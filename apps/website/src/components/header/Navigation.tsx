@@ -20,10 +20,10 @@ const Navigation = ({ isLoggedIn, isMobile = false, onLinkClick }: NavigationPro
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Don't show navigation items if user is logged in
-  if (isLoggedIn) {
-    return null;
-  }
+  // Show navigation items even if user is logged in
+  // if (isLoggedIn) {
+  //   return null;
+  // }
 
   const baseClasses = "text-sm font-medium transition-colors hover:text-primary";
   const containerClasses = isMobile ? "flex flex-col space-y-4" : "flex items-center space-x-8";

@@ -1,0 +1,23 @@
+{
+  "name": "kstorybridge-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:dashboard": "npm run dev --workspace=apps/dashboard",
+    "dev:website": "npm run dev --workspace=apps/website",
+    "build:dashboard": "npm run build --workspace=apps/dashboard",
+    "build:website": "npm run build --workspace=apps/website",
+    "build:all": "npm run build:dashboard && npm run build:website",
+    "lint:all": "npm run lint --workspace=apps/dashboard && npm run lint --workspace=apps/website",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "typescript": "^5.5.3"
+  }
+}

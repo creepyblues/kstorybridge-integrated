@@ -1,0 +1,205 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 255 255 255;
+    --foreground: 34 34 34;
+    --card: 255 255 255;
+    --card-foreground: 34 34 34;
+    --popover: 255 255 255;
+    --popover-foreground: 34 34 34;
+    --primary: 17 138 178;
+    --primary-foreground: 255 255 255;
+    --secondary: 255 107 107;
+    --secondary-foreground: 255 255 255;
+    --muted: 245 245 245;
+    --muted-foreground: 107 114 126;
+    --accent: 255 209 102;
+    --accent-foreground: 34 34 34;
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
+    --border: 229 231 235;
+    --input: 229 231 235;
+    --ring: 17 138 178;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-white text-[#222222] font-open-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Open Sans', 'Noto Sans KR', sans-serif;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .korean-text {
+    font-family: 'Noto Sans KR', 'Open Sans', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-primary {
+    color: rgb(17 138 178);
+  }
+  
+  .text-secondary {
+    color: rgb(255 107 107);
+  }
+  
+  .text-accent {
+    color: rgb(255 209 102);
+  }
+  
+  .bg-primary {
+    background-color: rgb(17 138 178);
+  }
+  
+  .bg-secondary {
+    background-color: rgb(255 107 107);
+  }
+  
+  .bg-accent {
+    background-color: rgb(255 209 102);
+  }
+  
+  .border-primary {
+    border-color: rgb(17 138 178);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+  
+  .animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes fadeIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from { 
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideInRight {
+    from { 
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from { 
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to { 
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% { 
+      transform: translateY(0px);
+    }
+    50% { 
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes drawLine {
+    from { 
+      stroke-dashoffset: 1000;
+    }
+    to { 
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .animate-draw-line {
+    stroke-dasharray: 1000;
+    animation: drawLine 3s ease-in-out infinite alternate;
+  }
+
+  /* Modern gradient backgrounds */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, rgb(17 138 178) 0%, rgb(255 107 107) 100%);
+  }
+
+  .bg-gradient-secondary {
+    background: linear-gradient(135deg, rgb(255 107 107) 0%, rgb(255 209 102) 100%);
+  }
+
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, rgb(255 209 102) 0%, rgb(17 138 178) 100%);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Text gradients */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, rgb(17 138 178) 0%, rgb(255 107 107) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-slide-up,
+    .animate-slide-in-right,
+    .animate-scale-in,
+    .animate-float,
+    .animate-draw-line {
+      animation: none;
+    }
+  }
+}

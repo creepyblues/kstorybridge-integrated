@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { getWebsiteUrl } from "@/config/urls";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (!loading && !user) {
       // TEMPORARY: Commenting out redirect for debugging purposes
       // TODO: Uncomment this line when debugging is complete
-      // window.location.href = "https://kstorybridge.com";
+      // window.location.href = getWebsiteUrl();
     }
   }, [user, loading]);
 

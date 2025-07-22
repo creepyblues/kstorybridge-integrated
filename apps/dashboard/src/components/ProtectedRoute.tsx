@@ -12,7 +12,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!loading && !user) {
-      window.location.href = "https://kstorybridge.com";
+      // TEMPORARY: Commenting out redirect for debugging purposes
+      // TODO: Uncomment this line when debugging is complete
+      // window.location.href = "https://kstorybridge.com";
     }
   }, [user, loading]);
 

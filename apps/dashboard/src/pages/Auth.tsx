@@ -3,8 +3,10 @@ import { useEffect } from "react";
 
 export default function Auth() {
   useEffect(() => {
+    // TEMPORARY: Commenting out redirect for debugging purposes
+    // TODO: Uncomment this line when debugging is complete
     // Redirect to the external sign-in page
-    window.location.href = "https://kstorybridge.com";
+    // window.location.href = "https://kstorybridge.com";
   }, []);
 
   // Show a loading state while redirecting

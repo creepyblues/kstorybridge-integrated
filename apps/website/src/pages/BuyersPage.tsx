@@ -67,8 +67,7 @@ const BuyersPage = () => {
           <div className="max-w-7xl mx-auto px-6">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-5xl lg:text-6xl font-bold mb-8 text-midnight-ink leading-tight">
-                Discover Korea's Next Global Hit 
-                <span className="block text-hanok-teal mt-2">Before the World Does</span>
+                <span className="text-hanok-teal">Discover Korea's Next Global Hit Before the World Does</span>
               </h1>
               <p className="text-xl lg:text-2xl text-midnight-ink-600 mb-12 leading-relaxed max-w-3xl mx-auto">
                 Scout Korean Hits with Confidence

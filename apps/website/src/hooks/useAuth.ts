@@ -31,6 +31,16 @@ export const useAuth = () => {
       console.log('✅ WEBSITE: Invitation status is accepted, proceeding with dashboard redirect');
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        console.log('🔄 WEBSITE: Current session details:', {
+          hasAccessToken: !!session.access_token,
+          hasRefreshToken: !!session.refresh_token,
+          expiresAt: session.expires_at,
+          expiresAtDate: session.expires_at ? new Date(session.expires_at * 1000) : 'N/A',
+          tokenType: session.token_type,
+          userEmail: session.user?.email,
+          isExpired: session.expires_at ? session.expires_at < Math.floor(Date.now() / 1000) : 'Unknown'
+        });
+        
         const dashboardUrl = getDashboardUrl();
         const sessionParams = new URLSearchParams({
           access_token: session.access_token,

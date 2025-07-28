@@ -53,8 +53,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('🔗 DASHBOARD: Session data to set:', { 
             hasAccessToken: !!sessionData.access_token, 
             hasRefreshToken: !!sessionData.refresh_token,
-            expiresAt: sessionData.expires_at 
+            expiresAt: sessionData.expires_at,
+            accessTokenLength: sessionData.access_token?.length,
+            refreshTokenLength: sessionData.refresh_token?.length,
+            tokenType: sessionData.token_type
           });
+          
+          // Check if tokens look valid
+          if (!sessionData.access_token || sessionData.access_token.length < 10) {
+            console.error('❌ DASHBOARD: Access token appears invalid:', sessionData.access_token?.substring(0, 20) + '...');
+          }
+          
+          if (sessionData.expires_at && sessionData.expires_at < Math.floor(Date.now() / 1000)) {
+            console.error('❌ DASHBOARD: Token appears to be expired:', new Date(sessionData.expires_at * 1000));
+          }
 
           try {
             const { data: { session }, error } = await supabase.auth.setSession(sessionData);

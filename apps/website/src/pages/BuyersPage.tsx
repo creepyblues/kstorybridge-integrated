@@ -1,13 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
+import { titlesService, type Title } from '../services/titlesService';
 
 const BuyersPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [titlesWithPitches, setTitlesWithPitches] = useState<Title[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const loadTitlesWithPitches = async () => {
+      try {
+        setLoading(true);
+        const titles = await titlesService.getTitlesWithPitches(6);
+        setTitlesWithPitches(titles);
+      } catch (error) {
+        console.error('Error loading titles with pitches:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTitlesWithPitches();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +39,13 @@ const BuyersPage = () => {
       description: "Thanks, we'll be in touch within 48 hours."
     });
     setIsSubmitting(false);
+  };
+
+  const formatGenre = (genre: string | null) => {
+    if (!genre) return '';
+    return genre.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
   };
 
   const mockCovers = [
@@ -185,31 +211,58 @@ const BuyersPage = () => {
               </p>
             </div>
             
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-              {mockCovers.map((item, index) => (
-                <Card key={index} className="relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300 border-0 shadow-lg rounded-2xl">
-                  <CardContent className="p-0">
-                    <div className="h-72 bg-gradient-to-br from-hanok-teal/10 to-porcelain-blue/10 relative">
-                      <div className={`absolute inset-0 ${item.blur ? 'blur-sm' : ''} flex items-center justify-center`}>
-                        <div className="text-center p-8">
-                          <div className="w-20 h-24 bg-hanok-teal/20 rounded-xl mx-auto mb-6 shadow-sm"></div>
-                          <h3 className="font-bold text-midnight-ink mb-3 text-lg">{item.title}</h3>
-                          <span className="text-sm text-midnight-ink-600 bg-white px-4 py-2 rounded-full shadow-sm font-medium">{item.genre}</span>
-                        </div>
-                      </div>
-                      {item.blur && (
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <div className="text-white text-center space-y-3">
-                            <div className="text-3xl">🔒</div>
-                            <p className="text-sm font-medium">VIP Access Required</p>
+            {loading ? (
+              <div className="text-center text-midnight-ink-600 py-8 mb-16">Loading titles...</div>
+            ) : (
+              <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-16">
+                {titlesWithPitches.map((title) => (
+                  <Card key={title.title_id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group">
+                    <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
+                      {title.title_image ? (
+                        <img 
+                          src={title.title_image} 
+                          alt={title.title_name_en || title.title_name_kr}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <>
+                          {/* Placeholder illustration */}
+                          <div className="w-12 h-12 bg-hanok-teal rounded-full flex items-center justify-center">
+                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                              <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
+                            </div>
                           </div>
-                        </div>
+                          <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
+                        </>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <CardContent className="p-3">
+                      <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
+                        {title.title_name_en || title.title_name_kr}
+                      </h3>
+                      {title.title_name_en && title.title_name_kr && (
+                        <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
+                      )}
+                      <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
+                        {title.tagline || title.pitch || 'Korean story with pitch available'}
+                      </p>
+                      {title.genre && (
+                        <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                          {formatGenre(title.genre)}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+            
+            {!loading && titlesWithPitches.length === 0 && (
+              <div className="text-center text-midnight-ink-600 py-8 mb-16">No titles with pitches available.</div>
+            )}
             
             <div className="text-center">
               <Link to="/signup">

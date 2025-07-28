@@ -5,8 +5,8 @@ const Logo = () => {
   return (
     <Link to="/" className="flex items-center">
       <img 
-        src="/lovable-uploads/b8a30438-0157-4985-bfd5-b81775215417.png" 
-        alt="K Story Bridge" 
+        src="/logo-new-teal.png" 
+        alt="KStoryBridge" 
         className="h-10 w-auto"
       />
     </Link>

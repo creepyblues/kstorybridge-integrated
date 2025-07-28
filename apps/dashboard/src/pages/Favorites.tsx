@@ -93,12 +93,12 @@ export default function Favorites() {
 
   if (!user) {
     return (
-      <div className="space-y-8">
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+      <div>
+        <Card className="bg-white border-gray-200 shadow-lg">
           <CardContent className="p-12 text-center">
-            <Heart className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">Please log in</h3>
-            <p className="text-slate-400">
+            <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-800 mb-2">Please log in</h3>
+            <p className="text-gray-600">
               You need to be logged in to view your favorites.
             </p>
           </CardContent>
@@ -109,137 +109,156 @@ export default function Favorites() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="text-center text-slate-400 py-8">Loading favorites...</div>
+      <div>
+        <div className="text-center text-gray-600 py-8">Loading favorites...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">My Favorites</h1>
-          <p className="text-slate-400">
-            Content you've saved for later review.
-          </p>
-        </div>
-        <div className="text-slate-400">
-          {filteredFavorites.length} favorites
-        </div>
-      </div>
-
-      {/* Search */}
-      <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-              <Input
-                placeholder="Search your favorites..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-400"
-              />
-            </div>
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Favorites Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredFavorites.map((favorite) => {
-          const title = favorite.titles;
-          return (
-            <Card key={favorite.id} className="bg-slate-800/50 border-slate-700 backdrop-blur-sm hover:bg-slate-800/70 transition-colors group">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white mb-1 line-clamp-2">
-                      {title.title_name_en || title.title_name_kr}
-                    </h3>
-                    {title.title_name_en && (
-                      <p className="text-sm text-slate-400 mb-2">{title.title_name_kr}</p>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveFromFavorites(title.title_id)}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Heart className="h-4 w-4 fill-current" />
-                  </Button>
-                </div>
-
-                <p className="text-slate-300 text-sm mb-4 line-clamp-3">
-                  {title.synopsis}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {title.genre && (
-                    <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
-                      {formatGenre(title.genre)}
-                    </Badge>
-                  )}
-                  {title.content_format && (
-                    <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
-                      {formatContentFormat(title.content_format)}
-                    </Badge>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between text-sm text-slate-400 mb-4">
-                  <span>By {title.author}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      {title.views?.toLocaleString() || '0'}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Heart className="h-3 w-3" />
-                      {title.likes || 0}
-                    </span>
-                    {title.rating && title.rating_count && title.rating_count > 0 && (
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-current text-yellow-400" />
-                        {title.rating}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Link to={`/titles/${title.title_id}`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700">
-                      View Details
-                    </Button>
-                  </Link>
-                  <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                    Start Deal
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {filteredFavorites.length === 0 && (
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-          <CardContent className="p-12 text-center">
-            <Heart className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">No favorites found</h3>
-            <p className="text-slate-400">
-              {searchTerm ? "No favorites match your search." : "Start browsing content to add favorites."}
+    <div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">My Favorites</h1>
+            <p className="text-gray-600">
+              Content you've saved for later review.
             </p>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-gray-600">
+              {filteredFavorites.length} favorites
+            </div>
+            <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-12">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            placeholder="Search your favorites..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-4 py-4 text-lg bg-gray-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal"
+          />
+        </div>
+
+        {/* Favorites Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {filteredFavorites.map((favorite) => {
+            const title = favorite.titles;
+            return (
+              <Card key={favorite.id} className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow group rounded-2xl">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4 mb-4">
+                    {title.title_image && (
+                      <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                        <img 
+                          src={title.title_image} 
+                          alt={title.title_name_en || title.title_name_kr}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <Link to={`/titles/${title.title_id}`}>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-2 hover:text-hanok-teal transition-colors cursor-pointer">
+                          {title.title_name_en || title.title_name_kr}
+                        </h3>
+                      </Link>
+                      {title.title_name_en && (
+                        <p className="text-sm text-gray-600 mb-2">{title.title_name_kr}</p>
+                      )}
+                      
+                      {/* Story and Art Authors */}
+                      <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-2">
+                        {title.story_author && (
+                          <div>
+                            <span className="font-medium">Story by</span> {title.story_author}
+                          </div>
+                        )}
+                        {title.art_author && (
+                          <div>
+                            <span className="font-medium">Art by</span> {title.art_author}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveFromFavorites(title.title_id)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Heart className="h-4 w-4 fill-current" />
+                    </Button>
+                  </div>
+
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                    {title.synopsis}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {title.genre && (
+                      <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
+                        {formatGenre(title.genre)}
+                      </Badge>
+                    )}
+                    {title.content_format && (
+                      <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
+                        {formatContentFormat(title.content_format)}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                    <span>{title.author}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" />
+                        {title.views?.toLocaleString() || '0'}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        {title.likes || 0}
+                      </span>
+                      {title.rating && title.rating_count && title.rating_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-current text-yellow-500" />
+                          {title.rating}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Link to={`/titles/${title.title_id}`} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full border-gray-300 text-gray-700 hover:text-gray-800 hover:bg-gray-50">
+                        View Details
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {filteredFavorites.length === 0 && (
+          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+            <CardContent className="p-12 text-center">
+              <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-800 mb-2">No favorites found</h3>
+              <p className="text-gray-600">
+                {searchTerm ? "No favorites match your search." : "Start browsing content to add favorites."}
+              </p>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }

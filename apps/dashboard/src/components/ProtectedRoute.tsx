@@ -12,10 +12,37 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && !user) {
-      // TEMPORARY: Commenting out redirect for debugging purposes
-      // TODO: Uncomment this line when debugging is complete
-      // window.location.href = getWebsiteUrl();
+    // Check if we have auth tokens in URL indicating auth flow in progress
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasAuthTokens = urlParams.has('access_token');
+    
+    console.log('🛡️ PROTECTED ROUTE EFFECT:', {
+      loading,
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasAuthTokens,
+      willRedirect: !loading && !user && !hasAuthTokens,
+      currentUrl: window.location.href,
+      currentPort: window.location.port
+    });
+    
+    // Don't redirect if auth is still loading OR if we have auth tokens in URL (auth flow in progress)
+    if (!loading && !user && !hasAuthTokens) {
+      console.log('🚨 PROTECTED ROUTE: Redirecting to website - no user authenticated and no auth flow in progress');
+      const websiteUrl = getWebsiteUrl();
+      const websiteUrlWithParam = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
+      console.log('🚨 PROTECTED ROUTE: Redirecting to:', websiteUrlWithParam);
+      console.log('🚨 PROTECTED ROUTE: Current URL:', window.location.href);
+      
+      // Small delay to prevent rapid redirects
+      setTimeout(() => {
+        console.log('🚨 PROTECTED ROUTE: Executing redirect now');
+        window.location.href = websiteUrlWithParam;
+      }, 200);
+    } else if (!loading && user) {
+      console.log('✅ PROTECTED ROUTE: User authenticated, allowing access');
+    } else if (hasAuthTokens) {
+      console.log('🔄 PROTECTED ROUTE: Auth flow in progress, waiting for completion...');
     }
   }, [user, loading]);
 

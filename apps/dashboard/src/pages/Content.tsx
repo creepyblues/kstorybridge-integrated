@@ -89,7 +89,7 @@ export default function Content() {
 
   if (showForm) {
     return (
-      <div className="space-y-6">
+      <div>
         <TitleForm
           title={editingTitle || undefined}
           onSave={handleSaveTitle}
@@ -103,25 +103,29 @@ export default function Content() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">My Titles</h1>
-          <p className="text-slate-400">Manage your intellectual property portfolio</p>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">My Titles</h1>
+          <p className="text-gray-600">Manage your intellectual property portfolio</p>
         </div>
-        <Button 
-          onClick={() => setShowForm(true)}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add New Title
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button 
+            onClick={() => setShowForm(true)}
+            className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add New Title
+          </Button>
+          <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+        </div>
       </div>
 
-      <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+      <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-white">Title Library</CardTitle>
-          <CardDescription className="text-slate-400">
+          <CardTitle className="text-gray-800">Title Library</CardTitle>
+          <CardDescription className="text-gray-600">
             Your intellectual property titles and content
           </CardDescription>
         </CardHeader>
@@ -130,66 +134,72 @@ export default function Content() {
           <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-              <Input
+              <input
+                type="text"
                 placeholder="Search titles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-400"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                  }
+                }}
+                className="pl-10 py-2 bg-gray-50 border-0 rounded-lg outline-none focus:ring-2 focus:ring-hanok-teal text-gray-800 w-full"
               />
             </div>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
+                <Button variant="outline" className="border-gray-300 text-gray-700 hover:text-gray-800 hover:bg-gray-50">
                   <Filter className="mr-2 h-4 w-4" />
                   Genre: {genreFilter === "all" ? "All" : genreFilter}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-slate-800 border-slate-700">
+              <DropdownMenuContent className="bg-white border-gray-200">
                 <DropdownMenuItem 
                   onClick={() => setGenreFilter("all")}
-                  className="text-slate-300 hover:text-white hover:bg-slate-700"
+                  className="text-gray-700 hover:text-gray-800 hover:bg-gray-50"
                 >
                   All Genres
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setGenreFilter("romance")} className="text-slate-300 hover:text-white hover:bg-slate-700">Romance</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setGenreFilter("fantasy")} className="text-slate-300 hover:text-white hover:bg-slate-700">Fantasy</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setGenreFilter("action")} className="text-slate-300 hover:text-white hover:bg-slate-700">Action</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setGenreFilter("drama")} className="text-slate-300 hover:text-white hover:bg-slate-700">Drama</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setGenreFilter("romance")} className="text-gray-700 hover:text-gray-800 hover:bg-gray-50">Romance</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setGenreFilter("fantasy")} className="text-gray-700 hover:text-gray-800 hover:bg-gray-50">Fantasy</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setGenreFilter("action")} className="text-gray-700 hover:text-gray-800 hover:bg-gray-50">Action</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setGenreFilter("drama")} className="text-gray-700 hover:text-gray-800 hover:bg-gray-50">Drama</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
+                <Button variant="outline" className="border-gray-300 text-gray-700 hover:text-gray-800 hover:bg-gray-50">
                   <Filter className="mr-2 h-4 w-4" />
                   Format: {formatFilter === "all" ? "All" : formatFilter}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-slate-800 border-slate-700">
+              <DropdownMenuContent className="bg-white border-gray-200">
                 <DropdownMenuItem 
                   onClick={() => setFormatFilter("all")}
-                  className="text-slate-300 hover:text-white hover:bg-slate-700"
+                  className="text-gray-700 hover:text-gray-800 hover:bg-gray-50"
                 >
                   All Formats
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFormatFilter("webtoon")} className="text-slate-300 hover:text-white hover:bg-slate-700">Webtoon</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFormatFilter("web_novel")} className="text-slate-300 hover:text-white hover:bg-slate-700">Web Novel</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFormatFilter("book")} className="text-slate-300 hover:text-white hover:bg-slate-700">Book</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFormatFilter("script")} className="text-slate-300 hover:text-white hover:bg-slate-700">Script</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFormatFilter("webtoon")} className="text-gray-700 hover:text-gray-800 hover:bg-gray-50">Webtoon</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFormatFilter("web_novel")} className="text-gray-700 hover:text-gray-800 hover:bg-gray-50">Web Novel</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFormatFilter("book")} className="text-gray-700 hover:text-gray-800 hover:bg-gray-50">Book</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFormatFilter("script")} className="text-gray-700 hover:text-gray-800 hover:bg-gray-50">Script</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
           {/* Titles Grid */}
           {loading ? (
-            <div className="text-center text-slate-400 py-8">Loading titles...</div>
+            <div className="text-center text-gray-600 py-8">Loading titles...</div>
           ) : filteredTitles.length === 0 ? (
-            <div className="text-center text-slate-400 py-8">
+            <div className="text-center text-gray-600 py-8">
               {titles.length === 0 ? "No titles yet. Create your first title!" : "No titles match your filters."}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredTitles.map((title) => (
                 <TitleCard
                   key={title.title_id}

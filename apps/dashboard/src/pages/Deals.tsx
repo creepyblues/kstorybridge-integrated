@@ -57,15 +57,15 @@ export default function Deals() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-600/20 text-green-400 border-green-600/30";
+        return "bg-green-100 text-green-700 border-green-300";
       case "negotiating":
-        return "bg-yellow-600/20 text-yellow-400 border-yellow-600/30";
+        return "bg-yellow-100 text-yellow-700 border-yellow-300";
       case "pending":
-        return "bg-blue-600/20 text-blue-400 border-blue-600/30";
+        return "bg-blue-100 text-blue-700 border-blue-300";
       case "cancelled":
-        return "bg-red-600/20 text-red-400 border-red-600/30";
+        return "bg-red-100 text-red-700 border-red-300";
       default:
-        return "bg-slate-600/20 text-slate-400 border-slate-600/30";
+        return "bg-gray-100 text-gray-700 border-gray-300";
     }
   };
 
@@ -85,84 +85,82 @@ export default function Deals() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Deals</h1>
-          <p className="text-slate-400">
-            Manage your content deals and negotiations.
-          </p>
-        </div>
-        <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-          <DollarSign className="mr-2 h-4 w-4" />
-          New Deal
-        </Button>
-      </div>
-
-      {/* Search and Filters */}
-      <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-              <Input
-                placeholder="Search deals..."
-                className="pl-10 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-400"
-              />
-            </div>
+    <div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">Deals</h1>
+            <p className="text-gray-600">
+              Manage your content deals and negotiations.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-4">
+            <Button className="bg-hanok-teal hover:bg-hanok-teal/90 text-white">
+              <DollarSign className="mr-2 h-4 w-4" />
+              New Deal
+            </Button>
+            <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+          </div>
+        </div>
 
-      {/* Deals List */}
-      <div className="grid grid-cols-1 gap-6">
-        {deals.map((deal) => (
-          <Card key={deal.id} className="bg-slate-800/50 border-slate-700 backdrop-blur-sm hover:bg-slate-800/70 transition-colors">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-white text-lg mb-2">{deal.title}</CardTitle>
-                  <div className="flex items-center gap-4 text-sm text-slate-400">
-                    <span>Buyer: {deal.buyer}</span>
-                    <span>Creator: {deal.creator}</span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Due: {deal.deadline}
-                    </span>
+        {/* Search Bar */}
+        <div className="relative mb-12">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            placeholder="Search deals..."
+            className="w-full pl-12 pr-4 py-4 text-lg bg-gray-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal"
+          />
+        </div>
+
+        {/* Deals List */}
+        <div className="grid grid-cols-1 gap-8 mb-16">
+          {deals.map((deal) => (
+            <Card key={deal.id} className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow rounded-2xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-gray-800 text-lg mb-2">{deal.title}</CardTitle>
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <span>Buyer: {deal.buyer}</span>
+                      <span>Creator: {deal.creator}</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        Due: {deal.deadline}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-800 mb-2">{deal.amount}</div>
+                    <Badge className={getStatusColor(deal.status)}>
+                      {getStatusIcon(deal.status)}
+                      <span className="ml-1 capitalize">{deal.status}</span>
+                    </Badge>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-white mb-2">{deal.amount}</div>
-                  <Badge className={getStatusColor(deal.status)}>
-                    {getStatusIcon(deal.status)}
-                    <span className="ml-1 capitalize">{deal.status}</span>
-                  </Badge>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span className="capitalize">{deal.type.replace('_', ' ')}</span>
+                    <span className="flex items-center gap-1">
+                      <MessageSquare className="h-3 w-3" />
+                      {deal.messages} messages
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:text-gray-800 hover:bg-gray-50">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Chat
+                    </Button>
+                    <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:text-gray-800 hover:bg-gray-50">
+                      View Details
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-sm text-slate-400">
-                  <span className="capitalize">{deal.type.replace('_', ' ')}</span>
-                  <span className="flex items-center gap-1">
-                    <MessageSquare className="h-3 w-3" />
-                    {deal.messages} messages
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700">
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Chat
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700">
-                    View Details
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
     </div>
   );
 }

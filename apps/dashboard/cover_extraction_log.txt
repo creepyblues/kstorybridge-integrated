@@ -1,0 +1,2029 @@
+[2025-07-24T00:46:27.965Z] 🚀 Initializing browser...
+[2025-07-24T00:46:30.386Z] 📊 Fetching titles from database...
+[2025-07-24T00:46:30.948Z] 📝 Found 0 titles with URLs
+[2025-07-24T00:46:30.948Z] ℹ️  No titles with URLs found to process
+[2025-07-24T00:46:31.012Z] 🔒 Browser closed
+[2025-07-24T00:46:31.012Z] 
+📊 EXTRACTION REPORT
+[2025-07-24T00:46:31.012Z] ==================================================
+[2025-07-24T00:46:31.012Z] ✅ Successfully extracted: 0
+[2025-07-24T00:46:31.012Z] ⏭️  Skipped (already had images): 0
+[2025-07-24T00:46:31.012Z] ❌ Failed: 0
+[2025-07-24T00:46:31.012Z] 📝 Total processed: 0
+[2025-07-24T00:46:31.012Z] 💾 Detailed results saved to: /Users/sungholee/code/kstorybridge-monorepo/apps/dashboard/cover_extraction_results.json
+[2025-07-24T00:46:31.012Z] 
+🎉 Extraction process completed!
+[2025-07-24T00:50:34.223Z] 🚀 Initializing browser...
+[2025-07-24T00:50:34.931Z] 📊 Fetching titles from database...
+[2025-07-24T00:50:35.454Z] 📝 Found 0 titles with URLs
+[2025-07-24T00:50:35.455Z] ℹ️  No titles with URLs found to process
+[2025-07-24T00:50:35.516Z] 🔒 Browser closed
+[2025-07-24T00:50:35.516Z] 
+📊 EXTRACTION REPORT
+[2025-07-24T00:50:35.516Z] ==================================================
+[2025-07-24T00:50:35.516Z] ✅ Successfully extracted: 0
+[2025-07-24T00:50:35.517Z] ⏭️  Skipped (already had images): 0
+[2025-07-24T00:50:35.517Z] ❌ Failed: 0
+[2025-07-24T00:50:35.517Z] 📝 Total processed: 0
+[2025-07-24T00:50:35.517Z] 💾 Detailed results saved to: /Users/sungholee/code/kstorybridge-monorepo/apps/dashboard/cover_extraction_results.json
+[2025-07-24T00:50:35.517Z] 
+🎉 Extraction process completed!
+[2025-07-24T00:54:07.123Z] 🚀 Initializing browser...
+[2025-07-24T00:54:07.808Z] 📊 Fetching titles from database...
+[2025-07-24T00:54:08.386Z] 📝 Found 0 titles with URLs
+[2025-07-24T00:54:08.386Z] ℹ️  No titles with URLs found to process
+[2025-07-24T00:54:08.449Z] 🔒 Browser closed
+[2025-07-24T00:54:08.449Z] 
+📊 EXTRACTION REPORT
+[2025-07-24T00:54:08.449Z] ==================================================
+[2025-07-24T00:54:08.449Z] ✅ Successfully extracted: 0
+[2025-07-24T00:54:08.449Z] ⏭️  Skipped (already had images): 0
+[2025-07-24T00:54:08.449Z] ❌ Failed: 0
+[2025-07-24T00:54:08.449Z] 📝 Total processed: 0
+[2025-07-24T00:54:08.450Z] 💾 Detailed results saved to: /Users/sungholee/code/kstorybridge-monorepo/apps/dashboard/cover_extraction_results.json
+[2025-07-24T00:54:08.450Z] 
+🎉 Extraction process completed!
+[2025-07-24T00:55:59.350Z] 🚀 Initializing browser...
+[2025-07-24T00:56:00.280Z] 📊 Fetching titles from database...
+[2025-07-24T00:56:00.798Z] 📝 Found 0 titles with URLs
+[2025-07-24T00:56:00.799Z] ℹ️  No titles with URLs found to process
+[2025-07-24T00:56:00.868Z] 🔒 Browser closed
+[2025-07-24T00:56:00.868Z] 
+📊 EXTRACTION REPORT
+[2025-07-24T00:56:00.868Z] ==================================================
+[2025-07-24T00:56:00.868Z] ✅ Successfully extracted: 0
+[2025-07-24T00:56:00.868Z] ⏭️  Skipped (already had images): 0
+[2025-07-24T00:56:00.868Z] ❌ Failed: 0
+[2025-07-24T00:56:00.868Z] 📝 Total processed: 0
+[2025-07-24T00:56:00.869Z] 💾 Detailed results saved to: /Users/sungholee/code/kstorybridge-monorepo/apps/dashboard/cover_extraction_results.json
+[2025-07-24T00:56:00.869Z] 
+🎉 Extraction process completed!
+[2025-07-24T00:58:21.635Z] 🚀 Initializing browser...
+[2025-07-24T00:58:22.383Z] 📊 Fetching titles from database...
+[2025-07-24T00:58:22.884Z] ❌ Fatal error: Failed to fetch titles: Invalid API key
+[2025-07-24T00:58:22.948Z] 🔒 Browser closed
+[2025-07-24T01:03:33.117Z] 🚀 Initializing browser...
+[2025-07-24T01:03:33.876Z] 📊 Fetching titles from database...
+[2025-07-24T01:03:33.981Z] 📋 Total titles in database (first 10): 10
+[2025-07-24T01:03:33.981Z]    1. Homo Plastikos
+[2025-07-24T01:03:33.981Z]       URL: https://manta.net/en/series/homo-plastikos?seriesId=2436
+[2025-07-24T01:03:33.981Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.981Z]    2. The Redemption of Earl Nottingham
+[2025-07-24T01:03:33.981Z]       URL: https://manta.net/en/series/the-redemption-of-earl-nottingham?seriesId=2071
+[2025-07-24T01:03:33.982Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.982Z]    3. Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:03:33.982Z]       URL: https://manta.net/en/series/juliet-we-re-not-in-kansas-anymore?seriesId=2144
+[2025-07-24T01:03:33.982Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.982Z]    4. Call Me Master
+[2025-07-24T01:03:33.982Z]       URL: https://manta.net/en/series/call-me-master?seriesId=2180
+[2025-07-24T01:03:33.982Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.982Z]    5. The Duke's Fake Sister
+[2025-07-24T01:03:33.982Z]       URL: https://manta.net/en/series/the-duke-s-fake-sister?seriesId=1772
+[2025-07-24T01:03:33.982Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.982Z]    6. When Fate Finds Us
+[2025-07-24T01:03:33.982Z]       URL: https://manta.net/en/series/when-fate-finds-us?seriesId=2182
+[2025-07-24T01:03:33.982Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.982Z]    7. Reborn as the Enemy Prince
+[2025-07-24T01:03:33.982Z]       URL: https://manta.net/en/series/reborn-as-the-enemy-prince?seriesId=2328
+[2025-07-24T01:03:33.982Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.982Z]    8. You Get Me Going
+[2025-07-24T01:03:33.982Z]       URL: https://manta.net/en/series/you-get-me-going?seriesId=2081
+[2025-07-24T01:03:33.982Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.982Z]    9. Cold-Blooded Beast
+[2025-07-24T01:03:33.982Z]       URL: https://manta.net/en/series/cold-blooded-beast?seriesId=2085
+[2025-07-24T01:03:33.982Z]       Image: NO IMAGE
+[2025-07-24T01:03:33.983Z]    10. Rewriting My Tragic Ending
+[2025-07-24T01:03:33.983Z]       URL: https://manta.net/en/series/rewriting-my-tragic-ending?seriesId=2073
+[2025-07-24T01:03:33.983Z]       Image: NO IMAGE
+[2025-07-24T01:03:34.039Z] 📝 Found 115 titles with URLs
+[2025-07-24T01:03:34.039Z] 🔄 Starting extraction for 115 titles...
+[2025-07-24T01:03:34.039Z] 
+[1/115] Processing: Homo Plastikos
+[2025-07-24T01:03:39.516Z] ❌ Error processing Homo Plastikos: page.waitForTimeout is not a function
+[2025-07-24T01:03:41.539Z] 
+[2/115] Processing: The Redemption of Earl Nottingham
+[2025-07-24T01:03:43.138Z] ❌ Error processing The Redemption of Earl Nottingham: page.waitForTimeout is not a function
+[2025-07-24T01:03:45.155Z] 
+[3/115] Processing: Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:03:46.910Z] ❌ Error processing Juliet, We're Not in Kansas Anymore!: page.waitForTimeout is not a function
+[2025-07-24T01:03:48.928Z] 
+[4/115] Processing: Call Me Master
+[2025-07-24T01:03:50.523Z] ❌ Error processing Call Me Master: page.waitForTimeout is not a function
+[2025-07-24T01:03:52.544Z] 
+[5/115] Processing: The Duke's Fake Sister
+[2025-07-24T01:03:54.813Z] ❌ Error processing The Duke's Fake Sister: page.waitForTimeout is not a function
+[2025-07-24T01:03:56.831Z] 
+[6/115] Processing: When Fate Finds Us
+[2025-07-24T01:03:58.901Z] ❌ Error processing When Fate Finds Us: page.waitForTimeout is not a function
+[2025-07-24T01:04:00.920Z] 
+[7/115] Processing: Reborn as the Enemy Prince
+[2025-07-24T01:04:02.452Z] ❌ Error processing Reborn as the Enemy Prince: page.waitForTimeout is not a function
+[2025-07-24T01:04:04.464Z] 
+[8/115] Processing: You Get Me Going
+[2025-07-24T01:04:05.991Z] ❌ Error processing You Get Me Going: page.waitForTimeout is not a function
+[2025-07-24T01:04:08.010Z] 
+[9/115] Processing: Cold-Blooded Beast
+[2025-07-24T01:04:09.560Z] ❌ Error processing Cold-Blooded Beast: page.waitForTimeout is not a function
+[2025-07-24T01:04:11.572Z] 
+[10/115] Processing: Rewriting My Tragic Ending
+[2025-07-24T01:04:13.363Z] ❌ Error processing Rewriting My Tragic Ending: page.waitForTimeout is not a function
+[2025-07-24T01:04:15.376Z] 
+[11/115] Processing: May God Bless Your Demise
+[2025-07-24T01:04:17.443Z] ❌ Error processing May God Bless Your Demise: page.waitForTimeout is not a function
+[2025-07-24T01:04:19.462Z] 
+[12/115] Processing: Punch Drunk Love
+[2025-07-24T01:04:20.973Z] ❌ Error processing Punch Drunk Love: page.waitForTimeout is not a function
+[2025-07-24T01:04:22.993Z] 
+[13/115] Processing: Love Lies
+[2025-07-24T01:04:24.786Z] ❌ Error processing Love Lies: page.waitForTimeout is not a function
+[2025-07-24T01:04:26.806Z] 
+[14/115] Processing: I Became a Doting Father
+[2025-07-24T01:04:28.521Z] ❌ Error processing I Became a Doting Father: page.waitForTimeout is not a function
+[2025-07-24T01:04:30.540Z] 
+[15/115] Processing: Cheolsu Saves the World
+[2025-07-24T01:04:32.802Z] ❌ Error processing Cheolsu Saves the World: page.waitForTimeout is not a function
+[2025-07-24T01:04:34.821Z] 
+[16/115] Processing: Isnelda
+[2025-07-24T01:04:36.458Z] ❌ Error processing Isnelda: page.waitForTimeout is not a function
+[2025-07-24T01:04:38.479Z] 
+[17/115] Processing: The Devil and His Sacrifice
+[2025-07-24T01:04:40.565Z] ❌ Error processing The Devil and His Sacrifice: page.waitForTimeout is not a function
+[2025-07-24T01:04:42.585Z] 
+[18/115] Processing: Winter Wolf
+[2025-07-24T01:04:44.297Z] ❌ Error processing Winter Wolf: page.waitForTimeout is not a function
+[2025-07-24T01:04:46.316Z] 
+[19/115] Processing: The Flower of Veneration
+[2025-07-24T01:04:47.961Z] ❌ Error processing The Flower of Veneration: page.waitForTimeout is not a function
+[2025-07-24T01:04:49.982Z] 
+[20/115] Processing: Countdown to Love
+[2025-07-24T01:04:51.547Z] ❌ Error processing Countdown to Love: page.waitForTimeout is not a function
+[2025-07-24T01:04:53.568Z] 
+[21/115] Processing: My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:04:55.620Z] ❌ Error processing My Sweet Enemy, Thy Name is Husband: page.waitForTimeout is not a function
+[2025-07-24T01:04:57.637Z] 
+[22/115] Processing: Falling for Danger
+[2025-07-24T01:04:59.709Z] ❌ Error processing Falling for Danger: page.waitForTimeout is not a function
+[2025-07-24T01:05:01.725Z] 
+[23/115] Processing: Heartrate Presto
+[2025-07-24T01:05:04.344Z] ❌ Error processing Heartrate Presto: page.waitForTimeout is not a function
+[2025-07-24T01:05:06.355Z] 
+[24/115] Processing: The Many Seasons of Food
+[2025-07-24T01:05:08.423Z] ❌ Error processing The Many Seasons of Food: page.waitForTimeout is not a function
+[2025-07-24T01:05:10.443Z] 
+[25/115] Processing: Falling for a Dying Princess
+[2025-07-24T01:05:12.083Z] ❌ Error processing Falling for a Dying Princess: page.waitForTimeout is not a function
+[2025-07-24T01:05:14.100Z] 
+[26/115] Processing: My Master, My Prince
+[2025-07-24T01:05:16.167Z] ❌ Error processing My Master, My Prince: page.waitForTimeout is not a function
+[2025-07-24T01:05:18.187Z] 
+[27/115] Processing: Opposites Attract
+[2025-07-24T01:05:19.765Z] ❌ Error processing Opposites Attract: page.waitForTimeout is not a function
+[2025-07-24T01:05:21.785Z] 
+[28/115] Processing: The Superheroes of Class F
+[2025-07-24T01:05:23.348Z] ❌ Error processing The Superheroes of Class F: page.waitForTimeout is not a function
+[2025-07-24T01:05:25.367Z] 
+[29/115] Processing: Werewolves Going Crazy Over Me
+[2025-07-24T01:05:26.922Z] ❌ Error processing Werewolves Going Crazy Over Me: page.waitForTimeout is not a function
+[2025-07-24T01:05:28.942Z] 
+[30/115] Processing: I Can See Your Stats!
+[2025-07-24T01:05:31.014Z] ❌ Error processing I Can See Your Stats!: page.waitForTimeout is not a function
+[2025-07-24T01:05:33.034Z] 
+[31/115] Processing: Sangyang: The Wanderer
+[2025-07-24T01:05:34.618Z] ❌ Error processing Sangyang: The Wanderer: page.waitForTimeout is not a function
+[2025-07-24T01:05:36.637Z] 
+[32/115] Processing: The Woodsman and the Stag
+[2025-07-24T01:05:38.367Z] ❌ Error processing The Woodsman and the Stag: page.waitForTimeout is not a function
+[2025-07-24T01:05:40.387Z] 
+[33/115] Processing: Wish Upon a Husband
+[2025-07-24T01:05:41.956Z] ❌ Error processing Wish Upon a Husband: page.waitForTimeout is not a function
+[2025-07-24T01:05:43.977Z] 
+[34/115] Processing: Shoot for the Stars
+[2025-07-24T01:05:45.525Z] ❌ Error processing Shoot for the Stars: page.waitForTimeout is not a function
+[2025-07-24T01:05:47.544Z] 
+[35/115] Processing: The Deviless' Impression of a Princess
+[2025-07-24T01:05:49.123Z] ❌ Error processing The Deviless' Impression of a Princess: page.waitForTimeout is not a function
+[2025-07-24T01:05:51.144Z] 
+[36/115] Processing: Shall We Bathe, Your Grace?
+[2025-07-24T01:05:52.656Z] ❌ Error processing Shall We Bathe, Your Grace?: page.waitForTimeout is not a function
+[2025-07-24T01:05:54.675Z] 
+[37/115] Processing: The Fallen Duke & the Knight Who Hated Him
+[2025-07-24T01:05:56.183Z] ❌ Error processing The Fallen Duke & the Knight Who Hated Him: page.waitForTimeout is not a function
+[2025-07-24T01:05:58.202Z] 
+[38/115] Processing: The Blood Moon
+[2025-07-24T01:05:59.755Z] ❌ Error processing The Blood Moon: page.waitForTimeout is not a function
+[2025-07-24T01:06:01.776Z] 
+[39/115] Processing: Science Tikitaka
+[2025-07-24T01:07:13.703Z] 🚀 Initializing browser...
+[2025-07-24T01:07:14.438Z] 📊 Fetching titles from database...
+[2025-07-24T01:07:14.936Z] 📋 Total titles in database (first 10): 10
+[2025-07-24T01:07:14.936Z]    1. Homo Plastikos
+[2025-07-24T01:07:14.936Z]       URL: https://manta.net/en/series/homo-plastikos?seriesId=2436
+[2025-07-24T01:07:14.936Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.937Z]    2. The Redemption of Earl Nottingham
+[2025-07-24T01:07:14.937Z]       URL: https://manta.net/en/series/the-redemption-of-earl-nottingham?seriesId=2071
+[2025-07-24T01:07:14.937Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.937Z]    3. Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:07:14.937Z]       URL: https://manta.net/en/series/juliet-we-re-not-in-kansas-anymore?seriesId=2144
+[2025-07-24T01:07:14.937Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.938Z]    4. Call Me Master
+[2025-07-24T01:07:14.938Z]       URL: https://manta.net/en/series/call-me-master?seriesId=2180
+[2025-07-24T01:07:14.938Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.938Z]    5. The Duke's Fake Sister
+[2025-07-24T01:07:14.938Z]       URL: https://manta.net/en/series/the-duke-s-fake-sister?seriesId=1772
+[2025-07-24T01:07:14.938Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.938Z]    6. When Fate Finds Us
+[2025-07-24T01:07:14.938Z]       URL: https://manta.net/en/series/when-fate-finds-us?seriesId=2182
+[2025-07-24T01:07:14.938Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.939Z]    7. Reborn as the Enemy Prince
+[2025-07-24T01:07:14.939Z]       URL: https://manta.net/en/series/reborn-as-the-enemy-prince?seriesId=2328
+[2025-07-24T01:07:14.939Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.939Z]    8. You Get Me Going
+[2025-07-24T01:07:14.939Z]       URL: https://manta.net/en/series/you-get-me-going?seriesId=2081
+[2025-07-24T01:07:14.939Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.939Z]    9. Cold-Blooded Beast
+[2025-07-24T01:07:14.939Z]       URL: https://manta.net/en/series/cold-blooded-beast?seriesId=2085
+[2025-07-24T01:07:14.939Z]       Image: NO IMAGE
+[2025-07-24T01:07:14.939Z]    10. Rewriting My Tragic Ending
+[2025-07-24T01:07:14.939Z]       URL: https://manta.net/en/series/rewriting-my-tragic-ending?seriesId=2073
+[2025-07-24T01:07:14.939Z]       Image: NO IMAGE
+[2025-07-24T01:07:15.015Z] 📝 Found 115 titles with URLs
+[2025-07-24T01:07:15.015Z] 🔄 Starting extraction for 115 titles...
+[2025-07-24T01:07:15.015Z] 
+[1/115] Processing: Homo Plastikos
+[2025-07-24T01:07:20.562Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:07:20.672Z] 💾 Updated database for Homo Plastikos
+[2025-07-24T01:07:22.674Z] 
+[2/115] Processing: The Redemption of Earl Nottingham
+[2025-07-24T01:07:27.252Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:07:27.365Z] 💾 Updated database for The Redemption of Earl Nottingham
+[2025-07-24T01:07:29.367Z] 
+[3/115] Processing: Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:07:34.439Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:07:34.549Z] 💾 Updated database for Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:07:36.555Z] 
+[4/115] Processing: Call Me Master
+[2025-07-24T01:07:41.154Z] ✅ Found cover image: https://static.mantacdn.net/2023-12-07/Pl/PlIjqjhMc2TmGL3v.jpg
+[2025-07-24T01:07:41.271Z] 💾 Updated database for Call Me Master
+[2025-07-24T01:07:43.273Z] 
+[5/115] Processing: The Duke's Fake Sister
+[2025-07-24T01:07:47.844Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-10/wK/wKxGSoE3WrF0rHwU.jpg
+[2025-07-24T01:07:47.944Z] 💾 Updated database for The Duke's Fake Sister
+[2025-07-24T01:07:49.946Z] 
+[6/115] Processing: When Fate Finds Us
+[2025-07-24T01:07:54.539Z] ✅ Found cover image: https://static.mantacdn.net/2024-12-07/dW/dW3KqAYKbu4KLPZq.jpg
+[2025-07-24T01:07:54.622Z] 💾 Updated database for When Fate Finds Us
+[2025-07-24T01:07:56.625Z] 
+[7/115] Processing: Reborn as the Enemy Prince
+[2025-07-24T01:08:01.185Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg
+[2025-07-24T01:08:01.283Z] 💾 Updated database for Reborn as the Enemy Prince
+[2025-07-24T01:08:03.287Z] 
+[8/115] Processing: You Get Me Going
+[2025-07-24T01:08:07.924Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg
+[2025-07-24T01:08:07.992Z] 💾 Updated database for You Get Me Going
+[2025-07-24T01:08:09.994Z] 
+[9/115] Processing: Cold-Blooded Beast
+[2025-07-24T01:08:14.501Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-07/7s/7s4dW0uRMsSP5Vw3.jpg
+[2025-07-24T01:08:14.576Z] 💾 Updated database for Cold-Blooded Beast
+[2025-07-24T01:08:16.578Z] 
+[10/115] Processing: Rewriting My Tragic Ending
+[2025-07-24T01:08:21.124Z] ✅ Found cover image: https://static.mantacdn.net/2024-04-22/RL/RLQ4TealWWCZ7pny.jpg
+[2025-07-24T01:08:21.209Z] 💾 Updated database for Rewriting My Tragic Ending
+[2025-07-24T01:08:23.211Z] 
+[11/115] Processing: May God Bless Your Demise
+[2025-07-24T01:08:27.789Z] ✅ Found cover image: https://static.mantacdn.net/2024-12-16/wn/wnVTEw4bXnMHnd3t.jpg
+[2025-07-24T01:08:27.868Z] 💾 Updated database for May God Bless Your Demise
+[2025-07-24T01:08:29.869Z] 
+[12/115] Processing: Punch Drunk Love
+[2025-07-24T01:08:34.408Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg
+[2025-07-24T01:08:34.492Z] 💾 Updated database for Punch Drunk Love
+[2025-07-24T01:08:36.511Z] 
+[13/115] Processing: Love Lies
+[2025-07-24T01:08:41.152Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-22/Ge/GepDENFTMmQqxvuK.jpg
+[2025-07-24T01:08:41.396Z] 💾 Updated database for Love Lies
+[2025-07-24T01:08:43.433Z] 
+[14/115] Processing: I Became a Doting Father
+[2025-07-24T01:08:48.095Z] ✅ Found cover image: https://static.mantacdn.net/2025-04-06/n5/n56w6ppB8Yql0921.jpg
+[2025-07-24T01:08:48.179Z] 💾 Updated database for I Became a Doting Father
+[2025-07-24T01:08:50.181Z] 
+[15/115] Processing: Cheolsu Saves the World
+[2025-07-24T01:08:54.752Z] ✅ Found cover image: https://static.mantacdn.net/2025-05-05/0d/0dlZPUpNrlczkGzi.jpg
+[2025-07-24T01:08:54.849Z] 💾 Updated database for Cheolsu Saves the World
+[2025-07-24T01:08:56.852Z] 
+[16/115] Processing: Isnelda
+[2025-07-24T01:09:01.427Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:09:01.915Z] 💾 Updated database for Isnelda
+[2025-07-24T01:09:03.918Z] 
+[17/115] Processing: The Devil and His Sacrifice
+[2025-07-24T01:09:08.490Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-12/BE/BE6U9YmEZn1NnLxQ.jpg
+[2025-07-24T01:09:08.574Z] 💾 Updated database for The Devil and His Sacrifice
+[2025-07-24T01:09:10.575Z] 
+[18/115] Processing: Winter Wolf
+[2025-07-24T01:09:15.290Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-09/eT/eTNcs4mFucFOxNFp.jpg
+[2025-07-24T01:09:15.397Z] 💾 Updated database for Winter Wolf
+[2025-07-24T01:09:17.398Z] 
+[19/115] Processing: The Flower of Veneration
+[2025-07-24T01:09:21.962Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:09:22.040Z] 💾 Updated database for The Flower of Veneration
+[2025-07-24T01:09:24.042Z] 
+[20/115] Processing: Countdown to Love
+[2025-07-24T01:09:29.116Z] ✅ Found cover image: https://static.mantacdn.net/2024-07-29/B8/B8IyHduSYBMJgQ8U.jpg
+[2025-07-24T01:09:29.217Z] 💾 Updated database for Countdown to Love
+[2025-07-24T01:09:31.219Z] 
+[21/115] Processing: My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:09:35.856Z] ✅ Found cover image: https://static.mantacdn.net/2023-12-07/Pl/PlIjqjhMc2TmGL3v.jpg
+[2025-07-24T01:09:35.935Z] 💾 Updated database for My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:09:37.936Z] 
+[22/115] Processing: Falling for Danger
+[2025-07-24T01:09:42.487Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg
+[2025-07-24T01:09:42.579Z] 💾 Updated database for Falling for Danger
+[2025-07-24T01:09:44.580Z] 
+[23/115] Processing: Heartrate Presto
+[2025-07-24T01:09:49.098Z] ✅ Found cover image: https://static.mantacdn.net/2022-01-14/M1/M13B6JQDWuDZCq6K.jpg
+[2025-07-24T01:09:49.170Z] 💾 Updated database for Heartrate Presto
+[2025-07-24T01:09:51.170Z] 
+[24/115] Processing: The Many Seasons of Food
+[2025-07-24T01:09:55.687Z] ✅ Found cover image: https://static.mantacdn.net/2022-05-05/Qy/Qydx4SHaacoHMN5g.jpg
+[2025-07-24T01:09:55.759Z] 💾 Updated database for The Many Seasons of Food
+[2025-07-24T01:09:57.762Z] 
+[25/115] Processing: Falling for a Dying Princess
+[2025-07-24T01:10:02.363Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:10:02.475Z] 💾 Updated database for Falling for a Dying Princess
+[2025-07-24T01:10:04.477Z] 
+[26/115] Processing: My Master, My Prince
+[2025-07-24T01:10:09.004Z] ✅ Found cover image: https://static.mantacdn.net/2023-04-27/ck/ckHNqJuxp5WuXp1G.jpg
+[2025-07-24T01:10:09.092Z] 💾 Updated database for My Master, My Prince
+[2025-07-24T01:10:11.093Z] 
+[27/115] Processing: Opposites Attract
+[2025-07-24T01:10:15.607Z] ✅ Found cover image: https://static.mantacdn.net/2025-05-08/G1/G1e3iReaVG8XHwfV.jpg
+[2025-07-24T01:10:15.685Z] 💾 Updated database for Opposites Attract
+[2025-07-24T01:10:17.686Z] 
+[28/115] Processing: The Superheroes of Class F
+[2025-07-24T01:10:22.276Z] ✅ Found cover image: https://www.acfm.kr/eng/addon/10000001/commingsoon.gif
+[2025-07-24T01:10:22.365Z] 💾 Updated database for The Superheroes of Class F
+[2025-07-24T01:10:24.368Z] 
+[29/115] Processing: Werewolves Going Crazy Over Me
+[2025-07-24T01:10:28.887Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:10:29.274Z] 💾 Updated database for Werewolves Going Crazy Over Me
+[2025-07-24T01:10:31.276Z] 
+[30/115] Processing: I Can See Your Stats!
+[2025-07-24T01:10:35.822Z] ✅ Found cover image: https://static.mantacdn.net/2024-11-04/kC/kCFaKFRVYP7nfLPQ.jpg
+[2025-07-24T01:10:35.885Z] 💾 Updated database for I Can See Your Stats!
+[2025-07-24T01:10:37.887Z] 
+[31/115] Processing: Sangyang: The Wanderer
+[2025-07-24T01:10:42.399Z] ✅ Found cover image: https://static.mantacdn.net/2023-06-02/Hl/HldDm0f83IsaG2kv.jpg
+[2025-07-24T01:10:42.495Z] 💾 Updated database for Sangyang: The Wanderer
+[2025-07-24T01:10:44.498Z] 
+[32/115] Processing: The Woodsman and the Stag
+[2025-07-24T01:10:49.046Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-04/jk/jk0Oznj6g5jufc6I.jpg
+[2025-07-24T01:10:49.525Z] 💾 Updated database for The Woodsman and the Stag
+[2025-07-24T01:10:51.527Z] 
+[33/115] Processing: Wish Upon a Husband
+[2025-07-24T01:10:56.435Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:10:56.576Z] 💾 Updated database for Wish Upon a Husband
+[2025-07-24T01:10:58.576Z] 
+[34/115] Processing: Shoot for the Stars
+[2025-07-24T01:11:03.120Z] ✅ Found cover image: https://static.mantacdn.net/2023-02-02/H0/H0yIARmg6WjDItFv.jpg
+[2025-07-24T01:11:03.237Z] 💾 Updated database for Shoot for the Stars
+[2025-07-24T01:11:05.239Z] 
+[35/115] Processing: The Deviless' Impression of a Princess
+[2025-07-24T01:11:09.809Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg
+[2025-07-24T01:11:09.903Z] 💾 Updated database for The Deviless' Impression of a Princess
+[2025-07-24T01:11:11.905Z] 
+[36/115] Processing: Shall We Bathe, Your Grace?
+[2025-07-24T01:11:16.469Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-22/Ge/GepDENFTMmQqxvuK.jpg
+[2025-07-24T01:11:16.555Z] 💾 Updated database for Shall We Bathe, Your Grace?
+[2025-07-24T01:11:18.557Z] 
+[37/115] Processing: The Fallen Duke & the Knight Who Hated Him
+[2025-07-24T01:11:23.122Z] ✅ Found cover image: https://static.mantacdn.net/2024-02-14/Sb/SbB6bHxJ80q41usb.jpg
+[2025-07-24T01:11:23.191Z] 💾 Updated database for The Fallen Duke & the Knight Who Hated Him
+[2025-07-24T01:11:25.193Z] 
+[38/115] Processing: The Blood Moon
+[2025-07-24T01:11:29.719Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Vp/VppqScRfPPRW1SuY.jpg
+[2025-07-24T01:11:29.795Z] 💾 Updated database for The Blood Moon
+[2025-07-24T01:11:31.797Z] 
+[39/115] Processing: Science Tikitaka
+[2025-07-24T01:11:37.438Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:11:37.526Z] 💾 Updated database for Science Tikitaka
+[2025-07-24T01:11:39.528Z] 
+[40/115] Processing: Devil at the Crossroads
+[2025-07-24T01:11:44.607Z] ✅ Found cover image: https://static.mantacdn.net/2023-04-27/ck/ckHNqJuxp5WuXp1G.jpg
+[2025-07-24T01:11:44.689Z] 💾 Updated database for Devil at the Crossroads
+[2025-07-24T01:11:46.691Z] 
+[41/115] Processing: My Second Life as an Idol
+[2025-07-24T01:11:51.268Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-10/v7/v7adnPfCb5dkmGN5.jpg
+[2025-07-24T01:11:51.345Z] 💾 Updated database for My Second Life as an Idol
+[2025-07-24T01:11:53.347Z] 
+[42/115] Processing: Arpeggio on the Surface of the Sea
+[2025-07-24T01:11:57.862Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-05/n7/n7eZxw8uBIbKyJmu.jpg
+[2025-07-24T01:11:57.950Z] 💾 Updated database for Arpeggio on the Surface of the Sea
+[2025-07-24T01:11:59.951Z] 
+[43/115] Processing: Trophy Husband
+[2025-07-24T01:12:05.034Z] ✅ Found cover image: https://static.mantacdn.net/2022-11-24/NE/NEFIqZBiecYotW7R.jpg
+[2025-07-24T01:12:05.112Z] 💾 Updated database for Trophy Husband
+[2025-07-24T01:12:07.114Z] 
+[44/115] Processing: The Tale of the Frost Flower
+[2025-07-24T01:12:13.536Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:12:13.608Z] 💾 Updated database for The Tale of the Frost Flower
+[2025-07-24T01:12:15.611Z] 
+[45/115] Processing: Zodiac Hunters
+[2025-07-24T01:12:20.917Z] ✅ Found cover image: https://static.mantacdn.net/2022-12-01/DJ/DJVGOngizlHikBuZ.jpg
+[2025-07-24T01:12:20.992Z] 💾 Updated database for Zodiac Hunters
+[2025-07-24T01:12:22.993Z] 
+[46/115] Processing: Reunion
+[2025-07-24T01:12:27.534Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-03/K4/K49rpttRZ43hV3yF.jpg
+[2025-07-24T01:12:27.606Z] 💾 Updated database for Reunion
+[2025-07-24T01:12:29.608Z] 
+[47/115] Processing: The Fantastical After-School Writing Club
+[2025-07-24T01:12:34.158Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg
+[2025-07-24T01:12:35.454Z] 💾 Updated database for The Fantastical After-School Writing Club
+[2025-07-24T01:12:37.457Z] 
+[48/115] Processing: Bittersweet Con Panna
+[2025-07-24T01:12:42.771Z] ✅ Found cover image: https://static.mantacdn.net/2024-12-20/Yf/YfrhkHXT3ULJkhsO.jpg
+[2025-07-24T01:12:42.841Z] 💾 Updated database for Bittersweet Con Panna
+[2025-07-24T01:12:44.843Z] 
+[49/115] Processing: Betrayal of Dignity
+[2025-07-24T01:12:49.397Z] ✅ Found cover image: https://static.mantacdn.net/2025-04-06/n5/n56w6ppB8Yql0921.jpg
+[2025-07-24T01:12:49.482Z] 💾 Updated database for Betrayal of Dignity
+[2025-07-24T01:12:51.484Z] 
+[50/115] Processing: The Dilettante
+[2025-07-24T01:12:56.068Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:12:56.164Z] 💾 Updated database for The Dilettante
+[2025-07-24T01:12:58.165Z] 
+[51/115] Processing: Justice Now!
+[2025-07-24T01:13:03.337Z] ✅ Found cover image: https://static.mantacdn.net/2022-02-18/pt/ptEnPOxSqUTXHKCi.jpg
+[2025-07-24T01:13:03.405Z] 💾 Updated database for Justice Now!
+[2025-07-24T01:13:05.408Z] 
+[52/115] Processing: Mokrin
+[2025-07-24T01:13:10.004Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-22/Ge/GepDENFTMmQqxvuK.jpg
+[2025-07-24T01:13:10.077Z] 💾 Updated database for Mokrin
+[2025-07-24T01:13:12.079Z] 
+[53/115] Processing: My Miraculous Bookstore
+[2025-07-24T01:13:17.623Z] ✅ Found cover image: https://static.mantacdn.net/2025-05-05/0d/0dlZPUpNrlczkGzi.jpg
+[2025-07-24T01:13:17.693Z] 💾 Updated database for My Miraculous Bookstore
+[2025-07-24T01:13:19.694Z] 
+[54/115] Processing: Even If...
+[2025-07-24T01:13:24.258Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:13:24.341Z] 💾 Updated database for Even If...
+[2025-07-24T01:13:26.342Z] 
+[55/115] Processing: I've Become a True Villainess
+[2025-07-24T01:13:30.934Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Vp/VppqScRfPPRW1SuY.jpg
+[2025-07-24T01:13:31.016Z] 💾 Updated database for I've Become a True Villainess
+[2025-07-24T01:13:33.017Z] 
+[56/115] Processing: The Forgotten Princess Just Wants Peace
+[2025-07-24T01:13:38.323Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Vp/VppqScRfPPRW1SuY.jpg
+[2025-07-24T01:13:38.395Z] 💾 Updated database for The Forgotten Princess Just Wants Peace
+[2025-07-24T01:13:40.396Z] 
+[57/115] Processing: Getting Along Just Fine
+[2025-07-24T01:13:45.732Z] ✅ Found cover image: https://static.mantacdn.net/2022-02-18/pt/ptEnPOxSqUTXHKCi.jpg
+[2025-07-24T01:13:45.806Z] 💾 Updated database for Getting Along Just Fine
+[2025-07-24T01:13:47.807Z] 
+[58/115] Processing: Duchess Crow
+[2025-07-24T01:13:52.413Z] ✅ Found cover image: https://static.mantacdn.net/2024-06-14/3E/3EnzIYIKhryJXWr5.jpg
+[2025-07-24T01:13:52.482Z] 💾 Updated database for Duchess Crow
+[2025-07-24T01:13:54.484Z] 
+[59/115] Processing: Your Eternal Lies
+[2025-07-24T01:13:59.559Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/JH/JHQr0sAIDt4xw8Of.jpg
+[2025-07-24T01:13:59.635Z] 💾 Updated database for Your Eternal Lies
+[2025-07-24T01:14:01.636Z] 
+[60/115] Processing: The Year of No Shopping
+[2025-07-24T01:14:07.549Z] ✅ Found cover image: https://static.mantacdn.net/2022-06-02/NN/NNiJvpbYegeo7JgW.jpg
+[2025-07-24T01:14:07.628Z] 💾 Updated database for The Year of No Shopping
+[2025-07-24T01:14:09.629Z] 
+[61/115] Processing: The Accidental Heiress
+[2025-07-24T01:14:14.986Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Vp/VppqScRfPPRW1SuY.jpg
+[2025-07-24T01:14:15.063Z] 💾 Updated database for The Accidental Heiress
+[2025-07-24T01:14:17.064Z] 
+[62/115] Processing: Fry My Life
+[2025-07-24T01:14:22.137Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:14:23.242Z] 💾 Updated database for Fry My Life
+[2025-07-24T01:14:25.243Z] 
+[63/115] Processing: [ blank。]
+[2025-07-24T01:14:29.826Z] ✅ Found cover image: https://static.mantacdn.net/2024-07-30/Ck/Ck1H3pCL3JQj3g6g.jpg
+[2025-07-24T01:14:29.908Z] 💾 Updated database for [ blank。]
+[2025-07-24T01:14:31.910Z] 
+[64/115] Processing: The Secret of Umbra
+[2025-07-24T01:14:38.308Z] ✅ Found cover image: https://static.mantacdn.net/2024-12-09/Zs/ZstHXkAnHzOqw58Y.jpg
+[2025-07-24T01:14:38.383Z] 💾 Updated database for The Secret of Umbra
+[2025-07-24T01:14:40.385Z] 
+[65/115] Processing: Nowhere But Iceland
+[2025-07-24T01:14:46.402Z] ✅ Found cover image: https://static.mantacdn.net/2020-12-11/1Q/1QPhY722Lxnfa9cG.jpg
+[2025-07-24T01:14:46.481Z] 💾 Updated database for Nowhere But Iceland
+[2025-07-24T01:14:48.483Z] 
+[66/115] Processing: Paljae, Child of Winter
+[2025-07-24T01:14:53.108Z] ✅ Found cover image: https://static.mantacdn.net/2023-07-13/v3/v3JdyG5CgYG3eWs5.jpg
+[2025-07-24T01:14:53.189Z] 💾 Updated database for Paljae, Child of Winter
+[2025-07-24T01:14:55.191Z] 
+[67/115] Processing: Whispers Through the Willows
+[2025-07-24T01:15:00.474Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg
+[2025-07-24T01:15:00.554Z] 💾 Updated database for Whispers Through the Willows
+[2025-07-24T01:15:02.556Z] 
+[68/115] Processing: The Script
+[2025-07-24T01:15:07.664Z] ✅ Found cover image: https://static.mantacdn.net/2025-04-06/n5/n56w6ppB8Yql0921.jpg
+[2025-07-24T01:15:07.735Z] 💾 Updated database for The Script
+[2025-07-24T01:15:09.737Z] 
+[69/115] Processing: Kneel Before Me
+[2025-07-24T01:15:14.449Z] ✅ Found cover image: https://static.mantacdn.net/2022-11-24/NE/NEFIqZBiecYotW7R.jpg
+[2025-07-24T01:15:14.536Z] 💾 Updated database for Kneel Before Me
+[2025-07-24T01:15:16.538Z] 
+[70/115] Processing: Evangeline's Sword
+[2025-07-24T01:15:21.405Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-11/dl/dlPg3ziM11o07ar4.jpg
+[2025-07-24T01:15:21.506Z] 💾 Updated database for Evangeline's Sword
+[2025-07-24T01:15:23.507Z] 
+[71/115] Processing: Terrarium Adventure
+[2025-07-24T01:15:28.343Z] ✅ Found cover image: https://static.mantacdn.net/2025-04-06/n5/n56w6ppB8Yql0921.jpg
+[2025-07-24T01:15:28.415Z] 💾 Updated database for Terrarium Adventure
+[2025-07-24T01:15:30.416Z] 
+[72/115] Processing: Being Me, Being You
+[2025-07-24T01:15:36.500Z] ✅ Found cover image: https://static.mantacdn.net/2022-04-01/lX/lXEqC6fnfIxg8Qs6.jpg
+[2025-07-24T01:15:36.577Z] 💾 Updated database for Being Me, Being You
+[2025-07-24T01:15:38.579Z] 
+[73/115] Processing: My Husband, My Sister, and I
+[2025-07-24T01:16:08.635Z] ❌ Error processing My Husband, My Sister, and I: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:16:10.698Z] 
+[74/115] Processing: Flip Turn
+[2025-07-24T01:16:15.776Z] ✅ Found cover image: https://static.mantacdn.net/2024-12-07/dW/dW3KqAYKbu4KLPZq.jpg
+[2025-07-24T01:16:16.273Z] 💾 Updated database for Flip Turn
+[2025-07-24T01:16:18.275Z] 
+[75/115] Processing: Flash Behavior
+[2025-07-24T01:16:23.347Z] ✅ Found cover image: https://static.mantacdn.net/2022-02-04/rP/rPTZScyj8Q2RpKrn.jpg
+[2025-07-24T01:16:23.441Z] 💾 Updated database for Flash Behavior
+[2025-07-24T01:16:25.442Z] 
+[76/115] Processing: The Quant of Wall Street
+[2025-07-24T01:16:30.521Z] ✅ Found cover image: https://static.mantacdn.net/2024-04-22/RL/RLQ4TealWWCZ7pny.jpg
+[2025-07-24T01:16:30.595Z] 💾 Updated database for The Quant of Wall Street
+[2025-07-24T01:16:32.596Z] 
+[77/115] Processing: Stand Up, Now!
+[2025-07-24T01:16:38.389Z] ✅ Found cover image: https://static.mantacdn.net/2023-09-15/P5/P5UAZmv4ilwL1pzr.jpg
+[2025-07-24T01:16:38.465Z] 💾 Updated database for Stand Up, Now!
+[2025-07-24T01:16:40.467Z] 
+[78/115] Processing: Happiness Starts at Home
+[2025-07-24T01:16:45.147Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-10/v7/v7adnPfCb5dkmGN5.jpg
+[2025-07-24T01:16:45.236Z] 💾 Updated database for Happiness Starts at Home
+[2025-07-24T01:16:47.239Z] 
+[79/115] Processing: Restoring Art and Love
+[2025-07-24T01:16:52.505Z] ✅ Found cover image: https://static.mantacdn.net/2022-05-05/Qy/Qydx4SHaacoHMN5g.jpg
+[2025-07-24T01:16:52.609Z] 💾 Updated database for Restoring Art and Love
+[2025-07-24T01:16:54.612Z] 
+[80/115] Processing: The Summer of Penguins
+[2025-07-24T01:16:59.183Z] ✅ Found cover image: https://static.mantacdn.net/2024-06-17/IB/IBGPjo9XqbKAWK2n.jpg
+[2025-07-24T01:16:59.272Z] 💾 Updated database for The Summer of Penguins
+[2025-07-24T01:17:01.272Z] 
+[81/115] Processing: A Zero Waste Life
+[2025-07-24T01:17:06.338Z] ✅ Found cover image: https://static.mantacdn.net/2021-03-07/uN/uNiG6lQPbwRuF2Lq.jpg
+[2025-07-24T01:17:06.414Z] 💾 Updated database for A Zero Waste Life
+[2025-07-24T01:17:08.415Z] 
+[82/115] Processing: Stone House on Jeju Island
+[2025-07-24T01:17:14.329Z] ✅ Found cover image: https://static.mantacdn.net/2024-12-20/Yf/YfrhkHXT3ULJkhsO.jpg
+[2025-07-24T01:17:14.400Z] 💾 Updated database for Stone House on Jeju Island
+[2025-07-24T01:17:16.402Z] 
+[83/115] Processing: Shall We Pole Dance?
+[2025-07-24T01:17:21.688Z] ✅ Found cover image: https://static.mantacdn.net/2021-12-01/ZZ/ZZNaTb5CVhIWwPh1.jpg
+[2025-07-24T01:17:21.776Z] 💾 Updated database for Shall We Pole Dance?
+[2025-07-24T01:17:23.778Z] 
+[84/115] Processing: NPCs Can Save the World Too!
+[2025-07-24T01:17:28.355Z] ✅ Found cover image: https://static.mantacdn.net/2024-11-04/9N/9N7CzghWfMPlygw0.jpg
+[2025-07-24T01:17:28.435Z] 💾 Updated database for NPCs Can Save the World Too!
+[2025-07-24T01:17:30.438Z] 
+[85/115] Processing: I Work at a Witch's Mansion
+[2025-07-24T01:17:35.515Z] ✅ Found cover image: https://static.mantacdn.net/2021-12-01/Wx/Wx3EaDXA0p98cnbp.jpg
+[2025-07-24T01:17:35.597Z] 💾 Updated database for I Work at a Witch's Mansion
+[2025-07-24T01:17:37.600Z] 
+[86/115] Processing: I Wanna Be the Madam!
+[2025-07-24T01:17:42.674Z] ✅ Found cover image: https://static.mantacdn.net/2021-12-01/hP/hP3sIb764aRCo8x2.jpg
+[2025-07-24T01:17:42.750Z] 💾 Updated database for I Wanna Be the Madam!
+[2025-07-24T01:17:44.751Z] 
+[87/115] Processing: Tori and Samuel
+[2025-07-24T01:17:49.826Z] ✅ Found cover image: https://static.mantacdn.net/2021-09-03/E4/E4IY2vV7VVvxWll5.jpg
+[2025-07-24T01:17:49.888Z] 💾 Updated database for Tori and Samuel
+[2025-07-24T01:17:51.889Z] 
+[88/115] Processing: My Super-Granny
+[2025-07-24T01:17:57.211Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-10/wK/wKxGSoE3WrF0rHwU.jpg
+[2025-07-24T01:17:57.285Z] 💾 Updated database for My Super-Granny
+[2025-07-24T01:17:59.286Z] 
+[89/115] Processing: Tendering Resignation
+[2025-07-24T01:18:04.717Z] ✅ Found cover image: https://static.mantacdn.net/2021-08-05/YZ/YZo4llkDNEV6E163.jpg
+[2025-07-24T01:18:05.208Z] 💾 Updated database for Tendering Resignation
+[2025-07-24T01:18:07.210Z] 
+[90/115] Processing: Let's Get You Better
+[2025-07-24T01:18:12.669Z] ✅ Found cover image: https://static.mantacdn.net/2022-07-19/dn/dnUmuccmFmMkuqX6.jpg
+[2025-07-24T01:18:12.728Z] 💾 Updated database for Let's Get You Better
+[2025-07-24T01:18:14.729Z] 
+[91/115] Processing: Go, Haechi, Go!
+[2025-07-24T01:18:19.808Z] ✅ Found cover image: https://static.mantacdn.net/2022-07-21/ZD/ZD6ZvKzkcNusoM2x.jpg
+[2025-07-24T01:18:19.933Z] 💾 Updated database for Go, Haechi, Go!
+[2025-07-24T01:18:21.935Z] 
+[92/115] Processing: Love Order
+[2025-07-24T01:18:27.005Z] ✅ Found cover image: https://static.mantacdn.net/2021-10-14/QM/QMWSvVHgLGQO72OK.jpg
+[2025-07-24T01:18:27.165Z] 💾 Updated database for Love Order
+[2025-07-24T01:18:29.166Z] 
+[93/115] Processing: Season of Change
+[2025-07-24T01:18:34.341Z] ✅ Found cover image: https://static.mantacdn.net/2025-05-29/9Y/9Y6s4gHoSTMdYNIe.jpg
+[2025-07-24T01:18:34.415Z] 💾 Updated database for Season of Change
+[2025-07-24T01:18:36.417Z] 
+[94/115] Processing: From Bread to Closets
+[2025-07-24T01:18:42.055Z] ✅ Found cover image: https://static.mantacdn.net/2021-03-07/uN/uNiG6lQPbwRuF2Lq.jpg
+[2025-07-24T01:18:42.128Z] 💾 Updated database for From Bread to Closets
+[2025-07-24T01:18:44.129Z] 
+[95/115] Processing: Women's Soccer
+[2025-07-24T01:18:49.443Z] ✅ Found cover image: https://static.mantacdn.net/2024-08-01/yo/yoxahoP7k8GMr4Go.jpg
+[2025-07-24T01:18:49.519Z] 💾 Updated database for Women's Soccer
+[2025-07-24T01:18:51.524Z] 
+[96/115] Processing: Observing Elena Evoy
+[2025-07-24T01:18:58.392Z] ⚠️  No suitable cover image found for Observing Elena Evoy
+[2025-07-24T01:19:00.506Z] 
+[97/115] Processing: Goodbye, Dieting!
+[2025-07-24T01:19:05.712Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg
+[2025-07-24T01:19:05.786Z] 💾 Updated database for Goodbye, Dieting!
+[2025-07-24T01:19:07.788Z] 
+[98/115] Processing: My Father is a Tyrant
+[2025-07-24T01:19:12.373Z] ✅ Found cover image: https://static.mantacdn.net/2022-12-30/SL/SLafnufowMkDECC4.jpg
+[2025-07-24T01:19:12.443Z] 💾 Updated database for My Father is a Tyrant
+[2025-07-24T01:19:14.445Z] 
+[99/115] Processing: I Lived in a Shelter
+[2025-07-24T01:19:19.519Z] ✅ Found cover image: https://static.mantacdn.net/2021-12-01/XM/XMqgCRimKDcTDFKQ.jpg
+[2025-07-24T01:19:19.599Z] 💾 Updated database for I Lived in a Shelter
+[2025-07-24T01:19:21.601Z] 
+[100/115] Processing: The Demon Queen Has a Death Wish
+[2025-07-24T01:19:26.673Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/nn/nnMdJrgfcy0fvOIM.jpg
+[2025-07-24T01:19:26.763Z] 💾 Updated database for The Demon Queen Has a Death Wish
+[2025-07-24T01:19:28.765Z] 
+[101/115] Processing: 4 Week Lovers
+[2025-07-24T01:19:33.368Z] ✅ Found cover image: https://static.mantacdn.net/2023-05-11/7q/7qdRA7E8lRv97QJs.jpg
+[2025-07-24T01:19:33.443Z] 💾 Updated database for 4 Week Lovers
+[2025-07-24T01:19:35.445Z] 
+[102/115] Processing: Lies Become You
+[2025-07-24T01:20:05.497Z] ❌ Error processing Lies Become You: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:20:07.591Z] 
+[103/115] Processing: Princess of the Animals
+[2025-07-24T01:20:13.377Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-22/Ge/GepDENFTMmQqxvuK.jpg
+[2025-07-24T01:20:13.909Z] 💾 Updated database for Princess of the Animals
+[2025-07-24T01:20:15.911Z] 
+[104/115] Processing: The Noble Pirate
+[2025-07-24T01:20:20.818Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:20:20.895Z] 💾 Updated database for The Noble Pirate
+[2025-07-24T01:20:22.896Z] 
+[105/115] Processing: Traces of the Sun
+[2025-07-24T01:20:27.597Z] ✅ Found cover image: https://static.mantacdn.net/2024-03-04/lR/lRvCYIDtqpNrkI6D.jpg
+[2025-07-24T01:20:27.672Z] 💾 Updated database for Traces of the Sun
+[2025-07-24T01:20:29.673Z] 
+[106/115] Processing: I Raised a Black Dragon
+[2025-07-24T01:20:35.846Z] ✅ Found cover image: https://static.mantacdn.net/2023-01-05/DB/DBbHVKZW9tiSVSea.jpg
+[2025-07-24T01:20:35.940Z] 💾 Updated database for I Raised a Black Dragon
+[2025-07-24T01:20:37.942Z] 
+[107/115] Processing: Disobey the Duke if You Dare
+[2025-07-24T01:21:07.999Z] ❌ Error processing Disobey the Duke if You Dare: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:21:10.037Z] 
+[108/115] Processing: Finding Camellia
+[2025-07-24T01:21:40.099Z] ❌ Error processing Finding Camellia: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:21:42.138Z] 
+[109/115] Processing: Bongchon Bride
+[2025-07-24T01:21:46.723Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-10/v7/v7adnPfCb5dkmGN5.jpg
+[2025-07-24T01:21:46.833Z] 💾 Updated database for Bongchon Bride
+[2025-07-24T01:21:48.837Z] 
+[110/115] Processing: If I Were You
+[2025-07-24T01:21:53.943Z] ✅ Found cover image: https://static.mantacdn.net/2025-04-23/Kj/KjyFzjvc7c199qdq.jpg
+[2025-07-24T01:21:54.005Z] 💾 Updated database for If I Were You
+[2025-07-24T01:21:56.008Z] 
+[111/115] Processing: Sora's Eyes
+[2025-07-24T01:22:01.637Z] ✅ Found cover image: https://static.mantacdn.net/2022-05-27/g8/g8zwdnyCnk02p08q.jpg
+[2025-07-24T01:22:02.124Z] 💾 Updated database for Sora's Eyes
+[2025-07-24T01:22:04.127Z] 
+[112/115] Processing: Miss You, Lucifer
+[2025-07-24T01:22:08.637Z] ✅ Found cover image: https://static.mantacdn.net/2024-08-27/1q/1qQfMWV9FTWaINri.jpg
+[2025-07-24T01:22:08.724Z] 💾 Updated database for Miss You, Lucifer
+[2025-07-24T01:22:10.727Z] 
+[113/115] Processing: Under the Oak Tree
+[2025-07-24T01:22:40.781Z] ❌ Error processing Under the Oak Tree: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:22:42.845Z] 
+[114/115] Processing: Lady Devil
+[2025-07-24T01:22:48.721Z] ⚠️  No suitable cover image found for Lady Devil
+[2025-07-24T01:22:50.756Z] 
+[115/115] Processing: The Golden Light of Dawn
+[2025-07-24T01:22:56.690Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Vp/VppqScRfPPRW1SuY.jpg
+[2025-07-24T01:22:56.798Z] 💾 Updated database for The Golden Light of Dawn
+[2025-07-24T01:22:57.153Z] 🔒 Browser closed
+[2025-07-24T01:22:57.153Z] 
+📊 EXTRACTION REPORT
+[2025-07-24T01:22:57.153Z] ==================================================
+[2025-07-24T01:22:57.153Z] ✅ Successfully extracted: 108
+[2025-07-24T01:22:57.154Z] ⏭️  Skipped (already had images): 0
+[2025-07-24T01:22:57.154Z] ❌ Failed: 7
+[2025-07-24T01:22:57.154Z] 📝 Total processed: 115
+[2025-07-24T01:22:57.154Z] 💾 Detailed results saved to: /Users/sungholee/code/kstorybridge-monorepo/apps/dashboard/cover_extraction_results.json
+[2025-07-24T01:22:57.156Z] 
+❌ Failed titles:
+[2025-07-24T01:22:57.156Z]    - My Husband, My Sister, and I: no_image_found 
+[2025-07-24T01:22:57.156Z]    - Observing Elena Evoy: no_image_found 
+[2025-07-24T01:22:57.156Z]    - Lies Become You: no_image_found 
+[2025-07-24T01:22:57.156Z]    - Disobey the Duke if You Dare: no_image_found 
+[2025-07-24T01:22:57.156Z]    - Finding Camellia: no_image_found 
+[2025-07-24T01:22:57.156Z]    - Under the Oak Tree: no_image_found 
+[2025-07-24T01:22:57.156Z]    - Lady Devil: no_image_found 
+[2025-07-24T01:22:57.156Z] 
+🎉 Extraction process completed!
+[2025-07-24T01:42:01.114Z] 🚀 Initializing browser...
+[2025-07-24T01:42:01.872Z] 📊 Fetching titles from database...
+[2025-07-24T01:42:02.414Z] 📋 Total titles in database (first 10): 10
+[2025-07-24T01:42:02.415Z]    1. Reborn as the Enemy Prince
+[2025-07-24T01:42:02.415Z]       URL: https://manta.net/en/series/reborn-as-the-enemy-prince?seriesId=2328
+[2025-07-24T01:42:02.415Z]       Image: https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg
+[2025-07-24T01:42:02.415Z]    2. Punch Drunk Love
+[2025-07-24T01:42:02.415Z]       URL: https://manta.net/en/series/punch-drunk-love?seriesId=2090
+[2025-07-24T01:42:02.416Z]       Image: https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg
+[2025-07-24T01:42:02.416Z]    3. Winter Wolf
+[2025-07-24T01:42:02.416Z]       URL: https://manta.net/en/series/winter-wolf?seriesId=1965
+[2025-07-24T01:42:02.416Z]       Image: https://static.mantacdn.net/2025-07-09/eT/eTNcs4mFucFOxNFp.jpg
+[2025-07-24T01:42:02.416Z]    4. My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:42:02.416Z]       URL: https://manta.net/en/series/my-sweet-enemy-thy-name-is-husband?seriesId=2173
+[2025-07-24T01:42:02.416Z]       Image: https://static.mantacdn.net/2023-12-07/Pl/PlIjqjhMc2TmGL3v.jpg
+[2025-07-24T01:42:02.416Z]    5. Werewolves Going Crazy Over Me
+[2025-07-24T01:42:02.416Z]       URL: https://manta.net/en/series/werewolves-going-crazy-over-me?seriesId=2107
+[2025-07-24T01:42:02.417Z]       Image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:42:02.417Z]    6. Sangyang: The Wanderer
+[2025-07-24T01:42:02.417Z]       URL: https://manta.net/en/series/sangyang-the-wanderer?seriesId=2007
+[2025-07-24T01:42:02.417Z]       Image: https://static.mantacdn.net/2023-06-02/Hl/HldDm0f83IsaG2kv.jpg
+[2025-07-24T01:42:02.417Z]    7. Devil at the Crossroads
+[2025-07-24T01:42:02.417Z]       URL: https://manta.net/en/series/devil-at-the-crossroads?seriesId=2089
+[2025-07-24T01:42:02.417Z]       Image: https://static.mantacdn.net/2023-04-27/ck/ckHNqJuxp5WuXp1G.jpg
+[2025-07-24T01:42:02.417Z]    8. My Second Life as an Idol
+[2025-07-24T01:42:02.417Z]       URL: https://manta.net/en/series/my-second-life-as-an-idol?seriesId=2060
+[2025-07-24T01:42:02.418Z]       Image: https://static.mantacdn.net/2025-02-10/v7/v7adnPfCb5dkmGN5.jpg
+[2025-07-24T01:42:02.418Z]    9. The Fantastical After-School Writing Club
+[2025-07-24T01:42:02.418Z]       URL: https://manta.net/en/series/the-fantastical-after-school-writing-club?seriesId=2154
+[2025-07-24T01:42:02.418Z]       Image: https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg
+[2025-07-24T01:42:02.418Z]    10. The Dilettante
+[2025-07-24T01:42:02.418Z]       URL: https://manta.net/en/series/the-dilettante?seriesId=1929
+[2025-07-24T01:42:02.418Z]       Image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:42:02.481Z] 📝 Found 115 titles with URLs
+[2025-07-24T01:42:02.481Z] 🔄 Starting extraction for 115 titles...
+[2025-07-24T01:42:02.481Z] 
+[1/115] Processing: Reborn as the Enemy Prince
+[2025-07-24T01:42:02.481Z] ⏭️  Skipping Reborn as the Enemy Prince - already has cover image
+[2025-07-24T01:42:02.481Z] 
+[2/115] Processing: Punch Drunk Love
+[2025-07-24T01:42:02.481Z] ⏭️  Skipping Punch Drunk Love - already has cover image
+[2025-07-24T01:42:02.481Z] 
+[3/115] Processing: Winter Wolf
+[2025-07-24T01:42:02.481Z] ⏭️  Skipping Winter Wolf - already has cover image
+[2025-07-24T01:42:02.482Z] 
+[4/115] Processing: My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:42:02.482Z] ⏭️  Skipping My Sweet Enemy, Thy Name is Husband - already has cover image
+[2025-07-24T01:42:02.482Z] 
+[5/115] Processing: Werewolves Going Crazy Over Me
+[2025-07-24T01:42:02.482Z] ⏭️  Skipping Werewolves Going Crazy Over Me - already has cover image
+[2025-07-24T01:42:02.482Z] 
+[6/115] Processing: Sangyang: The Wanderer
+[2025-07-24T01:42:02.482Z] ⏭️  Skipping Sangyang: The Wanderer - already has cover image
+[2025-07-24T01:42:02.482Z] 
+[7/115] Processing: Devil at the Crossroads
+[2025-07-24T01:42:02.482Z] ⏭️  Skipping Devil at the Crossroads - already has cover image
+[2025-07-24T01:42:02.482Z] 
+[8/115] Processing: My Second Life as an Idol
+[2025-07-24T01:42:02.482Z] ⏭️  Skipping My Second Life as an Idol - already has cover image
+[2025-07-24T01:42:02.482Z] 
+[9/115] Processing: The Fantastical After-School Writing Club
+[2025-07-24T01:42:02.482Z] ⏭️  Skipping The Fantastical After-School Writing Club - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[10/115] Processing: The Dilettante
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping The Dilettante - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[11/115] Processing: My Miraculous Bookstore
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping My Miraculous Bookstore - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[12/115] Processing: The Accidental Heiress
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping The Accidental Heiress - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[13/115] Processing: Paljae, Child of Winter
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping Paljae, Child of Winter - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[14/115] Processing: Being Me, Being You
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping Being Me, Being You - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[15/115] Processing: Happiness Starts at Home
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping Happiness Starts at Home - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[16/115] Processing: NPCs Can Save the World Too!
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping NPCs Can Save the World Too! - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[17/115] Processing: I Work at a Witch's Mansion
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping I Work at a Witch's Mansion - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[18/115] Processing: Goodbye, Dieting!
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping Goodbye, Dieting! - already has cover image
+[2025-07-24T01:42:02.483Z] 
+[19/115] Processing: I Raised a Black Dragon
+[2025-07-24T01:42:02.483Z] ⏭️  Skipping I Raised a Black Dragon - already has cover image
+[2025-07-24T01:42:02.484Z] 
+[20/115] Processing: Bongchon Bride
+[2025-07-24T01:42:02.484Z] ⏭️  Skipping Bongchon Bride - already has cover image
+[2025-07-24T01:42:02.484Z] 
+[21/115] Processing: Homo Plastikos
+[2025-07-24T01:42:02.484Z] ⏭️  Skipping Homo Plastikos - already has cover image
+[2025-07-24T01:42:02.484Z] 
+[22/115] Processing: The Redemption of Earl Nottingham
+[2025-07-24T01:42:02.484Z] ⏭️  Skipping The Redemption of Earl Nottingham - already has cover image
+[2025-07-24T01:42:02.484Z] 
+[23/115] Processing: Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:42:02.484Z] ⏭️  Skipping Juliet, We're Not in Kansas Anymore! - already has cover image
+[2025-07-24T01:42:02.484Z] 
+[24/115] Processing: Call Me Master
+[2025-07-24T01:42:02.484Z] ⏭️  Skipping Call Me Master - already has cover image
+[2025-07-24T01:42:02.484Z] 
+[25/115] Processing: The Duke's Fake Sister
+[2025-07-24T01:42:02.484Z] ⏭️  Skipping The Duke's Fake Sister - already has cover image
+[2025-07-24T01:42:02.484Z] 
+[26/115] Processing: When Fate Finds Us
+[2025-07-24T01:42:02.484Z] ⏭️  Skipping When Fate Finds Us - already has cover image
+[2025-07-24T01:42:02.484Z] 
+[27/115] Processing: You Get Me Going
+[2025-07-24T01:42:02.484Z] ⏭️  Skipping You Get Me Going - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[28/115] Processing: Cold-Blooded Beast
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping Cold-Blooded Beast - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[29/115] Processing: Rewriting My Tragic Ending
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping Rewriting My Tragic Ending - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[30/115] Processing: May God Bless Your Demise
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping May God Bless Your Demise - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[31/115] Processing: Love Lies
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping Love Lies - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[32/115] Processing: I Became a Doting Father
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping I Became a Doting Father - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[33/115] Processing: Cheolsu Saves the World
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping Cheolsu Saves the World - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[34/115] Processing: Isnelda
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping Isnelda - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[35/115] Processing: The Devil and His Sacrifice
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping The Devil and His Sacrifice - already has cover image
+[2025-07-24T01:42:02.485Z] 
+[36/115] Processing: The Flower of Veneration
+[2025-07-24T01:42:02.485Z] ⏭️  Skipping The Flower of Veneration - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[37/115] Processing: Countdown to Love
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping Countdown to Love - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[38/115] Processing: Falling for Danger
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping Falling for Danger - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[39/115] Processing: Heartrate Presto
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping Heartrate Presto - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[40/115] Processing: The Many Seasons of Food
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping The Many Seasons of Food - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[41/115] Processing: Falling for a Dying Princess
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping Falling for a Dying Princess - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[42/115] Processing: My Master, My Prince
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping My Master, My Prince - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[43/115] Processing: Opposites Attract
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping Opposites Attract - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[44/115] Processing: The Superheroes of Class F
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping The Superheroes of Class F - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[45/115] Processing: I Can See Your Stats!
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping I Can See Your Stats! - already has cover image
+[2025-07-24T01:42:02.486Z] 
+[46/115] Processing: The Woodsman and the Stag
+[2025-07-24T01:42:02.486Z] ⏭️  Skipping The Woodsman and the Stag - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[47/115] Processing: Wish Upon a Husband
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping Wish Upon a Husband - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[48/115] Processing: Shoot for the Stars
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping Shoot for the Stars - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[49/115] Processing: The Deviless' Impression of a Princess
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping The Deviless' Impression of a Princess - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[50/115] Processing: Shall We Bathe, Your Grace?
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping Shall We Bathe, Your Grace? - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[51/115] Processing: The Fallen Duke & the Knight Who Hated Him
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping The Fallen Duke & the Knight Who Hated Him - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[52/115] Processing: The Blood Moon
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping The Blood Moon - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[53/115] Processing: Science Tikitaka
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping Science Tikitaka - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[54/115] Processing: Arpeggio on the Surface of the Sea
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping Arpeggio on the Surface of the Sea - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[55/115] Processing: Trophy Husband
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping Trophy Husband - already has cover image
+[2025-07-24T01:42:02.487Z] 
+[56/115] Processing: The Tale of the Frost Flower
+[2025-07-24T01:42:02.487Z] ⏭️  Skipping The Tale of the Frost Flower - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[57/115] Processing: Zodiac Hunters
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping Zodiac Hunters - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[58/115] Processing: Reunion
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping Reunion - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[59/115] Processing: Bittersweet Con Panna
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping Bittersweet Con Panna - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[60/115] Processing: Betrayal of Dignity
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping Betrayal of Dignity - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[61/115] Processing: Justice Now!
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping Justice Now! - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[62/115] Processing: Mokrin
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping Mokrin - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[63/115] Processing: Even If...
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping Even If... - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[64/115] Processing: I've Become a True Villainess
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping I've Become a True Villainess - already has cover image
+[2025-07-24T01:42:02.488Z] 
+[65/115] Processing: The Forgotten Princess Just Wants Peace
+[2025-07-24T01:42:02.488Z] ⏭️  Skipping The Forgotten Princess Just Wants Peace - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[66/115] Processing: Getting Along Just Fine
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping Getting Along Just Fine - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[67/115] Processing: Duchess Crow
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping Duchess Crow - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[68/115] Processing: Your Eternal Lies
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping Your Eternal Lies - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[69/115] Processing: The Year of No Shopping
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping The Year of No Shopping - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[70/115] Processing: Fry My Life
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping Fry My Life - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[71/115] Processing: [ blank。]
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping [ blank。] - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[72/115] Processing: The Secret of Umbra
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping The Secret of Umbra - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[73/115] Processing: Nowhere But Iceland
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping Nowhere But Iceland - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[74/115] Processing: Whispers Through the Willows
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping Whispers Through the Willows - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[75/115] Processing: The Script
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping The Script - already has cover image
+[2025-07-24T01:42:02.489Z] 
+[76/115] Processing: Kneel Before Me
+[2025-07-24T01:42:02.489Z] ⏭️  Skipping Kneel Before Me - already has cover image
+[2025-07-24T01:42:02.490Z] 
+[77/115] Processing: Evangeline's Sword
+[2025-07-24T01:42:02.490Z] ⏭️  Skipping Evangeline's Sword - already has cover image
+[2025-07-24T01:42:02.490Z] 
+[78/115] Processing: Terrarium Adventure
+[2025-07-24T01:42:02.490Z] ⏭️  Skipping Terrarium Adventure - already has cover image
+[2025-07-24T01:42:02.490Z] 
+[79/115] Processing: My Husband, My Sister, and I
+[2025-07-24T01:42:08.464Z] ✅ Found cover image: https://i.ytimg.com/an/xSjujkzHAhMJ71sQxqCNlw/featured_channel.jpg?v=5faa97f1
+[2025-07-24T01:42:08.576Z] 💾 Updated database for My Husband, My Sister, and I
+[2025-07-24T01:42:10.578Z] 
+[80/115] Processing: Flip Turn
+[2025-07-24T01:42:10.578Z] ⏭️  Skipping Flip Turn - already has cover image
+[2025-07-24T01:42:10.578Z] 
+[81/115] Processing: Flash Behavior
+[2025-07-24T01:42:10.578Z] ⏭️  Skipping Flash Behavior - already has cover image
+[2025-07-24T01:42:10.578Z] 
+[82/115] Processing: The Quant of Wall Street
+[2025-07-24T01:42:10.578Z] ⏭️  Skipping The Quant of Wall Street - already has cover image
+[2025-07-24T01:42:10.578Z] 
+[83/115] Processing: Stand Up, Now!
+[2025-07-24T01:42:10.578Z] ⏭️  Skipping Stand Up, Now! - already has cover image
+[2025-07-24T01:42:10.579Z] 
+[84/115] Processing: Restoring Art and Love
+[2025-07-24T01:42:10.579Z] ⏭️  Skipping Restoring Art and Love - already has cover image
+[2025-07-24T01:42:10.579Z] 
+[85/115] Processing: The Summer of Penguins
+[2025-07-24T01:42:10.579Z] ⏭️  Skipping The Summer of Penguins - already has cover image
+[2025-07-24T01:42:10.579Z] 
+[86/115] Processing: A Zero Waste Life
+[2025-07-24T01:42:10.579Z] ⏭️  Skipping A Zero Waste Life - already has cover image
+[2025-07-24T01:42:10.579Z] 
+[87/115] Processing: Stone House on Jeju Island
+[2025-07-24T01:42:10.579Z] ⏭️  Skipping Stone House on Jeju Island - already has cover image
+[2025-07-24T01:42:10.579Z] 
+[88/115] Processing: Shall We Pole Dance?
+[2025-07-24T01:42:10.579Z] ⏭️  Skipping Shall We Pole Dance? - already has cover image
+[2025-07-24T01:42:10.579Z] 
+[89/115] Processing: I Wanna Be the Madam!
+[2025-07-24T01:42:10.579Z] ⏭️  Skipping I Wanna Be the Madam! - already has cover image
+[2025-07-24T01:42:10.579Z] 
+[90/115] Processing: Tori and Samuel
+[2025-07-24T01:42:10.579Z] ⏭️  Skipping Tori and Samuel - already has cover image
+[2025-07-24T01:42:10.579Z] 
+[91/115] Processing: My Super-Granny
+[2025-07-24T01:42:10.579Z] ⏭️  Skipping My Super-Granny - already has cover image
+[2025-07-24T01:42:10.580Z] 
+[92/115] Processing: Tendering Resignation
+[2025-07-24T01:42:10.580Z] ⏭️  Skipping Tendering Resignation - already has cover image
+[2025-07-24T01:42:10.580Z] 
+[93/115] Processing: Let's Get You Better
+[2025-07-24T01:42:10.580Z] ⏭️  Skipping Let's Get You Better - already has cover image
+[2025-07-24T01:42:10.580Z] 
+[94/115] Processing: Go, Haechi, Go!
+[2025-07-24T01:42:10.580Z] ⏭️  Skipping Go, Haechi, Go! - already has cover image
+[2025-07-24T01:42:10.580Z] 
+[95/115] Processing: Love Order
+[2025-07-24T01:42:10.580Z] ⏭️  Skipping Love Order - already has cover image
+[2025-07-24T01:42:10.580Z] 
+[96/115] Processing: Season of Change
+[2025-07-24T01:42:10.580Z] ⏭️  Skipping Season of Change - already has cover image
+[2025-07-24T01:42:10.580Z] 
+[97/115] Processing: From Bread to Closets
+[2025-07-24T01:42:10.580Z] ⏭️  Skipping From Bread to Closets - already has cover image
+[2025-07-24T01:42:10.580Z] 
+[98/115] Processing: Women's Soccer
+[2025-07-24T01:42:10.580Z] ⏭️  Skipping Women's Soccer - already has cover image
+[2025-07-24T01:42:10.580Z] 
+[99/115] Processing: Observing Elena Evoy
+[2025-07-24T01:42:40.623Z] ❌ Error processing Observing Elena Evoy: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:42:42.683Z] 
+[100/115] Processing: Lies Become You
+[2025-07-24T01:43:12.737Z] ❌ Error processing Lies Become You: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:43:14.781Z] 
+[101/115] Processing: My Father is a Tyrant
+[2025-07-24T01:43:14.781Z] ⏭️  Skipping My Father is a Tyrant - already has cover image
+[2025-07-24T01:43:14.782Z] 
+[102/115] Processing: I Lived in a Shelter
+[2025-07-24T01:43:14.782Z] ⏭️  Skipping I Lived in a Shelter - already has cover image
+[2025-07-24T01:43:14.782Z] 
+[103/115] Processing: The Demon Queen Has a Death Wish
+[2025-07-24T01:43:14.783Z] ⏭️  Skipping The Demon Queen Has a Death Wish - already has cover image
+[2025-07-24T01:43:14.783Z] 
+[104/115] Processing: 4 Week Lovers
+[2025-07-24T01:43:14.783Z] ⏭️  Skipping 4 Week Lovers - already has cover image
+[2025-07-24T01:43:14.783Z] 
+[105/115] Processing: Princess of the Animals
+[2025-07-24T01:43:14.783Z] ⏭️  Skipping Princess of the Animals - already has cover image
+[2025-07-24T01:43:14.784Z] 
+[106/115] Processing: The Noble Pirate
+[2025-07-24T01:43:14.784Z] ⏭️  Skipping The Noble Pirate - already has cover image
+[2025-07-24T01:43:14.784Z] 
+[107/115] Processing: Traces of the Sun
+[2025-07-24T01:43:14.784Z] ⏭️  Skipping Traces of the Sun - already has cover image
+[2025-07-24T01:43:14.784Z] 
+[108/115] Processing: Disobey the Duke if You Dare
+[2025-07-24T01:43:44.833Z] ❌ Error processing Disobey the Duke if You Dare: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:43:46.899Z] 
+[109/115] Processing: Finding Camellia
+[2025-07-24T01:44:16.958Z] ❌ Error processing Finding Camellia: Navigation timeout of 30000 ms exceeded
+[2025-07-24T01:44:18.998Z] 
+[110/115] Processing: Under the Oak Tree
+[2025-07-24T01:48:26.641Z] 🚀 Initializing browser...
+[2025-07-24T01:48:27.408Z] 📊 Fetching titles from database...
+[2025-07-24T01:48:27.951Z] 📋 Total titles in database (first 10): 10
+[2025-07-24T01:48:27.951Z]    1. Reborn as the Enemy Prince
+[2025-07-24T01:48:27.952Z]       URL: https://manta.net/en/series/reborn-as-the-enemy-prince?seriesId=2328
+[2025-07-24T01:48:27.952Z]       Image: https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg
+[2025-07-24T01:48:27.952Z]    2. Punch Drunk Love
+[2025-07-24T01:48:27.952Z]       URL: https://manta.net/en/series/punch-drunk-love?seriesId=2090
+[2025-07-24T01:48:27.952Z]       Image: https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg
+[2025-07-24T01:48:27.953Z]    3. Winter Wolf
+[2025-07-24T01:48:27.953Z]       URL: https://manta.net/en/series/winter-wolf?seriesId=1965
+[2025-07-24T01:48:27.953Z]       Image: https://static.mantacdn.net/2025-07-09/eT/eTNcs4mFucFOxNFp.jpg
+[2025-07-24T01:48:27.953Z]    4. My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:48:27.953Z]       URL: https://manta.net/en/series/my-sweet-enemy-thy-name-is-husband?seriesId=2173
+[2025-07-24T01:48:27.953Z]       Image: https://static.mantacdn.net/2023-12-07/Pl/PlIjqjhMc2TmGL3v.jpg
+[2025-07-24T01:48:27.953Z]    5. Werewolves Going Crazy Over Me
+[2025-07-24T01:48:27.953Z]       URL: https://manta.net/en/series/werewolves-going-crazy-over-me?seriesId=2107
+[2025-07-24T01:48:27.953Z]       Image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:48:27.954Z]    6. Sangyang: The Wanderer
+[2025-07-24T01:48:27.954Z]       URL: https://manta.net/en/series/sangyang-the-wanderer?seriesId=2007
+[2025-07-24T01:48:27.954Z]       Image: https://static.mantacdn.net/2023-06-02/Hl/HldDm0f83IsaG2kv.jpg
+[2025-07-24T01:48:27.954Z]    7. Devil at the Crossroads
+[2025-07-24T01:48:27.954Z]       URL: https://manta.net/en/series/devil-at-the-crossroads?seriesId=2089
+[2025-07-24T01:48:27.954Z]       Image: https://static.mantacdn.net/2023-04-27/ck/ckHNqJuxp5WuXp1G.jpg
+[2025-07-24T01:48:27.954Z]    8. My Second Life as an Idol
+[2025-07-24T01:48:27.954Z]       URL: https://manta.net/en/series/my-second-life-as-an-idol?seriesId=2060
+[2025-07-24T01:48:27.954Z]       Image: https://static.mantacdn.net/2025-02-10/v7/v7adnPfCb5dkmGN5.jpg
+[2025-07-24T01:48:27.954Z]    9. The Fantastical After-School Writing Club
+[2025-07-24T01:48:27.954Z]       URL: https://manta.net/en/series/the-fantastical-after-school-writing-club?seriesId=2154
+[2025-07-24T01:48:27.954Z]       Image: https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg
+[2025-07-24T01:48:27.954Z]    10. The Dilettante
+[2025-07-24T01:48:27.954Z]       URL: https://manta.net/en/series/the-dilettante?seriesId=1929
+[2025-07-24T01:48:27.955Z]       Image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:48:28.014Z] 📝 Found 115 titles with URLs
+[2025-07-24T01:48:28.014Z] 🔄 Starting extraction for 115 titles...
+[2025-07-24T01:48:28.014Z] 
+[1/115] Processing: Reborn as the Enemy Prince
+[2025-07-24T01:48:28.014Z] 🔄 Updating Reborn as the Enemy Prince - replacing existing image
+[2025-07-24T01:48:34.395Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg
+[2025-07-24T01:48:34.492Z] 💾 Updated database for Reborn as the Enemy Prince
+[2025-07-24T01:48:36.493Z] 
+[2/115] Processing: Punch Drunk Love
+[2025-07-24T01:48:36.494Z] 🔄 Updating Punch Drunk Love - replacing existing image
+[2025-07-24T01:48:41.102Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg
+[2025-07-24T01:48:41.194Z] 💾 Updated database for Punch Drunk Love
+[2025-07-24T01:48:43.196Z] 
+[3/115] Processing: Winter Wolf
+[2025-07-24T01:48:43.197Z] 🔄 Updating Winter Wolf - replacing existing image
+[2025-07-24T01:48:48.069Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-09/eT/eTNcs4mFucFOxNFp.jpg
+[2025-07-24T01:48:48.156Z] 💾 Updated database for Winter Wolf
+[2025-07-24T01:48:50.158Z] 
+[4/115] Processing: My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:48:50.159Z] 🔄 Updating My Sweet Enemy, Thy Name is Husband - replacing existing image
+[2025-07-24T01:48:55.248Z] ✅ Found cover image: https://static.mantacdn.net/2023-12-07/Pl/PlIjqjhMc2TmGL3v.jpg
+[2025-07-24T01:48:55.317Z] 💾 Updated database for My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:48:57.319Z] 
+[5/115] Processing: Werewolves Going Crazy Over Me
+[2025-07-24T01:48:57.320Z] 🔄 Updating Werewolves Going Crazy Over Me - replacing existing image
+[2025-07-24T01:49:01.925Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:49:02.033Z] 💾 Updated database for Werewolves Going Crazy Over Me
+[2025-07-24T01:49:04.036Z] 
+[6/115] Processing: Sangyang: The Wanderer
+[2025-07-24T01:49:04.038Z] 🔄 Updating Sangyang: The Wanderer - replacing existing image
+[2025-07-24T01:49:09.133Z] ✅ Found cover image: https://static.mantacdn.net/2023-06-02/Hl/HldDm0f83IsaG2kv.jpg
+[2025-07-24T01:49:09.215Z] 💾 Updated database for Sangyang: The Wanderer
+[2025-07-24T01:49:11.217Z] 
+[7/115] Processing: Devil at the Crossroads
+[2025-07-24T01:49:11.218Z] 🔄 Updating Devil at the Crossroads - replacing existing image
+[2025-07-24T01:49:15.787Z] ✅ Found cover image: https://static.mantacdn.net/2023-04-27/ck/ckHNqJuxp5WuXp1G.jpg
+[2025-07-24T01:49:15.863Z] 💾 Updated database for Devil at the Crossroads
+[2025-07-24T01:49:17.866Z] 
+[8/115] Processing: My Second Life as an Idol
+[2025-07-24T01:49:17.867Z] 🔄 Updating My Second Life as an Idol - replacing existing image
+[2025-07-24T01:49:22.393Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:49:22.495Z] 💾 Updated database for My Second Life as an Idol
+[2025-07-24T01:49:24.497Z] 
+[9/115] Processing: The Fantastical After-School Writing Club
+[2025-07-24T01:49:24.498Z] 🔄 Updating The Fantastical After-School Writing Club - replacing existing image
+[2025-07-24T01:49:29.081Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg
+[2025-07-24T01:49:29.271Z] 💾 Updated database for The Fantastical After-School Writing Club
+[2025-07-24T01:49:31.273Z] 
+[10/115] Processing: The Dilettante
+[2025-07-24T01:49:31.274Z] 🔄 Updating The Dilettante - replacing existing image
+[2025-07-24T01:49:35.866Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:49:35.966Z] 💾 Updated database for The Dilettante
+[2025-07-24T01:49:37.967Z] 
+[11/115] Processing: My Miraculous Bookstore
+[2025-07-24T01:49:37.967Z] 🔄 Updating My Miraculous Bookstore - replacing existing image
+[2025-07-24T01:49:43.033Z] ✅ Found cover image: https://static.mantacdn.net/2025-05-05/0d/0dlZPUpNrlczkGzi.jpg
+[2025-07-24T01:49:43.119Z] 💾 Updated database for My Miraculous Bookstore
+[2025-07-24T01:49:45.120Z] 
+[12/115] Processing: The Accidental Heiress
+[2025-07-24T01:49:45.120Z] 🔄 Updating The Accidental Heiress - replacing existing image
+[2025-07-24T01:49:50.511Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Vp/VppqScRfPPRW1SuY.jpg
+[2025-07-24T01:49:50.623Z] 💾 Updated database for The Accidental Heiress
+[2025-07-24T01:49:52.626Z] 
+[13/115] Processing: Paljae, Child of Winter
+[2025-07-24T01:49:52.628Z] 🔄 Updating Paljae, Child of Winter - replacing existing image
+[2025-07-24T01:49:57.258Z] ✅ Found cover image: https://static.mantacdn.net/2023-07-13/v3/v3JdyG5CgYG3eWs5.jpg
+[2025-07-24T01:49:57.341Z] 💾 Updated database for Paljae, Child of Winter
+[2025-07-24T01:49:59.343Z] 
+[14/115] Processing: Being Me, Being You
+[2025-07-24T01:49:59.344Z] 🔄 Updating Being Me, Being You - replacing existing image
+[2025-07-24T01:50:04.092Z] ✅ Found cover image: https://static.mantacdn.net/2022-04-01/lX/lXEqC6fnfIxg8Qs6.jpg
+[2025-07-24T01:50:04.244Z] 💾 Updated database for Being Me, Being You
+[2025-07-24T01:50:06.246Z] 
+[15/115] Processing: Happiness Starts at Home
+[2025-07-24T01:50:06.247Z] 🔄 Updating Happiness Starts at Home - replacing existing image
+[2025-07-24T01:50:10.879Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:50:11.406Z] 💾 Updated database for Happiness Starts at Home
+[2025-07-24T01:50:13.409Z] 
+[16/115] Processing: NPCs Can Save the World Too!
+[2025-07-24T01:50:13.411Z] 🔄 Updating NPCs Can Save the World Too! - replacing existing image
+[2025-07-24T01:50:18.477Z] ✅ Found cover image: https://static.mantacdn.net/2024-11-04/9N/9N7CzghWfMPlygw0.jpg
+[2025-07-24T01:50:18.563Z] 💾 Updated database for NPCs Can Save the World Too!
+[2025-07-24T01:50:20.566Z] 
+[17/115] Processing: I Work at a Witch's Mansion
+[2025-07-24T01:50:20.567Z] 🔄 Updating I Work at a Witch's Mansion - replacing existing image
+[2025-07-24T01:50:25.154Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-11/dl/dlPg3ziM11o07ar4.jpg
+[2025-07-24T01:50:25.236Z] 💾 Updated database for I Work at a Witch's Mansion
+[2025-07-24T01:50:27.238Z] 
+[18/115] Processing: Goodbye, Dieting!
+[2025-07-24T01:50:27.238Z] 🔄 Updating Goodbye, Dieting! - replacing existing image
+[2025-07-24T01:50:31.827Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg
+[2025-07-24T01:50:31.896Z] 💾 Updated database for Goodbye, Dieting!
+[2025-07-24T01:50:33.898Z] 
+[19/115] Processing: I Raised a Black Dragon
+[2025-07-24T01:50:33.899Z] 🔄 Updating I Raised a Black Dragon - replacing existing image
+[2025-07-24T01:50:38.524Z] ✅ Found cover image: https://static.mantacdn.net/2023-01-05/DB/DBbHVKZW9tiSVSea.jpg
+[2025-07-24T01:50:38.607Z] 💾 Updated database for I Raised a Black Dragon
+[2025-07-24T01:50:40.609Z] 
+[20/115] Processing: Bongchon Bride
+[2025-07-24T01:50:40.610Z] 🔄 Updating Bongchon Bride - replacing existing image
+[2025-07-24T01:50:45.201Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:50:45.306Z] 💾 Updated database for Bongchon Bride
+[2025-07-24T01:50:47.309Z] 
+[21/115] Processing: Homo Plastikos
+[2025-07-24T01:50:47.310Z] 🔄 Updating Homo Plastikos - replacing existing image
+[2025-07-24T01:50:52.386Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:50:52.476Z] 💾 Updated database for Homo Plastikos
+[2025-07-24T01:50:54.477Z] 
+[22/115] Processing: The Redemption of Earl Nottingham
+[2025-07-24T01:50:54.477Z] 🔄 Updating The Redemption of Earl Nottingham - replacing existing image
+[2025-07-24T01:50:59.088Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:50:59.184Z] 💾 Updated database for The Redemption of Earl Nottingham
+[2025-07-24T01:51:01.185Z] 
+[23/115] Processing: Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:51:01.187Z] 🔄 Updating Juliet, We're Not in Kansas Anymore! - replacing existing image
+[2025-07-24T01:51:05.747Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:51:05.843Z] 💾 Updated database for Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:51:07.846Z] 
+[24/115] Processing: Call Me Master
+[2025-07-24T01:51:07.846Z] 🔄 Updating Call Me Master - replacing existing image
+[2025-07-24T01:51:12.922Z] ✅ Found cover image: https://static.mantacdn.net/2023-12-07/Pl/PlIjqjhMc2TmGL3v.jpg
+[2025-07-24T01:51:13.000Z] 💾 Updated database for Call Me Master
+[2025-07-24T01:51:15.002Z] 
+[25/115] Processing: The Duke's Fake Sister
+[2025-07-24T01:51:15.003Z] 🔄 Updating The Duke's Fake Sister - replacing existing image
+[2025-07-24T01:51:19.554Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-10/wK/wKxGSoE3WrF0rHwU.jpg
+[2025-07-24T01:51:19.628Z] 💾 Updated database for The Duke's Fake Sister
+[2025-07-24T01:51:21.629Z] 
+[26/115] Processing: When Fate Finds Us
+[2025-07-24T01:51:21.630Z] 🔄 Updating When Fate Finds Us - replacing existing image
+[2025-07-24T01:51:26.163Z] ✅ Found cover image: https://static.mantacdn.net/2024-12-07/dW/dW3KqAYKbu4KLPZq.jpg
+[2025-07-24T01:51:26.237Z] 💾 Updated database for When Fate Finds Us
+[2025-07-24T01:51:28.238Z] 
+[27/115] Processing: You Get Me Going
+[2025-07-24T01:51:28.238Z] 🔄 Updating You Get Me Going - replacing existing image
+[2025-07-24T01:51:33.292Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg
+[2025-07-24T01:51:33.354Z] 💾 Updated database for You Get Me Going
+[2025-07-24T01:51:35.356Z] 
+[28/115] Processing: Cold-Blooded Beast
+[2025-07-24T01:51:35.356Z] 🔄 Updating Cold-Blooded Beast - replacing existing image
+[2025-07-24T01:51:39.825Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-07/7s/7s4dW0uRMsSP5Vw3.jpg
+[2025-07-24T01:51:39.889Z] 💾 Updated database for Cold-Blooded Beast
+[2025-07-24T01:51:41.889Z] 
+[29/115] Processing: Rewriting My Tragic Ending
+[2025-07-24T01:51:41.890Z] 🔄 Updating Rewriting My Tragic Ending - replacing existing image
+[2025-07-24T01:51:46.422Z] ✅ Found cover image: https://static.mantacdn.net/2024-04-22/RL/RLQ4TealWWCZ7pny.jpg
+[2025-07-24T01:51:46.510Z] 💾 Updated database for Rewriting My Tragic Ending
+[2025-07-24T01:51:48.512Z] 
+[30/115] Processing: May God Bless Your Demise
+[2025-07-24T01:51:48.512Z] 🔄 Updating May God Bless Your Demise - replacing existing image
+[2025-07-24T01:51:53.063Z] ✅ Found cover image: https://static.mantacdn.net/2024-12-16/wn/wnVTEw4bXnMHnd3t.jpg
+[2025-07-24T01:51:53.136Z] 💾 Updated database for May God Bless Your Demise
+[2025-07-24T01:51:55.137Z] 
+[31/115] Processing: Love Lies
+[2025-07-24T01:51:55.137Z] 🔄 Updating Love Lies - replacing existing image
+[2025-07-24T01:51:59.654Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-22/Ge/GepDENFTMmQqxvuK.jpg
+[2025-07-24T01:52:00.117Z] 💾 Updated database for Love Lies
+[2025-07-24T01:52:02.119Z] 
+[32/115] Processing: I Became a Doting Father
+[2025-07-24T01:52:02.119Z] 🔄 Updating I Became a Doting Father - replacing existing image
+[2025-07-24T01:52:07.419Z] ✅ Found cover image: https://static.mantacdn.net/2025-04-06/n5/n56w6ppB8Yql0921.jpg
+[2025-07-24T01:52:07.496Z] 💾 Updated database for I Became a Doting Father
+[2025-07-24T01:52:09.497Z] 
+[33/115] Processing: Cheolsu Saves the World
+[2025-07-24T01:52:09.498Z] 🔄 Updating Cheolsu Saves the World - replacing existing image
+[2025-07-24T01:52:14.050Z] ✅ Found cover image: https://static.mantacdn.net/2025-05-05/0d/0dlZPUpNrlczkGzi.jpg
+[2025-07-24T01:52:14.114Z] 💾 Updated database for Cheolsu Saves the World
+[2025-07-24T01:52:16.115Z] 
+[34/115] Processing: Isnelda
+[2025-07-24T01:52:16.115Z] 🔄 Updating Isnelda - replacing existing image
+[2025-07-24T01:52:20.632Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:52:20.698Z] 💾 Updated database for Isnelda
+[2025-07-24T01:52:22.700Z] 
+[35/115] Processing: The Devil and His Sacrifice
+[2025-07-24T01:52:22.701Z] 🔄 Updating The Devil and His Sacrifice - replacing existing image
+[2025-07-24T01:52:27.723Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-12/BE/BE6U9YmEZn1NnLxQ.jpg
+[2025-07-24T01:52:27.801Z] 💾 Updated database for The Devil and His Sacrifice
+[2025-07-24T01:52:29.801Z] 
+[36/115] Processing: The Flower of Veneration
+[2025-07-24T01:52:29.802Z] 🔄 Updating The Flower of Veneration - replacing existing image
+[2025-07-24T01:52:34.862Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:52:34.940Z] 💾 Updated database for The Flower of Veneration
+[2025-07-24T01:52:36.942Z] 
+[37/115] Processing: Countdown to Love
+[2025-07-24T01:52:36.942Z] 🔄 Updating Countdown to Love - replacing existing image
+[2025-07-24T01:52:41.998Z] ✅ Found cover image: https://static.mantacdn.net/2024-07-29/B8/B8IyHduSYBMJgQ8U.jpg
+[2025-07-24T01:52:42.063Z] 💾 Updated database for Countdown to Love
+[2025-07-24T01:52:44.065Z] 
+[38/115] Processing: Falling for Danger
+[2025-07-24T01:52:44.065Z] 🔄 Updating Falling for Danger - replacing existing image
+[2025-07-24T01:52:49.135Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg
+[2025-07-24T01:52:49.200Z] 💾 Updated database for Falling for Danger
+[2025-07-24T01:52:51.201Z] 
+[39/115] Processing: Heartrate Presto
+[2025-07-24T01:52:51.202Z] 🔄 Updating Heartrate Presto - replacing existing image
+[2025-07-24T01:52:55.760Z] ✅ Found cover image: https://static.mantacdn.net/2022-01-14/M1/M13B6JQDWuDZCq6K.jpg
+[2025-07-24T01:52:55.823Z] 💾 Updated database for Heartrate Presto
+[2025-07-24T01:52:57.825Z] 
+[40/115] Processing: The Many Seasons of Food
+[2025-07-24T01:52:57.826Z] 🔄 Updating The Many Seasons of Food - replacing existing image
+[2025-07-24T01:53:02.896Z] ✅ Found cover image: https://static.mantacdn.net/2022-05-05/Qy/Qydx4SHaacoHMN5g.jpg
+[2025-07-24T01:53:02.961Z] 💾 Updated database for The Many Seasons of Food
+[2025-07-24T01:53:04.963Z] 
+[41/115] Processing: Falling for a Dying Princess
+[2025-07-24T01:53:04.963Z] 🔄 Updating Falling for a Dying Princess - replacing existing image
+[2025-07-24T01:53:09.503Z] ✅ Found cover image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:53:09.571Z] 💾 Updated database for Falling for a Dying Princess
+[2025-07-24T01:53:11.572Z] 
+[42/115] Processing: My Master, My Prince
+[2025-07-24T01:53:11.573Z] 🔄 Updating My Master, My Prince - replacing existing image
+[2025-07-24T01:53:16.652Z] ✅ Found cover image: https://static.mantacdn.net/2023-04-27/ck/ckHNqJuxp5WuXp1G.jpg
+[2025-07-24T01:53:16.724Z] 💾 Updated database for My Master, My Prince
+[2025-07-24T01:53:18.725Z] 
+[43/115] Processing: Opposites Attract
+[2025-07-24T01:53:18.725Z] 🔄 Updating Opposites Attract - replacing existing image
+[2025-07-24T01:53:23.787Z] ✅ Found cover image: https://static.mantacdn.net/2025-05-08/G1/G1e3iReaVG8XHwfV.jpg
+[2025-07-24T01:53:23.889Z] 💾 Updated database for Opposites Attract
+[2025-07-24T01:53:25.890Z] 
+[44/115] Processing: The Superheroes of Class F
+[2025-07-24T01:53:25.891Z] 🔄 Updating The Superheroes of Class F - replacing existing image
+[2025-07-24T01:53:30.514Z] ⚠️  No suitable cover image found for The Superheroes of Class F
+[2025-07-24T01:53:32.525Z] 
+[45/115] Processing: I Can See Your Stats!
+[2025-07-24T01:53:32.525Z] 🔄 Updating I Can See Your Stats! - replacing existing image
+[2025-07-24T01:53:35.357Z] 🚀 Initializing browser...
+[2025-07-24T01:53:35.696Z] 📊 Fetching titles from database...
+[2025-07-24T01:53:35.751Z] ❌ Fatal error: Failed to fetch titles: Invalid API key
+[2025-07-24T01:53:35.792Z] 🔒 Browser closed
+[2025-07-24T01:53:37.407Z] ✅ Found cover image: https://static.mantacdn.net/2024-11-04/kC/kCFaKFRVYP7nfLPQ.jpg
+[2025-07-24T01:53:37.498Z] 💾 Updated database for I Can See Your Stats!
+[2025-07-24T01:53:39.500Z] 
+[46/115] Processing: The Woodsman and the Stag
+[2025-07-24T01:53:39.501Z] 🔄 Updating The Woodsman and the Stag - replacing existing image
+[2025-07-24T01:53:44.018Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-04/jk/jk0Oznj6g5jufc6I.jpg
+[2025-07-24T01:53:44.489Z] 💾 Updated database for The Woodsman and the Stag
+[2025-07-24T01:53:46.491Z] 
+[47/115] Processing: Wish Upon a Husband
+[2025-07-24T01:53:46.491Z] 🔄 Updating Wish Upon a Husband - replacing existing image
+[2025-07-24T01:53:51.079Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:53:51.147Z] 💾 Updated database for Wish Upon a Husband
+[2025-07-24T01:53:53.148Z] 
+[48/115] Processing: Shoot for the Stars
+[2025-07-24T01:53:53.149Z] 🔄 Updating Shoot for the Stars - replacing existing image
+[2025-07-24T01:53:57.688Z] ✅ Found cover image: https://static.mantacdn.net/2023-02-02/H0/H0yIARmg6WjDItFv.jpg
+[2025-07-24T01:53:57.747Z] 💾 Updated database for Shoot for the Stars
+[2025-07-24T01:53:59.749Z] 
+[49/115] Processing: The Deviless' Impression of a Princess
+[2025-07-24T01:53:59.749Z] 🔄 Updating The Deviless' Impression of a Princess - replacing existing image
+[2025-07-24T01:54:04.298Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg
+[2025-07-24T01:54:04.357Z] 💾 Updated database for The Deviless' Impression of a Princess
+[2025-07-24T01:54:06.359Z] 
+[50/115] Processing: Shall We Bathe, Your Grace?
+[2025-07-24T01:54:06.359Z] 🔄 Updating Shall We Bathe, Your Grace? - replacing existing image
+[2025-07-24T01:54:10.959Z] ✅ Found cover image: https://static.mantacdn.net/2025-01-22/Ge/GepDENFTMmQqxvuK.jpg
+[2025-07-24T01:54:11.051Z] 💾 Updated database for Shall We Bathe, Your Grace?
+[2025-07-24T01:54:13.051Z] 
+[51/115] Processing: The Fallen Duke & the Knight Who Hated Him
+[2025-07-24T01:54:13.052Z] 🔄 Updating The Fallen Duke & the Knight Who Hated Him - replacing existing image
+[2025-07-24T01:54:17.604Z] ✅ Found cover image: https://static.mantacdn.net/2024-02-14/Sb/SbB6bHxJ80q41usb.jpg
+[2025-07-24T01:54:17.686Z] 💾 Updated database for The Fallen Duke & the Knight Who Hated Him
+[2025-07-24T01:54:19.688Z] 
+[52/115] Processing: The Blood Moon
+[2025-07-24T01:54:19.688Z] 🔄 Updating The Blood Moon - replacing existing image
+[2025-07-24T01:54:24.269Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Vp/VppqScRfPPRW1SuY.jpg
+[2025-07-24T01:54:24.353Z] 💾 Updated database for The Blood Moon
+[2025-07-24T01:54:26.355Z] 
+[53/115] Processing: Science Tikitaka
+[2025-07-24T01:54:26.355Z] 🔄 Updating Science Tikitaka - replacing existing image
+[2025-07-24T01:54:30.918Z] ✅ Found cover image: https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg
+[2025-07-24T01:54:30.981Z] 💾 Updated database for Science Tikitaka
+[2025-07-24T01:54:32.982Z] 
+[54/115] Processing: Arpeggio on the Surface of the Sea
+[2025-07-24T01:54:32.982Z] 🔄 Updating Arpeggio on the Surface of the Sea - replacing existing image
+[2025-07-24T01:54:37.567Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-05/n7/n7eZxw8uBIbKyJmu.jpg
+[2025-07-24T01:54:37.673Z] 💾 Updated database for Arpeggio on the Surface of the Sea
+[2025-07-24T01:54:39.674Z] 
+[55/115] Processing: Trophy Husband
+[2025-07-24T01:54:39.674Z] 🔄 Updating Trophy Husband - replacing existing image
+[2025-07-24T01:54:44.759Z] ✅ Found cover image: https://static.mantacdn.net/2022-11-24/NE/NEFIqZBiecYotW7R.jpg
+[2025-07-24T01:54:44.844Z] 💾 Updated database for Trophy Husband
+[2025-07-24T01:54:46.844Z] 
+[56/115] Processing: The Tale of the Frost Flower
+[2025-07-24T01:54:46.844Z] 🔄 Updating The Tale of the Frost Flower - replacing existing image
+[2025-07-24T01:54:53.086Z] 🚀 Initializing browser...
+[2025-07-24T01:54:53.468Z] 📊 Fetching titles from database...
+[2025-07-24T01:54:53.562Z] 📋 Total titles in database (first 10): 10
+[2025-07-24T01:54:53.563Z]    1. Punch Drunk Love
+[2025-07-24T01:54:53.563Z]       URL: https://manta.net/en/series/punch-drunk-love?seriesId=2090
+[2025-07-24T01:54:53.563Z]       Image: https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg
+[2025-07-24T01:54:53.563Z]    2. Winter Wolf
+[2025-07-24T01:54:53.563Z]       URL: https://manta.net/en/series/winter-wolf?seriesId=1965
+[2025-07-24T01:54:53.563Z]       Image: https://static.mantacdn.net/2025-07-09/eT/eTNcs4mFucFOxNFp.jpg
+[2025-07-24T01:54:53.563Z]    3. My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:54:53.563Z]       URL: https://manta.net/en/series/my-sweet-enemy-thy-name-is-husband?seriesId=2173
+[2025-07-24T01:54:53.563Z]       Image: https://static.mantacdn.net/2023-12-07/Pl/PlIjqjhMc2TmGL3v.jpg
+[2025-07-24T01:54:53.563Z]    4. Werewolves Going Crazy Over Me
+[2025-07-24T01:54:53.563Z]       URL: https://manta.net/en/series/werewolves-going-crazy-over-me?seriesId=2107
+[2025-07-24T01:54:53.563Z]       Image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:54:53.563Z]    5. Sangyang: The Wanderer
+[2025-07-24T01:54:53.563Z]       URL: https://manta.net/en/series/sangyang-the-wanderer?seriesId=2007
+[2025-07-24T01:54:53.563Z]       Image: https://static.mantacdn.net/2023-06-02/Hl/HldDm0f83IsaG2kv.jpg
+[2025-07-24T01:54:53.563Z]    6. Devil at the Crossroads
+[2025-07-24T01:54:53.564Z]       URL: https://manta.net/en/series/devil-at-the-crossroads?seriesId=2089
+[2025-07-24T01:54:53.564Z]       Image: https://static.mantacdn.net/2023-04-27/ck/ckHNqJuxp5WuXp1G.jpg
+[2025-07-24T01:54:53.564Z]    7. My Second Life as an Idol
+[2025-07-24T01:54:53.564Z]       URL: https://manta.net/en/series/my-second-life-as-an-idol?seriesId=2060
+[2025-07-24T01:54:53.564Z]       Image: https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg
+[2025-07-24T01:54:53.564Z]    8. The Fantastical After-School Writing Club
+[2025-07-24T01:54:53.564Z]       URL: https://manta.net/en/series/the-fantastical-after-school-writing-club?seriesId=2154
+[2025-07-24T01:54:53.564Z]       Image: https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg
+[2025-07-24T01:54:53.564Z]    9. The Dilettante
+[2025-07-24T01:54:53.564Z]       URL: https://manta.net/en/series/the-dilettante?seriesId=1929
+[2025-07-24T01:54:53.564Z]       Image: https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg
+[2025-07-24T01:54:53.564Z]    10. My Miraculous Bookstore
+[2025-07-24T01:54:53.564Z]       URL: https://manta.net/en/series/my-miraculous-bookstore?seriesId=1974
+[2025-07-24T01:54:53.564Z]       Image: https://static.mantacdn.net/2025-05-05/0d/0dlZPUpNrlczkGzi.jpg
+[2025-07-24T01:54:53.612Z] 📝 Found 115 titles with URLs
+[2025-07-24T01:54:53.612Z] 🔄 Starting extraction for 115 titles...
+[2025-07-24T01:54:53.612Z] 
+[1/115] Processing: Punch Drunk Love
+[2025-07-24T01:54:53.612Z] 🔄 Updating Punch Drunk Love - replacing existing image
+[2025-07-24T01:54:58.781Z] ✅ Found cover image: https://static.mantacdn.net/2025-02-05/xt/xt2c6BA7zuBPNRTP.jpg
+[2025-07-24T01:54:58.860Z] 💾 Updated database for Punch Drunk Love
+[2025-07-24T01:55:00.862Z] 
+[2/115] Processing: Winter Wolf
+[2025-07-24T01:55:00.863Z] 🔄 Updating Winter Wolf - replacing existing image
+[2025-07-24T01:55:05.833Z] ✅ Found cover image: https://static.mantacdn.net/2024-11-13/Ba/Bajd1y7ddBhYq5nh.jpg
+[2025-07-24T01:55:05.918Z] 💾 Updated database for Winter Wolf
+[2025-07-24T01:55:07.921Z] 
+[3/115] Processing: My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:55:07.922Z] 🔄 Updating My Sweet Enemy, Thy Name is Husband - replacing existing image
+[2025-07-24T01:55:12.607Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Gi/GiN8pMnzFGIXqpmR.jpg
+[2025-07-24T01:55:12.735Z] 💾 Updated database for My Sweet Enemy, Thy Name is Husband
+[2025-07-24T01:55:14.736Z] 
+[4/115] Processing: Werewolves Going Crazy Over Me
+[2025-07-24T01:55:14.737Z] 🔄 Updating Werewolves Going Crazy Over Me - replacing existing image
+[2025-07-24T01:55:19.367Z] ✅ Found cover image: https://static.mantacdn.net/2025-05-19/QL/QLcKK2HlSxpPNVq0.jpg
+[2025-07-24T01:55:19.484Z] 💾 Updated database for Werewolves Going Crazy Over Me
+[2025-07-24T01:55:21.487Z] 
+[5/115] Processing: Sangyang: The Wanderer
+[2025-07-24T01:55:21.488Z] 🔄 Updating Sangyang: The Wanderer - replacing existing image
+[2025-07-24T01:55:26.098Z] ✅ Found cover image: https://static.mantacdn.net/2023-03-31/Kr/Krftlp6rIwdDMlvP.jpg
+[2025-07-24T01:55:26.172Z] 💾 Updated database for Sangyang: The Wanderer
+[2025-07-24T01:55:28.174Z] 
+[6/115] Processing: Devil at the Crossroads
+[2025-07-24T01:55:28.175Z] 🔄 Updating Devil at the Crossroads - replacing existing image
+[2025-07-24T01:55:32.781Z] ✅ Found cover image: https://static.mantacdn.net/2023-02-02/nj/njX5Gm4Sz0QX0Iaw.jpg
+[2025-07-24T01:55:33.252Z] 💾 Updated database for Devil at the Crossroads
+[2025-07-24T01:55:35.256Z] 
+[7/115] Processing: My Second Life as an Idol
+[2025-07-24T01:55:35.257Z] 🔄 Updating My Second Life as an Idol - replacing existing image
+[2025-07-24T01:55:39.834Z] ✅ Found cover image: https://static.mantacdn.net/2023-03-02/Iy/IyGlhkUuz8bXfYS9.jpg
+[2025-07-24T01:55:39.915Z] 💾 Updated database for My Second Life as an Idol
+[2025-07-24T01:55:41.917Z] 
+[8/115] Processing: The Fantastical After-School Writing Club
+[2025-07-24T01:55:41.917Z] 🔄 Updating The Fantastical After-School Writing Club - replacing existing image
+[2025-07-24T01:55:46.531Z] ✅ Found cover image: https://static.mantacdn.net/2023-01-16/sD/sD1DM1dmj3n6vnDi.jpg
+[2025-07-24T01:55:46.615Z] 💾 Updated database for The Fantastical After-School Writing Club
+[2025-07-24T01:55:48.617Z] 
+[9/115] Processing: The Dilettante
+[2025-07-24T01:55:48.618Z] 🔄 Updating The Dilettante - replacing existing image
+[2025-07-24T01:55:53.699Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-05/Bn/BntQTqOnSa9HlEEn.jpg
+[2025-07-24T01:55:53.776Z] 💾 Updated database for The Dilettante
+[2025-07-24T01:55:55.778Z] 
+[10/115] Processing: My Miraculous Bookstore
+[2025-07-24T01:55:55.780Z] 🔄 Updating My Miraculous Bookstore - replacing existing image
+[2025-07-24T01:56:00.341Z] ✅ Found cover image: https://static.mantacdn.net/2022-10-05/cF/cFszK5uO3ZqQzCoT.jpg
+[2025-07-24T01:56:00.415Z] 💾 Updated database for My Miraculous Bookstore
+[2025-07-24T01:56:02.417Z] 
+[11/115] Processing: The Accidental Heiress
+[2025-07-24T01:56:02.418Z] 🔄 Updating The Accidental Heiress - replacing existing image
+[2025-07-24T01:56:08.009Z] ✅ Found cover image: https://static.mantacdn.net/thumb/2022-06-03/EK/EKbJOOXWyCGWnrpI.jpg
+[2025-07-24T01:56:08.093Z] 💾 Updated database for The Accidental Heiress
+[2025-07-24T01:56:10.095Z] 
+[12/115] Processing: Paljae, Child of Winter
+[2025-07-24T01:56:10.095Z] 🔄 Updating Paljae, Child of Winter - replacing existing image
+[2025-07-24T01:56:14.831Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-04/kO/kOwAv2NUlTuE0CWc.jpg
+[2025-07-24T01:56:14.903Z] 💾 Updated database for Paljae, Child of Winter
+[2025-07-24T01:56:16.904Z] 
+[13/115] Processing: Being Me, Being You
+[2025-07-24T01:56:16.905Z] 🔄 Updating Being Me, Being You - replacing existing image
+[2025-07-24T01:56:21.528Z] ✅ Found cover image: https://static.mantacdn.net/2022-03-30/Ox/OxWjRNTdY3BHgLyV.jpg
+[2025-07-24T01:56:21.619Z] 💾 Updated database for Being Me, Being You
+[2025-07-24T01:56:23.621Z] 
+[14/115] Processing: Happiness Starts at Home
+[2025-07-24T01:56:23.622Z] 🔄 Updating Happiness Starts at Home - replacing existing image
+[2025-07-24T01:56:28.193Z] ✅ Found cover image: https://static.mantacdn.net/2022-02-18/Gv/Gvx1RCkqnZaTcQJs.jpg
+[2025-07-24T01:56:28.289Z] 💾 Updated database for Happiness Starts at Home
+[2025-07-24T01:56:30.291Z] 
+[15/115] Processing: NPCs Can Save the World Too!
+[2025-07-24T01:56:30.291Z] 🔄 Updating NPCs Can Save the World Too! - replacing existing image
+[2025-07-24T01:56:35.365Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-04/8A/8AIglHk6sWVjhSvA.jpg
+[2025-07-24T01:56:35.462Z] 💾 Updated database for NPCs Can Save the World Too!
+[2025-07-24T01:56:37.464Z] 
+[16/115] Processing: I Work at a Witch's Mansion
+[2025-07-24T01:56:37.466Z] 🔄 Updating I Work at a Witch's Mansion - replacing existing image
+[2025-07-24T01:56:42.063Z] ✅ Found cover image: https://static.mantacdn.net/2021-12-01/sG/sGEgxwdtHBi13cNk.jpg
+[2025-07-24T01:56:42.142Z] 💾 Updated database for I Work at a Witch's Mansion
+[2025-07-24T01:56:44.144Z] 
+[17/115] Processing: Goodbye, Dieting!
+[2025-07-24T01:56:44.145Z] 🔄 Updating Goodbye, Dieting! - replacing existing image
+[2025-07-24T01:56:48.786Z] ✅ Found cover image: https://static.mantacdn.net/2021-03-07/N2/N2iZ9QgOKwHCtLfe.jpg
+[2025-07-24T01:56:48.859Z] 💾 Updated database for Goodbye, Dieting!
+[2025-07-24T01:56:50.859Z] 
+[18/115] Processing: I Raised a Black Dragon
+[2025-07-24T01:56:50.860Z] 🔄 Updating I Raised a Black Dragon - replacing existing image
+[2025-07-24T01:56:55.390Z] ✅ Found cover image: https://static.mantacdn.net/2022-02-18/Ct/Ct3kAhDXnMmE3F4V.jpg
+[2025-07-24T01:56:55.465Z] 💾 Updated database for I Raised a Black Dragon
+[2025-07-24T01:56:57.468Z] 
+[19/115] Processing: Bongchon Bride
+[2025-07-24T01:56:57.469Z] 🔄 Updating Bongchon Bride - replacing existing image
+[2025-07-24T01:57:01.955Z] ✅ Found cover image: https://static.mantacdn.net/2023-03-02/Iy/IyGlhkUuz8bXfYS9.jpg
+[2025-07-24T01:57:02.036Z] 💾 Updated database for Bongchon Bride
+[2025-07-24T01:57:04.038Z] 
+[20/115] Processing: Reborn as the Enemy Prince
+[2025-07-24T01:57:04.039Z] 🔄 Updating Reborn as the Enemy Prince - replacing existing image
+[2025-07-24T01:57:08.542Z] ✅ Found cover image: https://static.mantacdn.net/2024-06-28/Un/UnQoBGpwJsGrNarq.jpg
+[2025-07-24T01:57:08.618Z] 💾 Updated database for Reborn as the Enemy Prince
+[2025-07-24T01:57:10.620Z] 
+[21/115] Processing: Wish Upon a Husband
+[2025-07-24T01:57:10.621Z] 🔄 Updating Wish Upon a Husband - replacing existing image
+[2025-07-24T01:57:15.140Z] ✅ Found cover image: https://static.mantacdn.net/2024-01-04/x2/x2TGBQk6peNNJZW3.jpg
+[2025-07-24T01:57:15.216Z] 💾 Updated database for Wish Upon a Husband
+[2025-07-24T01:57:17.219Z] 
+[22/115] Processing: Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:57:17.220Z] 🔄 Updating Juliet, We're Not in Kansas Anymore! - replacing existing image
+[2025-07-24T01:57:21.773Z] ✅ Found cover image: https://static.mantacdn.net/2023-10-05/Qk/QkVpks9Q1u0i3dVQ.jpg
+[2025-07-24T01:57:22.250Z] 💾 Updated database for Juliet, We're Not in Kansas Anymore!
+[2025-07-24T01:57:24.309Z] 
+[23/115] Processing: Call Me Master
+[2025-07-24T01:57:24.310Z] 🔄 Updating Call Me Master - replacing existing image
+[2025-07-24T01:57:24.310Z] ❌ Error processing Call Me Master: Protocol error: Connection closed.
+[2025-07-24T01:57:26.315Z] 
+[24/115] Processing: Homo Plastikos
+[2025-07-24T01:57:26.315Z] 🔄 Updating Homo Plastikos - replacing existing image
+[2025-07-24T01:57:26.316Z] ❌ Error processing Homo Plastikos: Protocol error: Connection closed.
+[2025-07-24T01:57:28.319Z] 
+[25/115] Processing: The Redemption of Earl Nottingham
+[2025-07-24T01:57:28.320Z] 🔄 Updating The Redemption of Earl Nottingham - replacing existing image
+[2025-07-24T01:57:28.321Z] ❌ Error processing The Redemption of Earl Nottingham: Protocol error: Connection closed.
+[2025-07-24T01:57:30.324Z] 
+[26/115] Processing: The Duke's Fake Sister
+[2025-07-24T01:57:30.325Z] 🔄 Updating The Duke's Fake Sister - replacing existing image
+[2025-07-24T01:57:30.326Z] ❌ Error processing The Duke's Fake Sister: Protocol error: Connection closed.
+[2025-07-24T02:03:33.784Z] 
+[27/115] Processing: When Fate Finds Us
+[2025-07-24T02:03:33.785Z] 🔄 Updating When Fate Finds Us - replacing existing image
+[2025-07-24T02:03:33.785Z] ❌ Error processing When Fate Finds Us: Protocol error: Connection closed.
+[2025-07-24T02:03:35.787Z] 
+[28/115] Processing: Cold-Blooded Beast
+[2025-07-24T02:03:35.788Z] 🔄 Updating Cold-Blooded Beast - replacing existing image
+[2025-07-24T02:03:35.788Z] ❌ Error processing Cold-Blooded Beast: Protocol error: Connection closed.
+[2025-07-24T02:03:37.791Z] 
+[29/115] Processing: Rewriting My Tragic Ending
+[2025-07-24T02:03:37.792Z] 🔄 Updating Rewriting My Tragic Ending - replacing existing image
+[2025-07-24T02:03:37.792Z] ❌ Error processing Rewriting My Tragic Ending: Protocol error: Connection closed.
+[2025-07-24T02:03:39.794Z] 
+[30/115] Processing: May God Bless Your Demise
+[2025-07-24T02:03:39.795Z] 🔄 Updating May God Bless Your Demise - replacing existing image
+[2025-07-24T02:03:39.795Z] ❌ Error processing May God Bless Your Demise: Protocol error: Connection closed.
+[2025-07-24T02:03:41.802Z] 
+[31/115] Processing: Love Lies
+[2025-07-24T02:03:41.802Z] 🔄 Updating Love Lies - replacing existing image
+[2025-07-24T02:03:41.802Z] ❌ Error processing Love Lies: Protocol error: Connection closed.
+[2025-07-24T02:03:43.803Z] 
+[32/115] Processing: I Became a Doting Father
+[2025-07-24T02:03:43.804Z] 🔄 Updating I Became a Doting Father - replacing existing image
+[2025-07-24T02:03:43.804Z] ❌ Error processing I Became a Doting Father: Protocol error: Connection closed.
+[2025-07-24T02:03:45.805Z] 
+[33/115] Processing: Cheolsu Saves the World
+[2025-07-24T02:03:45.805Z] 🔄 Updating Cheolsu Saves the World - replacing existing image
+[2025-07-24T02:03:45.805Z] ❌ Error processing Cheolsu Saves the World: Protocol error: Connection closed.
+[2025-07-24T02:03:47.807Z] 
+[34/115] Processing: Isnelda
+[2025-07-24T02:03:47.808Z] 🔄 Updating Isnelda - replacing existing image
+[2025-07-24T02:03:47.809Z] ❌ Error processing Isnelda: Protocol error: Connection closed.
+[2025-07-24T02:03:49.810Z] 
+[35/115] Processing: The Devil and His Sacrifice
+[2025-07-24T02:03:49.811Z] 🔄 Updating The Devil and His Sacrifice - replacing existing image
+[2025-07-24T02:03:49.812Z] ❌ Error processing The Devil and His Sacrifice: Protocol error: Connection closed.
+[2025-07-24T02:03:51.815Z] 
+[36/115] Processing: You Get Me Going
+[2025-07-24T02:03:51.817Z] 🔄 Updating You Get Me Going - replacing existing image
+[2025-07-24T02:03:51.817Z] ❌ Error processing You Get Me Going: Protocol error: Connection closed.
+[2025-07-24T02:03:53.820Z] 
+[37/115] Processing: Countdown to Love
+[2025-07-24T02:03:53.821Z] 🔄 Updating Countdown to Love - replacing existing image
+[2025-07-24T02:03:53.821Z] ❌ Error processing Countdown to Love: Protocol error: Connection closed.
+[2025-07-24T02:03:55.823Z] 
+[38/115] Processing: Falling for Danger
+[2025-07-24T02:03:55.824Z] 🔄 Updating Falling for Danger - replacing existing image
+[2025-07-24T02:03:55.824Z] ❌ Error processing Falling for Danger: Protocol error: Connection closed.
+[2025-07-24T02:03:57.827Z] 
+[39/115] Processing: Heartrate Presto
+[2025-07-24T02:03:57.828Z] 🔄 Updating Heartrate Presto - replacing existing image
+[2025-07-24T02:03:57.828Z] ❌ Error processing Heartrate Presto: Protocol error: Connection closed.
+[2025-07-24T02:03:59.831Z] 
+[40/115] Processing: The Many Seasons of Food
+[2025-07-24T02:03:59.832Z] 🔄 Updating The Many Seasons of Food - replacing existing image
+[2025-07-24T02:03:59.832Z] ❌ Error processing The Many Seasons of Food: Protocol error: Connection closed.
+[2025-07-24T02:04:01.835Z] 
+[41/115] Processing: Falling for a Dying Princess
+[2025-07-24T02:04:01.836Z] 🔄 Updating Falling for a Dying Princess - replacing existing image
+[2025-07-24T02:04:01.836Z] ❌ Error processing Falling for a Dying Princess: Protocol error: Connection closed.
+[2025-07-24T02:04:03.839Z] 
+[42/115] Processing: My Master, My Prince
+[2025-07-24T02:04:03.840Z] 🔄 Updating My Master, My Prince - replacing existing image
+[2025-07-24T02:04:03.841Z] ❌ Error processing My Master, My Prince: Protocol error: Connection closed.
+[2025-07-24T02:04:05.844Z] 
+[43/115] Processing: Opposites Attract
+[2025-07-24T02:04:05.844Z] 🔄 Updating Opposites Attract - replacing existing image
+[2025-07-24T02:04:05.845Z] ❌ Error processing Opposites Attract: Protocol error: Connection closed.
+[2025-07-24T02:04:07.847Z] 
+[44/115] Processing: The Superheroes of Class F
+[2025-07-24T02:04:07.848Z] 🔄 Updating The Superheroes of Class F - replacing existing image
+[2025-07-24T02:04:07.848Z] ❌ Error processing The Superheroes of Class F: Protocol error: Connection closed.
+[2025-07-24T02:04:09.850Z] 
+[45/115] Processing: The Flower of Veneration
+[2025-07-24T02:04:09.851Z] 🔄 Updating The Flower of Veneration - replacing existing image
+[2025-07-24T02:04:09.851Z] ❌ Error processing The Flower of Veneration: Protocol error: Connection closed.
+[2025-07-24T02:04:11.853Z] 
+[46/115] Processing: The Woodsman and the Stag
+[2025-07-24T02:04:11.853Z] 🔄 Updating The Woodsman and the Stag - replacing existing image
+[2025-07-24T02:04:11.854Z] ❌ Error processing The Woodsman and the Stag: Protocol error: Connection closed.
+[2025-07-24T02:04:13.856Z] 
+[47/115] Processing: Shoot for the Stars
+[2025-07-24T02:04:13.856Z] 🔄 Updating Shoot for the Stars - replacing existing image
+[2025-07-24T02:04:13.857Z] ❌ Error processing Shoot for the Stars: Protocol error: Connection closed.
+[2025-07-24T02:04:15.859Z] 
+[48/115] Processing: The Deviless' Impression of a Princess
+[2025-07-24T02:04:15.862Z] 🔄 Updating The Deviless' Impression of a Princess - replacing existing image
+[2025-07-24T02:04:15.863Z] ❌ Error processing The Deviless' Impression of a Princess: Protocol error: Connection closed.
+[2025-07-24T02:04:17.866Z] 
+[49/115] Processing: Shall We Bathe, Your Grace?
+[2025-07-24T02:04:17.867Z] 🔄 Updating Shall We Bathe, Your Grace? - replacing existing image
+[2025-07-24T02:04:17.867Z] ❌ Error processing Shall We Bathe, Your Grace?: Protocol error: Connection closed.
+[2025-07-24T02:21:43.092Z] 
+[50/115] Processing: The Fallen Duke & the Knight Who Hated Him
+[2025-07-24T02:21:43.093Z] 🔄 Updating The Fallen Duke & the Knight Who Hated Him - replacing existing image
+[2025-07-24T02:21:43.093Z] ❌ Error processing The Fallen Duke & the Knight Who Hated Him: Protocol error: Connection closed.
+[2025-07-24T02:21:45.097Z] 
+[51/115] Processing: The Blood Moon
+[2025-07-24T02:21:45.098Z] 🔄 Updating The Blood Moon - replacing existing image
+[2025-07-24T02:21:45.098Z] ❌ Error processing The Blood Moon: Protocol error: Connection closed.
+[2025-07-24T02:21:47.158Z] 
+[52/115] Processing: Science Tikitaka
+[2025-07-24T02:21:47.158Z] 🔄 Updating Science Tikitaka - replacing existing image
+[2025-07-24T02:21:47.159Z] ❌ Error processing Science Tikitaka: Protocol error: Connection closed.
+[2025-07-24T02:21:49.162Z] 
+[53/115] Processing: I Can See Your Stats!
+[2025-07-24T02:21:49.162Z] 🔄 Updating I Can See Your Stats! - replacing existing image
+[2025-07-24T02:21:49.163Z] ❌ Error processing I Can See Your Stats!: Protocol error: Connection closed.
+[2025-07-24T02:21:51.167Z] 
+[54/115] Processing: The Tale of the Frost Flower
+[2025-07-24T02:21:51.168Z] 🔄 Updating The Tale of the Frost Flower - replacing existing image
+[2025-07-24T02:21:51.168Z] ❌ Error processing The Tale of the Frost Flower: Protocol error: Connection closed.
+[2025-07-24T02:21:53.169Z] 
+[55/115] Processing: Zodiac Hunters
+[2025-07-24T02:21:53.170Z] 🔄 Updating Zodiac Hunters - replacing existing image
+[2025-07-24T02:21:53.171Z] ❌ Error processing Zodiac Hunters: Protocol error: Connection closed.
+[2025-07-24T02:21:55.173Z] 
+[56/115] Processing: Reunion
+[2025-07-24T02:21:55.174Z] 🔄 Updating Reunion - replacing existing image
+[2025-07-24T02:21:55.174Z] ❌ Error processing Reunion: Protocol error: Connection closed.
+[2025-07-24T02:21:57.177Z] 
+[57/115] Processing: Bittersweet Con Panna
+[2025-07-24T02:21:57.178Z] 🔄 Updating Bittersweet Con Panna - replacing existing image
+[2025-07-24T02:21:57.178Z] ❌ Error processing Bittersweet Con Panna: Protocol error: Connection closed.
+[2025-07-24T02:21:59.181Z] 
+[58/115] Processing: Betrayal of Dignity
+[2025-07-24T02:21:59.182Z] 🔄 Updating Betrayal of Dignity - replacing existing image
+[2025-07-24T02:21:59.183Z] ❌ Error processing Betrayal of Dignity: Protocol error: Connection closed.
+[2025-07-24T02:22:01.186Z] 
+[59/115] Processing: Arpeggio on the Surface of the Sea
+[2025-07-24T02:22:01.187Z] 🔄 Updating Arpeggio on the Surface of the Sea - replacing existing image
+[2025-07-24T02:22:01.187Z] ❌ Error processing Arpeggio on the Surface of the Sea: Protocol error: Connection closed.
+[2025-07-24T02:22:03.190Z] 
+[60/115] Processing: Trophy Husband
+[2025-07-24T02:22:03.191Z] 🔄 Updating Trophy Husband - replacing existing image
+[2025-07-24T02:22:03.192Z] ❌ Error processing Trophy Husband: Protocol error: Connection closed.
+[2025-07-24T02:22:05.195Z] 
+[61/115] Processing: Justice Now!
+[2025-07-24T02:22:05.199Z] 🔄 Updating Justice Now! - replacing existing image
+[2025-07-24T02:22:05.199Z] ❌ Error processing Justice Now!: Protocol error: Connection closed.
+[2025-07-24T02:22:07.202Z] 
+[62/115] Processing: Mokrin
+[2025-07-24T02:22:07.203Z] 🔄 Updating Mokrin - replacing existing image
+[2025-07-24T02:22:07.203Z] ❌ Error processing Mokrin: Protocol error: Connection closed.
+[2025-07-24T02:22:09.206Z] 
+[63/115] Processing: Even If...
+[2025-07-24T02:22:09.207Z] 🔄 Updating Even If... - replacing existing image
+[2025-07-24T02:22:09.207Z] ❌ Error processing Even If...: Protocol error: Connection closed.
+[2025-07-24T02:22:11.210Z] 
+[64/115] Processing: I've Become a True Villainess
+[2025-07-24T02:22:11.210Z] 🔄 Updating I've Become a True Villainess - replacing existing image
+[2025-07-24T02:22:11.211Z] ❌ Error processing I've Become a True Villainess: Protocol error: Connection closed.
+[2025-07-24T02:22:13.214Z] 
+[65/115] Processing: The Forgotten Princess Just Wants Peace
+[2025-07-24T02:22:13.215Z] 🔄 Updating The Forgotten Princess Just Wants Peace - replacing existing image
+[2025-07-24T02:22:13.215Z] ❌ Error processing The Forgotten Princess Just Wants Peace: Protocol error: Connection closed.
+[2025-07-24T02:22:15.217Z] 
+[66/115] Processing: Getting Along Just Fine
+[2025-07-24T02:22:15.218Z] 🔄 Updating Getting Along Just Fine - replacing existing image
+[2025-07-24T02:22:15.218Z] ❌ Error processing Getting Along Just Fine: Protocol error: Connection closed.
+[2025-07-24T02:22:17.220Z] 
+[67/115] Processing: Duchess Crow
+[2025-07-24T02:22:17.220Z] 🔄 Updating Duchess Crow - replacing existing image
+[2025-07-24T02:22:17.221Z] ❌ Error processing Duchess Crow: Protocol error: Connection closed.
+[2025-07-24T02:22:19.224Z] 
+[68/115] Processing: Your Eternal Lies
+[2025-07-24T02:22:19.224Z] 🔄 Updating Your Eternal Lies - replacing existing image
+[2025-07-24T02:22:19.225Z] ❌ Error processing Your Eternal Lies: Protocol error: Connection closed.
+[2025-07-24T02:22:21.229Z] 
+[69/115] Processing: The Year of No Shopping
+[2025-07-24T02:22:21.230Z] 🔄 Updating The Year of No Shopping - replacing existing image
+[2025-07-24T02:22:21.231Z] ❌ Error processing The Year of No Shopping: Protocol error: Connection closed.
+[2025-07-24T02:22:23.233Z] 
+[70/115] Processing: Fry My Life
+[2025-07-24T02:22:23.234Z] 🔄 Updating Fry My Life - replacing existing image
+[2025-07-24T02:22:23.235Z] ❌ Error processing Fry My Life: Protocol error: Connection closed.
+[2025-07-24T02:22:25.238Z] 
+[71/115] Processing: [ blank。]
+[2025-07-24T02:22:25.239Z] 🔄 Updating [ blank。] - replacing existing image
+[2025-07-24T02:22:25.239Z] ❌ Error processing [ blank。]: Protocol error: Connection closed.
+[2025-07-24T02:22:27.241Z] 
+[72/115] Processing: The Secret of Umbra
+[2025-07-24T02:22:27.242Z] 🔄 Updating The Secret of Umbra - replacing existing image
+[2025-07-24T02:22:27.242Z] ❌ Error processing The Secret of Umbra: Protocol error: Connection closed.
+[2025-07-24T02:22:29.245Z] 
+[73/115] Processing: Nowhere But Iceland
+[2025-07-24T02:22:29.247Z] 🔄 Updating Nowhere But Iceland - replacing existing image
+[2025-07-24T02:22:29.247Z] ❌ Error processing Nowhere But Iceland: Protocol error: Connection closed.
+[2025-07-24T02:22:31.249Z] 
+[74/115] Processing: Whispers Through the Willows
+[2025-07-24T02:22:31.249Z] 🔄 Updating Whispers Through the Willows - replacing existing image
+[2025-07-24T02:22:31.250Z] ❌ Error processing Whispers Through the Willows: Protocol error: Connection closed.
+[2025-07-24T02:22:33.253Z] 
+[75/115] Processing: The Script
+[2025-07-24T02:22:33.254Z] 🔄 Updating The Script - replacing existing image
+[2025-07-24T02:22:33.255Z] ❌ Error processing The Script: Protocol error: Connection closed.
+[2025-07-24T02:22:35.257Z] 
+[76/115] Processing: Kneel Before Me
+[2025-07-24T02:22:35.257Z] 🔄 Updating Kneel Before Me - replacing existing image
+[2025-07-24T02:22:35.258Z] ❌ Error processing Kneel Before Me: Protocol error: Connection closed.
+[2025-07-24T02:22:37.259Z] 
+[77/115] Processing: Evangeline's Sword
+[2025-07-24T02:22:37.261Z] 🔄 Updating Evangeline's Sword - replacing existing image
+[2025-07-24T02:22:37.261Z] ❌ Error processing Evangeline's Sword: Protocol error: Connection closed.
+[2025-07-24T02:22:39.264Z] 
+[78/115] Processing: Terrarium Adventure
+[2025-07-24T02:22:39.264Z] 🔄 Updating Terrarium Adventure - replacing existing image
+[2025-07-24T02:22:39.264Z] ❌ Error processing Terrarium Adventure: Protocol error: Connection closed.
+[2025-07-24T02:22:41.267Z] 
+[79/115] Processing: Flip Turn
+[2025-07-24T02:22:41.267Z] 🔄 Updating Flip Turn - replacing existing image
+[2025-07-24T02:22:41.268Z] ❌ Error processing Flip Turn: Protocol error: Connection closed.
+[2025-07-24T02:22:43.270Z] 
+[80/115] Processing: Flash Behavior
+[2025-07-24T02:22:43.271Z] 🔄 Updating Flash Behavior - replacing existing image
+[2025-07-24T02:22:43.272Z] ❌ Error processing Flash Behavior: Protocol error: Connection closed.
+[2025-07-24T02:22:45.275Z] 
+[81/115] Processing: The Quant of Wall Street
+[2025-07-24T02:22:45.276Z] 🔄 Updating The Quant of Wall Street - replacing existing image
+[2025-07-24T02:22:45.276Z] ❌ Error processing The Quant of Wall Street: Protocol error: Connection closed.
+[2025-07-24T02:22:47.279Z] 
+[82/115] Processing: Stand Up, Now!
+[2025-07-24T02:22:47.280Z] 🔄 Updating Stand Up, Now! - replacing existing image
+[2025-07-24T02:22:47.280Z] ❌ Error processing Stand Up, Now!: Protocol error: Connection closed.
+[2025-07-24T02:22:49.283Z] 
+[83/115] Processing: Restoring Art and Love
+[2025-07-24T02:22:49.284Z] 🔄 Updating Restoring Art and Love - replacing existing image
+[2025-07-24T02:22:49.285Z] ❌ Error processing Restoring Art and Love: Protocol error: Connection closed.
+[2025-07-24T02:22:51.287Z] 
+[84/115] Processing: The Summer of Penguins
+[2025-07-24T02:22:51.287Z] 🔄 Updating The Summer of Penguins - replacing existing image
+[2025-07-24T02:22:51.287Z] ❌ Error processing The Summer of Penguins: Protocol error: Connection closed.
+[2025-07-24T02:22:53.289Z] 
+[85/115] Processing: A Zero Waste Life
+[2025-07-24T02:22:53.290Z] 🔄 Updating A Zero Waste Life - replacing existing image
+[2025-07-24T02:22:53.290Z] ❌ Error processing A Zero Waste Life: Protocol error: Connection closed.
+[2025-07-24T02:22:55.293Z] 
+[86/115] Processing: Stone House on Jeju Island
+[2025-07-24T02:22:55.294Z] 🔄 Updating Stone House on Jeju Island - replacing existing image
+[2025-07-24T02:22:55.294Z] ❌ Error processing Stone House on Jeju Island: Protocol error: Connection closed.
+[2025-07-24T02:22:57.297Z] 
+[87/115] Processing: Shall We Pole Dance?
+[2025-07-24T02:22:57.298Z] 🔄 Updating Shall We Pole Dance? - replacing existing image
+[2025-07-24T02:22:57.298Z] ❌ Error processing Shall We Pole Dance?: Protocol error: Connection closed.
+[2025-07-24T02:22:59.300Z] 
+[88/115] Processing: My Husband, My Sister, and I
+[2025-07-24T02:22:59.300Z] 🔄 Updating My Husband, My Sister, and I - replacing existing image
+[2025-07-24T02:22:59.301Z] ❌ Error processing My Husband, My Sister, and I: Protocol error: Connection closed.
+[2025-07-24T02:23:01.303Z] 
+[89/115] Processing: I Wanna Be the Madam!
+[2025-07-24T02:23:01.304Z] 🔄 Updating I Wanna Be the Madam! - replacing existing image
+[2025-07-24T02:23:01.305Z] ❌ Error processing I Wanna Be the Madam!: Protocol error: Connection closed.
+[2025-07-24T02:23:03.308Z] 
+[90/115] Processing: Tori and Samuel
+[2025-07-24T02:23:03.308Z] 🔄 Updating Tori and Samuel - replacing existing image
+[2025-07-24T02:23:03.309Z] ❌ Error processing Tori and Samuel: Protocol error: Connection closed.
+[2025-07-24T02:23:05.312Z] 
+[91/115] Processing: My Super-Granny
+[2025-07-24T02:23:05.313Z] 🔄 Updating My Super-Granny - replacing existing image
+[2025-07-24T02:23:05.314Z] ❌ Error processing My Super-Granny: Protocol error: Connection closed.
+[2025-07-24T02:23:07.315Z] 
+[92/115] Processing: Tendering Resignation
+[2025-07-24T02:23:07.317Z] 🔄 Updating Tendering Resignation - replacing existing image
+[2025-07-24T02:23:07.317Z] ❌ Error processing Tendering Resignation: Protocol error: Connection closed.
+[2025-07-24T02:23:09.320Z] 
+[93/115] Processing: Let's Get You Better
+[2025-07-24T02:23:09.321Z] 🔄 Updating Let's Get You Better - replacing existing image
+[2025-07-24T02:23:09.322Z] ❌ Error processing Let's Get You Better: Protocol error: Connection closed.
+[2025-07-24T02:23:11.325Z] 
+[94/115] Processing: Go, Haechi, Go!
+[2025-07-24T02:23:11.325Z] 🔄 Updating Go, Haechi, Go! - replacing existing image
+[2025-07-24T02:23:11.326Z] ❌ Error processing Go, Haechi, Go!: Protocol error: Connection closed.
+[2025-07-24T02:23:13.328Z] 
+[95/115] Processing: Love Order
+[2025-07-24T02:23:13.329Z] 🔄 Updating Love Order - replacing existing image
+[2025-07-24T02:23:13.330Z] ❌ Error processing Love Order: Protocol error: Connection closed.
+[2025-07-24T02:23:15.332Z] 
+[96/115] Processing: Season of Change
+[2025-07-24T02:23:15.334Z] 🔄 Updating Season of Change - replacing existing image
+[2025-07-24T02:23:15.334Z] ❌ Error processing Season of Change: Protocol error: Connection closed.
+[2025-07-24T02:23:17.336Z] 
+[97/115] Processing: From Bread to Closets
+[2025-07-24T02:23:17.337Z] 🔄 Updating From Bread to Closets - replacing existing image
+[2025-07-24T02:23:17.337Z] ❌ Error processing From Bread to Closets: Protocol error: Connection closed.
+[2025-07-24T02:23:19.340Z] 
+[98/115] Processing: Women's Soccer
+[2025-07-24T02:23:19.340Z] 🔄 Updating Women's Soccer - replacing existing image
+[2025-07-24T02:23:19.340Z] ❌ Error processing Women's Soccer: Protocol error: Connection closed.
+[2025-07-24T02:23:21.345Z] 
+[99/115] Processing: Observing Elena Evoy
+[2025-07-24T02:23:21.347Z] ➕ Adding new image for Observing Elena Evoy
+[2025-07-24T02:23:21.348Z] ❌ Error processing Observing Elena Evoy: Protocol error: Connection closed.
+[2025-07-24T02:23:23.348Z] 
+[100/115] Processing: Lies Become You
+[2025-07-24T02:23:23.349Z] ➕ Adding new image for Lies Become You
+[2025-07-24T02:23:23.350Z] ❌ Error processing Lies Become You: Protocol error: Connection closed.
+[2025-07-24T02:23:25.352Z] 
+[101/115] Processing: My Father is a Tyrant
+[2025-07-24T02:23:25.353Z] 🔄 Updating My Father is a Tyrant - replacing existing image
+[2025-07-24T02:23:25.354Z] ❌ Error processing My Father is a Tyrant: Protocol error: Connection closed.
+[2025-07-24T02:23:27.355Z] 
+[102/115] Processing: I Lived in a Shelter
+[2025-07-24T02:23:27.356Z] 🔄 Updating I Lived in a Shelter - replacing existing image
+[2025-07-24T02:23:27.357Z] ❌ Error processing I Lived in a Shelter: Protocol error: Connection closed.
+[2025-07-24T02:23:29.358Z] 
+[103/115] Processing: The Demon Queen Has a Death Wish
+[2025-07-24T02:23:29.360Z] 🔄 Updating The Demon Queen Has a Death Wish - replacing existing image
+[2025-07-24T02:23:29.360Z] ❌ Error processing The Demon Queen Has a Death Wish: Protocol error: Connection closed.
+[2025-07-24T02:23:31.363Z] 
+[104/115] Processing: 4 Week Lovers
+[2025-07-24T02:23:31.364Z] 🔄 Updating 4 Week Lovers - replacing existing image
+[2025-07-24T02:23:31.368Z] ❌ Error processing 4 Week Lovers: Protocol error: Connection closed.
+[2025-07-24T02:23:33.369Z] 
+[105/115] Processing: Princess of the Animals
+[2025-07-24T02:23:33.370Z] 🔄 Updating Princess of the Animals - replacing existing image
+[2025-07-24T02:23:33.370Z] ❌ Error processing Princess of the Animals: Protocol error: Connection closed.
+[2025-07-24T02:23:35.373Z] 
+[106/115] Processing: The Noble Pirate
+[2025-07-24T02:23:35.374Z] 🔄 Updating The Noble Pirate - replacing existing image
+[2025-07-24T02:23:35.375Z] ❌ Error processing The Noble Pirate: Protocol error: Connection closed.
+[2025-07-24T02:23:37.376Z] 
+[107/115] Processing: Traces of the Sun
+[2025-07-24T02:23:37.378Z] 🔄 Updating Traces of the Sun - replacing existing image
+[2025-07-24T02:23:37.378Z] ❌ Error processing Traces of the Sun: Protocol error: Connection closed.
+[2025-07-24T02:23:39.381Z] 
+[108/115] Processing: Disobey the Duke if You Dare
+[2025-07-24T02:23:39.382Z] ➕ Adding new image for Disobey the Duke if You Dare
+[2025-07-24T02:23:39.382Z] ❌ Error processing Disobey the Duke if You Dare: Protocol error: Connection closed.
+[2025-07-24T02:23:41.385Z] 
+[109/115] Processing: Finding Camellia
+[2025-07-24T02:23:41.386Z] ➕ Adding new image for Finding Camellia
+[2025-07-24T02:23:41.386Z] ❌ Error processing Finding Camellia: Protocol error: Connection closed.
+[2025-07-24T02:23:43.389Z] 
+[110/115] Processing: Under the Oak Tree
+[2025-07-24T02:23:43.390Z] ➕ Adding new image for Under the Oak Tree
+[2025-07-24T02:23:43.391Z] ❌ Error processing Under the Oak Tree: Protocol error: Connection closed.
+[2025-07-24T02:23:45.394Z] 
+[111/115] Processing: Lady Devil
+[2025-07-24T02:23:45.394Z] ➕ Adding new image for Lady Devil
+[2025-07-24T02:23:45.395Z] ❌ Error processing Lady Devil: Protocol error: Connection closed.
+[2025-07-24T02:23:47.398Z] 
+[112/115] Processing: If I Were You
+[2025-07-24T02:23:47.400Z] 🔄 Updating If I Were You - replacing existing image
+[2025-07-24T02:23:47.401Z] ❌ Error processing If I Were You: Protocol error: Connection closed.
+[2025-07-24T02:24:00.999Z] 
+[113/115] Processing: Sora's Eyes
+[2025-07-24T02:24:00.999Z] 🔄 Updating Sora's Eyes - replacing existing image
+[2025-07-24T02:24:01.000Z] ❌ Error processing Sora's Eyes: Protocol error: Connection closed.
+[2025-07-24T02:24:03.003Z] 
+[114/115] Processing: Miss You, Lucifer
+[2025-07-24T02:24:03.003Z] 🔄 Updating Miss You, Lucifer - replacing existing image
+[2025-07-24T02:24:03.004Z] ❌ Error processing Miss You, Lucifer: Protocol error: Connection closed.
+[2025-07-24T02:24:05.005Z] 
+[115/115] Processing: The Golden Light of Dawn
+[2025-07-24T02:24:05.008Z] 🔄 Updating The Golden Light of Dawn - replacing existing image
+[2025-07-24T02:24:05.009Z] ❌ Error processing The Golden Light of Dawn: Protocol error: Connection closed.
+[2025-07-24T02:24:05.117Z] 🔒 Browser closed
+[2025-07-24T02:24:05.119Z] 
+📊 EXTRACTION REPORT
+[2025-07-24T02:24:05.119Z] ==================================================
+[2025-07-24T02:24:05.119Z] ✅ Successfully processed: 22
+[2025-07-24T02:24:05.119Z]    ➕ New images added: 0
+[2025-07-24T02:24:05.119Z]    🔄 Existing images updated: 22
+[2025-07-24T02:24:05.119Z] ⏭️  Skipped: 0
+[2025-07-24T02:24:05.119Z] ❌ Failed: 93
+[2025-07-24T02:24:05.119Z] 📝 Total processed: 115
+[2025-07-24T02:24:05.120Z] 💾 Detailed results saved to: /Users/sungholee/code/kstorybridge-monorepo/apps/dashboard/cover_extraction_results.json
+[2025-07-24T02:24:05.122Z] 
+❌ Failed titles:
+[2025-07-24T02:24:05.122Z]    - Call Me Master: no_image_found 
+[2025-07-24T02:24:05.122Z]    - Homo Plastikos: no_image_found 
+[2025-07-24T02:24:05.122Z]    - The Redemption of Earl Nottingham: no_image_found 
+[2025-07-24T02:24:05.122Z]    - The Duke's Fake Sister: no_image_found 
+[2025-07-24T02:24:05.122Z]    - When Fate Finds Us: no_image_found 
+[2025-07-24T02:24:05.122Z]    - Cold-Blooded Beast: no_image_found 
+[2025-07-24T02:24:05.122Z]    - Rewriting My Tragic Ending: no_image_found 
+[2025-07-24T02:24:05.122Z]    - May God Bless Your Demise: no_image_found 
+[2025-07-24T02:24:05.122Z]    - Love Lies: no_image_found 
+[2025-07-24T02:24:05.122Z]    - I Became a Doting Father: no_image_found 
+[2025-07-24T02:24:05.122Z]    - Cheolsu Saves the World: no_image_found 
+[2025-07-24T02:24:05.122Z]    - Isnelda: no_image_found 
+[2025-07-24T02:24:05.122Z]    - The Devil and His Sacrifice: no_image_found 
+[2025-07-24T02:24:05.122Z]    - You Get Me Going: no_image_found 
+[2025-07-24T02:24:05.122Z]    - Countdown to Love: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Falling for Danger: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Heartrate Presto: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Many Seasons of Food: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Falling for a Dying Princess: no_image_found 
+[2025-07-24T02:24:05.123Z]    - My Master, My Prince: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Opposites Attract: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Superheroes of Class F: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Flower of Veneration: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Woodsman and the Stag: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Shoot for the Stars: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Deviless' Impression of a Princess: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Shall We Bathe, Your Grace?: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Fallen Duke & the Knight Who Hated Him: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Blood Moon: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Science Tikitaka: no_image_found 
+[2025-07-24T02:24:05.123Z]    - I Can See Your Stats!: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Tale of the Frost Flower: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Zodiac Hunters: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Reunion: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Bittersweet Con Panna: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Betrayal of Dignity: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Arpeggio on the Surface of the Sea: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Trophy Husband: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Justice Now!: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Mokrin: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Even If...: no_image_found 
+[2025-07-24T02:24:05.123Z]    - I've Become a True Villainess: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Forgotten Princess Just Wants Peace: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Getting Along Just Fine: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Duchess Crow: no_image_found 
+[2025-07-24T02:24:05.123Z]    - Your Eternal Lies: no_image_found 
+[2025-07-24T02:24:05.123Z]    - The Year of No Shopping: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Fry My Life: no_image_found 
+[2025-07-24T02:24:05.124Z]    - [ blank。]: no_image_found 
+[2025-07-24T02:24:05.124Z]    - The Secret of Umbra: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Nowhere But Iceland: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Whispers Through the Willows: no_image_found 
+[2025-07-24T02:24:05.124Z]    - The Script: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Kneel Before Me: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Evangeline's Sword: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Terrarium Adventure: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Flip Turn: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Flash Behavior: no_image_found 
+[2025-07-24T02:24:05.124Z]    - The Quant of Wall Street: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Stand Up, Now!: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Restoring Art and Love: no_image_found 
+[2025-07-24T02:24:05.124Z]    - The Summer of Penguins: no_image_found 
+[2025-07-24T02:24:05.124Z]    - A Zero Waste Life: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Stone House on Jeju Island: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Shall We Pole Dance?: no_image_found 
+[2025-07-24T02:24:05.124Z]    - My Husband, My Sister, and I: no_image_found 
+[2025-07-24T02:24:05.124Z]    - I Wanna Be the Madam!: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Tori and Samuel: no_image_found 
+[2025-07-24T02:24:05.124Z]    - My Super-Granny: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Tendering Resignation: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Let's Get You Better: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Go, Haechi, Go!: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Love Order: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Season of Change: no_image_found 
+[2025-07-24T02:24:05.124Z]    - From Bread to Closets: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Women's Soccer: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Observing Elena Evoy: no_image_found 
+[2025-07-24T02:24:05.124Z]    - Lies Become You: no_image_found 
+[2025-07-24T02:24:05.124Z]    - My Father is a Tyrant: no_image_found 
+[2025-07-24T02:24:05.124Z]    - I Lived in a Shelter: no_image_found 
+[2025-07-24T02:24:05.125Z]    - The Demon Queen Has a Death Wish: no_image_found 
+[2025-07-24T02:24:05.125Z]    - 4 Week Lovers: no_image_found 
+[2025-07-24T02:24:05.125Z]    - Princess of the Animals: no_image_found 
+[2025-07-24T02:24:05.125Z]    - The Noble Pirate: no_image_found 
+[2025-07-24T02:24:05.125Z]    - Traces of the Sun: no_image_found 
+[2025-07-24T02:24:05.125Z]    - Disobey the Duke if You Dare: no_image_found 
+[2025-07-24T02:24:05.125Z]    - Finding Camellia: no_image_found 
+[2025-07-24T02:24:05.125Z]    - Under the Oak Tree: no_image_found 
+[2025-07-24T02:24:05.125Z]    - Lady Devil: no_image_found 
+[2025-07-24T02:24:05.125Z]    - If I Were You: no_image_found 
+[2025-07-24T02:24:05.125Z]    - Sora's Eyes: no_image_found 
+[2025-07-24T02:24:05.125Z]    - Miss You, Lucifer: no_image_found 
+[2025-07-24T02:24:05.125Z]    - The Golden Light of Dawn: no_image_found 
+[2025-07-24T02:24:05.125Z] 
+🎉 Extraction process completed!

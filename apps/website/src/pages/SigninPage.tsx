@@ -7,8 +7,8 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { getDashboardUrl } from '../config/urls';
+import PageHeader from '../components/PageHeader';
 
 const SigninPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +25,7 @@ const SigninPage = () => {
     setIsGoogleLoading(true);
     
     try {
-      const redirectUrl = `https://dashboard.kstorybridge.com/`;
+      const redirectUrl = getDashboardUrl();
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -72,14 +72,17 @@ const SigninPage = () => {
         if (error) {
           console.error('Error fetching buyer profile:', error);
           // Default to invited dashboard on error
-          navigate('/dashboard/invited');
+          navigate('/invited');
           return;
         }
         
         if (profile?.invitation_status === 'accepted') {
-          window.location.href = 'https://dashboard.kstorybridge.com/';
+          console.log('✅ SIGNIN: User accepted, navigating to homepage to let useAuth handle redirect');
+          // Navigate to homepage and let useAuth handle the dashboard redirect
+          // This prevents competing redirects and ensures proper session handling
+          navigate('/');
         } else {
-          navigate('/dashboard/invited');
+          navigate('/invited');
         }
       } else if (accountType === 'ip_owner') {
         const { data: profile, error } = await supabase
@@ -91,22 +94,25 @@ const SigninPage = () => {
         if (error) {
           console.error('Error fetching IP owner profile:', error);
           // Default to invited dashboard on error
-          navigate('/dashboard/invited');
+          navigate('/invited');
           return;
         }
         
         if (profile?.invitation_status === 'accepted') {
-          window.location.href = 'https://dashboard.kstorybridge.com/';
+          console.log('✅ SIGNIN: User accepted, navigating to homepage to let useAuth handle redirect');
+          // Navigate to homepage and let useAuth handle the dashboard redirect
+          // This prevents competing redirects and ensures proper session handling
+          navigate('/');
         } else {
-          navigate('/dashboard/invited');
+          navigate('/invited');
         }
       } else {
         // If no account type, default to invited dashboard
-        navigate('/dashboard/invited');
+        navigate('/invited');
       }
     } catch (error) {
       console.error('Error checking invitation status:', error);
-      navigate('/dashboard/invited');
+      navigate('/invited');
     }
   };
 
@@ -165,24 +171,27 @@ const SigninPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Header />
+    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+      <PageHeader />
       
-      <div className="flex-1 flex items-center justify-center px-4 py-16">
-        <div className="w-full max-w-md">
-          {/* Header Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
-              Welcome back
-            </h1>
-            <p className="text-lg text-gray-600">
-              Sign in to your account to continue
-            </p>
-          </div>
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="py-16 lg:py-24">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="max-w-md mx-auto">
+              {/* Header Section */}
+              <div className="text-center mb-12">
+                <h1 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
+                  Welcome Back
+                </h1>
+                <p className="text-xl text-midnight-ink-600">
+                  Sign in to your account to continue
+                </p>
+              </div>
 
-          {/* Sign In Form */}
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-8">
+              {/* Sign In Form */}
+              <Card className="border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
+                <CardContent className="p-8">
               {/* Google Sign In Button - Hidden for now */}
               {false && (
                 <div className="mb-6">
@@ -226,7 +235,7 @@ const SigninPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-900">
+                  <Label htmlFor="email" className="text-sm font-medium text-midnight-ink">
                     Email address
                   </Label>
                   <Input
@@ -234,7 +243,7 @@ const SigninPage = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => updateFormData('email', e.target.value)}
-                    className="h-12 text-base border-gray-200 focus:border-primary focus:ring-primary"
+                    className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                     placeholder="Enter your email"
                     required
                   />
@@ -242,7 +251,7 @@ const SigninPage = () => {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-900">
+                  <Label htmlFor="password" className="text-sm font-medium text-midnight-ink">
                     Password
                   </Label>
                   <Input
@@ -250,7 +259,7 @@ const SigninPage = () => {
                     type="password"
                     value={formData.password}
                     onChange={(e) => updateFormData('password', e.target.value)}
-                    className="h-12 text-base border-gray-200 focus:border-primary focus:ring-primary"
+                    className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                     placeholder="Enter your password"
                     required
                   />
@@ -259,7 +268,7 @@ const SigninPage = () => {
                 {/* Submit Button */}
                 <Button 
                   type="submit" 
-                  className="w-full h-12 text-base bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-colors" 
+                  className="w-full h-12 text-base bg-hanok-teal hover:bg-hanok-teal-600 text-white font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -268,36 +277,36 @@ const SigninPage = () => {
                       Signing in...
                     </div>
                   ) : (
-                    'Sign in'
+                    'Sign In'
                   )}
                 </Button>
               </form>
 
               {/* Divider */}
-              <div className="mt-8 pt-6 border-t border-gray-100">
-                <p className="text-center text-gray-600">
+              <div className="mt-8 pt-6 border-t border-midnight-ink-100">
+                <p className="text-center text-midnight-ink-600">
                   Don't have an account?{' '}
                   <Link 
                     to="/signup/buyer" 
-                    className="font-medium text-primary hover:text-primary/80 transition-colors"
+                    className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
                   >
                     Sign up for free
                   </Link>
                 </p>
               </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          {/* Additional Info */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
-              By signing in, you agree to our terms of service and privacy policy.
-            </p>
+              {/* Additional Info */}
+              <div className="mt-8 text-center">
+                <p className="text-sm text-midnight-ink-500">
+                  By signing in, you agree to our terms of service and privacy policy.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <Footer />
+        </section>
+      </main>
     </div>
   );
 };

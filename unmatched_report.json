@@ -1,0 +1,340 @@
+{
+  "generated_at": "2025-07-24T00:07:22.164Z",
+  "summary": {
+    "unmatched_files": 81,
+    "titles_without_images": 1
+  },
+  "unmatched_files": [
+    {
+      "filename": "4_Week_Lovers.png",
+      "converted_title": "4 Week Lovers"
+    },
+    {
+      "filename": "Arpeggio_on_the.png",
+      "converted_title": "Arpeggio on the"
+    },
+    {
+      "filename": "Being_Me__Being_You.png",
+      "converted_title": "Being Me... Being You"
+    },
+    {
+      "filename": "Betrayal_of_Dignity.png",
+      "converted_title": "Betrayal of Dignity"
+    },
+    {
+      "filename": "Bittersweet_Con_Panna.png",
+      "converted_title": "Bittersweet Con Panna"
+    },
+    {
+      "filename": "Bongchon_Bride.png",
+      "converted_title": "Bongchon Bride"
+    },
+    {
+      "filename": "Cheolsu_Saves_the_World.png",
+      "converted_title": "Cheolsu Saves the World"
+    },
+    {
+      "filename": "Cold-Blooded_Beast.png",
+      "converted_title": "Cold-Blooded Beast"
+    },
+    {
+      "filename": "Countdown_to_Love.png",
+      "converted_title": "Countdown to Love"
+    },
+    {
+      "filename": "Devil_at_the_Crossroads.png",
+      "converted_title": "Devil at the Crossroads"
+    },
+    {
+      "filename": "Disobey_the_Duke.png",
+      "converted_title": "Disobey the Duke"
+    },
+    {
+      "filename": "Duchess_Crow.png",
+      "converted_title": "Duchess Crow"
+    },
+    {
+      "filename": "Evangeline_s_Sword.png",
+      "converted_title": "Evangeline s Sword"
+    },
+    {
+      "filename": "Even_If___.png",
+      "converted_title": "Even If &"
+    },
+    {
+      "filename": "Falling_for_Danger.png",
+      "converted_title": "Falling for Danger"
+    },
+    {
+      "filename": "Finding_Camellia.png",
+      "converted_title": "Finding Camellia"
+    },
+    {
+      "filename": "Flash_Behavior.png",
+      "converted_title": "Flash Behavior"
+    },
+    {
+      "filename": "Flip_Turn.png",
+      "converted_title": "Flip Turn"
+    },
+    {
+      "filename": "From_Bread_to_Closets.png",
+      "converted_title": "From Bread to Closets"
+    },
+    {
+      "filename": "Fry_My_Life.png",
+      "converted_title": "Fry My Life"
+    },
+    {
+      "filename": "Go__Haechi__Go_.png",
+      "converted_title": "Go... Haechi... Go"
+    },
+    {
+      "filename": "Goodbye__Dieting_.png",
+      "converted_title": "Goodbye... Dieting"
+    },
+    {
+      "filename": "Happiness_Starts_at_Home.png",
+      "converted_title": "Happiness Starts at Home"
+    },
+    {
+      "filename": "Happy_Birthday.png",
+      "converted_title": "Happy Birthday"
+    },
+    {
+      "filename": "Heartrate_Presto.png",
+      "converted_title": "Heartrate Presto"
+    },
+    {
+      "filename": "I_Lived_in_a_Shelter.png",
+      "converted_title": "I Lived in a Shelter"
+    },
+    {
+      "filename": "I_Work_at_a_Witch_s_Mansion.png",
+      "converted_title": "I Work at a Witch s Mansion"
+    },
+    {
+      "filename": "If_I_Were_You.png",
+      "converted_title": "If I Were You"
+    },
+    {
+      "filename": "Justice_Now_.png",
+      "converted_title": "Justice Now"
+    },
+    {
+      "filename": "Kneel_Before_Me.png",
+      "converted_title": "Kneel Before Me"
+    },
+    {
+      "filename": "Lady_Devil.png",
+      "converted_title": "Lady Devil"
+    },
+    {
+      "filename": "Let_s_Get_You_Better.png",
+      "converted_title": "Let s Get You Better"
+    },
+    {
+      "filename": "Lies_Become_You.png",
+      "converted_title": "Lies Become You"
+    },
+    {
+      "filename": "Love_Order.png",
+      "converted_title": "Love Order"
+    },
+    {
+      "filename": "Miss_You__Lucifer.png",
+      "converted_title": "Miss You... Lucifer"
+    },
+    {
+      "filename": "Mokrin.png",
+      "converted_title": "Mokrin"
+    },
+    {
+      "filename": "My_Father_is_a_Tyrant.png",
+      "converted_title": "My Father is a Tyrant"
+    },
+    {
+      "filename": "My_Husband_.png",
+      "converted_title": "My Husband"
+    },
+    {
+      "filename": "My_Miraculous_Bookstore.png",
+      "converted_title": "My Miraculous Bookstore"
+    },
+    {
+      "filename": "My_Second_Life_as_an_Idol.png",
+      "converted_title": "My Second Life as an Idol"
+    },
+    {
+      "filename": "My_Super-Granny.png",
+      "converted_title": "My Super-Granny"
+    },
+    {
+      "filename": "My_Sweet_Enemy__Thy_Name_is_Husband.png",
+      "converted_title": "My Sweet Enemy... Thy Name is Husband"
+    },
+    {
+      "filename": "Nowhere_But_Iceland.png",
+      "converted_title": "Nowhere But Iceland"
+    },
+    {
+      "filename": "Observing_Elena_Evoy.png",
+      "converted_title": "Observing Elena Evoy"
+    },
+    {
+      "filename": "Paljae__Child_of_Winter.png",
+      "converted_title": "Paljae... Child of Winter"
+    },
+    {
+      "filename": "Restoring_Art_and_Love.png",
+      "converted_title": "Restoring Art and Love"
+    },
+    {
+      "filename": "Reunion.png",
+      "converted_title": "Reunion"
+    },
+    {
+      "filename": "Sangyang_The_Wanderer.png",
+      "converted_title": "Sangyang The Wanderer"
+    },
+    {
+      "filename": "Science_Tikitaka.png",
+      "converted_title": "Science Tikitaka"
+    },
+    {
+      "filename": "Season_of_Change.png",
+      "converted_title": "Season of Change"
+    },
+    {
+      "filename": "Shall_We_Bathe_.png",
+      "converted_title": "Shall We Bathe"
+    },
+    {
+      "filename": "Shall_We_Pole_Dance.png",
+      "converted_title": "Shall We Pole Dance"
+    },
+    {
+      "filename": "Shoot_for_the_Stars.png",
+      "converted_title": "Shoot for the Stars"
+    },
+    {
+      "filename": "Sora_s_Eyes.png",
+      "converted_title": "Sora s Eyes"
+    },
+    {
+      "filename": "Stand_Up__Now_.png",
+      "converted_title": "Stand Up... Now"
+    },
+    {
+      "filename": "Stigmata.png",
+      "converted_title": "Stigmata"
+    },
+    {
+      "filename": "Stone_House_on_Jeju_Island.png",
+      "converted_title": "Stone House on Jeju Island"
+    },
+    {
+      "filename": "Tendering_Resignation.png",
+      "converted_title": "Tendering Resignation"
+    },
+    {
+      "filename": "Terrarium_Adventure.png",
+      "converted_title": "Terrarium Adventure"
+    },
+    {
+      "filename": "The_Accidental_Heiress.png",
+      "converted_title": "The Accidental Heiress"
+    },
+    {
+      "filename": "The_Blood_Moon.png",
+      "converted_title": "The Blood Moon"
+    },
+    {
+      "filename": "The_Demon_Queen.png",
+      "converted_title": "The Demon Queen"
+    },
+    {
+      "filename": "The_Deviless__Impression_of_a_Princess.png",
+      "converted_title": "The Deviless... Impression of a Princess"
+    },
+    {
+      "filename": "The_Fantastical_After-School_Writing_Club.png",
+      "converted_title": "The Fantastical After-School Writing Club"
+    },
+    {
+      "filename": "The_Forgotten_Princess_Just_Wants_Peace.png",
+      "converted_title": "The Forgotten Princess Just Wants Peace"
+    },
+    {
+      "filename": "The_Golden_Light_of_Dawn.png",
+      "converted_title": "The Golden Light of Dawn"
+    },
+    {
+      "filename": "The_Noble_Pirate.png",
+      "converted_title": "The Noble Pirate"
+    },
+    {
+      "filename": "The_Quant_of_Wall_Street.png",
+      "converted_title": "The Quant of Wall Street"
+    },
+    {
+      "filename": "The_Script.png",
+      "converted_title": "The Script"
+    },
+    {
+      "filename": "The_Secret_of_Umbra.png",
+      "converted_title": "The Secret of Umbra"
+    },
+    {
+      "filename": "The_Superheroes_of_Class_F.png",
+      "converted_title": "The Superheroes of Class F"
+    },
+    {
+      "filename": "The_Year_of_No_Shopping.png",
+      "converted_title": "The Year of No Shopping"
+    },
+    {
+      "filename": "Tori_and_Samuel.png",
+      "converted_title": "Tori and Samuel"
+    },
+    {
+      "filename": "Traces_of_the_Sun.png",
+      "converted_title": "Traces of the Sun"
+    },
+    {
+      "filename": "Trophy_Husband.png",
+      "converted_title": "Trophy Husband"
+    },
+    {
+      "filename": "Under_the_Oak_Tree.png",
+      "converted_title": "Under the Oak Tree"
+    },
+    {
+      "filename": "Werewolves_Going.png",
+      "converted_title": "Werewolves Going"
+    },
+    {
+      "filename": "Wish_Upon_a_Husband.png",
+      "converted_title": "Wish Upon a Husband"
+    },
+    {
+      "filename": "Women_s_Soccer.png",
+      "converted_title": "Women s Soccer"
+    },
+    {
+      "filename": "Your_Eternal_Lies.png",
+      "converted_title": "Your Eternal Lies"
+    },
+    {
+      "filename": "Zodiac_Hunters.png",
+      "converted_title": "Zodiac Hunters"
+    }
+  ],
+  "titles_without_images": [
+    {
+      "title_id": "d9ca7295-628e-4bb2-ab9c-b4f87461405a",
+      "title_name_en": "Even If...",
+      "title_name_kr": ""
+    }
+  ]
+}

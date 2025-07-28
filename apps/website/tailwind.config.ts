@@ -1,5 +1,6 @@
 
 import type { Config } from "tailwindcss";
+import { tailwindColors } from "../../packages/colors/colors";
 
 export default {
 	darkMode: ["class"],
@@ -24,17 +25,21 @@ export default {
 				'noto-kr': ['Noto Sans KR', 'sans-serif'],
 			},
 			colors: {
+				// KStoryBridge Brand Colors
+				...tailwindColors,
+				
+				// shadcn/ui system colors
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'rgb(17 138 178)',
+					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
-					DEFAULT: 'rgb(255 107 107)',
+					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
 				destructive: {
@@ -46,7 +51,7 @@ export default {
 					foreground: 'hsl(var(--muted-foreground))'
 				},
 				accent: {
-					DEFAULT: 'rgb(255 209 102)',
+					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))'
 				},
 				popover: {

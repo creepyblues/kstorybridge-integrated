@@ -1,0 +1,13 @@
+{
+  "name": "@kstorybridge/colors",
+  "version": "1.0.0",
+  "description": "Shared color palette for KStoryBridge applications",
+  "main": "colors.ts",
+  "types": "colors.ts",
+  "exports": {
+    ".": "./colors.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

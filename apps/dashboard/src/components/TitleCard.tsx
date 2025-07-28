@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Eye, Heart, Star, Edit, Trash2 } from "lucide-react";
 import type { Title } from "@/services/titlesService";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,9 +31,11 @@ export function TitleCard({ title, onEdit, onDelete, showActions = false }: Titl
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-white mb-1">
-              {title.title_name_en || title.title_name_kr}
-            </h3>
+            <Link to={`/titles/${title.title_id}`}>
+              <h3 className="text-lg font-semibold text-white mb-1 hover:text-blue-400 transition-colors cursor-pointer">
+                {title.title_name_en || title.title_name_kr}
+              </h3>
+            </Link>
             {title.title_name_en && title.title_name_kr && (
               <p className="text-sm text-slate-400 mb-2">{title.title_name_kr}</p>
             )}

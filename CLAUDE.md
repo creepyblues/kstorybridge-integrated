@@ -75,6 +75,49 @@ Both applications use shadcn/ui component library with identical components in `
 3. Both apps can run simultaneously on different ports
 4. Shared Supabase backend ensures data consistency
 
+### Local Testing with Cross-Domain Authentication
+
+The applications support flexible URL configuration for local testing scenarios where users need to authenticate on the website and then access the dashboard.
+
+#### Option 1: Default Ports (Simplest)
+```bash
+npm run dev:website   # http://localhost:5173
+npm run dev:dashboard # http://localhost:8081
+```
+No additional configuration needed - redirects work automatically between ports.
+
+#### Option 2: Custom Environment Variables
+Copy `.env.local.example` to `.env.local` in each app directory and customize:
+
+**apps/website/.env.local:**
+```
+VITE_DASHBOARD_URL=http://localhost:8081
+VITE_WEBSITE_URL=http://localhost:5173
+```
+
+**apps/dashboard/.env.local:**
+```
+VITE_WEBSITE_URL=http://localhost:5173
+VITE_DASHBOARD_URL=http://localhost:8081
+```
+
+#### Option 3: Hosts File for Realistic Testing
+Add to `/etc/hosts`:
+```
+127.0.0.1 kstorybridge.com
+127.0.0.1 dashboard.kstorybridge.com
+```
+
+Then set environment variables:
+```
+VITE_DASHBOARD_URL=http://dashboard.kstorybridge.com:8081
+VITE_WEBSITE_URL=http://kstorybridge.com:5173
+```
+
+Access via:
+- Website: `http://kstorybridge.com:5173`
+- Dashboard: `http://dashboard.kstorybridge.com:8081`
+
 ## Important Notes
 
 - **Database Types**: Auto-generated, do not edit manually

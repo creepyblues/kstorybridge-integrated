@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 import { getWebsiteUrl } from "@/config/urls";
@@ -10,6 +10,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
+  const authTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     // Check if we have auth tokens in URL indicating auth flow in progress
@@ -29,6 +30,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     });
     
     // Don't redirect if auth is still loading OR if we have auth tokens in URL (auth flow in progress)
+    // But if we've been waiting too long with tokens and still no user, something is wrong
     if (!loading && !user && !hasAuthTokens) {
       console.log('🚨 PROTECTED ROUTE: Redirecting to website - no user authenticated and no auth flow in progress');
       const websiteUrl = getWebsiteUrl();
@@ -45,7 +47,28 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       console.log('✅ PROTECTED ROUTE: User authenticated, allowing access');
     } else if (hasAuthTokens) {
       console.log('🔄 PROTECTED ROUTE: Auth flow in progress, waiting for completion...');
+      
+      // Set a timeout in case the auth flow fails and we're waiting forever
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
+      
+      authTimeoutRef.current = setTimeout(() => {
+        console.log('⏰ PROTECTED ROUTE: Auth flow timeout - tokens may be invalid');
+        if (!user) {
+          console.log('🚨 PROTECTED ROUTE: Timeout reached, redirecting to website');
+          const websiteUrl = getWebsiteUrl();
+          const websiteUrlWithParam = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
+          window.location.href = websiteUrlWithParam;
+        }
+      }, 5000); // 5 second timeout
     }
+    
+    return () => {
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
+    };
   }, [user, loading]);
 
   if (loading) {

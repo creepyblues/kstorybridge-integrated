@@ -76,6 +76,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (error) {
               console.error('❌ DASHBOARD: Error setting session from URL parameters:', error);
               console.error('❌ DASHBOARD: Error details:', error.message);
+              
+              // Clear the URL parameters if token validation failed
+              console.log('🧹 DASHBOARD: Clearing invalid tokens from URL');
+              window.history.replaceState({}, document.title, window.location.pathname);
+              
               setLoading(false);
             } else if (session?.user) {
               console.log('✅ DASHBOARD: Successfully set session from URL for user:', session.user.email);
@@ -92,6 +97,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           } catch (err) {
             console.error('❌ DASHBOARD: Exception during setSession:', err);
+            
+            // Clear the URL parameters if there was an exception
+            console.log('🧹 DASHBOARD: Clearing tokens from URL due to exception');
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
             setLoading(false);
           }
         } else {

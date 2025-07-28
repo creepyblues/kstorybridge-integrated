@@ -81,15 +81,10 @@ const CreatorsPage = () => {
               Get discovered, get paid, get global.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+            <div className="flex justify-center pt-8">
               <Button asChild size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full">
-                <Link to="/signup" className="flex items-center gap-2">
+                <Link to="/signup/creator" className="flex items-center gap-2">
                   Start Selling <ArrowRight className="w-5 h-5" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white px-8 py-4 text-lg rounded-full">
-                <Link to="/pricing">
-                  See Pricing
                 </Link>
               </Button>
             </div>
@@ -185,7 +180,7 @@ const CreatorsPage = () => {
                   Join hundreds of Korean creators already earning from their stories globally.
                 </p>
                 <Button asChild size="lg" variant="secondary" className="bg-white text-hanok-teal hover:bg-snow-white rounded-full">
-                  <Link to="/signup" className="flex items-center gap-2">
+                  <Link to="/signup/creator" className="flex items-center gap-2">
                     Create Account <ArrowRight className="w-5 h-5" />
                   </Link>
                 </Button>
@@ -221,7 +216,7 @@ const CreatorsPage = () => {
           </div>
           
           <Button asChild size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-lg rounded-full">
-            <Link to="/signup" className="flex items-center gap-2">
+            <Link to="/signup/creator" className="flex items-center gap-2">
               Start Your Success Story <ArrowRight className="w-5 h-5" />
             </Link>
           </Button>

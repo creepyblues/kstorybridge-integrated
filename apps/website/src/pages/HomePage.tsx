@@ -217,8 +217,7 @@ const HomePage = () => {
                 {featuredTitles.map((featured) => {
                 const title = featured.titles;
                 return (
-                  <Card key={featured.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group"
-                    onClick={() => navigate(`/title/${title.title_id}`)}>
+                  <Card key={featured.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
                     <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
                       {title.title_image ? (
                         <img 

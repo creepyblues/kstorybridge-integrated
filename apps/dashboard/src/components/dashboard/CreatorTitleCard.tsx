@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { 
   Eye, 
@@ -116,9 +117,11 @@ export function CreatorTitleCard({
       <CardContent className="p-4 space-y-4">
         {/* Title and Genre */}
         <div>
-          <h3 className="font-bold text-midnight-ink line-clamp-2 mb-2 group-hover:text-hanok-teal transition-colors duration-200 will-change-auto">
-            {displayTitle}
-          </h3>
+          <Link to={`/titles/${title.id}`}>
+            <h3 className="font-bold text-midnight-ink line-clamp-2 mb-2 hover:text-hanok-teal transition-colors duration-200 cursor-pointer">
+              {displayTitle}
+            </h3>
+          </Link>
           <div className="flex items-center justify-between">
             {title.genre && (
               <Badge variant="outline" className="text-xs border-porcelain-blue-300 text-hanok-teal">

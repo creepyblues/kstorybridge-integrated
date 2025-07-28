@@ -1,0 +1,14 @@
+[
+  {
+    "title_id": "example-uuid-1",
+    "title_name_en": "Under the Oak Tree",
+    "title_name_kr": "떡갈나무 아래",
+    "title_image": null
+  },
+  {
+    "title_id": "example-uuid-2",
+    "title_name_en": "Cold Blooded Beast",
+    "title_name_kr": "냉혈한 야수",
+    "title_image": null
+  }
+]

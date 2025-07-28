@@ -1,0 +1,43 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Dashboard",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/apps/dashboard/node_modules/.bin/vite",
+            "args": [
+                "--port",
+                "5173"
+            ],
+            "cwd": "${workspaceFolder}/apps/dashboard",
+            "console": "integratedTerminal",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
+            "name": "Debug Website",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/apps/website/node_modules/.bin/vite",
+            "args": [
+                "--port",
+                "5174"
+            ],
+            "cwd": "${workspaceFolder}/apps/website",
+            "console": "integratedTerminal",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
+            "name": "Debug Current File",
+            "type": "node",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

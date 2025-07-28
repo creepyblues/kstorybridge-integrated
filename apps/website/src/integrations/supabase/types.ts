@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      featured: {
+        Row: {
+          id: string
+          title_id: string
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title_id: string
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title_id?: string
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_title_id_fkey"
+            columns: ["title_id"]
+            isOneToOne: false
+            referencedRelation: "titles"
+            referencedColumns: ["title_id"]
+          },
+        ]
+      }
       titles: {
         Row: {
           author: string | null
@@ -27,6 +59,7 @@ export type Database = {
           rating: number | null
           rating_count: number | null
           synopsis: string | null
+          tagline: string | null
           tags: string[] | null
           title_id: string
           title_image: string | null
@@ -49,6 +82,7 @@ export type Database = {
           rating?: number | null
           rating_count?: number | null
           synopsis?: string | null
+          tagline?: string | null
           tags?: string[] | null
           title_id?: string
           title_image?: string | null
@@ -71,6 +105,7 @@ export type Database = {
           rating?: number | null
           rating_count?: number | null
           synopsis?: string | null
+          tagline?: string | null
           tags?: string[] | null
           title_id?: string
           title_image?: string | null

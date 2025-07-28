@@ -8,7 +8,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
-import Dashboard from "./pages/Dashboard";
+import { RootRedirect } from "./components/RootRedirect";
 import Content from "./pages/Content";
 import Browse from "./pages/Browse";
 import Titles from "./pages/Titles";
@@ -35,7 +35,7 @@ const App = () => (
               <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={
-                  <ProtectedLayout><Dashboard /></ProtectedLayout>
+                  <ProtectedLayout><RootRedirect /></ProtectedLayout>
                 } />
                 <Route path="/content" element={
                   <ProtectedLayout><Content /></ProtectedLayout>

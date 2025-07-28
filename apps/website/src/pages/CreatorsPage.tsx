@@ -1,12 +1,9 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowRight, CheckCircle, BookOpen, Users, TrendingUp, Shield, Zap, Globe } from 'lucide-react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import KoreanPattern from '../components/KoreanPattern';
+import PageHeader from '../components/PageHeader';
 
 const CreatorsPage = () => {
   const { t } = useLanguage();
@@ -67,34 +64,30 @@ const CreatorsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+      <PageHeader />
       
       {/* Hero Section */}
-      <section className="relative py-32 px-4 lg:px-8 overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <KoreanPattern />
-        </div>
-        
-        <div className="container mx-auto relative z-10">
+      <section className="relative py-16 lg:py-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
+            <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-midnight-ink">
               Turn Your Korean Stories Into{' '}
-              <span className="text-primary">Global Hits</span>
+              <span className="text-hanok-teal block mt-2">Global Hits</span>
             </h1>
             
-            <p className="text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl lg:text-2xl text-midnight-ink-600 max-w-3xl mx-auto leading-relaxed">
               Connect directly with international studios, streamers, and publishers. 
               Get discovered, get paid, get global.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg rounded-full">
+              <Button asChild size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full">
                 <Link to="/signup" className="flex items-center gap-2">
                   Start Selling <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-2 border-gray-300 px-8 py-4 text-lg rounded-full hover:bg-gray-50">
+              <Button asChild variant="outline" size="lg" className="border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white px-8 py-4 text-lg rounded-full">
                 <Link to="/pricing">
                   See Pricing
                 </Link>
@@ -105,30 +98,30 @@ const CreatorsPage = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-24 bg-gray-50 px-4 lg:px-8">
-        <div className="container mx-auto">
+      <section className="py-20 bg-porcelain-blue-100">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-midnight-ink">
               Why Creators Choose Story Bridge
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-midnight-ink-600 max-w-3xl mx-auto">
               Built by creators, for creators. Everything you need to succeed globally.
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group">
+              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group bg-white">
                 <CardHeader className="text-center pb-4">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                    <benefit.icon className="w-8 h-8 text-primary group-hover:text-white" />
+                  <div className="w-16 h-16 bg-hanok-teal/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-hanok-teal group-hover:text-white transition-all duration-300">
+                    <benefit.icon className="w-8 h-8 text-hanok-teal group-hover:text-white" />
                   </div>
-                  <CardTitle className="text-xl font-bold">
+                  <CardTitle className="text-xl font-bold text-midnight-ink">
                     {benefit.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-midnight-ink-600 leading-relaxed">
                     {benefit.description}
                   </p>
                 </CardContent>
@@ -139,62 +132,59 @@ const CreatorsPage = () => {
       </section>
 
       {/* Process Section */}
-      <section className="py-24 px-4 lg:px-8">
-        <div className="container mx-auto">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-midnight-ink">
               Your Path to Global Success
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-midnight-ink-600 max-w-2xl mx-auto">
               Four simple steps to start licensing your Korean IP worldwide
             </p>
           </div>
           
-          <div className="max-w-4xl mx-auto">
-            {process.map((item, index) => (
-              <div key={index} className="flex flex-col md:flex-row items-center gap-8 mb-16 last:mb-0">
-                <div className="flex-shrink-0">
-                  <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {process.map((item, index) => (
+                <div key={index} className="text-center space-y-6">
+                  <div className="w-20 h-20 bg-hanok-teal rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto shadow-lg">
                     {item.step}
                   </div>
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-bold text-midnight-ink">{item.title}</h3>
+                    <p className="text-midnight-ink-600 leading-relaxed">{item.description}</p>
+                  </div>
                 </div>
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="text-2xl lg:text-3xl font-bold mb-4">{item.title}</h3>
-                  <p className="text-xl text-gray-600 leading-relaxed">{item.description}</p>
-                </div>
-                {index < process.length - 1 && (
-                  <div className="hidden md:block w-full h-px bg-gray-200 absolute right-0 transform translate-y-12"></div>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-gray-50 px-4 lg:px-8">
-        <div className="container mx-auto">
-          <div className="max-w-4xl mx-auto">
+      <section className="py-20 bg-porcelain-blue-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-4xl lg:text-5xl font-bold mb-8">
+                <h2 className="text-4xl lg:text-5xl font-bold mb-8 text-midnight-ink">
                   Everything You Need to Succeed
                 </h2>
                 <div className="space-y-4">
                   {features.map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
-                      <CheckCircle className="w-6 h-6 text-primary flex-shrink-0" />
-                      <span className="text-lg text-gray-700">{feature}</span>
+                      <CheckCircle className="w-6 h-6 text-hanok-teal flex-shrink-0" />
+                      <span className="text-lg text-midnight-ink-600">{feature}</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-primary to-secondary rounded-2xl p-8 text-white">
+              <div className="bg-gradient-to-br from-hanok-teal to-porcelain-blue-600 rounded-2xl p-8 text-white">
                 <h3 className="text-2xl font-bold mb-4">Ready to Get Started?</h3>
                 <p className="text-lg mb-6 opacity-90">
                   Join hundreds of Korean creators already earning from their stories globally.
                 </p>
-                <Button asChild size="lg" variant="secondary" className="bg-white text-primary hover:bg-gray-100 rounded-full">
+                <Button asChild size="lg" variant="secondary" className="bg-white text-hanok-teal hover:bg-snow-white rounded-full">
                   <Link to="/signup" className="flex items-center gap-2">
                     Create Account <ArrowRight className="w-5 h-5" />
                   </Link>
@@ -206,39 +196,37 @@ const CreatorsPage = () => {
       </section>
 
       {/* Success Stories */}
-      <section className="py-24 px-4 lg:px-8">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-midnight-ink">
             Join Our Success Stories
           </h2>
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-midnight-ink-600 mb-12 max-w-2xl mx-auto">
             Korean creators are already making millions through Story Bridge partnerships
           </p>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-12">
             <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">$2.5M+</div>
-              <div className="text-gray-600">Total Creator Earnings</div>
+              <div className="text-4xl font-bold text-hanok-teal mb-2">$2.5M+</div>
+              <div className="text-midnight-ink-600">Total Creator Earnings</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">150+</div>
-              <div className="text-gray-600">Active Creators</div>
+              <div className="text-4xl font-bold text-hanok-teal mb-2">150+</div>
+              <div className="text-midnight-ink-600">Active Creators</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">89%</div>
-              <div className="text-gray-600">Success Rate</div>
+              <div className="text-4xl font-bold text-hanok-teal mb-2">89%</div>
+              <div className="text-midnight-ink-600">Success Rate</div>
             </div>
           </div>
           
-          <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg rounded-full">
+          <Button asChild size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-lg rounded-full">
             <Link to="/signup" className="flex items-center gap-2">
               Start Your Success Story <ArrowRight className="w-5 h-5" />
             </Link>
           </Button>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

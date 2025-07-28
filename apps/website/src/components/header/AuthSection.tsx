@@ -32,6 +32,11 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
               ({formatAccountType(userProfile.account_type)})
             </span>
           )}
+          {userProfile?.invitation_status && (
+            <span className="ml-2 text-xs font-normal text-blue-600 bg-blue-100 px-2 py-1 rounded">
+              {userProfile.invitation_status}
+            </span>
+          )}
         </span>
         <Button 
           onClick={onSignOut} 

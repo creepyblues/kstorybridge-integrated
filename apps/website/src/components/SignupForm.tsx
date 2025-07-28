@@ -251,10 +251,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
     <>
       {/* Header Section */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-          Create Your <span className="text-primary">{isBuyer ? 'Buyer' : 'Creator'}</span> Account
+        <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight text-midnight-ink">
+          Create Your <span className="text-hanok-teal">{isBuyer ? 'Buyer' : 'Creator'}</span> Account
         </h1>
-        <p className="text-xl text-muted-foreground leading-relaxed max-w-lg mx-auto">
+        <p className="text-xl text-midnight-ink-600 leading-relaxed max-w-lg mx-auto">
           {isBuyer 
             ? 'Join the marketplace to discover and license Korean IP content'
             : 'Join the marketplace to showcase and license your Korean IP content'
@@ -263,11 +263,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       </div>
 
       {/* Form Card */}
-      <Card className="border-0 shadow-lg">
+      <Card className="border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
         <CardContent className="p-8 md:p-12">
           {/* Switch Account Type Button */}
           <div className="mb-8 text-center">
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-midnight-ink-600 mb-4">
               {isBuyer 
                 ? 'Are you a content creator instead?'
                 : 'Looking to discover content instead?'
@@ -276,7 +276,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             <Button 
               asChild
               size="lg"
-              className="bg-primary text-white hover:bg-primary/90 px-8 py-3 text-base font-semibold"
+              className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-3 text-base font-semibold rounded-full transition-all duration-300"
             >
               <Link to={isBuyer ? '/signup/creator' : '/signup/buyer'}>
                 Switch to {isBuyer ? 'Creator' : 'Buyer'} Signup
@@ -327,38 +327,38 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic Information */}
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold">Basic Information</h3>
+              <h3 className="text-lg font-semibold text-midnight-ink">Basic Information</h3>
               
               <div>
-                <Label htmlFor="fullName" className="text-base mb-2 block">Full Name *</Label>
+                <Label htmlFor="fullName" className="text-base mb-2 block text-midnight-ink">Full Name *</Label>
                 <Input
                   id="fullName"
                   value={formData.fullName}
                   onChange={(e) => updateFormData('fullName', e.target.value)}
                   required
-                  className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                  className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                   placeholder="Enter your full name"
                 />
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-base mb-2 block">Work Email *</Label>
+                <Label htmlFor="email" className="text-base mb-2 block text-midnight-ink">Work Email *</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => updateFormData('email', e.target.value)}
                   required
-                  className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                  className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                   placeholder="your.name@company.com"
                 />
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-midnight-ink-500 mt-2">
                   Personal email providers are not allowed
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="password" className="text-base mb-2 block">Password *</Label>
+                <Label htmlFor="password" className="text-base mb-2 block text-midnight-ink">Password *</Label>
                 <Input
                   id="password"
                   type="password"
@@ -366,7 +366,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   onChange={(e) => updateFormData('password', e.target.value)}
                   required
                   minLength={6}
-                  className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                  className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                   placeholder="Create a secure password"
                 />
               </div>
@@ -374,31 +374,31 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
             {/* Account-specific Information */}
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold text-midnight-ink">
                 {isBuyer ? 'Company Information' : 'Creative Information'}
               </h3>
               
               {isBuyer ? (
                 <>
                   <div>
-                    <Label htmlFor="buyerCompany" className="text-base mb-2 block">Company *</Label>
+                    <Label htmlFor="buyerCompany" className="text-base mb-2 block text-midnight-ink">Company *</Label>
                     <Input
                       id="buyerCompany"
                       value={(formData as BuyerFormData).buyerCompany}
                       onChange={(e) => updateFormData('buyerCompany', e.target.value)}
                       required
-                      className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                       placeholder="Your company name"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="buyerRole" className="text-base mb-2 block">Role</Label>
+                    <Label htmlFor="buyerRole" className="text-base mb-2 block text-midnight-ink">Role</Label>
                     <Select 
                       value={(formData as BuyerFormData).buyerRole}
                       onValueChange={(value) => updateFormData('buyerRole', value)}
                     >
-                      <SelectTrigger className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                      <SelectTrigger className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg">
                         <SelectValue placeholder="Select your role (optional)" />
                       </SelectTrigger>
                       <SelectContent>
@@ -412,13 +412,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   </div>
 
                   <div>
-                    <Label htmlFor="linkedinUrl" className="text-base mb-2 block">LinkedIn URL (Optional)</Label>
+                    <Label htmlFor="linkedinUrl" className="text-base mb-2 block text-midnight-ink">LinkedIn URL (Optional)</Label>
                     <Input
                       id="linkedinUrl"
                       type="url"
                       value={(formData as BuyerFormData).linkedinUrl}
                       onChange={(e) => updateFormData('linkedinUrl', e.target.value)}
-                      className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                       placeholder="https://linkedin.com/in/yourprofile"
                     />
                   </div>
@@ -426,23 +426,23 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               ) : (
                 <>
                   <div>
-                    <Label htmlFor="penNameOrStudio" className="text-base mb-2 block">Pen Name</Label>
+                    <Label htmlFor="penNameOrStudio" className="text-base mb-2 block text-midnight-ink">Pen Name</Label>
                     <Input
                       id="penNameOrStudio"
                       value={(formData as CreatorFormData).penNameOrStudio}
                       onChange={(e) => updateFormData('penNameOrStudio', e.target.value)}
-                      className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                       placeholder="Your pen name (optional)"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="ipOwnerRole" className="text-base mb-2 block">Role</Label>
+                    <Label htmlFor="ipOwnerRole" className="text-base mb-2 block text-midnight-ink">Role</Label>
                     <Select 
                       value={(formData as CreatorFormData).ipOwnerRole}
                       onValueChange={(value) => updateFormData('ipOwnerRole', value)}
                     >
-                      <SelectTrigger className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                      <SelectTrigger className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg">
                         <SelectValue placeholder="Select your role (optional)" />
                       </SelectTrigger>
                       <SelectContent>
@@ -453,24 +453,24 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   </div>
 
                   <div>
-                    <Label htmlFor="ipOwnerCompany" className="text-base mb-2 block">Company/Agency (Optional)</Label>
+                    <Label htmlFor="ipOwnerCompany" className="text-base mb-2 block text-midnight-ink">Company/Agency (Optional)</Label>
                     <Input
                       id="ipOwnerCompany"
                       value={(formData as CreatorFormData).ipOwnerCompany}
                       onChange={(e) => updateFormData('ipOwnerCompany', e.target.value)}
-                      className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                       placeholder="Your company or agency"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="websiteUrl" className="text-base mb-2 block">Website URL (Optional)</Label>
+                    <Label htmlFor="websiteUrl" className="text-base mb-2 block text-midnight-ink">Website URL (Optional)</Label>
                     <Input
                       id="websiteUrl"
                       type="url"
                       value={(formData as CreatorFormData).websiteUrl}
                       onChange={(e) => updateFormData('websiteUrl', e.target.value)}
-                      className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
                       placeholder="https://yourwebsite.com"
                     />
                   </div>
@@ -480,7 +480,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
             <Button 
               type="submit" 
-              className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 transition-colors" 
+              className="w-full h-14 text-lg font-semibold bg-hanok-teal hover:bg-hanok-teal-600 text-white rounded-full transition-all duration-300 shadow-lg hover:shadow-xl" 
               disabled={isLoading}
             >
               {isLoading ? 'Creating Account...' : `Create ${isBuyer ? 'Buyer' : 'Creator'} Account`}

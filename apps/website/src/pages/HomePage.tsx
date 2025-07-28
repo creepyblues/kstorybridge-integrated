@@ -1,212 +1,276 @@
-
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowRight, CheckCircle, Globe, Users, Zap, Star, Play, BookOpen, Award } from 'lucide-react';
-import PageLayout from '../components/PageLayout';
-import HeroSection from '../components/HeroSection';
-import FeatureCard from '../components/FeatureCard';
-import ProcessStep from '../components/ProcessStep';
+import { ArrowRight, Star, Menu, X } from 'lucide-react';
+import { featuredService, type FeaturedWithTitle } from '../services/featuredService';
+import { useAuth } from '../hooks/useAuth';
 
 const HomePage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Add authentication hook to handle redirects
+  const { user, userProfile, isLoading, isRedirecting } = useAuth();
 
-  const features = [{
-    icon: Globe,
-    title: "Global Reach",
-    description: "Connect Korean creators with international buyers across film, TV, and digital platforms."
-  }, {
-    icon: Users,
-    title: "Verified Community",
-    description: "Work-email verified professionals ensure quality connections and serious inquiries."
-  }, {
-    icon: Zap,
-    title: "Fast Licensing",
-    description: "Streamlined process from discovery to deal, cutting months off traditional timelines."
-  }];
+  useEffect(() => {
+    const loadFeaturedTitles = async () => {
+      try {
+        setLoading(true);
+        const titles = await featuredService.getFeaturedTitles();
+        setFeaturedTitles(titles);
+      } catch (error) {
+        console.error('Error loading featured titles:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const stats = [{
-    number: "500+",
-    label: "Korean Stories"
-  }, {
-    number: "100+",
-    label: "Global Studios"
-  }, {
-    number: "30+",
-    label: "Countries Reached"
-  }, {
-    number: "95%",
-    label: "Success Rate"
-  }];
+    loadFeaturedTitles();
+  }, []);
 
-  const processSteps = [
-    {
-      step: "1",
-      title: "Verify Rights",
-      description: "Upload proof of ownership"
-    },
-    {
-      step: "2", 
-      title: "Publish Pitch",
-      description: "AI-generated pitch decks"
-    },
-    {
-      step: "3",
-      title: "Match & Meet", 
-      description: "Connect with executives"
-    }
-  ];
-
-  const testimonials = [{
-    quote: "KStoryBridge helped us discover our next big hit. The platform made connecting with Korean creators seamless.",
-    author: "Sarah Chen",
-    role: "Content Acquisition, Netflix"
-  }, {
-    quote: "Finally, a platform that understands both Korean storytelling culture and global market needs.",
-    author: "Kim Min-jun",
-    role: "Webtoon Creator"
-  }];
+  const formatGenre = (genre: string | null) => {
+    if (!genre) return '';
+    return genre.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
 
   return (
-    <PageLayout background="gradient">{/* Hero Section */}
-      <HeroSection 
-        title="Where Korean Stories Meet Global Screens"
-        subtitle="List, discover, and license verified IP fast. The premier marketplace connecting Korean creators with international buyers."
-        size="large"
-        primaryCta={{
-          text: "Get Started",
-          onClick: () => navigate('/signup')
-        }}
-        className="py-32"
-      />
+    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
       
-      {/* Stats Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-gray-600 text-lg">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Navigation */}
+      <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
+        <div className="flex items-center">
+          <img 
+            src="/logo-new-teal.png" 
+            alt="KStoryBridge" 
+            className="h-10 w-auto cursor-pointer"
+            onClick={() => navigate('/')}
+          />
         </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-24 px-4 lg:px-8">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-              The Future of IP Licensing
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Built for the modern entertainment industry, designed for global collaboration.
-            </p>
+        
+        <div className="hidden md:flex items-center space-x-8">
+          <button 
+            onClick={() => navigate('/creators')}
+            className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
+          >
+            CREATORS
+          </button>
+          <button 
+            onClick={() => navigate('/buyers')}
+            className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
+          >
+            BUYERS
+          </button>
+          <button 
+            onClick={() => navigate('/about')}
+            className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
+          >
+            ABOUT
+          </button>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          {/* Desktop Sign In/Up buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Button 
+              variant="outline"
+              className="border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
+              onClick={() => navigate('/signin')}
+            >
+              SIGN IN
+            </Button>
+            <Button 
+              className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-2 rounded-full font-medium"
+              onClick={() => navigate('/signup')}
+            >
+              SIGN UP
+            </Button>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {features.map((feature, index) => (
-              <FeatureCard
-                key={index}
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                variant="hover-primary"
-                iconSize="large"
-              />
-            ))}
-          </div>
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6 text-midnight-ink" />
+            ) : (
+              <Menu className="h-6 w-6 text-midnight-ink" />
+            )}
+          </button>
         </div>
-      </section>
+      </nav>
 
-      {/* Process Section */}
-      <section className="py-24 bg-gray-50 px-4 lg:px-8">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-              Simple. Fast. Effective.
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              From discovery to deal in three simple steps
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-12 max-w-4xl mx-auto">
-            {processSteps.map((step, index) => (
-              <ProcessStep
-                key={index}
-                step={step.step}
-                title={step.title}
-                description={step.description}
-                variant="large"
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-24 px-4 lg:px-8">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-              Trusted by Industry Leaders
-            </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-lg rounded-2xl p-8">
-                <CardContent className="space-y-6">
-                  <div className="flex text-accent mb-4">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
-                  </div>
-                  <blockquote className="text-xl text-gray-700 leading-relaxed">
-                    "{testimonial.quote}"
-                  </blockquote>
-                  <div className="text-gray-600">
-                    <div className="font-semibold">{testimonial.author}</div>
-                    <div className="text-sm">{testimonial.role}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 bg-primary px-4 lg:px-8">
-        <div className="container mx-auto text-center">
-          <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-4xl lg:text-5xl font-bold text-white">
-              Ready to Bridge Stories Across Cultures?
-            </h2>
-            <p className="text-xl text-white/90 leading-relaxed">
-              Join the global community of creators and buyers shaping the future of entertainment.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white border-b border-porcelain-blue-200 shadow-lg">
+          <div className="max-w-7xl mx-auto px-6 py-4 space-y-4">
+            <button 
+              onClick={() => {
+                navigate('/creators');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left text-midnight-ink font-medium hover:text-hanok-teal transition-colors py-2"
+            >
+              CREATORS
+            </button>
+            <button 
+              onClick={() => {
+                navigate('/buyers');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left text-midnight-ink font-medium hover:text-hanok-teal transition-colors py-2"
+            >
+              BUYERS
+            </button>
+            <button 
+              onClick={() => {
+                navigate('/about');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left text-midnight-ink font-medium hover:text-hanok-teal transition-colors py-2"
+            >
+              ABOUT
+            </button>
+            
+            {/* Mobile Sign In/Up buttons */}
+            <div className="pt-4 border-t border-porcelain-blue-200 space-y-3">
               <Button 
-                size="lg" 
-                variant="secondary" 
-                className="bg-white text-primary hover:bg-gray-100 px-8 py-4 text-lg rounded-full"
-                onClick={() => navigate('/signup')}
+                variant="outline"
+                className="w-full border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white py-2 rounded-full font-medium transition-colors"
+                onClick={() => {
+                  navigate('/signin');
+                  setMobileMenuOpen(false);
+                }}
               >
-                Get Started For Free <ArrowRight className="w-5 h-5 ml-2" />
+                SIGN IN
+              </Button>
+              <Button 
+                className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white py-2 rounded-full font-medium"
+                onClick={() => {
+                  navigate('/signup');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                SIGN UP
               </Button>
             </div>
           </div>
         </div>
-      </section>
-    </PageLayout>
+      )}
+
+      {/* Hero Section */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight">
+                Where Korean Stories
+                <br />
+                Meet Global Screens
+              </h1>
+              <p className="text-xl text-midnight-ink-600 leading-relaxed max-w-lg">
+                Explore a world of Korean entertainment, comics, and creative storytelling.
+              </p>
+            </div>
+            
+            <Button 
+              size="lg"
+              className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium"
+              onClick={() => navigate('/signup')}
+            >
+              BROWSE NOW
+            </Button>
+          </div>
+          
+          <div className="relative">
+            <div className="relative z-10">
+              {/* Character Illustration */}
+              <div className="w-full max-w-md mx-auto">
+                <div className="relative">
+                  {/* Character */}
+                  <div className="bg-gradient-to-br from-sunrise-coral-100 to-sunrise-coral-200 rounded-full w-80 h-80 mx-auto flex items-center justify-center relative overflow-hidden">
+                    {/* Simple character illustration */}
+                    <div className="text-8xl">📚</div>
+                    <div className="absolute top-16 right-16 text-4xl animate-pulse">✨</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Featured Titles Section */}
+      <div className="bg-porcelain-blue-200 py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-4xl font-bold text-midnight-ink mb-12">FEATURED TITLES</h2>
+          
+          {loading ? (
+            <div className="text-center text-midnight-ink-600 py-8">Loading featured titles...</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {featuredTitles.map((featured) => {
+                const title = featured.titles;
+                return (
+                  <Card key={featured.id} className="bg-white rounded-2xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                    onClick={() => navigate(`/title/${title.title_id}`)}>
+                    <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
+                      {title.title_image ? (
+                        <img 
+                          src={title.title_image} 
+                          alt={title.title_name_en || title.title_name_kr}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <>
+                          {/* Placeholder illustration */}
+                          <div className="w-24 h-24 bg-hanok-teal rounded-full flex items-center justify-center">
+                            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
+                              <div className="w-8 h-8 bg-hanok-teal rounded opacity-60"></div>
+                            </div>
+                          </div>
+                          <div className="absolute top-4 right-4 w-6 h-6 bg-hanok-teal rounded-full"></div>
+                        </>
+                      )}
+                    </div>
+                    <CardContent className="p-6">
+                      <h3 className="text-xl font-bold text-midnight-ink mb-2">
+                        {title.title_name_en || title.title_name_kr}
+                      </h3>
+                      {title.title_name_en && title.title_name_kr && (
+                        <p className="text-sm text-midnight-ink-500 mb-2">{title.title_name_kr}</p>
+                      )}
+                      <p className="text-midnight-ink-600 mb-3 line-clamp-3">
+                        {title.tagline || title.pitch || 'Discover this amazing Korean story'}
+                      </p>
+                      {title.genre && (
+                        <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                          {formatGenre(title.genre)}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+          
+          {!loading && featuredTitles.length === 0 && (
+            <div className="text-center text-midnight-ink-600 py-8">No featured titles available.</div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

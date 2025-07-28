@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { tailwindColors } from "../../packages/colors/colors";
 
 export default {
 	darkMode: ["class"],
@@ -19,6 +20,10 @@ export default {
 		},
 		extend: {
 			colors: {
+				// KStoryBridge Brand Colors
+				...tailwindColors,
+				
+				// shadcn/ui system colors
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

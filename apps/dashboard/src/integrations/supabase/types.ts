@@ -67,67 +67,103 @@ export type Database = {
       }
       titles: {
         Row: {
+          art_author: string | null
+          audience: string | null
           author: string | null
+          chapters: number | null
+          completed: boolean | null
+          comps: string | null
           content_format: Database["public"]["Enums"]["content_format"] | null
           created_at: string
           creator_id: string
+          description: string | null
           genre: Database["public"]["Enums"]["genre"] | null
           illustrator: string | null
           likes: number | null
+          perfect_for: string | null
           pitch: string | null
           rating: number | null
           rating_count: number | null
+          rights: string | null
+          rights_owner: string | null
+          story_author: string | null
           synopsis: string | null
+          tagline: string | null
           tags: string[] | null
           title_id: string
           title_image: string | null
           title_name_en: string | null
           title_name_kr: string
           title_url: string | null
+          tone: string | null
           updated_at: string
           views: number | null
           writer: string | null
         }
         Insert: {
+          art_author?: string | null
+          audience?: string | null
           author?: string | null
+          chapters?: number | null
+          completed?: boolean | null
+          comps?: string | null
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id: string
+          description?: string | null
           genre?: Database["public"]["Enums"]["genre"] | null
           illustrator?: string | null
           likes?: number | null
+          perfect_for?: string | null
           pitch?: string | null
           rating?: number | null
           rating_count?: number | null
+          rights?: string | null
+          rights_owner?: string | null
+          story_author?: string | null
           synopsis?: string | null
+          tagline?: string | null
           tags?: string[] | null
           title_id?: string
           title_image?: string | null
           title_name_en?: string | null
           title_name_kr: string
           title_url?: string | null
+          tone?: string | null
           updated_at?: string
           views?: number | null
           writer?: string | null
         }
         Update: {
+          art_author?: string | null
+          audience?: string | null
           author?: string | null
+          chapters?: number | null
+          completed?: boolean | null
+          comps?: string | null
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id?: string
+          description?: string | null
           genre?: Database["public"]["Enums"]["genre"] | null
           illustrator?: string | null
           likes?: number | null
+          perfect_for?: string | null
           pitch?: string | null
           rating?: number | null
           rating_count?: number | null
+          rights?: string | null
+          rights_owner?: string | null
+          story_author?: string | null
           synopsis?: string | null
+          tagline?: string | null
           tags?: string[] | null
           title_id?: string
           title_image?: string | null
           title_name_en?: string | null
           title_name_kr?: string
           title_url?: string | null
+          tone?: string | null
           updated_at?: string
           views?: number | null
           writer?: string | null

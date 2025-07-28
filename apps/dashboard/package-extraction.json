@@ -1,0 +1,13 @@
+{
+  "name": "cover-image-extractor",
+  "version": "1.0.0",
+  "description": "Extract cover images from title URLs and update database",
+  "main": "extractCoverImages.js",
+  "scripts": {
+    "extract": "node extractCoverImages.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "puppeteer": "^21.0.0"
+  }
+}

@@ -387,7 +387,7 @@ const BuyersPage = () => {
                 Ready to Scout Your Next Hit?
               </h2>
               <p className="text-xl text-white/90 leading-relaxed">
-                Join executives from Netflix, Crunchyroll, and Top Hollywood Studios already discovering Korean IP on KStoryBridge.
+                Join executives from Top Streaming platforms and Hollywood Studios already discovering Korean IP on KStoryBridge.
               </p>
               <Link to="/signup">
                 <Button size="lg" className="bg-white text-hanok-teal hover:bg-snow-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">

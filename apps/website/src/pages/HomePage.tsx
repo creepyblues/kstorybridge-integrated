@@ -171,12 +171,10 @@ const HomePage = () => {
           <div className="space-y-8">
             <div className="space-y-4">
               <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight">
-                Where Korean Stories
-                <br />
-                Meet Global Screens
+                Where Korean Stories Meet Global Screens
               </h1>
               <p className="text-xl text-midnight-ink-600 leading-relaxed max-w-lg">
-                Explore a world of Korean entertainment, comics, and creative storytelling.
+                KStoryBridge gives studios first-look access to Korea's next breakout hit, while creators keep control and capture more upside.
               </p>
             </div>
             

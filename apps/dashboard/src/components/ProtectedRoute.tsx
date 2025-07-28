@@ -23,7 +23,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       hasAuthTokens,
       willRedirect: !loading && !user && !hasAuthTokens,
       currentUrl: window.location.href,
-      currentPort: window.location.port
+      currentHostname: window.location.hostname,
+      isDev: import.meta.env.DEV,
+      env: import.meta.env.MODE
     });
     
     // Don't redirect if auth is still loading OR if we have auth tokens in URL (auth flow in progress)

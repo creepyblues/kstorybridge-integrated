@@ -6,26 +6,29 @@
 export function getWebsiteUrl(): string {
   // Check for explicit environment variable override
   if (import.meta.env.VITE_WEBSITE_URL) {
+    console.log('🌐 DASHBOARD URL CONFIG: Using VITE_WEBSITE_URL:', import.meta.env.VITE_WEBSITE_URL);
     return import.meta.env.VITE_WEBSITE_URL;
   }
   
   // Check if we're in development mode
   if (import.meta.env.DEV) {
+    console.log('🌐 DASHBOARD URL CONFIG: Using dev website URL');
     return "http://localhost:5173"; // Default Vite port for website
   }
   
-  // Check if we're on Vercel
-  if (import.meta.env.VITE_VERCEL_URL) {
-    // Replace dashboard subdomain with www or root domain
-    const vercelUrl = import.meta.env.VITE_VERCEL_URL;
-    if (vercelUrl.includes('dashboard-')) {
-      return vercelUrl.replace('dashboard-', '');
-    }
-    // If it's a custom domain, replace dashboard. with www.
-    return vercelUrl.replace('dashboard.', 'www.');
+  // Check current hostname to determine if we're on a Vercel deployment
+  const currentHostname = window.location.hostname;
+  console.log('🌐 DASHBOARD URL CONFIG: Current hostname:', currentHostname);
+  
+  if (currentHostname.includes('vercel.app')) {
+    // We're on Vercel, construct website URL based on current dashboard URL
+    const websiteUrl = window.location.origin.replace('dashboard-', '').replace('dashboard.', '');
+    console.log('🌐 DASHBOARD URL CONFIG: Detected Vercel, using website URL:', websiteUrl);
+    return websiteUrl;
   }
   
   // Production fallback
+  console.log('🌐 DASHBOARD URL CONFIG: Using production fallback');
   return "https://kstorybridge.com";
 }
 

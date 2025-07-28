@@ -21,10 +21,10 @@ export function getWebsiteUrl(): string {
   console.log('🌐 DASHBOARD URL CONFIG: Current hostname:', currentHostname);
   
   if (currentHostname.includes('vercel.app')) {
-    // We're on Vercel, construct website URL based on current dashboard URL
-    const websiteUrl = window.location.origin.replace('dashboard-', '').replace('dashboard.', '');
-    console.log('🌐 DASHBOARD URL CONFIG: Detected Vercel, using website URL:', websiteUrl);
-    return websiteUrl;
+    // We're on Vercel - for now, use environment variables or hardcoded URLs
+    // TODO: Set VITE_WEBSITE_URL environment variable in Vercel dashboard
+    console.log('🌐 DASHBOARD URL CONFIG: On Vercel but no env var set, using fallback');
+    return "https://kstorybridge.com";
   }
   
   // Production fallback

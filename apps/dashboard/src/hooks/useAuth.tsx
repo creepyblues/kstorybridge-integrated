@@ -149,6 +149,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Redirect to website after sign out with sign out parameter
     const websiteUrl = getWebsiteUrl();
     const signOutUrl = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}signed_out=true`;
+    console.log('🚪 DASHBOARD: Sign out - websiteUrl:', websiteUrl);
+    console.log('🚪 DASHBOARD: Sign out - signOutUrl:', signOutUrl);
+    console.log('🚪 DASHBOARD: Sign out - current location:', window.location.href);
     window.location.href = signOutUrl;
   };
 

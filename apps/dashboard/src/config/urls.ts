@@ -7,7 +7,13 @@ export function getWebsiteUrl(): string {
   // Check for explicit environment variable override
   if (import.meta.env.VITE_WEBSITE_URL) {
     console.log('🌐 DASHBOARD URL CONFIG: Using VITE_WEBSITE_URL:', import.meta.env.VITE_WEBSITE_URL);
-    return import.meta.env.VITE_WEBSITE_URL;
+    let url = import.meta.env.VITE_WEBSITE_URL;
+    // Ensure URL has protocol
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+      console.log('🌐 DASHBOARD URL CONFIG: Added https protocol:', url);
+    }
+    return url;
   }
   
   // Check if we're in development mode

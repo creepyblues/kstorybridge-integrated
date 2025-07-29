@@ -133,12 +133,22 @@ export const useAuth = () => {
             setUserProfile(profile);
             
             // Auto-redirect from homepage if user is authenticated and accepted
-            // Only redirect if we're actually on the website (not dashboard) and not coming from dashboard
-            const hasRedirectParam = new URLSearchParams(window.location.search).has('from_dashboard');
+            // Only redirect if we're actually on the website (not dashboard) and not coming from dashboard or sign out
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasRedirectParam = urlParams.has('from_dashboard');
+            const hasSignedOutParam = urlParams.has('signed_out');
+            
+            // Clean up signed_out parameter from URL if present
+            if (hasSignedOutParam) {
+              console.log('🚪 WEBSITE: Detected sign out parameter, cleaning URL');
+              urlParams.delete('signed_out');
+              const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+              window.history.replaceState({}, document.title, newUrl);
+            }
             const isOnWebsite = window.location.port === '5173' || 
                                 window.location.hostname.includes('kstorybridge-website') ||
                                 window.location.hostname === 'kstorybridge.com';
-            if (location.pathname === '/' && !isRedirecting && isOnWebsite && !hasRedirectParam) {
+            if (location.pathname === '/' && !isRedirecting && isOnWebsite && !hasRedirectParam && !hasSignedOutParam) {
               console.log('🏠 WEBSITE: On homepage, checking if should redirect to dashboard');
               console.log('🏠 WEBSITE: Profile invitation_status:', profile.invitation_status);
               console.log('🏠 WEBSITE: Current location:', location.pathname);
@@ -150,13 +160,14 @@ export const useAuth = () => {
               console.log('🚀 WEBSITE: Starting redirect to dashboard...');
               await redirectToDashboard(profile);
             } else {
-              console.log('🏠 WEBSITE: Skipping redirect - not on homepage or not on website or from dashboard', {
+              console.log('🏠 WEBSITE: Skipping redirect - not on homepage or not on website or from dashboard/signout', {
                 pathname: location.pathname,
                 port: window.location.port,
                 hostname: window.location.hostname,
                 isOnWebsite,
                 isRedirecting,
-                hasRedirectParam
+                hasRedirectParam,
+                hasSignedOutParam
               });
             }
           } else {

@@ -146,9 +146,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    // Redirect to website after sign out
+    // Redirect to website after sign out with sign out parameter
     const websiteUrl = getWebsiteUrl();
-    window.location.href = websiteUrl;
+    const signOutUrl = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}signed_out=true`;
+    window.location.href = signOutUrl;
   };
 
   return (

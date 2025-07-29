@@ -135,7 +135,9 @@ export const useAuth = () => {
             // Auto-redirect from homepage if user is authenticated and accepted
             // Only redirect if we're actually on the website (not dashboard) and not coming from dashboard
             const hasRedirectParam = new URLSearchParams(window.location.search).has('from_dashboard');
-            const isOnWebsite = window.location.port === '5173' || window.location.hostname.includes('kstorybridge-website');
+            const isOnWebsite = window.location.port === '5173' || 
+                                window.location.hostname.includes('kstorybridge-website') ||
+                                window.location.hostname === 'kstorybridge.com';
             if (location.pathname === '/' && !isRedirecting && isOnWebsite && !hasRedirectParam) {
               console.log('🏠 WEBSITE: On homepage, checking if should redirect to dashboard');
               console.log('🏠 WEBSITE: Profile invitation_status:', profile.invitation_status);

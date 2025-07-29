@@ -19,6 +19,11 @@ export function getDashboardUrl(): string {
   // Check current hostname to determine if we're on a Vercel deployment
   const currentHostname = window.location.hostname;
   console.log('🌐 WEBSITE URL CONFIG: Current hostname:', currentHostname);
+  console.log('🌐 WEBSITE URL CONFIG: Environment variables:', {
+    VITE_DASHBOARD_URL: import.meta.env.VITE_DASHBOARD_URL,
+    DEV: import.meta.env.DEV,
+    MODE: import.meta.env.MODE
+  });
   
   if (currentHostname.includes('vercel.app')) {
     // We're on Vercel - for now, use environment variables or hardcoded URLs

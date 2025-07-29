@@ -19,6 +19,11 @@ export function getWebsiteUrl(): string {
   // Check current hostname to determine if we're on a Vercel deployment
   const currentHostname = window.location.hostname;
   console.log('🌐 DASHBOARD URL CONFIG: Current hostname:', currentHostname);
+  console.log('🌐 DASHBOARD URL CONFIG: Environment check:', {
+    VITE_WEBSITE_URL: import.meta.env.VITE_WEBSITE_URL,
+    DEV: import.meta.env.DEV,
+    MODE: import.meta.env.MODE
+  });
   
   if (currentHostname.includes('vercel.app')) {
     // We're on Vercel - for now, use environment variables or hardcoded URLs
@@ -27,9 +32,17 @@ export function getWebsiteUrl(): string {
     return "https://kstorybridge.com";
   }
   
+  if (currentHostname === 'dashboard.kstorybridge.com') {
+    // We're on custom domain dashboard
+    console.log('🌐 DASHBOARD URL CONFIG: On custom domain dashboard, using production website');
+    return "https://kstorybridge.com";
+  }
+  
   // Production fallback
   console.log('🌐 DASHBOARD URL CONFIG: Using production fallback');
-  return "https://kstorybridge.com";
+  const fallbackUrl = "https://kstorybridge.com";
+  console.log('🌐 DASHBOARD URL CONFIG: Returning URL:', fallbackUrl);
+  return fallbackUrl;
 }
 
 export function getDashboardUrl(): string {

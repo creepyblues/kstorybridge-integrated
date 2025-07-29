@@ -145,14 +145,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    // Redirect to website after sign out with sign out parameter
+    console.log('🚪 DASHBOARD: Starting sign out process');
+    // Redirect immediately before clearing auth state
     const websiteUrl = getWebsiteUrl();
     const signOutUrl = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}signed_out=true`;
     console.log('🚪 DASHBOARD: Sign out - websiteUrl:', websiteUrl);
     console.log('🚪 DASHBOARD: Sign out - signOutUrl:', signOutUrl);
     console.log('🚪 DASHBOARD: Sign out - current location:', window.location.href);
+    
+    // Redirect first, then sign out to prevent ProtectedRoute from interfering
     window.location.href = signOutUrl;
+    
+    // Sign out after redirect is initiated
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+    }, 100);
   };
 
   return (

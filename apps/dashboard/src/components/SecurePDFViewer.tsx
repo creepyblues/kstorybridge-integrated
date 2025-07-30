@@ -565,37 +565,83 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
               CONFIDENTIAL
             </div>
           </div>
-          {pdfData && (
-            <Document
-              file={pdfData}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={onDocumentLoadError}
-              loading={<div className="p-8 text-center">Loading PDF...</div>}
-              error={<div className="p-8 text-center text-red-600">Failed to load PDF document.</div>}
-              noData={<div className="p-8 text-center text-gray-600">No PDF data available.</div>}
-              options={{
-                // Disable PDF.js built-in UI controls
-                disableCreateObjectURL: false,
-                disableWebGL: false,
-                disableWorker: false,
-                // Additional security options
-                isEvalSupported: false,
-                maxImageSize: 16777216, // Limit image size
-                disableFontFace: false,
-                fontExtraProperties: false
-              }}
-            >
-              <Page
-                pageNumber={pageNumber}
-                scale={scale}
-                rotate={rotation}
-                renderTextLayer={false} // Disable text layer for security
-                renderAnnotationLayer={false} // Disable annotations for security
-                canvasBackground="white" // Set consistent background
-                loading={<div className="p-4 text-center text-gray-500">Loading page...</div>}
-              />
-            </Document>
-          )}
+          
+          {pdfData ? (
+            <>
+              {/* Try react-pdf first */}
+              <Document
+                file={pdfData}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+                loading={
+                  <div className="p-8 text-center">
+                    <div>Loading PDF...</div>
+                    <div className="mt-4 text-sm text-gray-500">
+                      If this takes too long, we'll switch to direct PDF display
+                    </div>
+                  </div>
+                }
+                error={
+                  <div className="p-8 text-center">
+                    <div className="text-red-600 mb-4">PDF component failed to load</div>
+                    <div className="text-sm text-gray-600">
+                      Switching to direct PDF display...
+                    </div>
+                    <iframe
+                      src={pdfData}
+                      width="100%"
+                      height="600"
+                      style={{ border: 'none' }}
+                      title="PDF Document"
+                    />
+                  </div>
+                }
+                noData={<div className="p-8 text-center text-gray-600">No PDF data available.</div>}
+                options={{
+                  // Disable PDF.js built-in UI controls
+                  disableCreateObjectURL: false,
+                  disableWebGL: false,
+                  disableWorker: false,
+                  // Additional security options
+                  isEvalSupported: false,
+                  maxImageSize: 16777216, // Limit image size
+                  disableFontFace: false,
+                  fontExtraProperties: false
+                }}
+              >
+                <Page
+                  pageNumber={pageNumber}
+                  scale={scale}
+                  rotate={rotation}
+                  renderTextLayer={false} // Disable text layer for security
+                  renderAnnotationLayer={false} // Disable annotations for security
+                  canvasBackground="white" // Set consistent background
+                  loading={<div className="p-4 text-center text-gray-500">Loading page...</div>}
+                />
+              </Document>
+              
+              {/* Fallback: After 10 seconds, show iframe */}
+              {loading && (
+                <div className="absolute inset-0 bg-white flex items-center justify-center" style={{zIndex: 20}}>
+                  <div className="text-center">
+                    <div className="mb-4">PDF taking too long to load...</div>
+                    <div className="mb-4 text-sm text-gray-600">Switching to direct display:</div>
+                    <iframe
+                      src={pdfData}
+                      width="100%"
+                      height="600"
+                      style={{ border: 'none' }}
+                      title="PDF Document"
+                      onLoad={() => {
+                        setLoading(false);
+                        console.log('✅ PDF loaded via iframe fallback');
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          ) : null}
         </div>
 
         {/* Enhanced Security Notice */}

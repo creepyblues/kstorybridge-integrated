@@ -194,7 +194,14 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           throw new Error('File too large. Maximum file size is 50MB.');
         }
         
+        console.log('✅ PDF blob created successfully:', {
+          size: blob.size,
+          type: blob.type
+        });
+        
         const dataUrl = URL.createObjectURL(blob);
+        console.log('✅ PDF data URL created:', dataUrl.substring(0, 50) + '...');
+        
         setPdfData(dataUrl);
         
         // Clear timeout on success
@@ -351,6 +358,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   }, []);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    console.log('✅ PDF document loaded successfully:', { numPages });
     setNumPages(numPages);
     setLoading(false);
   };

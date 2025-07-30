@@ -123,21 +123,24 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           }
           
           // Try to create signed URL, but handle storage API issues gracefully
-          const { data: signedUrlData, error: urlError } = await supabase.storage
-            .from(bucketName)
-            .createSignedUrl(filePath, 1800); // 30 minutes expiry
+          try {
+            const { data: signedUrlData, error: urlError } = await supabase.storage
+              .from(bucketName)
+              .createSignedUrl(filePath, 1800); // 30 minutes expiry
 
-          if (urlError) {
-            console.warn('Signed URL creation failed, this is expected due to storage API issues:', urlError.message);
-            // Since bucket is private, direct URLs will fail anyway
-            // We'll try the original URL with authentication headers as fallback
-            console.log('📋 Using authenticated request as fallback (direct URL should fail due to private bucket)');
-            finalUrl = pdfUrl; // Will fail due to private bucket, which is the intended security behavior
-          } else if (signedUrlData?.signedUrl) {
-            finalUrl = signedUrlData.signedUrl;
-            console.log('✅ Secure access granted with signed URL and validation');
-          } else {
-            throw new Error('Failed to generate secure access URL');
+            if (urlError) {
+              console.warn('Signed URL creation failed:', urlError.message);
+              throw new Error('Storage API unavailable. Please try again later or contact support.');
+            } else if (signedUrlData?.signedUrl) {
+              finalUrl = signedUrlData.signedUrl;
+              console.log('✅ Secure access granted with signed URL and validation');
+            } else {
+              throw new Error('Failed to generate secure access URL');
+            }
+          } catch (storageError) {
+            console.error('Storage API error:', storageError);
+            // For now, show a proper error message instead of failing silently
+            throw new Error('PDF access is temporarily unavailable due to storage configuration issues. Please contact support.');
           }
         } else if (!pdfUrl.includes('supabase.co/storage')) {
           // Non-Supabase URLs should not be allowed for security
@@ -392,14 +395,40 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           <div className="flex flex-col items-center gap-4">
             <AlertTriangle className="h-16 w-16 text-red-500" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Access Error</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                {error.includes('Storage API') || error.includes('storage configuration') 
+                  ? 'Service Temporarily Unavailable' 
+                  : 'Access Error'
+                }
+              </h3>
               <p className="text-red-600 mb-4">{error}</p>
+              
+              {error.includes('storage configuration') && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> PDF access is temporarily unavailable due to storage service issues. 
+                    This is a known technical issue and does not affect security. 
+                    Your documents remain fully protected.
+                  </p>
+                </div>
+              )}
+              
               {(error.includes('Access denied') || error.includes('sign in again') || sessionExpired) && (
                 <Button 
-                  onClick={() => window.location.href = '/signin'}
+                  onClick={() => window.location.href = '/auth'}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   Sign In Again
+                </Button>
+              )}
+              
+              {error.includes('storage configuration') && (
+                <Button 
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                  className="ml-2"
+                >
+                  Try Again
                 </Button>
               )}
             </div>

@@ -82,6 +82,12 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         return;
       }
 
+      // Set timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        setError('PDF loading timed out. Please try again or contact support.');
+        setLoading(false);
+      }, 30000); // 30 second timeout
+
       try {
         setLoading(true);
         setError(null);
@@ -165,6 +171,9 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           if (response.status === 401 || response.status === 403) {
             throw new Error('Access denied. Please sign in again.');
           }
+          if (response.status >= 500) {
+            throw new Error('PDF access is temporarily unavailable due to server issues. Please try again later.');
+          }
           throw new Error(`Failed to load PDF: ${response.status} ${response.statusText}`);
         }
 
@@ -183,6 +192,9 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         
         const dataUrl = URL.createObjectURL(blob);
         setPdfData(dataUrl);
+        
+        // Clear timeout on success
+        clearTimeout(timeoutId);
       } catch (err) {
         console.error('Error loading PDF:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to load PDF. Please try again.';
@@ -193,6 +205,9 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           setSessionExpired(true);
           setAuthValidated(false);
         }
+        
+        // Clear timeout on error
+        clearTimeout(timeoutId);
       } finally {
         setLoading(false);
       }
@@ -338,7 +353,13 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
 
   const onDocumentLoadError = (error: Error) => {
     console.error('PDF load error:', error);
-    setError('Failed to load PDF document');
+    if (error.message.includes('Invalid PDF structure') || error.message.includes('PDF is corrupted')) {
+      setError('The PDF file appears to be corrupted or invalid. Please contact support.');
+    } else if (error.message.includes('Network')) {
+      setError('Network error while loading PDF. Please check your connection and try again.');
+    } else {
+      setError('Failed to load PDF document. This may be due to storage service issues.');
+    }
     setLoading(false);
   };
 

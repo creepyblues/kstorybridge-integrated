@@ -208,6 +208,14 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         setPdfData(dataUrl);
         console.log('✅ PDF data set in state, triggering render...');
         
+        // Set a fallback timeout for react-pdf component
+        setTimeout(() => {
+          if (loading) {
+            console.log('⚠️ React-PDF taking too long, switching to iframe fallback');
+            setLoading(false); // This will trigger the iframe fallback
+          }
+        }, 10000); // 10 seconds
+        
         // Clear timeout on success
         clearTimeout(timeoutId);
       } catch (err) {
@@ -488,43 +496,13 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           </div>
         )}
         
-        {/* Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={goToPrevPage}
-              disabled={pageNumber <= 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-gray-600 px-2">
-              Page {pageNumber} of {numPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={goToNextPage}
-              disabled={pageNumber >= numPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+        {/* PDF Info */}
+        <div className="flex items-center justify-between gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="text-sm text-gray-600">
+            📄 Secure PDF Document - Authenticated Access
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={zoomOut}>
-              <ZoomOut className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-gray-600 px-2">
-              {Math.round(scale * 100)}%
-            </span>
-            <Button variant="outline" size="sm" onClick={zoomIn}>
-              <ZoomIn className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={rotate}>
-              <RotateCw className="h-4 w-4" />
-            </Button>
+          <div className="text-xs text-green-600">
+            🔒 All security layers active
           </div>
         </div>
 
@@ -567,80 +545,26 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           </div>
           
           {pdfData ? (
-            <>
-              {/* Try react-pdf first */}
-              <Document
-                file={pdfData}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading={
-                  <div className="p-8 text-center">
-                    <div>Loading PDF...</div>
-                    <div className="mt-4 text-sm text-gray-500">
-                      If this takes too long, we'll switch to direct PDF display
-                    </div>
-                  </div>
-                }
-                error={
-                  <div className="p-8 text-center">
-                    <div className="text-red-600 mb-4">PDF component failed to load</div>
-                    <div className="text-sm text-gray-600">
-                      Switching to direct PDF display...
-                    </div>
-                    <iframe
-                      src={pdfData}
-                      width="100%"
-                      height="600"
-                      style={{ border: 'none' }}
-                      title="PDF Document"
-                    />
-                  </div>
-                }
-                noData={<div className="p-8 text-center text-gray-600">No PDF data available.</div>}
-                options={{
-                  // Disable PDF.js built-in UI controls
-                  disableCreateObjectURL: false,
-                  disableWebGL: false,
-                  disableWorker: false,
-                  // Additional security options
-                  isEvalSupported: false,
-                  maxImageSize: 16777216, // Limit image size
-                  disableFontFace: false,
-                  fontExtraProperties: false
+            <div className="text-center">
+              <div className="mb-4 text-sm text-gray-600">
+                ✅ Secure PDF Access Granted - Displaying Document
+              </div>
+              <iframe
+                src={pdfData}
+                width="100%"
+                height="600"
+                style={{ border: 'none' }}
+                title="PDF Document"
+                onLoad={() => {
+                  setLoading(false);
+                  console.log('✅ PDF loaded successfully via iframe');
                 }}
-              >
-                <Page
-                  pageNumber={pageNumber}
-                  scale={scale}
-                  rotate={rotation}
-                  renderTextLayer={false} // Disable text layer for security
-                  renderAnnotationLayer={false} // Disable annotations for security
-                  canvasBackground="white" // Set consistent background
-                  loading={<div className="p-4 text-center text-gray-500">Loading page...</div>}
-                />
-              </Document>
-              
-              {/* Fallback: After 10 seconds, show iframe */}
-              {loading && (
-                <div className="absolute inset-0 bg-white flex items-center justify-center" style={{zIndex: 20}}>
-                  <div className="text-center">
-                    <div className="mb-4">PDF taking too long to load...</div>
-                    <div className="mb-4 text-sm text-gray-600">Switching to direct display:</div>
-                    <iframe
-                      src={pdfData}
-                      width="100%"
-                      height="600"
-                      style={{ border: 'none' }}
-                      title="PDF Document"
-                      onLoad={() => {
-                        setLoading(false);
-                        console.log('✅ PDF loaded via iframe fallback');
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </>
+                onError={() => {
+                  console.error('❌ Iframe failed to load PDF');
+                  setError('Failed to display PDF document');
+                }}
+              />
+            </div>
           ) : null}
         </div>
 

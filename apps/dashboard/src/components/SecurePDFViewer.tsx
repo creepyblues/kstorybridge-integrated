@@ -6,8 +6,11 @@ import { Card, CardContent } from './ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Configure PDF.js worker - try different worker sources
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 interface SecurePDFViewerProps {
   pdfUrl: string;
@@ -203,6 +206,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         console.log('✅ PDF data URL created:', dataUrl.substring(0, 50) + '...');
         
         setPdfData(dataUrl);
+        console.log('✅ PDF data set in state, triggering render...');
         
         // Clear timeout on success
         clearTimeout(timeoutId);
@@ -567,6 +571,8 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
               loading={<div className="p-8 text-center">Loading PDF...</div>}
+              error={<div className="p-8 text-center text-red-600">Failed to load PDF document.</div>}
+              noData={<div className="p-8 text-center text-gray-600">No PDF data available.</div>}
               options={{
                 // Disable PDF.js built-in UI controls
                 disableCreateObjectURL: false,

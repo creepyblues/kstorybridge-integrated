@@ -82,7 +82,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         URL.revokeObjectURL(pdfData);
       }
     };
-  }, [pdfUrl, user]);
+  }, [pdfUrl, user, pdfData]);
 
   // Security: Disable right-click, text selection, and keyboard shortcuts
   useEffect(() => {
@@ -98,15 +98,21 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     const preventKeyboard = (e: KeyboardEvent) => {
       // Disable Ctrl+P (print), Ctrl+S (save), Ctrl+A (select all), etc.
       if (e.ctrlKey || e.metaKey) {
-        const blockedKeys = ['p', 's', 'a', 'c', 'v', 'f', 'u'];
+        const blockedKeys = ['p', 's', 'a', 'c', 'v', 'f', 'u', 'i', 'j', 'shift+i', 'shift+j'];
         if (blockedKeys.includes(e.key.toLowerCase())) {
           e.preventDefault();
           e.stopPropagation();
           return false;
         }
       }
-      // Disable F12 (dev tools)
-      if (e.key === 'F12' || e.keyCode === 123) {
+      // Disable F12 (dev tools), F11 (fullscreen), and other function keys
+      if (['F12', 'F11', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10'].includes(e.key) || 
+          [123, 122, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121].includes(e.keyCode)) {
+        e.preventDefault();
+        return false;
+      }
+      // Disable Alt+F4, Alt+Tab
+      if (e.altKey && ['F4', 'Tab'].includes(e.key)) {
         e.preventDefault();
         return false;
       }
@@ -116,13 +122,28 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     container.addEventListener('contextmenu', preventActions);
     container.addEventListener('selectstart', preventActions);
     container.addEventListener('dragstart', preventActions);
+    container.addEventListener('copy', preventActions);
+    container.addEventListener('cut', preventActions);
+    container.addEventListener('paste', preventActions);
     document.addEventListener('keydown', preventKeyboard);
+    
+    // Prevent global print attempts
+    const preventPrint = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.warn('Printing is disabled for this secure document');
+      return false;
+    };
+    
+    window.addEventListener('beforeprint', preventPrint);
+    window.addEventListener('afterprint', preventPrint);
 
-    // Disable print styles
+    // Disable print styles and hide PDF.js controls
     const style = document.createElement('style');
     style.textContent = `
       @media print {
         .secure-pdf-viewer { display: none !important; }
+        body * { visibility: hidden !important; }
       }
       .react-pdf__Page__textContent {
         user-select: none !important;
@@ -133,6 +154,18 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
       .react-pdf__Page__annotations {
         pointer-events: none !important;
       }
+      /* Hide PDF.js built-in controls that might enable download/print */
+      .react-pdf__Document canvas {
+        pointer-events: none !important;
+      }
+      /* Prevent drag and drop */
+      * {
+        -webkit-user-drag: none !important;
+        -khtml-user-drag: none !important;
+        -moz-user-drag: none !important;
+        -o-user-drag: none !important;
+        user-drag: none !important;
+      }
     `;
     document.head.appendChild(style);
 
@@ -141,8 +174,15 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
       container.removeEventListener('contextmenu', preventActions);
       container.removeEventListener('selectstart', preventActions);
       container.removeEventListener('dragstart', preventActions);
+      container.removeEventListener('copy', preventActions);
+      container.removeEventListener('cut', preventActions);
+      container.removeEventListener('paste', preventActions);
       document.removeEventListener('keydown', preventKeyboard);
-      document.head.removeChild(style);
+      window.removeEventListener('beforeprint', preventPrint);
+      window.removeEventListener('afterprint', preventPrint);
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
     };
   }, []);
 
@@ -243,19 +283,57 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         {/* PDF Viewer */}
         <div 
           ref={containerRef}
-          className="secure-pdf-viewer border border-gray-200 rounded-lg overflow-auto"
+          className="secure-pdf-viewer border border-gray-200 rounded-lg overflow-auto relative"
           style={{ 
             maxHeight: '70vh',
             userSelect: 'none',
-            WebkitUserSelect: 'none'
+            WebkitUserSelect: 'none',
+            position: 'relative'
           }}
         >
+          {/* Security Watermark Overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              backgroundImage: `repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 100px,
+                rgba(0, 0, 0, 0.03) 100px,
+                rgba(0, 0, 0, 0.03) 120px
+              )`,
+              mixBlendMode: 'multiply'
+            }}
+          >
+            <div 
+              className="absolute inset-0 flex items-center justify-center text-gray-300 text-6xl font-bold opacity-10 select-none"
+              style={{
+                transform: 'rotate(-45deg)',
+                fontSize: '8rem',
+                lineHeight: '1',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              CONFIDENTIAL
+            </div>
+          </div>
           {pdfData && (
             <Document
               file={pdfData}
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
               loading={<div className="p-8 text-center">Loading PDF...</div>}
+              options={{
+                // Disable PDF.js built-in UI controls
+                disableCreateObjectURL: false,
+                disableWebGL: false,
+                disableWorker: false,
+                // Additional security options
+                isEvalSupported: false,
+                maxImageSize: 16777216, // Limit image size
+                disableFontFace: false,
+                fontExtraProperties: false
+              }}
             >
               <Page
                 pageNumber={pageNumber}
@@ -263,6 +341,8 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
                 rotate={rotation}
                 renderTextLayer={false} // Disable text layer for security
                 renderAnnotationLayer={false} // Disable annotations for security
+                canvasBackground="white" // Set consistent background
+                loading={<div className="p-4 text-center text-gray-500">Loading page...</div>}
               />
             </Document>
           )}

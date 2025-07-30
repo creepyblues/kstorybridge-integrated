@@ -4,11 +4,13 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Heart, Star, ExternalLink, Crown, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Eye, Heart, Star, ExternalLink, Crown, FileText, X } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import { favoritesService } from "@/services/favoritesService";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import SecurePDFViewer from "@/components/SecurePDFViewer";
 
 export default function TitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -18,6 +20,7 @@ export default function TitleDetail() {
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   useEffect(() => {
     if (titleId) {
@@ -292,27 +295,46 @@ export default function TitleDetail() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <CardTitle className="text-gray-800 text-xl">Synopsis</CardTitle>
               {title.pitch && user && (
-                <a
-                  href={title.pitch}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block"
-                >
-                  <Button className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group">
-                    {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
-                    
-                    {/* Icons */}
-                    <Crown className="h-4 w-4 mr-2 text-yellow-300 animate-pulse" />
-                    <FileText className="h-4 w-4 mr-2" />
-                    
-                    {/* Text */}
-                    <span className="relative z-10">View Pitch (Premium)</span>
-                    
-                    {/* Glow effect */}
-                    <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300"></div>
-                  </Button>
-                </a>
+                <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+                      
+                      {/* Icons */}
+                      <Crown className="h-4 w-4 mr-2 text-yellow-300 animate-pulse" />
+                      <FileText className="h-4 w-4 mr-2" />
+                      
+                      {/* Text */}
+                      <span className="relative z-10">View Pitch (Premium)</span>
+                      
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300"></div>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+                    <DialogHeader className="p-6 pb-0">
+                      <DialogTitle className="flex items-center justify-between">
+                        <span>Pitch Document - {title.title_name_en || title.title_name_kr}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsPdfModalOpen(false)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <X className="h-4 w-4" />
+                          <span className="sr-only">Close</span>
+                        </Button>
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="p-6 pt-0">
+                      <SecurePDFViewer 
+                        pdfUrl={title.pitch} 
+                        title={`${title.title_name_en || title.title_name_kr} - Pitch Document`}
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
               )}
               
               {title.pitch && !user && (

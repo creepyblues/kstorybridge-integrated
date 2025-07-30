@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Shield, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,13 +23,61 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfData, setPdfData] = useState<string | null>(null);
+  const [authValidated, setAuthValidated] = useState<boolean>(false);
+  const [sessionExpired, setSessionExpired] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Fetch PDF with authentication
+  // Validate user authentication and session
+  const validateAuth = useCallback(async () => {
+    try {
+      // Check if user exists
+      if (!user) {
+        setError('Authentication required to view PDF');
+        setAuthValidated(false);
+        return false;
+      }
+
+      // Validate session with Supabase
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        setError('Session expired. Please sign in again.');
+        setSessionExpired(true);
+        setAuthValidated(false);
+        return false;
+      }
+
+      // Verify user session matches current user
+      if (session.user.id !== user.id) {
+        setError('Authentication mismatch. Please sign in again.');
+        setAuthValidated(false);
+        return false;
+      }
+
+      // Check session expiry
+      const now = Math.floor(Date.now() / 1000);
+      if (session.expires_at && session.expires_at < now) {
+        setError('Session expired. Please sign in again.');
+        setSessionExpired(true);
+        setAuthValidated(false);
+        return false;
+      }
+
+      setAuthValidated(true);
+      return true;
+    } catch (error) {
+      console.error('Auth validation error:', error);
+      setError('Authentication validation failed');
+      setAuthValidated(false);
+      return false;
+    }
+  }, [user]);
+
+  // Fetch PDF with enhanced authentication
   useEffect(() => {
     const fetchPDF = async () => {
-      if (!user || !pdfUrl) {
-        setError('Authentication required to view PDF');
+      if (!pdfUrl) {
+        setError('No PDF URL provided');
         setLoading(false);
         return;
       }
@@ -37,38 +85,83 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
       try {
         setLoading(true);
         setError(null);
+        setSessionExpired(false);
 
-        // Get authenticated URL from Supabase
-        let finalUrl = pdfUrl;
-        
-        // If it's a Supabase storage URL, get a signed URL
-        if (pdfUrl.includes('supabase.co/storage')) {
-          const pathMatch = pdfUrl.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
-          if (pathMatch) {
-            const [, bucketName, filePath] = pathMatch;
-            const { data: signedUrlData, error: urlError } = await supabase.storage
-              .from(bucketName)
-              .createSignedUrl(filePath, 3600); // 1 hour expiry
-
-            if (urlError) throw urlError;
-            if (signedUrlData?.signedUrl) {
-              finalUrl = signedUrlData.signedUrl;
-            }
-          }
+        // First validate authentication
+        const isAuthValid = await validateAuth();
+        if (!isAuthValid) {
+          setLoading(false);
+          return;
         }
 
-        // Fetch PDF data
-        const response = await fetch(finalUrl);
+        // Always use signed URLs for maximum security
+        let finalUrl = pdfUrl;
+        
+        // Extract path from any Supabase storage URL (public or private)
+        const pathMatch = pdfUrl.match(/\/storage\/v1\/object\/(?:public\/)?([^/]+)\/(.+)$/);
+        if (pathMatch && pdfUrl.includes('supabase.co/storage')) {
+          const [, bucketName, filePath] = pathMatch;
+          
+          // Always create a new signed URL with short expiry for security
+          const { data: signedUrlData, error: urlError } = await supabase.storage
+            .from(bucketName)
+            .createSignedUrl(filePath, 1800); // 30 minutes expiry for enhanced security
+
+          if (urlError) {
+            console.error('Signed URL error:', urlError);
+            throw new Error(`Access denied: ${urlError.message}`);
+          }
+          
+          if (!signedUrlData?.signedUrl) {
+            throw new Error('Failed to generate secure access URL');
+          }
+          
+          finalUrl = signedUrlData.signedUrl;
+        } else if (!pdfUrl.includes('supabase.co/storage')) {
+          // Non-Supabase URLs should not be allowed for security
+          throw new Error('Only secure storage URLs are allowed');
+        }
+
+        // Add authentication headers and fetch PDF data
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: HeadersInit = {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'X-User-ID': user.id,
+        };
+
+        const response = await fetch(finalUrl, { headers });
         if (!response.ok) {
-          throw new Error(`Failed to load PDF: ${response.status}`);
+          if (response.status === 401 || response.status === 403) {
+            throw new Error('Access denied. Please sign in again.');
+          }
+          throw new Error(`Failed to load PDF: ${response.status} ${response.statusText}`);
+        }
+
+        // Verify content type
+        const contentType = response.headers.get('content-type');
+        if (!contentType?.includes('application/pdf')) {
+          throw new Error('Invalid file type. Only PDF files are allowed.');
         }
 
         const blob = await response.blob();
+        
+        // Additional security: verify blob size (prevent extremely large files)
+        if (blob.size > 50 * 1024 * 1024) { // 50MB limit
+          throw new Error('File too large. Maximum file size is 50MB.');
+        }
+        
         const dataUrl = URL.createObjectURL(blob);
         setPdfData(dataUrl);
       } catch (err) {
         console.error('Error loading PDF:', err);
-        setError('Failed to load PDF. Please try again.');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load PDF. Please try again.';
+        setError(errorMessage);
+        
+        // If it's an auth error, mark session as expired
+        if (errorMessage.includes('Access denied') || errorMessage.includes('sign in again')) {
+          setSessionExpired(true);
+          setAuthValidated(false);
+        }
       } finally {
         setLoading(false);
       }
@@ -82,7 +175,28 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         URL.revokeObjectURL(pdfData);
       }
     };
-  }, [pdfUrl, user, pdfData]);
+  }, [pdfUrl, user, pdfData, validateAuth]);
+
+  // Periodic session validation while PDF is being viewed
+  useEffect(() => {
+    if (!authValidated || !pdfData) return;
+
+    const validateSession = async () => {
+      const isValid = await validateAuth();
+      if (!isValid) {
+        // Clear PDF data if session becomes invalid
+        if (pdfData) {
+          URL.revokeObjectURL(pdfData);
+          setPdfData(null);
+        }
+      }
+    };
+
+    // Check session every 5 minutes while viewing
+    const interval = setInterval(validateSession, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [authValidated, pdfData, validateAuth]);
 
   // Security: Disable right-click, text selection, and keyboard shortcuts
   useEffect(() => {
@@ -203,11 +317,31 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   const zoomOut = () => setScale(prev => Math.max(0.5, prev - 0.2));
   const rotate = () => setRotation(prev => (prev + 90) % 360);
 
-  if (!user) {
+  // Enhanced authentication UI
+  if (!user || !authValidated) {
     return (
       <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
-          <p className="text-gray-600">Please log in to view the pitch document.</p>
+          <div className="flex flex-col items-center gap-4">
+            <Shield className="h-16 w-16 text-red-500" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                {sessionExpired ? 'Session Expired' : 'Authentication Required'}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {sessionExpired 
+                  ? 'Your session has expired. Please sign in again to view this secure document.'
+                  : 'Please sign in to view this secure pitch document.'
+                }
+              </p>
+              <Button 
+                onClick={() => window.location.href = '/signin'}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Sign In to Continue
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -227,7 +361,21 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     return (
       <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
-          <p className="text-red-600">{error}</p>
+          <div className="flex flex-col items-center gap-4">
+            <AlertTriangle className="h-16 w-16 text-red-500" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Access Error</h3>
+              <p className="text-red-600 mb-4">{error}</p>
+              {(error.includes('Access denied') || error.includes('sign in again') || sessionExpired) && (
+                <Button 
+                  onClick={() => window.location.href = '/signin'}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Sign In Again
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -237,7 +385,13 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     <div className="bg-white rounded-lg">
       <div className="p-6">
         {title && (
-          <h3 className="text-xl font-bold text-gray-800 mb-4">{title}</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <Shield className="h-4 w-4" />
+              <span>Secure Session Active</span>
+            </div>
+          </div>
         )}
         
         {/* Controls */}
@@ -348,11 +502,25 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           )}
         </div>
 
-        {/* Security Notice */}
-        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-xs text-yellow-800">
-            🔒 This document is protected. Download, printing, and copying are disabled.
-          </p>
+        {/* Enhanced Security Notice */}
+        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <Shield className="h-5 w-5 text-green-600 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-green-800 mb-1">
+                Secure Authenticated Access
+              </p>
+              <p className="text-xs text-green-700">
+                🔒 This document is protected with multiple security layers:<br/>
+                • User authentication required • Session validation active<br/>
+                • Download, printing, and copying disabled • Signed URL with expiry<br/>
+                • Periodic security checks • Content watermarked
+              </p>
+              <p className="text-xs text-green-600 mt-2">
+                Authenticated as: <strong>{user.email}</strong>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

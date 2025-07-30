@@ -122,22 +122,29 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
             throw new Error('Content not found or access denied');
           }
           
-          // Try to create signed URL, but handle storage API issues gracefully
-          const { data: signedUrlData, error: urlError } = await supabase.storage
-            .from(bucketName)
-            .createSignedUrl(filePath, 1800); // 30 minutes expiry
+          // Try to create signed URL first, fallback to direct URL if storage API issues persist
+          try {
+            const { data: signedUrlData, error: urlError } = await supabase.storage
+              .from(bucketName)
+              .createSignedUrl(filePath, 1800); // 30 minutes expiry
 
-          if (urlError) {
-            console.warn('Signed URL creation failed, this is expected due to storage API issues:', urlError.message);
-            // Since bucket is private, direct URLs will fail anyway
-            // We'll try the original URL with authentication headers as fallback
-            console.log('📋 Using authenticated request as fallback (direct URL should fail due to private bucket)');
-            finalUrl = pdfUrl; // Will fail due to private bucket, which is the intended security behavior
-          } else if (signedUrlData?.signedUrl) {
-            finalUrl = signedUrlData.signedUrl;
-            console.log('✅ Secure access granted with signed URL and validation');
-          } else {
-            throw new Error('Failed to generate secure access URL');
+            if (urlError) {
+              console.warn('Signed URL creation failed, falling back to direct URL:', urlError.message);
+              // Fallback to direct URL (but still with authentication checks)
+              finalUrl = pdfUrl;
+              console.log('⚠️ Using direct URL fallback due to storage API issues');
+            } else if (signedUrlData?.signedUrl) {
+              finalUrl = signedUrlData.signedUrl;
+              console.log('✅ Secure access granted with signed URL and validation');
+            } else {
+              console.warn('No signed URL returned, using direct URL fallback');
+              finalUrl = pdfUrl;
+            }
+          } catch (storageError) {
+            console.warn('Storage API exception, using direct URL fallback:', storageError);
+            // Use direct URL as fallback (authentication still enforced above)
+            finalUrl = pdfUrl;
+            console.log('⚠️ Using direct URL fallback due to storage API exception');
           }
         } else if (!pdfUrl.includes('supabase.co/storage')) {
           // Non-Supabase URLs should not be allowed for security

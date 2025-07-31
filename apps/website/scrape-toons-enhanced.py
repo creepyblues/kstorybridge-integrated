@@ -119,27 +119,75 @@ class EnhancedToonsKrScraper:
             page_source = self.driver.page_source
             soup = BeautifulSoup(page_source, 'html.parser')
             
-            # Extract cover image - first image on the page
+            # Extract the largest/main cover image (not logo)
             cover_image = ''
+            best_image_score = 0
+            
+            # Look for images in descending order of preference
             img_selectors = [
-                'img[src*="cdn."]',
-                'img[src*="oopy."]',
-                'img[src*="amazonaws"]',
-                'img[src*="cloudfront"]',
-                'img:not([alt="home"])',
-                'img'
+                'img[src*="prod-files-secure.s3.us-west-2.amazonaws.com"]',  # High-res S3 images
+                'img[src*="amazonaws.com"]',  # Other AWS images
+                'img[src*="oopy.lazyrockets.com/api/v2/notion/image"]',  # Notion API images with blockId
+                'img[src*="oopy."]',  # Other oopy images
+                'img[src*="cdn."]',  # CDN images
+                'img[src*="cloudfront"]',  # CloudFront images
+                'img'  # All other images as fallback
             ]
             
             for selector in img_selectors:
                 imgs = soup.select(selector)
                 for img in imgs:
                     src = img.get('src', '')
-                    if src and not any(skip in src.lower() for skip in ['home', 'logo', 'icon', 'favicon']):
+                    if not src:
+                        continue
+                        
+                    # Skip logos, icons, and navigation images
+                    if any(skip in src.lower() for skip in ['home', 'logo', 'icon', 'favicon', 'header', 'nav']):
+                        continue
+                    
+                    # Calculate image score based on URL patterns and dimensions
+                    score = 0
+                    
+                    # High priority for secure S3 URLs (main content images)
+                    if 'prod-files-secure.s3.us-west-2.amazonaws.com' in src:
+                        score += 100
+                    
+                    # High priority for Notion API images with blockId (processed images)
+                    if 'oopy.lazyrockets.com/api/v2/notion/image' in src and 'blockId=' in src:
+                        score += 90
+                    
+                    # Medium priority for other AWS/CDN images
+                    elif any(pattern in src for pattern in ['amazonaws.com', 'cloudfront', 'cdn.']):
+                        score += 50
+                    
+                    # Consider image dimensions if available
+                    width = img.get('width', '')
+                    height = img.get('height', '')
+                    
+                    try:
+                        if width and height:
+                            w, h = int(width), int(height)
+                            # Prefer landscape images (typical for webtoon covers)
+                            if w > h and w > 400:
+                                score += 30
+                            elif w > 300 and h > 200:
+                                score += 20
+                    except (ValueError, TypeError):
+                        pass
+                    
+                    # Prefer larger images based on file size indicators in URL
+                    if any(size_indicator in src for size_indicator in ['large', 'full', 'original', '1200', '800']):
+                        score += 15
+                    
+                    # Update best image if this one scores higher
+                    if score > best_image_score:
+                        best_image_score = score
                         if not src.startswith('http'):
                             src = urljoin(self.base_url, src)
                         cover_image = src
-                        break
-                if cover_image:
+                
+                # If we found a high-scoring image, stop looking
+                if best_image_score >= 90:
                     break
             
             # Extract 작품 줄거리 (story synopsis) from the page

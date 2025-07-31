@@ -125,11 +125,8 @@ export default function Favorites() {
               Content you've saved for later review.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-gray-600">
-              {filteredFavorites.length} favorites
-            </div>
-            <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+          <div className="text-gray-600">
+            {filteredFavorites.length} favorites
           </div>
         </div>
 
@@ -145,104 +142,60 @@ export default function Favorites() {
         </div>
 
         {/* Favorites Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-16">
           {filteredFavorites.map((favorite) => {
             const title = favorite.titles;
             return (
-              <Card key={favorite.id} className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow group rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4 mb-4">
-                    {title.title_image && (
-                      <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                        <img 
-                          src={title.title_image} 
-                          alt={title.title_name_en || title.title_name_kr}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      </div>
+              <Card key={favorite.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group relative">
+                {/* Unfavorite Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveFromFavorites(title.title_id)}
+                  className="absolute top-2 right-2 z-10 text-red-500 hover:text-red-600 hover:bg-red-50/80 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-white/80 rounded-full p-2"
+                >
+                  <Heart className="h-3 w-3 fill-current" />
+                </Button>
+
+                <Link to={`/titles/${title.title_id}`} className="block">
+                  <div className="aspect-[3/4] bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center relative overflow-hidden">
+                    {title.title_image ? (
+                      <img 
+                        src={title.title_image} 
+                        alt={title.title_name_en || title.title_name_kr}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 bg-hanok-teal rounded-full flex items-center justify-center">
+                          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                            <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
+                          </div>
+                        </div>
+                        <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
+                      </>
                     )}
-                    <div className="flex-1">
-                      <Link to={`/titles/${title.title_id}`}>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-2 hover:text-hanok-teal transition-colors cursor-pointer">
-                          {title.title_name_en || title.title_name_kr}
-                        </h3>
-                      </Link>
-                      {title.title_name_en && (
-                        <p className="text-sm text-gray-600 mb-2">{title.title_name_kr}</p>
-                      )}
-                      
-                      {/* Story and Art Authors */}
-                      <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-2">
-                        {title.story_author && (
-                          <div>
-                            <span className="font-medium">Story by</span> {title.story_author}
-                          </div>
-                        )}
-                        {title.art_author && (
-                          <div>
-                            <span className="font-medium">Art by</span> {title.art_author}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveFromFavorites(title.title_id)}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Heart className="h-4 w-4 fill-current" />
-                    </Button>
                   </div>
-
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {title.synopsis}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <CardContent className="p-3">
+                    <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                      {title.title_name_en || title.title_name_kr}
+                    </h3>
+                    {title.title_name_en && title.title_name_kr && (
+                      <p className="text-xs text-gray-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
+                    )}
+                    <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                      {title.tagline || title.pitch || 'Discover this amazing Korean story'}
+                    </p>
                     {title.genre && (
-                      <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
+                      <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
                         {formatGenre(title.genre)}
-                      </Badge>
+                      </div>
                     )}
-                    {title.content_format && (
-                      <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
-                        {formatContentFormat(title.content_format)}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                    <span>{title.author}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        {title.views?.toLocaleString() || '0'}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Heart className="h-3 w-3" />
-                        {title.likes || 0}
-                      </span>
-                      {title.rating && title.rating_count && title.rating_count > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-current text-yellow-500" />
-                          {title.rating}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Link to={`/titles/${title.title_id}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full border-gray-300 text-gray-700 hover:text-gray-800 hover:bg-gray-50">
-                        View Details
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
+                  </CardContent>
+                </Link>
               </Card>
             );
           })}

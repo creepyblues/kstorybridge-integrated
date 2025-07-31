@@ -74,8 +74,6 @@ export const featuredService = {
 
   // Get featured titles (for homepage-style display)
   async getFeaturedTitles(): Promise<FeaturedWithTitle[]> {
-    console.log('Fetching featured titles from database...');
-    
     const { data, error } = await supabase
       .from('featured')
       .select(`
@@ -88,21 +86,15 @@ export const featuredService = {
           tagline,
           genre,
           content_format,
-          author,
-          pitch,
-          views,
-          likes
+          story_author,
+          pitch
         )
       `)
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching featured titles:', error);
       throw new Error(`Failed to fetch featured titles: ${error.message}`);
     }
-
-    console.log('Featured titles query result:', data);
-    console.log('Number of records returned:', data?.length || 0);
 
     return data || [];
   }

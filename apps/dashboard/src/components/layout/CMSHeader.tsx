@@ -35,7 +35,6 @@ export function CMSHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 text-midnight-ink-600 hover:text-hanok-teal hover:bg-porcelain-blue-100">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg" />
                 <AvatarFallback className="bg-hanok-teal text-snow-white">
                   {(user?.user_metadata?.full_name || user?.email || "U").charAt(0).toUpperCase()}
                 </AvatarFallback>

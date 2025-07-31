@@ -296,6 +296,25 @@ export default function TitleDetail() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Note Card - Only show if note exists */}
+          {title.note && (
+            <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-gray-800 text-xl flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-hanok-teal" />
+                  Note
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 bg-gradient-to-r from-hanok-teal/5 to-porcelain-blue-50 rounded-lg border-l-4 border-hanok-teal">
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {title.note}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Right Column - Description and Details */}

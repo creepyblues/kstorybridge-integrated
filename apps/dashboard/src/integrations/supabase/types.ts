@@ -80,6 +80,7 @@ export type Database = {
           genre: Database["public"]["Enums"]["genre"] | null
           illustrator: string | null
           likes: number | null
+          note: string | null
           perfect_for: string | null
           pitch: string | null
           rating: number | null
@@ -114,6 +115,7 @@ export type Database = {
           genre?: Database["public"]["Enums"]["genre"] | null
           illustrator?: string | null
           likes?: number | null
+          note?: string | null
           perfect_for?: string | null
           pitch?: string | null
           rating?: number | null
@@ -148,6 +150,7 @@ export type Database = {
           genre?: Database["public"]["Enums"]["genre"] | null
           illustrator?: string | null
           likes?: number | null
+          note?: string | null
           perfect_for?: string | null
           pitch?: string | null
           rating?: number | null

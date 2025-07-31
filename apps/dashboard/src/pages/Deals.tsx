@@ -85,37 +85,37 @@ export default function Deals() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
         {/* Header */}
-        <div className="flex items-center justify-between mb-12">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">Deals</h1>
-            <p className="text-gray-600">
-              Manage your content deals and negotiations.
-            </p>
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">DEALS</h1>
+              <p className="text-xl text-midnight-ink-600 leading-relaxed">
+                Manage your content deals and negotiations.
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium">
+                <DollarSign className="mr-2 h-4 w-4" />
+                NEW DEAL
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Button className="bg-hanok-teal hover:bg-hanok-teal/90 text-white">
-              <DollarSign className="mr-2 h-4 w-4" />
-              New Deal
-            </Button>
-            <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+
+          {/* Search Bar */}
+          <div className="relative mb-12">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
+            <input
+              placeholder="Search deals..."
+              className="w-full pl-12 pr-4 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
+            />
           </div>
-        </div>
 
-        {/* Search Bar */}
-        <div className="relative mb-12">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            placeholder="Search deals..."
-            className="w-full pl-12 pr-4 py-4 text-lg bg-gray-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal"
-          />
-        </div>
-
-        {/* Deals List */}
-        <div className="grid grid-cols-1 gap-8 mb-16">
+          {/* Deals List */}
+          <div className="grid grid-cols-1 gap-8 mb-16">
           {deals.map((deal) => (
-            <Card key={deal.id} className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-shadow rounded-2xl">
+            <Card key={deal.id} className="bg-white border-porcelain-blue-200 shadow-lg hover:shadow-xl transition-shadow rounded-2xl">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div>
@@ -160,6 +160,7 @@ export default function Deals() {
               </CardContent>
             </Card>
           ))}
+          </div>
         </div>
     </div>
   );

@@ -181,7 +181,7 @@ const TestTitlesWithSample: React.FC = () => {
                   <div className="space-y-1 text-sm">
                     <p><strong>Rating:</strong> 
                       {title.rating ? (
-                        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded ml-1">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded ml-1">
                           ⭐ {title.rating}/5
                         </span>
                       ) : 'N/A'} 

@@ -119,8 +119,8 @@ export default function Deals() {
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-gray-800 text-lg mb-2">{deal.title}</CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <CardTitle className="text-midnight-ink text-xl font-bold mb-2">{deal.title}</CardTitle>
+                    <div className="flex items-center gap-4 text-sm text-midnight-ink-600">
                       <span>Buyer: {deal.buyer}</span>
                       <span>Creator: {deal.creator}</span>
                       <span className="flex items-center gap-1">
@@ -140,7 +140,7 @@ export default function Deals() {
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-4 text-sm text-midnight-ink-600">
                     <span className="capitalize">{deal.type.replace('_', ' ')}</span>
                     <span className="flex items-center gap-1">
                       <MessageSquare className="h-3 w-3" />

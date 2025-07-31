@@ -28,12 +28,11 @@ export default function PremiumFeaturePopup({
     try {
       setLoading(true);
       
-      // For now, we'll use the invitation_status field to track premium requests
-      // TODO: Add a dedicated 'requested' boolean column to profiles table
+      // Update the requested boolean field in user_buyers table
       const { error } = await supabase
-        .from('profiles')
-        .update({ invitation_status: 'premium_requested' })
-        .eq('id', user.id);
+        .from('user_buyers')
+        .update({ requested: true })
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Error updating user request:', error);

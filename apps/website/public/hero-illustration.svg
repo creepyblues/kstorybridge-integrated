@@ -1,0 +1,32 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- TV Screen -->
+  <rect x="20" y="40" width="240" height="140" rx="8" fill="#2D3748" stroke="#1A202C" stroke-width="4"/>
+  <rect x="30" y="50" width="220" height="120" rx="4" fill="#4A5568"/>
+  
+  <!-- Netflix logo placeholder -->
+  <rect x="40" y="60" width="20" height="20" fill="#E53E3E"/>
+  
+  <!-- Character on TV (female with sword) -->
+  <circle cx="120" cy="120" r="25" fill="#F7FAFC"/>
+  <path d="M100 95 C100 85, 115 85, 140 95 L140 105 C140 115, 125 115, 100 105 Z" fill="#6B46C1"/>
+  <rect x="115" y="140" width="3" height="25" fill="#E2E8F0"/>
+  <rect x="105" y="135" width="30" height="8" fill="#2D3748"/>
+  
+  <!-- Person viewing -->
+  <circle cx="320" cy="120" r="30" fill="#F7FAFC"/>
+  <path d="M295 90 C295 80, 310 80, 345 90 L345 100 C345 110, 330 110, 295 100 Z" fill="#2D3748"/>
+  <rect x="290" y="150" width="60" height="40" rx="8" fill="#2F855A"/>
+  
+  <!-- Mobile device -->
+  <rect x="280" y="200" width="50" height="80" rx="8" fill="#1A202C" stroke="#2D3748" stroke-width="2"/>
+  <rect x="285" y="210" width="40" height="60" rx="4" fill="#4A5568"/>
+  
+  <!-- Character on mobile (male character) -->
+  <circle cx="305" cy="235" r="12" fill="#F7FAFC"/>
+  <path d="M295 225 C295 220, 300 220, 315 225 L315 230 C315 235, 310 235, 295 230 Z" fill="#2D3748"/>
+  <rect x="295" y="250" width="20" height="15" fill="#2B6CB0"/>
+  
+  <!-- Connecting elements -->
+  <path d="M260 110 Q270 105, 280 110" stroke="#4FD1C7" stroke-width="2" fill="none"/>
+  <circle cx="275" cy="108" r="2" fill="#4FD1C7"/>
+</svg>

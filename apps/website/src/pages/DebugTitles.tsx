@@ -205,7 +205,7 @@ const DebugTitles: React.FC = () => {
       {/* Recommendations */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-2">Possible Issues & Solutions</h2>
-        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded">
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded">
           <ul className="list-disc list-inside space-y-2 text-sm">
             <li><strong>Row Level Security (RLS):</strong> The titles table might have RLS enabled. Check if you need to be authenticated or have specific permissions.</li>
             <li><strong>Empty Table:</strong> The table might genuinely be empty. Try inserting test data from the dashboard.</li>

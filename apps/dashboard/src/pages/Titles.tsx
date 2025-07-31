@@ -256,7 +256,7 @@ export default function Titles() {
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
-                      className="text-gray-600 border-gray-300 hover:bg-gray-100"
+                      className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
                     >
                       Previous
                     </Button>
@@ -284,7 +284,7 @@ export default function Titles() {
                             onClick={() => setCurrentPage(pageNumber)}
                             className={currentPage === pageNumber 
                               ? "bg-hanok-teal text-white hover:bg-hanok-teal/90" 
-                              : "text-gray-600 border-gray-300 hover:bg-gray-100"
+                              : "text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
                             }
                           >
                             {pageNumber}
@@ -298,7 +298,7 @@ export default function Titles() {
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredTitles.length / itemsPerPage)))}
                       disabled={currentPage === Math.ceil(filteredTitles.length / itemsPerPage)}
-                      className="text-gray-600 border-gray-300 hover:bg-gray-100"
+                      className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
                     >
                       Next
                     </Button>

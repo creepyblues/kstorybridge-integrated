@@ -14,7 +14,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
       {/* DEBUG: Auth Status Banner */}
-      <div className="bg-yellow-100 border-b border-yellow-300 px-4 py-1 text-xs">
+      <div className="bg-gray-100 border-b border-gray-300 px-4 py-1 text-xs">
         <div className="container mx-auto">
           <strong>🔍 WEBSITE AUTH DEBUG:</strong>
           {' '}Loading: {isLoading?.toString() || 'undefined'}

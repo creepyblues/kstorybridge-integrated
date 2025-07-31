@@ -350,6 +350,35 @@ export default function TitleDetail() {
                   </div>
                 </Button>
               )}
+
+              {!title.pitch && user && (
+                <Button className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group">
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+                  
+                  {/* Icons */}
+                  <FileText className="h-4 w-4 mr-2" />
+                  
+                  {/* Text */}
+                  <span className="relative z-10">Request a pitch deck</span>
+                  
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 rounded-full bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300"></div>
+                </Button>
+              )}
+
+              {!title.pitch && !user && (
+                <Button
+                  disabled
+                  className="bg-gray-400 text-gray-600 shadow-lg border-0 rounded-full px-5 py-2.5 text-sm font-medium cursor-not-allowed relative"
+                >
+                  <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                  Request a pitch deck
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">!</span>
+                  </div>
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -367,8 +396,19 @@ export default function TitleDetail() {
                       <span className="font-semibold text-purple-800">Premium Content Available</span>
                     </div>
                     <p className="text-sm text-purple-700">
-                      This title includes a detailed pitch document with comprehensive information about the story, 
-                      target audience, and market positioning. Click "View Pitch (Premium)" to access the full document.
+                      Premium Content Available by request. Request a detailed pitch document with comprehensive information about the story, target audience, and market positioning.
+                    </p>
+                  </div>
+                )}
+                
+                {!title.pitch && (
+                  <div className="mt-6 p-4 bg-gradient-to-r from-hanok-teal/10 to-blue-50 border border-hanok-teal/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText className="h-5 w-5 text-hanok-teal" />
+                      <span className="font-semibold text-hanok-teal">Premium Content Available</span>
+                    </div>
+                    <p className="text-sm text-hanok-teal/80">
+                      Premium Content Available by request. Request a detailed pitch document with comprehensive information about the story, target audience, and market positioning.
                     </p>
                   </div>
                 )}

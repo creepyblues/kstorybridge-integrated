@@ -214,7 +214,7 @@ const HomePage = () => {
                 {featuredTitles.map((featured) => {
                 const title = featured.titles;
                 return (
-                  <Card key={featured.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
+                  <Card key={featured.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col">
                     <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
                       {title.title_image ? (
                         <img 
@@ -237,19 +237,23 @@ const HomePage = () => {
                         </>
                       )}
                     </div>
-                    <CardContent className="p-3">
-                      <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
-                        {title.title_name_en || title.title_name_kr}
-                      </h3>
-                      {title.title_name_en && title.title_name_kr && (
-                        <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
-                      )}
-                      <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
-                        {title.tagline || title.pitch || 'Discover this amazing Korean story'}
-                      </p>
+                    <CardContent className="p-3 flex flex-col flex-grow">
+                      <div className="flex-grow">
+                        <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
+                          {title.title_name_en || title.title_name_kr}
+                        </h3>
+                        {title.title_name_en && title.title_name_kr && (
+                          <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
+                        )}
+                        <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
+                          {title.tagline || title.pitch || 'Discover this amazing Korean story'}
+                        </p>
+                      </div>
                       {title.genre && (
-                        <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
-                          {formatGenre(title.genre)}
+                        <div className="mt-auto">
+                          <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                            {formatGenre(title.genre)}
+                          </div>
                         </div>
                       )}
                     </CardContent>

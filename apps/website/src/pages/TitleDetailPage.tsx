@@ -181,8 +181,8 @@ export default function TitleDetailPage() {
                     <p className="font-bold text-gray-800">{title.likes?.toLocaleString() || '0'}</p>
                   </div>
                   {title.rating && title.rating_count && title.rating_count > 0 && (
-                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                      <Star className="h-5 w-5 text-yellow-500 mx-auto mb-1" />
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <Star className="h-5 w-5 text-blue-500 mx-auto mb-1" />
                       <p className="text-sm text-gray-600">Rating</p>
                       <p className="font-bold text-gray-800">{title.rating.toFixed(1)}</p>
                     </div>
@@ -205,7 +205,7 @@ export default function TitleDetailPage() {
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
                     
                     {/* Icons */}
-                    <Crown className="h-4 w-4 mr-2 text-yellow-300 animate-pulse" />
+                    <Crown className="h-4 w-4 mr-2 text-blue-400 animate-pulse" />
                     <FileText className="h-4 w-4 mr-2" />
                     
                     {/* Text */}

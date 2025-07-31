@@ -43,9 +43,6 @@ export function CMSHeader() {
                 <div className="text-sm text-midnight-ink">
                   {user?.user_metadata?.full_name || user?.email || "User"}
                 </div>
-                <div className="text-xs text-midnight-ink-500">
-                  {user ? "Authenticated" : "Guest"}
-                </div>
               </div>
             </Button>
           </DropdownMenuTrigger>

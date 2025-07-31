@@ -5,6 +5,8 @@ import { Crown, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { trackPremiumFeatureRequest, trackEvent } from "@/utils/analytics";
+import { useEffect } from "react";
 
 interface PremiumFeaturePopupProps {
   isOpen: boolean;
@@ -21,6 +23,13 @@ export default function PremiumFeaturePopup({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [requested, setRequested] = useState(false);
+
+  // Track when premium popup is shown
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent('premium_popup_viewed', 'premium_features', featureName);
+    }
+  }, [isOpen, featureName]);
 
   const handleRequest = async () => {
     if (!user) return;
@@ -45,6 +54,9 @@ export default function PremiumFeaturePopup({
       }
 
       setRequested(true);
+      
+      // Track the premium feature request
+      trackPremiumFeatureRequest(featureName);
       
       // Show success message for 2 seconds, then close
       setTimeout(() => {

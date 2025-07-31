@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/hooks/useAuth";
+import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { RootRedirect } from "./components/RootRedirect";
@@ -30,8 +31,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <SidebarProvider>
-            <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+          <AnalyticsProvider>
+            <SidebarProvider>
+              <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
               <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={
@@ -70,8 +72,9 @@ const App = () => (
                   </ProtectedRoute>
                 } />
               </Routes>
-            </div>
-          </SidebarProvider>
+              </div>
+            </SidebarProvider>
+          </AnalyticsProvider>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

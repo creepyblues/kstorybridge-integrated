@@ -68,11 +68,20 @@ export default function Titles() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
         {/* Header */}
-        <div className="flex items-center justify-between mb-12">
-          <h1 className="text-4xl font-bold text-gray-800">Title List</h1>
-        </div>
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">TITLES</h1>
+              <p className="text-xl text-midnight-ink-600 leading-relaxed">
+                Discover and browse Korean content titles.
+              </p>
+            </div>
+            <div className="text-midnight-ink-600 text-lg font-medium">
+              {filteredTitles.length} titles
+            </div>
+          </div>
 
         {/* Featured Titles Section */}
         <div className="mb-16">
@@ -86,8 +95,8 @@ export default function Titles() {
                 const title = featured.titles;
                 return (
                   <Link key={featured.id} to={`/titles/${title.title_id}`} className="block">
-                    <Card className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center relative overflow-hidden">
+                    <Card className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
                         {title.title_image ? (
                           <img 
                             src={title.title_image} 
@@ -108,19 +117,23 @@ export default function Titles() {
                           </>
                         )}
                       </div>
-                      <CardContent className="p-3">
-                        <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
-                          {title.title_name_en || title.title_name_kr}
-                        </h3>
-                        {title.title_name_en && title.title_name_kr && (
-                          <p className="text-xs text-gray-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
-                        )}
-                        <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                          {title.tagline || title.pitch || 'Discover this amazing Korean story'}
-                        </p>
+                      <CardContent className="p-3 flex flex-col flex-grow">
+                        <div className="flex-grow">
+                          <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
+                            {title.title_name_en || title.title_name_kr}
+                          </h3>
+                          {title.title_name_en && title.title_name_kr && (
+                            <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
+                          )}
+                          <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
+                            {title.tagline || title.pitch || 'Discover this amazing Korean story'}
+                          </p>
+                        </div>
                         {title.genre && (
-                          <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
-                            {formatGenre(title.genre)}
+                          <div className="mt-auto">
+                            <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                              {formatGenre(title.genre)}
+                            </div>
                           </div>
                         )}
                       </CardContent>
@@ -132,17 +145,17 @@ export default function Titles() {
           )}
           
           {!loading && featuredTitles.length === 0 && (
-            <div className="text-center text-gray-500 py-8">No featured titles available.</div>
+            <div className="text-center text-midnight-ink-600 py-8">No featured titles available.</div>
           )}
         </div>
 
         {/* All Titles Table */}
         <div className="mt-24">
-          <h2 className="text-2xl font-bold text-gray-800 mb-8">All Titles</h2>
+          <h2 className="text-4xl font-bold text-midnight-ink mb-12">ALL TITLES</h2>
           
           {/* Search Bar */}
-          <div className="relative mb-8">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <div className="relative mb-12">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search titles..."
@@ -153,7 +166,7 @@ export default function Titles() {
                   e.preventDefault();
                 }
               }}
-              className="w-full pl-12 pr-4 py-4 text-lg bg-gray-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal"
+              className="w-full pl-12 pr-4 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
             />
           </div>
           
@@ -308,6 +321,7 @@ export default function Titles() {
             )}
           </div>
         </div>
+      </div>
     </div>
   );
 }

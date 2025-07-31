@@ -11,6 +11,7 @@ import { favoritesService } from "@/services/favoritesService";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
+import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 
 export default function TitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -21,6 +22,8 @@ export default function TitleDetail() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
+  const [premiumFeatureName, setPremiumFeatureName] = useState("");
 
   useEffect(() => {
     if (titleId) {
@@ -167,7 +170,14 @@ export default function TitleDetail() {
                   </Button>
                 )}
                 
-                <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 shadow-lg rounded-2xl px-6 py-3">
+                <Button 
+                  onClick={() => {
+                    setPremiumFeatureName("Contact Creator");
+                    setPremiumPopupOpen(true);
+                  }}
+                  variant="outline" 
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50 shadow-lg rounded-2xl px-6 py-3"
+                >
                   Contact Creator
                 </Button>
               </div>
@@ -352,7 +362,13 @@ export default function TitleDetail() {
               )}
 
               {!title.pitch && user && (
-                <Button className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group">
+                <Button 
+                  onClick={() => {
+                    setPremiumFeatureName("Request a pitch deck");
+                    setPremiumPopupOpen(true);
+                  }}
+                  className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group"
+                >
                   {/* Shine effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
                   
@@ -513,6 +529,13 @@ export default function TitleDetail() {
 
         </div>
       </div>
+      
+      {/* Premium Feature Popup */}
+      <PremiumFeaturePopup
+        isOpen={premiumPopupOpen}
+        onClose={() => setPremiumPopupOpen(false)}
+        featureName={premiumFeatureName}
+      />
       
     </div>
   );

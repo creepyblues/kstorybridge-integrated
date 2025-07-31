@@ -70,5 +70,34 @@ export const featuredService = {
     }
 
     return data || [];
+  },
+
+  // Get featured titles (for homepage-style display)
+  async getFeaturedTitles(): Promise<FeaturedWithTitle[]> {
+    const { data, error } = await supabase
+      .from('featured')
+      .select(`
+        *,
+        titles (
+          title_id,
+          title_name_en,
+          title_name_kr,
+          title_image,
+          tagline,
+          genre,
+          content_format,
+          author,
+          pitch,
+          views,
+          likes
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch featured titles: ${error.message}`);
+    }
+
+    return data || [];
   }
 };

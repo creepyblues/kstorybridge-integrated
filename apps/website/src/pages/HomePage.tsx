@@ -189,16 +189,13 @@ const HomePage = () => {
           
           <div className="relative">
             <div className="relative z-10">
-              {/* Character Illustration */}
-              <div className="w-full max-w-md mx-auto">
-                <div className="relative">
-                  {/* Character */}
-                  <div className="bg-gradient-to-br from-sunrise-coral-100 to-sunrise-coral-200 rounded-full w-80 h-80 mx-auto flex items-center justify-center relative overflow-hidden">
-                    {/* Simple character illustration */}
-                    <div className="text-8xl">📚</div>
-                    <div className="absolute top-16 right-16 text-4xl animate-pulse">✨</div>
-                  </div>
-                </div>
+              {/* Hero Illustration */}
+              <div className="w-full max-w-lg mx-auto">
+                <img 
+                  src="/hero-illustration.svg" 
+                  alt="Korean content streaming across devices"
+                  className="w-full h-auto"
+                />
               </div>
             </div>
           </div>

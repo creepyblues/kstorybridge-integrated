@@ -1,18 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Search } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
@@ -21,8 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 export default function Titles() {
   const { toast } = useToast();
   const [titles, setTitles] = useState<Title[]>([]);
-  const [recentlyAddedTitle, setRecentlyAddedTitle] = useState<FeaturedWithTitle | null>(null);
-  const [topRatedTitles, setTopRatedTitles] = useState<FeaturedWithTitle[]>([]);
+  const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,14 +29,9 @@ export default function Titles() {
       const allTitles = await titlesService.getAllTitles();
       setTitles(allTitles);
       
-      // Load featured data
-      const [recentFeatured, topRatedFeatured] = await Promise.all([
-        featuredService.getMostRecentFeatured(),
-        featuredService.getFeaturedByViews(5)
-      ]);
-      
-      setRecentlyAddedTitle(recentFeatured);
-      setTopRatedTitles(topRatedFeatured);
+      // Load featured titles
+      const featured = await featuredService.getFeaturedTitles();
+      setFeaturedTitles(featured);
       
     } catch (error) {
       console.error("Error loading data:", error);
@@ -91,84 +75,66 @@ export default function Titles() {
           <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
         </div>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-12">
-          {/* Recently Added */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-8">Recently Added</h2>
-            <div className="space-y-6">
-              {recentlyAddedTitle ? (
-                <Link key={recentlyAddedTitle.titles.title_id} to={`/titles/${recentlyAddedTitle.titles.title_id}`} className="block">
-                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
-                    <div className="relative">
-                      <div className="h-64 bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center p-6">
-                        {recentlyAddedTitle.titles.title_image ? (
+        {/* Featured Titles Section */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-gray-800 mb-8">Featured Titles</h2>
+          
+          {loading ? (
+            <div className="text-center text-gray-500 py-8">Loading featured titles...</div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {featuredTitles.map((featured) => {
+                const title = featured.titles;
+                return (
+                  <Link key={featured.id} to={`/titles/${title.title_id}`} className="block">
+                    <Card className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center relative overflow-hidden">
+                        {title.title_image ? (
                           <img 
-                            src={recentlyAddedTitle.titles.title_image} 
-                            alt={recentlyAddedTitle.titles.title_name_en || recentlyAddedTitle.titles.title_name_kr}
-                            className="w-full h-full object-cover rounded-lg"
+                            src={title.title_image} 
+                            alt={title.title_name_en || title.title_name_kr}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
                           />
                         ) : (
-                          <div className="flex items-center justify-center w-full h-full">
-                            <div className="flex space-x-4">
-                              <div className="w-16 h-20 bg-gray-300 rounded-lg"></div>
-                              <div className="w-20 h-24 bg-gray-200 rounded-lg"></div>
-                              <div className="w-16 h-20 bg-gray-300 rounded-lg"></div>
+                          <>
+                            <div className="w-12 h-12 bg-hanok-teal rounded-full flex items-center justify-center">
+                              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                                <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
+                              </div>
                             </div>
-                          </div>
+                            <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
+                          </>
                         )}
                       </div>
-                      <div className="absolute bottom-6 left-6">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                          {recentlyAddedTitle.titles.title_name_en || recentlyAddedTitle.titles.title_name_kr}
+                      <CardContent className="p-3">
+                        <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                          {title.title_name_en || title.title_name_kr}
                         </h3>
-                        <button className="bg-hanok-teal text-white px-6 py-2 rounded-full text-sm font-medium">
-                          FEATURED
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ) : (
-                <div className="bg-white rounded-2xl shadow-lg p-8 text-center text-gray-500">
-                  No featured titles available
-                </div>
-              )}
+                        {title.title_name_en && title.title_name_kr && (
+                          <p className="text-xs text-gray-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
+                        )}
+                        <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                          {title.tagline || title.pitch || 'Discover this amazing Korean story'}
+                        </p>
+                        {title.genre && (
+                          <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                            {formatGenre(title.genre)}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
-          </div>
-
-          {/* Top Rated */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-8">Top Rated</h2>
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-gray-50 px-6 py-4 border-b">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-700">Title</span>
-                  <span className="font-semibold text-gray-700">Views</span>
-                </div>
-              </div>
-              <div className="divide-y">
-                {topRatedTitles.length > 0 ? (
-                  topRatedTitles.map((featuredTitle, index) => (
-                    <Link key={featuredTitle.titles.title_id} to={`/titles/${featuredTitle.titles.title_id}`} className="block">
-                      <div className="px-6 py-4 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
-                        <span className="text-gray-800 font-medium">
-                          {featuredTitle.titles.title_name_en || featuredTitle.titles.title_name_kr}
-                        </span>
-                        <span className="text-gray-600">
-                          {featuredTitle.titles.views?.toLocaleString() || '0'}
-                        </span>
-                      </div>
-                    </Link>
-                  ))
-                ) : (
-                  <div className="px-6 py-8 text-center text-gray-500">
-                    No featured titles available
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
+          
+          {!loading && featuredTitles.length === 0 && (
+            <div className="text-center text-gray-500 py-8">No featured titles available.</div>
+          )}
         </div>
 
         {/* All Titles Table */}
@@ -219,7 +185,7 @@ export default function Titles() {
                       <div className="px-6 py-4 grid grid-cols-8 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
                         <div className="col-span-1">
                           {title.title_image ? (
-                            <div className="w-12 h-16 bg-gray-200 rounded-lg overflow-hidden">
+                            <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden">
                               <img 
                                 src={title.title_image} 
                                 alt={title.title_name_en || title.title_name_kr}
@@ -232,7 +198,7 @@ export default function Titles() {
                               />
                             </div>
                           ) : (
-                            <div className="w-12 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <div className="w-16 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
                               <span className="text-xs text-gray-400">No Image</span>
                             </div>
                           )}

@@ -31,6 +31,8 @@ export default function Titles() {
       
       // Load featured titles
       const featured = await featuredService.getFeaturedTitles();
+      console.log('Featured titles loaded:', featured);
+      console.log('Number of featured titles:', featured.length);
       setFeaturedTitles(featured);
       
     } catch (error) {

@@ -31,8 +31,6 @@ export default function Titles() {
       
       // Load featured titles
       const featured = await featuredService.getFeaturedTitles();
-      console.log('Featured titles loaded:', featured);
-      console.log('Number of featured titles:', featured.length);
       setFeaturedTitles(featured);
       
     } catch (error) {
@@ -74,7 +72,6 @@ export default function Titles() {
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <h1 className="text-4xl font-bold text-gray-800">Title List</h1>
-          <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
         </div>
 
         {/* Featured Titles Section */}

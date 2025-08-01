@@ -10,7 +10,7 @@ interface AdminAuthContextType {
   adminProfile: AdminProfile | null;
   session: Session | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -50,11 +50,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadAdminProfile = async (email: string) => {
+  const loadAdminProfile = async (email: string, retryCount = 0) => {
     try {
-      console.log('Loading admin profile for email:', email);
+      console.log('Loading admin profile for email:', email, 'attempt:', retryCount + 1);
       
       const { data, error } = await supabase
         .from('admin')
@@ -68,6 +68,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         if (error.code === 'PGRST116') {
           console.log('No admin record found for email:', email);
+        } else if (error.message?.includes('401') && retryCount < 2) {
+          console.log('401 error, retrying...', retryCount + 1);
+          setTimeout(() => loadAdminProfile(email, retryCount + 1), 1000 * (retryCount + 1));
+          return;
         } else {
           console.error('Error loading admin profile:', error);
         }
@@ -78,9 +82,16 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error loading admin profile:', error);
+      if (retryCount < 2) {
+        console.log('Retrying loadAdminProfile due to error, attempt:', retryCount + 1);
+        setTimeout(() => loadAdminProfile(email, retryCount + 1), 1000 * (retryCount + 1));
+        return;
+      }
       setAdminProfile(null);
     } finally {
-      setIsLoading(false);
+      if (retryCount === 0 || error) {
+        setIsLoading(false);
+      }
     }
   };
 

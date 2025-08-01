@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Eye, EyeOff, Shield, AlertCircle } from 'lucide-react';
 import { testSupabaseConnection, testAdminEmailExists } from '@/utils/testSupabase';
+import ConnectionStatus from '@/components/ConnectionStatus';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -15,6 +16,8 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<string>('');
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [isConnectionHealthy, setIsConnectionHealthy] = useState<boolean | null>(null);
   
   const { signIn } = useAdminAuth();
   const navigate = useNavigate();
@@ -22,17 +25,39 @@ export default function AdminLogin() {
   // Test Supabase connection on component mount
   useEffect(() => {
     const runConnectionTest = async () => {
+      setConnectionStatus('🔄 Testing connection...');
       const result = await testSupabaseConnection();
       if (result.success) {
         setConnectionStatus('✅ Connected to Supabase');
+        setError(''); // Clear any previous errors
       } else {
-        setConnectionStatus('❌ Supabase connection failed');
-        setError('Database connection failed. Please try again later.');
+        setConnectionStatus('❌ Connection issues detected');
+        if (result.details?.title_error?.message?.includes('401') || 
+            result.details?.admin_error?.message?.includes('401')) {
+          setError('Database authentication issue detected. The system is attempting to resolve this automatically.');
+        } else {
+          setError('Database connection failed. Please try again later.');
+        }
       }
     };
     
     runConnectionTest();
   }, []);
+
+  const retryConnection = async () => {
+    setIsRetrying(true);
+    setError('');
+    setConnectionStatus('🔄 Retrying connection...');
+    
+    const result = await testSupabaseConnection();
+    if (result.success) {
+      setConnectionStatus('✅ Connected to Supabase');
+    } else {
+      setConnectionStatus('❌ Connection still failing');
+      setError('Unable to establish database connection. Please contact IT support.');
+    }
+    setIsRetrying(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +66,11 @@ export default function AdminLogin() {
 
     // First check if the email exists in admin table
     const adminCheck = await testAdminEmailExists(email);
+    if (adminCheck.error && adminCheck.error.message?.includes('401')) {
+      setError('Database authentication issue. Please wait a moment and try again.');
+      setIsLoading(false);
+      return;
+    }
     if (!adminCheck.exists) {
       setError(`Email ${email} is not authorized for admin access. Contact IT support.`);
       setIsLoading(false);
@@ -80,9 +110,12 @@ export default function AdminLogin() {
           </div>
           <h1 className="text-3xl font-bold text-midnight-ink mb-2">Admin Portal</h1>
           <p className="text-midnight-ink-600">KStoryBridge Administration</p>
-          {connectionStatus && (
-            <p className="text-sm mt-2 font-mono">{connectionStatus}</p>
-          )}
+          <div className="mt-3 flex justify-center">
+            <ConnectionStatus 
+              showRetryButton={true}
+              onConnectionChange={setIsConnectionHealthy}
+            />
+          </div>
         </div>
 
         <Card className="bg-white border-porcelain-blue-200 shadow-lg rounded-2xl">
@@ -132,14 +165,30 @@ export default function AdminLogin() {
 
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm">{error}</p>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-red-600 text-sm">{error}</p>
+                      {(error.includes('connection') || error.includes('authentication issue')) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={retryConnection}
+                          disabled={isRetrying}
+                          className="mt-2 text-xs h-7"
+                        >
+                          {isRetrying ? 'Retrying...' : 'Retry Connection'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 
               <Button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white py-3 rounded-xl font-medium transition-colors"
+                disabled={isLoading || isConnectionHealthy === false}
+                className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white py-3 rounded-xl font-medium transition-colors disabled:opacity-50"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">

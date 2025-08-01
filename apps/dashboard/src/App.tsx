@@ -7,6 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
+// Load debug utilities in development
+if (import.meta.env.DEV) {
+  import("@/utils/debugGA");
+}
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { RootRedirect } from "./components/RootRedirect";

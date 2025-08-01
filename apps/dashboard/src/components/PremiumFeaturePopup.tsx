@@ -12,12 +12,16 @@ interface PremiumFeaturePopupProps {
   isOpen: boolean;
   onClose: () => void;
   featureName: string;
+  titleId?: string;
+  requestType?: string;
 }
 
 export default function PremiumFeaturePopup({ 
   isOpen, 
   onClose, 
-  featureName 
+  featureName,
+  titleId,
+  requestType
 }: PremiumFeaturePopupProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -37,47 +41,78 @@ export default function PremiumFeaturePopup({
     try {
       setLoading(true);
       
-      // Try to track the request in user_buyers table, but don't fail if table doesn't exist
-      try {
-        // First check if user_buyers record exists, if not create it
-        const { data: existingRecord, error: fetchError } = await supabase
-          .from('user_buyers')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          // PGRST116 means "no rows found", which is expected for new users
-          console.warn('Could not access user_buyers table:', fetchError);
-          // Don't throw error, just continue without database tracking
-        } else if (!existingRecord) {
-          // Create new user_buyers record
-          const { error: insertError } = await supabase
-            .from('user_buyers')
+      // If we have titleId and requestType, save to request table
+      if (titleId && requestType) {
+        try {
+          const { error: requestError } = await supabase
+            .from('request')
             .insert({
               user_id: user.id,
-              requested: true
+              title_id: titleId,
+              type: requestType
             });
 
-          if (insertError) {
-            console.warn('Could not create user_buyers record:', insertError);
-            // Don't throw error, just continue without database tracking
+          if (requestError) {
+            console.error('Error saving to request table:', requestError);
+            toast({
+              title: "Error",
+              description: "Failed to submit request. Please try again.",
+              variant: "destructive"
+            });
+            return;
           }
-        } else {
-          // Update existing record
-          const { error: updateError } = await supabase
-            .from('user_buyers')
-            .update({ requested: true })
-            .eq('user_id', user.id);
-
-          if (updateError) {
-            console.warn('Could not update user_buyers record:', updateError);
-            // Don't throw error, just continue without database tracking
-          }
+        } catch (dbError) {
+          console.error('Database operation failed:', dbError);
+          toast({
+            title: "Error",
+            description: "Failed to submit request. Please try again.",
+            variant: "destructive"
+          });
+          return;
         }
-      } catch (dbError) {
-        console.warn('Database operation failed, continuing without tracking:', dbError);
-        // Continue execution even if database operations fail
+      } else {
+        // Fallback to user_buyers table for legacy requests
+        try {
+          // First check if user_buyers record exists, if not create it
+          const { data: existingRecord, error: fetchError } = await supabase
+            .from('user_buyers')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+          if (fetchError && fetchError.code !== 'PGRST116') {
+            // PGRST116 means "no rows found", which is expected for new users
+            console.warn('Could not access user_buyers table:', fetchError);
+            // Don't throw error, just continue without database tracking
+          } else if (!existingRecord) {
+            // Create new user_buyers record
+            const { error: insertError } = await supabase
+              .from('user_buyers')
+              .insert({
+                user_id: user.id,
+                requested: true
+              });
+
+            if (insertError) {
+              console.warn('Could not create user_buyers record:', insertError);
+              // Don't throw error, just continue without database tracking
+            }
+          } else {
+            // Update existing record
+            const { error: updateError } = await supabase
+              .from('user_buyers')
+              .update({ requested: true })
+              .eq('user_id', user.id);
+
+            if (updateError) {
+              console.warn('Could not update user_buyers record:', updateError);
+              // Don't throw error, just continue without database tracking
+            }
+          }
+        } catch (dbError) {
+          console.warn('Database operation failed, continuing without tracking:', dbError);
+          // Continue execution even if database operations fail
+        }
       }
 
       setRequested(true);

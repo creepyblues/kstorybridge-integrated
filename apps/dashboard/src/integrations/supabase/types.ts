@@ -65,6 +65,48 @@ export type Database = {
         }
         Relationships: []
       }
+      request: {
+        Row: {
+          id: string
+          title_id: string
+          user_id: string
+          type: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title_id: string
+          user_id: string
+          type: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title_id?: string
+          user_id?: string
+          type?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_title_id_fkey"
+            columns: ["title_id"]
+            isOneToOne: false
+            referencedRelation: "titles"
+            referencedColumns: ["title_id"]
+          },
+          {
+            foreignKeyName: "request_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       titles: {
         Row: {
           art_author: string | null

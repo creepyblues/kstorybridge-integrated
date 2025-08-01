@@ -58,31 +58,55 @@ class NaverWebtoonSeleniumScraper:
                     EC.presence_of_element_located((By.TAG_NAME, "body"))
                 )
                 
-                # Look for webtoon links
+                # Additional wait for dynamic content
+                time.sleep(3)
+                
+                # Look for "요일별 전체 웹툰" section first
                 title_links = []
+                weekday_section_found = False
                 
-                # Try different selectors for webtoon links
-                selectors = [
-                    "a[href*='titleId=']",
-                    "a[href*='webtoon/list']",
-                    ".thumb a",
-                    ".title a"
-                ]
+                try:
+                    # Find the "요일별 전체 웹툰" heading or similar
+                    page_text = self.driver.find_element(By.TAG_NAME, "body").text
+                    if "요일별 전체 웹툰" in page_text or "요일별" in page_text:
+                        print("Found weekday section indicator")
+                        weekday_section_found = True
+                except:
+                    print("Weekday section text not found, proceeding with general search")
                 
-                for selector in selectors:
+                # Get all links that contain titleId
+                all_links = self.driver.find_elements(By.CSS_SELECTOR, "a[href*='titleId=']")
+                print(f"Found {len(all_links)} total links with titleId")
+                
+                # If we found weekday section, try to filter links that appear after it
+                if weekday_section_found:
+                    # Look for elements containing "요일별" text
                     try:
-                        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
-                        print(f"Found {len(elements)} elements with selector '{selector}'")
-                        
-                        for element in elements:
-                            href = element.get_attribute('href')
-                            if href and 'titleId=' in href:
-                                clean_url = self.clean_title_url(href)
-                                if clean_url and clean_url not in title_links:
-                                    title_links.append(clean_url)
-                                    print(f"Found title link: {clean_url}")
+                        weekday_elements = self.driver.find_elements(By.XPATH, "//*[contains(text(), '요일별')]")
+                        if weekday_elements:
+                            weekday_element = weekday_elements[0]
+                            print(f"Found weekday section element: {weekday_element.text[:50]}...")
+                            
+                            # Get all titleId links that come after this element in the DOM
+                            following_links = self.driver.find_elements(By.XPATH, 
+                                f"//*[contains(text(), '요일별')]/following::*//a[contains(@href, 'titleId=')]")
+                            print(f"Found {len(following_links)} links after weekday section")
+                            
+                            if following_links:
+                                all_links = following_links[:100]  # Increase limit to get more titles
                     except Exception as e:
-                        print(f"Error with selector {selector}: {e}")
+                        print(f"Error finding weekday section: {e}")
+                
+                # Process the links
+                for element in all_links:
+                    try:
+                        href = element.get_attribute('href')
+                        if href and 'titleId=' in href and '/webtoon/list' in href:
+                            # Keep the entire URL including &tab= parameters
+                            if href not in title_links:
+                                title_links.append(href)
+                                print(f"Found title link: {href}")
+                    except Exception as e:
                         continue
                 
                 if title_links:
@@ -107,7 +131,27 @@ class NaverWebtoonSeleniumScraper:
             "https://comic.naver.com/webtoon/list?titleId=335885",  # 갓 오브 하이스쿨 (The God of High School)
             "https://comic.naver.com/webtoon/list?titleId=597447",  # 독립일기 (Independence Log)
             "https://comic.naver.com/webtoon/list?titleId=679519",  # 유미의 세포들 (Yumi's Cells)  
-            "https://comic.naver.com/webtoon/list?titleId=710751"   # 나 혼자만 레벨업 (Solo Leveling)
+            "https://comic.naver.com/webtoon/list?titleId=710751",  # 나 혼자만 레벨업 (Solo Leveling)
+            "https://comic.naver.com/webtoon/list?titleId=654774",  # 참교육 (True Education)
+            "https://comic.naver.com/webtoon/list?titleId=758037",  # 재벌집 막내아들 (The Youngest Son of a Conglomerate)
+            "https://comic.naver.com/webtoon/list?titleId=783054",  # 김부장 (Manager Kim)
+            "https://comic.naver.com/webtoon/list?titleId=779809",  # 나노마신 (Nano Machine)
+            "https://comic.naver.com/webtoon/list?titleId=822042",  # 템빨 (Item Mall)
+            "https://comic.naver.com/webtoon/list?titleId=818093",  # 내가 키운 S급들 (The S-Classes That I Raised)
+            "https://comic.naver.com/webtoon/list?titleId=796268",  # 갓겜 (God Game)
+            "https://comic.naver.com/webtoon/list?titleId=747269",  # 싸움독학 (Viral Hit)
+            "https://comic.naver.com/webtoon/list?titleId=789766",  # 견습 용사 알바 신청서 (Part-time Hero)
+            "https://comic.naver.com/webtoon/list?titleId=759833",  # 나는 계급장이다 (I Am the Rank)
+            "https://comic.naver.com/webtoon/list?titleId=671674",  # 하이브 (Hive)
+            "https://comic.naver.com/webtoon/list?titleId=725110",  # 프리스트 (Priest)
+            "https://comic.naver.com/webtoon/list?titleId=799893",  # 체인소우맨 (Chainsaw Man)
+            "https://comic.naver.com/webtoon/list?titleId=832351",  # 무한전생 (Infinite Reincarnation)
+            "https://comic.naver.com/webtoon/list?titleId=839004",  # 아가씨를 부탁해 (Please Take Care of the Lady)
+            "https://comic.naver.com/webtoon/list?titleId=815094",  # 스위트홈 (Sweet Home)
+            "https://comic.naver.com/webtoon/list?titleId=789766",  # 견습 용사 알바 신청서
+            "https://comic.naver.com/webtoon/list?titleId=794456",  # 킬러분식 (Killer Snack Bar)
+            "https://comic.naver.com/webtoon/list?titleId=822856",  # 헬창 (Hell Chang)
+            "https://comic.naver.com/webtoon/list?titleId=836447"   # 윈드브레이커 (Wind Breaker)
         ]
         
         if limit:
@@ -116,9 +160,10 @@ class NaverWebtoonSeleniumScraper:
         return sample_links
     
     def clean_title_url(self, url: str) -> str:
-        """Remove tab parameter from URL"""
-        if '&tab=' in url:
-            url = url.split('&tab=')[0]
+        """Keep the URL as is, including tab parameter"""
+        # Just ensure it's a full URL
+        if url.startswith('/'):
+            url = urljoin(self.base_url, url)
         return url
     
     def scrape_title_info(self, title_url: str) -> Dict:
@@ -245,54 +290,99 @@ class NaverWebtoonSeleniumScraper:
             print(f"  Looking for author information...")
             
             # Extract authors using regex patterns with more specific matching
-            author_patterns = {
-                'art_author': [
-                    r'그림\s*[:：]\s*([가-힣a-zA-Z\s]+?)(?=\s|$|\n|/|그림|글|원작)',
-                    r'그림\s+([가-힣a-zA-Z\s]+?)(?=\s|$|\n|/|그림|글|원작)'
-                ],
-                'story_author': [
-                    r'글\s*[:：]\s*([가-힣a-zA-Z\s]+?)(?=\s|$|\n|/|그림|글|원작)',
-                    r'글\s+([가-힣a-zA-Z\s]+?)(?=\s|$|\n|/|그림|글|원작)'
-                ],
-                'original_author_kr': [
-                    r'원작\s*[:：]\s*([가-힣a-zA-Z\s]+?)(?=\s|$|\n|/|그림|글|원작)',
-                    r'원작\s+([가-힣a-zA-Z\s]+?)(?=\s|$|\n|/|그림|글|원작)'
-                ]
-            }
-            
-            for field, patterns in author_patterns.items():
-                for pattern in patterns:
-                    matches = re.findall(pattern, all_text)
-                    for match in matches:
-                        author_name = match.strip()
-                        # Filter out unwanted text
-                        if (author_name and len(author_name) > 1 and len(author_name) < 50 and 
-                            not re.match(r'^\d+화', author_name) and
-                            '완결' not in author_name and '휴재' not in author_name and
-                            '이벤트' not in author_name and '안내' not in author_name and
-                            '확인' not in author_name and '필요' not in author_name and
-                            '당첨' not in author_name):
-                            title_data[field] = author_name
-                            print(f"  Found {field}: {author_name}")
+            # Handle combined 글/그림 (same person for art and story) - name appears BEFORE 글/그림
+            combined_author_match = re.search(r'([가-힣a-zA-Z]+)\s*∙?\s*글/그림', all_text)
+            if combined_author_match:
+                author_name = combined_author_match.group(1).strip()
+                if author_name and len(author_name) < 20:  # Korean names are typically shorter
+                    title_data['art_author'] = author_name
+                    title_data['story_author'] = author_name
+                    print(f"  Found combined art/story author: {author_name}")
+            else:
+                # Try individual patterns if no combined author found
+                author_patterns = {
+                    'art_author': [
+                        # Format: "name ∙ 그림" (name before role)
+                        r'([가-힣a-zA-Z]+)\s*∙\s*그림',
+                        # Format: "그림: name" or "그림 name" (role before name)
+                        r'그림\s*[:：]?\s*([가-힣a-zA-Z]+)(?=\s|$|\n|/|그림|글|원작|전체연령|세\s*이용가)',
+                        r'그림\s+([가-힣a-zA-Z]+)(?=\s|$|\n|/|그림|글|원작|전체연령|세\s*이용가)'
+                    ],
+                    'story_author': [
+                        # Format: "name ∙ 글" (name before role)
+                        r'([가-힣a-zA-Z]+)\s*∙\s*글',
+                        # Format: "글: name" or "글 name" (role before name)
+                        r'글\s*[:：]?\s*([가-힣a-zA-Z]+)(?=\s|$|\n|/|그림|글|원작|전체연령|세\s*이용가)',
+                        r'글\s+([가-힣a-zA-Z]+)(?=\s|$|\n|/|그림|글|원작|전체연령|세\s*이용가)'
+                    ]
+                }
+                
+                for field, patterns in author_patterns.items():
+                    found_author = False
+                    for pattern in patterns:
+                        if found_author:  # Skip remaining patterns if we already found a valid author
                             break
-                if title_data[field]:
+                        matches = re.findall(pattern, all_text)
+                        for match in matches:
+                            author_name = match.strip()
+                            # Filter out unwanted text - Korean names are typically 2-4 characters
+                            if (author_name and len(author_name) > 1 and len(author_name) < 20 and 
+                                not re.match(r'^\d+화', author_name) and
+                                '완결' not in author_name and '휴재' not in author_name and
+                                '이벤트' not in author_name and '안내' not in author_name and
+                                '확인' not in author_name and '필요' not in author_name and
+                                '당첨' not in author_name and '월요웹툰' not in author_name and
+                                '금요웹툰' not in author_name):
+                                title_data[field] = author_name
+                                print(f"  Found {field}: {author_name}")
+                                found_author = True
+                                break
+            
+            # Extract original author
+            original_author_patterns = [
+                # Format: "name ∙ 원작" (name before role)
+                r'([가-힣a-zA-Z]+)\s*∙\s*원작',
+                # Format: "원작: name" or "원작 name" (role before name)
+                r'원작\s*[:：]?\s*([가-힣a-zA-Z\s]+?)(?=\s|$|\n|전체연령|세\s*이용가|글|그림)',
+                r'원작\s+([가-힣a-zA-Z\s]+?)(?=\s|$|\n|전체연령|세\s*이용가|글|그림)'
+            ]
+            
+            for pattern in original_author_patterns:
+                matches = re.findall(pattern, all_text)
+                for match in matches:
+                    author_name = match.strip()
+                    if (author_name and len(author_name) > 1 and len(author_name) < 50 and 
+                        not re.match(r'^\d+화', author_name)):
+                        title_data['original_author_kr'] = author_name
+                        print(f"  Found original_author_kr: {author_name}")
+                        break
+                if title_data['original_author_kr']:
                     break
             
-            # Extract likes
-            like_patterns = [r'\+관심\s*(\d+)', r'관심\s*(\d+)', r'좋아요\s*(\d+)']
+            # Extract likes - handle numbers with commas
+            like_patterns = [r'\+관심\s*([\d,]+)', r'관심\s*([\d,]+)', r'좋아요\s*([\d,]+)']
             for pattern in like_patterns:
                 like_match = re.search(pattern, all_text)
                 if like_match:
-                    title_data['likes'] = int(like_match.group(1))
+                    # Remove commas and convert to int
+                    likes_str = like_match.group(1).replace(',', '')
+                    title_data['likes'] = int(likes_str)
                     print(f"  Found likes: {title_data['likes']}")
                     break
             
             # Extract age rating
-            age_patterns = [r'(\d+)세\s*이용가', r'(\d+)세\s*관람가']
+            age_patterns = [
+                r'전체연령가',  # All ages
+                r'(\d+)세\s*이용가', 
+                r'(\d+)세\s*관람가'
+            ]
             for pattern in age_patterns:
                 age_match = re.search(pattern, all_text)
                 if age_match:
-                    title_data['age_rating'] = f"{age_match.group(1)}세 이용가"
+                    if pattern == r'전체연령가':
+                        title_data['age_rating'] = "전체연령가"
+                    else:
+                        title_data['age_rating'] = f"{age_match.group(1)}세 이용가"
                     print(f"  Found age rating: {title_data['age_rating']}")
                     break
             
@@ -302,24 +392,59 @@ class NaverWebtoonSeleniumScraper:
                 title_data['tags'] = list(set(tag_matches))
                 print(f"  Found tags: {title_data['tags']}")
             
-            # Extract summary/tagline
-            summary_selectors = [
-                ".detail .summary",
-                ".comic_info .summary", 
-                ".description",
-                ".intro"
+            # Extract tagline/summary (look for longer descriptive text)
+            # First try to find text that looks like a story description
+            tagline_patterns = [
+                # Long multi-paragraph storylines (for webtoons like the third example)
+                r'무공에 미친[^#]{50,800}(?=#|$)',  # Specific pattern for martial arts stories
+                r'([가-힣][^#]{100,800}(?:\.|\?)(?:\s*[가-힣][^#]{50,400}(?:\.|\?))*)',  # Multi-sentence Korean descriptions
+                r'\"([^\"]{20,300})\"',  # Text in quotes - expanded range
+                r'\"([^\"]*(?:\([^)]*\))*[^\"]{20,300})\"',  # Text in quotes with parentheses  
+                r'나는\s+([^.]{30,200}\.)',  # Text starting with "나는" (I am/I...)
+                r'그\w*\s+([^.]{30,200}\.)',  # Text starting with "그" (He/She/It...)
+                r'([^.]{30,200}\.[^.]{30,200}\.)',  # Multi-sentence description
             ]
             
-            for selector in summary_selectors:
-                try:
-                    summary_element = self.driver.find_element(By.CSS_SELECTOR, selector)
-                    summary_text = summary_element.text.strip()
-                    if summary_text and len(summary_text) > 10:
-                        title_data['tagline'] = summary_text
-                        print(f"  Found tagline: {summary_text[:50]}...")
-                        break
-                except NoSuchElementException:
-                    continue
+            for pattern in tagline_patterns:
+                tagline_matches = re.findall(pattern, all_text, re.DOTALL)
+                for match in tagline_matches:
+                    text = match.strip()
+                    # Filter out unwanted matches
+                    if (text and len(text) > 30 and len(text) < 300 and 
+                        not text.startswith('#') and 
+                        '이용가' not in text and '관심' not in text and
+                        '글/그림' not in text and '원작' not in text and
+                        'https://' not in text and 'www.' not in text and
+                        '공지사항' not in text and '웹툰' not in text and
+                        'NAVER' not in text):
+                        # Clean up the text
+                        clean_text = re.sub(r'\s+', ' ', text).strip()
+                        if clean_text:
+                            title_data['tagline'] = clean_text
+                            print(f"  Found tagline: {clean_text[:50]}...")
+                            break
+                if title_data['tagline']:
+                    break
+            
+            # Fallback: try CSS selectors
+            if not title_data['tagline']:
+                summary_selectors = [
+                    ".detail .summary",
+                    ".comic_info .summary", 
+                    ".description",
+                    ".intro"
+                ]
+                
+                for selector in summary_selectors:
+                    try:
+                        summary_element = self.driver.find_element(By.CSS_SELECTOR, selector)
+                        summary_text = summary_element.text.strip()
+                        if summary_text and len(summary_text) > 30:
+                            title_data['tagline'] = summary_text
+                            print(f"  Found tagline (CSS): {summary_text[:50]}...")
+                            break
+                    except NoSuchElementException:
+                        continue
             
             return title_data
             
@@ -338,9 +463,9 @@ class NaverWebtoonSeleniumScraper:
             title_data = self.scrape_title_info(link)
             results.append(title_data)
             
-            # Rate limiting
+            # Rate limiting - reduced for faster testing
             if i < len(title_links) - 1:
-                time.sleep(2)
+                time.sleep(1)
         
         return results
     
@@ -353,12 +478,12 @@ def main():
     """Main function to run the scraper"""
     scraper = None
     try:
-        scraper = NaverWebtoonSeleniumScraper(headless=False)  # Set to False to see browser
+        scraper = NaverWebtoonSeleniumScraper(headless=True)  # Run in headless mode for speed
         
         print("Starting Naver Webtoon Selenium scraper...")
-        print("Scraping first 10 titles for validation...")
+        print("Scraping 30 titles with improved parser...")
         
-        results = scraper.scrape_titles(limit=10)
+        results = scraper.scrape_titles(limit=30)
         
         # Save results to JSON file
         output_file = "naver_webtoon_selenium_results.json"

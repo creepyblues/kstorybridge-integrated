@@ -34,7 +34,7 @@ export const debugGA = {
       console.log('- Window available:', true);
       console.log('- gtag function available:', !!window.gtag);
       console.log('- dataLayer available:', !!window.dataLayer);
-      console.log('- GA_MEASUREMENT_ID from env:', import.meta.env.VITE_GA_MEASUREMENT_ID);
+      console.log('- GA_MEASUREMENT_ID:', 'G-LTR32L1HTF');
       
       if (window.gtag) {
         console.log('✅ Google Analytics is ready');

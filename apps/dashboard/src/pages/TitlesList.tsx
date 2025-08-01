@@ -27,11 +27,11 @@ export default function TitlesList() {
       
       // Load featured titles
       const featured = await featuredService.getFeaturedTitles();
-      setFeaturedTitles(featured);
+      setFeaturedTitles(featured || []);
       
       // Load all titles
       const allTitles = await titlesService.getAllTitles();
-      setTitles(allTitles);
+      setTitles(allTitles || []);
       
     } catch (error) {
       console.error("Error loading data:", error);
@@ -64,6 +64,11 @@ export default function TitlesList() {
         
         {loading ? (
           <div className="text-center text-gray-500 py-8">Loading featured titles...</div>
+        ) : featuredTitles.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            <p>No featured titles available at the moment.</p>
+            <p className="text-sm mt-2">Check back later for new content!</p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
             {featuredTitles.map((featured) => {

@@ -54,6 +54,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const loadAdminProfile = async (email: string) => {
     try {
+      console.log('Loading admin profile for email:', email);
+      
       const { data, error } = await supabase
         .from('admin')
         .select('*')
@@ -61,10 +63,17 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         .eq('active', true)
         .single();
 
+      console.log('Admin profile query result:', { data, error });
+
       if (error) {
-        console.error('Error loading admin profile:', error);
+        if (error.code === 'PGRST116') {
+          console.log('No admin record found for email:', email);
+        } else {
+          console.error('Error loading admin profile:', error);
+        }
         setAdminProfile(null);
       } else {
+        console.log('Admin profile loaded successfully:', data);
         setAdminProfile(data);
       }
     } catch (error) {
@@ -77,14 +86,20 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
+    console.log('Attempting sign in for email:', email);
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
+    console.log('Sign in result:', { error });
+    
     if (!error) {
       // Profile will be loaded automatically by the auth state change listener
+      console.log('Sign in successful, waiting for admin profile check...');
     } else {
+      console.error('Sign in failed:', error);
       setIsLoading(false);
     }
     

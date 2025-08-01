@@ -173,6 +173,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_buyers: {
+        Row: {
+          created_at: string
+          id: string
+          requested: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requested?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requested?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_favorites: {
         Row: {
           created_at: string

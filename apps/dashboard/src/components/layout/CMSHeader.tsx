@@ -15,12 +15,14 @@ export function CMSHeader() {
   const displayTitle = accountType === "ip_owner" ? "Creator Dashboard" : "Buyer Dashboard";
 
   return (
-    <header className="bg-white border-b border-porcelain-blue-200 px-6 py-4">
+    <header className="w-full bg-white border-b border-porcelain-blue-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-hanok-teal rounded-full flex items-center justify-center">
-            <Shield className="w-4 h-4 text-white" />
-          </div>
+          <img 
+            src="/kstorybridge-logo.png" 
+            alt="KStoryBridge" 
+            className="h-8 w-auto object-contain"
+          />
           <div>
             <h1 className="text-lg font-bold text-midnight-ink">{displayTitle}</h1>
             <p className="text-xs text-midnight-ink-500">KStoryBridge Platform</p>

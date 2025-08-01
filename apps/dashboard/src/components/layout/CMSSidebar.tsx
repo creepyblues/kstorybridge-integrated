@@ -32,7 +32,7 @@ export function CMSSidebar() {
   const navigationItems = getNavigationItems(accountType);
 
   return (
-    <div className="w-64 bg-white border-r border-porcelain-blue-200 min-h-screen">
+    <div className="w-64 bg-white border-r border-porcelain-blue-200 h-[calc(100vh-73px)]">
       <nav className="p-4">
         <div className="space-y-2">
           {navigationItems.map((item) => {

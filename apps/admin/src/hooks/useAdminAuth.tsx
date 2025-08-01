@@ -52,10 +52,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadAdminProfile = async (email: string, retryCount = 0) => {
+  const loadAdminProfile = async (email: string) => {
     try {
-      console.log('Loading admin profile for email:', email, 'attempt:', retryCount + 1);
+      console.log('Loading admin profile for authenticated user:', email);
       
+      // Only attempt this after user is already authenticated
+      // This should work because the user has a valid session
       const { data, error } = await supabase
         .from('admin')
         .select('*')
@@ -68,12 +70,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         if (error.code === 'PGRST116') {
           console.log('No admin record found for email:', email);
-        } else if (error.message?.includes('401') && retryCount < 2) {
-          console.log('401 error, retrying...', retryCount + 1);
-          setTimeout(() => loadAdminProfile(email, retryCount + 1), 1000 * (retryCount + 1));
-          return;
+          console.log('User is authenticated but not an admin');
         } else {
           console.error('Error loading admin profile:', error);
+          console.log('Database error after authentication - this may be a policy issue');
         }
         setAdminProfile(null);
       } else {
@@ -82,35 +82,28 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error loading admin profile:', error);
-      if (retryCount < 2) {
-        console.log('Retrying loadAdminProfile due to error, attempt:', retryCount + 1);
-        setTimeout(() => loadAdminProfile(email, retryCount + 1), 1000 * (retryCount + 1));
-        return;
-      }
       setAdminProfile(null);
     } finally {
-      if (retryCount === 0 || error) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
-    console.log('Attempting sign in for email:', email);
+    console.log('Attempting authentication for email:', email);
     
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
-    console.log('Sign in result:', { error });
+    console.log('Authentication result:', { error });
     
     if (!error) {
-      // Profile will be loaded automatically by the auth state change listener
-      console.log('Sign in successful, waiting for admin profile check...');
+      console.log('Authentication successful - admin profile will be checked automatically');
+      // The auth state change listener will handle admin profile loading
     } else {
-      console.error('Sign in failed:', error);
+      console.error('Authentication failed:', error);
       setIsLoading(false);
     }
     

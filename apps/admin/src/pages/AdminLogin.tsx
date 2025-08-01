@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Eye, EyeOff, Shield } from 'lucide-react';
+import { Eye, EyeOff, Shield, AlertCircle } from 'lucide-react';
+import { testSupabaseConnection, testAdminEmailExists } from '@/utils/testSupabase';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -13,19 +14,54 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<string>('');
   
   const { signIn } = useAdminAuth();
   const navigate = useNavigate();
+
+  // Test Supabase connection on component mount
+  useEffect(() => {
+    const runConnectionTest = async () => {
+      const result = await testSupabaseConnection();
+      if (result.success) {
+        setConnectionStatus('✅ Connected to Supabase');
+      } else {
+        setConnectionStatus('❌ Supabase connection failed');
+        setError('Database connection failed. Please try again later.');
+      }
+    };
+    
+    runConnectionTest();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
+    // First check if the email exists in admin table
+    const adminCheck = await testAdminEmailExists(email);
+    if (!adminCheck.exists) {
+      setError(`Email ${email} is not authorized for admin access. Contact IT support.`);
+      setIsLoading(false);
+      return;
+    }
+
     const { error } = await signIn(email, password);
     
     if (error) {
-      setError('Invalid email or password, or you do not have admin access.');
+      console.error('Login error details:', error);
+      
+      // Provide specific error messages based on error code
+      if (error.message?.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please check your credentials.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        setError('Email not confirmed. Please check your email for confirmation link.');
+      } else if (error.message?.includes('Too many requests')) {
+        setError('Too many login attempts. Please wait a few minutes and try again.');
+      } else {
+        setError(`Login failed: ${error.message || 'Unknown error occurred'}`);
+      }
     } else {
       navigate('/titles');
     }
@@ -44,6 +80,9 @@ export default function AdminLogin() {
           </div>
           <h1 className="text-3xl font-bold text-midnight-ink mb-2">Admin Portal</h1>
           <p className="text-midnight-ink-600">KStoryBridge Administration</p>
+          {connectionStatus && (
+            <p className="text-sm mt-2 font-mono">{connectionStatus}</p>
+          )}
         </div>
 
         <Card className="bg-white border-porcelain-blue-200 shadow-lg rounded-2xl">

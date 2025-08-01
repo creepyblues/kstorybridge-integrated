@@ -9,10 +9,13 @@ interface CMSLayoutProps {
 
 export function CMSLayout({ children }: CMSLayoutProps) {
   return (
-    <div className="flex min-h-screen w-full bg-gray-50">
-      <CMSSidebar />
-      <div className="flex-1 flex flex-col">
-        <CMSHeader />
+    <div className="min-h-screen w-full bg-gray-50">
+      {/* Header spans full width */}
+      <CMSHeader />
+      
+      {/* Content area with sidebar */}
+      <div className="flex">
+        <CMSSidebar />
         <main className="flex-1 overflow-auto bg-gray-50">
           <div className="max-w-none mx-auto py-8 px-8">
             {children}

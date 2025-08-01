@@ -9,7 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 // Load debug utilities in development
 if (import.meta.env.DEV) {
-  import("@/utils/debugGA");
+  import("@/utils/debugGA").catch(console.error);
 }
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";

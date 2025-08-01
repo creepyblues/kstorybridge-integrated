@@ -7,72 +7,47 @@ declare global {
   }
 }
 
-// Google Analytics Measurement ID - replace with your actual GA4 measurement ID
-const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'GA_MEASUREMENT_ID';
+// Google Analytics Measurement ID
+const GA_MEASUREMENT_ID = 'G-LTR32L1HTF';
 
-// Initialize Google Analytics
+// Initialize Google Analytics (gtag is now loaded directly in HTML)
 export const initGA = () => {
-  if (typeof window !== 'undefined') {
-    // Wait for gtag to be available
-    const checkGtag = () => {
-      if (window.gtag) {
-        window.gtag('config', GA_MEASUREMENT_ID, {
-          // Enhanced measurement for better tracking
-          send_page_view: false, // We'll manually track page views
-          anonymize_ip: true,
-          allow_google_signals: true,
-          allow_ad_personalization_signals: false
-        });
-      } else {
-        // Retry after a short delay
-        setTimeout(checkGtag, 100);
-      }
-    };
-    checkGtag();
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('config', GA_MEASUREMENT_ID, {
+      // Enhanced measurement for better tracking
+      send_page_view: false, // We'll manually track page views
+      anonymize_ip: true,
+      allow_google_signals: true,
+      allow_ad_personalization_signals: false
+    });
   }
 };
 
 // Track page views
 export const trackPageView = (path: string, title?: string) => {
-  if (typeof window !== 'undefined') {
-    const sendPageView = () => {
-      if (window.gtag) {
-        window.gtag('event', 'page_view', {
-          page_title: title || document.title,
-          page_location: window.location.href,
-          page_path: path,
-          custom_map: {
-            dimension1: 'dashboard' // Custom dimension to identify dashboard traffic
-          }
-        });
-      } else {
-        // Retry after a short delay if gtag is not ready
-        setTimeout(sendPageView, 100);
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'page_view', {
+      page_title: title || document.title,
+      page_location: window.location.href,
+      page_path: path,
+      custom_map: {
+        dimension1: 'dashboard'
       }
-    };
-    sendPageView();
+    });
   }
 };
 
 // Track custom events
 export const trackEvent = (action: string, category: string, label?: string, value?: number) => {
-  if (typeof window !== 'undefined') {
-    const sendEvent = () => {
-      if (window.gtag) {
-        window.gtag('event', action, {
-          event_category: category,
-          event_label: label,
-          value: value,
-          custom_map: {
-            dimension1: 'dashboard'
-          }
-        });
-      } else {
-        // Retry after a short delay if gtag is not ready
-        setTimeout(sendEvent, 100);
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', action, {
+      event_category: category,
+      event_label: label,
+      value: value,
+      custom_map: {
+        dimension1: 'dashboard'
       }
-    };
-    sendEvent();
+    });
   }
 };
 
@@ -91,22 +66,15 @@ export const trackTitleView = (titleId: string, titleName: string) => {
   trackEvent('view_title', 'content_engagement', titleName, undefined);
   
   // Also track as custom event with more details
-  if (typeof window !== 'undefined') {
-    const sendTitleView = () => {
-      if (window.gtag) {
-        window.gtag('event', 'view_item', {
-          item_id: titleId,
-          item_name: titleName,
-          item_category: 'title',
-          custom_map: {
-            dimension1: 'dashboard'
-          }
-        });
-      } else {
-        setTimeout(sendTitleView, 100);
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'view_item', {
+      item_id: titleId,
+      item_name: titleName,
+      item_category: 'title',
+      custom_map: {
+        dimension1: 'dashboard'
       }
-    };
-    sendTitleView();
+    });
   }
 };
 
@@ -117,38 +85,24 @@ export const trackFavoriteAction = (action: 'add' | 'remove', titleId: string, t
 
 // Track search actions
 export const trackSearch = (searchTerm: string, resultCount?: number) => {
-  if (typeof window !== 'undefined') {
-    const sendSearch = () => {
-      if (window.gtag) {
-        window.gtag('event', 'search', {
-          search_term: searchTerm,
-          custom_map: {
-            dimension1: 'dashboard'
-          }
-        });
-      } else {
-        setTimeout(sendSearch, 100);
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'search', {
+      search_term: searchTerm,
+      custom_map: {
+        dimension1: 'dashboard'
       }
-    };
-    sendSearch();
+    });
   }
 };
 
 // Track authentication events
 export const trackAuth = (action: 'login' | 'logout' | 'signup') => {
-  if (typeof window !== 'undefined') {
-    const sendAuth = () => {
-      if (window.gtag) {
-        window.gtag('event', action, {
-          custom_map: {
-            dimension1: 'dashboard'
-          }
-        });
-      } else {
-        setTimeout(sendAuth, 100);
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', action, {
+      custom_map: {
+        dimension1: 'dashboard'
       }
-    };
-    sendAuth();
+    });
   }
 };
 

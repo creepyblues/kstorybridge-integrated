@@ -10,10 +10,12 @@
   "scripts": {
     "dev:dashboard": "npm run dev --workspace=apps/dashboard",
     "dev:website": "npm run dev --workspace=apps/website",
+    "dev:admin": "npm run dev --workspace=apps/admin",
     "build:dashboard": "npm run build --workspace=apps/dashboard",
     "build:website": "npm run build --workspace=apps/website",
-    "build:all": "npm run build:dashboard && npm run build:website",
-    "lint:all": "npm run lint --workspace=apps/dashboard && npm run lint --workspace=apps/website",
+    "build:admin": "npm run build --workspace=apps/admin",
+    "build:all": "npm run build:dashboard && npm run build:website && npm run build:admin",
+    "lint:all": "npm run lint --workspace=apps/dashboard && npm run lint --workspace=apps/website && npm run lint --workspace=apps/admin",
     "install:all": "npm install"
   },
   "devDependencies": {

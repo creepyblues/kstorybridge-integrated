@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KStoryBridge Admin Portal</title>
+    <meta name="description" content="KStoryBridge Administrative Interface" />
+    <meta name="author" content="KStoryBridge" />
+
+    <meta property="og:title" content="KStoryBridge Admin Portal" />
+    <meta property="og:description" content="KStoryBridge Administrative Interface" />
+    <meta property="og:type" content="website" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    <!-- Google Analytics -->
+    <script>
+      // Only load GA if measurement ID is provided
+      const GA_ID = '%VITE_GA_MEASUREMENT_ID%';
+      if (GA_ID && GA_ID !== 'GA_MEASUREMENT_ID' && !GA_ID.includes('%')) {
+        // Load gtag script
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+        document.head.appendChild(script);
+        
+        // Initialize dataLayer and gtag
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', GA_ID);
+      }
+    </script>
+    <script type="module" crossorigin src="/assets/index-Dln07E-v.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CL8hUEZT.css">
+  </head>
+
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

@@ -6,15 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Root Level Commands
 - `npm run dev:dashboard` - Start dashboard development server
-- `npm run dev:website` - Start website development server  
+- `npm run dev:website` - Start website development server
+- `npm run dev:admin` - Start admin development server
 - `npm run build:dashboard` - Build dashboard for production
 - `npm run build:website` - Build website for production
-- `npm run build:all` - Build both applications
-- `npm run lint:all` - Run linting on both applications
+- `npm run build:admin` - Build admin for production
+- `npm run build:all` - Build all three applications
+- `npm run lint:all` - Run linting on all applications
 - `npm install` - Install all workspace dependencies
 
 ### Individual Application Commands
-Run these from within `apps/dashboard/` or `apps/website/`:
+Run these from within `apps/dashboard/`, `apps/website/`, or `apps/admin/`:
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run build:dev` - Build for development mode
@@ -23,19 +25,20 @@ Run these from within `apps/dashboard/` or `apps/website/`:
 
 ## Architecture Overview
 
-This is a monorepo containing two related React TypeScript applications for KStoryBridge - a platform connecting Korean content creators with global media buyers.
+This is a monorepo containing three related React TypeScript applications for KStoryBridge - a platform connecting Korean content creators with global media buyers.
 
 ### Project Structure
 ```
 ├── apps/
-│   ├── dashboard/     # Admin dashboard for authenticated users
-│   └── website/       # Marketing website and authentication
+│   ├── dashboard/     # User dashboard for authenticated users  
+│   ├── website/       # Marketing website and authentication
+│   └── admin/         # Admin portal for authorized personnel
 ├── packages/          # Shared libraries (currently empty)
 └── node_modules/      # Workspace dependencies
 ```
 
 ### Shared Technology Stack
-Both applications share similar technology stacks:
+All three applications share similar technology stacks:
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: Tailwind CSS + shadcn/ui components + Radix UI
 - **Backend**: Supabase (shared database, authentication)

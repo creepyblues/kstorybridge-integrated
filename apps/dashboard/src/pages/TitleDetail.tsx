@@ -130,25 +130,25 @@ export default function TitleDetail() {
           <CardContent className="p-8">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h1 className="text-4xl font-bold text-gray-800 mb-2">
+                <h1 className="text-4xl font-bold text-midnight-ink mb-2">
                   {title.title_name_en || title.title_name_kr}
                 </h1>
                 {title.title_name_kr && title.title_name_en && (
-                  <p className="text-xl text-gray-600 font-medium mb-4">
+                  <p className="text-lg text-gray-500 font-medium mb-4">
                     {title.title_name_kr}
                   </p>
                 )}
                 
                 {/* Story and Art Authors */}
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-4">
+                <div className="flex flex-wrap gap-4 text-sm text-gray-500 mt-4">
                   {title.story_author && (
                     <div>
-                      <span className="font-medium">Story by</span> {title.story_author}
+                      <span className="font-semibold text-hanok-teal">Story by</span> <span className="text-gray-600">{title.story_author}</span>
                     </div>
                   )}
                   {title.art_author && (
                     <div>
-                      <span className="font-medium">Art by</span> {title.art_author}
+                      <span className="font-semibold text-hanok-teal">Art by</span> <span className="text-gray-600">{title.art_author}</span>
                     </div>
                   )}
                 </div>
@@ -260,22 +260,22 @@ export default function TitleDetail() {
               <div className="space-y-4">
                 {/* Statistics */}
                 <div className="space-y-3">
-                  <h4 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Statistics</h4>
+                  <h4 className="font-bold text-midnight-ink text-sm uppercase tracking-wide">Statistics</h4>
                   <div className="space-y-3">
                     {/* Views and Likes on same line */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
                         <Eye className="h-4 w-4 text-blue-600" />
                         <div>
-                          <p className="text-xs text-gray-600">Views</p>
-                          <p className="font-semibold text-gray-800 text-sm">{formatViews(title.views || 0)}</p>
+                          <p className="text-xs font-semibold text-hanok-teal">Views</p>
+                          <p className="font-medium text-gray-600 text-sm">{formatViews(title.views || 0)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
                         <Heart className="h-4 w-4 text-red-500" />
                         <div>
-                          <p className="text-xs text-gray-600">Likes</p>
-                          <p className="font-semibold text-gray-800 text-sm">{formatLikes(title.likes || 0)}</p>
+                          <p className="text-xs font-semibold text-hanok-teal">Likes</p>
+                          <p className="font-medium text-gray-600 text-sm">{formatLikes(title.likes || 0)}</p>
                         </div>
                       </div>
                     </div>
@@ -285,8 +285,8 @@ export default function TitleDetail() {
                       <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
                         <Star className="h-5 w-5 text-yellow-500" />
                         <div>
-                          <p className="text-sm text-gray-600">Rating</p>
-                          <p className="font-semibold text-gray-800">{title.rating.toFixed(1)} ({title.rating_count} reviews)</p>
+                          <p className="text-xs font-semibold text-hanok-teal">Rating</p>
+                          <p className="font-medium text-gray-600 text-sm">{title.rating.toFixed(1)} ({title.rating_count} reviews)</p>
                         </div>
                       </div>
                     )}
@@ -301,14 +301,14 @@ export default function TitleDetail() {
           {title.note && (
             <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-gray-800 text-xl flex items-center gap-2">
+                <CardTitle className="text-midnight-ink text-xl flex items-center gap-2">
                   <FileText className="h-5 w-5 text-hanok-teal" />
                   Note
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="p-4 bg-gradient-to-r from-hanok-teal/5 to-porcelain-blue-50 rounded-lg border-l-4 border-hanok-teal">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
                     {title.note}
                   </p>
                 </div>
@@ -322,7 +322,7 @@ export default function TitleDetail() {
           {/* Synopsis */}
           <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-gray-800 text-xl">Synopsis</CardTitle>
+              <CardTitle className="text-midnight-ink text-xl">Synopsis</CardTitle>
               {title.pitch && user && (
                 <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
                   <DialogTrigger asChild>
@@ -418,9 +418,9 @@ export default function TitleDetail() {
             <CardContent>
               <div className="space-y-6">
                 {title.description ? (
-                  <p className="text-gray-700 leading-relaxed text-lg">{title.description}</p>
+                  <p className="text-gray-600 leading-relaxed text-base">{title.description}</p>
                 ) : (
-                  <p className="text-gray-500 italic">No description available for this title.</p>
+                  <p className="text-gray-500 italic text-sm">No description available for this title.</p>
                 )}
                 
                 {/* Premium Feature Notice */}
@@ -452,23 +452,23 @@ export default function TitleDetail() {
                 <div className="pt-6 border-t border-gray-200 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h5 className="font-bold text-gray-600 mb-1">Perfect For</h5>
-                      <p className="text-gray-800 text-lg">{title.perfect_for || 'Not specified'}</p>
+                      <h5 className="font-bold text-hanok-teal mb-1">Perfect For</h5>
+                      <p className="text-gray-600 text-sm">{title.perfect_for || 'Not specified'}</p>
                     </div>
                     <div>
-                      <h5 className="font-bold text-gray-600 mb-1">Comps</h5>
-                      <p className="text-gray-800 text-lg">{title.comps || 'Not specified'}</p>
+                      <h5 className="font-bold text-hanok-teal mb-1">Comps</h5>
+                      <p className="text-gray-600 text-sm">{title.comps || 'Not specified'}</p>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h5 className="font-bold text-gray-600 mb-1">Tone</h5>
-                      <p className="text-gray-800 text-lg">{title.tone || 'Not specified'}</p>
+                      <h5 className="font-bold text-hanok-teal mb-1">Tone</h5>
+                      <p className="text-gray-600 text-sm">{title.tone || 'Not specified'}</p>
                     </div>
                     <div>
-                      <h5 className="font-bold text-gray-600 mb-1">Audience</h5>
-                      <p className="text-gray-800 text-lg">{title.audience || 'Not specified'}</p>
+                      <h5 className="font-bold text-hanok-teal mb-1">Audience</h5>
+                      <p className="text-gray-600 text-sm">{title.audience || 'Not specified'}</p>
                     </div>
                   </div>
                 </div>
@@ -479,7 +479,7 @@ export default function TitleDetail() {
           {/* Title Information and Details */}
           <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
             <CardHeader>
-              <CardTitle className="text-gray-800 text-xl">Title Information</CardTitle>
+              <CardTitle className="text-midnight-ink text-xl">Title Information</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -487,39 +487,39 @@ export default function TitleDetail() {
                 <div className="space-y-4">
                   {title.author && (
                     <div>
-                      <h5 className="font-medium text-gray-600 mb-1">Story Author (Original Author)</h5>
-                      <p className="text-gray-800 text-lg">{title.author}</p>
+                      <h5 className="font-semibold text-hanok-teal mb-1">Story Author (Original Author)</h5>
+                      <p className="text-gray-600 text-sm">{title.author}</p>
                     </div>
                   )}
                   {title.writer && (
                     <div>
-                      <h5 className="font-medium text-gray-600 mb-1">Writer</h5>
-                      <p className="text-gray-800 text-lg">{title.writer}</p>
+                      <h5 className="font-semibold text-hanok-teal mb-1">Writer</h5>
+                      <p className="text-gray-600 text-sm">{title.writer}</p>
                     </div>
                   )}
                   {title.illustrator && (
                     <div>
-                      <h5 className="font-medium text-gray-600 mb-1">Art Author (Artist)</h5>
-                      <p className="text-gray-800 text-lg">{title.illustrator}</p>
+                      <h5 className="font-semibold text-hanok-teal mb-1">Art Author (Artist)</h5>
+                      <p className="text-gray-600 text-sm">{title.illustrator}</p>
                     </div>
                   )}
                   <div>
-                    <h5 className="font-bold text-gray-600 mb-1">Rights Owner</h5>
-                    <p className="text-gray-800 text-lg">{title.rights || 'Not specified'}</p>
+                    <h5 className="font-bold text-hanok-teal mb-1">Rights Owner</h5>
+                    <p className="text-gray-600 text-sm">{title.rights || 'Not specified'}</p>
                   </div>
                 </div>
 
                 {/* Right Column - Content Details */}
                 <div className="space-y-4">
                   <div>
-                    <h5 className="font-bold text-gray-600 mb-1">Series Status</h5>
-                    <p className="text-gray-800 text-lg">
+                    <h5 className="font-bold text-hanok-teal mb-1">Series Status</h5>
+                    <p className="text-gray-600 text-sm">
                       {title.completed !== null && title.completed !== undefined ? String(title.completed) : 'null'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-bold text-gray-600 mb-1">Number of Chapters</h5>
-                    <p className="text-gray-800 text-lg">{title.chapters?.toLocaleString() || 'Not specified'}</p>
+                    <h5 className="font-bold text-hanok-teal mb-1">Number of Chapters</h5>
+                    <p className="text-gray-600 text-sm">{title.chapters?.toLocaleString() || 'Not specified'}</p>
                   </div>
                 </div>
               </div>
@@ -532,12 +532,12 @@ export default function TitleDetail() {
           {title.tags && title.tags.length > 0 && (
             <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-gray-800 text-xl">Tags</CardTitle>
+                <CardTitle className="text-midnight-ink text-xl">Tags</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-3">
                   {title.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-700 px-3 py-1 text-sm">
+                    <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-600 px-3 py-1 text-xs">
                       {tag}
                     </Badge>
                   ))}

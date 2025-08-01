@@ -93,7 +93,7 @@ class NaverWebtoonSeleniumScraper:
                             print(f"Found {len(following_links)} links after weekday section")
                             
                             if following_links:
-                                all_links = following_links[:100]  # Increase limit to get more titles
+                                all_links = following_links  # Get all available titles, no limit
                     except Exception as e:
                         print(f"Error finding weekday section: {e}")
                 
@@ -392,10 +392,12 @@ class NaverWebtoonSeleniumScraper:
                 title_data['tags'] = list(set(tag_matches))
                 print(f"  Found tags: {title_data['tags']}")
             
-            # Extract tagline/summary (look for longer descriptive text)
-            # First try to find text that looks like a story description
+            # Extract tagline/summary - text between age rating and hashtags
+            # First try to find text that appears between age rating and tags (most accurate)
             tagline_patterns = [
-                # Long multi-paragraph storylines (for webtoons like the third example)
+                # Pattern: age_rating ... tagline ... #tags
+                r'(?:전체연령가|(?:\d+)세\s*이용가)\s+([^#]*?)(?=\s*#|$)',
+                # Long multi-paragraph storylines (for webtoons like the third example) 
                 r'무공에 미친[^#]{50,800}(?=#|$)',  # Specific pattern for martial arts stories
                 r'([가-힣][^#]{100,800}(?:\.|\?)(?:\s*[가-힣][^#]{50,400}(?:\.|\?))*)',  # Multi-sentence Korean descriptions
                 r'\"([^\"]{20,300})\"',  # Text in quotes - expanded range
@@ -463,9 +465,20 @@ class NaverWebtoonSeleniumScraper:
             title_data = self.scrape_title_info(link)
             results.append(title_data)
             
-            # Rate limiting - reduced for faster testing
+            # Rate limiting - optimized for large scale scraping
             if i < len(title_links) - 1:
-                time.sleep(1)
+                time.sleep(0.5)  # Reduced delay for faster scraping
+                
+            # Progress indicator and intermediate saving for large scraping runs
+            if (i + 1) % 10 == 0:
+                print(f"Progress: {i+1}/{len(title_links)} titles completed ({((i+1)/len(title_links)*100):.1f}%)")
+                
+            # Save intermediate results every 50 titles to prevent data loss
+            if (i + 1) % 50 == 0:
+                temp_output = f"naver_webtoon_partial_{i+1}.json"
+                with open(temp_output, 'w', encoding='utf-8') as f:
+                    json.dump(results, f, ensure_ascii=False, indent=2)
+                print(f"  💾 Intermediate results saved to {temp_output}")
         
         return results
     
@@ -481,17 +494,32 @@ def main():
         scraper = NaverWebtoonSeleniumScraper(headless=True)  # Run in headless mode for speed
         
         print("Starting Naver Webtoon Selenium scraper...")
-        print("Scraping 30 titles with improved parser...")
+        print("Scraping ALL available titles with enhanced parser...")
         
-        results = scraper.scrape_titles(limit=30)
+        results = scraper.scrape_titles(limit=None)  # Remove limit to scrape all titles
         
         # Save results to JSON file
-        output_file = "naver_webtoon_selenium_results.json"
+        output_file = "naver_webtoon_all_titles.json"
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
         
-        print(f"\nScraping complete! Results saved to {output_file}")
+        print(f"\n🎉 Scraping complete! Results saved to {output_file}")
         print(f"Successfully scraped {len(results)} titles")
+        
+        # Generate summary statistics
+        successful_titles = [r for r in results if r.get('title_name_kr') and r.get('title_name_kr') != '네이버']
+        titles_with_images = [r for r in successful_titles if r.get('title_image')]
+        titles_with_authors = [r for r in successful_titles if r.get('art_author') or r.get('story_author')]
+        titles_with_taglines = [r for r in successful_titles if r.get('tagline')]
+        titles_with_likes = [r for r in successful_titles if r.get('likes')]
+        
+        print(f"\n📊 Summary Statistics:")
+        print(f"  Total titles processed: {len(results)}")
+        print(f"  Valid webtoon titles: {len(successful_titles)}")
+        print(f"  Titles with cover images: {len(titles_with_images)} ({len(titles_with_images)/len(successful_titles)*100:.1f}%)")
+        print(f"  Titles with author info: {len(titles_with_authors)} ({len(titles_with_authors)/len(successful_titles)*100:.1f}%)")
+        print(f"  Titles with taglines: {len(titles_with_taglines)} ({len(titles_with_taglines)/len(successful_titles)*100:.1f}%)")
+        print(f"  Titles with like counts: {len(titles_with_likes)} ({len(titles_with_likes)/len(successful_titles)*100:.1f}%)")
         
         # Display summary
         for i, title in enumerate(results[:3]):

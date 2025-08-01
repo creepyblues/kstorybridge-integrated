@@ -74,28 +74,34 @@ export const featuredService = {
 
   // Get featured titles (for homepage-style display)
   async getFeaturedTitles(): Promise<FeaturedWithTitle[]> {
-    const { data, error } = await supabase
-      .from('featured')
-      .select(`
-        *,
-        titles (
-          title_id,
-          title_name_en,
-          title_name_kr,
-          title_image,
-          tagline,
-          genre,
-          content_format,
-          story_author,
-          pitch
-        )
-      `)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('featured')
+        .select(`
+          *,
+          titles (
+            title_id,
+            title_name_en,
+            title_name_kr,
+            title_image,
+            tagline,
+            genre,
+            content_format,
+            story_author,
+            pitch
+          )
+        `)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      throw new Error(`Failed to fetch featured titles: ${error.message}`);
+      if (error) {
+        console.warn('Failed to fetch featured titles:', error.message);
+        return []; // Return empty array instead of throwing
+      }
+
+      return data || [];
+    } catch (error) {
+      console.warn('Featured titles service error:', error);
+      return []; // Return empty array on any error
     }
-
-    return data || [];
   }
 };

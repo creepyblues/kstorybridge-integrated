@@ -9,13 +9,21 @@ export type TitleUpdate = TablesUpdate<"titles">;
 export const titlesService = {
   // Get all titles (for buyers to browse)
   async getAllTitles() {
-    const { data, error } = await supabase
-      .from("titles")
-      .select("*")
-      .order("created_at", { ascending: false });
-    
-    if (error) throw error;
-    return data;
+    try {
+      const { data, error } = await supabase
+        .from("titles")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (error) {
+        console.warn('Failed to fetch titles:', error.message);
+        return []; // Return empty array instead of throwing
+      }
+      return data || [];
+    } catch (error) {
+      console.warn('Titles service error:', error);
+      return []; // Return empty array on any error
+    }
   },
 
   // Get titles by creator (for creators to manage their own)

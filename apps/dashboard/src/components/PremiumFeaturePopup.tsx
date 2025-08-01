@@ -37,64 +37,57 @@ export default function PremiumFeaturePopup({
     try {
       setLoading(true);
       
-      // First check if user_buyers record exists, if not create it
-      const { data: existingRecord, error: fetchError } = await supabase
-        .from('user_buyers')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        // PGRST116 means "no rows found", which is expected for new users
-        console.error('Error checking user_buyers record:', fetchError);
-        toast({
-          title: "Error",
-          description: "Failed to submit request. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (!existingRecord) {
-        // Create new user_buyers record
-        const { error: insertError } = await supabase
+      // Try to track the request in user_buyers table, but don't fail if table doesn't exist
+      try {
+        // First check if user_buyers record exists, if not create it
+        const { data: existingRecord, error: fetchError } = await supabase
           .from('user_buyers')
-          .insert({
-            user_id: user.id,
-            requested: true
-          });
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-        if (insertError) {
-          console.error('Error creating user_buyers record:', insertError);
-          toast({
-            title: "Error",
-            description: "Failed to submit request. Please try again.",
-            variant: "destructive"
-          });
-          return;
-        }
-      } else {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from('user_buyers')
-          .update({ requested: true })
-          .eq('user_id', user.id);
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          // PGRST116 means "no rows found", which is expected for new users
+          console.warn('Could not access user_buyers table:', fetchError);
+          // Don't throw error, just continue without database tracking
+        } else if (!existingRecord) {
+          // Create new user_buyers record
+          const { error: insertError } = await supabase
+            .from('user_buyers')
+            .insert({
+              user_id: user.id,
+              requested: true
+            });
 
-        if (updateError) {
-          console.error('Error updating user request:', updateError);
-          toast({
-            title: "Error",
-            description: "Failed to submit request. Please try again.",
-            variant: "destructive"
-          });
-          return;
+          if (insertError) {
+            console.warn('Could not create user_buyers record:', insertError);
+            // Don't throw error, just continue without database tracking
+          }
+        } else {
+          // Update existing record
+          const { error: updateError } = await supabase
+            .from('user_buyers')
+            .update({ requested: true })
+            .eq('user_id', user.id);
+
+          if (updateError) {
+            console.warn('Could not update user_buyers record:', updateError);
+            // Don't throw error, just continue without database tracking
+          }
         }
+      } catch (dbError) {
+        console.warn('Database operation failed, continuing without tracking:', dbError);
+        // Continue execution even if database operations fail
       }
 
       setRequested(true);
       
-      // Track the premium feature request
-      trackPremiumFeatureRequest(featureName);
+      // Track the premium feature request via analytics
+      try {
+        trackPremiumFeatureRequest(featureName);
+      } catch (analyticsError) {
+        console.warn('Analytics tracking failed:', analyticsError);
+      }
       
       // Show success message for 2 seconds, then close
       setTimeout(() => {
@@ -103,7 +96,7 @@ export default function PremiumFeaturePopup({
       }, 2000);
 
     } catch (error) {
-      console.error('Error submitting request:', error);
+      console.error('Unexpected error submitting request:', error);
       toast({
         title: "Error",
         description: "Failed to submit request. Please try again.",

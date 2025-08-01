@@ -37,20 +37,58 @@ export default function PremiumFeaturePopup({
     try {
       setLoading(true);
       
-      // Update the requested boolean field in user_buyers table
-      const { error } = await supabase
+      // First check if user_buyers record exists, if not create it
+      const { data: existingRecord, error: fetchError } = await supabase
         .from('user_buyers')
-        .update({ requested: true })
-        .eq('user_id', user.id);
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-      if (error) {
-        console.error('Error updating user request:', error);
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 means "no rows found", which is expected for new users
+        console.error('Error checking user_buyers record:', fetchError);
         toast({
           title: "Error",
           description: "Failed to submit request. Please try again.",
           variant: "destructive"
         });
         return;
+      }
+
+      if (!existingRecord) {
+        // Create new user_buyers record
+        const { error: insertError } = await supabase
+          .from('user_buyers')
+          .insert({
+            user_id: user.id,
+            requested: true
+          });
+
+        if (insertError) {
+          console.error('Error creating user_buyers record:', insertError);
+          toast({
+            title: "Error",
+            description: "Failed to submit request. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
+      } else {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_buyers')
+          .update({ requested: true })
+          .eq('user_id', user.id);
+
+        if (updateError) {
+          console.error('Error updating user request:', updateError);
+          toast({
+            title: "Error",
+            description: "Failed to submit request. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
       }
 
       setRequested(true);

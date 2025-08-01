@@ -45,12 +45,30 @@ export default function Titles() {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
     return (
+      // Title names
       title.title_name_kr?.toLowerCase().includes(searchLower) ||
       title.title_name_en?.toLowerCase().includes(searchLower) ||
+      // Author information
       title.author?.toLowerCase().includes(searchLower) ||
+      title.story_author?.toLowerCase().includes(searchLower) ||
+      title.art_author?.toLowerCase().includes(searchLower) ||
       title.writer?.toLowerCase().includes(searchLower) ||
       title.illustrator?.toLowerCase().includes(searchLower) ||
-      title.genre?.toLowerCase().includes(searchLower)
+      title.rights?.toLowerCase().includes(searchLower) ||
+      title.rights_owner?.toLowerCase().includes(searchLower) ||
+      // Content descriptions
+      title.tagline?.toLowerCase().includes(searchLower) ||
+      title.description?.toLowerCase().includes(searchLower) ||
+      title.synopsis?.toLowerCase().includes(searchLower) ||
+      title.note?.toLowerCase().includes(searchLower) ||
+      // Market information
+      title.perfect_for?.toLowerCase().includes(searchLower) ||
+      title.comps?.toLowerCase().includes(searchLower) ||
+      title.tone?.toLowerCase().includes(searchLower) ||
+      title.audience?.toLowerCase().includes(searchLower) ||
+      // Genre and tags
+      title.genre?.toLowerCase().includes(searchLower) ||
+      title.tags?.some(tag => tag.toLowerCase().includes(searchLower))
     );
   });
 
@@ -172,12 +190,14 @@ export default function Titles() {
           
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="bg-gray-50 px-6 py-4 border-b">
-              <div className="grid grid-cols-8 gap-4 items-center font-semibold text-gray-700">
+              <div className="grid grid-cols-12 gap-4 items-center font-semibold text-gray-700">
                 <div className="col-span-1">Image</div>
                 <div className="col-span-3">Title</div>
                 <div className="col-span-2">Genre</div>
-                <div className="col-span-1">Views</div>
-                <div className="col-span-1">Likes</div>
+                <div className="col-span-2">Tone</div>
+                <div className="col-span-2">Perfect For</div>
+                <div className="col-span-1">Comps</div>
+                <div className="col-span-1">Audience</div>
               </div>
             </div>
             
@@ -194,7 +214,7 @@ export default function Titles() {
                   
                   return currentTitles.map((title) => (
                     <Link key={title.title_id} to={`/titles/${title.title_id}`} className="block">
-                      <div className="px-6 py-4 grid grid-cols-8 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                      <div className="px-6 py-4 grid grid-cols-12 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
                         <div className="col-span-1">
                           {title.title_image ? (
                             <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden">
@@ -237,12 +257,20 @@ export default function Titles() {
                           )}
                         </div>
                         
-                        <div className="col-span-1 text-gray-600 text-sm">
-                          {title.views?.toLocaleString() || '0'}
+                        <div className="col-span-2 text-gray-600 text-sm">
+                          <span className="line-clamp-2">{title.tone || '-'}</span>
+                        </div>
+                        
+                        <div className="col-span-2 text-gray-600 text-sm">
+                          <span className="line-clamp-2">{title.perfect_for || '-'}</span>
                         </div>
                         
                         <div className="col-span-1 text-gray-600 text-sm">
-                          {title.likes?.toLocaleString() || '0'}
+                          <span className="line-clamp-2">{title.comps || '-'}</span>
+                        </div>
+                        
+                        <div className="col-span-1 text-gray-600 text-sm">
+                          <span className="line-clamp-2">{title.audience || '-'}</span>
                         </div>
                       </div>
                     </Link>

@@ -77,7 +77,7 @@ export const titlesService = {
     if (error) throw error;
   },
 
-  // Search titles
+  // Search titles with comprehensive text search
   async searchTitles(query: string, filters?: {
     genre?: string;
     content_format?: string;
@@ -87,7 +87,8 @@ export const titlesService = {
       .select("*");
 
     if (query) {
-      queryBuilder = queryBuilder.or(`title_name_kr.ilike.%${query}%,title_name_en.ilike.%${query}%,author.ilike.%${query}%`);
+      // Search across all text fields including tags array
+      queryBuilder = queryBuilder.or(`title_name_kr.ilike.%${query}%,title_name_en.ilike.%${query}%,author.ilike.%${query}%,story_author.ilike.%${query}%,art_author.ilike.%${query}%,writer.ilike.%${query}%,illustrator.ilike.%${query}%,tagline.ilike.%${query}%,description.ilike.%${query}%,perfect_for.ilike.%${query}%,comps.ilike.%${query}%,tone.ilike.%${query}%,audience.ilike.%${query}%,note.ilike.%${query}%,rights.ilike.%${query}%,rights_owner.ilike.%${query}%,tags.cs.{${query}}`);
     }
 
     if (filters?.genre) {

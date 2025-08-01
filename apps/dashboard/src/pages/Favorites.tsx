@@ -42,10 +42,32 @@ export default function Favorites() {
   useEffect(() => {
     const filtered = favorites.filter(favorite => {
       const title = favorite.titles;
+      const searchLower = searchTerm.toLowerCase();
       return (
-        title.title_name_en?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        title.title_name_kr.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        title.author?.toLowerCase().includes(searchTerm.toLowerCase())
+        // Title names
+        title.title_name_en?.toLowerCase().includes(searchLower) ||
+        title.title_name_kr.toLowerCase().includes(searchLower) ||
+        // Author information
+        title.author?.toLowerCase().includes(searchLower) ||
+        title.story_author?.toLowerCase().includes(searchLower) ||
+        title.art_author?.toLowerCase().includes(searchLower) ||
+        title.writer?.toLowerCase().includes(searchLower) ||
+        title.illustrator?.toLowerCase().includes(searchLower) ||
+        title.rights?.toLowerCase().includes(searchLower) ||
+        title.rights_owner?.toLowerCase().includes(searchLower) ||
+        // Content descriptions
+        title.tagline?.toLowerCase().includes(searchLower) ||
+        title.description?.toLowerCase().includes(searchLower) ||
+        title.synopsis?.toLowerCase().includes(searchLower) ||
+        title.note?.toLowerCase().includes(searchLower) ||
+        // Market information
+        title.perfect_for?.toLowerCase().includes(searchLower) ||
+        title.comps?.toLowerCase().includes(searchLower) ||
+        title.tone?.toLowerCase().includes(searchLower) ||
+        title.audience?.toLowerCase().includes(searchLower) ||
+        // Genre and tags
+        title.genre?.toLowerCase().includes(searchLower) ||
+        title.tags?.some(tag => tag.toLowerCase().includes(searchLower))
       );
     });
     setFilteredFavorites(filtered);

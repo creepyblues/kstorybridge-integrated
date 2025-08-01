@@ -144,8 +144,8 @@ export default function Favorites() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
         {/* Header */}
-        <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="flex items-center justify-between mb-12">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">MY FAVORITES</h1>
               <p className="text-xl text-midnight-ink-600 leading-relaxed">
@@ -158,7 +158,7 @@ export default function Favorites() {
           </div>
 
           {/* Search Bar */}
-          <div className="relative mb-12">
+          <div className="relative mb-8">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
             <input
               placeholder="Search your favorites..."
@@ -168,8 +168,11 @@ export default function Favorites() {
             />
           </div>
 
+          {/* Divider */}
+          <div className="border-t border-gray-200 my-12"></div>
+
           {/* Favorites Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-8">
           {filteredFavorites.map((favorite) => {
             const title = favorite.titles;
             return (

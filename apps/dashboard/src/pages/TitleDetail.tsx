@@ -554,6 +554,8 @@ export default function TitleDetail() {
         isOpen={premiumPopupOpen}
         onClose={() => setPremiumPopupOpen(false)}
         featureName={premiumFeatureName}
+        titleId={title?.title_id}
+        requestType={premiumFeatureName === "Request a pitch deck" ? "pitch" : undefined}
       />
       
     </div>

@@ -5,6 +5,7 @@ import AdminLogin from '@/pages/AdminLogin';
 import AdminTitles from '@/pages/AdminTitles';
 import AdminTitleDetail from '@/pages/AdminTitleDetail';
 import AdminTitleEdit from '@/pages/AdminTitleEdit';
+import AdminFeaturedTitles from '@/pages/AdminFeaturedTitles';
 import { Toaster } from '@/components/ui/sonner';
 import '@/index.css';
 
@@ -27,6 +28,11 @@ function App() {
           <Route path="/titles/:titleId/edit" element={
             <ProtectedRoute>
               <AdminTitleEdit />
+            </ProtectedRoute>
+          } />
+          <Route path="/featured-titles" element={
+            <ProtectedRoute>
+              <AdminFeaturedTitles />
             </ProtectedRoute>
           } />
           <Route path="/" element={<Navigate to="/titles" replace />} />

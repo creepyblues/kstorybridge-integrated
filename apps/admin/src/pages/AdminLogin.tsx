@@ -83,6 +83,7 @@ export default function AdminLogin() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@kstorybridge.com"
                   required
+                  autoComplete="email"
                   className="bg-porcelain-blue-50 border-porcelain-blue-200 rounded-xl focus:ring-hanok-teal focus:border-hanok-teal"
                 />
               </div>
@@ -99,6 +100,7 @@ export default function AdminLogin() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     required
+                    autoComplete="current-password"
                     className="bg-porcelain-blue-50 border-porcelain-blue-200 rounded-xl focus:ring-hanok-teal focus:border-hanok-teal pr-10"
                   />
                   <button

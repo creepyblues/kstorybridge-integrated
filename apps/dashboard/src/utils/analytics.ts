@@ -1,52 +1,52 @@
-// Google Analytics utility functions for the dashboard
+// Google Tag Manager utility functions for the dashboard
 
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
+    gtag?: (...args: any[]) => void;
     dataLayer: any[];
   }
 }
 
-// Google Analytics Measurement ID
-const GA_MEASUREMENT_ID = 'G-LTR32L1HTF';
+// Google Tag Manager Container ID
+const GTM_CONTAINER_ID = 'GTM-PZBC4XQT';
 
-// Initialize Google Analytics (gtag is now loaded directly in HTML)
+// Initialize Google Tag Manager (GTM is now loaded directly in HTML)
 export const initGA = () => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', GA_MEASUREMENT_ID, {
-      // Enhanced measurement for better tracking
-      send_page_view: false, // We'll manually track page views
-      anonymize_ip: true,
-      allow_google_signals: true,
-      allow_ad_personalization_signals: false
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    // GTM is initialized via the script in HTML
+    // Push initial configuration to dataLayer
+    window.dataLayer.push({
+      'gtm.start': new Date().getTime(),
+      'event': 'gtm.js',
+      'app_name': 'dashboard',
+      'app_version': '1.0.0'
     });
   }
 };
 
 // Track page views
 export const trackPageView = (path: string, title?: string) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'page_view', {
-      page_title: title || document.title,
-      page_location: window.location.href,
-      page_path: path,
-      custom_map: {
-        dimension1: 'dashboard'
-      }
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'page_view',
+      'page_title': title || document.title,
+      'page_location': window.location.href,
+      'page_path': path,
+      'app_section': 'dashboard'
     });
   }
 };
 
 // Track custom events
 export const trackEvent = (action: string, category: string, label?: string, value?: number) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-      custom_map: {
-        dimension1: 'dashboard'
-      }
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'custom_event',
+      'event_action': action,
+      'event_category': category,
+      'event_label': label,
+      'event_value': value,
+      'app_section': 'dashboard'
     });
   }
 };
@@ -65,15 +65,14 @@ export const trackPremiumFeatureRequest = (featureName: string) => {
 export const trackTitleView = (titleId: string, titleName: string) => {
   trackEvent('view_title', 'content_engagement', titleName, undefined);
   
-  // Also track as custom event with more details
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'view_item', {
-      item_id: titleId,
-      item_name: titleName,
-      item_category: 'title',
-      custom_map: {
-        dimension1: 'dashboard'
-      }
+  // Also track as ecommerce event with more details
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'view_item',
+      'item_id': titleId,
+      'item_name': titleName,
+      'item_category': 'title',
+      'app_section': 'dashboard'
     });
   }
 };
@@ -85,23 +84,23 @@ export const trackFavoriteAction = (action: 'add' | 'remove', titleId: string, t
 
 // Track search actions
 export const trackSearch = (searchTerm: string, resultCount?: number) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'search', {
-      search_term: searchTerm,
-      custom_map: {
-        dimension1: 'dashboard'
-      }
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'search',
+      'search_term': searchTerm,
+      'search_results': resultCount,
+      'app_section': 'dashboard'
     });
   }
 };
 
 // Track authentication events
 export const trackAuth = (action: 'login' | 'logout' | 'signup') => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', action, {
-      custom_map: {
-        dimension1: 'dashboard'
-      }
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'auth_event',
+      'auth_action': action,
+      'app_section': 'dashboard'
     });
   }
 };

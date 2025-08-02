@@ -1,21 +1,22 @@
-// Debug utility for Google Analytics in browser console
-// Use this to test GA tracking in development
+// Debug utility for Google Tag Manager in browser console
+// Use this to test GTM tracking in development
 
 declare global {
   interface Window {
-    debugGA: {
+    debugGTM: {
       testPageView: () => void;
       testEvent: () => void;
-      checkGAStatus: () => void;
+      checkGTMStatus: () => void;
       testPremiumRequest: () => void;
+      viewDataLayer: () => void;
     };
   }
 }
 
 import { trackPageView, trackEvent, trackPremiumFeatureRequest } from './analytics';
 
-// Debug functions to test GA tracking
-export const debugGA = {
+// Debug functions to test GTM tracking
+export const debugGTM = {
   testPageView: () => {
     console.log('🔍 Testing page view tracking...');
     trackPageView('/test-page', 'Debug Test Page');
@@ -28,18 +29,18 @@ export const debugGA = {
     console.log('✅ Custom event tracked');
   },
 
-  checkGAStatus: () => {
-    console.log('🔍 Checking GA status...');
+  checkGTMStatus: () => {
+    console.log('🔍 Checking GTM status...');
     if (typeof window !== 'undefined') {
       console.log('- Window available:', true);
-      console.log('- gtag function available:', !!window.gtag);
       console.log('- dataLayer available:', !!window.dataLayer);
-      console.log('- GA_MEASUREMENT_ID:', 'G-LTR32L1HTF');
+      console.log('- dataLayer length:', window.dataLayer?.length || 0);
+      console.log('- GTM Container ID:', 'GTM-PZBC4XQT');
       
-      if (window.gtag) {
-        console.log('✅ Google Analytics is ready');
+      if (window.dataLayer && window.dataLayer.length > 0) {
+        console.log('✅ Google Tag Manager is ready');
       } else {
-        console.log('⚠️ Google Analytics not ready yet');
+        console.log('⚠️ Google Tag Manager not ready yet');
       }
     } else {
       console.log('❌ Window not available (SSR?)');
@@ -50,11 +51,20 @@ export const debugGA = {
     console.log('🔍 Testing premium feature request tracking...');
     trackPremiumFeatureRequest('Debug Premium Feature');
     console.log('✅ Premium feature request tracked');
+  },
+
+  viewDataLayer: () => {
+    console.log('🔍 Current dataLayer contents:');
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      console.table(window.dataLayer);
+    } else {
+      console.log('❌ dataLayer not available');
+    }
   }
 };
 
 // Make debug functions available in browser console
 if (typeof window !== 'undefined') {
-  window.debugGA = debugGA;
-  console.log('🛠️ GA Debug utilities loaded. Use window.debugGA in console to test tracking.');
+  window.debugGTM = debugGTM;
+  console.log('🛠️ GTM Debug utilities loaded. Use window.debugGTM in console to test tracking.');
 }

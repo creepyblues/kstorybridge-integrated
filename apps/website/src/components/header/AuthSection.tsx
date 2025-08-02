@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { trackButtonClick } from '@/utils/analytics';
 import { User } from '@supabase/supabase-js';
 
 interface AuthSectionProps {
@@ -39,7 +40,10 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
           )}
         </span>
         <Button 
-          onClick={onSignOut} 
+          onClick={() => {
+            trackButtonClick('Sign Out', 'header');
+            onSignOut();
+          }} 
           variant="outline" 
           size="sm"
           className={isMobile ? "w-full" : ""}
@@ -59,6 +63,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
         asChild 
         variant="outline" 
         className={`border-primary text-primary hover:bg-primary hover:text-white ${buttonClasses}`}
+        onClick={() => trackButtonClick('Sign In', 'header')}
       >
         <Link to="/signin">
           Sign In
@@ -67,6 +72,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
       <Button 
         asChild 
         className={`bg-primary hover:bg-primary/90 text-white ${buttonClasses}`}
+        onClick={() => trackButtonClick('Get Started', 'header')}
       >
         <Link to="/signup">
           Get Started

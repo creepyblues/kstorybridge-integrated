@@ -8,6 +8,7 @@ import {
 } from '../ui/dropdown-menu';
 import { Globe } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { trackLanguageChange } from '@/utils/analytics';
 
 interface LanguageSelectorProps {
   isMobile?: boolean;
@@ -16,20 +17,26 @@ interface LanguageSelectorProps {
 const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
   const { language, setLanguage } = useLanguage();
 
+  const handleLanguageChange = (newLanguage: 'EN' | 'KR') => {
+    const oldLanguage = language;
+    setLanguage(newLanguage);
+    trackLanguageChange(oldLanguage, newLanguage);
+  };
+
   if (isMobile) {
     return (
       <div className="flex space-x-2">
         <Button 
           variant={language === 'EN' ? 'default' : 'outline'} 
           size="sm"
-          onClick={() => setLanguage('EN')}
+          onClick={() => handleLanguageChange('EN')}
         >
           EN
         </Button>
         <Button 
           variant={language === 'KR' ? 'default' : 'outline'} 
           size="sm"
-          onClick={() => setLanguage('KR')}
+          onClick={() => handleLanguageChange('KR')}
         >
           KR
         </Button>
@@ -46,10 +53,10 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg">
-        <DropdownMenuItem onClick={() => setLanguage('EN')}>
+        <DropdownMenuItem onClick={() => handleLanguageChange('EN')}>
           English
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setLanguage('KR')}>
+        <DropdownMenuItem onClick={() => handleLanguageChange('KR')}>
           한국어
         </DropdownMenuItem>
       </DropdownMenuContent>

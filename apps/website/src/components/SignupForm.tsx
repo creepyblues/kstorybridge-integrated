@@ -7,6 +7,7 @@ import { Card, CardContent } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
+import { trackSignup, trackFormSubmission, trackButtonClick } from '@/utils/analytics';
 
 type AccountType = 'buyer' | 'creator';
 
@@ -74,6 +75,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
   const handleGoogleSignUp = async () => {
     setIsGoogleLoading(true);
+    trackButtonClick('Google Signup', `${accountType}_signup_page`);
     
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -96,6 +98,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           description: error.message,
           variant: "destructive"
         });
+      } else {
+        // Track successful Google signup initiation
+        trackSignup(accountType, 'google');
       }
     } catch (error) {
       console.error('Unexpected error during Google signup:', error);
@@ -171,6 +176,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       
       if (error) {
         console.error('Signup error:', error);
+        trackFormSubmission(`${accountType}_signup_form`, false);
         toast({
           title: "Signup Error",
           description: error.message,
@@ -213,6 +219,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           
           checkProfile();
         }
+        
+        // Track successful signup
+        trackSignup(accountType, 'email');
+        trackFormSubmission(`${accountType}_signup_form`, true);
         
         toast({
           title: "Success!",

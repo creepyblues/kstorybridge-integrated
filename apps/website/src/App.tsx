@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import AnalyticsProvider from "./components/AnalyticsProvider";
 import HomePage from "./pages/HomePage";
 import CreatorsPage from "./pages/CreatorsPage";
 import BuyersPage from "./pages/BuyersPage";
@@ -27,6 +28,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AnalyticsProvider />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/creators" element={<CreatorsPage />} />

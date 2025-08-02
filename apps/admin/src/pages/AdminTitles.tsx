@@ -104,8 +104,9 @@ export default function AdminTitles() {
               {featuredTitles.map((featured) => {
                 const title = featured.titles;
                 return (
-                  <Card key={featured.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col">
-                    <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
+                  <Link key={featured.id} to={`/titles/${title.title_id}`}>
+                    <Card className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col cursor-pointer">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
                       {title.title_image ? (
                         <img 
                           src={title.title_image} 
@@ -146,7 +147,8 @@ export default function AdminTitles() {
                         </div>
                       )}
                     </CardContent>
-                  </Card>
+                    </Card>
+                  </Link>
                 );
               })}
             </div>
@@ -206,7 +208,8 @@ export default function AdminTitles() {
                   const currentTitles = filteredTitles.slice(startIndex, endIndex);
                   
                   return currentTitles.map((title) => (
-                    <div key={title.title_id} className="px-6 py-4 grid grid-cols-12 gap-4 items-center hover:bg-gray-50 transition-colors">
+                    <Link key={title.title_id} to={`/titles/${title.title_id}`} className="block">
+                      <div className="px-6 py-4 grid grid-cols-12 gap-4 items-center hover:bg-gray-50 transition-colors cursor-pointer">
                       <div className="col-span-1">
                         {title.title_image ? (
                           <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden">
@@ -264,7 +267,8 @@ export default function AdminTitles() {
                       <div className="col-span-1 text-gray-600 text-sm">
                         <span className="line-clamp-2">{title.audience || '-'}</span>
                       </div>
-                    </div>
+                      </div>
+                    </Link>
                   ));
                 })()
               ) : (

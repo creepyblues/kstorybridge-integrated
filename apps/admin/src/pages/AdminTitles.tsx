@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -173,7 +173,16 @@ export default function AdminTitles() {
 
         {/* All Titles Table */}
         <div>
-          <h2 className="text-4xl font-bold text-midnight-ink mb-8">ALL TITLES</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-4xl font-bold text-midnight-ink">ALL TITLES</h2>
+            <Button
+              onClick={() => navigate('/titles/new')}
+              className="bg-sunrise-coral hover:bg-sunrise-coral/90 text-white px-6 py-3 rounded-lg font-medium"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Title
+            </Button>
+          </div>
           
           {/* Search Bar */}
           <div className="relative mb-8">

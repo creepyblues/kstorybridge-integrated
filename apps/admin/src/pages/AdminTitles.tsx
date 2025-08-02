@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -8,6 +8,7 @@ import { featuredService, type FeaturedWithTitle } from "@/services/featuredServ
 import AdminLayout from "@/components/layout/AdminLayout";
 
 export default function AdminTitles() {
+  const navigate = useNavigate();
   const [titles, setTitles] = useState<Title[]>([]);
   const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -95,7 +96,15 @@ export default function AdminTitles() {
 
         {/* Featured Titles Section */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Featured Titles</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Featured Titles</h2>
+            <Button
+              onClick={() => navigate('/featured-titles')}
+              className="bg-hanok-teal hover:bg-hanok-teal/90 text-white px-4 py-2 rounded-lg font-medium"
+            >
+              Manage Featured
+            </Button>
+          </div>
           
           {loading ? (
             <div className="text-center text-gray-500 py-8">Loading featured titles...</div>

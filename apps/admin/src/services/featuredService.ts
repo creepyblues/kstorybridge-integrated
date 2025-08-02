@@ -97,5 +97,66 @@ export const featuredService = {
     }
 
     return data || [];
+  },
+
+  // Add a title to featured
+  async addFeaturedTitle(titleId: string, note?: string): Promise<Featured> {
+    const { data, error } = await supabase
+      .from('featured')
+      .insert({
+        title_id: titleId,
+        note: note || null
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to add featured title: ${error.message}`);
+    }
+
+    return data;
+  },
+
+  // Remove a title from featured
+  async removeFeaturedTitle(featuredId: string): Promise<void> {
+    const { error } = await supabase
+      .from('featured')
+      .delete()
+      .eq('id', featuredId);
+
+    if (error) {
+      throw new Error(`Failed to remove featured title: ${error.message}`);
+    }
+  },
+
+  // Update featured title note
+  async updateFeaturedNote(featuredId: string, note: string): Promise<Featured> {
+    const { data, error } = await supabase
+      .from('featured')
+      .update({ note, updated_at: new Date().toISOString() })
+      .eq('id', featuredId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update featured title note: ${error.message}`);
+    }
+
+    return data;
+  },
+
+  // Check if a title is already featured
+  async isTitleFeatured(titleId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('featured')
+      .select('id')
+      .eq('title_id', titleId)
+      .limit(1);
+
+    if (error) {
+      throw new Error(`Failed to check if title is featured: ${error.message}`);
+    }
+
+    return (data && data.length > 0) || false;
   }
 };

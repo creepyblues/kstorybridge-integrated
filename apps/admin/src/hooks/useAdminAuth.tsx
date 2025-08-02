@@ -23,6 +23,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.log('⚠️ Admin auth timeout - stopping loading state');
+        setIsLoading(false);
+      }
+    }, 10000); // 10 second timeout
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -49,12 +57,18 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeoutId);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAdminProfile = async (email: string) => {
     try {
       console.log('Loading admin profile for authenticated user:', email);
+      
+      // Add a small delay to ensure session is fully established
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Only attempt this after user is already authenticated
       // This should work because the user has a valid session
@@ -69,19 +83,25 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.log('No admin record found for email:', email);
-          console.log('User is authenticated but not an admin');
+          console.log('❌ No admin record found for email:', email);
+          console.log('💡 To fix: Add admin record to database');
+          console.log(`   INSERT INTO public.admin (email, full_name, active) VALUES ('${email}', 'Admin User', true);`);
+        } else if (error.code === '42501') {
+          console.log('❌ Permission denied - RLS policy issue');
+          console.log('💡 To fix: Update RLS policies on admin table');
+          console.log('   Run the fix-admin-access.sql script');
         } else {
-          console.error('Error loading admin profile:', error);
-          console.log('Database error after authentication - this may be a policy issue');
+          console.error('❌ Error loading admin profile:', error);
+          console.log('💡 Database error after authentication - check connection and table existence');
         }
         setAdminProfile(null);
       } else {
-        console.log('Admin profile loaded successfully:', data);
+        console.log('✅ Admin profile loaded successfully:', data);
         setAdminProfile(data);
       }
     } catch (error) {
-      console.error('Error loading admin profile:', error);
+      console.error('❌ Exception loading admin profile:', error);
+      console.log('💡 Check network connection and Supabase configuration');
       setAdminProfile(null);
     } finally {
       setIsLoading(false);

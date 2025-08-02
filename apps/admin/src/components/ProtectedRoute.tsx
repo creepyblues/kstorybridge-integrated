@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { AlertCircle, Shield } from 'lucide-react';
+import { AlertCircle, Shield, Bug } from 'lucide-react';
+import AdminAuthDebug from './AdminAuthDebug';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -9,6 +10,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { adminProfile, isLoading, user } = useAdminAuth();
+  const [showDebug, setShowDebug] = useState(false);
 
   if (isLoading) {
     return (
@@ -24,8 +26,12 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // If user is authenticated but no admin profile, show access denied
+  // If user is authenticated but no admin profile, show access denied with debug option
   if (user && !adminProfile) {
+    if (showDebug) {
+      return <AdminAuthDebug />;
+    }
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50 flex items-center justify-center px-6">
         <div className="text-center max-w-md">
@@ -39,12 +45,21 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
           <p className="text-sm text-midnight-ink-400 mb-4">
             Email: {user.email}
           </p>
-          <button
-            onClick={() => window.location.href = '/login'}
-            className="text-hanok-teal hover:underline"
-          >
-            Back to Login
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => setShowDebug(true)}
+              className="flex items-center gap-2 mx-auto text-orange-600 hover:underline mb-4"
+            >
+              <Bug className="w-4 h-4" />
+              Debug Authentication Issue
+            </button>
+            <button
+              onClick={() => window.location.href = '/login'}
+              className="text-hanok-teal hover:underline"
+            >
+              Back to Login
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
 import { titlesService, type Title } from '../services/titlesService';
+import Footer from '../components/Footer';
 
 const BuyersPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -398,6 +399,7 @@ const BuyersPage = () => {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 };

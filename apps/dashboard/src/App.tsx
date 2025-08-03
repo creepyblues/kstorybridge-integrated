@@ -44,12 +44,59 @@ const App = () => (
                 <Route path="/" element={
                   <ProtectedLayout><RootRedirect /></ProtectedLayout>
                 } />
+                
+                {/* Buyer routes */}
+                <Route path="/buyers" element={
+                  <ProtectedLayout><RootRedirect /></ProtectedLayout>
+                } />
+                <Route path="/buyers/titles" element={
+                  <ProtectedLayout><Titles /></ProtectedLayout>
+                } />
+                <Route path="/buyers/titles/:titleId" element={
+                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                } />
+                <Route path="/buyers/favorites" element={
+                  <ProtectedLayout><Favorites /></ProtectedLayout>
+                } />
+                <Route path="/buyers/deals" element={
+                  <ProtectedLayout><Deals /></ProtectedLayout>
+                } />
+                <Route path="/buyers/browse" element={
+                  <ProtectedLayout><Browse /></ProtectedLayout>
+                } />
+                <Route path="/buyers/media" element={
+                  <ProtectedLayout><Media /></ProtectedLayout>
+                } />
+                <Route path="/buyers/users" element={
+                  <ProtectedLayout><Users /></ProtectedLayout>
+                } />
+                <Route path="/buyers/settings" element={
+                  <ProtectedLayout><Settings /></ProtectedLayout>
+                } />
+                <Route path="/buyers/profile" element={
+                  <ProtectedLayout><Profile /></ProtectedLayout>
+                } />
+                
+                {/* Creator routes */}
+                <Route path="/creators" element={
+                  <ProtectedLayout><RootRedirect /></ProtectedLayout>
+                } />
+                <Route path="/creators/titles" element={
+                  <ProtectedLayout><Titles /></ProtectedLayout>
+                } />
+                <Route path="/creators/titles/:titleId" element={
+                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                } />
+                <Route path="/creators/profile" element={
+                  <ProtectedLayout><Profile /></ProtectedLayout>
+                } />
+                
+                {/* Legacy IP Owner/Creator routes */}
                 <Route path="/content" element={
                   <ProtectedLayout><Content /></ProtectedLayout>
                 } />
-                <Route path="/browse" element={
-                  <ProtectedLayout><Browse /></ProtectedLayout>
-                } />
+                
+                {/* Legacy routes - redirect to buyer routes */}
                 <Route path="/titles" element={
                   <ProtectedLayout><Titles /></ProtectedLayout>
                 } />

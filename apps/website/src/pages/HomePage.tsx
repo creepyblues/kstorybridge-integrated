@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowRight, Star, Menu, X } from 'lucide-react';
 import { featuredService, type FeaturedWithTitle } from '../services/featuredService';
 import { useAuth } from '../hooks/useAuth';
+import Footer from '../components/Footer';
 
 const HomePage = () => {
   const { t } = useLanguage();
@@ -280,6 +281,7 @@ const HomePage = () => {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

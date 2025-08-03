@@ -38,6 +38,26 @@ export const titlesService = {
     return data;
   },
 
+  // Get titles owned by creator using rights field
+  async getTitlesByCreatorRights(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from("titles")
+        .select("*")
+        .eq("rights", userId)
+        .order("created_at", { ascending: false });
+      
+      if (error) {
+        console.warn('Failed to fetch creator titles:', error.message);
+        return []; // Return empty array instead of throwing
+      }
+      return data || [];
+    } catch (error) {
+      console.warn('Creator titles service error:', error);
+      return []; // Return empty array on any error
+    }
+  },
+
   // Get single title by ID
   async getTitleById(titleId: string) {
     const { data, error } = await supabase

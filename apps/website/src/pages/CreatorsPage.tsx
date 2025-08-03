@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowRight, CheckCircle, BookOpen, Users, TrendingUp, Shield, Zap, Globe } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import Footer from '../components/Footer';
 
 const CreatorsPage = () => {
   const { t } = useLanguage();
@@ -222,6 +223,7 @@ const CreatorsPage = () => {
           </Button>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

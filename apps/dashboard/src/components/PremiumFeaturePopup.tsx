@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { trackPremiumFeatureRequest, trackEvent } from "@/utils/analytics";
+import { sendAdminNotification } from "@/utils/emailService";
 import { useEffect } from "react";
 
 interface PremiumFeaturePopupProps {
@@ -14,6 +15,7 @@ interface PremiumFeaturePopupProps {
   featureName: string;
   titleId?: string;
   requestType?: string;
+  titleName?: string;
 }
 
 export default function PremiumFeaturePopup({ 
@@ -21,7 +23,8 @@ export default function PremiumFeaturePopup({
   onClose, 
   featureName,
   titleId,
-  requestType
+  requestType,
+  titleName
 }: PremiumFeaturePopupProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -44,13 +47,15 @@ export default function PremiumFeaturePopup({
       // If we have titleId and requestType, try to save to request table
       if (titleId && requestType) {
         try {
-          const { error: requestError } = await supabase
+          const { data: requestData, error: requestError } = await supabase
             .from('request')
             .insert({
               user_id: user.id,
               title_id: titleId,
               type: requestType
-            });
+            })
+            .select('id')
+            .single();
 
           if (requestError) {
             console.warn('Error saving to request table, falling back to user_buyers:', requestError);
@@ -59,6 +64,32 @@ export default function PremiumFeaturePopup({
           } else {
             // Successfully saved to request table
             console.log('Request saved to request table successfully');
+            
+            // Send admin notification email if this is a pitch request
+            if (requestType === 'pitch' && requestData?.id && titleName) {
+              try {
+                // Get user profile for requestor name
+                const { data: profile, error: profileError } = await supabase
+                  .from('profiles')
+                  .select('full_name')
+                  .eq('id', user.id)
+                  .single();
+
+                const requestorName = profile?.full_name || user.email || 'Unknown User';
+
+                await sendAdminNotification({
+                  requestId: requestData.id,
+                  titleId,
+                  userId: user.id,
+                  type: requestType,
+                  requestorName,
+                  titleName
+                });
+              } catch (emailError) {
+                console.warn('Failed to send admin notification email:', emailError);
+                // Don't fail the request if email fails
+              }
+            }
           }
         } catch (dbError) {
           console.warn('Database operation failed for request table, falling back to user_buyers:', dbError);

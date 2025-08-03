@@ -136,14 +136,14 @@ export default function Profile() {
               </div>
             </div>
 
-            {profile.pen_name_or_studio && (
+            {profile.pen_name && (
               <>
                 <Separator />
                 <div className="flex items-center gap-3">
                   <User className="w-4 h-4 text-slate-500" />
                   <div>
-                    <p className="font-medium text-slate-800">{profile.pen_name_or_studio}</p>
-                    <p className="text-sm text-slate-600">Pen Name / Studio</p>
+                    <p className="font-medium text-slate-800">{profile.pen_name}</p>
+                    <p className="text-sm text-slate-600">Pen Name</p>
                   </div>
                 </div>
               </>

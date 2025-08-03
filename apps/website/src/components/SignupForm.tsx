@@ -160,7 +160,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         : {
             full_name: formData.fullName,
             account_type: 'ip_owner',
-            pen_name_or_studio: (formData as CreatorFormData).penNameOrStudio || null,
+            pen_name: (formData as CreatorFormData).penNameOrStudio || null,
             ip_owner_role: (formData as CreatorFormData).ipOwnerRole || null,
             ip_owner_company: (formData as CreatorFormData).ipOwnerCompany || null,
             website_url: (formData as CreatorFormData).websiteUrl || null,

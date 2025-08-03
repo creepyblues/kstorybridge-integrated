@@ -157,6 +157,7 @@ export default function TitleDetail() {
               <div className="flex flex-col items-end gap-3 ml-6">
                 {user && (
                   <Button
+                    id="title-detail-favorite-toggle-btn"
                     onClick={handleFavoriteToggle}
                     disabled={favoriteLoading}
                     variant="outline"
@@ -171,6 +172,7 @@ export default function TitleDetail() {
                 )}
                 
                 <Button 
+                  id="title-detail-contact-creator-btn"
                   onClick={() => {
                     setPremiumFeatureName("Contact Creator");
                     setPremiumPopupOpen(true);
@@ -326,7 +328,7 @@ export default function TitleDetail() {
               {title.pitch && user && (
                 <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group">
+                    <Button id="title-detail-view-pitch-btn" className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group">
                       {/* Shine effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
                       
@@ -346,6 +348,7 @@ export default function TitleDetail() {
                       <DialogTitle className="flex items-center justify-between">
                         <span>Pitch Document - {title.title_name_en || title.title_name_kr}</span>
                         <Button
+                          id="title-detail-close-pdf-modal-btn"
                           variant="ghost"
                           size="sm"
                           onClick={() => setIsPdfModalOpen(false)}
@@ -368,6 +371,7 @@ export default function TitleDetail() {
               
               {title.pitch && !user && (
                 <Button
+                  id="title-detail-view-pitch-disabled-btn"
                   disabled
                   className="bg-gray-400 text-gray-600 shadow-lg border-0 rounded-full px-5 py-2.5 text-sm font-medium cursor-not-allowed relative"
                 >
@@ -382,6 +386,7 @@ export default function TitleDetail() {
 
               {!title.pitch && user && (
                 <Button 
+                  id="title-detail-request-pitch-btn"
                   onClick={() => {
                     setPremiumFeatureName("Request a pitch deck");
                     setPremiumPopupOpen(true);
@@ -404,6 +409,7 @@ export default function TitleDetail() {
 
               {!title.pitch && !user && (
                 <Button
+                  id="title-detail-request-pitch-disabled-btn"
                   disabled
                   className="bg-gray-400 text-gray-600 shadow-lg border-0 rounded-full px-5 py-2.5 text-sm font-medium cursor-not-allowed relative"
                 >

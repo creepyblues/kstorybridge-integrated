@@ -40,6 +40,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
           )}
         </span>
         <Button 
+          id="header-signout-btn"
           onClick={() => {
             trackButtonClick('Sign Out', 'header');
             onSignOut();
@@ -60,6 +61,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
   return (
     <div className={containerClasses}>
       <Button 
+        id="header-signin-btn"
         asChild 
         variant="outline" 
         className={`border-primary text-primary hover:bg-primary hover:text-white ${buttonClasses}`}
@@ -70,6 +72,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
         </Link>
       </Button>
       <Button 
+        id="header-get-started-btn"
         asChild 
         className={`bg-primary hover:bg-primary/90 text-white ${buttonClasses}`}
         onClick={() => trackButtonClick('Get Started', 'header')}

@@ -173,6 +173,7 @@ export default function CreatorDashboard() {
           ].map((tab) => (
             <Button
               key={tab.value}
+              id={`creator-dashboard-${tab.value}-tab-btn`}
               onClick={() => setActiveTab(tab.value)}
               className={`px-8 py-3 rounded-2xl text-base font-medium flex items-center gap-2 ${
                 activeTab === tab.value
@@ -225,6 +226,7 @@ export default function CreatorDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4 p-6">
                   <Button 
+                    id="creator-dashboard-create-new-title-btn"
                     onClick={handleCreateNew}
                     className="w-full justify-start bg-sunrise-coral hover:bg-sunrise-coral-600 text-snow-white"
                   >
@@ -232,6 +234,7 @@ export default function CreatorDashboard() {
                     Create New Title
                   </Button>
                   <Button 
+                    id="creator-dashboard-manage-titles-btn"
                     variant="outline" 
                     className="w-full justify-start border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-snow-white"
                     onClick={() => setActiveTab('titles')}
@@ -240,6 +243,7 @@ export default function CreatorDashboard() {
                     Manage Titles
                   </Button>
                   <Button 
+                    id="creator-dashboard-view-analytics-btn"
                     variant="outline" 
                     className="w-full justify-start border-porcelain-blue-400 text-midnight-ink-700 hover:bg-porcelain-blue-100"
                     onClick={() => setActiveTab('analytics')}
@@ -257,6 +261,7 @@ export default function CreatorDashboard() {
             <div className="flex items-center justify-between mb-12">
               <h2 className="text-2xl font-bold text-midnight-ink">Your Titles</h2>
               <Button 
+                id="creator-titles-create-new-title-btn"
                 onClick={handleCreateNew}
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-snow-white"
               >

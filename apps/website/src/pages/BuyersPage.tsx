@@ -74,7 +74,7 @@ const BuyersPage = () => {
               </p>
               
               <Link to="/signup">
-                <Button size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                <Button id="buyers-hero-request-vip-btn" size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
                   Request VIP Access
                 </Button>
               </Link>
@@ -265,7 +265,7 @@ const BuyersPage = () => {
             
             <div className="text-center">
               <Link to="/signup">
-                <Button size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                <Button id="buyers-catalogue-join-btn" size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
                   Join to View Full Catalogue
                 </Button>
               </Link>
@@ -302,7 +302,7 @@ const BuyersPage = () => {
                     </div>
                   </div>
                   <Link to="/signup">
-                    <Button variant="outline" className="w-full border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
+                    <Button id="buyers-pricing-free-btn" variant="outline" className="w-full border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
                       Start Free
                     </Button>
                   </Link>
@@ -339,7 +339,7 @@ const BuyersPage = () => {
                     </div>
                   </div>
                   <Link to="/signup">
-                    <Button className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white py-4 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Button id="buyers-pricing-pro-btn" className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white py-4 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
                       Start Pro Trial
                     </Button>
                   </Link>
@@ -369,7 +369,7 @@ const BuyersPage = () => {
                     </div>
                   </div>
                   <Link to="/signup">
-                    <Button variant="outline" className="w-full border-2 border-midnight-ink text-midnight-ink hover:bg-midnight-ink hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
+                    <Button id="buyers-pricing-enterprise-btn" variant="outline" className="w-full border-2 border-midnight-ink text-midnight-ink hover:bg-midnight-ink hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
                       Contact Sales
                     </Button>
                   </Link>
@@ -390,7 +390,7 @@ const BuyersPage = () => {
                 Join executives from Top Streaming platforms and Hollywood Studios already discovering Korean IP on KStoryBridge.
               </p>
               <Link to="/signup">
-                <Button size="lg" className="bg-white text-hanok-teal hover:bg-snow-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                <Button id="buyers-cta-scout-catalogue-btn" size="lg" className="bg-white text-hanok-teal hover:bg-snow-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
                   Scout Catalogue Now
                 </Button>
               </Link>

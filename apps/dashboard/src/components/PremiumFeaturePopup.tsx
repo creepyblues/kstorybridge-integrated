@@ -165,6 +165,7 @@ export default function PremiumFeaturePopup({
               
               <div className="space-y-4">
                 <Button
+                  id="premium-popup-request-btn"
                   onClick={handleRequest}
                   disabled={loading}
                   className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
@@ -180,6 +181,7 @@ export default function PremiumFeaturePopup({
                 </Button>
                 
                 <Button
+                  id="premium-popup-cancel-btn"
                   onClick={onClose}
                   variant="outline"
                   className="w-full border-porcelain-blue-300 text-midnight-ink-600 hover:bg-porcelain-blue-100 rounded-full"

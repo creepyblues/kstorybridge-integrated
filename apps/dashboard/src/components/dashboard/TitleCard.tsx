@@ -104,6 +104,7 @@ export function TitleCard({
         {/* Favorite button */}
         {showActions && (
           <Button
+            id="dashboard-title-favorite-btn"
             size="sm"
             variant="ghost"
             className={`absolute top-3 right-3 h-8 w-8 p-0 rounded-full transition-all
@@ -171,6 +172,7 @@ export function TitleCard({
 
           {showActions && (
             <Button
+              id="dashboard-title-view-details-btn"
               size="sm"
               variant="ghost"
               className="h-8 w-8 p-0 text-midnight-ink-600 hover:text-hanok-teal hover:bg-porcelain-blue-100"

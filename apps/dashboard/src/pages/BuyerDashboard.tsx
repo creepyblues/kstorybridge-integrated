@@ -195,6 +195,7 @@ export default function BuyerDashboard() {
           {["All", "Webtoons", "Series", "Movies"].map((filter) => (
             <Button
               key={filter}
+              id={`dashboard-filter-${filter.toLowerCase()}-btn`}
               onClick={() => setActiveTab(filter.toLowerCase())}
               className={`px-8 py-3 rounded-2xl text-base font-medium ${
                 activeTab === filter.toLowerCase() || (filter === "All" && activeTab === "discover")

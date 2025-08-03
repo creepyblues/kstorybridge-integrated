@@ -284,6 +284,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               }
             </p>
             <Button 
+              id="signup-switch-account-type-btn"
               asChild
               size="lg"
               className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-3 text-base font-semibold rounded-full transition-all duration-300"
@@ -298,6 +299,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           {false && (
             <div className="mb-8">
               <Button 
+                id="signup-google-btn"
                 type="button"
                 variant="outline"
                 className="w-full h-12 text-base font-medium border-gray-300 hover:bg-gray-50"
@@ -489,6 +491,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             </div>
 
             <Button 
+              id="signup-form-submit-btn"
               type="submit" 
               className="w-full h-14 text-lg font-semibold bg-hanok-teal hover:bg-hanok-teal-600 text-white rounded-full transition-all duration-300 shadow-lg hover:shadow-xl" 
               disabled={isLoading}

@@ -17,18 +17,21 @@ const PageHeader = () => {
       
       <div className="hidden md:flex items-center space-x-8">
         <button 
+          id="pageheader-nav-creators-btn"
           onClick={() => navigate('/creators')}
           className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
         >
           CREATORS
         </button>
         <button 
+          id="pageheader-nav-buyers-btn"
           onClick={() => navigate('/buyers')}
           className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
         >
           BUYERS
         </button>
         <button 
+          id="pageheader-nav-about-btn"
           onClick={() => navigate('/about')}
           className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
         >
@@ -38,6 +41,7 @@ const PageHeader = () => {
       
       <div className="flex items-center space-x-4">
         <Button 
+          id="pageheader-signin-btn"
           variant="outline"
           className="border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
           onClick={() => navigate('/signin')}
@@ -45,6 +49,7 @@ const PageHeader = () => {
           SIGN IN
         </Button>
         <Button 
+          id="pageheader-signup-btn"
           className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-2 rounded-full font-medium"
           onClick={() => navigate('/signup')}
         >

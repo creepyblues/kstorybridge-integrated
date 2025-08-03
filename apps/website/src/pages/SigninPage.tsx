@@ -196,6 +196,7 @@ const SigninPage = () => {
               {false && (
                 <div className="mb-6">
                   <Button 
+                    id="signin-google-btn"
                     type="button"
                     variant="outline"
                     className="w-full h-12 text-base font-medium border-gray-300 hover:bg-gray-50"
@@ -267,6 +268,7 @@ const SigninPage = () => {
 
                 {/* Submit Button */}
                 <Button 
+                  id="signin-form-submit-btn"
                   type="submit" 
                   className="w-full h-12 text-base bg-hanok-teal hover:bg-hanok-teal-600 text-white font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl" 
                   disabled={isLoading}

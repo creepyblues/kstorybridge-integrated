@@ -7,6 +7,7 @@ interface MobileMenuProps {
 const MobileMenu = ({ isOpen, onToggle }: MobileMenuProps) => {
   return (
     <button
+      id="header-mobile-menu-toggle-btn"
       className="md:hidden p-2"
       onClick={onToggle}
       aria-label="Toggle menu"

@@ -82,7 +82,7 @@ const CreatorsPage = () => {
             </p>
             
             <div className="flex justify-center pt-8">
-              <Button asChild size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full">
+              <Button id="creators-hero-get-started-btn" asChild size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full">
                 <Link to="/signup/creator">
                   Get Started
                 </Link>
@@ -179,7 +179,7 @@ const CreatorsPage = () => {
                 <p className="text-lg mb-6 opacity-90">
                   Join hundreds of Korean creators already earning from their stories globally.
                 </p>
-                <Button asChild size="lg" variant="secondary" className="bg-white text-hanok-teal hover:bg-snow-white rounded-full">
+                <Button id="creators-features-create-account-btn" asChild size="lg" variant="secondary" className="bg-white text-hanok-teal hover:bg-snow-white rounded-full">
                   <Link to="/signup/creator" className="flex items-center gap-2">
                     Create Account <ArrowRight className="w-5 h-5" />
                   </Link>
@@ -215,7 +215,7 @@ const CreatorsPage = () => {
             </div>
           </div>
           
-          <Button asChild size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-lg rounded-full">
+          <Button id="creators-cta-get-started-btn" asChild size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-lg rounded-full">
             <Link to="/signup/creator">
               Get Started
             </Link>

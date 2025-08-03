@@ -27,6 +27,7 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
     return (
       <div className="flex space-x-2">
         <Button 
+          id="mobile-language-en-btn"
           variant={language === 'EN' ? 'default' : 'outline'} 
           size="sm"
           onClick={() => handleLanguageChange('EN')}
@@ -34,6 +35,7 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
           EN
         </Button>
         <Button 
+          id="mobile-language-kr-btn"
           variant={language === 'KR' ? 'default' : 'outline'} 
           size="sm"
           onClick={() => handleLanguageChange('KR')}
@@ -47,7 +49,7 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center space-x-1">
+        <Button id="header-language-selector-btn" variant="outline" size="sm" className="flex items-center space-x-1">
           <Globe className="w-4 h-4" />
           <span>{language}</span>
         </Button>

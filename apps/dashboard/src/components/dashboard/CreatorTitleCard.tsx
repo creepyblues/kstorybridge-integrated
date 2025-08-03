@@ -89,6 +89,7 @@ export function CreatorTitleCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
+                id="creator-title-card-actions-menu-btn"
                 size="sm"
                 variant="ghost"
                 className="absolute top-3 right-3 h-8 w-8 p-0 rounded-full bg-snow-white/80 text-midnight-ink hover:bg-snow-white"
@@ -97,15 +98,15 @@ export function CreatorTitleCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-snow-white border-porcelain-blue-300">
-              <DropdownMenuItem onClick={() => onEdit?.(title.id)} className="hover:bg-porcelain-blue-50">
+              <DropdownMenuItem id="creator-title-edit-menu-item" onClick={() => onEdit?.(title.id)} className="hover:bg-porcelain-blue-50">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Title
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onViewAnalytics?.(title.id)} className="hover:bg-porcelain-blue-50">
+              <DropdownMenuItem id="creator-title-analytics-menu-item" onClick={() => onViewAnalytics?.(title.id)} className="hover:bg-porcelain-blue-50">
                 <TrendingUp className="h-4 w-4 mr-2" />
                 View Analytics
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onViewInquiries?.(title.id)} className="hover:bg-porcelain-blue-50">
+              <DropdownMenuItem id="creator-title-inquiries-menu-item" onClick={() => onViewInquiries?.(title.id)} className="hover:bg-porcelain-blue-50">
                 <MessageSquare className="h-4 w-4 mr-2" />
                 View Inquiries
               </DropdownMenuItem>
@@ -170,6 +171,7 @@ export function CreatorTitleCard({
           </div>
           {(title.inquiries || 0) > 0 && (
             <Button
+              id="creator-title-view-inquiries-btn"
               size="sm"
               onClick={() => onViewInquiries?.(title.id)}
               className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-snow-white h-8 text-xs"
@@ -182,6 +184,7 @@ export function CreatorTitleCard({
         {/* Quick Actions */}
         <div className="flex gap-2">
           <Button
+            id="creator-title-edit-btn"
             size="sm"
             variant="outline"
             onClick={() => onEdit?.(title.id)}
@@ -191,6 +194,7 @@ export function CreatorTitleCard({
             Edit
           </Button>
           <Button
+            id="creator-title-analytics-btn"
             size="sm"
             variant="outline"
             onClick={() => onViewAnalytics?.(title.id)}

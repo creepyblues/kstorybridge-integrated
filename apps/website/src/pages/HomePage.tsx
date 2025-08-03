@@ -56,18 +56,21 @@ const HomePage = () => {
         
         <div className="hidden md:flex items-center space-x-8">
           <button 
+            id="nav-creators-btn"
             onClick={() => navigate('/creators')}
             className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
           >
             CREATORS
           </button>
           <button 
+            id="nav-buyers-btn"
             onClick={() => navigate('/buyers')}
             className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
           >
             BUYERS
           </button>
           <button 
+            id="nav-about-btn"
             onClick={() => navigate('/about')}
             className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
           >
@@ -79,6 +82,7 @@ const HomePage = () => {
           {/* Desktop Sign In/Up buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <Button 
+              id="homepage-header-signin-btn"
               variant="outline"
               className="border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
               onClick={() => navigate('/signin')}
@@ -86,6 +90,7 @@ const HomePage = () => {
               SIGN IN
             </Button>
             <Button 
+              id="signup"
               className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-2 rounded-full font-medium"
               onClick={() => navigate('/signup')}
             >
@@ -95,6 +100,7 @@ const HomePage = () => {
           
           {/* Mobile menu button */}
           <button
+            id="mobile-menu-toggle-btn"
             className="md:hidden p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -112,6 +118,7 @@ const HomePage = () => {
         <div className="md:hidden bg-white border-b border-porcelain-blue-200 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 py-4 space-y-4">
             <button 
+              id="homepage-mobile-creators-btn"
               onClick={() => {
                 navigate('/creators');
                 setMobileMenuOpen(false);
@@ -121,6 +128,7 @@ const HomePage = () => {
               CREATORS
             </button>
             <button 
+              id="homepage-mobile-buyers-btn"
               onClick={() => {
                 navigate('/buyers');
                 setMobileMenuOpen(false);
@@ -130,6 +138,7 @@ const HomePage = () => {
               BUYERS
             </button>
             <button 
+              id="homepage-mobile-about-btn"
               onClick={() => {
                 navigate('/about');
                 setMobileMenuOpen(false);
@@ -142,6 +151,7 @@ const HomePage = () => {
             {/* Mobile Sign In/Up buttons */}
             <div className="pt-4 border-t border-porcelain-blue-200 space-y-3">
               <Button 
+                id="homepage-mobile-signin-btn"
                 variant="outline"
                 className="w-full border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white py-2 rounded-full font-medium transition-colors"
                 onClick={() => {
@@ -152,6 +162,7 @@ const HomePage = () => {
                 SIGN IN
               </Button>
               <Button 
+                id="homepage-mobile-signup-btn"
                 className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white py-2 rounded-full font-medium"
                 onClick={() => {
                   navigate('/signup');
@@ -179,6 +190,7 @@ const HomePage = () => {
             </div>
             
             <Button 
+              id="homepage-browse-now-btn"
               size="lg"
               className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium"
               onClick={() => navigate('/signup')}

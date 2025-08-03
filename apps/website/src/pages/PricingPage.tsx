@@ -66,7 +66,7 @@ const PricingPage = () => {
                             Community support
                           </li>
                         </ul>
-                        <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                        <Button id="pricing-creators-free-btn" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
                           Start Free
                         </Button>
                       </CardContent>
@@ -112,7 +112,7 @@ const PricingPage = () => {
                             Priority support
                           </li>
                         </ul>
-                        <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                        <Button id="pricing-creators-premium-btn" className="w-full bg-primary hover:bg-primary/90 text-white">
                           Upgrade to Premium
                         </Button>
                       </CardContent>
@@ -146,7 +146,7 @@ const PricingPage = () => {
                             Community support
                           </li>
                         </ul>
-                        <Button variant="outline" className="w-full border-gray-300">
+                        <Button id="pricing-buyers-free-btn" variant="outline" className="w-full border-gray-300">
                           Start Free
                         </Button>
                       </CardContent>
@@ -188,7 +188,7 @@ const PricingPage = () => {
                             Priority support
                           </li>
                         </ul>
-                        <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                        <Button id="pricing-buyers-pro-btn" className="w-full bg-primary hover:bg-primary/90 text-white">
                           Start 14-Day Trial
                         </Button>
                       </CardContent>
@@ -225,7 +225,7 @@ const PricingPage = () => {
                             24/7 premium support
                           </li>
                         </ul>
-                        <Button variant="outline" className="w-full border-gray-900 text-gray-900">
+                        <Button id="pricing-buyers-enterprise-btn" variant="outline" className="w-full border-gray-900 text-gray-900">
                           Contact Sales
                         </Button>
                       </CardContent>

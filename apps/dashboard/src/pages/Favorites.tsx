@@ -179,6 +179,7 @@ export default function Favorites() {
               <Card key={favorite.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group relative h-full flex flex-col">
                 {/* Unfavorite Button */}
                 <Button
+                  id="favorites-remove-btn"
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveFromFavorites(title.title_id)}

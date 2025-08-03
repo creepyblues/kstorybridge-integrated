@@ -107,7 +107,7 @@ export default function Browse() {
             <div className="flex gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
+                  <Button id="browse-genre-filter-btn" variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
                     <Filter className="mr-2 h-4 w-4" />
                     Genre
                   </Button>
@@ -126,7 +126,7 @@ export default function Browse() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
+                  <Button id="browse-format-filter-btn" variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
                     <Filter className="mr-2 h-4 w-4" />
                     Format
                   </Button>
@@ -144,7 +144,7 @@ export default function Browse() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
+                  <Button id="browse-sort-filter-btn" variant="outline" className="border-slate-600 text-slate-300 hover:text-white">
                     <TrendingUp className="mr-2 h-4 w-4" />
                     Sort
                   </Button>
@@ -159,6 +159,7 @@ export default function Browse() {
               </DropdownMenu>
 
               <Button 
+                id="browse-search-btn"
                 onClick={handleSearch}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >

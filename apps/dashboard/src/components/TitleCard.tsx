@@ -119,6 +119,7 @@ export function TitleCard({ title, onEdit, onDelete, showActions = false }: Titl
           {showActions && isOwner && (
             <div className="flex gap-2">
               <Button 
+                id="title-card-edit-btn"
                 variant="ghost" 
                 size="sm" 
                 onClick={() => onEdit?.(title)}
@@ -127,6 +128,7 @@ export function TitleCard({ title, onEdit, onDelete, showActions = false }: Titl
                 <Edit className="h-4 w-4" />
               </Button>
               <Button 
+                id="title-card-delete-btn"
                 variant="ghost" 
                 size="sm" 
                 onClick={() => onDelete?.(title.title_id)}

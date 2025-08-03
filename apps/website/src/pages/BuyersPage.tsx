@@ -386,7 +386,7 @@ const BuyersPage = () => {
               <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
                 Ready to Scout Your Next Hit?
               </h2>
-              <p className="text-xl text-white/90 leading-relaxed mb-8">
+              <p className="text-xl text-white/90 leading-relaxed mb-12">
                 Join executives from Top Streaming platforms and Hollywood Studios already discovering Korean IP on KStoryBridge.
               </p>
               <Link to="/signup">

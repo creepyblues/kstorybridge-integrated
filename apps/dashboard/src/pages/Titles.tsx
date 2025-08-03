@@ -1,15 +1,18 @@
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Titles() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const location = useLocation();
   const [titles, setTitles] = useState<Title[]>([]);
   const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,21 +20,33 @@ export default function Titles() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(50);
 
+  // Determine if this is creator view based on route
+  const isCreatorView = location.pathname.startsWith('/creators');
+  const isBuyerView = location.pathname.startsWith('/buyers');
+
   useEffect(() => {
     loadData();
-  }, []);
+  }, [isCreatorView, user]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       
-      // Load all titles for the main table
-      const allTitles = await titlesService.getAllTitles();
-      setTitles(allTitles);
-      
-      // Load featured titles
-      const featured = await featuredService.getFeaturedTitles();
-      setFeaturedTitles(featured);
+      if (isCreatorView && user) {
+        // Load creator's own titles using rights field
+        const creatorTitles = await titlesService.getTitlesByCreatorRights(user.id);
+        setTitles(creatorTitles);
+        // Don't load featured titles for creators
+        setFeaturedTitles([]);
+      } else {
+        // Load all titles for buyers
+        const allTitles = await titlesService.getAllTitles();
+        setTitles(allTitles);
+        
+        // Load featured titles for buyers
+        const featured = await featuredService.getFeaturedTitles();
+        setFeaturedTitles(featured);
+      }
       
     } catch (error) {
       console.error("Error loading data:", error);
@@ -93,7 +108,7 @@ export default function Titles() {
             <div>
               <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">TITLES</h1>
               <p className="text-xl text-midnight-ink-600 leading-relaxed">
-                Discover and browse Korean content titles.
+                {isCreatorView ? "Manage your Korean content titles." : "Discover and browse Korean content titles."}
               </p>
             </div>
             <div className="text-midnight-ink-600 text-lg font-medium">
@@ -101,9 +116,10 @@ export default function Titles() {
             </div>
           </div>
 
-        {/* Featured Titles Section */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Featured Titles</h2>
+        {/* Featured Titles Section - Only show for buyers */}
+        {!isCreatorView && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Featured Titles</h2>
           
           {loading ? (
             <div className="text-center text-gray-500 py-8">Loading featured titles...</div>
@@ -165,14 +181,17 @@ export default function Titles() {
           {!loading && featuredTitles.length === 0 && (
             <div className="text-center text-midnight-ink-600 py-8">No featured titles available.</div>
           )}
-        </div>
+          </div>
+        )}
 
-        {/* Divider */}
-        <div className="border-t border-gray-200 my-16"></div>
+        {/* Divider - Only show for buyers */}
+        {!isCreatorView && <div className="border-t border-gray-200 my-16"></div>}
 
         {/* All Titles Table */}
         <div>
-          <h2 className="text-4xl font-bold text-midnight-ink mb-8">ALL TITLES</h2>
+          <h2 className="text-4xl font-bold text-midnight-ink mb-8">
+            {isCreatorView ? "MY TITLES" : "ALL TITLES"}
+          </h2>
           
           {/* Search Bar */}
           <div className="relative mb-8">

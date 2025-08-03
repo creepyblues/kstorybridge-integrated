@@ -21,6 +21,33 @@ const SigninPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const redirectToDashboard = async () => {
+    console.log('🔄 SIGNIN: Redirecting to dashboard');
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      const dashboardUrl = getDashboardUrl();
+      const sessionParams = new URLSearchParams({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token || '',
+        expires_at: session.expires_at?.toString() || '',
+        token_type: session.token_type || 'bearer'
+      });
+      const finalUrl = `${dashboardUrl}?${sessionParams.toString()}`;
+      console.log('🔄 SIGNIN: Redirecting to dashboard:', finalUrl.substring(0, 100) + '...');
+      
+      // Direct redirect to dashboard
+      window.location.href = finalUrl;
+    } else {
+      console.error('❌ SIGNIN: No session found for authenticated user');
+      toast({
+        title: "Session Error",
+        description: "Unable to redirect to dashboard. Please try signing in again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     
@@ -77,10 +104,8 @@ const SigninPage = () => {
         }
         
         if (profile?.invitation_status === 'accepted') {
-          console.log('✅ SIGNIN: User accepted, navigating to homepage to let useAuth handle redirect');
-          // Navigate to homepage and let useAuth handle the dashboard redirect
-          // This prevents competing redirects and ensures proper session handling
-          navigate('/');
+          console.log('✅ SIGNIN: Buyer accepted, redirecting directly to dashboard');
+          await redirectToDashboard();
         } else {
           navigate('/invited');
         }
@@ -99,10 +124,8 @@ const SigninPage = () => {
         }
         
         if (profile?.invitation_status === 'accepted') {
-          console.log('✅ SIGNIN: User accepted, navigating to homepage to let useAuth handle redirect');
-          // Navigate to homepage and let useAuth handle the dashboard redirect
-          // This prevents competing redirects and ensures proper session handling
-          navigate('/');
+          console.log('✅ SIGNIN: Creator accepted, redirecting directly to dashboard');
+          await redirectToDashboard();
         } else {
           navigate('/creator/invited');
         }

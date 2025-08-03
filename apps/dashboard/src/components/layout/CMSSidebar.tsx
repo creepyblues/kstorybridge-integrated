@@ -15,20 +15,26 @@ import { useAuth } from "@/hooks/useAuth";
 const getDiscoverItems = (accountType: string) => {
   if (accountType === "ip_owner") {
     return [
-      { title: "Content", href: "/content", icon: FileText },
+      { title: "Titles", href: "/creators/titles", icon: FileText },
     ];
   } else {
     return [
-      { title: "Titles", href: "/titles", icon: FileText },
-      { title: "Favorites", href: "/favorites", icon: Heart },
+      { title: "Titles", href: "/buyers/titles", icon: FileText },
+      { title: "Favorites", href: "/buyers/favorites", icon: Heart },
     ];
   }
 };
 
-const getSettingsItems = () => {
-  return [
-    { title: "Profile", href: "/profile", icon: User },
-  ];
+const getSettingsItems = (accountType: string) => {
+  if (accountType === "ip_owner") {
+    return [
+      { title: "Profile", href: "/creators/profile", icon: User },
+    ];
+  } else {
+    return [
+      { title: "Profile", href: "/buyers/profile", icon: User },
+    ];
+  }
 };
 
 export function CMSSidebar() {
@@ -39,7 +45,7 @@ export function CMSSidebar() {
   // Get account type from user metadata, default to buyer
   const accountType = user?.user_metadata?.account_type || "buyer";
   const discoverItems = getDiscoverItems(accountType);
-  const settingsItems = getSettingsItems();
+  const settingsItems = getSettingsItems(accountType);
 
   return (
     <>
@@ -124,6 +130,7 @@ export function CMSSidebar() {
             );
           })}
         </div>
+      </div>
       </div>
     </>
   );

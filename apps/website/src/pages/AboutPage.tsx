@@ -1,6 +1,7 @@
 import PageHeader from '../components/PageHeader';
 import { Card, CardContent } from '../components/ui/card';
 import { ExternalLink } from 'lucide-react';
+import Footer from '../components/Footer';
 
 const AboutPage = () => {
   return (

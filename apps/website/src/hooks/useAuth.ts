@@ -61,7 +61,8 @@ export const useAuth = () => {
       }
     } else {
       console.log('⚠️ WEBSITE: Invitation status is not accepted:', userProfile.invitation_status);
-      navigate('/invited');
+      const invitedPath = userProfile.account_type === 'ip_owner' ? '/creator/invited' : '/invited';
+      navigate(invitedPath);
     }
   };
 

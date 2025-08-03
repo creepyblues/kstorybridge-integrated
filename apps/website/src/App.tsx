@@ -16,6 +16,7 @@ import CreatorSignupPage from "./pages/CreatorSignupPage";
 import SigninPage from "./pages/SigninPage";
 import TitleDetailPage from "./pages/TitleDetailPage";
 import DashboardInvited from "./pages/DashboardInvited";
+import CreatorInvited from "./pages/CreatorInvited";
 import DebugSupabase from "./pages/DebugSupabase";
 import TestTitles from "./pages/TestTitles";
 import TestTitlesWithSample from "./pages/TestTitlesWithSample";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/signin" element={<SigninPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
           <Route path="/invited" element={<DashboardInvited />} />
+          <Route path="/creator/invited" element={<CreatorInvited />} />
           {/* Legacy redirect for old dashboard routes */}
           <Route path="/dashboard/invited" element={<Navigate to="/invited" replace />} />
           <Route path="/debug/supabase" element={<DebugSupabase />} />

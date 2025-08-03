@@ -135,8 +135,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         return;
       }
 
-      // Validate work email
-      if (!isWorkEmail(formData.email)) {
+      // Validate work email for buyers only
+      if (accountType === 'buyer' && !isWorkEmail(formData.email)) {
         toast({
           title: "Work Email Required",
           description: "Please use a work email address. Personal email providers are not allowed.",
@@ -154,7 +154,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             account_type: 'buyer',
             buyer_company: (formData as BuyerFormData).buyerCompany,
             buyer_role: (formData as BuyerFormData).buyerRole || null,
-            linkedin_url: (formData as BuyerFormData).linkedinUrl || null
+            linkedin_url: (formData as BuyerFormData).linkedinUrl || null,
+            invitation_status: 'invited'
           }
         : {
             full_name: formData.fullName,
@@ -162,7 +163,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             pen_name_or_studio: (formData as CreatorFormData).penNameOrStudio || null,
             ip_owner_role: (formData as CreatorFormData).ipOwnerRole || null,
             ip_owner_company: (formData as CreatorFormData).ipOwnerCompany || null,
-            website_url: (formData as CreatorFormData).websiteUrl || null
+            website_url: (formData as CreatorFormData).websiteUrl || null,
+            invitation_status: 'invited'
           };
       
       const { data, error } = await supabase.auth.signUp({
@@ -354,7 +356,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-base mb-2 block text-midnight-ink">Work Email *</Label>
+                <Label htmlFor="email" className="text-base mb-2 block text-midnight-ink">
+                  {isBuyer ? 'Work Email *' : 'Email *'}
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -362,11 +366,18 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   onChange={(e) => updateFormData('email', e.target.value)}
                   required
                   className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-hanok-teal rounded-lg"
-                  placeholder="your.name@company.com"
+                  placeholder={isBuyer ? "your.name@company.com" : "your.email@example.com"}
                 />
-                <p className="text-sm text-midnight-ink-500 mt-2">
-                  Personal email providers are not allowed
-                </p>
+                {isBuyer && (
+                  <p className="text-sm text-midnight-ink-500 mt-2">
+                    Personal email providers are not allowed
+                  </p>
+                )}
+                {isCreator && (
+                  <p className="text-sm text-midnight-ink-500 mt-2">
+                    You can use any email address including personal emails
+                  </p>
+                )}
               </div>
 
               <div>

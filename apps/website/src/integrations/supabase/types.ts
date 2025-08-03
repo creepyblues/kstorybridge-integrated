@@ -192,7 +192,7 @@ export type Database = {
           invitation_status: string | null
           ip_owner_company: string | null
           ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
-          pen_name_or_studio: string | null
+          pen_name: string | null
           updated_at: string
           website_url: string | null
         }
@@ -204,7 +204,7 @@ export type Database = {
           invitation_status?: string | null
           ip_owner_company?: string | null
           ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
-          pen_name_or_studio?: string | null
+          pen_name?: string | null
           updated_at?: string
           website_url?: string | null
         }
@@ -216,7 +216,7 @@ export type Database = {
           invitation_status?: string | null
           ip_owner_company?: string | null
           ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
-          pen_name_or_studio?: string | null
+          pen_name?: string | null
           updated_at?: string
           website_url?: string | null
         }

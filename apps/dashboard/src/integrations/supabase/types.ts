@@ -27,7 +27,7 @@ export type Database = {
           ip_owner_company: string | null
           ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url: string | null
-          pen_name_or_studio: string | null
+          pen_name: string | null
           updated_at: string
           website_url: string | null
         }
@@ -43,7 +43,7 @@ export type Database = {
           ip_owner_company?: string | null
           ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url?: string | null
-          pen_name_or_studio?: string | null
+          pen_name?: string | null
           updated_at?: string
           website_url?: string | null
         }
@@ -59,7 +59,7 @@ export type Database = {
           ip_owner_company?: string | null
           ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url?: string | null
-          pen_name_or_studio?: string | null
+          pen_name?: string | null
           updated_at?: string
           website_url?: string | null
         }

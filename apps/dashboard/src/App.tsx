@@ -24,6 +24,7 @@ import Media from "./pages/Media";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,9 @@ const App = () => (
                 } />
                 <Route path="/settings" element={
                   <ProtectedLayout><Settings /></ProtectedLayout>
+                } />
+                <Route path="/profile" element={
+                  <ProtectedLayout><Profile /></ProtectedLayout>
                 } />
                 <Route path="*" element={
                   <ProtectedRoute>

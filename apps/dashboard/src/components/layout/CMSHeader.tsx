@@ -15,7 +15,7 @@ export function CMSHeader() {
   const displayTitle = accountType === "ip_owner" ? "Creator Dashboard" : "Buyer Dashboard";
 
   return (
-    <header className="w-full bg-white border-b border-porcelain-blue-200 px-6 py-4">
+    <header className="fixed top-0 left-0 right-0 w-full bg-white border-b border-porcelain-blue-200 px-6 py-4 z-40">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <img 

@@ -93,8 +93,8 @@ const SigninPage = () => {
         
         if (error) {
           console.error('Error fetching IP owner profile:', error);
-          // Default to invited dashboard on error
-          navigate('/invited');
+          // Default to creator invited page on error
+          navigate('/creator/invited');
           return;
         }
         
@@ -104,7 +104,7 @@ const SigninPage = () => {
           // This prevents competing redirects and ensures proper session handling
           navigate('/');
         } else {
-          navigate('/invited');
+          navigate('/creator/invited');
         }
       } else {
         // If no account type, default to invited dashboard

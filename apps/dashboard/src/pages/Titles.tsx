@@ -189,9 +189,18 @@ export default function Titles() {
 
         {/* All Titles Table */}
         <div>
-          <h2 className="text-4xl font-bold text-midnight-ink mb-8">
-            {isCreatorView ? "MY TITLES" : "ALL TITLES"}
-          </h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-4xl font-bold text-midnight-ink">
+              {isCreatorView ? "MY TITLES" : "ALL TITLES"}
+            </h2>
+            {isCreatorView && (
+              <Link to="/creators/titles/add">
+                <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-6 py-3 rounded-lg font-medium">
+                  + Add a new title
+                </Button>
+              </Link>
+            )}
+          </div>
           
           {/* Search Bar */}
           <div className="relative mb-8">

@@ -124,6 +124,8 @@ const AboutPage = () => {
           </div>
         </section>
       </main>
+      
+      <Footer />
     </div>
   );
 };

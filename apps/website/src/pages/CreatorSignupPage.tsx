@@ -1,5 +1,6 @@
 import PageHeader from '../components/PageHeader';
 import SignupForm from '../components/SignupForm';
+import Footer from '../components/Footer';
 
 const CreatorSignupPage = () => {
   return (
@@ -15,6 +16,8 @@ const CreatorSignupPage = () => {
           </div>
         </section>
       </main>
+      
+      <Footer />
     </div>
   );
 };

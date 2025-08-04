@@ -81,7 +81,7 @@
     --secondary-foreground: 255 255 255;
     --muted: 245 245 245;
     --muted-foreground: 107 114 126;
-    --accent: 255 209 102;
+    --accent: 156 163 175;
     --accent-foreground: 34 34 34;
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
@@ -110,6 +110,22 @@
   .korean-text {
     font-family: 'Noto Sans KR', 'Open Sans', sans-serif;
   }
+
+  /* Override browser autofill yellow background */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px rgb(243, 244, 246) inset !important;
+    -webkit-text-fill-color: rgb(17, 24, 39) !important;
+    background-color: rgb(243, 244, 246) !important;
+    border-color: rgb(209, 213, 219) !important;
+  }
+
+  /* Additional autofill override for other browsers */
+  input[autocomplete]:not([autocomplete=""]) {
+    background-color: rgb(243, 244, 246) !important;
+  }
 }
 
 @layer utilities {
@@ -122,7 +138,7 @@
   }
   
   .text-accent {
-    color: rgb(255 209 102);
+    color: rgb(156 163 175);
   }
   
   .bg-primary {
@@ -134,7 +150,7 @@
   }
   
   .bg-accent {
-    background-color: rgb(255 209 102);
+    background-color: rgb(156 163 175);
   }
   
   .border-primary {
@@ -234,11 +250,11 @@
   }
 
   .bg-gradient-secondary {
-    background: linear-gradient(135deg, rgb(255 107 107) 0%, rgb(255 209 102) 100%);
+    background: linear-gradient(135deg, rgb(255 107 107) 0%, rgb(156 163 175) 100%);
   }
 
   .bg-gradient-accent {
-    background: linear-gradient(135deg, rgb(255 209 102) 0%, rgb(17 138 178) 100%);
+    background: linear-gradient(135deg, rgb(156 163 175) 0%, rgb(17 138 178) 100%);
   }
 
   /* Glass morphism effect */

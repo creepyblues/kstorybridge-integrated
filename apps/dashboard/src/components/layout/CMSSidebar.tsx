@@ -74,7 +74,7 @@ export function CMSSidebar() {
       )}>
       <nav className="p-4 flex-1">
         {/* DISCOVER Section */}
-        <div className="mb-6">
+        <div className="mb-6 mt-8">
           <h3 className="text-xs font-semibold text-midnight-ink-400 uppercase tracking-wider mb-3 px-3">
             DISCOVER
           </h3>

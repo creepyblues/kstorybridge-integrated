@@ -9,6 +9,7 @@ import { useToast } from '../hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
 import { getDashboardUrl } from '../config/urls';
 import PageHeader from '../components/PageHeader';
+import Footer from '../components/Footer';
 
 const SigninPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -332,6 +333,8 @@ const SigninPage = () => {
           </div>
         </section>
       </main>
+      
+      <Footer />
     </div>
   );
 };

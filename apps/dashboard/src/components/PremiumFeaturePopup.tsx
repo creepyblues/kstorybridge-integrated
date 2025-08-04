@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { trackPremiumFeatureRequest, trackEvent } from "@/utils/analytics";
 import { sendAdminNotification } from "@/utils/emailService";
+import { testRequestTable, debugAuthAndRLS } from "@/utils/debugRequest";
 import { useEffect } from "react";
 
 interface PremiumFeaturePopupProps {
@@ -44,26 +45,87 @@ export default function PremiumFeaturePopup({
     try {
       setLoading(true);
       
+      console.log('=== DEBUG: Starting handleRequest ===');
+      console.log('User:', user.id);
+      console.log('TitleId:', titleId);
+      console.log('RequestType:', requestType);
+      console.log('TitleName:', titleName);
+      
+      // Test if request table is accessible
+      await testRequestTable();
+      
+      // Test authentication and RLS
+      await debugAuthAndRLS();
+      
+      // Check authentication state
+      console.log('=== DEBUG: Authentication Check ===');
+      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
+      console.log('Current auth user:', currentUser);
+      console.log('Auth error:', authError);
+      console.log('User from hook:', user);
+      console.log('User IDs match:', currentUser?.id === user.id);
+      
       // If we have titleId and requestType, try to save to request table
       if (titleId && requestType) {
+        console.log('=== DEBUG: Attempting to save to request table ===');
         try {
+          const insertData = {
+            user_id: user.id,
+            title_id: titleId,
+            type: requestType
+          };
+          console.log('Insert data:', insertData);
+
           const { data: requestData, error: requestError } = await supabase
             .from('request')
-            .insert({
-              user_id: user.id,
-              title_id: titleId,
-              type: requestType
-            })
+            .insert(insertData)
             .select('id')
             .single();
 
+          console.log('Supabase response - Data:', requestData);
+          console.log('Supabase response - Error:', requestError);
+
           if (requestError) {
+            console.error('=== DEBUG: Error saving to request table ===');
+            console.error('Error details:', requestError);
+            console.error('Error code:', requestError.code);
+            console.error('Error message:', requestError.message);
+            console.error('Error hint:', requestError.hint);
+            
+            // Handle specific error cases
+            if (requestError.code === '23505') {
+              // Unique constraint violation - user already made this request
+              console.log('User has already made this request type for this title');
+              toast({
+                title: "Request Already Submitted",
+                description: "You have already submitted this type of request for this title.",
+                variant: "destructive"
+              });
+              setLoading(false);
+              return; // Exit early, don't continue with fallback
+            } else if (requestError.code === '42P01') {
+              console.log('❌ Request table does not exist - migration not applied');
+              toast({
+                title: "Database Setup Required",
+                description: "The request table hasn't been created yet. Please contact support.",
+                variant: "destructive"
+              });
+            } else if (requestError.code === '42501') {
+              console.log('❌ Permission denied to request table');
+              toast({
+                title: "Permission Error",
+                description: "You don't have permission to submit requests. Please contact support.",
+                variant: "destructive"
+              });
+            }
+            
             console.warn('Error saving to request table, falling back to user_buyers:', requestError);
             // If request table doesn't exist or has an error, fall back to user_buyers table
             // This ensures the feature works even if migration hasn't been applied yet
           } else {
             // Successfully saved to request table
-            console.log('Request saved to request table successfully');
+            console.log('=== DEBUG: Request saved successfully ===');
+            console.log('Request data:', requestData);
             
             // Send admin notification email if this is a pitch request
             if (requestType === 'pitch' && requestData?.id && titleName) {
@@ -92,9 +154,17 @@ export default function PremiumFeaturePopup({
             }
           }
         } catch (dbError) {
+          console.error('=== DEBUG: Database exception ===');
+          console.error('DB Error:', dbError);
           console.warn('Database operation failed for request table, falling back to user_buyers:', dbError);
           // Continue to fallback logic below
         }
+      } else {
+        console.log('=== DEBUG: Skipping request table insert ===');
+        console.log('TitleId exists:', !!titleId);
+        console.log('RequestType exists:', !!requestType);
+        console.log('Actual titleId:', titleId);
+        console.log('Actual requestType:', requestType);
       }
 
       // Always also save to user_buyers table for backwards compatibility and tracking

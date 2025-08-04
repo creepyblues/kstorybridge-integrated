@@ -115,21 +115,21 @@ const BuyersPage = () => {
             <div className="grid lg:grid-cols-3 gap-12">
               <div className="text-center group">
                 <div className="w-20 h-20 bg-hanok-teal/10 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-hanok-teal/20 transition-colors duration-300">
-                  <span className="text-hanok-teal text-3xl">🔍</span>
+                  <span className="text-hanok-teal text-3xl">📚</span>
                 </div>
-                <h3 className="text-2xl font-bold text-midnight-ink mb-6">Smart Discovery</h3>
+                <h3 className="text-2xl font-bold text-midnight-ink mb-6">Complete Korean Catalog</h3>
                 <p className="text-midnight-ink-600 text-lg leading-relaxed">
-                  Filter by genre, engagement metrics, audience, fan size, and monetization potential. Find your next hit in minutes.
+                  Access every Korean title from all platforms and distributors in one place—no more hunting across dozens of sources.
                 </p>
               </div>
 
               <div className="text-center group">
                 <div className="w-20 h-20 bg-porcelain-blue/20 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-porcelain-blue/30 transition-colors duration-300">
-                  <span className="text-porcelain-blue-600 text-3xl">📈</span>
+                  <span className="text-porcelain-blue-600 text-3xl">🧠</span>
                 </div>
-                <h3 className="text-2xl font-bold text-midnight-ink mb-6">Data Sheets</h3>
+                <h3 className="text-2xl font-bold text-midnight-ink mb-6">Cultural Adaptation Intelligence</h3>
                 <p className="text-midnight-ink-600 text-lg leading-relaxed">
-                  Instant access to performance data: views, engagement, revenue, and fan sentiment analysis.
+                  Get professional cultural interpretation—not just translation—with market insights that reveal true adaptation potential for your audience.
                 </p>
               </div>
 
@@ -137,9 +137,9 @@ const BuyersPage = () => {
                 <div className="w-20 h-20 bg-sunrise-coral/10 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:bg-sunrise-coral/20 transition-colors duration-300">
                   <span className="text-sunrise-coral text-3xl">🤝</span>
                 </div>
-                <h3 className="text-2xl font-bold text-midnight-ink mb-6">Smart Summary</h3>
+                <h3 className="text-2xl font-bold text-midnight-ink mb-6">Direct Rights Holder Access</h3>
                 <p className="text-midnight-ink-600 text-lg leading-relaxed">
-                  Quickly understand if it's the right one for you with smart summary and pitch deck.
+                  Connect straight to decision-makers with deal authority—skip the intermediaries and close faster.
                 </p>
               </div>
             </div>
@@ -162,7 +162,7 @@ const BuyersPage = () => {
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-xl font-bold text-midnight-ink">Browse & Discover</h3>
-                  <p className="text-midnight-ink-600 leading-relaxed">AI-curated recommendations based on your preferences and market trends</p>
+                  <p className="text-midnight-ink-600 leading-relaxed">AI learns your preferences and market trends to surface titles with breakout potential for your audience.</p>
                 </div>
               </div>
               
@@ -172,7 +172,7 @@ const BuyersPage = () => {
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-xl font-bold text-midnight-ink">Analyze & Evaluate</h3>
-                  <p className="text-midnight-ink-600 leading-relaxed">Get detailed analytics, audience insights, and adaptation potential scores</p>
+                  <p className="text-midnight-ink-600 leading-relaxed">Review cultural insights and adaptation analytics to make confident acquisition decisions.</p>
                 </div>
               </div>
               
@@ -182,7 +182,7 @@ const BuyersPage = () => {
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-xl font-bold text-midnight-ink">Connect & Negotiate</h3>
-                  <p className="text-midnight-ink-600 leading-relaxed">Direct access to verified rights holders and creators</p>
+                  <p className="text-midnight-ink-600 leading-relaxed">Reach verified rights holders directly and negotiate terms without intermediaries slowing you down.</p>
                 </div>
               </div>
               
@@ -192,7 +192,7 @@ const BuyersPage = () => {
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-xl font-bold text-midnight-ink">Secure & Adapt</h3>
-                  <p className="text-midnight-ink-600 leading-relaxed">Verified chain of title with seamless rights acquisition</p>
+                  <p className="text-midnight-ink-600 leading-relaxed">Complete verified rights acquisition with clear chain of title for seamless adaptation.</p>
                 </div>
               </div>
             </div>

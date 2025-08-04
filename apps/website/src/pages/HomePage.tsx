@@ -190,14 +190,24 @@ const HomePage = () => {
               </p>
             </div>
             
-            <Button 
-              id="homepage-browse-now-btn"
-              size="lg"
-              className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium"
-              onClick={() => navigate('/signup')}
-            >
-              BROWSE NOW
-            </Button>
+            <div className="flex gap-4">
+              <Button 
+                id="homepage-creator-btn"
+                size="lg"
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-lg rounded-full font-medium"
+                onClick={() => navigate('/creators')}
+              >
+                I'M A CREATOR
+              </Button>
+              <Button 
+                id="homepage-buyer-btn"
+                size="lg"
+                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium"
+                onClick={() => navigate('/buyers')}
+              >
+                I'M A BUYER
+              </Button>
+            </div>
           </div>
           
           <div className="relative">

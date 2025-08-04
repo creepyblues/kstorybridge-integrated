@@ -8,41 +8,144 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { User, Mail, Building, Globe, Linkedin, Save, Edit3, X } from "lucide-react";
-import { Database } from "@/integrations/supabase/types";
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
+// Define types for the actual table structures
+type BuyerProfile = {
+  id: string;
+  email: string;
+  full_name: string;
+  buyer_company?: string | null;
+  buyer_role?: string | null;
+  linkedin_url?: string | null;
+  invitation_status?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type IPOwnerProfile = {
+  id: string;
+  email: string;
+  full_name: string;
+  pen_name_or_studio?: string | null;
+  ip_owner_role?: string | null;
+  ip_owner_company?: string | null;
+  website_url?: string | null;
+  invitation_status?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type UnifiedProfile = {
+  id: string;
+  email: string;
+  full_name: string;
+  account_type: 'buyer' | 'ip_owner';
+  
+  // Buyer fields
+  buyer_company?: string | null;
+  buyer_role?: string | null;
+  linkedin_url?: string | null;
+  
+  // IP Owner fields
+  pen_name?: string | null; // mapped from pen_name_or_studio
+  ip_owner_role?: string | null;
+  ip_owner_company?: string | null;
+  website_url?: string | null;
+  
+  invitation_status?: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UnifiedProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<Profile>>({});
+  const [formData, setFormData] = useState<Partial<UnifiedProfile>>({});
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log("No user found, skipping profile fetch");
+        return;
+      }
+
+      console.log("Fetching profile for user:", user.id, user.email);
+      console.log("User metadata:", user.user_metadata);
 
       try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
+        const accountType = user.user_metadata?.account_type || 'buyer';
+        console.log("Account type:", accountType);
 
-        if (error) {
-          console.error("Error fetching profile:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load profile data",
-            variant: "destructive",
-          });
+        if (accountType === 'buyer') {
+          const { data, error } = await supabase
+            .from("user_buyers")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          console.log("Buyer profile query result:", { data, error });
+
+          if (error) {
+            if (error.code === 'PGRST116') {
+              console.log("No buyer profile found, attempting to create one");
+              await createBuyerProfile();
+            } else {
+              console.error("Error fetching buyer profile:", error);
+              toast({
+                title: "Error",
+                description: `Failed to load profile data: ${error.message}`,
+                variant: "destructive",
+              });
+            }
+          } else {
+            const unifiedProfile: UnifiedProfile = {
+              ...data,
+              account_type: 'buyer',
+              pen_name: null, // buyers don't have pen names
+            };
+            console.log("Buyer profile loaded successfully:", unifiedProfile);
+            setProfile(unifiedProfile);
+            setFormData(unifiedProfile);
+          }
         } else {
-          setProfile(data);
-          setFormData(data);
+          // ip_owner
+          const { data, error } = await supabase
+            .from("user_ipowners")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          console.log("IP Owner profile query result:", { data, error });
+
+          if (error) {
+            if (error.code === 'PGRST116') {
+              console.log("No IP owner profile found, attempting to create one");
+              await createIPOwnerProfile();
+            } else {
+              console.error("Error fetching IP owner profile:", error);
+              toast({
+                title: "Error",
+                description: `Failed to load profile data: ${error.message}`,
+                variant: "destructive",
+              });
+            }
+          } else {
+            const unifiedProfile: UnifiedProfile = {
+              ...data,
+              account_type: 'ip_owner',
+              pen_name: data.pen_name_or_studio, // map to pen_name
+              buyer_company: null,
+              buyer_role: null,
+              linkedin_url: null,
+            };
+            console.log("IP Owner profile loaded successfully:", unifiedProfile);
+            setProfile(unifiedProfile);
+            setFormData(unifiedProfile);
+          }
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -59,41 +162,182 @@ export default function Profile() {
     fetchProfile();
   }, [user, toast]);
 
+  const createBuyerProfile = async () => {
+    if (!user) return;
+    
+    console.log("Creating new buyer profile for user:", user.id);
+    
+    try {
+      const newProfile: Partial<BuyerProfile> = {
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || '',
+        buyer_company: user.user_metadata?.buyer_company,
+        buyer_role: user.user_metadata?.buyer_role,
+        linkedin_url: user.user_metadata?.linkedin_url,
+      };
+      
+      console.log("Creating buyer profile with data:", newProfile);
+      
+      const { data, error } = await supabase
+        .from("user_buyers")
+        .insert(newProfile)
+        .select()
+        .single();
+        
+      if (error) {
+        console.error("Failed to create buyer profile:", error);
+        toast({
+          title: "Error",
+          description: `Failed to create profile: ${error.message}`,
+          variant: "destructive",
+        });
+      } else {
+        const unifiedProfile: UnifiedProfile = {
+          ...data,
+          account_type: 'buyer',
+          pen_name: null,
+        };
+        console.log("Buyer profile created successfully:", unifiedProfile);
+        setProfile(unifiedProfile);
+        setFormData(unifiedProfile);
+        toast({
+          title: "Success",
+          description: "Profile created successfully!",
+        });
+      }
+    } catch (error) {
+      console.error("Exception creating buyer profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create profile",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const createIPOwnerProfile = async () => {
+    if (!user) return;
+    
+    console.log("Creating new IP owner profile for user:", user.id);
+    
+    try {
+      const newProfile: Partial<IPOwnerProfile> = {
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || '',
+        pen_name_or_studio: user.user_metadata?.pen_name_or_studio,
+        ip_owner_role: user.user_metadata?.ip_owner_role,
+        ip_owner_company: user.user_metadata?.ip_owner_company,
+        website_url: user.user_metadata?.website_url,
+      };
+      
+      console.log("Creating IP owner profile with data:", newProfile);
+      
+      const { data, error } = await supabase
+        .from("user_ipowners")
+        .insert(newProfile)
+        .select()
+        .single();
+        
+      if (error) {
+        console.error("Failed to create IP owner profile:", error);
+        toast({
+          title: "Error",
+          description: `Failed to create profile: ${error.message}`,
+          variant: "destructive",
+        });
+      } else {
+        const unifiedProfile: UnifiedProfile = {
+          ...data,
+          account_type: 'ip_owner',
+          pen_name: data.pen_name_or_studio,
+          buyer_company: null,
+          buyer_role: null,
+          linkedin_url: null,
+        };
+        console.log("IP owner profile created successfully:", unifiedProfile);
+        setProfile(unifiedProfile);
+        setFormData(unifiedProfile);
+        toast({
+          title: "Success",
+          description: "Profile created successfully!",
+        });
+      }
+    } catch (error) {
+      console.error("Exception creating IP owner profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create profile",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleUpdateProfile = async () => {
     if (!user || !profile) return;
 
     try {
       setUpdating(true);
 
-      const updateData: ProfileUpdate = {
-        full_name: formData.full_name,
-        pen_name: formData.pen_name,
-        website_url: formData.website_url,
-        linkedin_url: formData.linkedin_url,
-      };
+      if (profile.account_type === 'buyer') {
+        const updateData = {
+          full_name: formData.full_name,
+          buyer_company: formData.buyer_company,
+          buyer_role: formData.buyer_role,
+          linkedin_url: formData.linkedin_url,
+        };
 
-      // Add role-specific fields
-      if (profile.account_type === "buyer") {
-        updateData.buyer_company = formData.buyer_company;
-        updateData.buyer_role = formData.buyer_role;
+        const { data, error } = await supabase
+          .from("user_buyers")
+          .update(updateData)
+          .eq("id", user.id)
+          .select()
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        const unifiedProfile: UnifiedProfile = {
+          ...data,
+          account_type: 'buyer',
+          pen_name: null,
+        };
+        setProfile(unifiedProfile);
+        setFormData(unifiedProfile);
       } else {
-        updateData.ip_owner_company = formData.ip_owner_company;
-        updateData.ip_owner_role = formData.ip_owner_role;
+        const updateData = {
+          full_name: formData.full_name,
+          pen_name_or_studio: formData.pen_name,
+          ip_owner_role: formData.ip_owner_role,
+          ip_owner_company: formData.ip_owner_company,
+          website_url: formData.website_url,
+        };
+
+        const { data, error } = await supabase
+          .from("user_ipowners")
+          .update(updateData)
+          .eq("id", user.id)
+          .select()
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        const unifiedProfile: UnifiedProfile = {
+          ...data,
+          account_type: 'ip_owner',
+          pen_name: data.pen_name_or_studio,
+          buyer_company: null,
+          buyer_role: null,
+          linkedin_url: null,
+        };
+        setProfile(unifiedProfile);
+        setFormData(unifiedProfile);
       }
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .update(updateData)
-        .eq("id", user.id)
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      setProfile(data);
-      setFormData(data);
       setIsEditing(false);
       
       toast({
@@ -112,7 +356,7 @@ export default function Profile() {
     }
   };
 
-  const handleInputChange = (field: keyof Profile, value: string | null) => {
+  const handleInputChange = (field: keyof UnifiedProfile, value: string | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value || null,
@@ -250,22 +494,24 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="pen_name">Pen Name / Studio Name</Label>
-              {isEditing ? (
-                <Input
-                  id="pen_name"
-                  value={formData.pen_name || ""}
-                  onChange={(e) => handleInputChange("pen_name", e.target.value)}
-                  placeholder="Enter your pen name or studio name"
-                />
-              ) : (
-                <div className="flex items-center gap-3">
-                  <User className="w-4 h-4 text-slate-500" />
-                  <p className="font-medium text-slate-800">{profile.pen_name || "Not provided"}</p>
-                </div>
-              )}
-            </div>
+            {profile.account_type === 'ip_owner' && (
+              <div className="space-y-2">
+                <Label htmlFor="pen_name">Pen Name / Studio Name</Label>
+                {isEditing ? (
+                  <Input
+                    id="pen_name"
+                    value={formData.pen_name || ""}
+                    onChange={(e) => handleInputChange("pen_name", e.target.value)}
+                    placeholder="Enter your pen name or studio name"
+                  />
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <User className="w-4 h-4 text-slate-500" />
+                    <p className="font-medium text-slate-800">{profile.pen_name || "Not provided"}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -390,63 +636,74 @@ export default function Profile() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="website_url">Website URL</Label>
-              {isEditing ? (
-                <Input
-                  id="website_url"
-                  value={formData.website_url || ""}
-                  onChange={(e) => handleInputChange("website_url", e.target.value)}
-                  placeholder="https://your-website.com"
-                  type="url"
-                />
-              ) : (
-                <div className="flex items-center gap-3">
-                  <Globe className="w-4 h-4 text-slate-500" />
-                  {profile.website_url ? (
-                    <a
-                      href={profile.website_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
-                    >
-                      {profile.website_url}
-                    </a>
-                  ) : (
-                    <p className="font-medium text-slate-800">Not provided</p>
-                  )}
-                </div>
-              )}
-            </div>
+            {profile.account_type === 'ip_owner' && (
+              <div className="space-y-2">
+                <Label htmlFor="website_url">Website URL</Label>
+                {isEditing ? (
+                  <Input
+                    id="website_url"
+                    value={formData.website_url || ""}
+                    onChange={(e) => handleInputChange("website_url", e.target.value)}
+                    placeholder="https://your-website.com"
+                    type="url"
+                  />
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Globe className="w-4 h-4 text-slate-500" />
+                    {profile.website_url ? (
+                      <a
+                        href={profile.website_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                      >
+                        {profile.website_url}
+                      </a>
+                    ) : (
+                      <p className="font-medium text-slate-800">Not provided</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-              {isEditing ? (
-                <Input
-                  id="linkedin_url"
-                  value={formData.linkedin_url || ""}
-                  onChange={(e) => handleInputChange("linkedin_url", e.target.value)}
-                  placeholder="https://linkedin.com/in/your-profile"
-                  type="url"
-                />
-              ) : (
-                <div className="flex items-center gap-3">
-                  <Linkedin className="w-4 h-4 text-slate-500" />
-                  {profile.linkedin_url ? (
-                    <a
-                      href={profile.linkedin_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
-                    >
-                      LinkedIn Profile
-                    </a>
-                  ) : (
-                    <p className="font-medium text-slate-800">Not provided</p>
-                  )}
-                </div>
-              )}
-            </div>
+            {profile.account_type === 'buyer' && (
+              <div className="space-y-2">
+                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+                {isEditing ? (
+                  <Input
+                    id="linkedin_url"
+                    value={formData.linkedin_url || ""}
+                    onChange={(e) => handleInputChange("linkedin_url", e.target.value)}
+                    placeholder="https://linkedin.com/in/your-profile"
+                    type="url"
+                  />
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Linkedin className="w-4 h-4 text-slate-500" />
+                    {profile.linkedin_url ? (
+                      <a
+                        href={profile.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                      >
+                        LinkedIn Profile
+                      </a>
+                    ) : (
+                      <p className="font-medium text-slate-800">Not provided</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!profile.website_url && !profile.linkedin_url && (
+              <div className="text-center py-8 text-slate-500">
+                <Globe className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No contact links available</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

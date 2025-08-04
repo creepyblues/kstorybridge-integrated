@@ -17,6 +17,7 @@ import { RootRedirect } from "./components/RootRedirect";
 import Content from "./pages/Content";
 import Browse from "./pages/Browse";
 import Titles from "./pages/Titles";
+import AddTitle from "./pages/AddTitle";
 import TitleDetail from "./pages/TitleDetail";
 import Favorites from "./pages/Favorites";
 import Deals from "./pages/Deals";
@@ -83,6 +84,9 @@ const App = () => (
                 } />
                 <Route path="/creators/titles" element={
                   <ProtectedLayout><Titles /></ProtectedLayout>
+                } />
+                <Route path="/creators/titles/add" element={
+                  <ProtectedLayout><AddTitle /></ProtectedLayout>
                 } />
                 <Route path="/creators/titles/:titleId" element={
                   <ProtectedLayout><TitleDetail /></ProtectedLayout>

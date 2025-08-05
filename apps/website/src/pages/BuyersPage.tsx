@@ -190,12 +190,12 @@ const BuyersPage = () => {
           </div>
         </section>
 
-        {/* Catalogue Preview */}
+        {/* Catalog Preview */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
               <h2 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
-                The Biggest IP Catalogue
+                The Biggest IP Catalog
               </h2>
               <p className="text-xl text-midnight-ink-600 leading-relaxed max-w-2xl mx-auto">
                 Get access to verified Korean content with proven market performance
@@ -257,8 +257,8 @@ const BuyersPage = () => {
             
             <div className="text-center">
               <Link to="/signup">
-                <Button id="buyers-catalogue-join-btn" size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
-                  Join to View Full Catalogue
+                <Button id="buyers-catalog-join-btn" size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                  Join to View Full Catalog
                 </Button>
               </Link>
             </div>
@@ -352,14 +352,7 @@ const BuyersPage = () => {
               </Card>
 
               {/* Pro Plan - Featured */}
-              <Card className="relative border-0 shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-b from-hanok-teal-50 to-porcelain-blue-50 overflow-hidden transform scale-105">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-gradient-to-r from-hanok-teal to-porcelain-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center space-x-2">
-                    <span>👑</span>
-                    <span>Limited Time</span>
-                  </div>
-                </div>
-                
+              <Card className="relative border-0 shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-b from-hanok-teal-50 to-porcelain-blue-50 overflow-hidden">
                 <CardContent className="p-0">
                   <div className="bg-gradient-to-r from-hanok-teal to-porcelain-blue-600 p-6 rounded-t-3xl text-white">
                     <div className="text-sm text-white/90 font-medium mb-2">For active buyers</div>
@@ -370,6 +363,7 @@ const BuyersPage = () => {
                       <div className="flex items-baseline space-x-2 mb-1">
                         <span className="text-2xl font-bold text-white/60 line-through">$200</span>
                         <div className="text-5xl font-bold text-white">$20</div>
+                        <span className="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold">Limited Time</span>
                       </div>
                       <div className="text-white/90 text-sm">/month</div>
                     </div>
@@ -405,12 +399,12 @@ const BuyersPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Development Suite Plan */}
+              {/* Suite Plan */}
               <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
                 <CardContent className="p-0">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For studios & networks</div>
-                    <h3 className="text-3xl font-bold text-midnight-ink mb-4">Development Suite</h3>
+                    <h3 className="text-3xl font-bold text-midnight-ink mb-4">Suite</h3>
                     <p className="text-slate-600 text-sm mb-6">Custom solutions with expert guidance for large-scale content acquisition.</p>
                     
                     <div className="mb-6">
@@ -419,8 +413,8 @@ const BuyersPage = () => {
                     </div>
                     
                     <Link to="/signup">
-                      <Button id="buyers-pricing-development-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
-                        Contact sales
+                      <Button id="buyers-pricing-suite-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
+                        Coming Soon
                       </Button>
                     </Link>
                   </div>
@@ -452,15 +446,12 @@ const BuyersPage = () => {
         <section className="py-20 bg-gradient-to-r from-hanok-teal to-porcelain-blue-600">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <div className="max-w-4xl mx-auto space-y-8">
-              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-12 leading-tight">
                 Ready to Scout Your Next Hit?
               </h2>
-              <p className="text-xl text-white/90 leading-relaxed mb-12">
-                Join executives from Top Streaming platforms and Hollywood Studios already discovering Korean IP on KStoryBridge.
-              </p>
               <Link to="/signup">
-                <Button id="buyers-cta-scout-catalogue-btn" size="lg" className="bg-white text-hanok-teal hover:bg-snow-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
-                  Scout Catalogue Now
+                <Button id="buyers-cta-scout-catalog-btn" size="lg" className="bg-white text-hanok-teal hover:bg-snow-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                  Scout Catalog Now
                 </Button>
               </Link>
             </div>

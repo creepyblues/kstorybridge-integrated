@@ -17,6 +17,7 @@ type BuyerProfile = {
   buyer_company?: string | null;
   buyer_role?: string | null;
   linkedin_url?: string | null;
+  plan: string;
   invitation_status?: string | null;
   created_at: string;
   updated_at: string;
@@ -45,6 +46,7 @@ type UnifiedProfile = {
   buyer_company?: string | null;
   buyer_role?: string | null;
   linkedin_url?: string | null;
+  plan?: string | null; // only for buyers
   
   // IP Owner fields
   pen_name?: string | null; // mapped from pen_name_or_studio
@@ -141,6 +143,7 @@ export default function Profile() {
               buyer_company: null,
               buyer_role: null,
               linkedin_url: null,
+              plan: null, // IP owners don't have plans
             };
             console.log("IP Owner profile loaded successfully:", unifiedProfile);
             setProfile(unifiedProfile);
@@ -255,6 +258,7 @@ export default function Profile() {
           buyer_company: null,
           buyer_role: null,
           linkedin_url: null,
+          plan: null, // IP owners don't have plans
         };
         console.log("IP owner profile created successfully:", unifiedProfile);
         setProfile(unifiedProfile);
@@ -333,6 +337,7 @@ export default function Profile() {
           buyer_company: null,
           buyer_role: null,
           linkedin_url: null,
+          plan: null, // IP owners don't have plans
         };
         setProfile(unifiedProfile);
         setFormData(unifiedProfile);

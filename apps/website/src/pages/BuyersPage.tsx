@@ -274,114 +274,174 @@ const BuyersPage = () => {
               </h2>
             </div>
             
-            <div className="grid lg:grid-cols-4 gap-8">
-              <Card className="text-center border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
-                <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Free</h3>
-                  <div className="text-5xl font-bold text-midnight-ink mb-8">$0</div>
-                  <div className="space-y-4 text-left mb-10">
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Browse limited title catalog</span>
+            <div className="grid lg:grid-cols-4 gap-6">
+              {/* Free Plan */}
+              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="bg-slate-100 p-6 rounded-t-3xl">
+                    <div className="text-sm text-slate-600 font-medium mb-2">For content scouts</div>
+                    <h3 className="text-3xl font-bold text-midnight-ink mb-4">Free</h3>
+                    <p className="text-slate-600 text-sm mb-6">Browse Korean titles and get basic information to start your discovery.</p>
+                    
+                    <div className="mb-6">
+                      <div className="text-5xl font-bold text-midnight-ink">$0</div>
+                      <div className="text-slate-500 text-sm">/month</div>
                     </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Access basic title info</span>
-                    </div>
+                    
+                    <Link to="/signup">
+                      <Button id="buyers-pricing-free-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
+                        Get started
+                      </Button>
+                    </Link>
                   </div>
-                  <Link to="/signup">
-                    <Button id="buyers-pricing-free-btn" variant="outline" className="w-full border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
-                      Start Free
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-
-              <Card className="text-center border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
-                <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">à la carte</h3>
-                  <div className="text-4xl font-bold text-midnight-ink mb-8">Pay as you go</div>
-                  <div className="space-y-4 text-left mb-10">
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Everything in "Free" Plan</span>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Pay only for premium features (contact creator, pitch deck, etc)</span>
-                    </div>
-                  </div>
-                  <Link to="/signup">
-                    <Button id="buyers-pricing-alacarte-btn" variant="outline" className="w-full border-2 border-porcelain-blue text-porcelain-blue hover:bg-porcelain-blue hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
-                      Get Started
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-
-              <Card className="relative border-2 border-hanok-teal shadow-xl rounded-2xl hover:shadow-2xl transition-shadow duration-300 transform scale-105 bg-white">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-hanok-teal text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                    Limited Time
-                  </span>
-                </div>
-                <CardContent className="p-8 text-center">
-                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Pro</h3>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold text-slate-400 line-through">$200</span>
-                    <div className="text-5xl font-bold text-hanok-teal mb-2">$20</div>
-                  </div>
-                  <div className="text-midnight-ink-500 mb-8">/mo</div>
                   
-                  <div className="space-y-4 text-left mb-10">
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Everything in "Free" Plan</span>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Browse full title catalog (including exclusive access to top titles)</span>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Premium data including personalized recommendation and pitch decks</span>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Access to rights holder contact</span>
+                  <div className="p-6 bg-white">
+                    <h4 className="font-bold text-midnight-ink mb-4">Features you'll love:</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Browse limited title catalog</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Access basic title info</span>
+                      </div>
                     </div>
                   </div>
-                  <Link to="/signup">
-                    <Button id="buyers-pricing-pro-btn" className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white py-4 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
-                      Start Pro Trial
-                    </Button>
-                  </Link>
                 </CardContent>
               </Card>
 
-              <Card className="text-center border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
-                <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Development Suite</h3>
-                  <div className="text-5xl font-bold text-midnight-ink mb-8">Custom</div>
-                  <div className="space-y-4 text-left mb-10">
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Everything in "Pro" Plan</span>
+              {/* À la carte Plan */}
+              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="bg-slate-100 p-6 rounded-t-3xl">
+                    <div className="text-sm text-slate-600 font-medium mb-2">For selective buyers</div>
+                    <h3 className="text-3xl font-bold text-midnight-ink mb-4">à la carte</h3>
+                    <p className="text-slate-600 text-sm mb-6">Pay only for what you need when exploring specific titles.</p>
+                    
+                    <div className="mb-6">
+                      <div className="text-4xl font-bold text-midnight-ink">Pay as you go</div>
+                      <div className="text-slate-500 text-sm">Per feature used</div>
                     </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Custom monthly title recommendation and expert pitch</span>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Priority support</span>
+                    
+                    <Link to="/signup">
+                      <Button id="buyers-pricing-alacarte-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
+                        Get started
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  <div className="p-6 bg-white">
+                    <h4 className="font-bold text-midnight-ink mb-4">Everything in Free, plus:</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Pay per premium feature</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Contact creator access</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Pitch deck downloads</span>
+                      </div>
                     </div>
                   </div>
-                  <Link to="/signup">
-                    <Button id="buyers-pricing-development-btn" variant="outline" className="w-full border-2 border-midnight-ink text-midnight-ink hover:bg-midnight-ink hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
-                      Contact Sales
-                    </Button>
-                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Pro Plan - Featured */}
+              <Card className="relative border-0 shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-b from-hanok-teal-50 to-porcelain-blue-50 overflow-hidden transform scale-105">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                  <div className="bg-gradient-to-r from-hanok-teal to-porcelain-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg flex items-center space-x-2">
+                    <span>👑</span>
+                    <span>Limited Time</span>
+                  </div>
+                </div>
+                
+                <CardContent className="p-0">
+                  <div className="bg-gradient-to-r from-hanok-teal to-porcelain-blue-600 p-6 rounded-t-3xl text-white">
+                    <div className="text-sm text-white/90 font-medium mb-2">For active buyers</div>
+                    <h3 className="text-3xl font-bold mb-4">Pro</h3>
+                    <p className="text-white/90 text-sm mb-6">Full access to Korean titles with premium insights and direct connections.</p>
+                    
+                    <div className="mb-6">
+                      <div className="flex items-baseline space-x-2 mb-1">
+                        <span className="text-2xl font-bold text-white/60 line-through">$200</span>
+                        <div className="text-5xl font-bold text-white">$20</div>
+                      </div>
+                      <div className="text-white/90 text-sm">/month</div>
+                    </div>
+                    
+                    <Link to="/signup">
+                      <Button id="buyers-pricing-pro-btn" className="w-full bg-white text-hanok-teal hover:bg-slate-50 py-3 rounded-2xl font-medium transition-colors duration-300 shadow-lg">
+                        Start free trial
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  <div className="p-6 bg-white">
+                    <h4 className="font-bold text-midnight-ink mb-4">Everything in Free, plus:</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Full title catalog access</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Exclusive top titles</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Personalized recommendations</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Rights holder contact</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Development Suite Plan */}
+              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="bg-slate-100 p-6 rounded-t-3xl">
+                    <div className="text-sm text-slate-600 font-medium mb-2">For studios & networks</div>
+                    <h3 className="text-3xl font-bold text-midnight-ink mb-4">Development Suite</h3>
+                    <p className="text-slate-600 text-sm mb-6">Custom solutions with expert guidance for large-scale content acquisition.</p>
+                    
+                    <div className="mb-6">
+                      <div className="text-5xl font-bold text-midnight-ink">Custom</div>
+                      <div className="text-slate-500 text-sm">Contact for pricing</div>
+                    </div>
+                    
+                    <Link to="/signup">
+                      <Button id="buyers-pricing-development-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
+                        Contact sales
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  <div className="p-6 bg-white">
+                    <h4 className="font-bold text-midnight-ink mb-4">Everything in Pro, plus:</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Custom monthly recommendations</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Expert pitch presentations</span>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-hanok-teal text-lg">✓</span>
+                        <span className="text-slate-600 text-sm">Priority support</span>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

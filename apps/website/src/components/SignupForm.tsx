@@ -191,36 +191,58 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       if (data.user) {
         // Only do profile checking for buyers (as in original code)
         if (accountType === 'buyer') {
-          const checkProfile = async (attempts = 0) => {
-            const maxAttempts = 5;
-            const delay = 2000;
+          const checkProfile = async () => {
+            const maxAttempts = 3; // Reduced from 5
+            const baseDelay = 3000; // Increased base delay
             
-            try {
-              const { data: buyerProfile, error: profileError } = await supabase
-                .from('user_buyers')
-                .select('*')
-                .eq('id', data.user.id)
-                .single();
-              
-              console.log(`Buyer profile check attempt ${attempts + 1}:`, { buyerProfile, profileError });
-              
-              if (buyerProfile) {
-                console.log('✅ Trigger worked! Profile created successfully');
-                return true;
-              } else if (attempts < maxAttempts - 1) {
-                console.log(`❌ Profile not found yet, retrying in ${delay}ms...`);
-                setTimeout(() => checkProfile(attempts + 1), delay);
-              } else {
-                console.log('❌ Trigger failed - no profile found after maximum attempts');
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+              try {
+                console.log(`🔍 Buyer profile check attempt ${attempt + 1}/${maxAttempts}`);
+                
+                const { data: buyerProfile, error: profileError } = await supabase
+                  .from('user_buyers')
+                  .select('id, full_name, buyer_company')
+                  .eq('id', data.user.id)
+                  .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors when no record exists
+                
+                if (profileError) {
+                  console.warn(`⚠️ Profile check error (attempt ${attempt + 1}):`, profileError);
+                  
+                  // If it's a 406 or similar error, don't retry
+                  if (profileError.code === 'PGRST116' || profileError.message?.includes('406')) {
+                    console.log('❌ API error detected, stopping profile checks');
+                    break;
+                  }
+                } else if (buyerProfile) {
+                  console.log('✅ Trigger worked! Profile created successfully:', buyerProfile);
+                  return true;
+                }
+                
+                // If this isn't the last attempt, wait before retrying
+                if (attempt < maxAttempts - 1) {
+                  const delay = baseDelay * Math.pow(1.5, attempt); // Exponential backoff
+                  console.log(`⏳ Profile not found yet, waiting ${delay}ms before retry...`);
+                  await new Promise(resolve => setTimeout(resolve, delay));
+                }
+              } catch (error) {
+                console.error(`❌ Unexpected error in profile check attempt ${attempt + 1}:`, error);
+                
+                // If this isn't the last attempt, wait before retrying
+                if (attempt < maxAttempts - 1) {
+                  const delay = baseDelay * Math.pow(1.5, attempt);
+                  await new Promise(resolve => setTimeout(resolve, delay));
+                }
               }
-            } catch (error) {
-              console.error('Error checking profile:', error);
             }
             
+            console.log('❌ Profile not found after all attempts - this is normal for database triggers');
             return false;
           };
           
-          checkProfile();
+          // Don't await this - let it run in background
+          checkProfile().catch(error => {
+            console.error('Profile check failed:', error);
+          });
         }
         
         // Track successful signup
@@ -328,6 +350,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           </div>
 
           {/* Google Sign Up Button - Hidden for now */}
+          {/* Temporarily disabled Google signup
           {false && (
             <div className="mb-8">
               <Button 
@@ -367,6 +390,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               </div>
             </div>
           )}
+          */}
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic Information */}

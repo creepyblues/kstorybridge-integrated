@@ -14,44 +14,48 @@ export interface SlackNotificationData {
 export const sendSlackNotification = async (data: SlackNotificationData): Promise<void> => {
   const webhookUrl = import.meta.env.VITE_SLACK_WEBHOOK_URL;
   
+  console.log('🔍 Debug: Slack webhook URL:', webhookUrl ? 'Found' : 'Missing');
+  console.log('🔍 Debug: Notification data:', data);
+  
   if (!webhookUrl) {
-    console.warn('Slack webhook URL not configured');
+    console.warn('❌ Slack webhook URL not configured in environment variables');
     return;
   }
 
   try {
     // Create formatted message
     const message = formatSlackMessage(data);
+    console.log('🔍 Debug: Formatted message:', message);
+    
+    const payload = {
+      text: message,
+      username: 'KStoryBridge Bot',
+      icon_emoji: ':bell:',
+    };
+    
+    console.log('🔍 Debug: Sending payload to Slack:', payload);
+    console.log('🔍 Debug: Webhook URL (partial):', webhookUrl.substring(0, 50) + '...');
     
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        text: message,
-        username: 'KStoryBridge Bot',
-        icon_emoji: ':bell:',
-        // Use blocks for richer formatting
-        blocks: [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: message
-            }
-          }
-        ]
-      }),
+      body: JSON.stringify(payload),
     });
     
+    console.log('🔍 Debug: Response status:', response.status);
+    console.log('🔍 Debug: Response ok:', response.ok);
+    
     if (!response.ok) {
-      console.error('Failed to send Slack notification:', response.statusText);
+      const responseText = await response.text();
+      console.error('❌ Failed to send Slack notification:', response.status, response.statusText);
+      console.error('❌ Response body:', responseText);
     } else {
-      console.log('Slack notification sent successfully');
+      console.log('✅ Slack notification sent successfully!');
     }
   } catch (error) {
-    console.error('Error sending Slack notification:', error);
+    console.error('❌ Error sending Slack notification:', error);
   }
 };
 
@@ -100,6 +104,26 @@ const getEventEmoji = (event: string): string => {
   
   return eventEmojiMap[event] || '📢';
 };
+
+// Test function for debugging
+export const testSlackNotification = async () => {
+  console.log('🧪 Testing Slack notification...');
+  await sendSlackNotification({
+    event: 'Test Notification',
+    userType: 'buyer',
+    fullName: 'Test User',
+    email: 'test@example.com',
+    company: 'Test Company',
+    additionalInfo: {
+      note: 'This is a test message from KStoryBridge'
+    }
+  });
+};
+
+// Make it available globally for browser console testing
+if (typeof window !== 'undefined') {
+  (window as any).testSlackNotification = testSlackNotification;
+}
 
 // Convenience functions for common events
 export const notifyBuyerSignup = async (userData: {

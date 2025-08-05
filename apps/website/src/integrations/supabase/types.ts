@@ -128,6 +128,7 @@ export type Database = {
           id: string
           invitation_status: string | null
           linkedin_url: string | null
+          plan: Database["public"]["Enums"]["buyer_plan"]
           updated_at: string
         }
         Insert: {
@@ -139,6 +140,7 @@ export type Database = {
           id: string
           invitation_status?: string | null
           linkedin_url?: string | null
+          plan?: Database["public"]["Enums"]["buyer_plan"]
           updated_at?: string
         }
         Update: {
@@ -150,6 +152,7 @@ export type Database = {
           id?: string
           invitation_status?: string | null
           linkedin_url?: string | null
+          plan?: Database["public"]["Enums"]["buyer_plan"]
           updated_at?: string
         }
         Relationships: []
@@ -231,6 +234,7 @@ export type Database = {
     }
     Enums: {
       account_type: "ip_owner" | "buyer"
+      buyer_plan: "free" | "pro" | "a-la-carte" | "suite"
       buyer_role: "producer" | "executive" | "agent" | "content_scout" | "other"
       content_format:
         | "webtoon"
@@ -383,6 +387,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["ip_owner", "buyer"],
+      buyer_plan: ["free", "pro", "a-la-carte", "suite"],
       buyer_role: ["producer", "executive", "agent", "content_scout", "other"],
       content_format: [
         "webtoon",

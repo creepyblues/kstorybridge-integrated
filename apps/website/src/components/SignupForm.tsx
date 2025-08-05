@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
 import { trackSignup, trackFormSubmission, trackButtonClick } from '@/utils/analytics';
+import { notifyBuyerSignup, notifyCreatorSignup } from '../utils/slack';
 
 type AccountType = 'buyer' | 'creator';
 
@@ -225,6 +226,31 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         // Track successful signup
         trackSignup(accountType, 'email');
         trackFormSubmission(`${accountType}_signup_form`, true);
+        
+        // Send Slack notification
+        try {
+          if (accountType === 'buyer') {
+            await notifyBuyerSignup({
+              fullName: formData.fullName,
+              email: formData.email,
+              company: (formData as BuyerFormData).buyerCompany,
+              role: (formData as BuyerFormData).buyerRole,
+              linkedinUrl: (formData as BuyerFormData).linkedinUrl,
+            });
+          } else {
+            await notifyCreatorSignup({
+              fullName: formData.fullName,
+              email: formData.email,
+              penName: (formData as CreatorFormData).penNameOrStudio,
+              company: (formData as CreatorFormData).ipOwnerCompany,
+              role: (formData as CreatorFormData).ipOwnerRole,
+              websiteUrl: (formData as CreatorFormData).websiteUrl,
+            });
+          }
+        } catch (slackError) {
+          // Don't fail the signup if Slack notification fails
+          console.error('Failed to send Slack notification:', slackError);
+        }
         
         toast({
           title: "Success!",

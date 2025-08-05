@@ -228,8 +228,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         trackFormSubmission(`${accountType}_signup_form`, true);
         
         // Send Slack notification
+        console.log('🔔 Attempting to send Slack notification for:', accountType, 'signup');
         try {
           if (accountType === 'buyer') {
+            console.log('🔔 Sending buyer signup notification...');
             await notifyBuyerSignup({
               fullName: formData.fullName,
               email: formData.email,
@@ -238,6 +240,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               linkedinUrl: (formData as BuyerFormData).linkedinUrl,
             });
           } else {
+            console.log('🔔 Sending creator signup notification...');
             await notifyCreatorSignup({
               fullName: formData.fullName,
               email: formData.email,
@@ -247,9 +250,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               websiteUrl: (formData as CreatorFormData).websiteUrl,
             });
           }
+          console.log('✅ Slack notification completed successfully');
         } catch (slackError) {
           // Don't fail the signup if Slack notification fails
-          console.error('Failed to send Slack notification:', slackError);
+          console.error('❌ Failed to send Slack notification:', slackError);
         }
         
         toast({

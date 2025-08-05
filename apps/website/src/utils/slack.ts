@@ -8,102 +8,48 @@ export interface SlackNotificationData {
   fullName: string;
   email: string;
   company?: string;
-  additionalInfo?: Record<string, any>;
+  additionalInfo?: Record<string, unknown>;
 }
 
 export const sendSlackNotification = async (data: SlackNotificationData): Promise<void> => {
-  const webhookUrl = import.meta.env.VITE_SLACK_WEBHOOK_URL;
+  // Use Supabase Edge Function to proxy the Slack webhook request
+  // This avoids CORS issues when making requests directly from the browser
+  const SUPABASE_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA";
   
-  console.log('🔍 Debug: Slack webhook URL:', webhookUrl ? 'Found' : 'Missing');
+  const proxyUrl = `${SUPABASE_URL}/functions/v1/slack-webhook-proxy`;
+  
+  console.log('🔍 Debug: Using Slack proxy endpoint');
   console.log('🔍 Debug: Notification data:', data);
   
-  if (!webhookUrl) {
-    console.warn('❌ Slack webhook URL not configured in environment variables');
-    return;
-  }
-
   try {
-    // Create formatted message
-    const message = formatSlackMessage(data);
-    console.log('🔍 Debug: Formatted message:', message);
+    console.log('🔍 Debug: Sending to proxy endpoint:', proxyUrl);
     
-    const payload = {
-      text: message,
-      username: 'KStoryBridge Bot',
-      icon_emoji: ':bell:',
-    };
-    
-    console.log('🔍 Debug: Sending payload to Slack:', payload);
-    console.log('🔍 Debug: Webhook URL (partial):', webhookUrl.substring(0, 50) + '...');
-    
-    const response = await fetch(webhookUrl, {
+    const response = await fetch(proxyUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(data),
     });
     
-    console.log('🔍 Debug: Response status:', response.status);
-    console.log('🔍 Debug: Response ok:', response.ok);
+    console.log('🔍 Debug: Proxy response status:', response.status);
+    console.log('🔍 Debug: Proxy response ok:', response.ok);
     
     if (!response.ok) {
       const responseText = await response.text();
-      console.error('❌ Failed to send Slack notification:', response.status, response.statusText);
+      console.error('❌ Failed to send Slack notification via proxy:', response.status, response.statusText);
       console.error('❌ Response body:', responseText);
     } else {
-      console.log('✅ Slack notification sent successfully!');
+      const result = await response.json();
+      console.log('✅ Slack notification sent successfully via proxy!', result);
     }
   } catch (error) {
-    console.error('❌ Error sending Slack notification:', error);
+    console.error('❌ Error sending Slack notification via proxy:', error);
   }
 };
 
-const formatSlackMessage = (data: SlackNotificationData): string => {
-  const { event, userType, fullName, email, company, additionalInfo } = data;
-  
-  const userTypeEmoji = userType === 'buyer' ? '🛒' : '✍️';
-  const eventEmoji = getEventEmoji(event);
-  
-  let message = `${eventEmoji} *${event}*\n`;
-  message += `${userTypeEmoji} *Type:* ${userType === 'buyer' ? 'Content Buyer' : 'IP Owner/Creator'}\n`;
-  message += `👤 *Name:* ${fullName}\n`;
-  message += `📧 *Email:* ${email}\n`;
-  
-  if (company) {
-    message += `🏢 *Company:* ${company}\n`;
-  }
-  
-  if (additionalInfo) {
-    Object.entries(additionalInfo).forEach(([key, value]) => {
-      if (value) {
-        const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        message += `• *${formattedKey}:* ${value}\n`;
-      }
-    });
-  }
-  
-  message += `\n⏰ *Time:* ${new Date().toLocaleString('en-US', { 
-    timeZone: 'America/New_York',
-    dateStyle: 'short',
-    timeStyle: 'short'
-  })}`;
-  
-  return message;
-};
-
-const getEventEmoji = (event: string): string => {
-  const eventEmojiMap: Record<string, string> = {
-    'New Buyer Signup': '🎉',
-    'New Creator Signup': '🌟',
-    'User Login': '🔑',
-    'Profile Updated': '✏️',
-    'Title Added': '📚',
-    'Contact Request': '📞',
-  };
-  
-  return eventEmojiMap[event] || '📢';
-};
 
 // Test function for debugging
 export const testSlackNotification = async () => {
@@ -122,7 +68,7 @@ export const testSlackNotification = async () => {
 
 // Make it available globally for browser console testing
 if (typeof window !== 'undefined') {
-  (window as any).testSlackNotification = testSlackNotification;
+  (window as typeof window & { testSlackNotification: typeof testSlackNotification }).testSlackNotification = testSlackNotification;
 }
 
 // Convenience functions for common events

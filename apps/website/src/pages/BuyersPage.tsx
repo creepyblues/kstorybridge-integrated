@@ -182,6 +182,17 @@ const BuyersPage = () => {
           </div>
         </section>
 
+        {/* Quote Section */}
+        <section className="py-16 bg-hanok-teal">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center">
+              <blockquote className="text-3xl lg:text-4xl font-bold text-white italic leading-relaxed max-w-5xl mx-auto">
+                "Tired of hearing about amazing Korean IPs only after they've already blown up and become too expensive to acquire?"
+              </blockquote>
+            </div>
+          </div>
+        </section>
+
         {/* Catalog Preview */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-6">

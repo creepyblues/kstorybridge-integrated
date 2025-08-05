@@ -4,29 +4,29 @@ import PageHeader from '../components/PageHeader';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
-import { titlesService, type Title } from '../services/titlesService';
+import { featuredService, type FeaturedWithTitle } from '../services/featuredService';
 import Footer from '../components/Footer';
 
 const BuyersPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [titlesWithPitches, setTitlesWithPitches] = useState<Title[]>([]);
+  const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    const loadTitlesWithPitches = async () => {
+    const loadFeaturedTitles = async () => {
       try {
         setLoading(true);
-        const titles = await titlesService.getTitlesWithPitches(6);
-        setTitlesWithPitches(titles);
+        const titles = await featuredService.getFeaturedTitles();
+        setFeaturedTitles(titles);
       } catch (error) {
-        console.error('Error loading titles with pitches:', error);
+        console.error('Error loading featured titles:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadTitlesWithPitches();
+    loadFeaturedTitles();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,14 +49,6 @@ const BuyersPage = () => {
     ).join(' ');
   };
 
-  const mockCovers = [
-    { title: "Webtoon Title 1", genre: "Romance", blur: true },
-    { title: "Novel Series 2", genre: "Action", blur: true },
-    { title: "Game IP 3", genre: "Fantasy", blur: true },
-    { title: "Webtoon Title 4", genre: "Thriller", blur: true },
-    { title: "Novel Series 5", genre: "Sci-Fi", blur: true },
-    { title: "Game IP 6", genre: "Horror", blur: true }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
@@ -203,56 +195,63 @@ const BuyersPage = () => {
             </div>
             
             {loading ? (
-              <div className="text-center text-midnight-ink-600 py-8 mb-16">Loading titles...</div>
+              <div className="text-center text-midnight-ink-600 py-8 mb-16">Loading featured titles...</div>
             ) : (
-              <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-16">
-                {titlesWithPitches.map((title) => (
-                  <Card key={title.title_id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group">
-                    <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
-                      {title.title_image ? (
-                        <img 
-                          src={title.title_image} 
-                          alt={title.title_name_en || title.title_name_kr}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <>
-                          {/* Placeholder illustration */}
-                          <div className="w-12 h-12 bg-hanok-teal rounded-full flex items-center justify-center">
-                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                              <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-16">
+                {featuredTitles.map((featured) => {
+                  const title = featured.titles;
+                  return (
+                    <Card key={featured.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
+                        {title.title_image ? (
+                          <img 
+                            src={title.title_image} 
+                            alt={title.title_name_en || title.title_name_kr}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <>
+                            {/* Placeholder illustration */}
+                            <div className="w-12 h-12 bg-hanok-teal rounded-full flex items-center justify-center">
+                              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                                <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
+                              </div>
+                            </div>
+                            <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
+                          </>
+                        )}
+                      </div>
+                      <CardContent className="p-3 flex flex-col flex-grow">
+                        <div className="flex-grow">
+                          <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
+                            {title.title_name_en || title.title_name_kr}
+                          </h3>
+                          {title.title_name_en && title.title_name_kr && (
+                            <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
+                          )}
+                          <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
+                            {title.tagline || title.pitch || 'Discover this amazing Korean story'}
+                          </p>
+                        </div>
+                        {title.genre && (
+                          <div className="mt-auto">
+                            <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                              {formatGenre(title.genre)}
                             </div>
                           </div>
-                          <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
-                        </>
-                      )}
-                    </div>
-                    <CardContent className="p-3">
-                      <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
-                        {title.title_name_en || title.title_name_kr}
-                      </h3>
-                      {title.title_name_en && title.title_name_kr && (
-                        <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
-                      )}
-                      <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
-                        {title.tagline || title.pitch || 'Korean story with pitch available'}
-                      </p>
-                      {title.genre && (
-                        <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
-                          {formatGenre(title.genre)}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
             
-            {!loading && titlesWithPitches.length === 0 && (
-              <div className="text-center text-midnight-ink-600 py-8 mb-16">No titles with pitches available.</div>
+            {!loading && featuredTitles.length === 0 && (
+              <div className="text-center text-midnight-ink-600 py-8 mb-16">No featured titles available.</div>
             )}
             
             <div className="text-center">
@@ -280,7 +279,7 @@ const BuyersPage = () => {
                 <CardContent className="p-0">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For content scouts</div>
-                    <h3 className="text-3xl font-bold text-midnight-ink mb-4">Free</h3>
+                    <h3 className="text-3xl font-bold text-sunrise-coral mb-4">Free</h3>
                     <p className="text-slate-600 text-sm mb-6">Browse Korean titles and get basic information to start your discovery.</p>
                     
                     <div className="mb-6">
@@ -316,7 +315,7 @@ const BuyersPage = () => {
                 <CardContent className="p-0">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For selective buyers</div>
-                    <h3 className="text-3xl font-bold text-midnight-ink mb-4">à la carte</h3>
+                    <h3 className="text-3xl font-bold text-sunrise-coral mb-4">à la carte</h3>
                     <p className="text-slate-600 text-sm mb-6">Pay only for what you need when exploring specific titles.</p>
                     
                     <div className="mb-6">
@@ -356,8 +355,8 @@ const BuyersPage = () => {
                 <CardContent className="p-0">
                   <div className="bg-gradient-to-r from-hanok-teal to-porcelain-blue-600 p-6 rounded-t-3xl text-white">
                     <div className="text-sm text-white/90 font-medium mb-2">For active buyers</div>
-                    <h3 className="text-3xl font-bold mb-4">Pro</h3>
-                    <p className="text-white/90 text-sm mb-6">Full access to Korean titles with premium insights and direct connections.</p>
+                    <h3 className="text-3xl font-bold text-sunrise-coral mb-4">Pro</h3>
+                    <p className="text-white/90 text-sm mb-6">Full title access with premium insights and direct connections.</p>
                     
                     <div className="mb-6">
                       <div className="flex items-baseline space-x-2 mb-1">
@@ -404,19 +403,17 @@ const BuyersPage = () => {
                 <CardContent className="p-0">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For studios & networks</div>
-                    <h3 className="text-3xl font-bold text-midnight-ink mb-4">Suite</h3>
-                    <p className="text-slate-600 text-sm mb-6">Custom solutions with expert guidance for large-scale content acquisition.</p>
+                    <h3 className="text-3xl font-bold text-sunrise-coral mb-4">Suite</h3>
+                    <p className="text-slate-600 text-sm mb-6">Custom solutions with expert guidance.</p>
                     
                     <div className="mb-6">
                       <div className="text-5xl font-bold text-midnight-ink">Custom</div>
                       <div className="text-slate-500 text-sm">Contact for pricing</div>
                     </div>
                     
-                    <Link to="/signup">
-                      <Button id="buyers-pricing-suite-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
-                        Coming Soon
-                      </Button>
-                    </Link>
+                    <Button id="buyers-pricing-suite-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300" disabled>
+                      Coming Soon
+                    </Button>
                   </div>
                   
                   <div className="p-6 bg-white">

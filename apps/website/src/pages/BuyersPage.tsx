@@ -83,22 +83,13 @@ const BuyersPage = () => {
           </div>
         </section>
 
-        {/* Stats Strip */}
+        {/* Quote Section */}
         <section className="py-16 bg-hanok-teal">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="grid md:grid-cols-3 gap-12 text-center">
-              <div className="space-y-3">
-                <div className="text-4xl lg:text-5xl font-bold text-white">42 → 5</div>
-                <div className="text-lg text-white/90 font-medium">days for chain-of-title verification</div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-4xl lg:text-5xl font-bold text-white">12 → 1</div>
-                <div className="text-lg text-white/90 font-medium">clicks to schedule Korean creator calls</div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-4xl lg:text-5xl font-bold text-white">$3K → $0</div>
-                <div className="text-lg text-white/90 font-medium">translation costs with smart summaries</div>
-              </div>
+            <div className="text-center">
+              <blockquote className="text-3xl lg:text-4xl font-bold text-white italic leading-relaxed max-w-5xl mx-auto">
+                "Done with projects falling apart because nobody could figure out who had the authority to make decisions?"
+              </blockquote>
             </div>
           </div>
         </section>
@@ -283,23 +274,19 @@ const BuyersPage = () => {
               </h2>
             </div>
             
-            <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid lg:grid-cols-4 gap-8">
               <Card className="text-center border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
-                <CardContent className="p-10">
-                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Free Preview</h3>
+                <CardContent className="p-8">
+                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Free</h3>
                   <div className="text-5xl font-bold text-midnight-ink mb-8">$0</div>
                   <div className="space-y-4 text-left mb-10">
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Browse public catalogue</span>
+                      <span className="text-midnight-ink-600">Browse limited title catalog</span>
                     </div>
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Basic content info</span>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Limited contact access</span>
+                      <span className="text-midnight-ink-600">Access basic title info</span>
                     </div>
                   </div>
                   <Link to="/signup">
@@ -310,33 +297,58 @@ const BuyersPage = () => {
                 </CardContent>
               </Card>
 
+              <Card className="text-center border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
+                <CardContent className="p-8">
+                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">à la carte</h3>
+                  <div className="text-4xl font-bold text-midnight-ink mb-8">Pay as you go</div>
+                  <div className="space-y-4 text-left mb-10">
+                    <div className="flex items-start space-x-3">
+                      <span className="text-hanok-teal font-bold text-lg">•</span>
+                      <span className="text-midnight-ink-600">Everything in "Free" Plan</span>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <span className="text-hanok-teal font-bold text-lg">•</span>
+                      <span className="text-midnight-ink-600">Pay only for premium features (contact creator, pitch deck, etc)</span>
+                    </div>
+                  </div>
+                  <Link to="/signup">
+                    <Button id="buyers-pricing-alacarte-btn" variant="outline" className="w-full border-2 border-porcelain-blue text-porcelain-blue hover:bg-porcelain-blue hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
+                      Get Started
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
               <Card className="relative border-2 border-hanok-teal shadow-xl rounded-2xl hover:shadow-2xl transition-shadow duration-300 transform scale-105 bg-white">
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-hanok-teal text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                    Most Popular
+                    Limited Time
                   </span>
                 </div>
-                <CardContent className="p-10 text-center">
-                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Pro Scout</h3>
-                  <div className="text-5xl font-bold text-hanok-teal mb-2">$199</div>
+                <CardContent className="p-8 text-center">
+                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Pro</h3>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold text-slate-400 line-through">$200</span>
+                    <div className="text-5xl font-bold text-hanok-teal mb-2">$20</div>
+                  </div>
                   <div className="text-midnight-ink-500 mb-8">/mo</div>
                   
                   <div className="space-y-4 text-left mb-10">
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Full catalogue access</span>
+                      <span className="text-midnight-ink-600">Everything in "Free" Plan</span>
                     </div>
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Advanced analytics</span>
+                      <span className="text-midnight-ink-600">Browse full title catalog (including exclusive access to top titles)</span>
                     </div>
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Direct creator contact</span>
+                      <span className="text-midnight-ink-600">Premium data including personalized recommendation and pitch decks</span>
                     </div>
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Pitch deck access</span>
+                      <span className="text-midnight-ink-600">Access to rights holder contact</span>
                     </div>
                   </div>
                   <Link to="/signup">
@@ -348,21 +360,17 @@ const BuyersPage = () => {
               </Card>
 
               <Card className="text-center border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
-                <CardContent className="p-10">
-                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Enterprise</h3>
+                <CardContent className="p-8">
+                  <h3 className="text-2xl font-bold text-midnight-ink mb-4">Development Suite</h3>
                   <div className="text-5xl font-bold text-midnight-ink mb-8">Custom</div>
                   <div className="space-y-4 text-left mb-10">
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Everything in Pro</span>
+                      <span className="text-midnight-ink-600">Everything in "Pro" Plan</span>
                     </div>
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Custom integrations</span>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <span className="text-hanok-teal font-bold text-lg">•</span>
-                      <span className="text-midnight-ink-600">Dedicated account manager</span>
+                      <span className="text-midnight-ink-600">Custom monthly title recommendation and expert pitch</span>
                     </div>
                     <div className="flex items-start space-x-3">
                       <span className="text-hanok-teal font-bold text-lg">•</span>
@@ -370,7 +378,7 @@ const BuyersPage = () => {
                     </div>
                   </div>
                   <Link to="/signup">
-                    <Button id="buyers-pricing-enterprise-btn" variant="outline" className="w-full border-2 border-midnight-ink text-midnight-ink hover:bg-midnight-ink hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
+                    <Button id="buyers-pricing-development-btn" variant="outline" className="w-full border-2 border-midnight-ink text-midnight-ink hover:bg-midnight-ink hover:text-white py-4 rounded-full font-medium transition-colors duration-300">
                       Contact Sales
                     </Button>
                   </Link>

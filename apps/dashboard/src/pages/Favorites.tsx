@@ -16,6 +16,7 @@ import { favoritesService } from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import type { Title } from "@/services/titlesService";
+import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 
 type FavoriteWithTitle = {
   id: string;
@@ -40,38 +41,30 @@ export default function Favorites() {
   }, [user]);
 
   useEffect(() => {
-    const filtered = favorites.filter(favorite => {
-      const title = favorite.titles;
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        // Title names
-        title.title_name_en?.toLowerCase().includes(searchLower) ||
-        title.title_name_kr.toLowerCase().includes(searchLower) ||
-        // Author information
-        title.author?.toLowerCase().includes(searchLower) ||
-        title.story_author?.toLowerCase().includes(searchLower) ||
-        title.art_author?.toLowerCase().includes(searchLower) ||
-        title.writer?.toLowerCase().includes(searchLower) ||
-        title.illustrator?.toLowerCase().includes(searchLower) ||
-        title.rights?.toLowerCase().includes(searchLower) ||
-        title.rights_owner?.toLowerCase().includes(searchLower) ||
-        // Content descriptions
-        title.tagline?.toLowerCase().includes(searchLower) ||
-        title.description?.toLowerCase().includes(searchLower) ||
-        title.synopsis?.toLowerCase().includes(searchLower) ||
-        title.note?.toLowerCase().includes(searchLower) ||
-        // Market information
-        title.perfect_for?.toLowerCase().includes(searchLower) ||
-        title.comps?.toLowerCase().includes(searchLower) ||
-        title.tone?.toLowerCase().includes(searchLower) ||
-        title.audience?.toLowerCase().includes(searchLower) ||
-        // Genre and tags
-        (Array.isArray(title.genre) 
-          ? title.genre.some(g => g.toLowerCase().includes(searchLower))
-          : title.genre?.toLowerCase().includes(searchLower)) ||
-        title.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-      );
-    });
+    if (!searchTerm.trim()) {
+      setFilteredFavorites(favorites);
+      return;
+    }
+    
+    // Extract titles from favorites for searching
+    const titlesFromFavorites = favorites.map(fav => fav.titles);
+    
+    const { exactMatches, expandedMatches } = enhancedSearch(
+      titlesFromFavorites,
+      searchTerm,
+      getTitleSearchFields()
+    );
+    
+    // Combine exact and expanded matches with priority to exact matches
+    const matchedTitles = [...exactMatches, ...expandedMatches];
+    
+    // Map back to FavoriteWithTitle objects
+    const filtered = favorites.filter(favorite => 
+      matchedTitles.some(matchedTitle => 
+        matchedTitle.title_id === favorite.titles.title_id
+      )
+    );
+    
     setFilteredFavorites(filtered);
   }, [searchTerm, favorites]);
 

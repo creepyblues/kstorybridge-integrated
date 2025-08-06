@@ -363,24 +363,13 @@ export default function TitleDetail() {
                   </DialogTrigger>
                   <DialogContent className="max-w-6xl max-h-[90vh] p-0">
                     <DialogHeader className="p-6 pb-0">
-                      <DialogTitle className="flex items-center justify-between">
-                        <span>Pitch Document - {title.title_name_en || title.title_name_kr}</span>
-                        <Button
-                          id="title-detail-close-pdf-modal-btn"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsPdfModalOpen(false)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Close</span>
-                        </Button>
+                      <DialogTitle>
+                        Pitch Document - {title.title_name_en || title.title_name_kr}
                       </DialogTitle>
                     </DialogHeader>
                     <div className="p-6 pt-0">
                       <SecurePDFViewer 
-                        pdfUrl={title.pitch} 
-                        title={`${title.title_name_en || title.title_name_kr} - Pitch Document`}
+                        pdfUrl={title.pitch}
                       />
                     </div>
                   </DialogContent>

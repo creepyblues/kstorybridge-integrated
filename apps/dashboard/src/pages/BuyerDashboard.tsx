@@ -15,6 +15,7 @@ import { SearchAndFilter } from "@/components/dashboard/SearchAndFilter";
 import { FeaturedSection } from "@/components/dashboard/FeaturedSection";
 import { titlesService, type Title } from "@/services/titlesService";
 import { useToast } from "@/components/ui/use-toast";
+import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 
 // Mock data for titles
 const mockTitles = [
@@ -137,13 +138,20 @@ export default function BuyerDashboard() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    const filtered = titles.filter(title => 
-      title.title_name_en?.toLowerCase().includes(query.toLowerCase()) ||
-      title.title_name_kr.toLowerCase().includes(query.toLowerCase()) ||
-      (Array.isArray(title.genre) 
-        ? title.genre.some(g => g.toLowerCase().includes(query.toLowerCase()))
-        : title.genre?.toLowerCase().includes(query.toLowerCase()))
+    
+    if (!query.trim()) {
+      setFilteredTitles(titles);
+      return;
+    }
+    
+    const { exactMatches, expandedMatches } = enhancedSearch(
+      titles,
+      query,
+      getTitleSearchFields()
     );
+    
+    // Return exact matches first, followed by expanded matches
+    const filtered = [...exactMatches, ...expandedMatches];
     setFilteredTitles(filtered);
   };
 

@@ -9,6 +9,7 @@ import { featuredService, type FeaturedWithTitle } from "@/services/featuredServ
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import PremiumColumn from "@/components/PremiumColumn";
+import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 
 export default function Titles() {
   const { toast } = useToast();
@@ -57,38 +58,18 @@ export default function Titles() {
     }
   };
 
-  const filteredTitles = titles.filter(title => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      // Title names
-      title.title_name_kr?.toLowerCase().includes(searchLower) ||
-      title.title_name_en?.toLowerCase().includes(searchLower) ||
-      // Author information
-      title.author?.toLowerCase().includes(searchLower) ||
-      title.story_author?.toLowerCase().includes(searchLower) ||
-      title.art_author?.toLowerCase().includes(searchLower) ||
-      title.writer?.toLowerCase().includes(searchLower) ||
-      title.illustrator?.toLowerCase().includes(searchLower) ||
-      title.rights?.toLowerCase().includes(searchLower) ||
-      title.rights_owner?.toLowerCase().includes(searchLower) ||
-      // Content descriptions
-      title.tagline?.toLowerCase().includes(searchLower) ||
-      title.description?.toLowerCase().includes(searchLower) ||
-      title.synopsis?.toLowerCase().includes(searchLower) ||
-      title.note?.toLowerCase().includes(searchLower) ||
-      // Market information
-      title.perfect_for?.toLowerCase().includes(searchLower) ||
-      title.comps?.toLowerCase().includes(searchLower) ||
-      title.tone?.toLowerCase().includes(searchLower) ||
-      title.audience?.toLowerCase().includes(searchLower) ||
-      // Genre and tags
-      (Array.isArray(title.genre) 
-        ? title.genre.some(g => g.toLowerCase().includes(searchLower))
-        : title.genre?.toLowerCase().includes(searchLower)) ||
-      title.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+  const filteredTitles = (() => {
+    if (!searchTerm) return titles;
+    
+    const { exactMatches, expandedMatches } = enhancedSearch(
+      titles,
+      searchTerm,
+      getTitleSearchFields()
     );
-  });
+    
+    // Return exact matches first, followed by expanded matches
+    return [...exactMatches, ...expandedMatches];
+  })();
 
   // Reset pagination when search term changes
   useEffect(() => {

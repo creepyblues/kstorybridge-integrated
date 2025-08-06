@@ -1,0 +1,126 @@
+2025-08-06 14:28:31,228 - INFO - Starting comprehensive webtoon scraping...
+2025-08-06 14:28:31,228 - INFO - Starting Naver Webtoons scraping...
+2025-08-06 14:28:32,183 - INFO - Starting Kakao Webtoons scraping...
+2025-08-06 14:28:32,637 - INFO - Starting Tappytoon scraping...
+2025-08-06 14:28:33,158 - INFO - Starting Webtoon.xyz scraping...
+2025-08-06 14:28:33,243 - ERROR - Error scraping Webtoon.xyz: 403 Client Error: Forbidden for url: https://www.webtoon.xyz/
+2025-08-06 14:28:33,244 - INFO - Scraping completed. Total webtoons collected: 0
+2025-08-06 14:28:33,252 - INFO - Results saved to CSV: webtoon_data_20250806_142833.csv
+2025-08-06 14:28:33,253 - INFO - Results saved to JSON: webtoon_data_20250806_142833.json
+2025-08-06 14:28:33,253 - WARNING - No data to analyze
+2025-08-06 14:29:40,407 - INFO - Starting comprehensive webtoon scraping...
+2025-08-06 14:29:40,407 - INFO - Starting Naver Webtoons scraping...
+2025-08-06 14:29:41,170 - INFO - Found 0 potential webtoon containers
+2025-08-06 14:29:41,170 - INFO - Starting Kakao Webtoons scraping...
+2025-08-06 14:29:41,608 - INFO - Found 0 potential Kakao webtoon cards
+2025-08-06 14:29:41,608 - INFO - Starting Tappytoon scraping...
+2025-08-06 14:29:42,022 - INFO - Found 0 potential Tappytoon items
+2025-08-06 14:29:42,022 - INFO - Starting Webtoon.xyz scraping...
+2025-08-06 14:29:42,089 - ERROR - Error scraping Webtoon.xyz: 403 Client Error: Forbidden for url: https://www.webtoon.xyz/
+2025-08-06 14:29:42,089 - INFO - Scraping completed. Total webtoons collected: 0
+2025-08-06 14:29:42,095 - INFO - Results saved to CSV: webtoon_data_20250806_142942.csv
+2025-08-06 14:29:42,096 - INFO - Results saved to JSON: webtoon_data_20250806_142942.json
+2025-08-06 14:29:42,096 - WARNING - No data to analyze
+2025-08-06 14:34:41,397 - INFO - Starting to scrape 7 URLs...
+2025-08-06 14:34:41,397 - INFO - Processing URL 1/7: https://series.naver.com/comic/detail.series?productNo=6393990
+2025-08-06 14:34:41,398 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=6393990
+2025-08-06 14:34:43,908 - INFO - Processing URL 2/7: https://series.naver.com/comic/detail.series?productNo=9478408
+2025-08-06 14:34:43,909 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=9478408
+2025-08-06 14:34:47,006 - INFO - Processing URL 3/7: https://series.naver.com/comic/detail.series?productNo=6362438
+2025-08-06 14:34:47,006 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=6362438
+2025-08-06 14:34:48,675 - INFO - Processing URL 4/7: https://page.kakao.com/content/53764524
+2025-08-06 14:34:48,676 - INFO - Scraping KakaoPage: https://page.kakao.com/content/53764524
+2025-08-06 14:34:51,283 - INFO - Processing URL 5/7: https://page.kakao.com/content/58439503?orderby=asc
+2025-08-06 14:34:51,283 - INFO - Scraping KakaoPage: https://page.kakao.com/content/58439503?orderby=asc
+2025-08-06 14:34:53,311 - INFO - Processing URL 6/7: https://page.kakao.com/content/56453386
+2025-08-06 14:34:53,312 - INFO - Scraping KakaoPage: https://page.kakao.com/content/56453386
+2025-08-06 14:34:55,166 - INFO - Processing URL 7/7: https://page.kakao.com/content/67242927
+2025-08-06 14:34:55,166 - INFO - Scraping KakaoPage: https://page.kakao.com/content/67242927
+2025-08-06 14:34:55,477 - INFO - Completed scraping 7 URLs
+2025-08-06 14:34:55,485 - INFO - Results saved to CSV: webtoon_data_20250806_143455.csv
+2025-08-06 15:02:45,167 - INFO - Starting to scrape 7 URLs...
+2025-08-06 15:02:45,167 - INFO - Processing URL 1/7: https://series.naver.com/comic/detail.series?productNo=6393990
+2025-08-06 15:02:45,167 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=6393990
+2025-08-06 15:02:46,310 - INFO - Found completion status: 완결
+2025-08-06 15:02:49,186 - INFO - Processing URL 2/7: https://series.naver.com/comic/detail.series?productNo=9478408
+2025-08-06 15:02:49,186 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=9478408
+2025-08-06 15:02:49,625 - INFO - Found completion status: 연재중
+2025-08-06 15:02:50,876 - INFO - Processing URL 3/7: https://series.naver.com/comic/detail.series?productNo=6362438
+2025-08-06 15:02:50,877 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=6362438
+2025-08-06 15:02:51,281 - INFO - Found completion status: 연재중
+2025-08-06 15:02:53,101 - INFO - Processing URL 4/7: https://page.kakao.com/content/53764524
+2025-08-06 15:02:53,102 - INFO - Scraping KakaoPage: https://page.kakao.com/content/53764524
+2025-08-06 15:02:54,098 - INFO - Found completion status: 완결
+2025-08-06 15:02:56,514 - INFO - Processing URL 5/7: https://page.kakao.com/content/58439503?orderby=asc
+2025-08-06 15:02:56,515 - INFO - Scraping KakaoPage: https://page.kakao.com/content/58439503?orderby=asc
+2025-08-06 15:02:57,397 - INFO - Found completion status: 완결
+2025-08-06 15:02:59,752 - INFO - Processing URL 6/7: https://page.kakao.com/content/56453386
+2025-08-06 15:02:59,752 - INFO - Scraping KakaoPage: https://page.kakao.com/content/56453386
+2025-08-06 15:03:00,128 - INFO - Found completion status: 완결
+2025-08-06 15:03:02,170 - INFO - Processing URL 7/7: https://page.kakao.com/content/67242927
+2025-08-06 15:03:02,171 - INFO - Scraping KakaoPage: https://page.kakao.com/content/67242927
+2025-08-06 15:03:02,483 - INFO - Completed scraping 7 URLs
+2025-08-06 15:03:02,491 - INFO - Results saved to CSV: webtoon_data_20250806_150302.csv
+2025-08-06 15:04:10,818 - INFO - Starting to scrape 7 URLs...
+2025-08-06 15:04:10,818 - INFO - Processing URL 1/7: https://series.naver.com/comic/detail.series?productNo=6393990
+2025-08-06 15:04:10,818 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=6393990
+2025-08-06 15:04:12,380 - INFO - Saved debug HTML to: debug_html/naver__comic_detail.series.html
+2025-08-06 15:04:12,404 - INFO - Found completion status: 완결
+2025-08-06 15:04:12,405 - INFO - Found Korean numbers in page: ['', '', '', '', '', '', '', '', '', '']
+2025-08-06 15:04:14,140 - INFO - Processing URL 2/7: https://series.naver.com/comic/detail.series?productNo=9478408
+2025-08-06 15:04:14,140 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=9478408
+2025-08-06 15:04:14,732 - INFO - Saved debug HTML to: debug_html/naver__comic_detail.series.html
+2025-08-06 15:04:14,750 - INFO - Found completion status: 연재중
+2025-08-06 15:04:14,750 - INFO - Found Korean numbers in page: ['', '', '', '', '', '', '', '', '', '']
+2025-08-06 15:04:17,733 - INFO - Processing URL 3/7: https://series.naver.com/comic/detail.series?productNo=6362438
+2025-08-06 15:04:17,734 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=6362438
+2025-08-06 15:04:18,287 - INFO - Saved debug HTML to: debug_html/naver__comic_detail.series.html
+2025-08-06 15:04:18,308 - INFO - Found completion status: 연재중
+2025-08-06 15:04:18,309 - INFO - Found Korean numbers in page: ['', '', '', '', '', '', '', '', '', '']
+2025-08-06 15:04:20,597 - INFO - Processing URL 4/7: https://page.kakao.com/content/53764524
+2025-08-06 15:04:20,597 - INFO - Scraping KakaoPage: https://page.kakao.com/content/53764524
+2025-08-06 15:04:21,586 - INFO - Saved debug HTML to: debug_html/kakao__content_53764524.html
+2025-08-06 15:04:21,600 - INFO - Found completion status: 완결
+2025-08-06 15:04:21,600 - INFO - Found Korean numbers in page: ['', '', '', '', '', '', '', '', '', '']
+2025-08-06 15:04:23,734 - INFO - Processing URL 5/7: https://page.kakao.com/content/58439503?orderby=asc
+2025-08-06 15:04:23,734 - INFO - Scraping KakaoPage: https://page.kakao.com/content/58439503?orderby=asc
+2025-08-06 15:04:24,457 - INFO - Saved debug HTML to: debug_html/kakao__content_58439503.html
+2025-08-06 15:04:24,469 - INFO - Found completion status: 완결
+2025-08-06 15:04:24,470 - INFO - Found Korean numbers in page: ['', '', '', '', '', '', '', '', '', '']
+2025-08-06 15:04:27,347 - INFO - Processing URL 6/7: https://page.kakao.com/content/56453386
+2025-08-06 15:04:27,348 - INFO - Scraping KakaoPage: https://page.kakao.com/content/56453386
+2025-08-06 15:04:27,809 - INFO - Saved debug HTML to: debug_html/kakao__content_56453386.html
+2025-08-06 15:04:27,823 - INFO - Found completion status: 완결
+2025-08-06 15:04:27,823 - INFO - Found Korean numbers in page: ['', '', '', '', '', '', '', '', '', '']
+2025-08-06 15:04:30,126 - INFO - Processing URL 7/7: https://page.kakao.com/content/67242927
+2025-08-06 15:04:30,126 - INFO - Scraping KakaoPage: https://page.kakao.com/content/67242927
+2025-08-06 15:04:30,431 - INFO - Saved debug HTML to: debug_html/kakao__content_67242927.html
+2025-08-06 15:04:30,446 - INFO - Found Korean numbers in page: ['', '', '', '', '', '', '', '', '', '']
+2025-08-06 15:04:30,446 - INFO - Completed scraping 7 URLs
+2025-08-06 15:04:30,459 - INFO - Results saved to CSV: webtoon_data_20250806_150430.csv
+2025-08-06 15:12:49,613 - INFO - Starting to scrape 7 URLs...
+2025-08-06 15:12:49,613 - INFO - Processing URL 1/7: https://series.naver.com/comic/detail.series?productNo=6393990
+2025-08-06 15:12:49,613 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=6393990
+2025-08-06 15:12:50,795 - INFO - Found likes: 8.3 -> 8
+2025-08-06 15:12:50,795 - INFO - Found completion status: 완결
+2025-08-06 15:12:53,593 - INFO - Processing URL 2/7: https://series.naver.com/comic/detail.series?productNo=9478408
+2025-08-06 15:12:53,593 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=9478408
+2025-08-06 15:12:53,983 - INFO - Found likes: 9.8 -> 9
+2025-08-06 15:12:53,984 - INFO - Found completion status: 연재중
+2025-08-06 15:12:55,546 - INFO - Processing URL 3/7: https://series.naver.com/comic/detail.series?productNo=6362438
+2025-08-06 15:12:55,546 - INFO - Scraping NAVER Series: https://series.naver.com/comic/detail.series?productNo=6362438
+2025-08-06 15:12:55,940 - INFO - Found likes: 9.3 -> 9
+2025-08-06 15:12:55,940 - INFO - Found completion status: 연재중
+2025-08-06 15:12:58,566 - INFO - Processing URL 4/7: https://page.kakao.com/content/53764524
+2025-08-06 15:12:58,567 - INFO - Scraping KakaoPage: https://page.kakao.com/content/53764524
+2025-08-06 15:12:59,594 - INFO - Found completion status: 완결
+2025-08-06 15:13:00,963 - INFO - Processing URL 5/7: https://page.kakao.com/content/58439503?orderby=asc
+2025-08-06 15:13:00,963 - INFO - Scraping KakaoPage: https://page.kakao.com/content/58439503?orderby=asc
+2025-08-06 15:13:01,469 - INFO - Found completion status: 완결
+2025-08-06 15:13:04,042 - INFO - Processing URL 6/7: https://page.kakao.com/content/56453386
+2025-08-06 15:13:04,042 - INFO - Scraping KakaoPage: https://page.kakao.com/content/56453386
+2025-08-06 15:13:04,399 - INFO - Found completion status: 완결
+2025-08-06 15:13:06,031 - INFO - Processing URL 7/7: https://page.kakao.com/content/67242927
+2025-08-06 15:13:06,031 - INFO - Scraping KakaoPage: https://page.kakao.com/content/67242927
+2025-08-06 15:13:06,340 - INFO - Completed scraping 7 URLs
+2025-08-06 15:13:06,348 - INFO - Results saved to CSV: webtoon_data_20250806_151306.csv

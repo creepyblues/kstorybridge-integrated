@@ -177,7 +177,7 @@ export default function MyRequests() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
                             <h3 className="text-xl font-bold text-midnight-ink">
-                              {request.titles?.title_name_en || request.titles?.title_name_kr || 'Unknown Title'}
+                              {request.titles?.title_name_en || request.titles?.title_name_kr || `Request #${request.id.slice(0, 8)}`}
                             </h3>
                             <Badge className={`${typeDisplay.color} font-medium`}>
                               {typeDisplay.label}
@@ -186,6 +186,10 @@ export default function MyRequests() {
 
                           {request.titles?.title_name_en && request.titles?.title_name_kr && (
                             <p className="text-midnight-ink-500 mb-2">{request.titles.title_name_kr}</p>
+                          )}
+
+                          {!request.titles && (
+                            <p className="text-midnight-ink-500 mb-2">Title ID: {request.title_id}</p>
                           )}
 
                           <div className="flex items-center gap-4 text-sm text-midnight-ink-600">
@@ -221,11 +225,17 @@ export default function MyRequests() {
                           <Clock className="w-4 h-4 text-yellow-600" />
                           Pending
                         </div>
-                        <Link to={`/titles/${request.title_id}`}>
-                          <Button variant="outline" size="sm" className="text-hanok-teal border-hanok-teal hover:bg-hanok-teal hover:text-white">
-                            View Title
+                        {request.titles ? (
+                          <Link to={`/titles/${request.title_id}`}>
+                            <Button variant="outline" size="sm" className="text-hanok-teal border-hanok-teal hover:bg-hanok-teal hover:text-white">
+                              View Title
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button variant="outline" size="sm" disabled className="text-gray-400 border-gray-300">
+                            Title Not Found
                           </Button>
-                        </Link>
+                        )}
                       </div>
                     </div>
                   </CardContent>

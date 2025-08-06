@@ -13,12 +13,15 @@ export type RequestWithTitle = Request & {
     genre: string[] | null;
     content_format: string | null;
     title_image: string | null;
-  };
+  } | null;
 };
 
 export const requestsService = {
   // Get all requests for a specific user
   async getUserRequests(userId: string): Promise<RequestWithTitle[]> {
+    console.log('🔍 Fetching requests for user:', userId);
+    
+    // First try with titles relationship
     const { data, error } = await supabase
       .from("request")
       .select(`
@@ -36,10 +39,31 @@ export const requestsService = {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching user requests:", error);
-      throw error;
+      console.error("Error fetching user requests with titles:", error);
+      console.log("🔄 Trying to fetch requests without titles relationship...");
+      
+      // Fallback: get requests without titles relationship
+      const { data: requestsOnly, error: requestsError } = await supabase
+        .from("request")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (requestsError) {
+        console.error("Error fetching user requests (fallback):", requestsError);
+        throw requestsError;
+      }
+
+      console.log('✅ Fetched requests without titles:', requestsOnly?.length || 0);
+      
+      // Transform requests to match expected format
+      return (requestsOnly || []).map(request => ({
+        ...request,
+        titles: null // No title data available
+      })) as RequestWithTitle[];
     }
 
+    console.log('✅ Fetched requests with titles:', data?.length || 0);
     return data || [];
   },
 

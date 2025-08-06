@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
+import { DataCacheProvider } from "@/contexts/DataCacheContext";
 // Load debug utilities in development
 if (import.meta.env.DEV) {
   import("@/utils/debugGA").catch(console.error);
@@ -34,11 +35,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AnalyticsProvider>
-            <SidebarProvider>
+        <DataCacheProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AnalyticsProvider>
+              <SidebarProvider>
               <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
               <Routes>
                 <Route path="/auth" element={<Auth />} />
@@ -135,6 +137,7 @@ const App = () => (
             </SidebarProvider>
           </AnalyticsProvider>
         </BrowserRouter>
+        </DataCacheProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

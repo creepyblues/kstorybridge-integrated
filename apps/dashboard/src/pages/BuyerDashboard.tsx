@@ -8,7 +8,8 @@ import {
   Grid,
   Heart,
   Compass,
-  TrendingUp
+  TrendingUp,
+  RefreshCw
 } from "lucide-react";
 import { TitleCard } from "@/components/dashboard/TitleCard";
 import { SearchAndFilter } from "@/components/dashboard/SearchAndFilter";
@@ -16,6 +17,7 @@ import { FeaturedSection } from "@/components/dashboard/FeaturedSection";
 import { titlesService, type Title } from "@/services/titlesService";
 import { useToast } from "@/components/ui/use-toast";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
+import { useDataCache } from "@/contexts/DataCacheContext";
 
 // Mock data for titles
 const mockTitles = [
@@ -107,53 +109,60 @@ const mockTitles = [
 
 export default function BuyerDashboard() {
   const { toast } = useToast();
+  const { getTitles, setTitles, isFresh, refreshData } = useDataCache();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({});
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [titles, setTitles] = useState<Title[]>([]);
-  const [filteredTitles, setFilteredTitles] = useState<Title[]>([]);
   const [activeTab, setActiveTab] = useState("discover");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  // Get data from cache
+  const titles = getTitles();
 
   useEffect(() => {
-    loadTitles();
-  }, []);
+    // Only load data if cache is empty or stale
+    if (titles.length === 0 || !isFresh('titles')) {
+      loadTitles();
+    }
+  }, [titles.length, isFresh]);
 
   const loadTitles = async () => {
     try {
       setLoading(true);
       const data = await titlesService.getAllTitles();
       setTitles(data);
-      setFilteredTitles(data);
     } catch (error) {
       console.error("Error loading titles:", error);
       toast({ title: "Error loading titles", variant: "destructive" });
       // Fallback to mock data if real data fails
       setTitles(mockTitles as any);
-      setFilteredTitles(mockTitles as any);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleRefresh = () => {
+    refreshData('titles');
+    loadTitles();
+  };
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    
-    if (!query.trim()) {
-      setFilteredTitles(titles);
-      return;
-    }
+  };
+
+  // Filter titles based on search query
+  const filteredTitles = (() => {
+    if (!searchQuery.trim()) return titles;
     
     const { exactMatches, expandedMatches } = enhancedSearch(
       titles,
-      query,
+      searchQuery,
       getTitleSearchFields()
     );
     
     // Return exact matches first, followed by expanded matches
-    const filtered = [...exactMatches, ...expandedMatches];
-    setFilteredTitles(filtered);
-  };
+    return [...exactMatches, ...expandedMatches];
+  })();
 
   const handleFilters = (newFilters: any) => {
     setFilters(newFilters);
@@ -180,7 +189,18 @@ export default function BuyerDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <h1 className="text-4xl font-bold text-gray-800">Dashboard</h1>
-          <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleRefresh}
+              disabled={loading}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+          </div>
         </div>
 
         {/* Search Bar */}

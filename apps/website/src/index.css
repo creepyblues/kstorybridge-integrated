@@ -154,6 +154,28 @@
       background-image: none !important;
     }
   }
+
+  /* Additional aggressive mobile autofill override */
+  input[type="email"],
+  input[type="password"],
+  input[type="text"] {
+    background-color: white !important;
+    background: white !important;
+    background-image: none !important;
+  }
+  
+  /* Mobile Safari specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 50px white inset !important;
+      -webkit-text-fill-color: #111827 !important;
+      background-color: white !important;
+      transition: background-color 5000s ease-in-out 0s !important;
+    }
+  }
 }
 
 @layer utilities {

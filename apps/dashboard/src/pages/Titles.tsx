@@ -3,22 +3,32 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import PremiumColumn from "@/components/PremiumColumn";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
+import { useDataCache } from "@/contexts/DataCacheContext";
 
 export default function Titles() {
   const { toast } = useToast();
   const { user } = useAuth();
   const location = useLocation();
-  const [titles, setTitles] = useState<Title[]>([]);
-  const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
+  const { 
+    getTitles, 
+    getFeaturedTitles, 
+    getCreatorTitles, 
+    setTitles, 
+    setFeaturedTitles, 
+    setCreatorTitles, 
+    isFresh, 
+    refreshData 
+  } = useDataCache();
+  
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(50);
 
@@ -26,20 +36,26 @@ export default function Titles() {
   const isCreatorView = location.pathname.startsWith('/creators');
   const isBuyerView = location.pathname.startsWith('/buyers');
 
-  useEffect(() => {
-    loadData();
-  }, [isCreatorView, user]);
+  // Get data from cache
+  const titles = isCreatorView ? getCreatorTitles() : getTitles();
+  const featuredTitles = getFeaturedTitles();
 
-  const loadData = async () => {
+  useEffect(() => {
+    // Only load data if cache is empty or stale
+    const dataKey = isCreatorView ? 'creatorTitles' : 'titles';
+    if (titles.length === 0 || !isFresh(dataKey)) {
+      loadData();
+    }
+  }, [isCreatorView, user, titles.length, isFresh]);
+
+  const loadData = async (force = false) => {
     try {
       setLoading(true);
       
       if (isCreatorView && user) {
         // Load creator's own titles using rights field
         const creatorTitles = await titlesService.getTitlesByCreatorRights(user.id);
-        setTitles(creatorTitles);
-        // Don't load featured titles for creators
-        setFeaturedTitles([]);
+        setCreatorTitles(creatorTitles);
       } else {
         // Load all titles for buyers
         const allTitles = await titlesService.getAllTitles();
@@ -56,6 +72,13 @@ export default function Titles() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = () => {
+    const dataKey = isCreatorView ? 'creatorTitles' : 'titles';
+    refreshData(dataKey);
+    refreshData('featuredTitles');
+    loadData(true);
   };
 
   const filteredTitles = (() => {
@@ -193,13 +216,24 @@ export default function Titles() {
             <h2 className="text-4xl font-bold text-midnight-ink">
               {isCreatorView ? "MY TITLES" : "ALL TITLES"}
             </h2>
-            {isCreatorView && (
-              <Link to="/creators/titles/add">
-                <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-6 py-3 rounded-lg font-medium">
-                  + Add a new title
-                </Button>
-              </Link>
-            )}
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleRefresh}
+                disabled={loading}
+                variant="outline"
+                className="flex items-center gap-2 text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              {isCreatorView && (
+                <Link to="/creators/titles/add">
+                  <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-6 py-3 rounded-lg font-medium">
+                    + Add a new title
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
           
           {/* Search Bar */}

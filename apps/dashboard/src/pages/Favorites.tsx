@@ -10,13 +10,15 @@ import {
   Heart, 
   Eye, 
   Star,
-  Filter
+  Filter,
+  RefreshCw
 } from "lucide-react";
 import { favoritesService } from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import type { Title } from "@/services/titlesService";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
+import { useDataCache } from "@/contexts/DataCacheContext";
 
 type FavoriteWithTitle = {
   id: string;
@@ -29,22 +31,23 @@ type FavoriteWithTitle = {
 export default function Favorites() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getFavorites, setFavorites, isFresh, refreshData } = useDataCache();
   const [searchTerm, setSearchTerm] = useState("");
-  const [favorites, setFavorites] = useState<FavoriteWithTitle[]>([]);
-  const [filteredFavorites, setFilteredFavorites] = useState<FavoriteWithTitle[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  // Get data from cache
+  const favorites = getFavorites();
 
   useEffect(() => {
-    if (user) {
+    // Only load data if cache is empty or stale and user exists
+    if (user && (favorites.length === 0 || !isFresh('favorites'))) {
       loadFavorites();
     }
-  }, [user]);
+  }, [user, favorites.length, isFresh]);
 
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredFavorites(favorites);
-      return;
-    }
+  // Filter favorites based on search term
+  const filteredFavorites = (() => {
+    if (!searchTerm.trim()) return favorites;
     
     // Extract titles from favorites for searching
     const titlesFromFavorites = favorites.map(fav => fav.titles);
@@ -59,14 +62,12 @@ export default function Favorites() {
     const matchedTitles = [...exactMatches, ...expandedMatches];
     
     // Map back to FavoriteWithTitle objects
-    const filtered = favorites.filter(favorite => 
+    return favorites.filter(favorite => 
       matchedTitles.some(matchedTitle => 
         matchedTitle.title_id === favorite.titles.title_id
       )
     );
-    
-    setFilteredFavorites(filtered);
-  }, [searchTerm, favorites]);
+  })();
 
   const loadFavorites = async () => {
     if (!user) return;
@@ -83,12 +84,19 @@ export default function Favorites() {
     }
   };
 
+  const handleRefresh = () => {
+    refreshData('favorites');
+    loadFavorites();
+  };
+
   const handleRemoveFromFavorites = async (titleId: string) => {
     if (!user) return;
 
     try {
       await favoritesService.removeFromFavorites(user.id, titleId);
-      setFavorites(prev => prev.filter(fav => fav.title_id !== titleId));
+      // Update cache by filtering out the removed favorite
+      const updatedFavorites = favorites.filter(fav => fav.title_id !== titleId);
+      setFavorites(updatedFavorites);
       toast({ title: "Removed from favorites" });
     } catch (error) {
       console.error("Error removing from favorites:", error);
@@ -148,8 +156,19 @@ export default function Favorites() {
                 Content you've saved for later review.
               </p>
             </div>
-            <div className="text-midnight-ink-600 text-lg font-medium">
-              {filteredFavorites.length} favorites
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleRefresh}
+                disabled={loading}
+                variant="outline"
+                className="flex items-center gap-2 text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <div className="text-midnight-ink-600 text-lg font-medium">
+                {filteredFavorites.length} favorites
+              </div>
             </div>
           </div>
 

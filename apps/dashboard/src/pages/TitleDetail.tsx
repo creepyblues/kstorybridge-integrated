@@ -84,7 +84,10 @@ export default function TitleDetail() {
     }
   };
 
-  const formatGenre = (genre: string) => {
+  const formatGenre = (genre: string | string[]) => {
+    if (Array.isArray(genre)) {
+      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()));
+    }
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
@@ -244,10 +247,25 @@ export default function TitleDetail() {
 
           {/* Genre and Format Badges */}
           <div className="flex flex-wrap gap-2">
-            {title.genre && (
-              <Badge variant="outline" className="border-hanok-teal text-hanok-teal bg-hanok-teal/5 px-3 py-1">
-                {formatGenre(title.genre)}
-              </Badge>
+            {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
+              <>
+                {Array.isArray(title.genre) ? (
+                  title.genre.slice(0, 2).map((g, idx) => (
+                    <Badge key={idx} variant="outline" className="border-hanok-teal text-hanok-teal bg-hanok-teal/5 px-3 py-1">
+                      {formatGenre(g)}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge variant="outline" className="border-hanok-teal text-hanok-teal bg-hanok-teal/5 px-3 py-1">
+                    {formatGenre(title.genre)}
+                  </Badge>
+                )}
+                {Array.isArray(title.genre) && title.genre.length > 2 && (
+                  <Badge variant="outline" className="border-gray-300 text-gray-500 px-3 py-1">
+                    +{title.genre.length - 2}
+                  </Badge>
+                )}
+              </>
             )}
             {title.content_format && (
               <Badge variant="outline" className="border-blue-500 text-blue-500 bg-blue-50 px-3 py-1">

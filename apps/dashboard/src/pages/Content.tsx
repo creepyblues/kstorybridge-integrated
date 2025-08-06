@@ -81,7 +81,8 @@ export default function Content() {
       title.title_name_en?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       title.author?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesGenre = genreFilter === "all" || title.genre === genreFilter;
+    const matchesGenre = genreFilter === "all" || 
+      (Array.isArray(title.genre) ? title.genre.includes(genreFilter) : title.genre === genreFilter);
     const matchesFormat = formatFilter === "all" || title.content_format === formatFilter;
     
     return matchesSearch && matchesGenre && matchesFormat;

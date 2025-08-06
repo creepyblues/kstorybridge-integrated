@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import PaymentButton from '../components/PaymentButton';
 
 const PricingPage = () => {
   return (
@@ -66,9 +67,14 @@ const PricingPage = () => {
                             Community support
                           </li>
                         </ul>
-                        <Button id="pricing-creators-free-btn" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                        <PaymentButton 
+                          planType="creator_premium"
+                          priceId="price_free" 
+                          isFree={true}
+                          className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+                        >
                           Start Free
-                        </Button>
+                        </PaymentButton>
                       </CardContent>
                     </Card>
 
@@ -112,9 +118,13 @@ const PricingPage = () => {
                             Priority support
                           </li>
                         </ul>
-                        <Button id="pricing-creators-premium-btn" className="w-full bg-primary hover:bg-primary/90 text-white">
+                        <PaymentButton 
+                          planType="creator_premium"
+                          priceId="price_creator_premium_yearly" 
+                          className="w-full bg-primary hover:bg-primary/90 text-white"
+                        >
                           Upgrade to Premium
-                        </Button>
+                        </PaymentButton>
                       </CardContent>
                     </Card>
                   </div>
@@ -146,9 +156,14 @@ const PricingPage = () => {
                             Community support
                           </li>
                         </ul>
-                        <Button id="pricing-buyers-free-btn" variant="outline" className="w-full border-gray-300">
+                        <PaymentButton 
+                          planType="buyer_pro"
+                          priceId="price_free" 
+                          isFree={true}
+                          className="w-full border-gray-300"
+                        >
                           Start Free
-                        </Button>
+                        </PaymentButton>
                       </CardContent>
                     </Card>
 
@@ -188,9 +203,13 @@ const PricingPage = () => {
                             Priority support
                           </li>
                         </ul>
-                        <Button id="pricing-buyers-pro-btn" className="w-full bg-primary hover:bg-primary/90 text-white">
+                        <PaymentButton 
+                          planType="buyer_pro"
+                          priceId="price_buyer_pro_monthly" 
+                          className="w-full bg-primary hover:bg-primary/90 text-white"
+                        >
                           Start 14-Day Trial
-                        </Button>
+                        </PaymentButton>
                       </CardContent>
                     </Card>
 

@@ -42,11 +42,12 @@ const BuyersPage = () => {
     setIsSubmitting(false);
   };
 
-  const formatGenre = (genre: string | null) => {
+  const formatGenre = (genre: string | string[] | null) => {
     if (!genre) return '';
-    return genre.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    if (Array.isArray(genre)) {
+      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ');
+    }
+    return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
 

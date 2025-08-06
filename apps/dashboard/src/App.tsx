@@ -21,6 +21,7 @@ import Titles from "./pages/Titles";
 import AddTitle from "./pages/AddTitle";
 import TitleDetail from "./pages/TitleDetail";
 import Favorites from "./pages/Favorites";
+import MyRequests from "./pages/MyRequests";
 import Deals from "./pages/Deals";
 import Media from "./pages/Media";
 import Users from "./pages/Users";
@@ -61,6 +62,9 @@ const App = () => (
                 <Route path="/buyers/favorites" element={
                   <ProtectedLayout><Favorites /></ProtectedLayout>
                 } />
+                <Route path="/buyers/requests" element={
+                  <ProtectedLayout><MyRequests /></ProtectedLayout>
+                } />
                 <Route path="/buyers/deals" element={
                   <ProtectedLayout><Deals /></ProtectedLayout>
                 } />
@@ -92,6 +96,9 @@ const App = () => (
                 } />
                 <Route path="/creators/titles/:titleId" element={
                   <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                } />
+                <Route path="/creators/requests" element={
+                  <ProtectedLayout><MyRequests /></ProtectedLayout>
                 } />
                 <Route path="/creators/profile" element={
                   <ProtectedLayout><Profile /></ProtectedLayout>

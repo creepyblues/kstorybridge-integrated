@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Shield, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { useAuth } from '../hooks/useAuth';
@@ -84,7 +84,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
       <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
           <div className="flex flex-col items-center gap-4">
-            <Shield className="h-16 w-16 text-red-500" />
+            <AlertTriangle className="h-16 w-16 text-red-500" />
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 Authentication Required
@@ -168,26 +168,6 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   return (
     <div className="bg-white rounded-lg">
       <div className="p-6">
-        {title && (
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-800">{title}</h3>
-            <div className="flex items-center gap-2 text-sm text-green-600">
-              <Shield className="h-4 w-4" />
-              <span>Secure Session Active</span>
-            </div>
-          </div>
-        )}
-        
-        {/* PDF Info */}
-        <div className="flex items-center justify-between gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
-          <div className="text-sm text-gray-600">
-            📄 Secure PDF Document - Authenticated Access
-          </div>
-          <div className="text-xs text-green-600">
-            🔒 All security layers active
-          </div>
-        </div>
-
         {/* PDF Viewer */}
         <div 
           ref={containerRef}
@@ -227,47 +207,21 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           </div>
           
           {pdfVerified ? (
-            <div className="text-center">
-              <div className="mb-4 text-sm text-gray-600">
-                ✅ Secure PDF Access Granted - Displaying Document
-              </div>
-              <iframe
-                src={pdfUrl}
-                width="100%"
-                height="600"
-                style={{ border: 'none' }}
-                title="PDF Document"
-                onLoad={() => {
-                  console.log('✅ PDF loaded successfully via iframe');
-                }}
-                onError={() => {
-                  console.error('❌ Iframe failed to load PDF');
-                  setError('Failed to display PDF document');
-                }}
-              />
-            </div>
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="600"
+              style={{ border: 'none' }}
+              title="PDF Document"
+              onLoad={() => {
+                console.log('✅ PDF loaded successfully via iframe');
+              }}
+              onError={() => {
+                console.error('❌ Iframe failed to load PDF');
+                setError('Failed to display PDF document');
+              }}
+            />
           ) : null}
-        </div>
-
-        {/* Enhanced Security Notice */}
-        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-start gap-3">
-            <Shield className="h-5 w-5 text-green-600 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-green-800 mb-1">
-                Secure Authenticated Access
-              </p>
-              <p className="text-xs text-green-700">
-                🔒 This document is protected with multiple security layers:<br/>
-                • User authentication required • Session validation active<br/>
-                • Download, printing, and copying disabled • Signed URL with expiry<br/>
-                • Periodic security checks • Content watermarked
-              </p>
-              <p className="text-xs text-green-600 mt-2">
-                Authenticated as: <strong>{user.email}</strong>
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

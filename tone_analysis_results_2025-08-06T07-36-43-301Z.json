@@ -1,0 +1,485 @@
+{
+  "analysis_date": "2025-08-06T07:36:43.302Z",
+  "total_titles_analyzed": 5,
+  "results": [
+    {
+      "title_id": "1f76f392-fd3b-4e51-9aec-266c2c0bfdf3",
+      "title_name_kr": "Disobey the Duke if You Dare",
+      "title_name_en": "Disobey the Duke if You Dare",
+      "genre": [
+        "ROMANCE"
+      ],
+      "tone_analysis": {
+        "primaryTone": "rebellious",
+        "secondaryTones": [
+          "romantic"
+        ],
+        "toneScores": {
+          "rebellious": 12,
+          "romantic": 3,
+          "sweet": 0.5
+        },
+        "confidence": 100,
+        "fieldAnalysis": {
+          "title_name_kr": {
+            "text": "Disobey the Duke if You Dare",
+            "weight": 3,
+            "score": 6,
+            "toneMatches": {
+              "rebellious": {
+                "score": 6,
+                "matches": [
+                  "disobey",
+                  "dare"
+                ]
+              }
+            }
+          },
+          "title_name_en": {
+            "text": "Disobey the Duke if You Dare",
+            "weight": 3,
+            "score": 6,
+            "toneMatches": {
+              "rebellious": {
+                "score": 6,
+                "matches": [
+                  "disobey",
+                  "dare"
+                ]
+              }
+            }
+          },
+          "description": {
+            "text": "You must never see the duke’s face.\nAfter her second husband's death, Lily is forced into a third marriage by her father. Her new husband is rumored to be a monstrous warmonger, but to Lily's surprise, the Duke turns out to be a kind man and husband. There's just one catch... she must never see his face.",
+            "weight": 2,
+            "score": 2,
+            "toneMatches": {
+              "romantic": {
+                "score": 2,
+                "matches": [
+                  "marriage"
+                ]
+              }
+            }
+          },
+          "tagline": {
+            "text": "YouTube Trailer",
+            "weight": 2,
+            "score": 0
+          },
+          "genre": {
+            "text": "ROMANCE",
+            "weight": 1,
+            "score": 1,
+            "toneMatches": {
+              "romantic": {
+                "score": 1,
+                "matches": [
+                  "romance"
+                ]
+              }
+            }
+          }
+        },
+        "analysis": {
+          "textAnalyzed": 387,
+          "fieldsUsed": [
+            "title_name_kr",
+            "title_name_en",
+            "description",
+            "tagline",
+            "genre"
+          ],
+          "totalScore": 15.5
+        }
+      }
+    },
+    {
+      "title_id": "2ba01662-71b0-4fe6-930e-be4bd271ea4e",
+      "title_name_kr": "Mokrin",
+      "title_name_en": "Mokrin",
+      "genre": [
+        "HISTORICAL"
+      ],
+      "tone_analysis": {
+        "primaryTone": "romantic",
+        "secondaryTones": [],
+        "toneScores": {
+          "romantic": 8,
+          "contemplative": 0.5,
+          "realistic": 0.5
+        },
+        "confidence": 70,
+        "fieldAnalysis": {
+          "title_name_kr": {
+            "text": "Mokrin",
+            "weight": 3,
+            "score": 0
+          },
+          "title_name_en": {
+            "text": "Mokrin",
+            "weight": 3,
+            "score": 0
+          },
+          "description": {
+            "text": "Can love transcend all boundaries?\nThe 200-year long peace in Mokrin's island tribe is broken when the warlike Gyui-heols arrive to demand open borders. What's more, Eonyeong, the son of their chieftess, falls hopelessly in love with Mokrin. Now it's up to her — will she spurn his affection or marry him for the sake of her people?",
+            "weight": 2,
+            "score": 6,
+            "toneMatches": {
+              "romantic": {
+                "score": 6,
+                "matches": [
+                  "love",
+                  "love",
+                  "affection"
+                ]
+              }
+            }
+          },
+          "tagline": {
+            "text": "A wonderful island world to explore through a romantic epic",
+            "weight": 2,
+            "score": 2,
+            "toneMatches": {
+              "romantic": {
+                "score": 2,
+                "matches": [
+                  "romantic"
+                ]
+              }
+            }
+          },
+          "genre": {
+            "text": "HISTORICAL",
+            "weight": 1,
+            "score": 0
+          }
+        },
+        "analysis": {
+          "textAnalyzed": 417,
+          "fieldsUsed": [
+            "title_name_kr",
+            "title_name_en",
+            "description",
+            "tagline",
+            "genre"
+          ],
+          "totalScore": 9
+        }
+      }
+    },
+    {
+      "title_id": "2448b5ea-8222-4bd7-a559-30d194f9d322",
+      "title_name_kr": "Punch Drunk Love",
+      "title_name_en": "Punch Drunk Love",
+      "genre": [
+        "LGBTQ+"
+      ],
+      "tone_analysis": {
+        "primaryTone": "romantic",
+        "secondaryTones": [
+          "realistic",
+          "playful"
+        ],
+        "toneScores": {
+          "romantic": 8,
+          "realistic": 6,
+          "playful": 2
+        },
+        "confidence": 75,
+        "fieldAnalysis": {
+          "title_name_kr": {
+            "text": "Punch Drunk Love",
+            "weight": 3,
+            "score": 3,
+            "toneMatches": {
+              "romantic": {
+                "score": 3,
+                "matches": [
+                  "love"
+                ]
+              }
+            }
+          },
+          "title_name_en": {
+            "text": "Punch Drunk Love",
+            "weight": 3,
+            "score": 3,
+            "toneMatches": {
+              "romantic": {
+                "score": 3,
+                "matches": [
+                  "love"
+                ]
+              }
+            }
+          },
+          "pitch": {
+            "text": "https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/pitch-pdfs/2448b5ea-8222-4bd7-a559-30d194f9d322/pitch.pdf",
+            "weight": 2,
+            "score": 0
+          },
+          "description": {
+            "text": "Sunwoo is a perfectly ordinary guy with a perfectly ordinary life. So it's no wonder he's enamored by his coworker Taemoon. The guy's handsome, charming, and a total ten! But when Sunwoo catches a glimpse of his crush's texts one day, he realizes that their days at work will be anything but ordinary.",
+            "weight": 2,
+            "score": 8,
+            "toneMatches": {
+              "realistic": {
+                "score": 6,
+                "matches": [
+                  "ordinary",
+                  "ordinary",
+                  "ordinary"
+                ]
+              },
+              "playful": {
+                "score": 2,
+                "matches": [
+                  "charming"
+                ]
+              }
+            }
+          },
+          "tagline": {
+            "text": "Love is like a punch to the face.",
+            "weight": 2,
+            "score": 2,
+            "toneMatches": {
+              "romantic": {
+                "score": 2,
+                "matches": [
+                  "love"
+                ]
+              }
+            }
+          },
+          "genre": {
+            "text": "LGBTQ+",
+            "weight": 1,
+            "score": 0
+          }
+        },
+        "analysis": {
+          "textAnalyzed": 500,
+          "fieldsUsed": [
+            "title_name_kr",
+            "title_name_en",
+            "pitch",
+            "description",
+            "tagline",
+            "genre"
+          ],
+          "totalScore": 16
+        }
+      }
+    },
+    {
+      "title_id": "4364b5c6-4789-4c58-8d78-0cb639895d83",
+      "title_name_kr": "Shoot for the Stars",
+      "title_name_en": "Shoot for the Stars",
+      "genre": [
+        "LGBTQ+"
+      ],
+      "tone_analysis": {
+        "primaryTone": "romantic",
+        "secondaryTones": [],
+        "toneScores": {
+          "romantic": 4
+        },
+        "confidence": 70,
+        "fieldAnalysis": {
+          "title_name_kr": {
+            "text": "Shoot for the Stars",
+            "weight": 3,
+            "score": 0
+          },
+          "title_name_en": {
+            "text": "Shoot for the Stars",
+            "weight": 3,
+            "score": 0
+          },
+          "pitch": {
+            "text": "https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/pitch-pdfs/4364b5c6-4789-4c58-8d78-0cb639895d83/pitch.pdf",
+            "weight": 2,
+            "score": 0
+          },
+          "description": {
+            "text": "Falling star to superstar!\nYusung is destined to give up on his dream of becoming an idol and spend the rest of his days working as his crush's manager. That is, unless he reinvents his approach to being a trainee! What are these mysterious skill bars only he can see? Could they be the key to avoid a painful future and making his dreams for his creative and romantic life come true?",
+            "weight": 2,
+            "score": 2,
+            "toneMatches": {
+              "romantic": {
+                "score": 2,
+                "matches": [
+                  "romantic"
+                ]
+              }
+            }
+          },
+          "tagline": {
+            "text": "K-Pop\nSeeing stats / knowing the future\nRomance",
+            "weight": 2,
+            "score": 2,
+            "toneMatches": {
+              "romantic": {
+                "score": 2,
+                "matches": [
+                  "romance"
+                ]
+              }
+            }
+          },
+          "genre": {
+            "text": "LGBTQ+",
+            "weight": 1,
+            "score": 0
+          }
+        },
+        "analysis": {
+          "textAnalyzed": 603,
+          "fieldsUsed": [
+            "title_name_kr",
+            "title_name_en",
+            "pitch",
+            "description",
+            "tagline",
+            "genre"
+          ],
+          "totalScore": 4
+        }
+      }
+    },
+    {
+      "title_id": "d6cdcc3a-b7a0-446b-97e0-1310d672c6aa",
+      "title_name_kr": "Falling for Danger",
+      "title_name_en": "Falling for Danger",
+      "genre": [
+        "DRAMA"
+      ],
+      "tone_analysis": {
+        "primaryTone": "action_packed",
+        "secondaryTones": [
+          "romantic",
+          "dramatic"
+        ],
+        "toneScores": {
+          "action_packed": 8,
+          "dramatic": 3,
+          "romantic": 4,
+          "comedic": 2,
+          "mysterious": 2,
+          "emotional": 0.5
+        },
+        "confidence": 100,
+        "fieldAnalysis": {
+          "title_name_kr": {
+            "text": "Falling for Danger",
+            "weight": 3,
+            "score": 3,
+            "toneMatches": {
+              "action_packed": {
+                "score": 3,
+                "matches": [
+                  "danger"
+                ]
+              }
+            }
+          },
+          "title_name_en": {
+            "text": "Falling for Danger",
+            "weight": 3,
+            "score": 3,
+            "toneMatches": {
+              "action_packed": {
+                "score": 3,
+                "matches": [
+                  "danger"
+                ]
+              }
+            }
+          },
+          "pitch": {
+            "text": "https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/pitch-pdfs/d6cdcc3a-b7a0-446b-97e0-1310d672c6aa/pitch.pdf",
+            "weight": 2,
+            "score": 0
+          },
+          "description": {
+            "text": "Hale Windsor was a renowned hitman until he is betrayed and loses the love of his life. With nothing left to live for, he begins a war of revenge on the very organization he used to work for. That is, until he meets Marine, a girl who brings color back into his black and white existence.\nBut things are more complex for Marine, an unexceptional middle-manager who just learned her most competent-yet-challenging employee KILLS PEOPLE during his lunch hour!\nThe two end up an unlikely team to take on a global cartel, with a government sanction to kill.",
+            "weight": 2,
+            "score": 4,
+            "toneMatches": {
+              "dramatic": {
+                "score": 2,
+                "matches": [
+                  "revenge"
+                ]
+              },
+              "romantic": {
+                "score": 2,
+                "matches": [
+                  "love"
+                ]
+              }
+            }
+          },
+          "tagline": {
+            "text": "A dramatic action thriller with a hint of comedy and romance",
+            "weight": 2,
+            "score": 8,
+            "toneMatches": {
+              "comedic": {
+                "score": 2,
+                "matches": [
+                  "comedy"
+                ]
+              },
+              "romantic": {
+                "score": 2,
+                "matches": [
+                  "romance"
+                ]
+              },
+              "mysterious": {
+                "score": 2,
+                "matches": [
+                  "thriller"
+                ]
+              },
+              "action_packed": {
+                "score": 2,
+                "matches": [
+                  "action"
+                ]
+              }
+            }
+          },
+          "genre": {
+            "text": "DRAMA",
+            "weight": 1,
+            "score": 1,
+            "toneMatches": {
+              "dramatic": {
+                "score": 1,
+                "matches": [
+                  "drama"
+                ]
+              }
+            }
+          }
+        },
+        "analysis": {
+          "textAnalyzed": 782,
+          "fieldsUsed": [
+            "title_name_kr",
+            "title_name_en",
+            "pitch",
+            "description",
+            "tagline",
+            "genre"
+          ],
+          "totalScore": 19.5
+        }
+      }
+    }
+  ]
+}

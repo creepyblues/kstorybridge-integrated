@@ -24,7 +24,7 @@ interface CreatorTitleCardProps {
     id: string;
     title_name_en?: string;
     title_name_kr: string;
-    genre?: string;
+    genre?: string | string[];
     author?: string;
     status?: string;
     title_image?: string;
@@ -124,10 +124,25 @@ export function CreatorTitleCard({
             </h3>
           </Link>
           <div className="flex items-center justify-between">
-            {title.genre && (
-              <Badge variant="outline" className="text-xs border-porcelain-blue-300 text-hanok-teal">
-                {title.genre}
-              </Badge>
+            {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
+              <div className="flex flex-wrap gap-1">
+                {Array.isArray(title.genre) ? (
+                  title.genre.slice(0, 2).map((g, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs border-porcelain-blue-300 text-hanok-teal">
+                      {g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge variant="outline" className="text-xs border-porcelain-blue-300 text-hanok-teal">
+                    {title.genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </Badge>
+                )}
+                {Array.isArray(title.genre) && title.genre.length > 2 && (
+                  <Badge variant="outline" className="text-xs border-gray-300 text-gray-500">
+                    +{title.genre.length - 2}
+                  </Badge>
+                )}
+              </div>
             )}
             {title.content_format && (
               <Badge variant="secondary" className="text-xs bg-warm-sand text-midnight-ink border-0">

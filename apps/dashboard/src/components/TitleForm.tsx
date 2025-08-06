@@ -48,7 +48,7 @@ interface FormData {
   synopsis: string;
   pitch: string;
   title_url: string;
-  genre: string | null;
+  genre: string[] | null;
   content_format: string | null;
   views: number;
   likes: number;
@@ -61,6 +61,7 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [tags, setTags] = useState<string[]>(title?.tags || []);
+  const [genres, setGenres] = useState<string[]>(title?.genre || []);
   const [newTag, setNewTag] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -81,7 +82,7 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
       synopsis: title?.synopsis || "",
       pitch: title?.pitch || "",
       title_url: title?.title_url || "",
-      genre: title?.genre || null,
+      genre: title?.genre || [],
       content_format: title?.content_format || null,
       views: title?.views || 0,
       likes: title?.likes || 0,
@@ -93,6 +94,7 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
   useEffect(() => {
     if (title) {
       setTags(title.tags || []);
+      setGenres(title.genre || []);
     }
   }, [title]);
 
@@ -105,6 +107,20 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
 
   const handleTagDelete = (tagToDelete: string) => {
     setTags(tags.filter((tag) => tag !== tagToDelete));
+  };
+
+  const handleGenreAdd = (genreToAdd: string) => {
+    if (!genres.includes(genreToAdd)) {
+      const newGenres = [...genres, genreToAdd];
+      setGenres(newGenres);
+      setValue("genre", newGenres);
+    }
+  };
+
+  const handleGenreRemove = (genreToRemove: string) => {
+    const newGenres = genres.filter((genre) => genre !== genreToRemove);
+    setGenres(newGenres);
+    setValue("genre", newGenres);
   };
 
   const onSubmit = async (data: FormData) => {
@@ -132,8 +148,9 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
       const titleData = {
         ...data,
         tags,
+        genres,
         creator_id: user.id,
-        genre: (data.genre && data.genre !== "") ? data.genre as Database['public']['Enums']['genre'] : null,
+        genre: genres.length > 0 ? genres : null,
         content_format: (data.content_format && data.content_format !== "") ? data.content_format as Database['public']['Enums']['content_format'] : null,
       };
 
@@ -263,10 +280,10 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
             />
           </div>
           <div>
-            <Label htmlFor="genre" className="text-slate-300">Genre</Label>
-            <Select onValueChange={(value) => setValue("genre", value)}>
+            <Label htmlFor="genre" className="text-slate-300">Genres</Label>
+            <Select onValueChange={handleGenreAdd}>
               <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-400">
-                <SelectValue placeholder="Select a genre" />
+                <SelectValue placeholder="Add a genre" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800/80 border-slate-700 backdrop-blur-sm">
                 <SelectItem value="action">Action</SelectItem>
@@ -283,6 +300,26 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
                 <SelectItem value="thriller">Thriller</SelectItem>
               </SelectContent>
             </Select>
+            {genres.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {genres.map((genre, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="bg-slate-700 text-slate-200 hover:bg-slate-600"
+                  >
+                    {genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    <button
+                      type="button"
+                      onClick={() => handleGenreRemove(genre)}
+                      className="ml-2 text-slate-400 hover:text-white"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
           <div>
             <Label htmlFor="content_format" className="text-slate-300">Content Format</Label>

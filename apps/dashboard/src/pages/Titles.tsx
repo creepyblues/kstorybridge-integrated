@@ -8,6 +8,7 @@ import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import PremiumColumn from "@/components/PremiumColumn";
 
 export default function Titles() {
   const { toast } = useToast();
@@ -82,7 +83,9 @@ export default function Titles() {
       title.tone?.toLowerCase().includes(searchLower) ||
       title.audience?.toLowerCase().includes(searchLower) ||
       // Genre and tags
-      title.genre?.toLowerCase().includes(searchLower) ||
+      (Array.isArray(title.genre) 
+        ? title.genre.some(g => g.toLowerCase().includes(searchLower))
+        : title.genre?.toLowerCase().includes(searchLower)) ||
       title.tags?.some(tag => tag.toLowerCase().includes(searchLower))
     );
   });
@@ -92,7 +95,10 @@ export default function Titles() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const formatGenre = (genre: string) => {
+  const formatGenre = (genre: string | string[]) => {
+    if (Array.isArray(genre)) {
+      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ');
+    }
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
@@ -163,10 +169,23 @@ export default function Titles() {
                             {title.tagline || title.pitch || 'Discover this amazing Korean story'}
                           </p>
                         </div>
-                        {title.genre && (
+                        {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
                           <div className="mt-auto">
-                            <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
-                              {formatGenre(title.genre)}
+                            <div className="flex flex-wrap gap-1">
+                              {Array.isArray(title.genre) ? (
+                                title.genre.slice(0, 1).map((g, idx) => (
+                                  <div key={idx} className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                                    {formatGenre(g)}
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                                  {formatGenre(title.genre)}
+                                </div>
+                              )}
+                              {Array.isArray(title.genre) && title.genre.length > 1 && (
+                                <span className="text-xs text-gray-500">+{title.genre.length - 1}</span>
+                              )}
                             </div>
                           </div>
                         )}
@@ -226,9 +245,24 @@ export default function Titles() {
                 <div className="col-span-3">Title</div>
                 <div className="col-span-2">Genre</div>
                 <div className="col-span-2">Tone</div>
-                <div className="col-span-2">Perfect For</div>
-                <div className="col-span-1">Comps</div>
-                <div className="col-span-1">Audience</div>
+                <div className="col-span-2 relative flex flex-col items-center justify-center">
+                  <span>Perfect For</span>
+                  <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
+                    Premium Feature
+                  </span>
+                </div>
+                <div className="col-span-1 relative flex flex-col items-center justify-center">
+                  <span>Comps</span>
+                  <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
+                    Premium Feature
+                  </span>
+                </div>
+                <div className="col-span-1 relative flex flex-col items-center justify-center">
+                  <span>Audience</span>
+                  <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
+                    Premium Feature
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -279,10 +313,23 @@ export default function Titles() {
                         </div>
                         
                         <div className="col-span-2">
-                          {title.genre ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-hanok-teal/10 text-hanok-teal">
-                              {formatGenre(title.genre)}
-                            </span>
+                          {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) ? (
+                            <div className="flex flex-wrap gap-1">
+                              {Array.isArray(title.genre) ? (
+                                title.genre.slice(0, 2).map((g, idx) => (
+                                  <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-hanok-teal/10 text-hanok-teal">
+                                    {formatGenre(g)}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-hanok-teal/10 text-hanok-teal">
+                                  {formatGenre(title.genre)}
+                                </span>
+                              )}
+                              {Array.isArray(title.genre) && title.genre.length > 2 && (
+                                <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-gray-400">-</span>
                           )}
@@ -292,16 +339,22 @@ export default function Titles() {
                           <span className="line-clamp-2">{title.tone || '-'}</span>
                         </div>
                         
-                        <div className="col-span-2 text-gray-600 text-sm">
-                          <span className="line-clamp-2">{title.perfect_for || '-'}</span>
+                        <div className="col-span-2">
+                          <PremiumColumn className="text-gray-600 text-sm">
+                            <span className="line-clamp-2">{title.perfect_for || '-'}</span>
+                          </PremiumColumn>
                         </div>
                         
-                        <div className="col-span-1 text-gray-600 text-sm">
-                          <span className="line-clamp-2">{title.comps || '-'}</span>
+                        <div className="col-span-1">
+                          <PremiumColumn className="text-gray-600 text-sm">
+                            <span className="line-clamp-2">{title.comps || '-'}</span>
+                          </PremiumColumn>
                         </div>
                         
-                        <div className="col-span-1 text-gray-600 text-sm">
-                          <span className="line-clamp-2">{title.audience || '-'}</span>
+                        <div className="col-span-1">
+                          <PremiumColumn className="text-gray-600 text-sm">
+                            <span className="line-clamp-2">{title.audience || '-'}</span>
+                          </PremiumColumn>
                         </div>
                       </div>
                     </Link>

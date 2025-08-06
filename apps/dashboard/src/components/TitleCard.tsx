@@ -18,7 +18,10 @@ export function TitleCard({ title, onEdit, onDelete, showActions = false }: Titl
   const { user } = useAuth();
   const isOwner = user?.id === title.creator_id;
 
-  const formatGenre = (genre: string) => {
+  const formatGenre = (genre: string | string[]) => {
+    if (Array.isArray(genre)) {
+      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()));
+    }
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
@@ -40,10 +43,25 @@ export function TitleCard({ title, onEdit, onDelete, showActions = false }: Titl
               <p className="text-sm text-slate-400 mb-2">{title.title_name_kr}</p>
             )}
             <div className="flex flex-wrap gap-2 mb-3">
-              {title.genre && (
-                <Badge variant="outline" className="border-blue-600/30 text-blue-400">
-                  {formatGenre(title.genre)}
-                </Badge>
+              {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
+                <>
+                  {Array.isArray(title.genre) ? (
+                    title.genre.slice(0, 2).map((g, idx) => (
+                      <Badge key={idx} variant="outline" className="border-blue-600/30 text-blue-400">
+                        {formatGenre(g)}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="outline" className="border-blue-600/30 text-blue-400">
+                      {formatGenre(title.genre)}
+                    </Badge>
+                  )}
+                  {Array.isArray(title.genre) && title.genre.length > 2 && (
+                    <Badge variant="outline" className="border-gray-600/30 text-gray-400">
+                      +{title.genre.length - 2}
+                    </Badge>
+                  )}
+                </>
               )}
               {title.content_format && (
                 <Badge variant="outline" className="border-purple-600/30 text-purple-400">

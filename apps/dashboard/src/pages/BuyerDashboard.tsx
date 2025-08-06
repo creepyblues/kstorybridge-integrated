@@ -140,7 +140,9 @@ export default function BuyerDashboard() {
     const filtered = titles.filter(title => 
       title.title_name_en?.toLowerCase().includes(query.toLowerCase()) ||
       title.title_name_kr.toLowerCase().includes(query.toLowerCase()) ||
-      title.genre?.toLowerCase().includes(query.toLowerCase())
+      (Array.isArray(title.genre) 
+        ? title.genre.some(g => g.toLowerCase().includes(query.toLowerCase()))
+        : title.genre?.toLowerCase().includes(query.toLowerCase()))
     );
     setFilteredTitles(filtered);
   };

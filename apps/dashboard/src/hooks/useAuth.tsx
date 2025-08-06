@@ -20,12 +20,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check if we should bypass auth for localhost development
   const shouldBypassAuth = () => {
     const isLocalhost = window.location.hostname === 'localhost';
-    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
     const isDev = import.meta.env.DEV;
     
-    if (isLocalhost && bypassEnabled && isDev) {
+    if (isLocalhost && isDev) {
       console.log('🚨 AUTH BYPASS: Authentication bypassed for localhost development');
       console.log('🚨 AUTH BYPASS: This should NEVER happen in production!');
+      console.log('🚨 AUTH BYPASS: Loading test data for sungho@dadble.com');
       return true;
     }
     return false;
@@ -37,7 +37,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('🔍 AUTH BYPASS: Attempting to find existing user data for sungho@dadble.com');
       
-      // Check if there's a buyer profile with this email
+      // First check the main profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', 'sungho@dadble.com')
+        .single();
+      
+      if (profile) {
+        console.log('✅ AUTH BYPASS: Found existing profile, using real user ID:', profile.id);
+        return {
+          id: profile.id,
+          email: 'sungho@dadble.com',
+          app_metadata: {},
+          user_metadata: { 
+            account_type: profile.account_type,
+            full_name: profile.full_name,
+            buyer_company: profile.buyer_company,
+            buyer_role: profile.buyer_role,
+            ip_owner_company: profile.ip_owner_company,
+            ip_owner_role: profile.ip_owner_role,
+            pen_name: profile.pen_name,
+            linkedin_url: profile.linkedin_url,
+            website_url: profile.website_url
+          },
+          aud: 'authenticated',
+          created_at: profile.created_at || new Date().toISOString(),
+          updated_at: profile.updated_at || new Date().toISOString(),
+          email_confirmed_at: new Date().toISOString(),
+          last_sign_in_at: new Date().toISOString(),
+          role: 'authenticated',
+          confirmation_sent_at: new Date().toISOString(),
+        } as User;
+      }
+
+      // Fallback: Check if there's a buyer profile with this email
       const { data: buyerProfile } = await supabase
         .from('user_buyers')
         .select('*')
@@ -67,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } as User;
       }
 
-      // Check if there's an IP owner profile with this email
+      // Fallback: Check if there's an IP owner profile with this email
       const { data: ipOwnerProfile } = await supabase
         .from('user_ipowners')
         .select('*')

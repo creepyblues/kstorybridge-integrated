@@ -7,7 +7,8 @@ import {
   DollarSign,
   User,
   Menu,
-  X
+  X,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,11 +17,13 @@ const getDiscoverItems = (accountType: string) => {
   if (accountType === "ip_owner") {
     return [
       { title: "Titles", href: "/creators/titles", icon: FileText },
+      { title: "My Requests", href: "/creators/requests", icon: MessageSquare },
     ];
   } else {
     return [
       { title: "Titles", href: "/buyers/titles", icon: FileText },
       { title: "Favorites", href: "/buyers/favorites", icon: Heart },
+      { title: "My Requests", href: "/buyers/requests", icon: MessageSquare },
     ];
   }
 };

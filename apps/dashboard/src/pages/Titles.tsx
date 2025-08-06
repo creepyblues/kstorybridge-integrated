@@ -263,19 +263,19 @@ export default function Titles() {
                 <div className="col-span-2 relative flex flex-col items-center justify-center">
                   <span>Perfect For</span>
                   <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
-                    Premium Feature
+                    PRO PLAN
                   </span>
                 </div>
                 <div className="col-span-1 relative flex flex-col items-center justify-center">
                   <span>Comps</span>
                   <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
-                    Premium Feature
+                    PRO PLAN
                   </span>
                 </div>
                 <div className="col-span-1 relative flex flex-col items-center justify-center">
                   <span>Audience</span>
                   <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
-                    Premium Feature
+                    PRO PLAN
                   </span>
                 </div>
               </div>
@@ -332,14 +332,14 @@ export default function Titles() {
                             <div className="flex flex-wrap gap-1">
                               {Array.isArray(title.genre) ? (
                                 title.genre.slice(0, 2).map((g, idx) => (
-                                  <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-hanok-teal/10 text-hanok-teal">
+                                  <div key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-3 py-1.5 rounded-full text-sm font-medium">
                                     {formatGenre(g)}
-                                  </span>
+                                  </div>
                                 ))
                               ) : (
-                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-hanok-teal/10 text-hanok-teal">
+                                <div className="inline-block bg-cyan-100 text-cyan-800 px-3 py-1.5 rounded-full text-sm font-medium">
                                   {formatGenre(title.genre)}
-                                </span>
+                                </div>
                               )}
                               {Array.isArray(title.genre) && title.genre.length > 2 && (
                                 <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
@@ -350,25 +350,49 @@ export default function Titles() {
                           )}
                         </div>
                         
-                        <div className="col-span-2 text-gray-600 text-sm">
-                          <span className="line-clamp-2">{title.tone || '-'}</span>
+                        <div className="col-span-2">
+                          {title.tone ? (
+                            <div className="inline-block bg-purple-100 text-purple-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                              {title.tone}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
                         </div>
                         
                         <div className="col-span-2">
-                          <PremiumColumn className="text-gray-600 text-sm">
-                            <span className="line-clamp-2">{title.perfect_for || '-'}</span>
+                          <PremiumColumn>
+                            {title.perfect_for ? (
+                              <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                                {title.perfect_for}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </PremiumColumn>
                         </div>
                         
                         <div className="col-span-1">
-                          <PremiumColumn className="text-gray-600 text-sm">
-                            <span className="line-clamp-2">{title.comps || '-'}</span>
+                          <PremiumColumn>
+                            {title.comps ? (
+                              <div className="inline-block bg-green-100 text-green-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                                {title.comps}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </PremiumColumn>
                         </div>
                         
                         <div className="col-span-1">
-                          <PremiumColumn className="text-gray-600 text-sm">
-                            <span className="line-clamp-2">{title.audience || '-'}</span>
+                          <PremiumColumn>
+                            {title.audience ? (
+                              <div className="inline-block bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                                {title.audience}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </PremiumColumn>
                         </div>
                       </div>

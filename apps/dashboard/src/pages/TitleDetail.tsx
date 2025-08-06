@@ -223,15 +223,28 @@ export default function TitleDetail() {
 
           {/* View Original Content */}
           {title.title_url && (
-            <div className="border border-gray-200 rounded-lg p-3">
+            <div className="relative bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 rounded-xl p-1 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group">
+              {/* Animated border glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+              
               <a 
                 href={title.title_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 text-hanok-teal hover:text-hanok-teal/80 font-medium text-sm transition-colors"
+                className="block bg-white rounded-lg p-4 text-center relative overflow-hidden group-hover:bg-gray-50 transition-colors duration-300"
               >
-                <ExternalLink className="h-4 w-4" />
-                View Original Content
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+                
+                <div className="relative flex items-center justify-center gap-3">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-full">
+                    <ExternalLink className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-bold text-lg text-gray-800 mb-1">View Original Content</div>
+                    <div className="text-sm text-gray-600">Read the full story on original platform</div>
+                  </div>
+                </div>
               </a>
             </div>
           )}
@@ -245,28 +258,8 @@ export default function TitleDetail() {
             </div>
           )}
 
-          {/* Genre and Format Badges */}
+          {/* Format Badge */}
           <div className="flex flex-wrap gap-2">
-            {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
-              <>
-                {Array.isArray(title.genre) ? (
-                  title.genre.slice(0, 2).map((g, idx) => (
-                    <Badge key={idx} variant="outline" className="border-hanok-teal text-hanok-teal bg-hanok-teal/5 px-3 py-1">
-                      {formatGenre(g)}
-                    </Badge>
-                  ))
-                ) : (
-                  <Badge variant="outline" className="border-hanok-teal text-hanok-teal bg-hanok-teal/5 px-3 py-1">
-                    {formatGenre(title.genre)}
-                  </Badge>
-                )}
-                {Array.isArray(title.genre) && title.genre.length > 2 && (
-                  <Badge variant="outline" className="border-gray-300 text-gray-500 px-3 py-1">
-                    +{title.genre.length - 2}
-                  </Badge>
-                )}
-              </>
-            )}
             {title.content_format && (
               <Badge variant="outline" className="border-blue-500 text-blue-500 bg-blue-50 px-3 py-1">
                 {formatContentFormat(title.content_format)}
@@ -274,48 +267,6 @@ export default function TitleDetail() {
             )}
           </div>
 
-          {/* Statistics Card */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* Statistics */}
-                <div className="space-y-3">
-                  <h4 className="font-bold text-midnight-ink text-sm uppercase tracking-wide">Statistics</h4>
-                  <div className="space-y-3">
-                    {/* Views and Likes on same line */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                        <Eye className="h-4 w-4 text-blue-600" />
-                        <div>
-                          <p className="text-xs font-semibold text-hanok-teal">Views</p>
-                          <p className="font-medium text-gray-600 text-sm">{formatViews(title.views || 0)}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
-                        <Heart className="h-4 w-4 text-red-500" />
-                        <div>
-                          <p className="text-xs font-semibold text-hanok-teal">Likes</p>
-                          <p className="font-medium text-gray-600 text-sm">{formatLikes(title.likes || 0)}</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Rating on separate line if exists */}
-                    {title.rating && title.rating_count && title.rating_count > 0 && (
-                      <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-                        <Star className="h-5 w-5 text-yellow-500" />
-                        <div>
-                          <p className="text-xs font-semibold text-hanok-teal">Rating</p>
-                          <p className="font-medium text-gray-600 text-sm">{title.rating.toFixed(1)} ({title.rating_count} reviews)</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Note Card - Only show if note exists */}
           {title.note && (
@@ -465,23 +416,65 @@ export default function TitleDetail() {
                 <div className="pt-6 border-t border-gray-200 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-1">Perfect For</h5>
-                      <p className="text-gray-600 text-sm">{title.perfect_for || 'Not specified'}</p>
+                      <h5 className="font-bold text-hanok-teal mb-3">Perfect For</h5>
+                      {title.perfect_for ? (
+                        <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                          {title.perfect_for}
+                        </div>
+                      ) : (
+                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                          Not specified
+                        </div>
+                      )}
                     </div>
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-1">Comps</h5>
-                      <p className="text-gray-600 text-sm">{title.comps || 'Not specified'}</p>
+                      <h5 className="font-bold text-hanok-teal mb-3">Comps</h5>
+                      {title.comps ? (
+                        <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                          {title.comps}
+                        </div>
+                      ) : (
+                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                          Not specified
+                        </div>
+                      )}
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-1">Tone</h5>
-                      <p className="text-gray-600 text-sm">{title.tone || 'Not specified'}</p>
+                      <h5 className="font-bold text-hanok-teal mb-3">Tone</h5>
+                      {title.tone ? (
+                        <div className="inline-block bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">
+                          {title.tone}
+                        </div>
+                      ) : (
+                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                          Not specified
+                        </div>
+                      )}
                     </div>
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-1">Audience</h5>
-                      <p className="text-gray-600 text-sm">{title.audience || 'Not specified'}</p>
+                      <h5 className="font-bold text-hanok-teal mb-3">Genre</h5>
+                      {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) ? (
+                        <div className="flex flex-wrap gap-2">
+                          {Array.isArray(title.genre) ? (
+                            title.genre.map((g, idx) => (
+                              <div key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-4 py-2 rounded-full text-sm font-medium">
+                                {formatGenre(g)}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="inline-block bg-cyan-100 text-cyan-800 px-4 py-2 rounded-full text-sm font-medium">
+                              {formatGenre(title.genre)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                          Not specified
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -495,6 +488,41 @@ export default function TitleDetail() {
               <CardTitle className="text-midnight-ink text-xl">Title Information</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Statistics Section */}
+              <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-bold text-midnight-ink text-sm uppercase tracking-wide mb-4">Statistics</h4>
+                <div className="space-y-3">
+                  {/* Views and Likes on same line */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                      <Eye className="h-4 w-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs font-semibold text-hanok-teal">Views</p>
+                        <p className="font-medium text-gray-600 text-sm">{formatViews(title.views || 0)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
+                      <Heart className="h-4 w-4 text-red-500" />
+                      <div>
+                        <p className="text-xs font-semibold text-hanok-teal">Likes</p>
+                        <p className="font-medium text-gray-600 text-sm">{formatLikes(title.likes || 0)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Rating on separate line if exists */}
+                  {title.rating && title.rating_count && title.rating_count > 0 && (
+                    <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                      <div>
+                        <p className="text-xs font-semibold text-hanok-teal">Rating</p>
+                        <p className="font-medium text-gray-600 text-sm">{title.rating.toFixed(1)} ({title.rating_count} reviews)</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column - Creator Information */}
                 <div className="space-y-4">
@@ -517,18 +545,40 @@ export default function TitleDetail() {
                     </div>
                   )}
                   <div>
-                    <h5 className="font-bold text-hanok-teal mb-1">Rights Owner</h5>
-                    <p className="text-gray-600 text-sm">{title.rights || 'Not specified'}</p>
+                    <h5 className="font-bold text-hanok-teal mb-3">Rights Owner</h5>
+                    {(title.rights_owner || title.rights) ? (
+                      <div className="inline-block bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-sm font-medium">
+                        {title.rights_owner || title.rights}
+                      </div>
+                    ) : (
+                      <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                        Not specified
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-hanok-teal mb-3">Audience</h5>
+                    {title.audience ? (
+                      <div className="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium">
+                        {title.audience}
+                      </div>
+                    ) : (
+                      <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                        Not specified
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Right Column - Content Details */}
                 <div className="space-y-4">
                   <div>
-                    <h5 className="font-bold text-hanok-teal mb-1">Series Status</h5>
-                    <p className="text-gray-600 text-sm">
-                      {title.completed !== null && title.completed !== undefined ? String(title.completed) : 'null'}
-                    </p>
+                    <h5 className="font-bold text-hanok-teal mb-3">Series Status</h5>
+                    <div className="inline-block bg-teal-100 text-teal-800 px-4 py-2 rounded-full text-sm font-medium">
+                      {title.completed !== null && title.completed !== undefined 
+                        ? (title.completed ? 'Completed' : 'Ongoing') 
+                        : 'Unknown'}
+                    </div>
                   </div>
                   <div>
                     <h5 className="font-bold text-hanok-teal mb-1">Number of Chapters</h5>

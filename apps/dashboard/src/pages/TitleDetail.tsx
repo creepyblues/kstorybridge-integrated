@@ -411,6 +411,20 @@ export default function TitleDetail() {
                     </p>
                   </div>
                 )}
+
+                {/* Keywords Section */}
+                {title.tags && title.tags.length > 0 && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <h5 className="font-bold text-hanok-teal mb-3">Keywords</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {title.tags.map((tag, idx) => (
+                        <div key={`synopsis-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium">
+                          {tag}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Market Information */}
                 <div className="pt-6 border-t border-gray-200 space-y-6">

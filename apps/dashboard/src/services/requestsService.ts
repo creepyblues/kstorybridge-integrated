@@ -25,60 +25,60 @@ const shouldUseMockData = () => {
   return isLocalhost && bypassEnabled && isDev;
 };
 
-// Mock requests data for localhost development
+// Mock requests data for localhost development - using real title data from database
 const mockRequests: RequestWithTitle[] = [
   {
     id: "req-1",
     user_id: "550e8400-e29b-41d4-a716-446655440000",
-    title_id: "1",
+    title_id: "bd688163-0a61-4e67-a125-95644e5be942",
     request_type: "pitch_deck",
     status: "pending",
-    message: "I'd like to request the pitch deck for this fantasy webtoon. It looks very promising for our streaming platform.",
+    message: "I'd like to request the pitch deck for this drama webtoon. The color-blindness story looks very promising for our streaming platform.",
     created_at: "2024-01-15T10:30:00Z",
     updated_at: "2024-01-15T10:30:00Z",
     titles: {
-      title_id: "1",
-      title_name_en: "Mystic Academy Chronicles",
-      title_name_kr: "신비한 아카데미 연대기",
-      genre: ["Fantasy"],
-      content_format: "Webtoon",
-      title_image: "/covers/mystic-academy.jpg"
+      title_id: "bd688163-0a61-4e67-a125-95644e5be942",
+      title_name_en: "serendipity",
+      title_name_kr: "세렌디피티",
+      genre: ["Drama", "Growth"],
+      content_format: null,
+      title_image: "https://oopy.lazyrockets.com/api/v2/notion/image?src=https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Ff0411885-e2d8-4b4e-8f6e-543406835ca6%2F14401000%EB%B0%B0%EB%84%88.jpg&blockId=61630920-51c6-4dd1-aa18-24867fe4d110"
     }
   },
   {
     id: "req-2", 
     user_id: "550e8400-e29b-41d4-a716-446655440000",
-    title_id: "2",
+    title_id: "eda7e1d9-211a-4c9e-bd26-8eda72f58030",
     request_type: "contact_info",
     status: "approved",
-    message: "We're interested in licensing this for our international market. Could we get contact information for the creator?",
+    message: "We're interested in licensing this BL title for our international market. Could we get contact information for the creator?",
     created_at: "2024-01-10T14:20:00Z",
     updated_at: "2024-01-12T09:15:00Z",
     titles: {
-      title_id: "2",
-      title_name_en: "Corporate Love Simulator", 
-      title_name_kr: "회사 연애 시뮬레이터",
-      genre: ["Romance"],
-      content_format: "Webnovel",
-      title_image: "/covers/corporate-love.jpg"
+      title_id: "eda7e1d9-211a-4c9e-bd26-8eda72f58030",
+      title_name_en: "Young Blood", 
+      title_name_kr: "영블러드",
+      genre: ["BL"],
+      content_format: null,
+      title_image: "https://oopy.lazyrockets.com/api/v2/notion/image?src=https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F782801ca-3dcc-4751-8a08-4267aa829022%2F67a243d0-c88f-4571-a915-ea2a82589c51%2F300_430.jpg&blockId=f9e61928-b726-4f8d-b437-4504e533e1ca"
     }
   },
   {
     id: "req-3",
     user_id: "550e8400-e29b-41d4-a716-446655440000", 
-    title_id: "3",
+    title_id: "3cce946a-e45b-4c36-84b4-fc45b5ccec0e",
     request_type: "bible",
     status: "rejected",
-    message: "Looking for the series bible to evaluate adaptation potential for our cyberpunk anthology.",
+    message: "Looking for the series bible for this romantic comedy about chicken. Evaluating adaptation potential for our food-themed anthology.",
     created_at: "2024-01-05T16:45:00Z",
     updated_at: "2024-01-08T11:30:00Z",
     titles: {
-      title_id: "3",
-      title_name_en: "Digital Detective",
-      title_name_kr: "디지털 탐정", 
-      genre: ["Mystery"],
-      content_format: "Webtoon",
-      title_image: "/covers/digital-detective.jpg"
+      title_id: "3cce946a-e45b-4c36-84b4-fc45b5ccec0e",
+      title_name_en: "Is love delicious fried as well?",
+      title_name_kr: "사랑도 튀기면 맛있나요", 
+      genre: ["Dailylife", "romance", "familycomedy", "healing"],
+      content_format: null,
+      title_image: "https://oopy.lazyrockets.com/api/v2/notion/image?src=https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F064d0237-3eb6-4b0d-9ac9-5ad7e05b6aec%2F%EB%8C%80%ED%91%9C%EC%9D%B4%EB%AF%B8%EC%A7%80_%EC%B9%B4%EC%B9%B4%EC%98%A4%ED%8E%98%EC%9D%B4%EC%A7%80.jpg&blockId=68eca8ae-8266-4774-9a42-934c8f3c27f1"
     }
   }
 ] as RequestWithTitle[];

@@ -294,90 +294,7 @@ export default function TitleDetail() {
           <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <CardTitle className="text-midnight-ink text-xl">Synopsis</CardTitle>
-              {title.pitch && user && (
-                <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
-                  <DialogTrigger id="title-detail-view-pitch-btn" asChild>
-                    <Button id="title-detail-view-pitch-btn" className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group">
-                      {/* Shine effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                      
-                      {/* Icons */}
-                      <Crown className="h-4 w-4 mr-2 text-yellow-300 animate-pulse pointer-events-none" />
-                      <FileText className="h-4 w-4 mr-2 pointer-events-none" />
-                      
-                      {/* Text */}
-                      <span className="relative z-10 pointer-events-none">View Pitch (Premium)</span>
-                      
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-6xl max-h-[90vh] p-0">
-                    <DialogHeader className="p-6 pb-0">
-                      <DialogTitle>
-                        Pitch Document - {title.title_name_en || title.title_name_kr}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="p-6 pt-0">
-                      <SecurePDFViewer 
-                        pdfUrl={title.pitch}
-                      />
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
-              
-              {title.pitch && !user && (
-                <Button
-                  id="title-detail-view-pitch-disabled-btn"
-                  disabled
-                  className="bg-gray-400 text-gray-600 shadow-lg border-0 rounded-full px-5 py-2.5 text-sm font-medium cursor-not-allowed relative"
-                >
-                  <Crown className="h-4 w-4 mr-2 text-gray-500" />
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Pitch (Premium)
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">!</span>
-                  </div>
-                </Button>
-              )}
 
-              {!title.pitch && user && (
-                <Button 
-                  id="title-detail-request-pitch-btn"
-                  onClick={() => {
-                    setPremiumFeatureName("Request a pitch deck");
-                    setPremiumPopupOpen(true);
-                  }}
-                  className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-xl border-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl relative overflow-hidden group"
-                >
-                  {/* Shine effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                  
-                  {/* Icons */}
-                  <FileText className="h-4 w-4 mr-2 pointer-events-none" />
-                  
-                  {/* Text */}
-                  <span className="relative z-10 pointer-events-none">Request a pitch deck</span>
-                  
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 rounded-full bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
-                </Button>
-              )}
-
-              {!title.pitch && !user && (
-                <Button
-                  id="title-detail-request-pitch-disabled-btn"
-                  disabled
-                  className="bg-gray-400 text-gray-600 shadow-lg border-0 rounded-full px-5 py-2.5 text-sm font-medium cursor-not-allowed relative"
-                >
-                  <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                  Request a pitch deck
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">!</span>
-                  </div>
-                </Button>
-              )}
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -385,31 +302,6 @@ export default function TitleDetail() {
                   <p className="text-gray-600 leading-relaxed text-base">{title.description}</p>
                 ) : (
                   <p className="text-gray-500 italic text-sm">No description available for this title.</p>
-                )}
-                
-                {/* Premium Feature Notice */}
-                {title.pitch && (
-                  <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Crown className="h-5 w-5 text-purple-600" />
-                      <span className="font-semibold text-purple-800">Premium Content Available</span>
-                    </div>
-                    <p className="text-sm text-purple-700">
-                      Premium Content Available by request. Request a detailed pitch document with comprehensive information about the story, target audience, and market positioning.
-                    </p>
-                  </div>
-                )}
-                
-                {!title.pitch && (
-                  <div className="mt-6 p-4 bg-gradient-to-r from-hanok-teal/10 to-blue-50 border border-hanok-teal/30 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="h-5 w-5 text-hanok-teal" />
-                      <span className="font-semibold text-hanok-teal">Premium Content Available</span>
-                    </div>
-                    <p className="text-sm text-hanok-teal/80">
-                      Premium Content Available by request. Request a detailed pitch document with comprehensive information about the story, target audience, and market positioning.
-                    </p>
-                  </div>
                 )}
 
                 {/* Keywords Section */}
@@ -426,6 +318,116 @@ export default function TitleDetail() {
                   </div>
                 )}
                 
+                {/* Premium Feature Notice */}
+                {title.pitch && (
+                  <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-purple-600" />
+                        <span className="font-semibold text-purple-800">Premium Content Available</span>
+                      </div>
+                      {user && (
+                        <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
+                          <DialogTrigger id="title-detail-view-pitch-btn" asChild>
+                            <Button id="title-detail-view-pitch-btn" className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group">
+                              {/* Shine effect */}
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                              
+                              {/* Icons */}
+                              <Crown className="h-3 w-3 mr-1 text-yellow-300 animate-pulse pointer-events-none" />
+                              <FileText className="h-3 w-3 mr-1 pointer-events-none" />
+                              
+                              {/* Text */}
+                              <span className="relative z-10 pointer-events-none">View</span>
+                              
+                              {/* Glow effect */}
+                              <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+                            <DialogHeader className="p-6 pb-0">
+                              <DialogTitle>
+                                Pitch Document - {title.title_name_en || title.title_name_kr}
+                              </DialogTitle>
+                            </DialogHeader>
+                            <div className="p-6 pt-0">
+                              <SecurePDFViewer 
+                                pdfUrl={title.pitch}
+                              />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                      {!user && (
+                        <Button
+                          id="title-detail-view-pitch-disabled-btn"
+                          disabled
+                          className="bg-gray-400 text-gray-600 shadow-lg border-0 rounded-full px-4 py-2 text-sm font-medium cursor-not-allowed relative"
+                        >
+                          <Crown className="h-3 w-3 mr-1 text-gray-500" />
+                          <FileText className="h-3 w-3 mr-1" />
+                          View
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">!</span>
+                          </div>
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-sm text-purple-700">
+                      Premium Content Available by request. Request a detailed pitch document with comprehensive information about the story, target audience, and market positioning.
+                    </p>
+                  </div>
+                )}
+                
+                {!title.pitch && (
+                  <div className="mt-6 p-4 bg-gradient-to-r from-hanok-teal/10 to-blue-50 border border-hanok-teal/30 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-hanok-teal" />
+                        <span className="font-semibold text-hanok-teal">Premium Content Available</span>
+                      </div>
+                      {user && (
+                        <Button 
+                          id="title-detail-request-pitch-btn"
+                          onClick={() => {
+                            setPremiumFeatureName("Request a pitch deck");
+                            setPremiumPopupOpen(true);
+                          }}
+                          className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
+                        >
+                          {/* Shine effect */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                          
+                          {/* Icons */}
+                          <FileText className="h-3 w-3 mr-1 pointer-events-none" />
+                          
+                          {/* Text */}
+                          <span className="relative z-10 pointer-events-none">Request</span>
+                          
+                          {/* Glow effect */}
+                          <div className="absolute inset-0 rounded-full bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
+                        </Button>
+                      )}
+                      {!user && (
+                        <Button
+                          id="title-detail-request-pitch-disabled-btn"
+                          disabled
+                          className="bg-gray-400 text-gray-600 shadow-lg border-0 rounded-full px-4 py-2 text-sm font-medium cursor-not-allowed relative"
+                        >
+                          <FileText className="h-3 w-3 mr-1 text-gray-500" />
+                          Request
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">!</span>
+                          </div>
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-sm text-hanok-teal/80">
+                      Premium Content Available by request. Request a detailed pitch document with comprehensive information about the story, target audience, and market positioning.
+                    </p>
+                  </div>
+                )}
+
                 {/* Market Information */}
                 <div className="pt-6 border-t border-gray-200 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -605,23 +607,6 @@ export default function TitleDetail() {
 
 
 
-          {/* Tags */}
-          {title.tags && title.tags.length > 0 && (
-            <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-midnight-ink text-xl">Tags</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  {title.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-600 px-3 py-1 text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
         </div>
       </div>

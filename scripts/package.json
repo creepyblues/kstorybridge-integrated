@@ -7,6 +7,10 @@
   "scripts": {
     "extract-keywords": "node keyword-extractor.js",
     "identify-comps": "node comp-identifier.js",
+    "visual-comps": "node visual-comp-identifier.js",
+    "generate-reports": "node generate-comp-report.js",
+    "full-analysis": "npm run extract-keywords && npm run identify-comps && npm run generate-reports",
+    "visual-analysis": "npm run extract-keywords && npm run visual-comps",
     "test": "echo \"No tests specified\""
   },
   "dependencies": {

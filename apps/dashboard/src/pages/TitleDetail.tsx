@@ -338,7 +338,7 @@ export default function TitleDetail() {
                               <FileText className="h-3 w-3 mr-1 pointer-events-none" />
                               
                               {/* Text */}
-                              <span className="relative z-10 pointer-events-none">View</span>
+                              <span className="relative z-10 pointer-events-none">View Pitch</span>
                               
                               {/* Glow effect */}
                               <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
@@ -366,7 +366,7 @@ export default function TitleDetail() {
                         >
                           <Crown className="h-3 w-3 mr-1 text-gray-500" />
                           <FileText className="h-3 w-3 mr-1" />
-                          View
+                          View Pitch
                           <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-xs font-bold">!</span>
                           </div>
@@ -402,7 +402,7 @@ export default function TitleDetail() {
                           <FileText className="h-3 w-3 mr-1 pointer-events-none" />
                           
                           {/* Text */}
-                          <span className="relative z-10 pointer-events-none">Request</span>
+                          <span className="relative z-10 pointer-events-none">Request Pitch</span>
                           
                           {/* Glow effect */}
                           <div className="absolute inset-0 rounded-full bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
@@ -415,7 +415,7 @@ export default function TitleDetail() {
                           className="bg-gray-400 text-gray-600 shadow-lg border-0 rounded-full px-4 py-2 text-sm font-medium cursor-not-allowed relative"
                         >
                           <FileText className="h-3 w-3 mr-1 text-gray-500" />
-                          Request
+                          Request Pitch
                           <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-xs font-bold">!</span>
                           </div>

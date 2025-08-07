@@ -1,0 +1,17 @@
+{
+  "name": "kstorybridge-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Utility scripts for KStoryBridge data processing",
+  "main": "keyword-extractor.js",
+  "scripts": {
+    "extract-keywords": "node keyword-extractor.js",
+    "identify-comps": "node comp-identifier.js",
+    "test": "echo \"No tests specified\""
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "keywords": ["keyword-extraction", "content-analysis", "supabase"],
+  "author": "KStoryBridge Team"
+}

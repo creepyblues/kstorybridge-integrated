@@ -136,7 +136,7 @@ export function TitleCard({
           <div className="flex flex-wrap gap-1">
             {Array.isArray(title.genre) ? (
               title.genre.slice(0, 2).map((g, idx) => (
-                <Badge key={idx} variant="outline" className="text-xs border-porcelain-blue-300 text-hanok-teal">
+                <Badge key={`${title.title_id}-genre-${idx}`} variant="outline" className="text-xs border-porcelain-blue-300 text-hanok-teal">
                   {g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Badge>
               ))

@@ -177,7 +177,7 @@ export default function MyRequests() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
                             <h3 className="text-xl font-bold text-midnight-ink">
-                              {request.titles?.title_name_en || request.titles?.title_name_kr || `Request #${request.id.slice(0, 8)}`}
+                              {request.titles?.title_name_en || request.titles?.title_name_kr || `Request #${request.id?.toString().slice(0, 8) || 'Unknown'}`}
                             </h3>
                             <Badge className={`${typeDisplay.color} font-medium`}>
                               {typeDisplay.label}

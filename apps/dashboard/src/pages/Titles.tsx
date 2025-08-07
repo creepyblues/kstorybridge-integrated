@@ -178,7 +178,7 @@ export default function Titles() {
                             <div className="flex flex-wrap gap-1">
                               {Array.isArray(title.genre) ? (
                                 title.genre.slice(0, 1).map((g, idx) => (
-                                  <div key={idx} className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                                  <div key={`${title.title_id}-card-genre-${idx}`} className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
                                     {formatGenre(g)}
                                   </div>
                                 ))
@@ -261,7 +261,7 @@ export default function Titles() {
                 <div className="col-span-2">Genre</div>
                 <div className="col-span-2">Tone</div>
                 <div className="col-span-2 relative flex flex-col items-center justify-center">
-                  <span>Perfect For</span>
+                  <span>Keywords</span>
                   <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
                     PRO PLAN
                   </span>
@@ -332,7 +332,7 @@ export default function Titles() {
                             <div className="flex flex-wrap gap-1">
                               {Array.isArray(title.genre) ? (
                                 title.genre.slice(0, 2).map((g, idx) => (
-                                  <div key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                                  <div key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-3 py-1.5 rounded-full text-sm font-medium">
                                     {formatGenre(g)}
                                   </div>
                                 ))
@@ -362,9 +362,18 @@ export default function Titles() {
                         
                         <div className="col-span-2">
                           <PremiumColumn>
-                            {title.perfect_for ? (
-                              <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full text-sm font-medium">
-                                {title.perfect_for}
+                            {title.tags && title.tags.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {title.tags.slice(0, 2).map((tag, idx) => (
+                                  <div key={`${title.title_id}-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    {tag}
+                                  </div>
+                                ))}
+                                {title.tags.length > 2 && (
+                                  <div className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
+                                    +{title.tags.length - 2}
+                                  </div>
+                                )}
                               </div>
                             ) : (
                               <span className="text-gray-400">-</span>

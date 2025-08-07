@@ -308,8 +308,8 @@ export default function TitleDetail() {
                 <div className="pt-4 border-t border-gray-200">
                   <h5 className="font-bold text-hanok-teal mb-3">Keywords</h5>
                   <div className="flex flex-wrap gap-2">
-                    {title.tags && title.tags.length > 0 ? (
-                      title.tags.map((tag, idx) => (
+                    {(title.keywords || title.tags) && (title.keywords || title.tags).length > 0 ? (
+                      (title.keywords || title.tags).map((tag, idx) => (
                         <div key={`synopsis-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium">
                           {tag}
                         </div>

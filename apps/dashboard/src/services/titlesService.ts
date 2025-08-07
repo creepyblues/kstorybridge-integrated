@@ -12,6 +12,14 @@ const shouldUseMockData = () => {
   const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
   const isDev = import.meta.env.DEV;
   
+  console.log('🔍 Mock data check:', {
+    hostname: window.location.hostname,
+    isLocalhost,
+    bypassEnabled,
+    isDev,
+    shouldUse: isLocalhost && bypassEnabled && isDev
+  });
+  
   return isLocalhost && bypassEnabled && isDev;
 };
 

@@ -356,16 +356,16 @@ export default function Titles() {
                         </div>
                         
                         <div className="col-span-2">
-                          {title.tags && title.tags.length > 0 ? (
+                          {((title as any).keywords || title.tags) && ((title as any).keywords || title.tags).length > 0 ? (
                             <div className="flex flex-wrap gap-1">
-                              {title.tags.slice(0, 2).map((tag, idx) => (
+                              {((title as any).keywords || title.tags).slice(0, 2).map((tag: string, idx: number) => (
                                 <div key={`${title.title_id}-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                                   {tag}
                                 </div>
                               ))}
-                              {title.tags.length > 2 && (
+                              {((title as any).keywords || title.tags).length > 2 && (
                                 <div className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
-                                  +{title.tags.length - 2}
+                                  +{((title as any).keywords || title.tags).length - 2}
                                 </div>
                               )}
                             </div>

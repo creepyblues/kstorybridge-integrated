@@ -1,0 +1,27 @@
+
+> kstorybridge-monorepo@1.0.0 dev:admin
+> npm run dev --workspace=apps/admin
+
+
+> @kstorybridge/admin@0.0.0 dev
+> vite --port 8082
+
+▲ [WARNING] Invalid pattern "./packages/*/src/*", must have at most one "*" character [tsconfig.json]
+
+    ../../tsconfig.json:22:20:
+      22 │       "@shared/*": ["./packages/*/src/*"]
+         ╵                     ~~~~~~~~~~~~~~~~~~~~
+
+
+  VITE v5.4.19  ready in 100 ms
+
+  ➜  Local:   http://localhost:8082/
+  ➜  Network: http://10.185.253.110:8082/
+(!) %VITE_GA_MEASUREMENT_ID% is not defined in env variables found in /index.html. Is the variable mistyped?
+(!) %VITE_GA_MEASUREMENT_ID% is not defined in env variables found in /index.html. Is the variable mistyped?
+(!) %VITE_GA_MEASUREMENT_ID% is not defined in env variables found in /index.html. Is the variable mistyped?
+(!) %VITE_GA_MEASUREMENT_ID% is not defined in env variables found in /index.html. Is the variable mistyped?
+3:22:27 PM [vite] hmr update /src/pages/AdminTitles.tsx, /src/index.css
+(!) %VITE_GA_MEASUREMENT_ID% is not defined in env variables found in /index.html. Is the variable mistyped?
+(!) %VITE_GA_MEASUREMENT_ID% is not defined in env variables found in /index.html. Is the variable mistyped?
+(!) %VITE_GA_MEASUREMENT_ID% is not defined in env variables found in /index.html. Is the variable mistyped?

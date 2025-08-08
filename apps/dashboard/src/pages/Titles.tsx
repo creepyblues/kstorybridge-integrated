@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import PremiumColumn from "@/components/PremiumColumn";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
+import { trackSearch } from "@/utils/analytics";
 
 export default function Titles() {
   const { toast } = useToast();
@@ -33,6 +34,7 @@ export default function Titles() {
   const [itemsPerPage] = useState(50);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Determine if this is creator view based on route
   const isCreatorView = location.pathname.startsWith('/creators');
@@ -49,6 +51,15 @@ export default function Titles() {
       loadData();
     }
   }, [isCreatorView, user, titles.length, isFresh]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+    };
+  }, [searchDebounceTimer]);
 
   const loadData = async (force = false) => {
     try {
@@ -81,6 +92,38 @@ export default function Titles() {
     refreshData(dataKey);
     refreshData('featuredTitles');
     loadData(true);
+  };
+
+  const handleSearchChange = (newSearchTerm: string) => {
+    setSearchTerm(newSearchTerm);
+    
+    // Clear existing timer
+    if (searchDebounceTimer) {
+      clearTimeout(searchDebounceTimer);
+    }
+    
+    // Set new timer to track search after user stops typing
+    const timer = setTimeout(() => {
+      if (newSearchTerm.trim().length > 0) {
+        // Calculate result count for the search
+        const { exactMatches, expandedMatches } = enhancedSearch(
+          titles,
+          newSearchTerm,
+          getTitleSearchFields()
+        );
+        const resultCount = exactMatches.length + expandedMatches.length;
+        
+        // Track the search query
+        trackSearch(newSearchTerm.trim(), resultCount);
+        console.log('🔍 SEARCH TRACKED:', { 
+          searchTerm: newSearchTerm.trim(), 
+          resultCount,
+          userType: isCreatorView ? 'creator' : 'buyer'
+        });
+      }
+    }, 1000); // Wait 1 second after user stops typing
+    
+    setSearchDebounceTimer(timer);
   };
 
   const handleSort = (field: string) => {
@@ -326,10 +369,25 @@ export default function Titles() {
               type="text"
               placeholder="Search titles..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
+                  // Track immediate search on Enter key
+                  if (e.currentTarget.value.trim().length > 0) {
+                    const { exactMatches, expandedMatches } = enhancedSearch(
+                      titles,
+                      e.currentTarget.value.trim(),
+                      getTitleSearchFields()
+                    );
+                    const resultCount = exactMatches.length + expandedMatches.length;
+                    trackSearch(e.currentTarget.value.trim(), resultCount);
+                    console.log('🔍 SEARCH TRACKED (Enter):', { 
+                      searchTerm: e.currentTarget.value.trim(), 
+                      resultCount,
+                      userType: isCreatorView ? 'creator' : 'buyer'
+                    });
+                  }
                 }
               }}
               className="w-full pl-12 pr-4 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"

@@ -75,7 +75,10 @@ export default function AdminTitles() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const formatGenre = (genre: string) => {
+  const formatGenre = (genre: string | string[]) => {
+    if (Array.isArray(genre)) {
+      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ');
+    }
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
@@ -148,10 +151,23 @@ export default function AdminTitles() {
                           {title.tagline || title.pitch || 'Discover this amazing Korean story'}
                         </p>
                       </div>
-                      {title.genre && (
+                      {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
                         <div className="mt-auto">
-                          <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
-                            {formatGenre(title.genre)}
+                          <div className="flex flex-wrap gap-1">
+                            {Array.isArray(title.genre) ? (
+                              title.genre.slice(0, 1).map((g, idx) => (
+                                <div key={`${title.title_id}-card-genre-${idx}`} className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                                  {formatGenre(g)}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                                {formatGenre(title.genre)}
+                              </div>
+                            )}
+                            {Array.isArray(title.genre) && title.genre.length > 1 && (
+                              <span className="text-xs text-gray-500">+{title.genre.length - 1}</span>
+                            )}
                           </div>
                         </div>
                       )}
@@ -261,10 +277,23 @@ export default function AdminTitles() {
                       </div>
                       
                       <div className="col-span-2">
-                        {title.genre ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-hanok-teal/10 text-hanok-teal">
-                            {formatGenre(title.genre)}
-                          </span>
+                        {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) ? (
+                          <div className="flex flex-wrap gap-1">
+                            {Array.isArray(title.genre) ? (
+                              title.genre.slice(0, 2).map((g, idx) => (
+                                <span key={`${title.title_id}-genre-${idx}`} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-hanok-teal/10 text-hanok-teal">
+                                  {formatGenre(g)}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-hanok-teal/10 text-hanok-teal">
+                                {formatGenre(title.genre)}
+                              </span>
+                            )}
+                            {Array.isArray(title.genre) && title.genre.length > 2 && (
+                              <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}

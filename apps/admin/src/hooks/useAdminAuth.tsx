@@ -45,6 +45,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
     let loadingTimeout: NodeJS.Timeout;
     let sessionCheckInterval: NodeJS.Timeout;
+    let visibilityCheckTimeout: NodeJS.Timeout;
 
     console.log('🔐 Admin Auth: Initializing authentication...');
 
@@ -56,6 +57,81 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         setError('Authentication timeout. Please try refreshing the page.');
       }
     }, 6000);
+
+    // Enhanced visibility and focus handling for tab switching
+    const handleVisibilityChange = () => {
+      if (!mounted) return;
+      
+      if (!document.hidden) {
+        console.log('👀 Admin Auth: Tab became visible, checking session...');
+        
+        // Debounced session check when tab becomes visible
+        clearTimeout(visibilityCheckTimeout);
+        visibilityCheckTimeout = setTimeout(async () => {
+          if (!mounted || !sessionRef.current) return;
+          
+          try {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error) {
+              console.error('❌ Admin Auth: Visibility check error:', error);
+              return;
+            }
+            
+            if (!session && sessionRef.current) {
+              console.log('⚠️ Admin Auth: Session lost during tab switch');
+              setSession(null);
+              setUser(null);
+              setAdminProfile(null);
+              setError('Session expired. Please log in again.');
+            } else if (session && !sessionRef.current) {
+              console.log('✅ Admin Auth: Session restored on tab focus');
+              setSession(session);
+              setUser(session.user);
+              if (session.user?.email) {
+                await loadAdminProfile(session.user.email);
+              }
+            }
+          } catch (error) {
+            console.error('❌ Admin Auth: Visibility check failed:', error);
+          }
+        }, 500); // Small delay to prevent rapid calls
+      }
+    };
+
+    const handleWindowFocus = () => {
+      if (!mounted) return;
+      console.log('🔍 Admin Auth: Window focused, refreshing session...');
+      handleVisibilityChange();
+    };
+
+    // Cross-tab synchronization listener
+    const handleAuthChange = (event: CustomEvent) => {
+      if (!mounted) return;
+      
+      const { key, action } = event.detail;
+      console.log(`🔄 Admin Auth: Cross-tab sync - ${action} ${key}`);
+      
+      if (key.includes('auth-token')) {
+        if (action === 'set' && !sessionRef.current) {
+          console.log('✅ Admin Auth: Auth token added in another tab, refreshing session...');
+          setTimeout(() => {
+            if (mounted) refreshAuth();
+          }, 100);
+        } else if (action === 'remove' && sessionRef.current) {
+          console.log('⚠️ Admin Auth: Auth token removed in another tab, signing out...');
+          setSession(null);
+          setUser(null);
+          setAdminProfile(null);
+          setError('Session ended from another tab');
+        }
+      }
+    };
+
+    // Add visibility, focus, and cross-tab listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleWindowFocus);
+    window.addEventListener('admin-auth-change', handleAuthChange as EventListener);
 
     // Initialize session
     const initializeAuth = async () => {
@@ -142,7 +218,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false;
       clearTimeout(loadingTimeout);
+      clearTimeout(visibilityCheckTimeout);
       clearInterval(sessionCheckInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleWindowFocus);
+      window.removeEventListener('admin-auth-change', handleAuthChange as EventListener);
       subscription.unsubscribe();
       console.log('🧹 Admin Auth: Cleanup completed');
     };

@@ -10,7 +10,7 @@ export interface StorageAdapter {
 }
 
 /**
- * Create an isolated storage adapter for admin app
+ * Create an isolated storage adapter for admin app with cross-tab synchronization
  * All keys are prefixed with 'admin-' to avoid conflicts
  */
 export const createAdminStorage = (): StorageAdapter => {
@@ -19,7 +19,11 @@ export const createAdminStorage = (): StorageAdapter => {
   return {
     getItem: (key: string): string | null => {
       try {
-        return localStorage.getItem(`${ADMIN_PREFIX}${key}`);
+        const value = localStorage.getItem(`${ADMIN_PREFIX}${key}`);
+        if (key.includes('auth-token') && value) {
+          console.log(`🔑 AdminStorage: Retrieved ${key} from storage`);
+        }
+        return value;
       } catch (error) {
         console.error('AdminStorage getItem error:', error);
         return null;
@@ -29,6 +33,13 @@ export const createAdminStorage = (): StorageAdapter => {
     setItem: (key: string, value: string): void => {
       try {
         localStorage.setItem(`${ADMIN_PREFIX}${key}`, value);
+        if (key.includes('auth-token')) {
+          console.log(`🔐 AdminStorage: Stored ${key} in storage`);
+          // Dispatch custom event for cross-tab sync
+          window.dispatchEvent(new CustomEvent('admin-auth-change', { 
+            detail: { key, action: 'set' }
+          }));
+        }
       } catch (error) {
         console.error('AdminStorage setItem error:', error);
       }
@@ -37,6 +48,13 @@ export const createAdminStorage = (): StorageAdapter => {
     removeItem: (key: string): void => {
       try {
         localStorage.removeItem(`${ADMIN_PREFIX}${key}`);
+        if (key.includes('auth-token')) {
+          console.log(`🗑️ AdminStorage: Removed ${key} from storage`);
+          // Dispatch custom event for cross-tab sync
+          window.dispatchEvent(new CustomEvent('admin-auth-change', { 
+            detail: { key, action: 'remove' }
+          }));
+        }
       } catch (error) {
         console.error('AdminStorage removeItem error:', error);
       }

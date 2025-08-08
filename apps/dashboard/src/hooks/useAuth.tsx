@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const createMockUser = (): User => {
     console.log('🏗️ AUTH BYPASS: Creating mock user for sungho@dadble.com');
     return {
-      id: '550e8400-e29b-41d4-a716-446655440000', // Fixed UUID for consistency
+      id: '550e8400-e29b-41d4-a716-446655440000', // Fixed UUID for consistency - matches mock data in services
       email: 'sungho@dadble.com',
       app_metadata: {},
       user_metadata: { 

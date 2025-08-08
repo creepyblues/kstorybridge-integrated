@@ -10,6 +10,7 @@ import { titlesService, type Title } from "@/services/titlesService";
 import { favoritesService } from "@/services/favoritesService";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 
@@ -17,8 +18,9 @@ export default function TitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { getTitleDetail, setTitleDetail, isFresh } = useDataCache();
   const [title, setTitle] = useState<Title | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
@@ -27,18 +29,28 @@ export default function TitleDetail() {
 
   useEffect(() => {
     if (titleId) {
-      loadTitle(titleId);
+      // Check if we have cached data first
+      const cachedTitle = getTitleDetail(titleId);
+      if (cachedTitle && isFresh(`titleDetail:${titleId}`)) {
+        setTitle(cachedTitle);
+        setLoading(false);
+      } else {
+        loadTitle(titleId);
+      }
+      
       if (user) {
         checkIfFavorited(titleId);
       }
     }
-  }, [titleId, user]);
+  }, [titleId, user, getTitleDetail, isFresh]);
 
   const loadTitle = async (id: string) => {
     try {
       setLoading(true);
       const data = await titlesService.getTitleById(id);
       setTitle(data);
+      // Cache the title data
+      setTitleDetail(id, data);
     } catch (error) {
       console.error("Error loading title:", error);
       toast({ title: "Error loading title", variant: "destructive" });

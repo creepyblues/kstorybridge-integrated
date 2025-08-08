@@ -31,7 +31,7 @@ const mockTitles: Title[] = [
     art_author: "주요",
     content_format: null,
     pitch: null,
-    creator_id: "f21b54bb-945c-42ed-a49a-18824b08d8cc",
+    creator_id: "550e8400-e29b-41d4-a716-446655440000", // sungho@dadble.com for localhost testing
     created_at: "2025-07-31T03:19:06.4027+00:00",
     updated_at: "2025-08-07T00:39:40.007195+00:00",
     story_author: "잇뚜",
@@ -72,7 +72,7 @@ const mockTitles: Title[] = [
     art_author: "다와서",
     content_format: null,
     pitch: null,
-    creator_id: "f21b54bb-945c-42ed-a49a-18824b08d8cc",
+    creator_id: "550e8400-e29b-41d4-a716-446655440000", // sungho@dadble.com for localhost testing
     created_at: "2025-07-31T03:19:06.4027+00:00",
     updated_at: "2025-08-07T00:39:40.007195+00:00",
     story_author: "다와서",
@@ -113,7 +113,7 @@ const mockTitles: Title[] = [
     art_author: "감자튀김",
     content_format: null,
     pitch: null,
-    creator_id: "f21b54bb-945c-42ed-a49a-18824b08d8cc",
+    creator_id: "550e8400-e29b-41d4-a716-446655440000", // sungho@dadble.com for localhost testing
     created_at: "2025-07-31T03:19:06.4027+00:00",
     updated_at: "2025-08-07T00:39:40.007195+00:00",
     story_author: "감자튀김",
@@ -154,7 +154,7 @@ const mockTitles: Title[] = [
     art_author: "짱9",
     content_format: null,
     pitch: null,
-    creator_id: "f21b54bb-945c-42ed-a49a-18824b08d8cc",
+    creator_id: "550e8400-e29b-41d4-a716-446655440000", // sungho@dadble.com for localhost testing
     created_at: "2025-07-31T03:19:06.4027+00:00",
     updated_at: "2025-08-07T00:39:40.007195+00:00",
     story_author: "신갓김치",
@@ -195,7 +195,7 @@ const mockTitles: Title[] = [
     art_author: "현용민",
     content_format: null,
     pitch: null,
-    creator_id: "f21b54bb-945c-42ed-a49a-18824b08d8cc",
+    creator_id: "550e8400-e29b-41d4-a716-446655440000", // sungho@dadble.com for localhost testing
     created_at: "2025-07-31T03:19:06.4027+00:00",
     updated_at: "2025-08-07T00:39:40.007195+00:00",
     story_author: "현용민",

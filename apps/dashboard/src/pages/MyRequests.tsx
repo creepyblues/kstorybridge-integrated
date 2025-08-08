@@ -20,14 +20,21 @@ import { useDataCache } from "@/contexts/DataCacheContext";
 export default function MyRequests() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getMyRequests, setMyRequests, isFresh, refreshData } = useDataCache();
   const [requests, setRequests] = useState<RequestWithTitle[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
-      loadRequests();
+      // Check if we have cached data first
+      const cachedRequests = getMyRequests();
+      if (cachedRequests.length > 0 && isFresh('myRequests')) {
+        setRequests(cachedRequests);
+      } else {
+        loadRequests();
+      }
     }
-  }, [user]);
+  }, [user, getMyRequests, isFresh]);
 
   const loadRequests = async () => {
     if (!user) return;
@@ -36,6 +43,8 @@ export default function MyRequests() {
       setLoading(true);
       const data = await requestsService.getUserRequests(user.id);
       setRequests(data);
+      // Cache the requests data
+      setMyRequests(data);
     } catch (error) {
       console.error("Error loading requests:", error);
       toast({ title: "Error loading requests", variant: "destructive" });
@@ -45,6 +54,7 @@ export default function MyRequests() {
   };
 
   const handleRefresh = () => {
+    refreshData('myRequests');
     loadRequests();
   };
 
@@ -177,7 +187,7 @@ export default function MyRequests() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
                             <h3 className="text-xl font-bold text-midnight-ink">
-                              {request.titles?.title_name_en || request.titles?.title_name_kr || `Request #${request.id?.toString().slice(0, 8) || 'Unknown'}`}
+                              {request.titles?.title_name_en || request.titles?.title_name_kr || 'Title Information Unavailable'}
                             </h3>
                             <Badge className={`${typeDisplay.color} font-medium`}>
                               {typeDisplay.label}
@@ -186,10 +196,6 @@ export default function MyRequests() {
 
                           {request.titles?.title_name_en && request.titles?.title_name_kr && (
                             <p className="text-midnight-ink-500 mb-2">{request.titles.title_name_kr}</p>
-                          )}
-
-                          {!request.titles && (
-                            <p className="text-midnight-ink-500 mb-2">Title ID: {request.title_id}</p>
                           )}
 
                           <div className="flex items-center gap-4 text-sm text-midnight-ink-600">
@@ -225,16 +231,12 @@ export default function MyRequests() {
                           <Clock className="w-4 h-4 text-yellow-600" />
                           Pending
                         </div>
-                        {request.titles ? (
+                        {request.titles && (
                           <Link to={`/titles/${request.title_id}`}>
                             <Button variant="outline" size="sm" className="text-hanok-teal border-hanok-teal hover:bg-hanok-teal hover:text-white">
                               View Title
                             </Button>
                           </Link>
-                        ) : (
-                          <Button variant="outline" size="sm" disabled className="text-gray-400 border-gray-300">
-                            Title Not Found
-                          </Button>
                         )}
                       </div>
                     </div>

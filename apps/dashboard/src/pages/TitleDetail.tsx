@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
+import PremiumColumn from "@/components/PremiumColumn";
 
 export default function TitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -448,28 +449,42 @@ export default function TitleDetail() {
                 <div className="pt-6 border-t border-gray-200 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-3">Perfect For</h5>
-                      {title.perfect_for ? (
-                        <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
-                          {title.perfect_for}
-                        </div>
-                      ) : (
-                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
-                          Not specified
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2 mb-3">
+                        <h5 className="font-bold text-hanok-teal">Perfect For</h5>
+                        <span className="bg-rose-200/70 text-rose-800 text-[10px] px-2 py-1 rounded-full font-medium">
+                          PRO PLAN
+                        </span>
+                      </div>
+                      <PremiumColumn>
+                        {title.perfect_for ? (
+                          <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                            {title.perfect_for}
+                          </div>
+                        ) : (
+                          <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                            Not specified
+                          </div>
+                        )}
+                      </PremiumColumn>
                     </div>
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-3">Comps</h5>
-                      {title.comps ? (
-                        <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-                          {title.comps}
-                        </div>
-                      ) : (
-                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
-                          Not specified
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2 mb-3">
+                        <h5 className="font-bold text-hanok-teal">Comps</h5>
+                        <span className="bg-rose-200/70 text-rose-800 text-[10px] px-2 py-1 rounded-full font-medium">
+                          PRO PLAN
+                        </span>
+                      </div>
+                      <PremiumColumn>
+                        {title.comps ? (
+                          <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                            {title.comps}
+                          </div>
+                        ) : (
+                          <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                            Not specified
+                          </div>
+                        )}
+                      </PremiumColumn>
                     </div>
                   </div>
                   
@@ -577,28 +592,42 @@ export default function TitleDetail() {
                     </div>
                   )}
                   <div>
-                    <h5 className="font-bold text-hanok-teal mb-3">Rights Owner</h5>
-                    {(title.rights_owner || title.rights) ? (
-                      <div className="inline-block bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-sm font-medium">
-                        {title.rights_owner || title.rights}
-                      </div>
-                    ) : (
-                      <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
-                        Not specified
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 mb-3">
+                      <h5 className="font-bold text-hanok-teal">Rights Owner</h5>
+                      <span className="bg-rose-200/70 text-rose-800 text-[10px] px-2 py-1 rounded-full font-medium">
+                        PRO PLAN
+                      </span>
+                    </div>
+                    <PremiumColumn>
+                      {(title.rights_owner || title.rights) ? (
+                        <div className="inline-block bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-sm font-medium">
+                          {title.rights_owner || title.rights}
+                        </div>
+                      ) : (
+                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                          Not specified
+                        </div>
+                      )}
+                    </PremiumColumn>
                   </div>
                   <div>
-                    <h5 className="font-bold text-hanok-teal mb-3">Audience</h5>
-                    {title.audience ? (
-                      <div className="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium">
-                        {title.audience}
-                      </div>
-                    ) : (
-                      <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
-                        Not specified
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 mb-3">
+                      <h5 className="font-bold text-hanok-teal">Audience</h5>
+                      <span className="bg-rose-200/70 text-rose-800 text-[10px] px-2 py-1 rounded-full font-medium">
+                        PRO PLAN
+                      </span>
+                    </div>
+                    <PremiumColumn>
+                      {title.audience ? (
+                        <div className="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium">
+                          {title.audience}
+                        </div>
+                      ) : (
+                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                          Not specified
+                        </div>
+                      )}
+                    </PremiumColumn>
                   </div>
                 </div>
 

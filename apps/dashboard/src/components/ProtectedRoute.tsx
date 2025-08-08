@@ -18,6 +18,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
     const isDev = import.meta.env.DEV;
     
+    console.log('🚨 PROTECTED ROUTE BYPASS CHECK:', {
+      isLocalhost,
+      bypassEnabled,
+      isDev,
+      envVar: import.meta.env.VITE_DISABLE_AUTH_LOCALHOST,
+      shouldBypass: isLocalhost && bypassEnabled && isDev
+    });
+    
     if (isLocalhost && bypassEnabled && isDev) {
       console.log('🚨 PROTECTED ROUTE BYPASS: Auth bypass enabled for localhost');
       return true;
@@ -44,8 +52,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     
     // Don't redirect if auth is still loading OR if we have auth tokens in URL (auth flow in progress)
     // Also don't redirect if localhost auth bypass is enabled
-    // But if we've been waiting too long with tokens and still no user, something is wrong
-    if (!loading && !user && !hasAuthTokens && !shouldBypassAuth()) {
+    const bypassEnabled = shouldBypassAuth();
+    console.log('🚨 PROTECTED ROUTE: Auth bypass check:', { bypassEnabled });
+    
+    if (!loading && !user && !hasAuthTokens && !bypassEnabled) {
       console.log('🚨 PROTECTED ROUTE: Redirecting to website - no user authenticated and no auth flow in progress');
       const websiteUrl = getWebsiteUrl();
       const websiteUrlWithParam = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
@@ -93,7 +103,13 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!user && !shouldBypassAuth()) {
+  // If auth bypass is enabled, always allow access even without a user object
+  if (shouldBypassAuth()) {
+    console.log('🚨 PROTECTED ROUTE BYPASS: Allowing access due to localhost auth bypass');
+    return <>{children}</>;
+  }
+
+  if (!user) {
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center">

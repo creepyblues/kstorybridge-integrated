@@ -22,6 +22,13 @@ const shouldUseMockData = () => {
   const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
   const isDev = import.meta.env.DEV;
   
+  console.log('🔍 REQUESTS SERVICE: Mock data conditions:', {
+    isLocalhost,
+    bypassEnabled,
+    isDev,
+    shouldUse: isLocalhost && bypassEnabled && isDev
+  });
+  
   return isLocalhost && bypassEnabled && isDev;
 };
 
@@ -110,11 +117,18 @@ const mockRequests: RequestWithTitle[] = [
   {
     id: "req-006",
     user_id: "550e8400-e29b-41d4-a716-446655440000",
-    title_id: "unknown-title-123", // Example of missing title data
+    title_id: "bd688163-0a61-4e67-a125-95644e5be942", // Use a valid title
     type: "pitch",
-    created_at: "2024-12-15T11:30:00Z",
-    updated_at: "2024-12-15T11:30:00Z",
-    titles: null // This simulates a title that's not found or has been deleted
+    created_at: "2025-08-07T08:42:00Z", // Match the date from the screenshot
+    updated_at: "2025-08-07T08:42:00Z",
+    titles: {
+      title_id: "bd688163-0a61-4e67-a125-95644e5be942",
+      title_name_en: "serendipity",
+      title_name_kr: "세렌디피티",
+      genre: ["Drama", "Growth"],
+      content_format: "webtoon",
+      title_image: "https://oopy.lazyrockets.com/api/v2/notion/image?src=https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Ff0411885-e2d8-4b4e-8f6e-543406835ca6%2F14401000%EB%B0%B0%EB%84%88.jpg&blockId=61630920-51c6-4dd1-aa18-24867fe4d110"
+    }
   }
 ] as RequestWithTitle[];
 
@@ -129,8 +143,12 @@ export const requestsService = {
       const filteredRequests = mockRequests.filter(request => request.user_id === userId);
       console.log('📝 REQUESTS SERVICE: Mock requests found:', filteredRequests.length, 'for user:', userId);
       console.log('📝 REQUESTS SERVICE: Available mock user IDs:', [...new Set(mockRequests.map(r => r.user_id))]);
+      console.log('📝 REQUESTS SERVICE: Sample request data:', filteredRequests[0]);
+      console.log('📝 REQUESTS SERVICE: All filtered requests:', filteredRequests.map(r => ({ id: r.id, titleName: r.titles?.title_name_en, hasImage: !!r.titles?.title_image })));
       return filteredRequests;
     }
+    
+    console.log('🌐 REQUESTS SERVICE: Attempting to fetch from production database');
     
     // First try with titles relationship
     const { data, error } = await supabase
@@ -166,6 +184,7 @@ export const requestsService = {
       }
 
       console.log('✅ Fetched requests without titles:', requestsOnly?.length || 0);
+      console.log('📋 Production request sample:', requestsOnly?.[0]);
       
       // Transform requests to match expected format
       return (requestsOnly || []).map(request => ({
@@ -175,6 +194,7 @@ export const requestsService = {
     }
 
     console.log('✅ Fetched requests with titles:', data?.length || 0);
+    console.log('📋 Production request with titles sample:', data?.[0]);
     return data || [];
   },
 

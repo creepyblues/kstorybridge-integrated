@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Auth Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Admin Authentication Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        const SUPABASE_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA";
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        async function testAuth() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing authentication...</p>';
+            
+            try {
+                // Test 1: Check if we can access the admin table without auth
+                output.innerHTML += '<p>Test 1: Public access to admin table...</p>';
+                const { data: publicData, error: publicError } = await supabase
+                    .from('admin')
+                    .select('email')
+                    .limit(1);
+                
+                output.innerHTML += `<p>Public access: ${publicError ? 'Blocked ✅' : 'Allowed ⚠️'}</p>`;
+                
+                // Test 2: Try to authenticate
+                output.innerHTML += '<p>Test 2: Authenticating with sungho@dadble.com...</p>';
+                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                    email: 'sungho@dadble.com',
+                    password: 'your_password_here' // Replace with actual password
+                });
+                
+                if (authError) {
+                    output.innerHTML += `<p>Auth failed: ${authError.message}</p>`;
+                    return;
+                }
+                
+                output.innerHTML += '<p>Authentication successful! ✅</p>';
+                
+                // Test 3: Check admin table access after auth
+                output.innerHTML += '<p>Test 3: Checking admin table access after auth...</p>';
+                const { data: adminData, error: adminError } = await supabase
+                    .from('admin')
+                    .select('*')
+                    .eq('email', 'sungho@dadble.com')
+                    .eq('active', true);
+                
+                if (adminError) {
+                    output.innerHTML += `<p>Admin query failed: ${adminError.message}</p>`;
+                    output.innerHTML += `<p>Error code: ${adminError.code}</p>`;
+                } else {
+                    output.innerHTML += `<p>Admin query successful! Found ${adminData.length} record(s) ✅</p>`;
+                    output.innerHTML += `<pre>${JSON.stringify(adminData, null, 2)}</pre>`;
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<p>Exception: ${error.message}</p>`;
+            }
+        }
+        
+        // Run test on page load
+        testAuth();
+    </script>
+</body>
+</html>

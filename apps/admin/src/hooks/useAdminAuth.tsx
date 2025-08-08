@@ -137,14 +137,28 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const initializeAuth = async () => {
       try {
         console.log('🔍 Admin Auth: Getting initial session...');
+        
+        // Add a timeout for the entire initialization
+        const initTimeout = setTimeout(() => {
+          if (mounted && isLoadingRef.current) {
+            console.error('🚨 Admin Auth: Initialization timeout - forcing loading to false');
+            setIsLoading(false);
+            setError('Authentication initialization timed out. Please refresh the page.');
+          }
+        }, 8000); // 8 second timeout for initialization
+        
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (!mounted) return;
+        if (!mounted) {
+          clearTimeout(initTimeout);
+          return;
+        }
 
         if (sessionError) {
           console.error('❌ Admin Auth: Session error:', sessionError);
           setError(`Session error: ${sessionError.message}`);
           setIsLoading(false);
+          clearTimeout(initTimeout);
           return;
         }
 
@@ -153,10 +167,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          console.log('👤 Admin Auth: Session found, loading admin profile...');
           await loadAdminProfile(session.user.email!);
         } else {
+          console.log('❌ Admin Auth: No session found, setting loading to false');
           setIsLoading(false);
         }
+        
+        clearTimeout(initTimeout);
       } catch (error) {
         console.error('❌ Admin Auth: Initialize error:', error);
         setError('Failed to initialize authentication');
@@ -232,11 +250,21 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log(`👤 Admin Auth: Loading profile for ${email}...`);
       
+      // Ensure loading is set
+      if (!isLoadingRef.current) {
+        console.log('🔄 Admin Auth: Setting loading to true');
+        setIsLoading(true);
+      }
+      
       // Multiple query strategies with timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => {
+        console.log('⏰ Admin Auth: Profile query timeout, aborting...');
+        controller.abort();
+      }, 5000); // 5 second timeout
       
       try {
+        console.log('📡 Admin Auth: Starting database query...');
         // Try the standard query first
         const { data, error } = await supabase
           .from('admin')
@@ -246,6 +274,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           .maybeSingle(); // Use maybeSingle to avoid errors when no record found
 
         clearTimeout(timeoutId);
+        console.log('📋 Admin Auth: Database query completed', { data, error });
 
         if (error) {
           console.error('❌ Admin Auth: Profile query error:', error);
@@ -253,8 +282,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (data) {
-          console.log('✅ Admin Auth: Profile loaded successfully');
+          console.log('✅ Admin Auth: Profile loaded successfully', data);
           setAdminProfile(data);
+          clearError(); // Clear any previous errors
         } else {
           console.log('❌ Admin Auth: No admin profile found for:', email);
           setError(`No admin access found for ${email}. Contact IT support.`);
@@ -262,9 +292,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (queryError) {
         clearTimeout(timeoutId);
+        console.error('🚨 Admin Auth: Query exception:', queryError);
         
         if (queryError.name === 'AbortError') {
-          throw new Error('Profile loading timeout');
+          throw new Error('Profile loading timeout - database query took too long');
         }
         throw queryError;
       }
@@ -274,6 +305,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       setError(`Failed to load admin profile: ${errorMessage}`);
       setAdminProfile(null);
     } finally {
+      console.log('🏁 Admin Auth: Profile loading finished, setting loading to false');
       setIsLoading(false);
     }
   };

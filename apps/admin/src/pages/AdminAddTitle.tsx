@@ -194,378 +194,456 @@ export default function AdminAddTitle() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+        <form onSubmit={handleSubmit}>
+          {/* Data Collection Section */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+            <div className="bg-sunrise-coral px-6 py-4 border-b-4 border-sunrise-coral">
+              <h2 className="text-xl font-bold text-white">Auto Data Collection</h2>
+              <p className="text-sunrise-coral-50 text-sm mt-1">Automatically populate fields from an existing title URL</p>
+            </div>
+            <div className="px-6 py-6">
+              <table className="w-full">
+                <tbody>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Title Link</td>
+                    <td className="py-4 pl-6">
+                      <div className="flex gap-3">
+                        <Input
+                          id="title_link_scrape"
+                          placeholder="https://example.com/title-page"
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          disabled={true}
+                          className="bg-sunrise-coral hover:bg-sunrise-coral/90 text-white opacity-50 cursor-not-allowed"
+                        >
+                          Collect Data
+                        </Button>
+                      </div>
+                      <p className="text-gray-500 text-xs mt-2">
+                        Feature coming soon - will automatically fill form fields from the provided URL
+                      </p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            {/* Basic Information Section */}
+            <div className="bg-gray-50 px-6 py-4 border-b-4 border-hanok-teal">
+              <h2 className="text-xl font-bold text-midnight-ink flex items-center gap-2">
                 Basic Information
                 <span className="text-red-500">*</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title_name_kr">
-                    Korean Title <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="title_name_kr"
-                    value={formData.title_name_kr || ""}
-                    onChange={(e) => handleInputChange("title_name_kr", e.target.value)}
-                    placeholder="한국어 제목"
-                    className={errors.title_name_kr ? "border-red-500" : ""}
-                  />
-                  {errors.title_name_kr && (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.title_name_kr}
-                    </p>
-                  )}
-                </div>
+              </h2>
+            </div>
+            <div className="px-6 py-6">
+              <table className="w-full">
+                <tbody className="divide-y divide-gray-100">
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">
+                      Korean Title <span className="text-red-500">*</span>
+                    </td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="title_name_kr"
+                        value={formData.title_name_kr || ""}
+                        onChange={(e) => handleInputChange("title_name_kr", e.target.value)}
+                        placeholder="한국어 제목"
+                        className={errors.title_name_kr ? "border-red-500" : ""}
+                      />
+                      {errors.title_name_kr && (
+                        <p className="text-red-500 text-sm flex items-center gap-1 mt-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.title_name_kr}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">English Title</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="title_name_en"
+                        value={formData.title_name_en || ""}
+                        onChange={(e) => handleInputChange("title_name_en", e.target.value)}
+                        placeholder="English Title"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">
+                      Creator ID <span className="text-red-500">*</span>
+                    </td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="creator_id"
+                        value={formData.creator_id || ""}
+                        onChange={(e) => handleInputChange("creator_id", e.target.value)}
+                        placeholder="UUID of the creator"
+                        className={errors.creator_id ? "border-red-500" : ""}
+                      />
+                      {errors.creator_id && (
+                        <p className="text-red-500 text-sm flex items-center gap-1 mt-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.creator_id}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Genre</td>
+                    <td className="py-4 pl-6">
+                      <Select 
+                        value={formData.genre || ""} 
+                        onValueChange={(value) => handleInputChange("genre", value)}
+                      >
+                        <SelectTrigger className="w-80">
+                          <SelectValue placeholder="Select genre" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {GENRE_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Content Format</td>
+                    <td className="py-4 pl-6">
+                      <Select 
+                        value={formData.content_format || ""} 
+                        onValueChange={(value) => handleInputChange("content_format", value)}
+                      >
+                        <SelectTrigger className="w-80">
+                          <SelectValue placeholder="Select format" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CONTENT_FORMAT_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Chapters</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="chapters"
+                        type="number"
+                        min="0"
+                        value={formData.chapters || ""}
+                        onChange={(e) => handleInputChange("chapters", parseInt(e.target.value) || undefined)}
+                        placeholder="Number of chapters"
+                        className={`w-80 ${errors.chapters ? "border-red-500" : ""}`}
+                      />
+                      {errors.chapters && (
+                        <p className="text-red-500 text-sm flex items-center gap-1 mt-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.chapters}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Status</td>
+                    <td className="py-4 pl-6">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="completed"
+                          checked={formData.completed || false}
+                          onCheckedChange={(checked) => handleInputChange("completed", checked)}
+                        />
+                        <Label htmlFor="completed">Mark as completed</Label>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="title_name_en">English Title</Label>
-                  <Input
-                    id="title_name_en"
-                    value={formData.title_name_en || ""}
-                    onChange={(e) => handleInputChange("title_name_en", e.target.value)}
-                    placeholder="English Title"
-                  />
-                </div>
+            {/* Content Details Section */}
+            <div className="bg-gray-50 px-6 py-4 border-b-4 border-hanok-teal border-t-4">
+              <h2 className="text-xl font-bold text-midnight-ink">Content Details</h2>
+            </div>
+            <div className="px-6 py-6">
+              <table className="w-full">
+                <tbody className="divide-y divide-gray-100">
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Tagline</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="tagline"
+                        value={formData.tagline || ""}
+                        onChange={(e) => handleInputChange("tagline", e.target.value)}
+                        placeholder="Brief catchy tagline"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Description</td>
+                    <td className="py-4 pl-6">
+                      <Textarea
+                        id="description"
+                        value={formData.description || ""}
+                        onChange={(e) => handleInputChange("description", e.target.value)}
+                        placeholder="Detailed description of the title"
+                        rows={4}
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Synopsis</td>
+                    <td className="py-4 pl-6">
+                      <Textarea
+                        id="synopsis"
+                        value={formData.synopsis || ""}
+                        onChange={(e) => handleInputChange("synopsis", e.target.value)}
+                        placeholder="Story synopsis"
+                        rows={4}
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Pitch</td>
+                    <td className="py-4 pl-6">
+                      <Textarea
+                        id="pitch"
+                        value={formData.pitch || ""}
+                        onChange={(e) => handleInputChange("pitch", e.target.value)}
+                        placeholder="Sales pitch for potential buyers"
+                        rows={3}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="creator_id">
-                    Creator ID <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="creator_id"
-                    value={formData.creator_id || ""}
-                    onChange={(e) => handleInputChange("creator_id", e.target.value)}
-                    placeholder="UUID of the creator"
-                    className={errors.creator_id ? "border-red-500" : ""}
-                  />
-                  {errors.creator_id && (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.creator_id}
-                    </p>
-                  )}
-                </div>
+            {/* Creator Information Section */}
+            <div className="bg-gray-50 px-6 py-4 border-b-4 border-hanok-teal border-t-4">
+              <h2 className="text-xl font-bold text-midnight-ink">Creator Information</h2>
+            </div>
+            <div className="px-6 py-6">
+              <table className="w-full">
+                <tbody className="divide-y divide-gray-100">
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Author</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="author"
+                        value={formData.author || ""}
+                        onChange={(e) => handleInputChange("author", e.target.value)}
+                        placeholder="Main author"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Story Author</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="story_author"
+                        value={formData.story_author || ""}
+                        onChange={(e) => handleInputChange("story_author", e.target.value)}
+                        placeholder="Story author (if different)"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Art Author</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="art_author"
+                        value={formData.art_author || ""}
+                        onChange={(e) => handleInputChange("art_author", e.target.value)}
+                        placeholder="Artist/illustrator"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Writer</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="writer"
+                        value={formData.writer || ""}
+                        onChange={(e) => handleInputChange("writer", e.target.value)}
+                        placeholder="Writer"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Illustrator</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="illustrator"
+                        value={formData.illustrator || ""}
+                        onChange={(e) => handleInputChange("illustrator", e.target.value)}
+                        placeholder="Illustrator"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Rights Owner</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="rights_owner"
+                        value={formData.rights_owner || ""}
+                        onChange={(e) => handleInputChange("rights_owner", e.target.value)}
+                        placeholder="Rights owner"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Rights Information</td>
+                    <td className="py-4 pl-6">
+                      <Textarea
+                        id="rights"
+                        value={formData.rights || ""}
+                        onChange={(e) => handleInputChange("rights", e.target.value)}
+                        placeholder="Detailed rights information"
+                        rows={3}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-                <div className="space-y-2">
-                  <Label>Genre</Label>
-                  <Select 
-                    value={formData.genre || ""} 
-                    onValueChange={(value) => handleInputChange("genre", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select genre" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {GENRE_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* Market Information Section */}
+            <div className="bg-gray-50 px-6 py-4 border-b-4 border-hanok-teal border-t-4">
+              <h2 className="text-xl font-bold text-midnight-ink">Market Information</h2>
+            </div>
+            <div className="px-6 py-6">
+              <table className="w-full">
+                <tbody className="divide-y divide-gray-100">
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Perfect For</td>
+                    <td className="py-4 pl-6">
+                      <Textarea
+                        id="perfect_for"
+                        value={formData.perfect_for || ""}
+                        onChange={(e) => handleInputChange("perfect_for", e.target.value)}
+                        placeholder="What type of adaptation/market is this perfect for?"
+                        rows={3}
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Comparisons</td>
+                    <td className="py-4 pl-6">
+                      <Textarea
+                        id="comps"
+                        value={formData.comps || ""}
+                        onChange={(e) => handleInputChange("comps", e.target.value)}
+                        placeholder="Similar titles or comparable content"
+                        rows={3}
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Tone</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="tone"
+                        value={formData.tone || ""}
+                        onChange={(e) => handleInputChange("tone", e.target.value)}
+                        placeholder="e.g., Dark, Light-hearted, Serious"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Target Audience</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="audience"
+                        value={formData.audience || ""}
+                        onChange={(e) => handleInputChange("audience", e.target.value)}
+                        placeholder="e.g., Young Adults, Adults, All Ages"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-                <div className="space-y-2">
-                  <Label>Content Format</Label>
-                  <Select 
-                    value={formData.content_format || ""} 
-                    onValueChange={(value) => handleInputChange("content_format", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CONTENT_FORMAT_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* Media & Links Section */}
+            <div className="bg-gray-50 px-6 py-4 border-b-4 border-hanok-teal border-t-4">
+              <h2 className="text-xl font-bold text-midnight-ink">Media & Links</h2>
+            </div>
+            <div className="px-6 py-6">
+              <table className="w-full">
+                <tbody className="divide-y divide-gray-100">
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Title Image URL</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="title_image"
+                        value={formData.title_image || ""}
+                        onChange={(e) => handleInputChange("title_image", e.target.value)}
+                        placeholder="https://example.com/image.jpg"
+                        className={errors.title_image ? "border-red-500" : ""}
+                      />
+                      {errors.title_image && (
+                        <p className="text-red-500 text-sm flex items-center gap-1 mt-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.title_image}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700">Title URL</td>
+                    <td className="py-4 pl-6">
+                      <Input
+                        id="title_url"
+                        value={formData.title_url || ""}
+                        onChange={(e) => handleInputChange("title_url", e.target.value)}
+                        placeholder="https://example.com/title"
+                        className={errors.title_url ? "border-red-500" : ""}
+                      />
+                      {errors.title_url && (
+                        <p className="text-red-500 text-sm flex items-center gap-1 mt-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.title_url}
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="chapters">Chapters</Label>
-                  <Input
-                    id="chapters"
-                    type="number"
-                    min="0"
-                    value={formData.chapters || ""}
-                    onChange={(e) => handleInputChange("chapters", parseInt(e.target.value) || undefined)}
-                    placeholder="Number of chapters"
-                    className={errors.chapters ? "border-red-500" : ""}
-                  />
-                  {errors.chapters && (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.chapters}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="completed"
-                  checked={formData.completed || false}
-                  onCheckedChange={(checked) => handleInputChange("completed", checked)}
-                />
-                <Label htmlFor="completed">Mark as completed</Label>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Content Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Content Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="tagline">Tagline</Label>
-                <Input
-                  id="tagline"
-                  value={formData.tagline || ""}
-                  onChange={(e) => handleInputChange("tagline", e.target.value)}
-                  placeholder="Brief catchy tagline"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description || ""}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
-                  placeholder="Detailed description of the title"
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="synopsis">Synopsis</Label>
-                <Textarea
-                  id="synopsis"
-                  value={formData.synopsis || ""}
-                  onChange={(e) => handleInputChange("synopsis", e.target.value)}
-                  placeholder="Story synopsis"
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pitch">Pitch</Label>
-                <Textarea
-                  id="pitch"
-                  value={formData.pitch || ""}
-                  onChange={(e) => handleInputChange("pitch", e.target.value)}
-                  placeholder="Sales pitch for potential buyers"
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Creator Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Creator Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="author">Author</Label>
-                  <Input
-                    id="author"
-                    value={formData.author || ""}
-                    onChange={(e) => handleInputChange("author", e.target.value)}
-                    placeholder="Main author"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="story_author">Story Author</Label>
-                  <Input
-                    id="story_author"
-                    value={formData.story_author || ""}
-                    onChange={(e) => handleInputChange("story_author", e.target.value)}
-                    placeholder="Story author (if different)"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="art_author">Art Author</Label>
-                  <Input
-                    id="art_author"
-                    value={formData.art_author || ""}
-                    onChange={(e) => handleInputChange("art_author", e.target.value)}
-                    placeholder="Artist/illustrator"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="writer">Writer</Label>
-                  <Input
-                    id="writer"
-                    value={formData.writer || ""}
-                    onChange={(e) => handleInputChange("writer", e.target.value)}
-                    placeholder="Writer"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="illustrator">Illustrator</Label>
-                  <Input
-                    id="illustrator"
-                    value={formData.illustrator || ""}
-                    onChange={(e) => handleInputChange("illustrator", e.target.value)}
-                    placeholder="Illustrator"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="rights_owner">Rights Owner</Label>
-                  <Input
-                    id="rights_owner"
-                    value={formData.rights_owner || ""}
-                    onChange={(e) => handleInputChange("rights_owner", e.target.value)}
-                    placeholder="Rights owner"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="rights">Rights Information</Label>
-                <Textarea
-                  id="rights"
-                  value={formData.rights || ""}
-                  onChange={(e) => handleInputChange("rights", e.target.value)}
-                  placeholder="Detailed rights information"
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Market Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Market Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="perfect_for">Perfect For</Label>
-                <Textarea
-                  id="perfect_for"
-                  value={formData.perfect_for || ""}
-                  onChange={(e) => handleInputChange("perfect_for", e.target.value)}
-                  placeholder="What type of adaptation/market is this perfect for?"
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="comps">Comparisons</Label>
-                <Textarea
-                  id="comps"
-                  value={formData.comps || ""}
-                  onChange={(e) => handleInputChange("comps", e.target.value)}
-                  placeholder="Similar titles or comparable content"
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="tone">Tone</Label>
-                  <Input
-                    id="tone"
-                    value={formData.tone || ""}
-                    onChange={(e) => handleInputChange("tone", e.target.value)}
-                    placeholder="e.g., Dark, Light-hearted, Serious"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="audience">Target Audience</Label>
-                  <Input
-                    id="audience"
-                    value={formData.audience || ""}
-                    onChange={(e) => handleInputChange("audience", e.target.value)}
-                    placeholder="e.g., Young Adults, Adults, All Ages"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Media & Links */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Media & Links</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="title_image">Title Image URL</Label>
-                <Input
-                  id="title_image"
-                  value={formData.title_image || ""}
-                  onChange={(e) => handleInputChange("title_image", e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className={errors.title_image ? "border-red-500" : ""}
-                />
-                {errors.title_image && (
-                  <p className="text-red-500 text-sm flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {errors.title_image}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="title_url">Title URL</Label>
-                <Input
-                  id="title_url"
-                  value={formData.title_url || ""}
-                  onChange={(e) => handleInputChange("title_url", e.target.value)}
-                  placeholder="https://example.com/title"
-                  className={errors.title_url ? "border-red-500" : ""}
-                />
-                {errors.title_url && (
-                  <p className="text-red-500 text-sm flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {errors.title_url}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Admin Notes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Admin Notes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="note">Internal Notes</Label>
-                <Textarea
-                  id="note"
-                  value={formData.note || ""}
-                  onChange={(e) => handleInputChange("note", e.target.value)}
-                  placeholder="Internal notes for admin use only"
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
+            {/* Admin Notes Section */}
+            <div className="bg-gray-50 px-6 py-4 border-b-4 border-hanok-teal border-t-4">
+              <h2 className="text-xl font-bold text-midnight-ink">Admin Notes</h2>
+            </div>
+            <div className="px-6 py-6">
+              <table className="w-full">
+                <tbody>
+                  <tr className="group hover:bg-gray-50">
+                    <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Internal Notes</td>
+                    <td className="py-4 pl-6">
+                      <Textarea
+                        id="note"
+                        value={formData.note || ""}
+                        onChange={(e) => handleInputChange("note", e.target.value)}
+                        placeholder="Internal notes for admin use only"
+                        rows={3}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
           {/* Submit Buttons */}
           <div className="flex justify-end gap-4 pt-6 border-t">

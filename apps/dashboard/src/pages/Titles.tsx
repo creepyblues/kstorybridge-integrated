@@ -418,12 +418,12 @@ export default function Titles() {
                             <div className="flex flex-wrap gap-1">
                               {Array.isArray(title.genre) ? (
                                 title.genre.slice(0, 2).map((g, idx) => (
-                                  <div key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                                  <div key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
                                     {formatGenre(g)}
                                   </div>
                                 ))
                               ) : (
-                                <div className="inline-block bg-cyan-100 text-cyan-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                                <div className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
                                   {formatGenre(title.genre)}
                                 </div>
                               )}
@@ -438,7 +438,7 @@ export default function Titles() {
                         
                         <div className="col-span-2">
                           {title.tone ? (
-                            <div className="inline-block bg-purple-100 text-purple-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                            <div className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
                               {title.tone}
                             </div>
                           ) : (

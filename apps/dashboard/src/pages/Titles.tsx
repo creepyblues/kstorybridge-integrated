@@ -28,13 +28,13 @@ export default function Titles() {
     refreshData 
   } = useDataCache();
   
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // What user types
+  const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(50);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Determine if this is creator view based on route
   const isCreatorView = location.pathname.startsWith('/creators');
@@ -52,14 +52,6 @@ export default function Titles() {
     }
   }, [isCreatorView, user, titles.length, isFresh]);
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-      }
-    };
-  }, [searchDebounceTimer]);
 
   const loadData = async (force = false) => {
     try {
@@ -94,36 +86,38 @@ export default function Titles() {
     loadData(true);
   };
 
-  const handleSearchChange = (newSearchTerm: string) => {
-    setSearchTerm(newSearchTerm);
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    // Clear existing timer
-    if (searchDebounceTimer) {
-      clearTimeout(searchDebounceTimer);
+    // Update the actual search term (which triggers filtering)
+    setSearchTerm(searchQuery.trim());
+    
+    // Track the search query when submitted
+    if (searchQuery.trim().length > 0) {
+      // Calculate result count for the search
+      const { exactMatches, expandedMatches } = enhancedSearch(
+        titles,
+        searchQuery.trim(),
+        getTitleSearchFields()
+      );
+      const resultCount = exactMatches.length + expandedMatches.length;
+      
+      // Track the search query with enhanced context
+      trackSearch(searchQuery.trim(), resultCount, {
+        userType: isCreatorView ? 'creator' : 'buyer',
+        searchContext: 'main',
+        page: location.pathname
+      });
     }
     
-    // Set new timer to track search after user stops typing
-    const timer = setTimeout(() => {
-      if (newSearchTerm.trim().length > 0) {
-        // Calculate result count for the search
-        const { exactMatches, expandedMatches } = enhancedSearch(
-          titles,
-          newSearchTerm,
-          getTitleSearchFields()
-        );
-        const resultCount = exactMatches.length + expandedMatches.length;
-        
-        // Track the search query
-        trackSearch(newSearchTerm.trim(), resultCount);
-        console.log('🔍 SEARCH TRACKED:', { 
-          searchTerm: newSearchTerm.trim(), 
-          resultCount,
-          userType: isCreatorView ? 'creator' : 'buyer'
-        });
-      }
-    }, 1000); // Wait 1 second after user stops typing
-    
-    setSearchDebounceTimer(timer);
+    // Reset to first page on new search
+    setCurrentPage(1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setSearchTerm("");
+    setCurrentPage(1);
   };
 
   const handleSort = (field: string) => {
@@ -363,36 +357,36 @@ export default function Titles() {
           </div>
           
           {/* Search Bar */}
-          <div className="relative mb-8">
+          <form onSubmit={handleSearchSubmit} className="relative mb-8">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search titles..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  // Track immediate search on Enter key
-                  if (e.currentTarget.value.trim().length > 0) {
-                    const { exactMatches, expandedMatches } = enhancedSearch(
-                      titles,
-                      e.currentTarget.value.trim(),
-                      getTitleSearchFields()
-                    );
-                    const resultCount = exactMatches.length + expandedMatches.length;
-                    trackSearch(e.currentTarget.value.trim(), resultCount);
-                    console.log('🔍 SEARCH TRACKED (Enter):', { 
-                      searchTerm: e.currentTarget.value.trim(), 
-                      resultCount,
-                      userType: isCreatorView ? 'creator' : 'buyer'
-                    });
-                  }
-                }
-              }}
-              className="w-full pl-12 pr-4 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
+              placeholder="Search titles... (press Enter or click Search)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-32 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
             />
-          </div>
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
+              {searchTerm && (
+                <Button
+                  type="button"
+                  onClick={handleClearSearch}
+                  variant="ghost"
+                  size="sm"
+                  className="text-midnight-ink-400 hover:text-midnight-ink-600"
+                >
+                  Clear
+                </Button>
+              )}
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
+              >
+                Search
+              </Button>
+            </div>
+          </form>
           
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="bg-gray-50 px-6 py-4 border-b">

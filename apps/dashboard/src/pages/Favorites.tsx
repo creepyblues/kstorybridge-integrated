@@ -33,9 +33,9 @@ export default function Favorites() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { getFavorites, setFavorites, isFresh, refreshData } = useDataCache();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // What user types
+  const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
   const [loading, setLoading] = useState(false);
-  const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Get data from cache
   const favorites = getFavorites();
@@ -91,48 +91,36 @@ export default function Favorites() {
     loadFavorites();
   };
 
-  const handleSearchChange = (newSearchTerm: string) => {
-    setSearchTerm(newSearchTerm);
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    // Clear existing timer
-    if (searchDebounceTimer) {
-      clearTimeout(searchDebounceTimer);
+    // Update the actual search term (which triggers filtering)
+    setSearchTerm(searchQuery.trim());
+    
+    // Track the search query when submitted
+    if (searchQuery.trim().length > 0) {
+      // Calculate result count for the search
+      const titleObjects = favorites.map(f => f.titles);
+      const { exactMatches, expandedMatches } = enhancedSearch(
+        titleObjects,
+        searchQuery.trim(),
+        getTitleSearchFields()
+      );
+      const resultCount = exactMatches.length + expandedMatches.length;
+      
+      // Track the search query with favorites context
+      trackSearch(searchQuery.trim(), resultCount, {
+        userType: 'buyer', // Favorites are typically used by buyers
+        searchContext: 'favorites',
+        page: '/buyers/favorites'
+      });
     }
-    
-    // Set new timer to track search after user stops typing
-    const timer = setTimeout(() => {
-      if (newSearchTerm.trim().length > 0) {
-        // Calculate result count for the search
-        const titleObjects = favorites.map(f => f.titles);
-        const { exactMatches, expandedMatches } = enhancedSearch(
-          titleObjects,
-          newSearchTerm,
-          getTitleSearchFields()
-        );
-        const resultCount = exactMatches.length + expandedMatches.length;
-        
-        // Track the search query with favorites context
-        trackSearch(`favorites:${newSearchTerm.trim()}`, resultCount);
-        console.log('🔍 SEARCH TRACKED (Favorites):', { 
-          searchTerm: newSearchTerm.trim(), 
-          resultCount,
-          context: 'favorites',
-          totalFavorites: favorites.length
-        });
-      }
-    }, 1000); // Wait 1 second after user stops typing
-    
-    setSearchDebounceTimer(timer);
   };
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-      }
-    };
-  }, [searchDebounceTimer]);
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setSearchTerm("");
+  };
 
   const handleRemoveFromFavorites = async (titleId: string) => {
     if (!user) return;
@@ -218,37 +206,36 @@ export default function Favorites() {
           </div>
 
           {/* Search Bar */}
-          <div className="relative mb-8">
+          <form onSubmit={handleSearchSubmit} className="relative mb-8">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
             <input
-              placeholder="Search your favorites..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  // Track immediate search on Enter key
-                  if (e.currentTarget.value.trim().length > 0) {
-                    const titleObjects = favorites.map(f => f.titles);
-                    const { exactMatches, expandedMatches } = enhancedSearch(
-                      titleObjects,
-                      e.currentTarget.value.trim(),
-                      getTitleSearchFields()
-                    );
-                    const resultCount = exactMatches.length + expandedMatches.length;
-                    trackSearch(`favorites:${e.currentTarget.value.trim()}`, resultCount);
-                    console.log('🔍 SEARCH TRACKED (Favorites Enter):', { 
-                      searchTerm: e.currentTarget.value.trim(), 
-                      resultCount,
-                      context: 'favorites',
-                      totalFavorites: favorites.length
-                    });
-                  }
-                }
-              }}
-              className="w-full pl-12 pr-4 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
+              type="text"
+              placeholder="Search your favorites... (press Enter or click Search)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-32 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
             />
-          </div>
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
+              {searchTerm && (
+                <Button
+                  type="button"
+                  onClick={handleClearSearch}
+                  variant="ghost"
+                  size="sm"
+                  className="text-midnight-ink-400 hover:text-midnight-ink-600"
+                >
+                  Clear
+                </Button>
+              )}
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
+              >
+                Search
+              </Button>
+            </div>
+          </form>
 
           {/* Divider */}
           <div className="border-t border-gray-200 my-12"></div>

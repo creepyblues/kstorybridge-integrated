@@ -82,14 +82,36 @@ export const trackFavoriteAction = (action: 'add' | 'remove', titleId: string, t
   trackEvent(`favorite_${action}`, 'content_engagement', titleName);
 };
 
-// Track search actions
-export const trackSearch = (searchTerm: string, resultCount?: number) => {
+// Track search actions with enhanced context
+export const trackSearch = (searchTerm: string, resultCount?: number, context?: {
+  userType?: 'buyer' | 'creator';
+  searchContext?: 'main' | 'favorites';
+  page?: string;
+}) => {
   if (typeof window !== 'undefined' && window.dataLayer) {
+    // Clean search term (remove context prefixes like "favorites:")
+    const cleanSearchTerm = searchTerm.replace(/^(favorites|main):/i, '').trim();
+    const searchContext = searchTerm.startsWith('favorites:') ? 'favorites' : 'main';
+    
     window.dataLayer.push({
       'event': 'search',
-      'search_term': searchTerm,
-      'search_results': resultCount,
-      'app_section': 'dashboard'
+      'search_term': cleanSearchTerm,
+      'search_results': resultCount || 0,
+      'search_context': context?.searchContext || searchContext,
+      'user_type': context?.userType || 'unknown',
+      'page_context': context?.page || window.location.pathname,
+      'app_section': 'dashboard',
+      // GA4 enhanced ecommerce parameters
+      'search_id': `search_${Date.now()}`,
+      'search_timestamp': new Date().toISOString()
+    });
+
+    console.log('🔍 GA4 SEARCH EVENT:', {
+      searchTerm: cleanSearchTerm,
+      resultCount,
+      context: context?.searchContext || searchContext,
+      userType: context?.userType,
+      timestamp: new Date().toISOString()
     });
   }
 };

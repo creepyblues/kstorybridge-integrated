@@ -49,14 +49,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
     console.log('🔐 Admin Auth: Initializing authentication...');
 
-    // Set loading timeout (reduced to 6 seconds)
+    // Set loading timeout (increased to 10 seconds)
     loadingTimeout = setTimeout(() => {
       if (mounted && isLoadingRef.current) {
         console.log('⏰ Admin Auth: Loading timeout reached');
         setIsLoading(false);
         setError('Authentication timeout. Please try refreshing the page.');
       }
-    }, 6000);
+    }, 10000);
 
     // Enhanced visibility and focus handling for tab switching
     const handleVisibilityChange = () => {

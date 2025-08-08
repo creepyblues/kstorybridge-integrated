@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
 import { useToast } from "@/components/ui/use-toast";
@@ -31,6 +31,8 @@ export default function Titles() {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(50);
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Determine if this is creator view based on route
   const isCreatorView = location.pathname.startsWith('/creators');
@@ -81,23 +83,82 @@ export default function Titles() {
     loadData(true);
   };
 
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New field, default to ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortTitles = (titles: Title[]) => {
+    if (!sortField) return titles;
+
+    return [...titles].sort((a, b) => {
+      let aValue: string | string[] | null | undefined;
+      let bValue: string | string[] | null | undefined;
+
+      switch (sortField) {
+        case 'title':
+          aValue = a.title_name_en || a.title_name_kr || '';
+          bValue = b.title_name_en || b.title_name_kr || '';
+          break;
+        case 'genre':
+          aValue = Array.isArray(a.genre) ? a.genre.join(', ') : (a.genre || '');
+          bValue = Array.isArray(b.genre) ? b.genre.join(', ') : (b.genre || '');
+          break;
+        case 'tone':
+          aValue = a.tone || '';
+          bValue = b.tone || '';
+          break;
+        case 'keywords':
+          const aKeywords = (a as any).keywords || a.tags;
+          const bKeywords = (b as any).keywords || b.tags;
+          aValue = Array.isArray(aKeywords) ? aKeywords.join(', ') : (aKeywords || '');
+          bValue = Array.isArray(bKeywords) ? bKeywords.join(', ') : (bKeywords || '');
+          break;
+        default:
+          return 0;
+      }
+
+      // Convert to strings for comparison
+      const aStr = String(aValue).toLowerCase();
+      const bStr = String(bValue).toLowerCase();
+
+      if (aStr < bStr) {
+        return sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aStr > bStr) {
+        return sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+
   const filteredTitles = (() => {
-    if (!searchTerm) return titles;
+    let result = titles;
     
-    const { exactMatches, expandedMatches } = enhancedSearch(
-      titles,
-      searchTerm,
-      getTitleSearchFields()
-    );
+    // Apply search filter first
+    if (searchTerm) {
+      const { exactMatches, expandedMatches } = enhancedSearch(
+        titles,
+        searchTerm,
+        getTitleSearchFields()
+      );
+      result = [...exactMatches, ...expandedMatches];
+    }
     
-    // Return exact matches first, followed by expanded matches
-    return [...exactMatches, ...expandedMatches];
+    // Apply sorting
+    return sortTitles(result);
   })();
 
-  // Reset pagination when search term changes
+  // Reset pagination when search term or sorting changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, sortField, sortDirection]);
 
   const formatGenre = (genre: string | string[]) => {
     if (Array.isArray(genre)) {
@@ -109,6 +170,28 @@ export default function Titles() {
   const formatContentFormat = (format: string) => {
     return format.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
+
+  const SortableHeader = ({ field, children, className = "" }: { 
+    field: string; 
+    children: React.ReactNode; 
+    className?: string;
+  }) => (
+    <button
+      onClick={() => handleSort(field)}
+      className={`flex items-center gap-1 hover:text-gray-900 transition-colors ${className}`}
+    >
+      {children}
+      {sortField === field ? (
+        sortDirection === 'asc' ? (
+          <ChevronUp className="w-4 h-4" />
+        ) : (
+          <ChevronDown className="w-4 h-4" />
+        )
+      ) : (
+        <ArrowUpDown className="w-4 h-4 text-gray-400 opacity-60" />
+      )}
+    </button>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
@@ -257,10 +340,18 @@ export default function Titles() {
             <div className="bg-gray-50 px-6 py-4 border-b">
               <div className="grid grid-cols-12 gap-4 items-center font-semibold text-gray-700">
                 <div className="col-span-1">Image</div>
-                <div className="col-span-3">Title</div>
-                <div className="col-span-2">Genre</div>
-                <div className="col-span-2">Tone</div>
-                <div className="col-span-2">Keywords</div>
+                <div className="col-span-3">
+                  <SortableHeader field="title">Title</SortableHeader>
+                </div>
+                <div className="col-span-2">
+                  <SortableHeader field="genre">Genre</SortableHeader>
+                </div>
+                <div className="col-span-2">
+                  <SortableHeader field="tone">Tone</SortableHeader>
+                </div>
+                <div className="col-span-2">
+                  <SortableHeader field="keywords">Keywords</SortableHeader>
+                </div>
                 <div className="col-span-1 relative flex flex-col items-center justify-center">
                   <span>Comps</span>
                   <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">

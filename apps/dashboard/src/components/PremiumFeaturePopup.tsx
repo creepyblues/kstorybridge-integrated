@@ -181,7 +181,7 @@ export default function PremiumFeaturePopup({
               <Sparkles className="h-6 w-6 text-hanok-teal absolute -top-1 -right-1 animate-bounce" />
             </div>
           </div>
-          <DialogTitle className="text-2xl font-bold text-midnight-ink mb-2">
+          <DialogTitle className="text-2xl font-bold text-midnight-ink mb-2 text-center">
             Premium Feature
           </DialogTitle>
         </DialogHeader>
@@ -192,9 +192,6 @@ export default function PremiumFeaturePopup({
               <div className="space-y-4">
                 <p className="text-midnight-ink-600 text-lg leading-relaxed">
                   This feature is for premium members only.
-                </p>
-                <p className="text-xl font-semibold text-midnight-ink">
-                  Be the first to get it now!
                 </p>
               </div>
               
@@ -211,18 +208,10 @@ export default function PremiumFeaturePopup({
                       Requesting...
                     </div>
                   ) : (
-                    "REQUEST"
+                    "Request Access"
                   )}
                 </Button>
                 
-                <Button
-                  id="premium-popup-cancel-btn"
-                  onClick={onClose}
-                  variant="outline"
-                  className="w-full border-porcelain-blue-300 text-midnight-ink-600 hover:bg-porcelain-blue-100 rounded-full"
-                >
-                  Cancel
-                </Button>
               </div>
             </>
           ) : (

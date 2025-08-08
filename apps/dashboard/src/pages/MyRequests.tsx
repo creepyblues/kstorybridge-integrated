@@ -25,7 +25,8 @@ export default function MyRequests() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    // Load requests if we have a user OR auth bypass is enabled
+    if (user || shouldBypassAuth()) {
       // Check if we have cached data first
       const cachedRequests = getMyRequests();
       if (cachedRequests.length > 0 && isFresh('myRequests')) {
@@ -37,11 +38,18 @@ export default function MyRequests() {
   }, [user, getMyRequests, isFresh]);
 
   const loadRequests = async () => {
-    if (!user) return;
+    // For localhost auth bypass, use a mock user ID when no real user exists
+    const userId = user?.id || (shouldBypassAuth() ? '550e8400-e29b-41d4-a716-446655440000' : null);
+    const userEmail = user?.email || (shouldBypassAuth() ? 'sungho@dadble.com' : null);
+    
+    if (!userId) return;
     
     try {
       setLoading(true);
-      const data = await requestsService.getUserRequests(user.id);
+      console.log('🔄 MY REQUESTS: Loading requests for user:', userId, userEmail);
+      const data = await requestsService.getUserRequests(userId);
+      console.log('📋 MY REQUESTS: Received data:', data.length, 'requests');
+      console.log('📋 MY REQUESTS: First request sample:', data[0]);
       setRequests(data);
       // Cache the requests data
       setMyRequests(data);
@@ -90,7 +98,23 @@ export default function MyRequests() {
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  if (!user) {
+  // Check if we should bypass auth for localhost development
+  const shouldBypassAuth = () => {
+    const isLocalhost = window.location.hostname === 'localhost';
+    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
+    const isDev = import.meta.env.DEV;
+    
+    console.log('🔍 MY REQUESTS: Auth bypass check:', {
+      isLocalhost,
+      bypassEnabled,
+      isDev,
+      shouldBypass: isLocalhost && bypassEnabled && isDev
+    });
+    
+    return isLocalhost && bypassEnabled && isDev;
+  };
+
+  if (!user && !shouldBypassAuth()) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
         <div className="max-w-7xl mx-auto px-6 py-16">

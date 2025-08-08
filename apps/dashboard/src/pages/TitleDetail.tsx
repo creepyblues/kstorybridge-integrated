@@ -19,6 +19,17 @@ export default function TitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Check if we should bypass auth for localhost development
+  const shouldBypassAuth = () => {
+    const isLocalhost = window.location.hostname === 'localhost';
+    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
+    const isDev = import.meta.env.DEV;
+    return isLocalhost && (bypassEnabled || isDev);
+  };
+
+  // For localhost auth bypass, consider as authenticated
+  const isAuthenticated = user || shouldBypassAuth();
   const { getTitleDetail, setTitleDetail, isFresh } = useDataCache();
   const [title, setTitle] = useState<Title | null>(null);
   const [loading, setLoading] = useState(false);
@@ -171,7 +182,7 @@ export default function TitleDetail() {
               </div>
               
               <div className="flex flex-col items-end gap-3 ml-6">
-                {user && (
+                {isAuthenticated && (
                   <Button
                     id="title-detail-favorite-toggle-btn"
                     onClick={handleFavoriteToggle}
@@ -343,7 +354,7 @@ export default function TitleDetail() {
                         <Crown className="h-5 w-5 text-purple-600" />
                         <span className="font-semibold text-purple-800">Premium Content Available</span>
                       </div>
-                      {user && (
+                      {isAuthenticated && (
                         <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
                           <DialogTrigger id="title-detail-view-pitch-btn" asChild>
                             <Button id="title-detail-view-pitch-btn" className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group">
@@ -375,7 +386,7 @@ export default function TitleDetail() {
                           </DialogContent>
                         </Dialog>
                       )}
-                      {!user && (
+                      {!isAuthenticated && (
                         <Button
                           id="title-detail-view-pitch-disabled-btn"
                           disabled
@@ -403,7 +414,7 @@ export default function TitleDetail() {
                         <FileText className="h-5 w-5 text-hanok-teal" />
                         <span className="font-semibold text-hanok-teal">Premium Content Available</span>
                       </div>
-                      {user && (
+                      {isAuthenticated && (
                         <Button 
                           id="title-detail-request-pitch-btn"
                           onClick={() => {
@@ -425,7 +436,7 @@ export default function TitleDetail() {
                           <div className="absolute inset-0 rounded-full bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
                         </Button>
                       )}
-                      {!user && (
+                      {!isAuthenticated && (
                         <Button
                           id="title-detail-request-pitch-disabled-btn"
                           disabled

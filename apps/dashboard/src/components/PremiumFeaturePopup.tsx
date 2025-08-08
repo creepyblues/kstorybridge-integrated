@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { trackPremiumFeatureRequest, trackEvent } from "@/utils/analytics";
 import { sendAdminNotification } from "@/utils/emailService";
+import { notifyPitchRequest } from "@/utils/slack";
 // import { testRequestTable, debugAuthAndRLS } from "@/utils/debugRequest"; // Debug imports - can be removed
 import { useEffect } from "react";
 
@@ -79,6 +80,25 @@ export default function PremiumFeaturePopup({
           } else {
             // Successfully saved to request table
             console.log('✅ Request saved to database:', requestData?.id);
+            
+            // Send Slack notification if this is a pitch request
+            if (requestType === 'pitch' && requestData?.id && titleName) {
+              console.log('📄 Sending Slack notification for pitch request...');
+              try {
+                await notifyPitchRequest({
+                  userFullName: user.user_metadata?.full_name || user.email || 'Unknown User',
+                  userEmail: user.email || 'unknown@email.com',
+                  titleName: titleName,
+                  titleId: titleId,
+                  requestType: requestType,
+                  company: user.user_metadata?.company || undefined
+                });
+                console.log('✅ Slack notification sent successfully!');
+              } catch (slackError) {
+                console.warn('❌ Failed to send Slack notification:', slackError);
+                // Don't fail the request if Slack notification fails
+              }
+            }
             
             // Send admin notification email if this is a pitch request
             if (requestType === 'pitch' && requestData?.id && titleName) {

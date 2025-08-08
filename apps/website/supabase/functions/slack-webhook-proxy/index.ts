@@ -163,6 +163,7 @@ function getEventEmoji(event: string): string {
     'Profile Updated': '✏️',
     'Title Added': '📚',
     'Contact Request': '📞',
+    'Pitch Document Requested': '📄',
   }
   
   return eventEmojiMap[event] || '📢'

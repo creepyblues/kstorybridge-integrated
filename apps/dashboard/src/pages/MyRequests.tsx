@@ -26,14 +26,31 @@ export default function MyRequests() {
 
   useEffect(() => {
     // Load requests if we have a user OR auth bypass is enabled
-    if (user || shouldBypassAuth()) {
+    const bypassEnabled = shouldBypassAuth();
+    console.log('🔍 MY REQUESTS: useEffect triggered:', {
+      hasUser: !!user,
+      userEmail: user?.email,
+      bypassEnabled,
+      shouldLoad: user || bypassEnabled
+    });
+    
+    if (user || bypassEnabled) {
       // Check if we have cached data first
       const cachedRequests = getMyRequests();
+      console.log('🔍 MY REQUESTS: Cache check:', {
+        cachedCount: cachedRequests.length,
+        isFreshResult: isFresh('myRequests')
+      });
+      
       if (cachedRequests.length > 0 && isFresh('myRequests')) {
+        console.log('🔍 MY REQUESTS: Using cached data');
         setRequests(cachedRequests);
       } else {
+        console.log('🔍 MY REQUESTS: Loading fresh data');
         loadRequests();
       }
+    } else {
+      console.log('🔍 MY REQUESTS: Not loading - no user and no bypass');
     }
   }, [user, getMyRequests, isFresh]);
 

@@ -323,12 +323,12 @@ export default function TitleDetail() {
                   <div className="flex flex-wrap gap-2">
                     {(title.keywords || title.tags) && (title.keywords || title.tags).length > 0 ? (
                       (title.keywords || title.tags).map((tag, idx) => (
-                        <div key={`synopsis-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium">
+                        <div key={`synopsis-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                           {tag}
                         </div>
                       ))
                     ) : (
-                      <div className="inline-block bg-gray-100 text-gray-500 px-3 py-2 rounded-full text-sm">
+                      <div className="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
                         No keywords available
                       </div>
                     )}
@@ -457,11 +457,11 @@ export default function TitleDetail() {
                       </div>
                       <PremiumColumn>
                         {title.perfect_for ? (
-                          <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                          <div className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                             {title.perfect_for}
                           </div>
                         ) : (
-                          <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                          <div className="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
                             Not specified
                           </div>
                         )}
@@ -476,11 +476,11 @@ export default function TitleDetail() {
                       </div>
                       <PremiumColumn>
                         {title.comps ? (
-                          <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                          <div className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
                             {title.comps}
                           </div>
                         ) : (
-                          <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                          <div className="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
                             Not specified
                           </div>
                         )}
@@ -492,11 +492,11 @@ export default function TitleDetail() {
                     <div>
                       <h5 className="font-bold text-hanok-teal mb-3">Tone</h5>
                       {title.tone ? (
-                        <div className="inline-block bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">
+                        <div className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
                           {title.tone}
                         </div>
                       ) : (
-                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                        <div className="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
                           Not specified
                         </div>
                       )}
@@ -507,18 +507,18 @@ export default function TitleDetail() {
                         <div className="flex flex-wrap gap-2">
                           {Array.isArray(title.genre) ? (
                             title.genre.map((g, idx) => (
-                              <div key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-4 py-2 rounded-full text-sm font-medium">
+                              <div key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
                                 {formatGenre(g)}
                               </div>
                             ))
                           ) : (
-                            <div className="inline-block bg-cyan-100 text-cyan-800 px-4 py-2 rounded-full text-sm font-medium">
+                            <div className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
                               {formatGenre(title.genre)}
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                        <div className="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
                           Not specified
                         </div>
                       )}
@@ -600,11 +600,11 @@ export default function TitleDetail() {
                     </div>
                     <PremiumColumn>
                       {(title.rights_owner || title.rights) ? (
-                        <div className="inline-block bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-sm font-medium">
+                        <div className="inline-block bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs font-medium">
                           {title.rights_owner || title.rights}
                         </div>
                       ) : (
-                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                        <div className="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
                           Not specified
                         </div>
                       )}
@@ -619,11 +619,11 @@ export default function TitleDetail() {
                     </div>
                     <PremiumColumn>
                       {title.audience ? (
-                        <div className="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium">
+                        <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
                           {title.audience}
                         </div>
                       ) : (
-                        <div className="inline-block bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                        <div className="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
                           Not specified
                         </div>
                       )}
@@ -635,7 +635,7 @@ export default function TitleDetail() {
                 <div className="space-y-4">
                   <div>
                     <h5 className="font-bold text-hanok-teal mb-3">Series Status</h5>
-                    <div className="inline-block bg-teal-100 text-teal-800 px-4 py-2 rounded-full text-sm font-medium">
+                    <div className="inline-block bg-teal-100 text-teal-800 px-2 py-1 rounded-full text-xs font-medium">
                       {title.completed !== null && title.completed !== undefined 
                         ? (title.completed ? 'Completed' : 'Ongoing') 
                         : 'Unknown'}
@@ -643,7 +643,13 @@ export default function TitleDetail() {
                   </div>
                   <div>
                     <h5 className="font-bold text-hanok-teal mb-1">Number of Chapters</h5>
-                    <p className="text-gray-600 text-sm">{title.chapters?.toLocaleString() || 'Not specified'}</p>
+                    <p className="text-gray-600 text-sm">
+                      {title.chapters ? (
+                        `${title.chapters.toLocaleString()}${title.completed !== 'completed' ? '+' : ''}`
+                      ) : (
+                        'Not specified'
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>

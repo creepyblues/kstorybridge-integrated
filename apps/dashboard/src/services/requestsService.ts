@@ -22,14 +22,18 @@ const shouldUseMockData = () => {
   const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
   const isDev = import.meta.env.DEV;
   
+  // Force mock data for localhost development if auth bypass is working
+  const shouldUse = isLocalhost && (bypassEnabled || isDev);
+  
   console.log('🔍 REQUESTS SERVICE: Mock data conditions:', {
     isLocalhost,
     bypassEnabled,
     isDev,
-    shouldUse: isLocalhost && bypassEnabled && isDev
+    envVar: import.meta.env.VITE_DISABLE_AUTH_LOCALHOST,
+    shouldUse
   });
   
-  return isLocalhost && bypassEnabled && isDev;
+  return shouldUse;
 };
 
 // Mock requests data for localhost development - using real title data from database

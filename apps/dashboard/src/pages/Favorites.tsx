@@ -19,6 +19,7 @@ import { useToast } from "@/components/ui/use-toast";
 import type { Title } from "@/services/titlesService";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
+import { trackSearch } from "@/utils/analytics";
 
 type FavoriteWithTitle = {
   id: string;
@@ -34,6 +35,7 @@ export default function Favorites() {
   const { getFavorites, setFavorites, isFresh, refreshData } = useDataCache();
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchDebounceTimer, setSearchDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Get data from cache
   const favorites = getFavorites();
@@ -88,6 +90,49 @@ export default function Favorites() {
     refreshData('favorites');
     loadFavorites();
   };
+
+  const handleSearchChange = (newSearchTerm: string) => {
+    setSearchTerm(newSearchTerm);
+    
+    // Clear existing timer
+    if (searchDebounceTimer) {
+      clearTimeout(searchDebounceTimer);
+    }
+    
+    // Set new timer to track search after user stops typing
+    const timer = setTimeout(() => {
+      if (newSearchTerm.trim().length > 0) {
+        // Calculate result count for the search
+        const titleObjects = favorites.map(f => f.titles);
+        const { exactMatches, expandedMatches } = enhancedSearch(
+          titleObjects,
+          newSearchTerm,
+          getTitleSearchFields()
+        );
+        const resultCount = exactMatches.length + expandedMatches.length;
+        
+        // Track the search query with favorites context
+        trackSearch(`favorites:${newSearchTerm.trim()}`, resultCount);
+        console.log('🔍 SEARCH TRACKED (Favorites):', { 
+          searchTerm: newSearchTerm.trim(), 
+          resultCount,
+          context: 'favorites',
+          totalFavorites: favorites.length
+        });
+      }
+    }, 1000); // Wait 1 second after user stops typing
+    
+    setSearchDebounceTimer(timer);
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+    };
+  }, [searchDebounceTimer]);
 
   const handleRemoveFromFavorites = async (titleId: string) => {
     if (!user) return;
@@ -178,7 +223,29 @@ export default function Favorites() {
             <input
               placeholder="Search your favorites..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  // Track immediate search on Enter key
+                  if (e.currentTarget.value.trim().length > 0) {
+                    const titleObjects = favorites.map(f => f.titles);
+                    const { exactMatches, expandedMatches } = enhancedSearch(
+                      titleObjects,
+                      e.currentTarget.value.trim(),
+                      getTitleSearchFields()
+                    );
+                    const resultCount = exactMatches.length + expandedMatches.length;
+                    trackSearch(`favorites:${e.currentTarget.value.trim()}`, resultCount);
+                    console.log('🔍 SEARCH TRACKED (Favorites Enter):', { 
+                      searchTerm: e.currentTarget.value.trim(), 
+                      resultCount,
+                      context: 'favorites',
+                      totalFavorites: favorites.length
+                    });
+                  }
+                }
+              }}
               className="w-full pl-12 pr-4 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
             />
           </div>

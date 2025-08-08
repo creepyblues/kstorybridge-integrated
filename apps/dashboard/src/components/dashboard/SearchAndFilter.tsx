@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 interface SearchAndFilterProps {
-  onSearchChange: (search: string) => void;
+  onSearchSubmit: (search: string) => void;
   onFiltersChange: (filters: any) => void;
   totalResults?: number;
 }
@@ -53,7 +53,7 @@ const popularTags = [
 ];
 
 export function SearchAndFilter({ 
-  onSearchChange, 
+  onSearchSubmit, 
   onFiltersChange, 
   totalResults = 0 
 }: SearchAndFilterProps) {
@@ -67,9 +67,14 @@ export function SearchAndFilter({
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    onSearchChange(value);
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearchSubmit(searchQuery.trim());
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    onSearchSubmit("");
   };
 
   const handleFilterChange = (key: keyof FilterState, value: any) => {
@@ -108,15 +113,36 @@ export function SearchAndFilter({
   return (
     <div className="space-y-6">
       {/* Search Bar */}
-      <div className="relative">
+      <form onSubmit={handleSearchSubmit} className="relative">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-midnight-ink-500" />
         <Input
-          placeholder="Search titles, authors, genres..."
+          type="text"
+          placeholder="Search titles, authors, genres... (press Enter or click Search)"
           value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-12 h-12 text-lg border-porcelain-blue-300 focus:border-hanok-teal focus:ring-hanok-teal/20 bg-snow-white"
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-12 pr-32 h-12 text-lg border-porcelain-blue-300 focus:border-hanok-teal focus:ring-hanok-teal/20 bg-snow-white"
         />
-      </div>
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
+          {searchQuery && (
+            <Button
+              type="button"
+              onClick={handleClearSearch}
+              variant="ghost"
+              size="sm"
+              className="text-midnight-ink-400 hover:text-midnight-ink-600"
+            >
+              Clear
+            </Button>
+          )}
+          <Button
+            type="submit"
+            size="sm"
+            className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
+          >
+            Search
+          </Button>
+        </div>
+      </form>
 
       {/* Filter Controls */}
       <div className="flex flex-wrap items-center gap-6">

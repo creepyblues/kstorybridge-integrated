@@ -11,6 +11,7 @@ import { DataCacheProvider } from "@/contexts/DataCacheContext";
 // Load debug utilities in development
 if (import.meta.env.DEV) {
   import("@/utils/debugGA").catch(console.error);
+  import("@/utils/testSearchTracking").catch(console.error);
 }
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";

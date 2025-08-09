@@ -206,15 +206,31 @@ export default function AdminAddTitle() {
         author: "Kim Writer",
         description: "A fantasy webtoon about a hero who goes back in time to save the world.",
         content_format: "webtoon",
-        title_image: "https://example.com/cover2.jpg",
+        title_image: "https://via.placeholder.com/300x400?text=Webtoons+Cover",
         title_url: url
       };
       extractedFields = ['title_name_en', 'title_name_kr', 'genre', 'author', 'description', 'content_format', 'title_image'];
+    } else if (hostname.includes('naver.com') || hostname.includes('series.naver.com')) {
+      mockData = {
+        title_name_kr: "테스트 제목",
+        title_name_en: "Test Title",
+        genre: "drama",
+        author: "네이버작가",
+        writer: "네이버작가",
+        description: "웹사이트에서 추출된 설명입니다. 네이버 시리즈의 인기 작품으로 많은 독자들의 사랑을 받고 있습니다.",
+        synopsis: "주인공이 겪는 다양한 모험과 성장 이야기를 담은 드라마 장르의 작품입니다.",
+        content_format: "web_novel",
+        chapters: 120,
+        title_image: "https://via.placeholder.com/300x400?text=Naver+Series",
+        completed: true,
+        title_url: url
+      };
+      extractedFields = ['title_name_kr', 'title_name_en', 'genre', 'author', 'writer', 'description', 'synopsis', 'content_format', 'chapters', 'title_image'];
     } else {
       mockData = {
         title_name_kr: "테스트 제목",
         description: "웹사이트에서 추출된 설명입니다.",
-        title_image: "https://example.com/generic-cover.jpg",
+        title_image: "https://via.placeholder.com/300x400?text=Generic+Cover",
         title_url: url
       };
       extractedFields = ['title_name_kr', 'description', 'title_image'];

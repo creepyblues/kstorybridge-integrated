@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, TestTube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigationItems = [
@@ -7,6 +7,11 @@ const navigationItems = [
     title: 'Titles',
     href: '/titles',
     icon: BookOpen,
+  },
+  {
+    title: 'Scraper Test',
+    href: '/scraper-test',
+    icon: TestTube,
   },
 ];
 

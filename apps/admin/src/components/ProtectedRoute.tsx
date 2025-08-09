@@ -12,7 +12,52 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { adminProfile, isLoading, user, error, clearError, refreshAuth } = useAdminAuth();
   const [showDebug, setShowDebug] = useState(false);
 
-  if (isLoading) {
+  // If user is present but we don't have an admin profile and we also have an error
+  // or loading has already completed, show access denied rather than a spinner
+  if (user && !adminProfile && (error || !isLoading)) {
+    if (showDebug) {
+      return <AdminAuthDebug />;
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50 flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-midnight-ink mb-2">Access Denied</h2>
+          <p className="text-midnight-ink-600 mb-4">
+            You are authenticated but do not have admin access. Contact IT support if you believe this is an error.
+          </p>
+          <p className="text-sm text-midnight-ink-400 mb-4">
+            Email: {user.email}
+          </p>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+          <div className="space-y-2">
+            <button
+              onClick={() => setShowDebug(true)}
+              className="flex items-center gap-2 mx-auto text-orange-600 hover:underline mb-4"
+            >
+              <Bug className="w-4 h-4" />
+              Debug Authentication Issue
+            </button>
+            <button
+              onClick={() => window.location.href = '/login'}
+              className="text-hanok-teal hover:underline"
+            >
+              Back to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading && !adminProfile) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50 flex items-center justify-center">
         <div className="text-center max-w-md">

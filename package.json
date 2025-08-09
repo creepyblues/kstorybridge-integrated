@@ -23,7 +23,9 @@
     "typescript": "^5.5.3"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.53.0",
+    "class-variance-authority": "^0.7.1",
     "uuid": "^11.1.0"
   }
 }

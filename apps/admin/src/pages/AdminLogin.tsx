@@ -16,7 +16,7 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   // Simplified state - no connection testing needed
   
-  const { signIn } = useAdminAuth();
+  const { signIn, forceSignOut, session, isLoading: authLoading } = useAdminAuth();
   const navigate = useNavigate();
 
   // No connection testing needed - authenticate first
@@ -136,6 +136,28 @@ export default function AdminLogin() {
                   'Sign In'
                 )}
               </Button>
+
+              {(session || authLoading) && (
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 shrink-0" />
+                    <div className="space-y-2">
+                      <p className="text-yellow-800 text-sm">
+                        Session detected but stuck loading. This can happen if a previous session wasn't properly cleared.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => forceSignOut()}
+                        className="text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                      >
+                        Clear Session & Retry
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>

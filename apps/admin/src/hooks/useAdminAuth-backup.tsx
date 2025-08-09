@@ -1,0 +1,370 @@
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User, Session } from '@supabase/supabase-js';
+import type { Tables } from '@/integrations/supabase/types';
+import { clearAdminStorage, debugAdminStorage } from '@/lib/adminStorage';
+
+type AdminProfile = Tables<'admin'>;
+
+interface AdminAuthContextType {
+  user: User | null;
+  adminProfile: AdminProfile | null;
+  session: Session | null;
+  isLoading: boolean;
+  error: string | null;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<void>;
+  clearError: () => void;
+  refreshAuth: () => Promise<void>;
+}
+
+const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
+
+export function AdminAuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Use refs to prevent stale closures
+  const isLoadingRef = useRef(isLoading);
+  const userRef = useRef(user);
+  const sessionRef = useRef(session);
+  const adminProfileRef = useRef<AdminProfile | null>(null);
+  const errorRef = useRef<string | null>(null);
+  
+  // Update refs when state changes
+  useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
+  useEffect(() => { userRef.current = user; }, [user]);
+  useEffect(() => { sessionRef.current = session; }, [session]);
+  useEffect(() => { adminProfileRef.current = adminProfile; }, [adminProfile]);
+  useEffect(() => { errorRef.current = error; }, [error]);
+
+  // Clear error function
+  const clearError = () => setError(null);
+
+  // Attempt to hydrate admin storage from default Supabase storage if present
+  const hydrateAdminSessionFromDefaultIfPresent = (): boolean => {
+    try {
+      const defaultKeyPrefix = `sb-dlrnrgcoguxlkkcitlpd-auth-token`;
+      // Find any key that starts with the default project auth token
+      const keys = Object.keys(localStorage);
+      const defaultKey = keys.find((k) => k.startsWith(defaultKeyPrefix));
+      const adminKey = 'admin-auth-token';
+
+      const adminExisting = adminStorage.getItem(adminKey);
+      if (adminExisting) {
+        return false; // already hydrated
+      }
+
+      if (defaultKey) {
+        const value = localStorage.getItem(defaultKey);
+        if (value) {
+          // Copy into admin storage under our namespaced key
+          adminStorage.setItem(adminKey, value);
+          console.log('🧩 Admin Auth: Hydrated admin session from default storage');
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('Admin Auth: Hydration from default storage failed', e);
+    }
+    return false;
+  };
+
+  // Simplified session monitoring
+  useEffect(() => {
+    let mounted = true;
+    let loadingTimeout: NodeJS.Timeout;
+
+    console.log('🔐 Admin Auth: Initializing authentication...');
+
+    // Set loading timeout (10 seconds)
+    loadingTimeout = setTimeout(() => {
+      if (mounted && isLoadingRef.current) {
+        console.log('⏰ Admin Auth: Loading timeout reached');
+        setIsLoading(false);
+        setError('Authentication initialization timed out. Please refresh the page.');
+      }
+    }, 10000);
+
+    // Simplified visibility handling for tab switching
+    const handleVisibilityChange = () => {
+      if (!mounted || document.hidden) return;
+      
+      // Avoid unnecessary refresh loops if user has no admin access
+      if (errorRef.current && errorRef.current.includes('No admin access')) {
+        return;
+      }
+      
+      console.log('👀 Admin Auth: Tab became visible, checking session...');
+      
+      // Simple session check without debouncing to reduce complexity
+      setTimeout(async () => {
+        if (!mounted) return;
+        
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (!session && sessionRef.current) {
+            console.log('⚠️ Admin Auth: Session lost during tab switch');
+            setSession(null);
+            setUser(null);
+            setAdminProfile(null);
+            setError('Session expired. Please log in again.');
+          }
+        } catch (error) {
+          console.error('❌ Admin Auth: Visibility check failed:', error);
+        }
+      }, 100);
+    };
+
+    // Add only essential listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Initialize session
+    const initializeAuth = async () => {
+      try {
+        console.log('🔍 Admin Auth: Getting initial session...');
+
+        // Try to hydrate from default storage first to support new-tab flows
+        hydrateAdminSessionFromDefaultIfPresent();
+        
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
+        if (sessionError) {
+          console.error('❌ Admin Auth: Session error:', sessionError);
+          setError(`Session error: ${sessionError.message}`);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('📋 Admin Auth: Initial session:', session ? 'Found' : 'None');
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          console.log('👤 Admin Auth: Session found, loading admin profile...');
+          await loadAdminProfile(session.user.email!);
+        } else {
+          console.log('❌ Admin Auth: No session found, setting loading to false');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('❌ Admin Auth: Initialize error:', error);
+        setError('Failed to initialize authentication');
+        setIsLoading(false);
+      }
+    };
+
+    // Auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        console.log(`🔄 Admin Auth: State change - ${event}`, session ? 'Session exists' : 'No session');
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        clearError(); // Clear any previous errors
+
+        if (event === 'SIGNED_OUT') {
+          setAdminProfile(null);
+          setIsLoading(false);
+          console.log('👋 Admin Auth: User signed out');
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Admin Auth: Token refreshed');
+          if (session?.user) {
+            await loadAdminProfile(session.user.email!);
+          }
+        } else if (session?.user) {
+          await loadAdminProfile(session.user.email!);
+        } else {
+          setAdminProfile(null);
+          setIsLoading(false);
+        }
+      }
+    );
+
+    // Start initialization
+    initializeAuth();
+
+    // Cleanup
+    return () => {
+      mounted = false;
+      clearTimeout(loadingTimeout);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      subscription.unsubscribe();
+      console.log('🧹 Admin Auth: Cleanup completed');
+    };
+  }, []);
+
+  const loadAdminProfile = async (email: string): Promise<void> => {
+    try {
+      console.log(`👤 Admin Auth: Loading profile for ${email}...`);
+      
+      // Ensure loading is set
+      if (!isLoadingRef.current) {
+        console.log('🔄 Admin Auth: Setting loading to true');
+        setIsLoading(true);
+      }
+      
+      console.log('📡 Admin Auth: Starting database query...');
+      const { data, error } = await supabase
+        .from('admin')
+        .select('*')
+        .eq('email', email)
+        .eq('active', true)
+        .maybeSingle(); // Use maybeSingle to avoid errors when no record found
+
+      console.log('📋 Admin Auth: Database query completed', { data, error });
+
+      if (error) {
+        console.error('❌ Admin Auth: Profile query error:', error);
+        throw error;
+      }
+
+      if (data) {
+        console.log('✅ Admin Auth: Profile loaded successfully', data);
+        setAdminProfile(data);
+        clearError(); // Clear any previous errors
+      } else {
+        console.log('❌ Admin Auth: No admin profile found for:', email);
+        setError(`No admin access found for ${email}. Contact IT support.`);
+        setAdminProfile(null);
+      }
+    } catch (error) {
+      console.error('❌ Admin Auth: Profile loading failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(`Failed to load admin profile: ${errorMessage}`);
+      setAdminProfile(null);
+    } finally {
+      console.log('🏁 Admin Auth: Profile loading finished, setting loading to false');
+      setIsLoading(false);
+    }
+  };
+
+  const signIn = async (email: string, password: string): Promise<{ error: Error | null }> => {
+    try {
+      setIsLoading(true);
+      clearError();
+      console.log(`🔐 Admin Auth: Signing in ${email}...`);
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) {
+        console.error('❌ Admin Auth: Sign in failed:', error);
+        setIsLoading(false);
+        return { error };
+      }
+
+      console.log('✅ Admin Auth: Sign in successful');
+      // Auth state change listener will handle the rest
+      return { error: null };
+    } catch (error) {
+      console.error('❌ Admin Auth: Sign in exception:', error);
+      setIsLoading(false);
+      const err = error instanceof Error ? error : new Error('Sign in failed');
+      return { error: err };
+    }
+  };
+
+  const signOut = async (): Promise<void> => {
+    try {
+      console.log('🚪 Admin Auth: Signing out...');
+      
+      // Clear admin storage first
+      clearAdminStorage();
+      
+      // Then sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Reset state
+      setUser(null);
+      setAdminProfile(null);
+      setSession(null);
+      clearError();
+      
+      console.log('✅ Admin Auth: Sign out completed');
+    } catch (error) {
+      console.error('❌ Admin Auth: Sign out error:', error);
+    }
+  };
+
+  const refreshAuth = async (): Promise<void> => {
+    try {
+      console.log('🔄 Admin Auth: Refreshing authentication...');
+      setIsLoading(true);
+      clearError();
+
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        throw error;
+      }
+
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (session?.user) {
+        await loadAdminProfile(session.user.email!);
+      } else {
+        setAdminProfile(null);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('❌ Admin Auth: Refresh failed:', error);
+      setError('Failed to refresh authentication');
+      setIsLoading(false);
+    }
+  };
+
+  // Debug helper (development only)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      (window as any).adminAuth = {
+        user,
+        adminProfile,
+        session,
+        isLoading,
+        error,
+        refreshAuth,
+        clearError,
+        debugStorage: debugAdminStorage,
+        clearStorage: clearAdminStorage,
+      };
+    }
+  }, [user, adminProfile, session, isLoading, error]);
+
+  const value = {
+    user,
+    adminProfile,
+    session,
+    isLoading,
+    error,
+    signIn,
+    signOut,
+    clearError,
+    refreshAuth,
+  };
+
+  return (
+    <AdminAuthContext.Provider value={value}>
+      {children}
+    </AdminAuthContext.Provider>
+  );
+}
+
+export function useAdminAuth() {
+  const context = useContext(AdminAuthContext);
+  if (context === undefined) {
+    throw new Error('useAdminAuth must be used within an AdminAuthProvider');
+  }
+  return context;
+}

@@ -23,7 +23,7 @@ import {
   BodyText,
   LeadText,
   Caption
-} from '../design-system';
+} from '@/design-system';
 
 // Existing Services
 import { featuredService, type FeaturedWithTitle } from '../services/featuredService';

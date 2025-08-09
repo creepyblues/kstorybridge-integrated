@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import AnalyticsProvider from "./components/AnalyticsProvider";
 import HomePage from "./pages/HomePage";
+import HomePageNew from "./pages/HomePageNew";
 import CreatorsPage from "./pages/CreatorsPage";
 import BuyersPage from "./pages/BuyersPage";
 import PricingPage from "./pages/PricingPage";
@@ -32,6 +33,7 @@ const App = () => (
         <AnalyticsProvider />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/new-design" element={<HomePageNew />} />
           <Route path="/creators" element={<CreatorsPage />} />
           <Route path="/buyers" element={<BuyersPage />} />
           <Route path="/pricing" element={<PricingPage />} />

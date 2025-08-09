@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle, XCircle, RefreshCw, Shield } from 'lucide-react';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface DebugInfo {
   hasSession: boolean;
@@ -16,6 +17,7 @@ interface DebugInfo {
 export default function AdminAuthDebug() {
   const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   const [isDebugging, setIsDebugging] = useState(false);
+  const { retryProfileLoad } = useAdminAuth();
 
   const runDiagnostics = async () => {
     setIsDebugging(true);
@@ -180,6 +182,16 @@ export default function AdminAuthDebug() {
                   <pre className="text-xs text-green-700 bg-green-100 p-2 rounded overflow-x-auto">
                     {JSON.stringify(debugInfo.adminQueryResult[0], null, 2)}
                   </pre>
+                  <div className="mt-3">
+                    <Button
+                      onClick={retryProfileLoad}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Retry Profile Load
+                    </Button>
+                  </div>
                 </div>
               )}
 

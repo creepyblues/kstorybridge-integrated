@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { adminProfile, isLoading, user, error, clearError, refreshAuth } = useAdminAuth();
+  const { adminProfile, isLoading, user, error, clearError, refreshAuth, retryProfileLoad } = useAdminAuth();
   const [showDebug, setShowDebug] = useState(false);
 
   // If user is present but we don't have an admin profile and we also have an error
@@ -35,6 +35,14 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-600 text-sm">{error}</p>
+              {error.includes('timeout') && (
+                <button
+                  onClick={retryProfileLoad}
+                  className="mt-2 text-red-700 hover:underline text-sm font-medium block"
+                >
+                  Retry Profile Load
+                </button>
+              )}
             </div>
           )}
           <div className="space-y-2">
@@ -72,11 +80,15 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
               <button
                 onClick={() => {
                   clearError();
-                  refreshAuth();
+                  if (error?.includes('timeout')) {
+                    retryProfileLoad();
+                  } else {
+                    refreshAuth();
+                  }
                 }}
                 className="mt-2 text-orange-700 hover:underline text-sm font-medium"
               >
-                Retry Authentication
+                {error?.includes('timeout') ? 'Retry Profile Load' : 'Retry Authentication'}
               </button>
             </div>
           )}
@@ -107,6 +119,14 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-600 text-sm">{error}</p>
+              {error.includes('timeout') && (
+                <button
+                  onClick={retryProfileLoad}
+                  className="mt-2 text-red-700 hover:underline text-sm font-medium block"
+                >
+                  Retry Profile Load
+                </button>
+              )}
             </div>
           )}
           <div className="space-y-2">

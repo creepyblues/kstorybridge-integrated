@@ -30,6 +30,7 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import BuyerDashboardNew from "./pages/BuyerDashboardNew";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,9 @@ const App = () => (
                 {/* Buyer routes */}
                 <Route path="/buyers" element={
                   <ProtectedLayout><RootRedirect /></ProtectedLayout>
+                } />
+                <Route path="/buyers/dashboard-new" element={
+                  <ProtectedLayout><BuyerDashboardNew /></ProtectedLayout>
                 } />
                 <Route path="/buyers/titles" element={
                   <ProtectedLayout><Titles /></ProtectedLayout>

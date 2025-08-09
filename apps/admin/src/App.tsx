@@ -7,6 +7,7 @@ import AdminTitleDetail from '@/pages/AdminTitleDetail';
 import AdminTitleEdit from '@/pages/AdminTitleEdit';
 import AdminFeaturedTitles from '@/pages/AdminFeaturedTitles';
 import AdminAddTitle from '@/pages/AdminAddTitle';
+import AdminScraperTest from '@/pages/AdminScraperTest';
 import { Toaster } from '@/components/ui/sonner';
 import '@/index.css';
 
@@ -39,6 +40,11 @@ function App() {
           <Route path="/titles/new" element={
             <ProtectedRoute>
               <AdminAddTitle />
+            </ProtectedRoute>
+          } />
+          <Route path="/scraper-test" element={
+            <ProtectedRoute>
+              <AdminScraperTest />
             </ProtectedRoute>
           } />
           <Route path="/" element={<Navigate to="/titles" replace />} />

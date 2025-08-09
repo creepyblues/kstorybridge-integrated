@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, AlertCircle } from "lucide-react";
 import { titlesService, type TitleInsert } from "@/services/titlesService";
+import { scraperService, type ScrapingResult } from "@/services/scraperService";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { toast } from "sonner";
 
@@ -47,6 +48,8 @@ const CONTENT_FORMAT_OPTIONS = [
 export default function AdminAddTitle() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isScrapingLoading, setIsScrapingLoading] = useState(false);
+  const [scrapingUrl, setScrapingUrl] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Form state
@@ -119,6 +122,110 @@ export default function AdminAddTitle() {
     } catch (_) {
       return false;
     }
+  };
+
+  const handleScrapeData = async () => {
+    if (!scrapingUrl.trim()) {
+      toast.error("Please enter a URL to scrape");
+      return;
+    }
+
+    setIsScrapingLoading(true);
+    
+    try {
+      // Simulate scraping with mock data for now
+      const mockResult = await simulateScraping(scrapingUrl);
+      
+      if (mockResult.success && mockResult.data) {
+        // Populate form fields with scraped data
+        const scrapedData = mockResult.data;
+        
+        setFormData(prev => ({
+          ...prev,
+          ...(scrapedData.title_name_kr && { title_name_kr: scrapedData.title_name_kr }),
+          ...(scrapedData.title_name_en && { title_name_en: scrapedData.title_name_en }),
+          ...(scrapedData.description && { description: scrapedData.description }),
+          ...(scrapedData.synopsis && { synopsis: scrapedData.synopsis }),
+          ...(scrapedData.tagline && { tagline: scrapedData.tagline }),
+          ...(scrapedData.author && { author: scrapedData.author }),
+          ...(scrapedData.writer && { writer: scrapedData.writer }),
+          ...(scrapedData.illustrator && { illustrator: scrapedData.illustrator }),
+          ...(scrapedData.art_author && { art_author: scrapedData.art_author }),
+          ...(scrapedData.story_author && { story_author: scrapedData.story_author }),
+          ...(scrapedData.genre && { genre: scrapedData.genre }),
+          ...(scrapedData.content_format && { content_format: scrapedData.content_format }),
+          ...(scrapedData.chapters && { chapters: scrapedData.chapters }),
+          ...(scrapedData.completed !== undefined && { completed: scrapedData.completed }),
+          ...(scrapedData.title_image && { title_image: scrapedData.title_image }),
+          ...(scrapedData.tone && { tone: scrapedData.tone }),
+          ...(scrapedData.audience && { audience: scrapedData.audience }),
+          ...(scrapedData.pitch && { pitch: scrapedData.pitch }),
+          ...(scrapedData.perfect_for && { perfect_for: scrapedData.perfect_for }),
+          ...(scrapedData.comps && { comps: scrapedData.comps }),
+        }));
+
+        toast.success(`Data scraped successfully! Populated ${mockResult.extractedFields.length} fields with ${Math.round(mockResult.confidence * 100)}% confidence`);
+      } else {
+        toast.error(mockResult.error || "Failed to scrape data from URL");
+      }
+    } catch (error) {
+      console.error("Scraping error:", error);
+      toast.error("Failed to scrape data. Please try again or enter manually.");
+    } finally {
+      setIsScrapingLoading(false);
+    }
+  };
+
+  // Mock scraping function (to be replaced with actual scraping)
+  const simulateScraping = async (url: string): Promise<ScrapingResult> => {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const hostname = url.toLowerCase();
+    let mockData: any = {};
+    let extractedFields: string[] = [];
+    
+    if (hostname.includes('toons.kr')) {
+      mockData = {
+        title_name_kr: "시간을 되돌리는 용사",
+        genre: "fantasy",
+        writer: "김작가",
+        illustrator: "박화가",
+        synopsis: "용사가 시간을 되돌려 세계를 구원하는 판타지 웹툰입니다. 마왕을 쓰러뜨리기 위해 과거로 돌아간 용사의 모험을 그린 작품입니다.",
+        content_format: "webtoon",
+        chapters: 45,
+        title_image: "https://example.com/cover1.jpg",
+        completed: false,
+        title_url: url
+      };
+      extractedFields = ['title_name_kr', 'genre', 'writer', 'illustrator', 'synopsis', 'content_format', 'chapters', 'title_image'];
+    } else if (hostname.includes('webtoons.com')) {
+      mockData = {
+        title_name_en: "Time Rewind Hero",
+        title_name_kr: "시간을 되돌리는 용사",
+        genre: "fantasy",
+        author: "Kim Writer",
+        description: "A fantasy webtoon about a hero who goes back in time to save the world.",
+        content_format: "webtoon",
+        title_image: "https://example.com/cover2.jpg",
+        title_url: url
+      };
+      extractedFields = ['title_name_en', 'title_name_kr', 'genre', 'author', 'description', 'content_format', 'title_image'];
+    } else {
+      mockData = {
+        title_name_kr: "테스트 제목",
+        description: "웹사이트에서 추출된 설명입니다.",
+        title_image: "https://example.com/generic-cover.jpg",
+        title_url: url
+      };
+      extractedFields = ['title_name_kr', 'description', 'title_image'];
+    }
+
+    return {
+      success: extractedFields.length > 0,
+      data: mockData,
+      confidence: Math.min(extractedFields.length * 0.15, 0.95),
+      extractedFields
+    };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -210,19 +317,29 @@ export default function AdminAddTitle() {
                       <div className="flex gap-3">
                         <Input
                           id="title_link_scrape"
-                          placeholder="https://example.com/title-page"
+                          value={scrapingUrl}
+                          onChange={(e) => setScrapingUrl(e.target.value)}
+                          placeholder="https://www.toons.kr/example-title"
                           className="flex-1"
                         />
                         <Button
                           type="button"
-                          disabled={true}
-                          className="bg-sunrise-coral hover:bg-sunrise-coral/90 text-white opacity-50 cursor-not-allowed"
+                          onClick={handleScrapeData}
+                          disabled={isScrapingLoading || !scrapingUrl.trim()}
+                          className="bg-sunrise-coral hover:bg-sunrise-coral/90 text-white"
                         >
-                          Collect Data
+                          {isScrapingLoading ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              Scraping...
+                            </div>
+                          ) : (
+                            'Collect Data'
+                          )}
                         </Button>
                       </div>
                       <p className="text-gray-500 text-xs mt-2">
-                        Feature coming soon - will automatically fill form fields from the provided URL
+                        Automatically populate form fields from the provided URL (currently using mock data for testing)
                       </p>
                     </td>
                   </tr>

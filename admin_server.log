@@ -27,3 +27,19 @@
 (!) %VITE_GA_MEASUREMENT_ID% is not defined in env variables found in /index.html. Is the variable mistyped?
 3:32:55 PM [vite] hmr update /src/pages/AdminAddTitle.tsx, /src/index.css
 3:34:36 PM [vite] hmr update /src/pages/AdminAddTitle.tsx, /src/index.css
+4:17:57 PM [vite] hmr update /src/pages/AdminTitles.tsx, /src/index.css
+4:27:31 PM [vite] hmr update /src/hooks/useAdminAuth.tsx, /src/index.css
+4:27:48 PM [vite] hmr update /src/components/ProtectedRoute.tsx, /src/index.css
+4:45:11 PM [vite] hmr update /src/hooks/useAdminAuth.tsx, /src/index.css
+4:52:22 PM [vite] hmr update /src/components/ProtectedRoute.tsx, /src/index.css
+4:57:48 PM [vite] hmr update /src/hooks/useAdminAuth.tsx, /src/index.css
+4:58:03 PM [vite] hmr update /src/hooks/useAdminAuth.tsx, /src/index.css
+5:06:54 PM [vite] hmr update /src/hooks/useAdminAuth.tsx, /src/index.css
+5:07:15 PM [vite] vite.config.ts changed, restarting server...
+▲ [WARNING] Invalid pattern "./packages/*/src/*", must have at most one "*" character [tsconfig.json]
+
+    ../../tsconfig.json:22:20:
+      22 │       "@shared/*": ["./packages/*/src/*"]
+         ╵                     ~~~~~~~~~~~~~~~~~~~~
+
+5:07:15 PM [vite] server restarted.

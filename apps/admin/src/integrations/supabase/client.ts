@@ -15,11 +15,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     flowType: 'pkce', // Use PKCE flow for better security
     debug: process.env.NODE_ENV === 'development', // Enable debug logging in dev
     storageKey: 'admin-auth-token', // Custom storage key for admin app
-    sessionRefresh: {
-      // Enhanced token refresh settings
-      refetchOnReconnect: true,
-      refetchOnWindowFocus: true,
-    },
   },
   global: {
     headers: {
@@ -32,3 +27,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     }
   }
 })
+
+// Expose client for debugging in development
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  ;(window as any).supabaseAdmin = supabase
+}

@@ -196,6 +196,13 @@ export default function AdminTitles() {
               <div className="text-midnight-ink-600 text-lg font-medium">
                 {filteredTitles.length} titles
               </div>
+            <Button
+              asChild
+              size="sm"
+              className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
+            >
+              <Link to="/titles/new">New title</Link>
+            </Button>
               <Button
                 onClick={handleRefresh}
                 variant="outline"
@@ -203,7 +210,7 @@ export default function AdminTitles() {
                 disabled={loading}
                 className="flex items-center gap-2 text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
             </div>

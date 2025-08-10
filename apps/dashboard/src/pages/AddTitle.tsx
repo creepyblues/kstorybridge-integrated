@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Save, FileText, Users, Palette, BookOpen, Globe } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
+import { StringArrayInput } from "@/components/ui/string-array-input";
 
 type TitleInsert = Database["public"]["Tables"]["titles"]["Insert"];
 
@@ -408,15 +409,13 @@ export default function AddTitle() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="comps">Comparable Titles</Label>
-                <Input
-                  id="comps"
-                  value={formData.comps || ""}
-                  onChange={(e) => handleInputChange("comps", e.target.value)}
-                  placeholder="Similar successful titles"
-                />
-              </div>
+              <StringArrayInput
+                id="comps"
+                label="Comparable Titles"
+                placeholder="Add similar successful titles"
+                value={formData.comps}
+                onChange={(value) => handleInputChange("comps", value)}
+              />
 
               <div>
                 <Label htmlFor="tone">Tone</Label>

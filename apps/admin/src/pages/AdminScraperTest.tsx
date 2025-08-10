@@ -19,17 +19,19 @@ import {
   TestTube
 } from "lucide-react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { scraperService, type ScrapingResult, type ScrapedTitleData } from "@/services/scraperService";
+import scraperApiClient, { type ScrapingResult, type ScrapedTitleData } from "@/services/scraperApiClient";
 import { toast } from "sonner";
 
 export default function AdminScraperTest() {
-  const [url, setUrl] = useState("");
+  // Pre-fill with the test URL
+  const [url, setUrl] = useState("https://series.naver.com/comic/detail.series?productNo=3293134");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ScrapingResult | null>(null);
   const [editableData, setEditableData] = useState<Partial<ScrapedTitleData>>({});
 
-  // Sample URLs for testing (including real examples from images)
+  // Sample URLs for testing
   const sampleUrls = [
+    "https://series.naver.com/comic/detail.series?productNo=3293134", // Your test URL first
     "https://page.kakao.com/home?seriesId=54100540",
     "https://page.kakao.com/content/54100540?tab_type=about",
     "https://series.naver.com/comic/detail.series?productNo=11979674",
@@ -52,8 +54,7 @@ export default function AdminScraperTest() {
 
     try {
       console.log('🔍 Starting scrape for:', url);
-      // Use the actual scraper service for testing
-      const scrapingResult = await scraperService.scrapeTitle(url);
+      const scrapingResult = await scraperApiClient.scrapeTitle(url);
       console.log('📊 Scraping result:', scrapingResult);
       setResult(scrapingResult);
       
@@ -76,188 +77,6 @@ export default function AdminScraperTest() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const simulateScraping = async (testUrl: string): Promise<ScrapingResult> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Detect platform for mock data
-    const hostname = testUrl.toLowerCase();
-    let mockData: Partial<ScrapedTitleData> = {
-      title_url: testUrl
-    };
-    
-    let extractedFields: string[] = [];
-    
-    if (hostname.includes('toons.kr')) {
-      mockData = {
-        title_url: testUrl,
-        title_name_kr: "시간을 되돌리는 용사",
-        genre: "fantasy",
-        writer: "김작가",
-        illustrator: "박화가",
-        synopsis: "용사가 시간을 되돌려 세계를 구원하는 판타지 웹툰입니다. 마왕을 쓰러뜨리기 위해 과거로 돌아간 용사의 모험을 그린 작품으로, 흥미진진한 전개와 매력적인 캐릭터들이 특징입니다.",
-        content_format: "webtoon",
-        chapters: 45,
-        title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDMwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjOTk5OTk5Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjA1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE2Ij5Ub29ucy5rciBDb3ZlcjwvdGV4dD4KPHN2Zz4K",
-        completed: false
-      };
-      extractedFields = ['title_name_kr', 'genre', 'writer', 'illustrator', 'synopsis', 'content_format', 'chapters', 'title_image'];
-    } else if (hostname.includes('webtoons.com')) {
-      mockData = {
-        title_url: testUrl,
-        title_name_en: "Time Rewind Hero",
-        title_name_kr: "시간을 되돌리는 용사",
-        genre: "fantasy",
-        author: "Kim Writer",
-        description: "A fantasy webtoon about a hero who goes back in time to save the world. Follow the adventures of the hero who returned to the past to defeat the demon king.",
-        content_format: "webtoon",
-        title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDMwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjOTk5OTk5Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjA1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE2Ij5XZWJ0b29ucyBDb3ZlcjwvdGV4dD4KPHN2Zz4K"
-      };
-      extractedFields = ['title_name_en', 'title_name_kr', 'genre', 'author', 'description', 'content_format', 'title_image'];
-    } else if (hostname.includes('naver.com') || hostname.includes('series.naver.com')) {
-      // Naver specific mock data based on the example images
-      const isSeriesNaver = hostname.includes('series.naver.com');
-      const isWebtoonNaver = hostname.includes('comic.naver.com');
-      
-      if (isSeriesNaver) {
-        // Mock data based on 화신과 천재검귀 example
-        mockData = {
-          title_url: testUrl,
-          title_name_kr: "화신과 천재검귀",
-          genre: "action", // 무협 maps to action
-          story_author: "황제덕",
-          writer: "황제덕", 
-          art_author: "김시준",
-          illustrator: "김시준",
-          author: "황제덕",
-          description: "네이버 시리즈에서 추출된 작품 설명입니다. 화신과 천재검귀의 모험을 그린 무협 소설입니다.",
-          content_format: "web_novel",
-          completed: true,
-          title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgdmlld0JveD0iMCAwIDIwMCAyODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjgwIiBmaWxsPSIjOTk5OTk5Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTQ1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE0Ij7tmZTsi6Dqs7wg7LKc7J6s6rSA6riIPC90ZXh0Pgo8L3N2Zz4K",
-          tags: ["rating:9.7", "views:1162000", "likes:126", "age_rating:15"]
-        };
-        extractedFields = ['title_name_kr', 'genre', 'story_author', 'writer', 'art_author', 'illustrator', 'author', 'description', 'content_format', 'completed', 'title_image', 'tags'];
-      } else if (isWebtoonNaver) {
-        // Mock data based on 마음의소리 example  
-        mockData = {
-          title_url: testUrl,
-          title_name_kr: "마음의소리",
-          genre: "comedy", 
-          author: "조석",
-          writer: "조석",
-          art_author: "조석", 
-          description: "네이버 웹툰에서 추출된 작품 설명입니다. 일상의 재미있는 순간들을 그린 개그 웹툰입니다.",
-          content_format: "webtoon",
-          completed: false,
-          title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgdmlld0JveD0iMCAwIDIwMCAyODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjgwIiBmaWxsPSIjOTk5OTk5Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTQ1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE0Ij7rp4jsnYzsnZjshozrpqw8L3RleHQ+Cjwvc3ZnPgo=",
-          tags: ["likes:233686"]
-        };
-        extractedFields = ['title_name_kr', 'genre', 'author', 'writer', 'art_author', 'description', 'content_format', 'completed', 'title_image', 'tags'];
-      } else {
-        // Generic Naver fallback
-        mockData = {
-          title_url: testUrl,
-          title_name_kr: "네이버 테스트 작품",
-          genre: "drama",
-          author: "네이버작가",
-          description: "네이버에서 추출된 작품 설명입니다.",
-          content_format: "webtoon",
-          title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgdmlld0JveD0iMCAwIDIwMCAyODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjgwIiBmaWxsPSIjOTk5OTk5Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTQ1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE0Ij5OYXZlciBDb250ZW50PC90ZXh0Pgo8L3N2Zz4K"
-        };
-        extractedFields = ['title_name_kr', 'genre', 'author', 'description', 'content_format', 'title_image'];
-      }
-    } else if (hostname.includes('page.kakao.com')) {
-      // Determine if it's the specific series we're testing
-      const isTargetSeries = testUrl.includes('54100540') || testUrl.includes('seriesId=54100540');
-      
-      if (isTargetSeries) {
-        // Mock data for "사랑에 번역앱이 필요한가요?" based on your specifications
-        mockData = {
-          title_url: testUrl,
-          title_name_kr: "사랑에 번역앱이 필요한가요?",
-          genre: "romance",
-          art_author: "휘요",
-          author: "휘요", 
-          writer: "휘요",
-          illustrator: "휘요",
-          description: "현대 로맨스 웹툰으로, 번역앱을 통해 시작된 특별한 사랑 이야기를 그립니다.",
-          content_format: "webtoon",
-          title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgdmlld0JveD0iMCAwIDIwMCAyODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjgwIiBmaWxsPSIjRkY4MDgwIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTMwIiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjEyIj7sgKzrnZHsl5Ag67KI7Jet7JWx7J20PC90ZXh0Pgo8dGV4dCB4PSIxMDAiIHk9IjE1MCIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRlciIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI0ZGRkZGRiIgZm9udC1zaXplPSIxMiI+7ZWE7JqU7ZWc6rCA7JqUPzwvdGV4dD4KPHN2Zz4K",
-          tags: ["views:6206000", "likes:9.9", "#현대로맨스", "#캠퍼스물", "#동거물", "#우연한만남", "#외국인남/혼혈", "#능력녀", "#경쟁구도", "#달달물", "#드라마"]
-        };
-        extractedFields = ['title_name_kr', 'genre', 'art_author', 'author', 'writer', 'illustrator', 'description', 'content_format', 'title_image', 'tags'];
-      } else {
-        // KakaoPage mock data based on 제젓니, 짝사랑 example
-        mockData = {
-          title_url: testUrl,
-          title_name_kr: "제젓니, 짝사랑",
-          genre: "romance",
-          author: "조민재", 
-          writer: "조민재",
-          description: "시원한 웹툰 속 남자친구를, 그의 사하룰 뿐인 여주를 흔들어 버리고 그냥 타는 마지막 사하룰...",
-          content_format: "webtoon",
-          title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgdmlld0JveD0iMCAwIDIwMCAyODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjgwIiBmaWxsPSIjRkY2QjZCIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTQ1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE0Ij7soJzsoJ3ri4wg7Kyc7IKs656RPC90ZXh0Pgo8L3N2Zz4K",
-          tags: ["rating:10.0", "views:90124000"]
-        };
-        extractedFields = ['title_name_kr', 'genre', 'author', 'writer', 'description', 'content_format', 'title_image', 'tags'];
-      }
-    } else if (hostname.includes('webtoon.kakao.com')) {
-      // Kakao Webtoon mock data based on RAINBOW example
-      mockData = {
-        title_url: testUrl,
-        title_name_en: "RAINBOW",
-        genre: "fantasy",
-        author: "강어틀",
-        writer: "강어틀",
-        story_author: "강어틀", 
-        art_author: "강어틀",
-        illustrator: "강어틀",
-        description: "지독하도 험상한 위쟁어도 이정산 있는 승거지 파라디이스 '무치사'살",
-        content_format: "webtoon",
-        title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgdmlld0JveD0iMCAwIDIwMCAyODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjgwIiBmaWxsPSIjNEVDREMzIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTQ1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE2Ij5SQUlOQk9XPC90ZXh0Pgo8L3N2Zz4K",
-        tags: ["rating:7.9", "views:3327000"]
-      };
-      extractedFields = ['title_name_en', 'genre', 'author', 'writer', 'story_author', 'art_author', 'illustrator', 'description', 'content_format', 'title_image', 'tags'];
-    } else if (hostname.includes('kakao')) {
-      mockData = {
-        title_url: testUrl,
-        title_name_kr: "카카오 테스트 작품",
-        genre: "romance",
-        author: "카카오작가",
-        description: "카카오페이지의 인기 로맨스 소설입니다.",
-        content_format: "web_novel",
-        title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDMwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjOTk5OTk5Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjA1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE2Ij5LYWthbyBQYWdlPC90ZXh0Pgo8L3N2Zz4K"
-      };
-      extractedFields = ['title_name_kr', 'genre', 'author', 'description', 'content_format', 'title_image'];
-    } else {
-      // Generic scraping result
-      mockData = {
-        title_url: testUrl,
-        title_name_kr: "테스트 제목",
-        description: "웹사이트에서 추출된 설명입니다.",
-        title_image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDMwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjOTk5OTk5Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMjA1IiBkb21pbmFudC1iYXNlbGluZT0iY2VudGVyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRkZGRkZGIiBmb250LXNpemU9IjE2Ij5HZW5lcmljIENvdmVyPC90ZXh0Pgo8L3N2Zz4K"
-      };
-      extractedFields = ['title_name_kr', 'description', 'title_image'];
-    }
-
-    const result = {
-      success: extractedFields.length > 0,
-      data: mockData as ScrapedTitleData,
-      confidence: Math.min(extractedFields.length * 0.1 + 0.2, 0.95), // Better confidence calculation
-      extractedFields
-    };
-
-    console.log('🎯 Mock scraping result:', {
-      url: testUrl,
-      platform: hostname.includes('naver') ? 'Naver' : hostname.includes('toons.kr') ? 'Toons.kr' : hostname.includes('webtoons') ? 'Webtoons' : hostname.includes('kakao') ? 'Kakao' : 'Generic',
-      fieldsCount: extractedFields.length,
-      confidence: result.confidence,
-      extractedFields
-    });
-
-    return result;
   };
 
   const handleFieldEdit = (field: keyof ScrapedTitleData, value: any) => {
@@ -309,6 +128,7 @@ export default function AdminScraperTest() {
           </div>
         </div>
 
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Section */}
           <div className="space-y-6">
@@ -365,20 +185,73 @@ export default function AdminScraperTest() {
                     ))}
                   </div>
 
-                  <div className="mt-4 pt-4 border-t">
+                  <div className="mt-4 pt-4 border-t space-y-2">
                     <button
                       onClick={() => {
-                        scraperService.testKoreanNumbers();
+                        scraperApiClient.testKoreanNumbers();
                         console.log('Korean number test completed - check console for results');
                       }}
                       className="w-full text-sm text-purple-600 hover:underline p-2 rounded border border-purple-200 hover:bg-purple-50"
                     >
                       🧮 Test Korean Number Conversion (Check Console)
                     </button>
+                    
+                    <button
+                      onClick={async () => {
+                        const health = await scraperApiClient.healthCheck();
+                        if (health) {
+                          toast.success(`Backend healthy: ${health.service}`);
+                        } else {
+                          toast.error('Backend unavailable - make sure server is running');
+                        }
+                      }}
+                      className="w-full text-sm text-green-600 hover:underline p-2 rounded border border-green-200 hover:bg-green-50"
+                    >
+                      🏥 Check Backend Health
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        setIsLoading(true);
+                        const testResult = await scraperApiClient.runTest();
+                        setResult(testResult);
+                        if (testResult.success && testResult.data) {
+                          setEditableData(testResult.data);
+                        }
+                        setIsLoading(false);
+                      }}
+                      disabled={isLoading}
+                      className="w-full text-sm text-blue-600 hover:underline p-2 rounded border border-blue-200 hover:bg-blue-50 disabled:opacity-50"
+                    >
+                      🧪 Run Backend Test
+                    </button>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Verbose Logs */}
+            {result && result.logs && result.logs.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <RefreshCw className="w-5 h-5" />
+                    Scraping Progress Log
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-h-80 overflow-y-auto bg-gray-50 rounded-lg p-3">
+                    <div className="space-y-1">
+                      {result.logs.map((log, index) => (
+                        <div key={index} className="text-xs font-mono text-gray-700">
+                          {log}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Results Summary */}
             {result && (
@@ -455,227 +328,98 @@ export default function AdminScraperTest() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="max-h-[600px] overflow-y-auto space-y-4">
-                    {/* Title Fields */}
-                    {(editableData.title_name_kr || editableData.title_name_en) && (
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-midnight-ink border-b pb-1">Title Information</h4>
-                        
-                        {editableData.title_name_kr && (
-                          <div className="space-y-1">
-                            <Label className="text-sm flex items-center gap-2">
-                              <BookOpen className="w-3 h-3" />
-                              Korean Title
+                    {/* All fields display */}
+                    {Object.entries(editableData).map(([field, value]) => {
+                      if (!value && value !== false && value !== 0) return null;
+                      
+                      const isTextArea = ['description', 'synopsis', 'logline'].includes(field);
+                      const isBoolean = typeof value === 'boolean';
+                      const isNumber = field === 'chapters';
+                      const isImage = field === 'title_image';
+                      const isTags = field === 'tags' && Array.isArray(value);
+                      
+                      return (
+                        <div key={field} className="space-y-1">
+                          <Label className="text-sm flex items-center gap-2">
+                            {getFieldIcon(field)}
+                            {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            {!isBoolean && !isImage && (
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => copyToClipboard(editableData.title_name_kr || '')}
+                                onClick={() => copyToClipboard(String(value))}
                                 className="h-6 w-6 p-0"
                               >
                                 <Copy className="w-3 h-3" />
                               </Button>
-                            </Label>
-                            <Input
-                              value={editableData.title_name_kr || ''}
-                              onChange={(e) => handleFieldEdit('title_name_kr', e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-                        
-                        {editableData.title_name_en && (
-                          <div className="space-y-1">
-                            <Label className="text-sm flex items-center gap-2">
-                              <BookOpen className="w-3 h-3" />
-                              English Title
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => copyToClipboard(editableData.title_name_en || '')}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Copy className="w-3 h-3" />
-                              </Button>
-                            </Label>
-                            <Input
-                              value={editableData.title_name_en || ''}
-                              onChange={(e) => handleFieldEdit('title_name_en', e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Content Fields */}
-                    {(editableData.description || editableData.synopsis) && (
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-midnight-ink border-b pb-1">Content Details</h4>
-                        
-                        {editableData.description && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Description</Label>
+                            )}
+                          </Label>
+                          
+                          {isTextArea ? (
                             <Textarea
-                              value={editableData.description || ''}
-                              onChange={(e) => handleFieldEdit('description', e.target.value)}
+                              value={String(value)}
+                              onChange={(e) => handleFieldEdit(field as keyof ScrapedTitleData, e.target.value)}
                               rows={3}
                               className="text-sm"
                             />
-                          </div>
-                        )}
-                        
-                        {editableData.synopsis && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Synopsis</Label>
-                            <Textarea
-                              value={editableData.synopsis || ''}
-                              onChange={(e) => handleFieldEdit('synopsis', e.target.value)}
-                              rows={3}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Creator Fields */}
-                    {(editableData.author || editableData.writer || editableData.illustrator || editableData.art_author || editableData.story_author) && (
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-midnight-ink border-b pb-1">Creator Information</h4>
-                        
-                        {editableData.author && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Author</Label>
-                            <Input
-                              value={editableData.author || ''}
-                              onChange={(e) => handleFieldEdit('author', e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-                        
-                        {editableData.writer && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Writer</Label>
-                            <Input
-                              value={editableData.writer || ''}
-                              onChange={(e) => handleFieldEdit('writer', e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-                        
-                        {editableData.illustrator && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Illustrator</Label>
-                            <Input
-                              value={editableData.illustrator || ''}
-                              onChange={(e) => handleFieldEdit('illustrator', e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Metadata Fields */}
-                    {(editableData.genre || editableData.content_format || editableData.chapters !== undefined || editableData.completed !== undefined) && (
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-midnight-ink border-b pb-1">Metadata</h4>
-                        
-                        {editableData.genre && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Genre</Label>
-                            <Input
-                              value={editableData.genre || ''}
-                              onChange={(e) => handleFieldEdit('genre', e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-                        
-                        {editableData.content_format && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Content Format</Label>
-                            <Input
-                              value={editableData.content_format || ''}
-                              onChange={(e) => handleFieldEdit('content_format', e.target.value)}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-                        
-                        {editableData.chapters !== undefined && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Chapters</Label>
-                            <Input
-                              type="number"
-                              value={editableData.chapters || ''}
-                              onChange={(e) => handleFieldEdit('chapters', parseInt(e.target.value) || 0)}
-                              className="text-sm"
-                            />
-                          </div>
-                        )}
-
-                        {editableData.completed !== undefined && (
-                          <div className="space-y-1">
-                            <Label className="text-sm">Completed Status</Label>
+                          ) : isBoolean ? (
                             <div className="flex items-center gap-2">
                               <input
                                 type="checkbox"
-                                checked={editableData.completed || false}
-                                onChange={(e) => handleFieldEdit('completed', e.target.checked)}
+                                checked={Boolean(value)}
+                                onChange={(e) => handleFieldEdit(field as keyof ScrapedTitleData, e.target.checked)}
                                 className="rounded"
                               />
-                              <span className="text-sm">{editableData.completed ? 'Completed' : 'Ongoing'}</span>
+                              <span className="text-sm">{value ? 'Yes' : 'No'}</span>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* URLs */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-midnight-ink border-b pb-1">URLs</h4>
-                      
-                      {editableData.title_image && (
-                        <div className="space-y-1">
-                          <Label className="text-sm flex items-center gap-2">
-                            <Image className="w-3 h-3" />
-                            Title Image URL
-                          </Label>
-                          <Input
-                            value={editableData.title_image || ''}
-                            onChange={(e) => handleFieldEdit('title_image', e.target.value)}
-                            className="text-sm"
-                          />
-                          {editableData.title_image && (
-                            <div className="mt-2">
-                              <img 
-                                src={editableData.title_image} 
-                                alt="Title Preview" 
-                                className="w-24 h-32 object-cover rounded border"
-                                onError={(e) => {
-                                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgOTYgMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iMTI4IiBmaWxsPSIjQ0NDQ0NDIi8+Cjx0ZXh0IHg9IjQ4IiB5PSI2OCIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRlciIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI0ZGRkZGRiIgZm9udC1zaXplPSIxMiI+Tm8gSW1hZ2U8L3RleHQ+Cjwvc3ZnPgo=';
-                                }}
+                          ) : isNumber ? (
+                            <Input
+                              type="number"
+                              value={String(value)}
+                              onChange={(e) => handleFieldEdit(field as keyof ScrapedTitleData, parseInt(e.target.value) || 0)}
+                              className="text-sm"
+                            />
+                          ) : isTags ? (
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1">
+                                {(value as string[]).map((tag, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ) : isImage ? (
+                            <div className="space-y-2">
+                              <Input
+                                value={String(value)}
+                                onChange={(e) => handleFieldEdit(field as keyof ScrapedTitleData, e.target.value)}
+                                className="text-sm"
                               />
+                              {value && (
+                                <div className="mt-2">
+                                  <img 
+                                    src={String(value)} 
+                                    alt="Title Preview" 
+                                    className="w-24 h-32 object-cover rounded border"
+                                    onError={(e) => {
+                                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgOTYgMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iMTI4IiBmaWxsPSIjQ0NDQ0NDIi8+Cjx0ZXh0IHg9IjQ4IiB5PSI2OCIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRlciIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI0ZGRkZGRiIgZm9udC1zaXplPSIxMiI+Tm8gSW1hZ2U8L3RleHQ+Cjwvc3ZnPgo=';
+                                    }}
+                                  />
+                                </div>
+                              )}
                             </div>
+                          ) : (
+                            <Input
+                              value={String(value)}
+                              onChange={(e) => handleFieldEdit(field as keyof ScrapedTitleData, e.target.value)}
+                              className="text-sm"
+                              disabled={field === 'title_url'}
+                            />
                           )}
                         </div>
-                      )}
-                      
-                      <div className="space-y-1">
-                        <Label className="text-sm flex items-center gap-2">
-                          <Globe className="w-3 h-3" />
-                          Source URL
-                        </Label>
-                        <Input
-                          value={editableData.title_url || ''}
-                          onChange={(e) => handleFieldEdit('title_url', e.target.value)}
-                          className="text-sm"
-                          disabled
-                        />
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
 
                   <div className="pt-4 border-t">

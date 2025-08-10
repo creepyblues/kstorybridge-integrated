@@ -335,7 +335,17 @@ export default function AdminTitleDetail() {
                       </div>
                       <div>
                         <h5 className="font-bold text-hanok-teal mb-1">Comps</h5>
-                        <p className="text-gray-600 text-sm">{title.comps || 'Not specified'}</p>
+                        {title.comps && title.comps.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {title.comps.map((comp, index) => (
+                              <span key={index} className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">
+                                {comp}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-600 text-sm">Not specified</p>
+                        )}
                       </div>
                     </div>
                     

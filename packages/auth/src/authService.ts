@@ -38,7 +38,7 @@ export class AuthService {
       if (accountType === 'buyer') {
         const { data: profile, error } = await this.supabase
           .from('user_buyers')
-          .select('invitation_status, buyer_role')
+          .select('tier, buyer_role')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -49,7 +49,7 @@ export class AuthService {
 
         return {
           account_type: 'buyer',
-          invitation_status: profile?.invitation_status || 'invited',
+          invitation_status: profile?.tier === 'invited' ? 'invited' : 'accepted',
           role: profile?.buyer_role
         };
       }

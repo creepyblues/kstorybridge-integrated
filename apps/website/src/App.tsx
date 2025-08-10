@@ -18,10 +18,6 @@ import SigninPage from "./pages/SigninPage";
 import TitleDetailPage from "./pages/TitleDetailPage";
 import DashboardInvited from "./pages/DashboardInvited";
 import CreatorInvited from "./pages/CreatorInvited";
-import DebugSupabase from "./pages/DebugSupabase";
-import TestTitles from "./pages/TestTitles";
-import TestTitlesWithSample from "./pages/TestTitlesWithSample";
-import DebugTitles from "./pages/DebugTitles";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -47,10 +43,6 @@ const App = () => (
           <Route path="/creator/invited" element={<CreatorInvited />} />
           {/* Legacy redirect for old dashboard routes */}
           <Route path="/dashboard/invited" element={<Navigate to="/invited" replace />} />
-          <Route path="/debug/supabase" element={<DebugSupabase />} />
-          <Route path="/test/titles" element={<TestTitles />} />
-          <Route path="/test/titles-sample" element={<TestTitlesWithSample />} />
-          <Route path="/debug/titles" element={<DebugTitles />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -28,7 +28,7 @@ export const useAuth = () => {
     }
     
     if (userProfile.invitation_status === 'accepted') {
-      console.log('✅ WEBSITE: Invitation status is accepted, proceeding with dashboard redirect');
+      console.log('✅ WEBSITE: User is accepted (invitation_status: ' + userProfile.invitation_status + '), proceeding with dashboard redirect');
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         console.log('🔄 WEBSITE: Current session details:', {
@@ -60,7 +60,7 @@ export const useAuth = () => {
         navigate('/invited');
       }
     } else {
-      console.log('⚠️ WEBSITE: Invitation status is not accepted:', userProfile.invitation_status);
+      console.log('⚠️ WEBSITE: User not accepted (invitation_status: ' + userProfile.invitation_status + '), redirecting to invited page');
       const invitedPath = userProfile.account_type === 'ip_owner' ? '/creator/invited' : '/invited';
       navigate(invitedPath);
     }
@@ -96,7 +96,7 @@ export const useAuth = () => {
           if (accountType === 'buyer') {
             const { data, error } = await supabase
               .from('user_buyers')
-              .select('invitation_status, buyer_role')
+              .select('tier, buyer_role')
               .eq('id', session.user.id)
               .maybeSingle();
             
@@ -105,7 +105,7 @@ export const useAuth = () => {
             if (!error && data) {
               profile = {
                 account_type: 'buyer' as const,
-                invitation_status: data.invitation_status || 'invited',
+                invitation_status: data.tier === 'invited' ? 'invited' : 'accepted',
                 role: data.buyer_role
               };
             }

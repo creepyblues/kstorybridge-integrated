@@ -53,20 +53,43 @@ export const useTierAccess = (): TierAccess => {
       }
 
       try {
-        const { data, error } = await supabase
+        console.log('🔍 useTierAccess: Fetching tier for user:', { id: user.id, email: user.email });
+        
+        // First try by user_id
+        let { data, error } = await supabase
           .from('user_buyers')
-          .select('tier')
+          .select('tier, user_id')
           .eq('user_id', user.id)
           .single();
 
+        console.log('🔍 useTierAccess: Query by user_id result:', { data, error });
+
+        // If no result by user_id, try by email
+        if (error && user.email) {
+          console.log('🔍 useTierAccess: Trying by email:', user.email);
+          const emailQuery = await supabase
+            .from('user_buyers')
+            .select('tier, user_id, email')
+            .eq('email', user.email)
+            .single();
+          
+          console.log('🔍 useTierAccess: Query by email result:', emailQuery);
+          data = emailQuery.data;
+          error = emailQuery.error;
+        }
+
         if (error) {
-          console.error('Error fetching user tier:', error);
+          console.error('❌ Error fetching user tier:', error);
+          console.log('Setting tier to invited due to error');
           setTier('invited'); // Default to most restrictive
         } else {
-          setTier(data.tier || 'invited');
+          const finalTier = data.tier || 'invited';
+          console.log('✅ Setting tier to:', finalTier, '(raw data.tier:', data.tier, ')');
+          setTier(finalTier);
         }
       } catch (error) {
-        console.error('Exception fetching user tier:', error);
+        console.error('❌ Exception fetching user tier:', error);
+        console.log('Setting tier to invited due to exception');
         setTier('invited'); // Default to most restrictive
       } finally {
         setLoading(false);

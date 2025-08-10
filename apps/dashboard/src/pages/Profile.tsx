@@ -18,7 +18,7 @@ type BuyerProfile = {
   buyer_role?: string | null;
   linkedin_url?: string | null;
   plan: string;
-  invitation_status?: string | null;
+  tier?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -31,7 +31,7 @@ type IPOwnerProfile = {
   ip_owner_role?: string | null;
   ip_owner_company?: string | null;
   website_url?: string | null;
-  invitation_status?: string | null;
+  tier?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -54,7 +54,7 @@ type UnifiedProfile = {
   ip_owner_company?: string | null;
   website_url?: string | null;
   
-  invitation_status?: string | null;
+  tier?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -731,15 +731,19 @@ export default function Profile() {
               <p className="font-medium text-slate-800">{formatDate(profile.updated_at)}</p>
             </div>
 
-            {profile.invitation_status && (
+            {profile.tier && (
               <div className="space-y-2">
-                <Label>Invitation Status</Label>
+                <Label>Membership Tier</Label>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  profile.invitation_status === "accepted" 
-                    ? "bg-green-100 text-green-800 border border-green-200" 
+                  profile.tier === "basic" || profile.tier === "pro" || profile.tier === "suite"
+                    ? profile.tier === "suite" 
+                      ? "bg-purple-100 text-purple-800 border border-purple-200"
+                      : profile.tier === "pro"
+                      ? "bg-blue-100 text-blue-800 border border-blue-200"
+                      : "bg-green-100 text-green-800 border border-green-200"
                     : "bg-slate-100 text-slate-800 border border-slate-200"
                 }`}>
-                  {profile.invitation_status.charAt(0).toUpperCase() + profile.invitation_status.slice(1)}
+                  {profile.tier === "suite" ? "Suite" : profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1)}
                 </span>
               </div>
             )}

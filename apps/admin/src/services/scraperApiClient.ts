@@ -14,18 +14,20 @@ export interface ScrapedTitleData {
   illustrator?: string;
   art_author?: string;
   story_author?: string;
-  genre?: string;
+  genre?: string; // Now stores genre: "소년"
   content_format?: string;
   chapters?: number;
-  completed?: boolean;
+  completed?: boolean; // Now stores completion status based on "완결"
   title_image?: string;
   title_url: string;
-  tags?: string[];
+  tags?: string[]; // Only for comic.naver.com (has keywords), not series.naver.com
   tone?: string;
-  audience?: string;
+  audience?: string; // Now stores age rating: "15세 이용가"
   pitch?: string;
   perfect_for?: string;
   comps?: string;
+  views?: number; // Now stores view count: 137000
+  cp?: string; // Now stores content provider: "시프트코믹스"
 }
 
 export interface ScrapingResult {

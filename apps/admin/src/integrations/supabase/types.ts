@@ -50,7 +50,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          invitation_status: string | null
+          tier: Database["public"]["Enums"]["user_tier"] | null
           ip_owner_company: string | null
           ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url: string | null
@@ -66,7 +66,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          invitation_status?: string | null
+          tier?: Database["public"]["Enums"]["user_tier"] | null
           ip_owner_company?: string | null
           ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url?: string | null
@@ -82,7 +82,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
-          invitation_status?: string | null
+          tier?: Database["public"]["Enums"]["user_tier"] | null
           ip_owner_company?: string | null
           ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url?: string | null
@@ -283,6 +283,7 @@ export type Database = {
         | "sports"
         | "other"
       ip_owner_role: "author" | "agent"
+      user_tier: "invited" | "basic" | "pro" | "suite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -437,6 +438,7 @@ export const Constants = {
         "other",
       ],
       ip_owner_role: ["author", "agent"],
+      user_tier: ["invited", "basic", "pro", "suite"],
     },
   },
 } as const

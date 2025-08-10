@@ -55,28 +55,14 @@ export const useTierAccess = (): TierAccess => {
       try {
         console.log('🔍 useTierAccess: Fetching tier for user:', { id: user.id, email: user.email });
         
-        // First try by user_id
-        let { data, error } = await supabase
+        // Query by email since user_id column doesn't exist yet
+        const { data, error } = await supabase
           .from('user_buyers')
-          .select('tier, user_id')
-          .eq('user_id', user.id)
+          .select('tier, email')
+          .eq('email', user.email)
           .single();
 
-        console.log('🔍 useTierAccess: Query by user_id result:', { data, error });
-
-        // If no result by user_id, try by email
-        if (error && user.email) {
-          console.log('🔍 useTierAccess: Trying by email:', user.email);
-          const emailQuery = await supabase
-            .from('user_buyers')
-            .select('tier, user_id, email')
-            .eq('email', user.email)
-            .single();
-          
-          console.log('🔍 useTierAccess: Query by email result:', emailQuery);
-          data = emailQuery.data;
-          error = emailQuery.error;
-        }
+        console.log('🔍 useTierAccess: Query by email result:', { data, error, email: user.email });
 
         if (error) {
           console.error('❌ Error fetching user tier:', error);

@@ -88,7 +88,7 @@ export default function Profile() {
           const { data, error } = await supabase
             .from("user_buyers")
             .select("*")
-            .eq("user_id", user.id)
+            .eq("email", user.email)
             .single();
 
           console.log("Buyer profile query result:", { data, error });
@@ -120,7 +120,7 @@ export default function Profile() {
           const { data, error } = await supabase
             .from("user_ipowners")
             .select("*")
-            .eq("user_id", user.id)
+            .eq("email", user.email)
             .single();
 
           console.log("IP Owner profile query result:", { data, error });
@@ -174,7 +174,6 @@ export default function Profile() {
     
     try {
       const newProfile: Partial<BuyerProfile> = {
-        user_id: user.id,
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
         buyer_company: user.user_metadata?.buyer_company,
@@ -228,7 +227,6 @@ export default function Profile() {
     
     try {
       const newProfile: Partial<IPOwnerProfile> = {
-        user_id: user.id,
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
         pen_name_or_studio: user.user_metadata?.pen_name_or_studio,
@@ -297,7 +295,7 @@ export default function Profile() {
         const { data, error } = await supabase
           .from("user_buyers")
           .update(updateData)
-          .eq("user_id", user.id)
+          .eq("email", user.email)
           .select()
           .single();
 
@@ -324,7 +322,7 @@ export default function Profile() {
         const { data, error } = await supabase
           .from("user_ipowners")
           .update(updateData)
-          .eq("user_id", user.id)
+          .eq("email", user.email)
           .select()
           .single();
 

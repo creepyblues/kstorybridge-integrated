@@ -80,7 +80,7 @@ export const debugProfile = async () => {
     const { data: buyerData, error: buyerError } = await supabase
       .from("user_buyers")
       .select("*")
-      .eq("id", user.id);
+      .eq("email", user.email);
       
     if (buyerError) {
       console.log("ℹ️ user_buyers query failed (might not exist):", buyerError.message);
@@ -91,7 +91,7 @@ export const debugProfile = async () => {
     const { data: ipOwnerData, error: ipOwnerError } = await supabase
       .from("user_ipowners")
       .select("*")
-      .eq("id", user.id);
+      .eq("email", user.email);
       
     if (ipOwnerError) {
       console.log("ℹ️ user_ipowners query failed (might not exist):", ipOwnerError.message);

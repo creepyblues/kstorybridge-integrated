@@ -47,7 +47,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
           }} 
           variant="outline" 
           size="sm"
-          className={isMobile ? "w-full" : ""}
+          className={`border-gray-300 text-gray-700 hover:bg-gray-50 ${isMobile ? "w-full" : ""}`}
         >
           Sign Out
         </Button>

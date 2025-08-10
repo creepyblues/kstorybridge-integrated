@@ -14,6 +14,7 @@ import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import PremiumColumn from "@/components/PremiumColumn";
+import TierGatedContent from "@/components/TierGatedContent";
 
 export default function TitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -466,7 +467,7 @@ export default function TitleDetail() {
                           PRO PLAN
                         </span>
                       </div>
-                      <PremiumColumn>
+                      <TierGatedContent requiredTier="pro">
                         {title.perfect_for ? (
                           <div className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                             {title.perfect_for}
@@ -476,7 +477,7 @@ export default function TitleDetail() {
                             Not specified
                           </div>
                         )}
-                      </PremiumColumn>
+                      </TierGatedContent>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-3">
@@ -485,11 +486,11 @@ export default function TitleDetail() {
                           PRO PLAN
                         </span>
                       </div>
-                      <PremiumColumn>
+                      <TierGatedContent requiredTier="pro">
                         {title.comps && title.comps.length > 0 ? (
-                          <div className="space-y-1">
+                          <div className="flex flex-wrap gap-1">
                             {title.comps.map((comp, index) => (
-                              <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium mr-1 mb-1">
+                              <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
                                 {comp}
                               </div>
                             ))}
@@ -499,7 +500,7 @@ export default function TitleDetail() {
                             Not specified
                           </div>
                         )}
-                      </PremiumColumn>
+                      </TierGatedContent>
                     </div>
                   </div>
                   
@@ -613,7 +614,7 @@ export default function TitleDetail() {
                         PRO PLAN
                       </span>
                     </div>
-                    <PremiumColumn>
+                    <TierGatedContent requiredTier="pro">
                       {(title.rights_owner || title.rights) ? (
                         <div className="inline-block bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs font-medium">
                           {title.rights_owner || title.rights}
@@ -623,7 +624,7 @@ export default function TitleDetail() {
                           Not specified
                         </div>
                       )}
-                    </PremiumColumn>
+                    </TierGatedContent>
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-3">
@@ -632,7 +633,7 @@ export default function TitleDetail() {
                         PRO PLAN
                       </span>
                     </div>
-                    <PremiumColumn>
+                    <TierGatedContent requiredTier="pro">
                       {title.audience ? (
                         <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
                           {title.audience}
@@ -642,7 +643,7 @@ export default function TitleDetail() {
                           Not specified
                         </div>
                       )}
-                    </PremiumColumn>
+                    </TierGatedContent>
                   </div>
                 </div>
 

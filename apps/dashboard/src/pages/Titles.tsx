@@ -9,6 +9,7 @@ import { featuredService, type FeaturedWithTitle } from "@/services/featuredServ
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import PremiumColumn from "@/components/PremiumColumn";
+import TierGatedContent from "@/components/TierGatedContent";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
@@ -518,27 +519,31 @@ export default function Titles() {
                         </div>
                         
                         <div className="col-span-1">
-                          <PremiumColumn>
-                            {title.comps ? (
-                              <div className="inline-block bg-green-100 text-green-800 px-3 py-1.5 rounded-full text-sm font-medium">
-                                {title.comps}
+                          <TierGatedContent requiredTier="pro">
+                            {title.comps && title.comps.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {title.comps.map((comp, index) => (
+                                  <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    {comp}
+                                  </div>
+                                ))}
                               </div>
                             ) : (
                               <span className="text-gray-400">-</span>
                             )}
-                          </PremiumColumn>
+                          </TierGatedContent>
                         </div>
                         
                         <div className="col-span-1">
-                          <PremiumColumn>
+                          <TierGatedContent requiredTier="pro">
                             {title.audience ? (
-                              <div className="inline-block bg-orange-100 text-orange-800 px-3 py-1.5 rounded-full text-sm font-medium">
+                              <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
                                 {title.audience}
                               </div>
                             ) : (
                               <span className="text-gray-400">-</span>
                             )}
-                          </PremiumColumn>
+                          </TierGatedContent>
                         </div>
                       </div>
                     </Link>

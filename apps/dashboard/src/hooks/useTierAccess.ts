@@ -28,8 +28,24 @@ export const useTierAccess = (): TierAccess => {
   const [tier, setTier] = useState<UserTier | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Mock data for localhost development
+  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+  
+  // 🧪 TESTING: Change this value to test different tier access
+  // Options: 'invited', 'basic', 'pro', 'suite'
+  // NOTE: Should match the mockTier in CMSHeader.tsx for consistency
+  const mockTier: UserTier = 'pro';
+
   useEffect(() => {
     const fetchUserTier = async () => {
+      // Use mock data on localhost
+      if (isLocalhost) {
+        console.log('🧪 useTierAccess: Using localhost mock tier:', mockTier);
+        setTier(mockTier);
+        setLoading(false);
+        return;
+      }
+
       if (!user?.id) {
         setTier(null);
         setLoading(false);
@@ -58,7 +74,7 @@ export const useTierAccess = (): TierAccess => {
     };
 
     fetchUserTier();
-  }, [user?.id]);
+  }, [user?.id, isLocalhost, mockTier]);
 
   const hasMinimumTier = (requiredTier: UserTier): boolean => {
     if (!tier) return false;

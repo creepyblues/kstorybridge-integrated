@@ -31,15 +31,11 @@ export default function AdminScraperTest() {
 
   // Sample URLs for testing
   const sampleUrls = [
-    "https://series.naver.com/comic/detail.series?productNo=3293134", // Your test URL first
-    "https://page.kakao.com/home?seriesId=54100540",
-    "https://page.kakao.com/content/54100540?tab_type=about",
-    "https://series.naver.com/comic/detail.series?productNo=11979674",
-    "https://comic.naver.com/webtoon/list?titleId=814543", 
-    "https://page.kakao.com/content/50744771?tab_type=about",
-    "https://webtoon.kakao.com/content/RAINBOW/4122?tab=profile",
-    "https://www.toons.kr/example-title",
-    "https://www.webtoons.com/en/drama/example/list"
+    "https://series.naver.com/comic/detail.series?productNo=8306797",
+    "https://comic.naver.com/webtoon/list?titleId=841324",
+    "https://page.kakao.com/content/61614855",
+    "https://webtoon.kakao.com/content/%EC%83%A4%ED%81%AC-%EC%99%80%EC%9D%B4%EB%B2%88/3616",
+    "https://series.naver.com/comic/detail.series?productNo=9935335",
   ];
 
   const handleScrape = async () => {
@@ -327,7 +323,7 @@ export default function AdminScraperTest() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="max-h-[600px] overflow-y-auto space-y-4">
+                  <div className="space-y-4">
                     {/* All fields display */}
                     {Object.entries(editableData).map(([field, value]) => {
                       if (!value && value !== false && value !== 0) return null;

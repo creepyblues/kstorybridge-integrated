@@ -82,11 +82,8 @@ export function CMSHeader() {
                   <span className="text-midnight-ink font-medium">
                     {displayUser.user_metadata?.full_name || displayUser.email}
                   </span>
-                  <span className="text-midnight-ink-400 text-xs">
-                    ID: {displayUser.id}
-                  </span>
                   {accountType === "buyer" && (
-                    <div className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${tierDisplay.className}`}>
+                    <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 w-fit ${tierDisplay.className}`}>
                       {tierDisplay.label}
                     </div>
                   )}

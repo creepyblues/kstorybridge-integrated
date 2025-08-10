@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, AlertCircle } from "lucide-react";
 import { titlesService, type TitleInsert } from "@/services/titlesService";
+import { StringArrayInput } from '@/components/ui/string-array-input';
 import { scraperService, type ScrapingResult } from "@/services/scraperService";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { toast } from "sonner";
@@ -71,7 +72,7 @@ export default function AdminAddTitle() {
     rights: "",
     rights_owner: "",
     perfect_for: "",
-    comps: "",
+    comps: null,
     tone: "",
     audience: "",
     title_image: "",
@@ -274,7 +275,7 @@ export default function AdminAddTitle() {
         rights: formData.rights?.trim() || null,
         rights_owner: formData.rights_owner?.trim() || null,
         perfect_for: formData.perfect_for?.trim() || null,
-        comps: formData.comps?.trim() || null,
+        comps: formData.comps || null,
         tone: formData.tone?.trim() || null,
         audience: formData.audience?.trim() || null,
         title_image: formData.title_image?.trim() || null,
@@ -672,12 +673,12 @@ export default function AdminAddTitle() {
                   <tr className="group hover:bg-gray-50">
                     <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Comparisons</td>
                     <td className="py-4 pl-6">
-                      <Textarea
+                      <StringArrayInput
                         id="comps"
-                        value={formData.comps || ""}
-                        onChange={(e) => handleInputChange("comps", e.target.value)}
-                        placeholder="Similar titles or comparable content"
-                        rows={3}
+                        label=""
+                        placeholder="Add comparable titles"
+                        value={formData.comps}
+                        onChange={(value) => handleInputChange("comps", value)}
                       />
                     </td>
                   </tr>

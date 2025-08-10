@@ -486,9 +486,13 @@ export default function TitleDetail() {
                         </span>
                       </div>
                       <PremiumColumn>
-                        {title.comps ? (
-                          <div className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                            {title.comps}
+                        {title.comps && title.comps.length > 0 ? (
+                          <div className="space-y-1">
+                            {title.comps.map((comp, index) => (
+                              <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium mr-1 mb-1">
+                                {comp}
+                              </div>
+                            ))}
                           </div>
                         ) : (
                           <div className="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">

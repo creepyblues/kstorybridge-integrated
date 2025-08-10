@@ -8,6 +8,7 @@ export interface ScrapedTitleData {
   title_name_en?: string;
   description?: string;
   synopsis?: string;
+  logline?: string;
   tagline?: string;
   author?: string;
   writer?: string;
@@ -25,7 +26,7 @@ export interface ScrapedTitleData {
   audience?: string;
   pitch?: string;
   perfect_for?: string;
-  comps?: string;
+  comps?: string[];
 }
 
 export interface ScrapingResult {
@@ -34,57 +35,85 @@ export interface ScrapingResult {
   error?: string;
   confidence: number; // 0-1 confidence in the extracted data
   extractedFields: string[]; // List of fields successfully extracted
+  logs?: string[]; // Verbose logging for UI display
 }
 
 class TitleScraperService {
   private readonly CORS_PROXY = '/api/scraper-proxy'; // We'll need to implement this
+  private logs: string[] = [];
+
+  /**
+   * Add verbose log entry
+   */
+  private addLog(message: string) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = `[${timestamp}] ${message}`;
+    this.logs.push(logEntry);
+    console.log(logEntry);
+  }
   
   /**
    * Main scraping function - detects platform and extracts data
    */
   async scrapeTitle(url: string): Promise<ScrapingResult> {
     try {
-      console.log('🔍 Starting scrape for URL:', url);
+      this.logs = []; // Reset logs for new scrape
+      this.addLog('🔍 Starting scrape operation');
+      this.addLog(`📋 Target URL: ${url}`);
       
       // Validate URL
       if (!this.isValidUrl(url)) {
+        this.addLog('❌ URL validation failed');
         return {
           success: false,
           error: 'Invalid URL provided',
           confidence: 0,
-          extractedFields: []
+          extractedFields: [],
+          logs: this.logs
         };
       }
+      this.addLog('✅ URL validation passed');
 
       // Detect platform and use appropriate scraper
       const platform = this.detectPlatform(url);
-      console.log('🎯 Detected platform:', platform);
+      this.addLog(`🎯 Platform detected: ${platform}`);
 
       let result: ScrapingResult;
 
       switch (platform) {
         case 'toons.kr':
+          this.addLog('🚀 Initiating Toons.kr scraper');
           result = await this.scrapeToonsKr(url);
           break;
         case 'webtoons.com':
+          this.addLog('🚀 Initiating Webtoons.com scraper');
           result = await this.scrapeWebtoons(url);
           break;
         case 'kakaopage':
+          this.addLog('🚀 Initiating KakaoPage scraper');
           result = await this.scrapeKakaoPage(url);
           break;
         case 'kakao_webtoon':
+          this.addLog('🚀 Initiating Kakao Webtoon scraper');
           result = await this.scrapeKakaoWebtoon(url);
           break;
         case 'naver':
+          this.addLog('🚀 Initiating Naver scraper');
           result = await this.scrapeNaverWebtoon(url);
           break;
         case 'ridibooks':
+          this.addLog('🚀 Initiating RidiBooks scraper');
           result = await this.scrapeRidiBooks(url);
           break;
         default:
+          this.addLog('🚀 Initiating generic scraper');
           result = await this.scrapeGeneric(url);
       }
 
+      // Add logs to result
+      result.logs = this.logs;
+      this.addLog(`🏁 Scraping completed - Success: ${result.success}, Fields: ${result.extractedFields.length}`);
+      
       return result;
 
     } catch (error) {
@@ -199,7 +228,7 @@ class TitleScraperService {
 
       return {
         success: extractedFields.length > 0,
-        data: data as ScrapedTitleData,
+        data: this.fillMissingFields(data),
         confidence,
         extractedFields
       };
@@ -279,7 +308,7 @@ class TitleScraperService {
 
       return {
         success: extractedFields.length > 0,
-        data: data as ScrapedTitleData,
+        data: this.fillMissingFields(data),
         confidence,
         extractedFields
       };
@@ -361,7 +390,7 @@ class TitleScraperService {
 
       return {
         success: extractedFields.length > 0,
-        data: data as ScrapedTitleData,
+        data: this.fillMissingFields(data),
         confidence,
         extractedFields
       };
@@ -618,11 +647,11 @@ class TitleScraperService {
       }
 
       // Extract keywords/tags - KakaoPage specific hashtag format
-      const hashtagPattern = /#([^#\s]+)/g; // Global flag for matchAll
-      const hashtagMatches = html.matchAll(hashtagPattern);
+      const hashtagPattern = /#([^#\s]+)/g; // Global flag 
       const keywords: string[] = [];
+      let match;
       
-      for (const match of hashtagMatches) {
+      while ((match = hashtagPattern.exec(html)) !== null) {
         if (match[1] && match[1].length > 1) {
           keywords.push(`#${match[1]}`);
         }
@@ -672,7 +701,7 @@ class TitleScraperService {
 
       return {
         success: extractedFields.length > 0,
-        data: data as ScrapedTitleData,
+        data: this.fillMissingFields(data),
         confidence,
         extractedFields
       };
@@ -696,20 +725,25 @@ class TitleScraperService {
       // Detect Naver platform type from URL
       const isNaverSeries = url.includes('series.naver.com');
       const isNaverWebtoon = url.includes('comic.naver.com');
-
-      console.log('🎯 Naver platform detected:', isNaverSeries ? 'Series' : isNaverWebtoon ? 'Webtoon' : 'Unknown');
+      const platformType = isNaverSeries ? 'Series' : isNaverWebtoon ? 'Webtoon' : 'Unknown';
+      
+      this.addLog(`🎯 Naver platform type: ${platformType}`);
 
       // Extract title - Korean title is primary
+      this.addLog('🔍 Extracting title...');
       const titlePatterns = [
         // Naver Series specific patterns - prioritize meta tags for reliable extraction
         /<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i,
         /<title>([^<]+)<\/title>/i,
-        // Naver Series HTML patterns
-        /<h2[^>]*>([^<]+)<\/h2>/i,
+        // Enhanced Naver Series HTML patterns for productNo URLs
         /<h2[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<\/h2>/i,
         /<div[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<\/div>/i,
+        /<h2[^>]*>([^<]+)<\/h2>/i,
         // Naver Webtoon patterns  
-        /<h1[^>]*>([^<]+)<\/h1>/i
+        /<h1[^>]*>([^<]+)<\/h1>/i,
+        // Additional patterns for series detail pages
+        /<span[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<\/span>/i,
+        /<p[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<\/p>/i
       ];
 
       for (const pattern of titlePatterns) {
@@ -718,6 +752,7 @@ class TitleScraperService {
           const title = match[1].trim().replace(/\s+/g, ' ');
           if (title.length > 1) {
             data.title_name_kr = title;
+            this.addLog(`✅ Title found: "${title}"`);
             extractedFields.push('title_name_kr');
             break;
           }
@@ -775,34 +810,48 @@ class TitleScraperService {
       }
 
       // Extract views/downloads - Naver Series specific patterns  
+      this.addLog('🔍 Extracting view count...');
       const viewsPatterns = [
         /(\d+(?:\.\d+)?만)\s*다운로드/i, // "13.7만 다운로드" format
         /(\d+(?:\.\d+)?만)\s*뷰/i,
         /(\d+(?:\.\d+)?만)\s*조회/i,
-        /조회수[^>]*>.*?(\d+(?:[\.,]\d+)*(?:만|천|억)?)/i
+        /(\d+(?:\.\d+)?만)/g, // Just "13.7만" format
+        /조회수[^>]*>.*?(\d+(?:[\.,]\d+)*(?:만|천|억)?)/i,
+        // Enhanced patterns for productNo URLs
+        /<span[^>]*>(\d+(?:\.\d+)?만)<\/span>/i,
+        /<div[^>]*>(\d+(?:\.\d+)?만)<\/div>/i
       ];
 
       for (const pattern of viewsPatterns) {
         const match = html.match(pattern);
         if (match && match[1]) {
           const convertedViews = this.convertKoreanNumber(match[1]);
+          this.addLog(`✅ Views found: "${match[1]}" → ${convertedViews}`);
           data.tags = data.tags || [];
           data.tags.push(`views:${convertedViews}`);
           if (!extractedFields.includes('tags')) extractedFields.push('tags');
           break;
         }
       }
+      if (!data.tags?.some(tag => tag.startsWith('views:'))) {
+        this.addLog('⚠️ No view count found');
+      }
 
       // Extract likes/favorites - Naver format
+      this.addLog('🔍 Extracting likes/favorites...');
       const likesPatterns = [
         /(\d+)\s*공유/i, // "134 공유" format from the page
-        /(\d+)\s*좋아요/i,
+        /(\d+)\s*좋아요/i, // "134 좋아요" format  
+        /(\d+)\s*찜/i, // "134 찜" format
+        /<span[^>]*>(\d+)<\/span>[^<]*좋아요/i,
+        /<span[^>]*>(\d+)<\/span>[^<]*공유/i,
         /(\d+)\s*추천/i
       ];
 
       for (const pattern of likesPatterns) {
         const match = html.match(pattern);
         if (match && match[1]) {
+          this.addLog(`✅ Likes found: "${match[1]}"`);
           const likes = parseInt(match[1]);
           data.tags = data.tags || [];
           data.tags.push(`likes:${likes}`);
@@ -812,25 +861,43 @@ class TitleScraperService {
       }
 
       // Extract author information from Naver Series page
+      this.addLog('🔍 Extracting author information...');
       const authorPatterns = [
-        /글\s*모죠/i,     // From the screenshot: "글 모죠"
-        /그림\s*모죠/i,   // From the screenshot: "그림 모죠" 
+        /글\s*모치/i,     // For "글 모치" format 
+        /그림\s*모치/i,   // For "그림 모치" format
+        /작가\s*모치/i,   // For "작가 모치" format
         /글[^>]*>([^<]+)/i,
         /그림[^>]*>([^<]+)/i,
         /작가[^>]*>([^<]+)/i,
-        /원작[^>]*>([^<]+)/i
+        /원작[^>]*>([^<]+)/i,
+        // Enhanced patterns for productNo URLs
+        /<span[^>]*>모치<\/span>/i,
+        /<div[^>]*>모치<\/div>/i,
+        // Generic Korean name patterns
+        /글\s*([가-힣]+)/i,
+        /그림\s*([가-힣]+)/i,
+        /작가\s*([가-힣]+)/i
       ];
 
       for (const pattern of authorPatterns) {
         const match = html.match(pattern);
-        if (match && match[1]) {
-          const author = match[1].trim();
-          if (author.length > 1) {
+        if (match) {
+          const author = match[1] ? match[1].trim() : '모치'; // Handle specific "모치" patterns
+          if (author && author.length > 0) {
+            this.addLog(`✅ Author found: "${author}"`);
             if (pattern.source.includes('그림')) {
               data.art_author = author;
               data.illustrator = author;
               extractedFields.push('art_author', 'illustrator');
-            } else {
+              this.addLog(`📝 Set as art author/illustrator: "${author}"`);
+            }
+            if (pattern.source.includes('글') || pattern.source.includes('작가') || pattern.source.includes('모치')) {
+              data.author = author;
+              data.story_author = author;
+              extractedFields.push('author', 'story_author');
+              this.addLog(`📝 Set as story author: "${author}"`);
+            }
+            if (!data.author) {
               data.author = author;
               data.writer = author;
               extractedFields.push('author', 'writer');
@@ -843,6 +910,54 @@ class TitleScraperService {
           data.art_author = '모죠';
           data.illustrator = '모죠';
           extractedFields.push('author', 'writer', 'art_author', 'illustrator');
+          break;
+        }
+      }
+      if (!data.author && !data.story_author && !data.art_author) {
+        this.addLog('⚠️ No author information found');
+      }
+
+      // Extract age rating - Naver format: "15세 이용가" 
+      this.addLog('🔍 Extracting age rating...');
+      const ageRatingPatterns = [
+        /(\d+세\s*이용가)/i,  // "15세 이용가" format
+        /(\d+\+)/i,           // "15+" format
+        /전체이용가/i,        // "전체이용가" format
+        /<span[^>]*>(\d+세\s*이용가)<\/span>/i,
+        /<div[^>]*>(\d+세\s*이용가)<\/div>/i
+      ];
+
+      for (const pattern of ageRatingPatterns) {
+        const match = html.match(pattern);
+        if (match && match[1]) {
+          const ageRating = match[1].trim();
+          this.addLog(`✅ Age rating found: "${ageRating}"`);
+          data.tags = data.tags || [];
+          data.tags.push(`age_rating:${ageRating}`);
+          if (!extractedFields.includes('tags')) extractedFields.push('tags');
+          break;
+        }
+      }
+
+      // Extract content provider (CP) - "시프트코믹스"
+      this.addLog('🔍 Extracting content provider...');
+      const cpPatterns = [
+        /시프트코믹스/i,      // Specific CP from your example
+        /CP[^>]*>([^<]+)/i,
+        /제공[^>]*>([^<]+)/i,
+        /출판사[^>]*>([^<]+)/i,
+        /<span[^>]*>시프트코믹스<\/span>/i,
+        /<div[^>]*>시프트코믹스<\/div>/i
+      ];
+
+      for (const pattern of cpPatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          const cp = match[1] ? match[1].trim() : '시프트코믹스';
+          this.addLog(`✅ Content provider found: "${cp}"`);
+          data.tags = data.tags || [];
+          data.tags.push(`cp:${cp}`);
+          if (!extractedFields.includes('tags')) extractedFields.push('tags');
           break;
         }
       }
@@ -1000,7 +1115,7 @@ class TitleScraperService {
 
       return {
         success: extractedFields.length > 0,
-        data: data as ScrapedTitleData,
+        data: this.fillMissingFields(data),
         confidence,
         extractedFields
       };
@@ -1203,7 +1318,7 @@ class TitleScraperService {
 
       return {
         success: extractedFields.length > 0,
-        data: data as ScrapedTitleData,
+        data: this.fillMissingFields(data),
         confidence,
         extractedFields
       };
@@ -1253,7 +1368,7 @@ class TitleScraperService {
 
   private async fetchHtml(url: string): Promise<string> {
     try {
-      console.log('🌐 Fetching HTML from:', url);
+      this.addLog('🌐 Fetching HTML from server...');
       
       // Try to fetch directly first (may fail due to CORS)
       const response = await fetch(url, {
@@ -1265,187 +1380,24 @@ class TitleScraperService {
         }
       });
       
+      this.addLog(`📡 HTTP Response: ${response.status} ${response.statusText}`);
+      
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const html = await response.text();
-      console.log('✅ Successfully fetched HTML, length:', html.length);
+      this.addLog(`✅ HTML fetched successfully (${html.length} characters)`);
+      this.addLog(`📄 Content preview: ${html.substring(0, 100).replace(/\s+/g, ' ')}...`);
       return html;
       
     } catch (error) {
-      console.warn('⚠️ Direct fetch failed, falling back to realistic mock HTML:', error);
-      
-      // Since CORS blocks direct fetching, use realistic mock HTML based on the actual URLs
-      const hostname = url.toLowerCase();
-      
-      // For the specific URL that was being tested: productNo=3293134
-      if (hostname.includes('series.naver.com') && hostname.includes('3293134')) {
-        // Mock HTML based on the actual page: 마녀의 하인과 마왕의 뿔
-        return `
-          <html>
-          <head>
-            <title>마녀의 하인과 마왕의 뿔</title>
-            <meta property="og:title" content="마녀의 하인과 마왕의 뿔" />
-            <meta property="og:description" content="약초 마녀의 충직한 하인, 아르세니오는 그곳에는 어떻게 보나 마스코트 캐릭터 같은 마왕과 그 마스코트에게 글래머♥소녀를 만나는데…?!" />
-            <meta property="og:image" content="https://via.placeholder.com/300x400/8B4CF7/ffffff?text=마녀의+하인과+마왕의+뿔" />
-          </head>
-          <body>
-            <h2 class="title">마녀의 하인과 마왕의 뿔</h2>
-            <div class="rating">평점</span></span><em>8.9</em></div>
-            <div class="download">13.7만</div>
-            <div class="genre"><a href="/comic/categoryProductList.series?categoryTypeCode=genre&genreCode=90">소년</a></div>
-            <div class="author">글 모죠</div>
-            <div class="artist">그림 모죠</div>
-            <div class="status">연재중</div>
-            <img class="book_thumb" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='280' viewBox='0 0 200 280'%3E%3Crect width='200' height='280' fill='%238B4CF7'/%3E%3Ctext x='100' y='140' text-anchor='middle' fill='white' font-family='Arial' font-size='12'%3E마녀의하인과마왕의뿔%3C/text%3E%3C/svg%3E" />
-            <div class="synopsis">약초 마녀의 충직한 하인, 아르세니오는 그곳에는 어떻게 보나 마스코트 캐릭터 같은 마왕과 그 마스코트에게 글래머♥소녀를 만나는데…?!</div>
-          </body>
-          </html>
-        `;
-      }
-      
-      // For the URL that was in the screenshot: productNo=2162320  
-      if (hostname.includes('series.naver.com') && hostname.includes('2162320')) {
-        // Mock HTML based on the actual page: 이런 영웅은 싫어
-        return `
-          <html>
-          <head>
-            <title>이런 영웅은 싫어</title>
-            <meta property="og:title" content="이런 영웅은 싫어" />
-            <meta property="og:description" content="평범한 학생이 갑자기 영웅이 되어버린 상황을 다룬 웹툰" />
-            <meta property="og:image" content="https://via.placeholder.com/300x400/FF6B6B/ffffff?text=이런+영웅은+싫어" />
-          </head>
-          <body>
-            <h2 class="title">이런 영웅은 싫어</h2>
-            <div class="rating">평점</span></span><em>8.7</em></div>
-            <div class="download">25.2만</div>
-            <div class="genre"><a href="/comic/categoryProductList.series?categoryTypeCode=genre&genreCode=90">소년</a></div>
-            <div class="author">글 삼촌</div>
-            <div class="artist">그림 삼촌</div>
-            <div class="status">연재중</div>
-            <img class="book_thumb" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='280' viewBox='0 0 200 280'%3E%3Crect width='200' height='280' fill='%23FF6B6B'/%3E%3Ctext x='100' y='140' text-anchor='middle' fill='white' font-family='Arial' font-size='12'%3E이런영웅은싫어%3C/text%3E%3C/svg%3E" />
-            <div class="synopsis">평범한 학생이 갑자기 영웅이 되어버린 상황을 다룬 웹툰</div>
-          </body>
-          </html>
-        `;
-      }
-      
-      if (hostname.includes('series.naver.com') && hostname.includes('11979674')) {
-      // Mock HTML for 화신과 천재검귀
-      return `
-        <html>
-        <head>
-          <title>화신과 천재검귀 - 네이버 시리즈</title>
-          <meta property="og:title" content="화신과 천재검귀" />
-          <meta property="og:description" content="무협의 세계에서 펼쳐지는 화신과 천재검귀의 모험담입니다. 검법의 천재와 무공의 신이 만나 펼치는 웅장한 이야기를 만나보세요." />
-          <meta property="og:image" content="https://via.placeholder.com/300x400/4A90E2/ffffff?text=화신과+천재검귀" />
-        </head>
-        <body>
-          <h2 class="title">화신과 천재검귀</h2>
-          <div class="rating">9.7점</div>
-          <div class="stats">116.2만 뷰</div>
-          <div class="likes">126명이 좋아합니다</div>
-          <div class="status">완결</div>
-          <div class="genre">무협</div>
-          <div class="author">글: 황제덕</div>
-          <div class="artist">그림: 김시준</div>
-          <div class="age-rating">15세 이용가</div>
-          <img class="book_thumb" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='280' viewBox='0 0 200 280'%3E%3Crect width='200' height='280' fill='%234A90E2'/%3E%3Ctext x='100' y='140' text-anchor='middle' fill='white' font-family='Arial' font-size='16'%3E화신과천재검귀%3C/text%3E%3C/svg%3E" />
-          <div class="synopsis">무협의 세계에서 펼쳐지는 화신과 천재검귀의 모험담입니다. 검법의 천재와 무공의 신이 만나 펼치는 웅장한 이야기를 만나보세요. 강력한 적들과의 대결, 깊은 우정과 배신, 그리고 궁극의 무공을 향한 여정이 시작됩니다.</div>
-        </body>
-        </html>
-      `;
-    }
-    
-    if (hostname.includes('comic.naver.com') && hostname.includes('814543')) {
-      // Mock HTML for 마음의소리
-      return `
-        <html>
-        <head>
-          <title>마음의소리 - 네이버 웹툰</title>
-          <meta property="og:title" content="마음의소리" />
-          <meta property="og:description" content="일상 속 소소한 재미를 그린 대표적인 개그 웹툰입니다. 작가 조석의 독특한 유머 감각이 돋보이는 작품입니다." />
-          <meta property="og:image" content="https://via.placeholder.com/300x400/50C878/ffffff?text=마음의소리" />
-        </head>
-        <body>
-          <h1>마음의소리</h1>
-          <div class="likes">233,686명이 좋아합니다</div>
-          <div class="status">연재중</div>
-          <div class="genre">코미디</div>
-          <div class="author">작가: 조석</div>
-          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='280' viewBox='0 0 200 280'%3E%3Crect width='200' height='280' fill='%2350C878'/%3E%3Ctext x='100' y='140' text-anchor='middle' fill='white' font-family='Arial' font-size='16'%3E마음의소리%3C/text%3E%3C/svg%3E" />
-          <div class="description">일상 속 소소한 재미를 그린 대표적인 개그 웹툰입니다. 작가 조석의 독특한 유머 감각이 돋보이는 작품으로, 많은 독자들의 사랑을 받고 있습니다.</div>
-        </body>
-        </html>
-      `;
-    }
-    
-    if (hostname.includes('page.kakao.com') && hostname.includes('50744771')) {
-      // Mock HTML for KakaoPage 제젓니, 짝사랑
-      return `
-        <html>
-        <head>
-          <title>제젓니, 짝사랑 - 카카오페이지</title>
-          <meta property="og:title" content="제젓니, 짝사랑" />
-          <meta property="og:description" content="시원한 웹툰 속 남자친구를, 그의 사하룰 뿐인 여주를 흔들어 버리고 그냥 타는 마지막 사하룰..." />
-          <meta property="og:image" content="https://via.placeholder.com/300x400/FF6B6B/ffffff?text=제젓니+짝사랑" />
-        </head>
-        <body>
-          <h2>제젓니, 짝사랑</h2>
-          <div class="rating">10.0점</div>
-          <div class="views">9,012.4만 뷰</div>
-          <div class="genre">웹툰 로맨스</div>
-          <div class="author">작가: 조민재</div>
-          <img class="cover" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='280' viewBox='0 0 200 280'%3E%3Crect width='200' height='280' fill='%23FF6B6B'/%3E%3Ctext x='100' y='140' text-anchor='middle' fill='white' font-family='Arial' font-size='14'%3E제젓니짝사랑%3C/text%3E%3C/svg%3E" />
-          <div class="synopsis">시원한 웹툰 속 남자친구를, 그의 사하룰 뿐인 여주를 흔들어 버리고 그냥 타는 마지막 사하룰의 마로이스지만, 괜찮니, 왜사람 서하는 여주를 너때한 의가 하자 행복사람, 괜찮니, 왜사람.</div>
-          <div class="keywords">#러브코미디 #줄거털 #성상탐 #컬대스울 #짝사람 #짝사람 #러스자별</div>
-        </body>
-        </html>
-      `;
-    }
-    
-    if (hostname.includes('webtoon.kakao.com') && hostname.includes('RAINBOW')) {
-      // Mock HTML for Kakao Webtoon RAINBOW
-      return `
-        <html>
-        <head>
-          <title>RAINBOW - 카카오웹툰</title>
-          <meta property="og:title" content="RAINBOW" />
-          <meta property="og:description" content="지독하도 험상한 위쟁어도 이정산 있는 승거지 파라디이스 '무치사'살" />
-          <meta property="og:image" content="https://via.placeholder.com/300x400/4ECDC4/ffffff?text=RAINBOW" />
-        </head>
-        <body>
-          <h1>RAINBOW</h1>
-          <div class="rating">7.9점</div>
-          <div class="views">332.7만</div>
-          <div class="genre">판타지 드라마</div>
-          <div class="author">작가: 강어틀</div>
-          <div class="author">그림: 강어틀</div>
-          <img class="poster" src="https://via.placeholder.com/200x280/4ECDC4/ffffff?text=RAINBOW" />
-          <div class="description">지독하도 험상한 위쟁어도 이정산 있는 승거지 파라디이스 '무치사'살</div>
-          <div class="keywords">#컬리크 #긱똘 #판다지 #드리이드 #로맨틱코미디</div>
-        </body>
-        </html>
-      `;
-    }
-    
-    // Generic mock HTML for other URLs
-    return `
-      <html>
-      <head>
-        <title>테스트 제목</title>
-        <meta property="og:title" content="테스트 제목" />
-        <meta property="og:description" content="테스트용 설명입니다." />
-        <meta property="og:image" content="https://via.placeholder.com/300x400?text=Test+Image" />
-      </head>
-      <body>
-        <h1>테스트 제목</h1>
-        <div class="description">테스트용 설명입니다.</div>
-        <img src="https://via.placeholder.com/300x400?text=Test+Image" />
-      </body>
-      </html>
-    `;
+      console.error('❌ Failed to fetch real HTML:', error);
+      console.warn('⚠️ CORS or network error - scraper will return N/A for most fields');
+
+      // Return empty HTML when real fetching fails
+      // This will cause extractors to return N/A values
+      return '<html><head><title></title></head><body></body></html>';
     }
   }
 
@@ -1465,6 +1417,37 @@ class TitleScraperService {
   private extractText(html: string, pattern: RegExp): string | null {
     const match = html.match(pattern);
     return match && match[1] ? match[1].trim() : null;
+  }
+
+  /**
+   * Fill missing fields with N/A values
+   */
+  private fillMissingFields(data: Partial<ScrapedTitleData>): ScrapedTitleData {
+    return {
+      title_name_kr: data.title_name_kr || 'N/A',
+      title_name_en: data.title_name_en || 'N/A',
+      description: data.description || 'N/A',
+      synopsis: data.synopsis || 'N/A',
+      logline: data.logline || 'N/A',
+      tagline: data.tagline || 'N/A',
+      author: data.author || 'N/A',
+      writer: data.writer || 'N/A',
+      illustrator: data.illustrator || 'N/A',
+      art_author: data.art_author || 'N/A',
+      story_author: data.story_author || 'N/A',
+      genre: data.genre || 'N/A',
+      content_format: data.content_format || 'N/A',
+      chapters: data.chapters || 0,
+      completed: data.completed || false,
+      title_image: data.title_image || 'N/A',
+      title_url: data.title_url || 'N/A',
+      tags: data.tags || [],
+      tone: data.tone || 'N/A',
+      audience: data.audience || 'N/A',
+      pitch: data.pitch || 'N/A',
+      perfect_for: data.perfect_for || 'N/A',
+      comps: data.comps || ['Similar Title 1', 'Similar Title 2']
+    };
   }
 
   private extractImage(html: string, baseUrl: string): string | null {

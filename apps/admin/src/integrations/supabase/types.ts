@@ -99,7 +99,7 @@ export type Database = {
           author: string | null
           chapters: number | null
           completed: boolean | null
-          comps: string | null
+          comps: string[] | null
           content_format: Database["public"]["Enums"]["content_format"] | null
           created_at: string
           creator_id: string
@@ -134,7 +134,7 @@ export type Database = {
           author?: string | null
           chapters?: number | null
           completed?: boolean | null
-          comps?: string | null
+          comps?: string[] | null
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id: string
@@ -169,7 +169,7 @@ export type Database = {
           author?: string | null
           chapters?: number | null
           completed?: boolean | null
-          comps?: string | null
+          comps?: string[] | null
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id?: string

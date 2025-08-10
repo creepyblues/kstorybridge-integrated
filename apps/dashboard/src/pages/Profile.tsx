@@ -12,6 +12,7 @@ import { User, Mail, Building, Globe, Linkedin, Save, Edit3, X } from "lucide-re
 // Define types for the actual table structures
 type BuyerProfile = {
   id: string;
+  user_id: string;
   email: string;
   full_name: string;
   buyer_company?: string | null;
@@ -25,6 +26,7 @@ type BuyerProfile = {
 
 type IPOwnerProfile = {
   id: string;
+  user_id: string;
   email: string;
   full_name: string;
   pen_name_or_studio?: string | null;
@@ -86,7 +88,7 @@ export default function Profile() {
           const { data, error } = await supabase
             .from("user_buyers")
             .select("*")
-            .eq("id", user.id)
+            .eq("user_id", user.id)
             .single();
 
           console.log("Buyer profile query result:", { data, error });
@@ -118,7 +120,7 @@ export default function Profile() {
           const { data, error } = await supabase
             .from("user_ipowners")
             .select("*")
-            .eq("id", user.id)
+            .eq("user_id", user.id)
             .single();
 
           console.log("IP Owner profile query result:", { data, error });
@@ -172,7 +174,7 @@ export default function Profile() {
     
     try {
       const newProfile: Partial<BuyerProfile> = {
-        id: user.id,
+        user_id: user.id,
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
         buyer_company: user.user_metadata?.buyer_company,
@@ -226,7 +228,7 @@ export default function Profile() {
     
     try {
       const newProfile: Partial<IPOwnerProfile> = {
-        id: user.id,
+        user_id: user.id,
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
         pen_name_or_studio: user.user_metadata?.pen_name_or_studio,
@@ -295,7 +297,7 @@ export default function Profile() {
         const { data, error } = await supabase
           .from("user_buyers")
           .update(updateData)
-          .eq("id", user.id)
+          .eq("user_id", user.id)
           .select()
           .single();
 
@@ -322,7 +324,7 @@ export default function Profile() {
         const { data, error } = await supabase
           .from("user_ipowners")
           .update(updateData)
-          .eq("id", user.id)
+          .eq("user_id", user.id)
           .select()
           .single();
 

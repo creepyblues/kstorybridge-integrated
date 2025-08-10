@@ -50,7 +50,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          tier: Database["public"]["Enums"]["user_tier"] | null
+          invitation_status: string | null
           ip_owner_company: string | null
           ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url: string | null
@@ -66,7 +66,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          tier?: Database["public"]["Enums"]["user_tier"] | null
+          invitation_status?: string | null
           ip_owner_company?: string | null
           ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url?: string | null
@@ -82,7 +82,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
-          tier?: Database["public"]["Enums"]["user_tier"] | null
+          invitation_status?: string | null
           ip_owner_company?: string | null
           ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
           linkedin_url?: string | null
@@ -204,19 +204,25 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          invitation_status: string | null
           requested: boolean | null
+          tier: Database["public"]["Enums"]["user_tier"] | null
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          invitation_status?: string | null
           requested?: boolean | null
+          tier?: Database["public"]["Enums"]["user_tier"] | null
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          invitation_status?: string | null
           requested?: boolean | null
+          tier?: Database["public"]["Enums"]["user_tier"] | null
           user_id?: string
         }
         Relationships: []

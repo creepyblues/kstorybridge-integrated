@@ -11,7 +11,12 @@
     "preview": "vite preview",
     "generate:taglines": "node scripts/data_generator_tagline.js",
     "generate:taglines:dry-run": "node scripts/data_generator_tagline.js --dry-run",
-    "generate:taglines:limit": "node scripts/data_generator_tagline.js --limit=5"
+    "generate:taglines:limit": "node scripts/data_generator_tagline.js --limit=5",
+    "generate:scraper-data": "node scripts/data_generator_scraper.js",
+    "generate:scraper-data:dry-run": "node scripts/data_generator_scraper.js --dry-run",
+    "generate:scraper-data:limit": "node scripts/data_generator_scraper.js --limit=10",
+    "generate:scraper-data:views": "node scripts/data_generator_scraper.js --field=views",
+    "generate:scraper-data:likes": "node scripts/data_generator_scraper.js --field=likes"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -58,7 +63,8 @@
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8",
     "openai": "^4.67.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

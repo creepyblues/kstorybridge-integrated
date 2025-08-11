@@ -21,22 +21,67 @@ export default function AdminTitles() {
   const [itemsPerPage] = useState(50);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [lastCacheUpdate, setLastCacheUpdate] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
+    // Clear cache on page load/reload to ensure fresh data
+    localStorage.removeItem('admin_titles_cache');
+    localStorage.removeItem('admin_titles_cache_time');
+    localStorage.removeItem('admin_featured_cache');
+    localStorage.removeItem('admin_featured_cache_time');
+    
+    loadData(true);
   }, []);
 
   const loadData = async (force = false) => {
     try {
       setLoading(true);
       
-      // Load all titles for admins
-      const allTitles = await titlesService.getAllTitles();
+      const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+      const now = Date.now();
+      
+      // Check cache for titles
+      let allTitles = [];
+      const titlesCache = localStorage.getItem('admin_titles_cache');
+      const titlesCacheTime = localStorage.getItem('admin_titles_cache_time');
+      
+      if (!force && titlesCache && titlesCacheTime && 
+          (now - parseInt(titlesCacheTime)) < CACHE_DURATION) {
+        // Use cached titles
+        allTitles = JSON.parse(titlesCache);
+      } else {
+        // Fetch fresh titles and cache them
+        allTitles = await titlesService.getAllTitles();
+        localStorage.setItem('admin_titles_cache', JSON.stringify(allTitles));
+        localStorage.setItem('admin_titles_cache_time', now.toString());
+      }
       setTitles(allTitles);
       
-      // Load featured titles
-      const featured = await featuredService.getFeaturedTitles();
+      // Check cache for featured titles
+      let featured = [];
+      const featuredCache = localStorage.getItem('admin_featured_cache');
+      const featuredCacheTime = localStorage.getItem('admin_featured_cache_time');
+      
+      if (!force && featuredCache && featuredCacheTime && 
+          (now - parseInt(featuredCacheTime)) < CACHE_DURATION) {
+        // Use cached featured titles
+        featured = JSON.parse(featuredCache);
+      } else {
+        // Fetch fresh featured titles and cache them
+        featured = await featuredService.getFeaturedTitles();
+        localStorage.setItem('admin_featured_cache', JSON.stringify(featured));
+        localStorage.setItem('admin_featured_cache_time', now.toString());
+      }
       setFeaturedTitles(featured);
+      
+      // Update last cache update time display
+      const cacheTime = Math.max(
+        parseInt(localStorage.getItem('admin_titles_cache_time') || '0'),
+        parseInt(localStorage.getItem('admin_featured_cache_time') || '0')
+      );
+      if (cacheTime > 0) {
+        setLastCacheUpdate(new Date(cacheTime).toLocaleString());
+      }
       
     } catch (error) {
       console.error("Error loading data:", error);
@@ -47,6 +92,11 @@ export default function AdminTitles() {
   };
 
   const handleRefresh = () => {
+    // Clear cache and force refresh
+    localStorage.removeItem('admin_titles_cache');
+    localStorage.removeItem('admin_titles_cache_time');
+    localStorage.removeItem('admin_featured_cache');
+    localStorage.removeItem('admin_featured_cache_time');
     loadData(true);
   };
 
@@ -194,8 +244,11 @@ export default function AdminTitles() {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-midnight-ink-600 text-lg font-medium">
-                {filteredTitles.length} titles
+              <div className="text-midnight-ink-600 text-sm">
+                <div className="font-medium text-lg">{filteredTitles.length} titles</div>
+                {lastCacheUpdate && (
+                  <div className="text-xs opacity-75">Last updated: {lastCacheUpdate}</div>
+                )}
               </div>
             <Button
               asChild

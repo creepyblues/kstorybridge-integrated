@@ -14,7 +14,9 @@ export interface ScrapedTitleData {
   illustrator?: string;
   art_author?: string;
   story_author?: string;
-  genre?: string; // Now stores genre: "소년"
+  art_author_kr?: string; // Korean art author for Kakao webtoons
+  story_author_kr?: string;
+  genre?: string; // Now stores genre: "소년" or compound "학원/판타지"
   content_format?: string;
   chapters?: number;
   completed?: boolean; // Now stores completion status based on "완결"
@@ -22,11 +24,13 @@ export interface ScrapedTitleData {
   title_url: string;
   tags?: string[]; // Only for comic.naver.com (has keywords), not series.naver.com
   tone?: string;
-  audience?: string; // Now stores age rating: "15세 이용가"
+  audience?: string; // Legacy field
+  age_rating?: string; // Age rating: "전체이용가", "15세 이용가", etc.
   pitch?: string;
   perfect_for?: string;
   comps?: string;
-  views?: number; // Now stores view count: 137000
+  views?: number; // Now stores view count: 137000 (converted from "13.7만")
+  likes?: number; // Now stores likes count: 115000 (converted from "11.5만")
   cp?: string; // Now stores content provider: "시프트코믹스"
 }
 

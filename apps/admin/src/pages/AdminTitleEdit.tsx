@@ -341,11 +341,22 @@ export default function AdminTitleEdit() {
                   
                   <div>
                     <label className="block text-sm font-semibold text-hanok-teal mb-2">
-                      Rights Owner
+                      Rights
                     </label>
                     <Input
                       value={formData.rights || ''}
                       onChange={(e) => handleInputChange('rights', e.target.value)}
+                      placeholder="Rights information"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-hanok-teal mb-2">
+                      Rights Owner
+                    </label>
+                    <Input
+                      value={formData.rights_owner || ''}
+                      onChange={(e) => handleInputChange('rights_owner', e.target.value)}
                       placeholder="Rights owner information"
                     />
                   </div>
@@ -362,6 +373,18 @@ export default function AdminTitleEdit() {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-hanok-teal mb-2">
+                      Synopsis
+                    </label>
+                    <Textarea
+                      value={formData.synopsis || ''}
+                      onChange={(e) => handleInputChange('synopsis', e.target.value)}
+                      placeholder="Brief synopsis of the content"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-hanok-teal mb-2">
                       Description
                     </label>
                     <Textarea
@@ -372,17 +395,6 @@ export default function AdminTitleEdit() {
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-semibold text-hanok-teal mb-2">
-                      Synopsis
-                    </label>
-                    <Textarea
-                      value={formData.synopsis || ''}
-                      onChange={(e) => handleInputChange('synopsis', e.target.value)}
-                      placeholder="Brief synopsis"
-                      rows={3}
-                    />
-                  </div>
                   
                   <div>
                     <label className="block text-sm font-semibold text-hanok-teal mb-2">

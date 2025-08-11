@@ -1,0 +1,18 @@
+{
+  "url": "https://comic.naver.com/webtoon/list?titleId=841324",
+  "expected": {
+    "title_name_kr": "Expected Comic Title",
+    "content_format": "webtoon",
+    "tags": [
+      "keyword1",
+      "keyword2"
+    ]
+  },
+  "metadata": {
+    "platform": "naver",
+    "dateAdded": "2025-08-10T21:42:29.313Z",
+    "source": "template",
+    "difficulty": "medium",
+    "notes": "Comic.naver.com should have tags/keywords"
+  }
+}

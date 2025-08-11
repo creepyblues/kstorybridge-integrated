@@ -1,0 +1,19 @@
+{
+  "url": "https://series.naver.com/comic/detail.series?productNo=12981120",
+  "expected": {
+    "title_name_kr": "반에 꼭 있는 애",
+    "views": 24000,
+    "genre": "소년",
+    "audience": "15세 이용가",
+    "cp": "네이버웹툰",
+    "completed": false,
+    "content_format": "webtoon"
+  },
+  "metadata": {
+    "platform": "naver",
+    "dateAdded": "2025-08-10T21:42:29.313Z",
+    "source": "validated_manual",
+    "difficulty": "easy",
+    "notes": "Ongoing series (연재), standard Naver format"
+  }
+}

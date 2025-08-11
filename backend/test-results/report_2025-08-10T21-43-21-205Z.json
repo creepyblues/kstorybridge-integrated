@@ -1,0 +1,659 @@
+{
+  "timestamp": "2025-08-10T21:43:21.204Z",
+  "summary": {
+    "totalTests": 4,
+    "passed": 0,
+    "warning": 2,
+    "failed": 2,
+    "avgAccuracy": 0.49523809523809526,
+    "avgConfidence": 0.76
+  },
+  "byPlatform": {
+    "naver": {
+      "count": 3,
+      "avgAccuracy": 0.5492063492063491,
+      "passed": 0
+    },
+    "kakaopage": {
+      "count": 1,
+      "avgAccuracy": 0.3333333333333333,
+      "passed": 0
+    }
+  },
+  "fieldAnalysis": {
+    "title_name_kr": {
+      "totalTests": 4,
+      "avgScore": 0.5,
+      "correctCount": 2,
+      "accuracy": 0.5
+    },
+    "content_format": {
+      "totalTests": 4,
+      "avgScore": 1,
+      "correctCount": 4,
+      "accuracy": 1
+    },
+    "tags": {
+      "totalTests": 1,
+      "avgScore": 0,
+      "correctCount": 0,
+      "accuracy": 0
+    },
+    "genre": {
+      "totalTests": 3,
+      "avgScore": 0.3333333333333333,
+      "correctCount": 1,
+      "accuracy": 0.3333333333333333
+    },
+    "views": {
+      "totalTests": 2,
+      "avgScore": 0.5,
+      "correctCount": 1,
+      "accuracy": 0.5
+    },
+    "author": {
+      "totalTests": 1,
+      "avgScore": 0,
+      "correctCount": 0,
+      "accuracy": 0
+    },
+    "story_author_kr": {
+      "totalTests": 1,
+      "avgScore": 0,
+      "correctCount": 0,
+      "accuracy": 0
+    },
+    "art_author_kr": {
+      "totalTests": 1,
+      "avgScore": 0,
+      "correctCount": 0,
+      "accuracy": 0
+    },
+    "audience": {
+      "totalTests": 2,
+      "avgScore": 1,
+      "correctCount": 2,
+      "accuracy": 1
+    },
+    "cp": {
+      "totalTests": 2,
+      "avgScore": 1,
+      "correctCount": 2,
+      "accuracy": 1
+    },
+    "completed": {
+      "totalTests": 2,
+      "avgScore": 0.5,
+      "correctCount": 1,
+      "accuracy": 0.5
+    }
+  },
+  "recommendations": [
+    {
+      "type": "platform",
+      "priority": "high",
+      "platform": "naver",
+      "issue": "Low accuracy for naver (54.9%)",
+      "suggestion": "Review and improve naver scraper patterns. Consider adding more specific selectors."
+    },
+    {
+      "type": "platform",
+      "priority": "high",
+      "platform": "kakaopage",
+      "issue": "Low accuracy for kakaopage (33.3%)",
+      "suggestion": "Review and improve kakaopage scraper patterns. Consider adding more specific selectors."
+    },
+    {
+      "type": "field",
+      "priority": "high",
+      "field": "tags",
+      "issue": "Poor extraction accuracy for tags (0.0%)",
+      "suggestion": "Improve tags extraction patterns. Consider adding fallback selectors or regex patterns."
+    },
+    {
+      "type": "field",
+      "priority": "high",
+      "field": "author",
+      "issue": "Poor extraction accuracy for author (0.0%)",
+      "suggestion": "Improve author extraction patterns. Consider adding fallback selectors or regex patterns."
+    },
+    {
+      "type": "field",
+      "priority": "high",
+      "field": "story_author_kr",
+      "issue": "Poor extraction accuracy for story_author_kr (0.0%)",
+      "suggestion": "Improve story_author_kr extraction patterns. Consider adding fallback selectors or regex patterns."
+    },
+    {
+      "type": "field",
+      "priority": "high",
+      "field": "art_author_kr",
+      "issue": "Poor extraction accuracy for art_author_kr (0.0%)",
+      "suggestion": "Improve art_author_kr extraction patterns. Consider adding fallback selectors or regex patterns."
+    },
+    {
+      "type": "general",
+      "priority": "high",
+      "issue": "Overall accuracy below target (49.5%)",
+      "suggestion": "Focus on improving high-value fields like title_name_kr, author, and genre extraction."
+    },
+    {
+      "type": "field",
+      "priority": "medium",
+      "field": "title_name_kr",
+      "issue": "Poor extraction accuracy for title_name_kr (50.0%)",
+      "suggestion": "Improve title_name_kr extraction patterns. Consider adding fallback selectors or regex patterns."
+    },
+    {
+      "type": "field",
+      "priority": "medium",
+      "field": "genre",
+      "issue": "Poor extraction accuracy for genre (33.3%)",
+      "suggestion": "Improve genre extraction patterns. Consider adding fallback selectors or regex patterns."
+    },
+    {
+      "type": "field",
+      "priority": "medium",
+      "field": "views",
+      "issue": "Poor extraction accuracy for views (50.0%)",
+      "suggestion": "Improve views extraction patterns. Consider adding fallback selectors or regex patterns."
+    },
+    {
+      "type": "field",
+      "priority": "medium",
+      "field": "completed",
+      "issue": "Poor extraction accuracy for completed (50.0%)",
+      "suggestion": "Improve completed extraction patterns. Consider adding fallback selectors or regex patterns."
+    }
+  ],
+  "results": [
+    {
+      "testId": "https___comic_naver_com_webtoon_list_titleId_84132_me67m4e9",
+      "url": "https://comic.naver.com/webtoon/list?titleId=841324",
+      "platform": "naver",
+      "success": true,
+      "expected": 3,
+      "extracted": 5,
+      "accuracy": {
+        "overall": 0.3333333333333333,
+        "byField": {
+          "title_name_kr": {
+            "expected": "Expected Comic Title",
+            "actual": "기획재정부",
+            "correct": false,
+            "score": 0
+          },
+          "content_format": {
+            "expected": "webtoon",
+            "actual": "webtoon",
+            "correct": true,
+            "score": 1
+          },
+          "tags": {
+            "expected": [
+              "keyword1",
+              "keyword2"
+            ],
+            "actual": [],
+            "correct": false,
+            "score": 0
+          }
+        },
+        "correctFields": 1,
+        "totalFields": 3
+      },
+      "confidence": 0.6,
+      "duration": "289ms",
+      "timestamp": "2025-08-10T21:43:18.567Z",
+      "logs": [
+        "[2:43:18 PM] 🔍 Starting scrape operation",
+        "[2:43:18 PM] 📋 Target URL: https://comic.naver.com/webtoon/list?titleId=841324",
+        "[2:43:18 PM] ✅ URL validation passed",
+        "[2:43:18 PM] 🎯 Platform detected: naver",
+        "[2:43:18 PM] 🚀 Initiating Naver scraper",
+        "[2:43:18 PM] 🌐 Fetching HTML from server (attempt 1/3)...",
+        "[2:43:18 PM] 📡 HTTP Response: 200 OK",
+        "[2:43:18 PM] ✅ HTML fetched successfully (2396 characters)",
+        "[2:43:18 PM] 📄 Content preview:  <!DOCTYPE html> <html lang=\"ko\"> <head> <title>네이버 웹툰</title> <link rel=\"icon\" href=\"https://s...",
+        "[2:43:18 PM] 🎯 Naver platform type: Webtoon",
+        "[2:43:18 PM] 🔍 Extracting title (meta tags)...",
+        "[2:43:18 PM] ✅ Title found via meta: \"기획재정부\"",
+        "[2:43:18 PM] 🖼️ Image via meta og:image",
+        "[2:43:18 PM] 🔍 Extracting view count...",
+        "[2:43:18 PM] ✅ Views found: \"5천\" → 5000",
+        "[2:43:18 PM] 🔍 Extracting likes...",
+        "[2:43:18 PM] 🔍 Extracting authors (글/그림/작가)...",
+        "[2:43:18 PM] 🔍 Extracting age rating...",
+        "[2:43:18 PM] 🔍 Extracting publisher (출판사)...",
+        "[2:43:18 PM] 🔍 Using fallback content provider patterns...",
+        "[2:43:18 PM] 🔍 Extracting genre...",
+        "[2:43:18 PM] 🔍 Extracting completion status...",
+        "[2:43:18 PM] 🏁 Scraping completed - Success: true, Fields: 5"
+      ],
+      "data": {
+        "title_name_kr": "기획재정부",
+        "title_name_en": "N/A",
+        "description": "나는 언제나 좋은 사람이었고, 웃는 얼굴로 나라를 말아먹었다.지지율을 위해 5천조에 달하는 예산을 낭비한 결과, 대한민국은 두 번째 IMF를 맞았다.그렇게 나라를 망친 대통령으로서의 삶을 마감하고 30년 전으로 돌아온 이성준.회귀한 그의 눈에 보인 건 꼼수와 비리, 각종 이기주의로 점철된 예산안이 기획재정부의 결재판을 통과하고 있는 현실이었다.‘욕을 먹더라도 이런 예산안은 모두 막아야 한다, 이 나라를 구하려면.’30년 동안 정치를 하면서 익힌 각종 편법과 정략, 그리고 여론전.그 모든 것을 활용해서 국가의 금고를 지키는 수문장이 될 것이다.",
+        "synopsis": "N/A",
+        "logline": "N/A",
+        "tagline": "N/A",
+        "author": "N/A",
+        "writer": "N/A",
+        "illustrator": "N/A",
+        "art_author": "N/A",
+        "story_author": "N/A",
+        "story_author_kr": "N/A",
+        "art_author_kr": "N/A",
+        "genre": "N/A",
+        "content_format": "webtoon",
+        "chapters": 0,
+        "completed": false,
+        "title_image": "https://shared-comic.pstatic.net/thumb/webtoon/841324/thumbnail/thumbnail_IMAG21_12e65646-cf56-415f-b460-6bcbaf3fa059.jpg",
+        "title_url": "https://comic.naver.com/webtoon/list?titleId=841324",
+        "tags": [],
+        "tone": "N/A",
+        "audience": "N/A",
+        "pitch": "N/A",
+        "perfect_for": "N/A",
+        "comps": "N/A",
+        "views": 5000,
+        "cp": "N/A"
+      },
+      "expectedData": {
+        "title_name_kr": "Expected Comic Title",
+        "content_format": "webtoon",
+        "tags": [
+          "keyword1",
+          "keyword2"
+        ]
+      },
+      "metadata": {
+        "platform": "naver",
+        "dateAdded": "2025-08-10T21:42:29.313Z",
+        "source": "template",
+        "difficulty": "medium",
+        "notes": "Comic.naver.com should have tags/keywords"
+      }
+    },
+    {
+      "testId": "https___page_kakao_com_content_61614855_me67m4e9",
+      "url": "https://page.kakao.com/content/61614855",
+      "platform": "kakaopage",
+      "success": true,
+      "expected": 3,
+      "extracted": 5,
+      "accuracy": {
+        "overall": 0.3333333333333333,
+        "byField": {
+          "title_name_kr": {
+            "expected": "Expected Title Here",
+            "actual": "철혈검가 사냥개의 회귀",
+            "correct": false,
+            "score": 0
+          },
+          "content_format": {
+            "expected": "webtoon",
+            "actual": "webtoon",
+            "correct": true,
+            "score": 1
+          },
+          "genre": {
+            "expected": "romance",
+            "actual": "fantasy",
+            "correct": false,
+            "score": 0
+          }
+        },
+        "correctFields": 1,
+        "totalFields": 3
+      },
+      "confidence": 0.6799999999999999,
+      "duration": "1052ms",
+      "timestamp": "2025-08-10T21:43:19.619Z",
+      "logs": [
+        "[2:43:18 PM] 🔍 Starting scrape operation",
+        "[2:43:18 PM] 📋 Target URL: https://page.kakao.com/content/61614855",
+        "[2:43:18 PM] ✅ URL validation passed",
+        "[2:43:18 PM] 🎯 Platform detected: kakaopage",
+        "[2:43:18 PM] 🚀 Initiating KakaoPage scraper",
+        "[2:43:18 PM] 🌐 Fetching HTML from server (attempt 1/3)...",
+        "[2:43:19 PM] 📡 HTTP Response: 200 OK",
+        "[2:43:19 PM] ✅ HTML fetched successfully (79468 characters)",
+        "[2:43:19 PM] 📄 Content preview: <!DOCTYPE html><html lang=\"ko\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=dev...",
+        "[2:43:19 PM] ✅ Title via meta: \"철혈검가 사냥개의 회귀\"",
+        "[2:43:19 PM] 🏁 Scraping completed - Success: true, Fields: 5"
+      ],
+      "data": {
+        "title_name_kr": "철혈검가 사냥개의 회귀",
+        "title_name_en": "N/A",
+        "description": "바스커빌 가문의 사냥개 '비키르'.사냥개로서 가문에 충성한 보답은 모함과 누명으로 얼룩진 단두대의 칼날이었다.\"다시는 토끼를 잡고 나면 삶아지는 사냥개처럼 살지 않겠노라.\"그런 그에게 죽음 대신 찾아온 뜻밖의 기회.어둠 속에서 송곳니를 갈고닦는 비키르의 눈이 붉게 빛났다.\"기다려라. 휴고. 이번엔 반드시 네 목을 물어뜯어 주마.\"주인을 향한 사냥개의 잔혹한 핏빛 복수가 시작된다.",
+        "synopsis": "N/A",
+        "logline": "N/A",
+        "tagline": "N/A",
+        "author": "N/A",
+        "writer": "N/A",
+        "illustrator": "N/A",
+        "art_author": "N/A",
+        "story_author": "N/A",
+        "story_author_kr": "N/A",
+        "art_author_kr": "N/A",
+        "genre": "fantasy",
+        "content_format": "webtoon",
+        "chapters": 0,
+        "completed": false,
+        "title_image": "https://page-images.kakaoentcdn.com/download/resource?kid=OOqPu/hAMhoY53AE/MySKhs8vXTCyFqGOfpAFV1&filename=o1",
+        "title_url": "https://page.kakao.com/content/61614855",
+        "tags": [],
+        "tone": "N/A",
+        "audience": "N/A",
+        "pitch": "N/A",
+        "perfect_for": "N/A",
+        "comps": "N/A",
+        "views": 0,
+        "cp": "N/A"
+      },
+      "expectedData": {
+        "title_name_kr": "Expected Title Here",
+        "content_format": "webtoon",
+        "genre": "romance"
+      },
+      "metadata": {
+        "platform": "kakaopage",
+        "dateAdded": "2025-08-10T21:42:29.313Z",
+        "source": "template",
+        "difficulty": "hard",
+        "notes": "KakaoPage content page - needs validation"
+      }
+    },
+    {
+      "testId": "https___series_naver_com_comic_detail_series_produ_me67m4e8",
+      "url": "https://series.naver.com/comic/detail.series?productNo=3293134",
+      "platform": "naver",
+      "success": true,
+      "expected": 10,
+      "extracted": 12,
+      "accuracy": {
+        "overall": 0.6,
+        "byField": {
+          "title_name_kr": {
+            "expected": "마녀의 하인과 마왕의 뿔",
+            "actual": "마녀의 하인과 마왕의 뿔",
+            "correct": true,
+            "score": 1
+          },
+          "views": {
+            "expected": 137000,
+            "actual": 137000,
+            "correct": true,
+            "score": 1
+          },
+          "author": {
+            "expected": "모치",
+            "actual": "N/A",
+            "correct": false,
+            "score": 0
+          },
+          "story_author_kr": {
+            "expected": "모치",
+            "actual": "래머",
+            "correct": false,
+            "score": 0
+          },
+          "art_author_kr": {
+            "expected": "모치",
+            "actual": "N/A",
+            "correct": false,
+            "score": 0
+          },
+          "genre": {
+            "expected": "소년",
+            "actual": "순정",
+            "correct": false,
+            "score": 0
+          },
+          "audience": {
+            "expected": "15세 이용가",
+            "actual": "15세 이용가",
+            "correct": true,
+            "score": 1
+          },
+          "cp": {
+            "expected": "시프트코믹스",
+            "actual": "시프트코믹스",
+            "correct": true,
+            "score": 1
+          },
+          "completed": {
+            "expected": true,
+            "actual": true,
+            "correct": true,
+            "score": 1
+          },
+          "content_format": {
+            "expected": "webtoon",
+            "actual": "webtoon",
+            "correct": true,
+            "score": 1
+          }
+        },
+        "correctFields": 6,
+        "totalFields": 10
+      },
+      "confidence": 0.97,
+      "duration": "1153ms",
+      "timestamp": "2025-08-10T21:43:20.773Z",
+      "logs": [
+        "[2:43:19 PM] 🔍 Starting scrape operation",
+        "[2:43:19 PM] 📋 Target URL: https://series.naver.com/comic/detail.series?productNo=3293134",
+        "[2:43:19 PM] ✅ URL validation passed",
+        "[2:43:19 PM] 🎯 Platform detected: naver",
+        "[2:43:19 PM] 🚀 Initiating Naver scraper",
+        "[2:43:19 PM] 🌐 Fetching HTML from server (attempt 1/3)...",
+        "[2:43:20 PM] 📡 HTTP Response: 200 200",
+        "[2:43:20 PM] ✅ HTML fetched successfully (129887 characters)",
+        "[2:43:20 PM] 📄 Content preview:  <!doctype html> <html lang=\"ko\"> <head> <meta charset=\"utf-8\"> <meta http-equiv=\"Expires\" con...",
+        "[2:43:20 PM] 🎯 Naver platform type: Series",
+        "[2:43:20 PM] 🔍 Extracting title (meta tags)...",
+        "[2:43:20 PM] ✅ Title found via meta: \"마녀의 하인과 마왕의 뿔\"",
+        "[2:43:20 PM] 🖼️ Image via meta og:image",
+        "[2:43:20 PM] 🔍 Extracting view count...",
+        "[2:43:20 PM] ✅ Views found: \"13.7만\" → 137000",
+        "[2:43:20 PM] 🔍 Extracting likes...",
+        "[2:43:20 PM] 🔍 Extracting authors (글/그림/작가)...",
+        "[2:43:20 PM] ✅ 글 (writer) → story_author_kr: \"래머\"",
+        "[2:43:20 PM] 🔍 Extracting age rating...",
+        "[2:43:20 PM] ✅ Age rating found: \"15세 이용가\"",
+        "[2:43:20 PM] 🔍 Extracting publisher (출판사)...",
+        "[2:43:20 PM] 🔍 Using fallback content provider patterns...",
+        "[2:43:20 PM] ✅ Content provider found: \"시프트코믹스\"",
+        "[2:43:20 PM] 🔍 Extracting genre...",
+        "[2:43:20 PM] ✅ Genre found: \"순정\"",
+        "[2:43:20 PM] 🔍 Extracting completion status...",
+        "[2:43:20 PM] ✅ Completion status found: \"완결\" → true",
+        "[2:43:20 PM] 🏁 Scraping completed - Success: true, Fields: 12"
+      ],
+      "data": {
+        "title_name_kr": "마녀의 하인과 마왕의 뿔",
+        "title_name_en": "N/A",
+        "description": "마왕 토벌의 명령을 받아 혼자서 마왕성에 진입한 마녀의 하인, 아르세니오.\n약초 마녀의 충직한 하인, 아르세니오는 그곳에는 어떻게 보나 마스코트 캐릭터 같은 마왕과 그 마스코트에...",
+        "synopsis": "N/A",
+        "logline": "N/A",
+        "tagline": "N/A",
+        "author": "N/A",
+        "writer": "래머",
+        "illustrator": "N/A",
+        "art_author": "N/A",
+        "story_author": "래머",
+        "story_author_kr": "래머",
+        "art_author_kr": "N/A",
+        "genre": "순정",
+        "content_format": "webtoon",
+        "chapters": 0,
+        "completed": true,
+        "title_image": "https://comicthumb-phinf.pstatic.net/20250805_38/pocket_175437065636617jGO_JPEG/001.jpg?type=m600x314",
+        "title_url": "https://series.naver.com/comic/detail.series?productNo=3293134",
+        "tags": [],
+        "tone": "N/A",
+        "audience": "15세 이용가",
+        "pitch": "N/A",
+        "perfect_for": "N/A",
+        "comps": "N/A",
+        "views": 137000,
+        "cp": "시프트코믹스"
+      },
+      "expectedData": {
+        "title_name_kr": "마녀의 하인과 마왕의 뿔",
+        "views": 137000,
+        "author": "모치",
+        "story_author_kr": "모치",
+        "art_author_kr": "모치",
+        "genre": "소년",
+        "audience": "15세 이용가",
+        "cp": "시프트코믹스",
+        "completed": true,
+        "content_format": "webtoon"
+      },
+      "metadata": {
+        "platform": "naver",
+        "dateAdded": "2025-08-10T21:42:29.311Z",
+        "source": "validated_manual",
+        "difficulty": "medium",
+        "notes": "Well-structured Naver series page with all major fields"
+      }
+    },
+    {
+      "testId": "https___series_naver_com_comic_detail_series_produ_me67m4e9",
+      "url": "https://series.naver.com/comic/detail.series?productNo=12981120",
+      "platform": "naver",
+      "success": true,
+      "expected": 7,
+      "extracted": 9,
+      "accuracy": {
+        "overall": 0.7142857142857143,
+        "byField": {
+          "title_name_kr": {
+            "expected": "반에 꼭 있는 애",
+            "actual": "반에 꼭 있는 애",
+            "correct": true,
+            "score": 1
+          },
+          "views": {
+            "expected": 24000,
+            "actual": 43000,
+            "correct": false,
+            "score": 0
+          },
+          "genre": {
+            "expected": "소년",
+            "actual": "소년",
+            "correct": true,
+            "score": 1
+          },
+          "audience": {
+            "expected": "15세 이용가",
+            "actual": "15세 이용가",
+            "correct": true,
+            "score": 1
+          },
+          "cp": {
+            "expected": "네이버웹툰",
+            "actual": "네이버웹툰",
+            "correct": true,
+            "score": 1
+          },
+          "completed": {
+            "expected": false,
+            "actual": false,
+            "correct": false,
+            "score": 0
+          },
+          "content_format": {
+            "expected": "webtoon",
+            "actual": "webtoon",
+            "correct": true,
+            "score": 1
+          }
+        },
+        "correctFields": 5,
+        "totalFields": 7
+      },
+      "confidence": 0.79,
+      "duration": "431ms",
+      "timestamp": "2025-08-10T21:43:21.204Z",
+      "logs": [
+        "[2:43:20 PM] 🔍 Starting scrape operation",
+        "[2:43:20 PM] 📋 Target URL: https://series.naver.com/comic/detail.series?productNo=12981120",
+        "[2:43:20 PM] ✅ URL validation passed",
+        "[2:43:20 PM] 🎯 Platform detected: naver",
+        "[2:43:20 PM] 🚀 Initiating Naver scraper",
+        "[2:43:20 PM] 🌐 Fetching HTML from server (attempt 1/3)...",
+        "[2:43:21 PM] 📡 HTTP Response: 200 200",
+        "[2:43:21 PM] ✅ HTML fetched successfully (127234 characters)",
+        "[2:43:21 PM] 📄 Content preview:  <!doctype html> <html lang=\"ko\"> <head> <meta charset=\"utf-8\"> <meta http-equiv=\"Expires\" con...",
+        "[2:43:21 PM] 🎯 Naver platform type: Series",
+        "[2:43:21 PM] 🔍 Extracting title (meta tags)...",
+        "[2:43:21 PM] ✅ Title found via meta: \"반에 꼭 있는 애\"",
+        "[2:43:21 PM] 🖼️ Image via meta og:image",
+        "[2:43:21 PM] 🔍 Extracting view count...",
+        "[2:43:21 PM] ✅ Views found: \"4.3만\" → 43000",
+        "[2:43:21 PM] 🔍 Extracting likes...",
+        "[2:43:21 PM] 🔍 Extracting authors (글/그림/작가)...",
+        "[2:43:21 PM] 🔍 Extracting age rating...",
+        "[2:43:21 PM] ✅ Age rating found: \"15세 이용가\"",
+        "[2:43:21 PM] 🔍 Extracting publisher (출판사)...",
+        "[2:43:21 PM] 🔍 Using fallback content provider patterns...",
+        "[2:43:21 PM] ✅ Content provider found: \"네이버웹툰\"",
+        "[2:43:21 PM] 🔍 Extracting genre...",
+        "[2:43:21 PM] ✅ Genre found: \"소년\"",
+        "[2:43:21 PM] 🔍 Extracting completion status...",
+        "[2:43:21 PM] ✅ Completion status found: \"연재\" → false",
+        "[2:43:21 PM] 🏁 Scraping completed - Success: true, Fields: 9"
+      ],
+      "data": {
+        "title_name_kr": "반에 꼭 있는 애",
+        "title_name_en": "N/A",
+        "description": "교실에 한 명쯤은 꼭 있다.. \n모두가 욕하지만 알고 보면 남일 같지 않은 우리 주변의 이야기",
+        "synopsis": "N/A",
+        "logline": "N/A",
+        "tagline": "N/A",
+        "author": "N/A",
+        "writer": "N/A",
+        "illustrator": "N/A",
+        "art_author": "N/A",
+        "story_author": "N/A",
+        "story_author_kr": "N/A",
+        "art_author_kr": "N/A",
+        "genre": "소년",
+        "content_format": "webtoon",
+        "chapters": 0,
+        "completed": false,
+        "title_image": "https://comicthumb-phinf.pstatic.net/20250806_25/pocket_1754465872590coFf6_JPEG/%BD%C3%B8%AE%C1%EE_%C6%F7%BD%BA%C5%CD_%BD%E6%B3%D7%C0%CF_690x1000.jpg?type=m600x314",
+        "title_url": "https://series.naver.com/comic/detail.series?productNo=12981120",
+        "tags": [],
+        "tone": "N/A",
+        "audience": "15세 이용가",
+        "pitch": "N/A",
+        "perfect_for": "N/A",
+        "comps": "N/A",
+        "views": 43000,
+        "cp": "네이버웹툰"
+      },
+      "expectedData": {
+        "title_name_kr": "반에 꼭 있는 애",
+        "views": 24000,
+        "genre": "소년",
+        "audience": "15세 이용가",
+        "cp": "네이버웹툰",
+        "completed": false,
+        "content_format": "webtoon"
+      },
+      "metadata": {
+        "platform": "naver",
+        "dateAdded": "2025-08-10T21:42:29.313Z",
+        "source": "validated_manual",
+        "difficulty": "easy",
+        "notes": "Ongoing series (연재), standard Naver format"
+      }
+    }
+  ]
+}

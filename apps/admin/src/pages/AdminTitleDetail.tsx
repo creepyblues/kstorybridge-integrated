@@ -279,10 +279,10 @@ export default function AdminTitleDetail() {
 
           {/* Right Column - Description and Details */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Synopsis */}
+            {/* Content Details */}
             <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="text-midnight-ink text-xl">Synopsis</CardTitle>
+                <CardTitle className="text-midnight-ink text-xl">Content Details</CardTitle>
                 {title.pitch && (
                   <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
                     <DialogTrigger asChild>
@@ -320,11 +320,23 @@ export default function AdminTitleDetail() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {title.description ? (
-                    <p className="text-gray-600 leading-relaxed text-base">{title.description}</p>
-                  ) : (
-                    <p className="text-gray-500 italic text-sm">No description available for this title.</p>
+                  {/* Synopsis */}
+                  {title.synopsis && (
+                    <div>
+                      <h5 className="font-bold text-hanok-teal mb-2">Synopsis</h5>
+                      <p className="text-gray-600 leading-relaxed text-sm mb-4">{title.synopsis}</p>
+                    </div>
                   )}
+                  
+                  {/* Description */}
+                  <div>
+                    <h5 className="font-bold text-hanok-teal mb-2">Description</h5>
+                    {title.description ? (
+                      <p className="text-gray-600 leading-relaxed text-base">{title.description}</p>
+                    ) : (
+                      <p className="text-gray-500 italic text-sm">No description available for this title.</p>
+                    )}
+                  </div>
                   
                   {/* Market Information */}
                   <div className="pt-6 border-t border-gray-200 space-y-6">
@@ -392,8 +404,12 @@ export default function AdminTitleDetail() {
                       </div>
                     )}
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-1">Rights Owner</h5>
+                      <h5 className="font-bold text-hanok-teal mb-1">Rights</h5>
                       <p className="text-gray-600 text-sm">{title.rights || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <h5 className="font-bold text-hanok-teal mb-1">Rights Owner</h5>
+                      <p className="text-gray-600 text-sm">{title.rights_owner || 'Not specified'}</p>
                     </div>
                   </div>
 

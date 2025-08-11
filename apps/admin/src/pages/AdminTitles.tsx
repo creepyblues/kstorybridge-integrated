@@ -8,6 +8,7 @@ import { featuredService, type FeaturedWithTitle } from "@/services/featuredServ
 import AdminLayout from "@/components/layout/AdminLayout";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { toast } from "sonner";
+import PremiumColumn from "@/components/PremiumColumn";
 
 export default function AdminTitles() {
   const navigate = useNavigate();
@@ -339,7 +340,18 @@ export default function AdminTitles() {
                 <div className="col-span-2">
                   <SortableHeader field="keywords">Keywords</SortableHeader>
                 </div>
-                <div className="col-span-2">Format</div>
+                <div className="col-span-1 relative flex flex-col items-center justify-center">
+                  <span>Comps</span>
+                  <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
+                    PRO PLAN
+                  </span>
+                </div>
+                <div className="col-span-1 relative flex flex-col items-center justify-center">
+                  <span>Audience</span>
+                  <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
+                    PRO PLAN
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -434,15 +446,25 @@ export default function AdminTitles() {
                         )}
                       </div>
                       
-                      <div className="col-span-2">
-                        {title.content_format ? (
-                          <div className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                            {formatContentFormat(title.content_format)}
+                      <PremiumColumn className="col-span-1">
+                        {title.comps ? (
+                          <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
+                            {title.comps}
                           </div>
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
-                      </div>
+                      </PremiumColumn>
+                      
+                      <PremiumColumn className="col-span-1">
+                        {title.audience ? (
+                          <div className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                            {title.audience}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </PremiumColumn>
                     </div>
                   </Link>
                 ))}

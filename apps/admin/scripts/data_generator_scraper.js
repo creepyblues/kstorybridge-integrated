@@ -237,19 +237,17 @@ async function scrapeTitle(title, index, total) {
  */
 function generateSqlUpdate(titleId, foundData, titleName) {
   const updates = [];
-  const values = [];
 
   Object.entries(foundData).forEach(([field, value]) => {
     if (value !== null && value !== undefined) {
       if (typeof value === 'string') {
-        updates.push(`${field} = $${updates.length + 1}`);
-        values.push(value.replace(/'/g, "''"));  // Escape quotes
+        // Escape single quotes and wrap in quotes
+        const escapedValue = value.replace(/'/g, "''");
+        updates.push(`${field} = '${escapedValue}'`);
       } else if (typeof value === 'number') {
-        updates.push(`${field} = $${updates.length + 1}`);
-        values.push(value);
+        updates.push(`${field} = ${value}`);
       } else if (typeof value === 'boolean') {
-        updates.push(`${field} = $${updates.length + 1}`);
-        values.push(value);
+        updates.push(`${field} = ${value}`);
       }
     }
   });
@@ -257,29 +255,19 @@ function generateSqlUpdate(titleId, foundData, titleName) {
   if (updates.length === 0) return null;
 
   // Add updated_at timestamp
-  updates.push(`updated_at = $${updates.length + 1}`);
-  values.push(new Date().toISOString());
+  const timestamp = new Date().toISOString();
+  updates.push(`updated_at = '${timestamp}'`);
 
   const sql = `-- Update ${titleName} (${titleId})
 UPDATE titles 
 SET ${updates.join(', ')}
 WHERE title_id = '${titleId}';`;
 
-  const parameterizedSql = `-- Update ${titleName} (${titleId})
-UPDATE titles 
-SET ${updates.join(', ')}
-WHERE title_id = '${titleId}';`;
-
-  // Also provide values for reference
-  const valueComments = values.map((val, idx) => 
-    `-- $${idx + 1} = ${typeof val === 'string' ? `'${val}'` : val}`
-  ).join('\n');
-
   return {
     sql: sql,
-    parameterizedSql,
-    valueComments,
-    values
+    titleId,
+    titleName,
+    foundData
   };
 }
 
@@ -405,7 +393,7 @@ function displayResults(results) {
     
     // Write SQL to file
     const sqlContent = results.sqlQueries.map(query => 
-      `${query.valueComments}\n${query.sql}\n`
+      `${query.sql}\n`
     ).join('\n');
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');

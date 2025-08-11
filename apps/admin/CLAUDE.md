@@ -225,6 +225,13 @@ The `titles` table contains all fields for title management. **Always show ALL f
 - Generates 10-60 character marketing taglines from descriptions
 - Configurable with dry-run and limit options
 
+**Data Generator Scraper:**
+- Script: `scripts/data_generator_scraper.js`
+- Finds titles with missing data (views, likes, audience, age_rating)
+- Uses scraper API to populate missing fields automatically
+- Generates SQL update queries for batch database updates
+- Supports Korean platforms: Naver Series, Naver Comics, KakaoPage, Kakao Webtoon
+
 **Script Development Guidelines:**
 - Always include dry-run mode for testing
 - Add comprehensive logging with emojis for readability
@@ -303,3 +310,187 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 - **Isolated Operation**: No dependencies on website/dashboard authentication
 - **Data Completeness**: Always display ALL available fields when showing title data
 - **Error Resilience**: Handle database errors and missing fields gracefully
+
+## Data Generator Scraper System
+
+### Overview
+The `data_generator_scraper` script automatically finds titles with missing data (views, likes, audience, age_rating) and uses the scraper API to populate them, generating SQL update queries for batch database updates.
+
+### Prerequisites
+1. **Backend Scraper API**: Must be running on port 3001
+   ```bash
+   cd backend && npm start
+   ```
+2. **Dependencies**: All required packages (node-fetch, dotenv) included in package.json
+
+### Usage Commands
+
+**Basic Usage:**
+```bash
+# Process all missing data for Korean platform titles
+npm run generate:scraper-data
+
+# Test mode - no database changes
+npm run generate:scraper-data:dry-run
+
+# Limit processing to 10 titles
+npm run generate:scraper-data:limit
+```
+
+**Field-Specific Commands:**
+```bash
+# Process only views data
+npm run generate:scraper-data:views
+
+# Process only likes data  
+npm run generate:scraper-data:likes
+
+# Custom combinations
+node scripts/data_generator_scraper.js --field=views,likes --limit=5 --dry-run
+```
+
+### Command Line Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--dry-run` | Test mode - no database changes | `--dry-run` |
+| `--limit=N` | Process only N titles | `--limit=10` |
+| `--field=fields` | Target specific fields | `--field=views,likes` |
+
+### Supported Data Fields
+- **views**: View counts from Korean platforms
+- **likes**: Like/heart counts  
+- **audience**: Target audience information
+- **age_rating**: Korean age ratings (전체이용가, 15세 이용가, etc.)
+
+### Platform Support
+The script automatically filters for and processes titles from:
+- **Naver Series** (`series.naver.com`) - ✅ Full support
+- **Naver Comics** (`comic.naver.com`) - ✅ Working
+- **KakaoPage** (`page.kakao.com`) - ✅ Working  
+- **Kakao Webtoon** (`webtoon.kakao.com`) - ⚠️ Partial support
+
+### Output Format
+
+**Console Progress:**
+```
+🚀 Starting Data Generator Scraper
+===================================
+🧪 DRY RUN MODE - No database changes will be made
+
+🏥 Checking scraper API health...
+✅ Scraper API is healthy
+
+📝 Processing (1/10): 웹툰 제목
+🔗 URL: https://series.naver.com/comic/detail.series?productNo=123456
+📋 Missing fields: views, likes
+✅ Scraping successful (confidence: 95%)
+✨ Found views: 137000
+✨ Found likes: 15000
+```
+
+**Generated SQL File:**
+```sql
+-- title_updates_2025-08-11T10-30-45-123Z.sql
+
+-- Update 웹툰 제목 (title-uuid-here)
+UPDATE titles 
+SET views = 137000, likes = 15000, updated_at = '2025-08-11T10:30:45.123Z'
+WHERE title_id = 'title-uuid-here';
+```
+
+**Results Summary:**
+```
+📊 PROCESSING SUMMARY
+=====================
+✅ Successful: 8
+❌ Failed: 2
+📈 Success Rate: 80.0%
+
+📋 Fields Updated:
+  • views: 6 titles
+  • likes: 5 titles
+  • audience: 3 titles
+  • age_rating: 4 titles
+```
+
+### SQL Execution Workflow
+
+1. **Review Generated SQL**: Check the timestamped `.sql` file
+2. **Test on Staging**: Validate queries on staging database first
+3. **Execute in Supabase**: Copy-paste directly into Supabase SQL Editor
+4. **Verify Results**: Check updated data in admin interface
+
+The generated SQL uses direct values (not parameterized queries) and is ready for immediate execution in Supabase without modifications.
+
+### Error Handling & Rate Limiting
+
+**Built-in Safety Features:**
+- 2-second delays between API calls to prevent overwhelming scraper
+- Graceful handling of unsupported URLs
+- Network error resilience with detailed logging
+- Dry-run mode for safe testing
+
+**Common Issues:**
+- **API Unavailable**: Ensures backend server is running on port 3001
+- **Unsupported URLs**: Skips non-Korean platform URLs automatically
+- **Scraping Failures**: Logs detailed error information for debugging
+
+### Integration with Scraper System
+
+The data generator leverages the existing scraper infrastructure:
+- Uses same API endpoints (`/api/scraper/scrape`)
+- Handles Korean number conversion automatically (e.g., "13.7만" → 137,000)
+- Provides confidence scoring and field extraction details
+- Maintains consistent error handling patterns
+
+### Performance Characteristics
+
+**Database Optimization:**
+- Filters Korean platform URLs at database level
+- Processes only titles with missing target fields
+- Configurable batch sizes to manage system load
+
+**Scraper Integration:**
+- Health checks ensure API availability
+- Rate limiting prevents server overload
+- Comprehensive progress tracking and statistics
+
+### Configuration
+
+**Environment Variables (Optional):**
+```bash
+VITE_SCRAPER_API_URL=http://localhost:3001/api/scraper
+VITE_SUPABASE_URL=https://dlrnrgcoguxlkkcitlpd.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+**Default Configuration:**
+- Scraper API: http://localhost:3001/api/scraper
+- Target Fields: views, likes, audience, age_rating
+- Rate Limit: 2-second delays between requests
+- SQL Output: Timestamped files with direct value queries
+
+### Development Best Practices
+
+1. **Start Small**: Always test with `--dry-run` and `--limit=5`
+2. **Gradual Processing**: Use batch sizes (10-20 titles) rather than full processing
+3. **Backup First**: Test SQL queries on staging before production execution
+4. **Monitor Results**: Review success rates and adjust batch sizes accordingly
+5. **Field-Specific Processing**: Use `--field` parameter for targeted data updates
+
+### Available NPM Scripts
+
+```bash
+# Basic commands
+npm run generate:scraper-data              # Process all missing data
+npm run generate:scraper-data:dry-run      # Test mode only
+npm run generate:scraper-data:limit        # Process 10 titles max
+
+# Field-specific commands
+npm run generate:scraper-data:views        # Only views field
+npm run generate:scraper-data:likes        # Only likes field
+
+# Custom parameters
+node scripts/data_generator_scraper.js --field=audience,age_rating --limit=20 --dry-run
+```

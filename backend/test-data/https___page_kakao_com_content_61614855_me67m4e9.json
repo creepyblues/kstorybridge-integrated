@@ -1,0 +1,15 @@
+{
+  "url": "https://page.kakao.com/content/61614855",
+  "expected": {
+    "title_name_kr": "Expected Title Here",
+    "content_format": "webtoon",
+    "genre": "romance"
+  },
+  "metadata": {
+    "platform": "kakaopage",
+    "dateAdded": "2025-08-10T21:42:29.313Z",
+    "source": "template",
+    "difficulty": "hard",
+    "notes": "KakaoPage content page - needs validation"
+  }
+}

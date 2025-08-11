@@ -9,12 +9,13 @@ import { featuredService, type FeaturedWithTitle } from "@/services/featuredServ
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import PremiumColumn from "@/components/PremiumColumn";
-import TierGatedContent from "@/components/TierGatedContent";
+import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
+import { TierProvider } from "@/contexts/TierContext";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
 
-export default function Titles() {
+function TitlesContent() {
   const { toast } = useToast();
   const { user } = useAuth();
   const location = useLocation();
@@ -519,7 +520,7 @@ export default function Titles() {
                         </div>
                         
                         <div className="col-span-1">
-                          <TierGatedContent requiredTier="pro">
+                          <OptimizedTierGatedContent requiredTier="pro">
                             {title.comps && title.comps.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {title.comps.map((comp, index) => (
@@ -531,11 +532,11 @@ export default function Titles() {
                             ) : (
                               <span className="text-gray-400">-</span>
                             )}
-                          </TierGatedContent>
+                          </OptimizedTierGatedContent>
                         </div>
                         
                         <div className="col-span-1">
-                          <TierGatedContent requiredTier="pro">
+                          <OptimizedTierGatedContent requiredTier="pro">
                             {title.audience ? (
                               <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
                                 {title.audience}
@@ -543,7 +544,7 @@ export default function Titles() {
                             ) : (
                               <span className="text-gray-400">-</span>
                             )}
-                          </TierGatedContent>
+                          </OptimizedTierGatedContent>
                         </div>
                       </div>
                     </Link>
@@ -624,5 +625,13 @@ export default function Titles() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Titles() {
+  return (
+    <TierProvider>
+      <TitlesContent />
+    </TierProvider>
   );
 }

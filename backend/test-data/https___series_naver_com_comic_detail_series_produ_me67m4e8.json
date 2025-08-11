@@ -1,0 +1,22 @@
+{
+  "url": "https://series.naver.com/comic/detail.series?productNo=3293134",
+  "expected": {
+    "title_name_kr": "마녀의 하인과 마왕의 뿔",
+    "views": 137000,
+    "author": "모치",
+    "story_author_kr": "모치",
+    "art_author_kr": "모치",
+    "genre": "소년",
+    "audience": "15세 이용가",
+    "cp": "시프트코믹스",
+    "completed": true,
+    "content_format": "webtoon"
+  },
+  "metadata": {
+    "platform": "naver",
+    "dateAdded": "2025-08-10T21:42:29.311Z",
+    "source": "validated_manual",
+    "difficulty": "medium",
+    "notes": "Well-structured Naver series page with all major fields"
+  }
+}

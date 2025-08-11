@@ -16,7 +16,8 @@ import {
   Tag,
   Copy,
   RefreshCw,
-  TestTube
+  TestTube,
+  Heart
 } from "lucide-react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import scraperApiClient, { type ScrapingResult, type ScrapedTitleData } from "@/services/scraperApiClient";
@@ -96,7 +97,9 @@ export default function AdminScraperTest() {
       'illustrator': <User className="w-4 h-4" />,
       'genre': <Tag className="w-4 h-4" />,
       'title_image': <Image className="w-4 h-4" />,
-      'title_url': <Globe className="w-4 h-4" />
+      'title_url': <Globe className="w-4 h-4" />,
+      'likes': <Heart className="w-4 h-4" />,
+      'age_rating': <AlertCircle className="w-4 h-4" />
     };
     return iconMap[field] || <AlertCircle className="w-4 h-4" />;
   };
@@ -324,13 +327,21 @@ export default function AdminScraperTest() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-4">
-                    {/* All fields display */}
+                    {/* Filtered fields display - excluding specified fields */}
                     {Object.entries(editableData).map(([field, value]) => {
                       if (!value && value !== false && value !== 0) return null;
                       
-                      const isTextArea = ['description', 'synopsis', 'logline'].includes(field);
+                      // Skip these fields as requested  
+                      const excludedFields = [
+                        'synopsis', 'logline', 'tagline', 'author', 'illustrator', 
+                        'art_author', 'story_author', 'tone', 'pitch', 'perfect_for', 'comps',
+                        'title_name_en', 'tags', 'audience'
+                      ];
+                      if (excludedFields.includes(field)) return null;
+                      
+                      const isTextArea = ['description'].includes(field);
                       const isBoolean = typeof value === 'boolean';
-                      const isNumber = field === 'chapters';
+                      const isNumber = ['chapters', 'likes'].includes(field);
                       const isImage = field === 'title_image';
                       const isTags = field === 'tags' && Array.isArray(value);
                       
@@ -377,13 +388,30 @@ export default function AdminScraperTest() {
                             />
                           ) : isTags ? (
                             <div className="space-y-2">
-                              <div className="flex flex-wrap gap-1">
-                                {(value as string[]).map((tag, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {tag}
-                                  </Badge>
-                                ))}
+                              <Input
+                                value={Array.isArray(value) ? (value as string[]).join(', ') : ''}
+                                onChange={(e) => {
+                                  const tagsArray = e.target.value
+                                    .split(',')
+                                    .map(tag => tag.trim())
+                                    .filter(tag => tag.length > 0);
+                                  handleFieldEdit(field as keyof ScrapedTitleData, tagsArray);
+                                }}
+                                placeholder="Enter keywords separated by commas"
+                                className="text-sm"
+                              />
+                              <div className="text-xs text-gray-500">
+                                Separate keywords with commas (e.g., romance, drama, webtoon)
                               </div>
+                              {Array.isArray(value) && value.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {(value as string[]).map((tag, index) => (
+                                    <Badge key={index} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ) : isImage ? (
                             <div className="space-y-2">
@@ -416,18 +444,92 @@ export default function AdminScraperTest() {
                         </div>
                       );
                     })}
+
                   </div>
 
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t space-y-2">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          // Submit feedback if data was corrected
+                          const response = await fetch('http://localhost:3001/api/testing/feedback', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              url,
+                              originalData: result?.data || {},
+                              correctedData: editableData,
+                              userContext: {
+                                timestamp: new Date().toISOString(),
+                                sessionId: Date.now().toString()
+                              }
+                            })
+                          });
+                          
+                          if (response.ok) {
+                            toast.success("✅ Feedback submitted! This will improve scraper accuracy.");
+                          } else {
+                            throw new Error('Failed to submit feedback');
+                          }
+                        } catch (error) {
+                          console.error('Feedback submission failed:', error);
+                          toast.error("❌ Could not submit feedback. Data logged to console.");
+                          console.log('Corrected data:', editableData);
+                        }
+                      }}
+                      className="w-full bg-sunrise-coral hover:bg-sunrise-coral/90 text-white"
+                      disabled={!result?.data || Object.keys(editableData).length === 0}
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Submit Corrections & Improve AI
+                    </Button>
+                    
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('http://localhost:3001/api/testing/test-case', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              url,
+                              expectedData: editableData,
+                              metadata: {
+                                source: 'admin_manual',
+                                difficulty: 'medium',
+                                dateAdded: new Date().toISOString()
+                              }
+                            })
+                          });
+                          
+                          if (response.ok) {
+                            const data = await response.json();
+                            toast.success(`🧪 Test case created: ${data.testId}`);
+                          } else {
+                            throw new Error('Failed to create test case');
+                          }
+                        } catch (error) {
+                          console.error('Test case creation failed:', error);
+                          toast.error("❌ Could not create test case");
+                        }
+                      }}
+                      variant="outline"
+                      className="w-full border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white"
+                      disabled={Object.keys(editableData).length === 0}
+                    >
+                      <TestTube className="w-4 h-4 mr-2" />
+                      Add as Test Case
+                    </Button>
+                    
                     <Button
                       onClick={() => {
                         console.log('Validated data:', editableData);
                         toast.success("Data validated! Check console for details.");
                       }}
-                      className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white"
+                      variant="outline"
+                      className="w-full"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Validate & Use Data
+                      Validate & Log Data
                     </Button>
                   </div>
                 </CardContent>

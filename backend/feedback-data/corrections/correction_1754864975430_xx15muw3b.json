@@ -1,0 +1,87 @@
+{
+  "id": "correction_1754864975430_xx15muw3b",
+  "timestamp": "2025-08-10T22:29:35.430Z",
+  "url": "https://page.kakao.com/content/61614855",
+  "original": {
+    "title_name_kr": "철혈검가 사냥개의 회귀",
+    "title_name_en": "N/A",
+    "description": "바스커빌 가문의 사냥개 '비키르'.사냥개로서 가문에 충성한 보답은 모함과 누명으로 얼룩진 단두대의 칼날이었다.\"다시는 토끼를 잡고 나면 삶아지는 사냥개처럼 살지 않겠노라.\"그런 그에게 죽음 대신 찾아온 뜻밖의 기회.어둠 속에서 송곳니를 갈고닦는 비키르의 눈이 붉게 빛났다.\"기다려라. 휴고. 이번엔 반드시 네 목을 물어뜯어 주마.\"주인을 향한 사냥개의 잔혹한 핏빛 복수가 시작된다.",
+    "synopsis": "N/A",
+    "logline": "N/A",
+    "tagline": "N/A",
+    "author": "N/A",
+    "writer": "N/A",
+    "illustrator": "N/A",
+    "art_author": "N/A",
+    "story_author": "N/A",
+    "story_author_kr": "N/A",
+    "art_author_kr": "N/A",
+    "genre": "fantasy",
+    "content_format": "webtoon",
+    "chapters": 0,
+    "completed": false,
+    "title_image": "https://page-images.kakaoentcdn.com/download/resource?kid=OOqPu/hAMhoY53AE/MySKhs8vXTCyFqGOfpAFV1&filename=o1",
+    "title_url": "https://page.kakao.com/content/61614855",
+    "tags": [],
+    "tone": "N/A",
+    "audience": "N/A",
+    "pitch": "N/A",
+    "perfect_for": "N/A",
+    "comps": "N/A",
+    "views": 0,
+    "cp": "N/A"
+  },
+  "corrected": {
+    "title_name_kr": "철혈검가 사냥개의 회귀",
+    "title_name_en": "N/A",
+    "description": "바스커빌 가문의 사냥개 '비키르'.사냥개로서 가문에 충성한 보답은 모함과 누명으로 얼룩진 단두대의 칼날이었다.\"다시는 토끼를 잡고 나면 삶아지는 사냥개처럼 살지 않겠노라.\"그런 그에게 죽음 대신 찾아온 뜻밖의 기회.어둠 속에서 송곳니를 갈고닦는 비키르의 눈이 붉게 빛났다.\"기다려라. 휴고. 이번엔 반드시 네 목을 물어뜯어 주마.\"주인을 향한 사냥개의 잔혹한 핏빛 복수가 시작된다.",
+    "synopsis": "N/A",
+    "logline": "N/A",
+    "tagline": "N/A",
+    "author": "N/A",
+    "writer": "N/A",
+    "illustrator": "N/A",
+    "art_author": "N/A",
+    "story_author": "N/A",
+    "story_author_kr": "N/A",
+    "art_author_kr": "모피 프로그(REDICE STUDIO),설아랑,레고밟았어",
+    "genre": "fantasy",
+    "content_format": "webtoon",
+    "chapters": 0,
+    "completed": false,
+    "title_image": "https://page-images.kakaoentcdn.com/download/resource?kid=OOqPu/hAMhoY53AE/MySKhs8vXTCyFqGOfpAFV1&filename=o1",
+    "title_url": "https://page.kakao.com/content/61614855",
+    "tags": [],
+    "tone": "N/A",
+    "audience": "N/A",
+    "pitch": "N/A",
+    "perfect_for": "N/A",
+    "comps": "N/A",
+    "views": "",
+    "cp": "N/A"
+  },
+  "platform": "kakaopage",
+  "changes": {
+    "art_author_kr": {
+      "from": "N/A",
+      "to": "모피 프로그(REDICE STUDIO),설아랑,레고밟았어",
+      "type": "added"
+    },
+    "tags": {
+      "from": [],
+      "to": [],
+      "type": "modified"
+    },
+    "views": {
+      "from": 0,
+      "to": "",
+      "type": "added"
+    }
+  },
+  "userContext": {
+    "timestamp": "2025-08-10T22:29:35.408Z",
+    "sessionId": "1754864975408"
+  },
+  "status": "pending",
+  "confidence": 0.75
+}

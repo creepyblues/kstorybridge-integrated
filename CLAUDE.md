@@ -121,13 +121,145 @@ Access via:
 - Website: `http://kstorybridge.com:5173`
 - Dashboard: `http://dashboard.kstorybridge.com:8081`
 
+## Common Development Patterns & Best Practices
+
+### Database Operations
+
+**Standard Supabase Configuration:**
+```typescript
+const SUPABASE_URL = 'https://dlrnrgcoguxlkkcitlpd.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA'
+```
+
+**Query Patterns:**
+- ✅ Use `email` for user lookups: `.eq('email', user.email)`
+- ❌ Avoid `user_id` - this field doesn't exist in user tables
+- Handle null/undefined values appropriately
+- Always include error handling with try/catch blocks
+
+**User Table Structure:**
+- `user_buyers` - Buyer accounts with `tier` field (invited|basic|pro|suite)
+- `user_ipowners` - Creator/IP owner accounts
+- `profiles` - Legacy profile data (being phased out)
+- Query by `email` field, not `user_id`
+
+### Tier System (Dashboard)
+
+**Buyer Tier Hierarchy:**
+- `invited` (0) - Restricted access
+- `basic` (1) - Basic features
+- `pro` (2) - Premium content access
+- `suite` (3) - Full feature access
+
+**Implementation:**
+- Use `useTierAccess()` hook for tier checking
+- Field `tier` in `user_buyers` table (replaced `invitation_status`)
+- Premium content gating with `TierGatedContent` component
+
+### Content Management (Titles Table)
+
+**Complete Field List** (Always show ALL when requested):
+- **Basic**: `title_id`, `title_name_kr`, `title_name_en`, `description`, `synopsis`, `tagline`, `note`
+- **Authors**: `author`, `story_author`, `art_author`, `writer`, `illustrator`  
+- **Rights**: `rights`, `rights_owner` (separate fields), `creator_id`
+- **Content**: `genre`, `content_format`, `chapters`, `completed`, `tags`
+- **Media**: `title_image`, `title_url`, `pitch`
+- **Metrics**: `views`, `likes`, `rating`, `rating_count`
+- **Market**: `perfect_for`, `comps` (array), `tone`, `audience`
+- **System**: `created_at`, `updated_at`
+
+### Authentication Patterns
+
+**Dashboard Authentication:**
+- Uses shared Supabase auth + tier checking
+- Localhost dev: Configurable mock vs real data
+- Real data queries use `email`, not `user_id`
+
+**Admin Authentication:**
+- Separate `admin` table for access control
+- No cross-domain dependencies with other apps
+- Email verification against admin table
+
+### UI/UX Standards
+
+**Component Consistency:**
+- Use shadcn/ui components consistently
+- Follow color scheme: hanok-teal, midnight-ink, porcelain-blue
+- Card-based layouts for content sections
+- Loading states and error handling
+
+**Form Patterns:**
+- React Hook Form + Zod validation
+- Array fields: comma-separated input with proper parsing
+- Confirmation dialogs for destructive actions
+- Field validation and error display
+
+### Script Development
+
+**Data Generation Scripts:**
+- Always include `--dry-run` mode for testing
+- Use comprehensive logging with emoji indicators
+- Handle both AI and fallback processing methods
+- Include summary statistics and error reporting
+- Environment variable configuration for API keys
+
+**Example Script Structure:**
+```javascript
+// Command line argument parsing
+const isDryRun = args.includes('--dry-run')
+const limit = args.find(arg => arg.startsWith('--limit='))
+
+// Process with error handling
+try {
+  const results = await processData()
+  displaySummary(results)
+} catch (error) {
+  console.error('❌ Operation failed:', error)
+  process.exit(1)
+}
+```
+
+### Build & Testing
+
+**Quality Checks:**
+- Always run `npm run build` after significant changes
+- Check TypeScript compilation errors
+- Verify all imports resolve correctly
+- Test database operations on small datasets first
+
+**Deployment Preparation:**
+- Ensure all environment variables are documented
+- Test cross-app authentication flows
+- Verify database migrations are applied
+- Check responsive design and accessibility
+
+### Common Issues & Solutions
+
+**Database Schema:**
+- Field names may differ between display and storage
+- Array fields (tags, comps) need special form handling
+- Handle both `rights` and `rights_owner` as distinct fields
+- Null/undefined value handling in displays
+
+**Authentication:**
+- Mock vs real data configuration for localhost development
+- Tier-based content access implementation
+- Cross-domain session management between apps
+
+**Performance:**
+- Rate limiting for external API calls
+- Batch processing for large dataset operations
+- Proper error handling and fallback methods
+
 ## Important Notes
 
 - **Database Types**: Auto-generated, do not edit manually
 - **UI Components**: shadcn/ui components in `ui/` folders are generated, avoid direct edits  
-- **Supabase Config**: Both apps share same project ID but have separate migration folders
-- **Environment**: No custom environment configuration detected - apps likely use default Supabase settings
-- **Testing**: No test frameworks detected in package.json files
-- **Linting**: ESLint configured with unused variables disabled in both applications
+- **Supabase Config**: All apps share same project ID but have separate migration folders
+- **User Queries**: Always use `email` field, never `user_id` (doesn't exist)
+- **Data Completeness**: When showing "all data", include ALL available fields
+- **Testing**: Always test with small datasets first, use dry-run modes
+- **Linting**: ESLint configured with unused variables disabled in all applications
+- **Build Verification**: Run build command after significant changes
 
-The existing individual CLAUDE.md files in each application provide detailed app-specific guidance and should be consulted for application-specific development tasks.
+The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide detailed app-specific guidance and should be consulted for application-specific development tasks.

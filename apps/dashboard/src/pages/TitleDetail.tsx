@@ -14,9 +14,10 @@ import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import PremiumColumn from "@/components/PremiumColumn";
-import TierGatedContent from "@/components/TierGatedContent";
+import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
+import { TierProvider } from "@/contexts/TierContext";
 
-export default function TitleDetail() {
+function TitleDetailContent() {
   const { titleId } = useParams<{ titleId: string }>();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -467,7 +468,7 @@ export default function TitleDetail() {
                           PRO PLAN
                         </span>
                       </div>
-                      <TierGatedContent requiredTier="pro">
+                      <OptimizedTierGatedContent requiredTier="pro">
                         {title.perfect_for ? (
                           <div className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                             {title.perfect_for}
@@ -477,7 +478,7 @@ export default function TitleDetail() {
                             Not specified
                           </div>
                         )}
-                      </TierGatedContent>
+                      </OptimizedTierGatedContent>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-3">
@@ -486,7 +487,7 @@ export default function TitleDetail() {
                           PRO PLAN
                         </span>
                       </div>
-                      <TierGatedContent requiredTier="pro">
+                      <OptimizedTierGatedContent requiredTier="pro">
                         {title.comps && title.comps.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {title.comps.map((comp, index) => (
@@ -500,7 +501,7 @@ export default function TitleDetail() {
                             Not specified
                           </div>
                         )}
-                      </TierGatedContent>
+                      </OptimizedTierGatedContent>
                     </div>
                   </div>
                   
@@ -614,7 +615,7 @@ export default function TitleDetail() {
                         PRO PLAN
                       </span>
                     </div>
-                    <TierGatedContent requiredTier="pro">
+                    <OptimizedTierGatedContent requiredTier="pro">
                       {(title.rights_owner || title.rights) ? (
                         <div className="inline-block bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs font-medium">
                           {title.rights_owner || title.rights}
@@ -624,7 +625,7 @@ export default function TitleDetail() {
                           Not specified
                         </div>
                       )}
-                    </TierGatedContent>
+                    </OptimizedTierGatedContent>
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-3">
@@ -633,7 +634,7 @@ export default function TitleDetail() {
                         PRO PLAN
                       </span>
                     </div>
-                    <TierGatedContent requiredTier="pro">
+                    <OptimizedTierGatedContent requiredTier="pro">
                       {title.audience ? (
                         <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
                           {title.audience}
@@ -643,7 +644,7 @@ export default function TitleDetail() {
                           Not specified
                         </div>
                       )}
-                    </TierGatedContent>
+                    </OptimizedTierGatedContent>
                   </div>
                 </div>
 
@@ -693,5 +694,13 @@ export default function TitleDetail() {
       />
       
     </div>
+  );
+}
+
+export default function TitleDetail() {
+  return (
+    <TierProvider>
+      <TitleDetailContent />
+    </TierProvider>
   );
 }

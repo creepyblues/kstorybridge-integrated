@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import scraperRoutes from './routes/scraper.js';
+import testingRoutes from './routes/testing.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -39,6 +40,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/scraper', scraperRoutes);
+app.use('/api/testing', testingRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

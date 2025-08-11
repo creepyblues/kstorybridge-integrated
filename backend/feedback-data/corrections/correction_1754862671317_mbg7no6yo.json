@@ -1,0 +1,107 @@
+{
+  "id": "correction_1754862671317_mbg7no6yo",
+  "timestamp": "2025-08-10T21:51:11.317Z",
+  "url": "https://series.naver.com/comic/detail.series?productNo=3293134",
+  "original": {
+    "title_name_kr": "마녀의 하인과 마왕의 뿔",
+    "title_name_en": "N/A",
+    "description": "마왕 토벌의 명령을 받아 혼자서 마왕성에 진입한 마녀의 하인, 아르세니오.\n약초 마녀의 충직한 하인, 아르세니오는 그곳에는 어떻게 보나 마스코트 캐릭터 같은 마왕과 그 마스코트에...",
+    "synopsis": "N/A",
+    "logline": "N/A",
+    "tagline": "N/A",
+    "author": "N/A",
+    "writer": "래머",
+    "illustrator": "N/A",
+    "art_author": "N/A",
+    "story_author": "래머",
+    "story_author_kr": "래머",
+    "art_author_kr": "N/A",
+    "genre": "순정",
+    "content_format": "webtoon",
+    "chapters": 0,
+    "completed": true,
+    "title_image": "https://comicthumb-phinf.pstatic.net/20250805_38/pocket_175437065636617jGO_JPEG/001.jpg?type=m600x314",
+    "title_url": "https://series.naver.com/comic/detail.series?productNo=3293134",
+    "tags": [],
+    "tone": "N/A",
+    "audience": "15세 이용가",
+    "pitch": "N/A",
+    "perfect_for": "N/A",
+    "comps": "N/A",
+    "views": 137000,
+    "cp": "시프트코믹스"
+  },
+  "corrected": {
+    "title_name_kr": "마녀의 하인과 마왕의 뿔",
+    "title_name_en": "N/A",
+    "description": "마왕 토벌의 명령을 받아 혼자서 마왕성에 진입한 마녀의 하인, 아르세니오.\n약초 마녀의 충직한 하인, 아르세니오는 그곳에는 어떻게 보나 마스코트 캐릭터 같은 마왕과 그 마스코트에...",
+    "synopsis": "N/A",
+    "logline": "N/A",
+    "tagline": "N/A",
+    "author": "N/A",
+    "writer": "",
+    "illustrator": "N/A",
+    "art_author": "",
+    "story_author": "",
+    "story_author_kr": "모치",
+    "art_author_kr": "모치",
+    "genre": "소년",
+    "content_format": "webtoon",
+    "chapters": 0,
+    "completed": true,
+    "title_image": "https://comicthumb-phinf.pstatic.net/20250805_38/pocket_175437065636617jGO_JPEG/001.jpg?type=m600x314",
+    "title_url": "https://series.naver.com/comic/detail.series?productNo=3293134",
+    "tags": [],
+    "tone": "N/A",
+    "audience": "15세 이용가",
+    "pitch": "N/A",
+    "perfect_for": "N/A",
+    "comps": "N/A",
+    "views": 137000,
+    "cp": "시프트코믹스"
+  },
+  "platform": "naver",
+  "changes": {
+    "writer": {
+      "from": "래머",
+      "to": "",
+      "type": "removed"
+    },
+    "art_author": {
+      "from": "N/A",
+      "to": "",
+      "type": "added"
+    },
+    "story_author": {
+      "from": "래머",
+      "to": "",
+      "type": "removed"
+    },
+    "story_author_kr": {
+      "from": "래머",
+      "to": "모치",
+      "type": "modified"
+    },
+    "art_author_kr": {
+      "from": "N/A",
+      "to": "모치",
+      "type": "added"
+    },
+    "genre": {
+      "from": "순정",
+      "to": "소년",
+      "type": "modified"
+    },
+    "tags": {
+      "from": [],
+      "to": [],
+      "type": "modified"
+    }
+  },
+  "userContext": {
+    "timestamp": "2025-08-10T21:51:11.293Z",
+    "sessionId": "1754862671293"
+  },
+  "status": "pending",
+  "confidence": 0.65
+}

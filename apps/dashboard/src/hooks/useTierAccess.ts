@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
 
 type UserTier = 'invited' | 'basic' | 'pro' | 'suite';
 
@@ -28,23 +28,33 @@ export const useTierAccess = (): TierAccess => {
   const [tier, setTier] = useState<UserTier | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Mock data for localhost development
+  // Localhost development configuration
   const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-  
-  // 🧪 TESTING: Change this value to test different tier access
+
+  // 🧪 LOCALHOST CONFIG: Control data source for development
+  // Set to true to use real Supabase data, false for mock data
+  const useRealDataOnLocalhost = true; // Change this to true for real data testing
+
+  // 🧪 MOCK TESTING: Change this value when using mock data
   // Options: 'invited', 'basic', 'pro', 'suite'
   // NOTE: Should match the mockTier in CMSHeader.tsx for consistency
   const mockTier: UserTier = 'pro';
 
+  // Test email for real data queries (replace with your test account)
+  const testEmail = 'sungho@dadble.com';
+
   useEffect(() => {
     const fetchUserTier = async () => {
-      // Use mock data on localhost
-      if (isLocalhost) {
+      // Handle localhost development
+      if (isLocalhost && !useRealDataOnLocalhost) {
         console.log('🧪 useTierAccess: Using localhost mock tier:', mockTier);
         setTier(mockTier);
         setLoading(false);
         return;
       }
+
+      // For localhost with real data, use test email
+      const queryEmail = isLocalhost && useRealDataOnLocalhost ? testEmail : user?.email;
 
       if (!user?.id) {
         setTier(null);
@@ -53,16 +63,20 @@ export const useTierAccess = (): TierAccess => {
       }
 
       try {
-        console.log('🔍 useTierAccess: Fetching tier for user:', { id: user.id, email: user.email });
-        
+        if (isLocalhost && useRealDataOnLocalhost) {
+          console.log('🔍 useTierAccess: Using real Supabase data on localhost for:', testEmail);
+        } else {
+          console.log('🔍 useTierAccess: Fetching tier for user:', { id: user?.id, email: user?.email });
+        }
+
         // Query by email since user_id column doesn't exist yet
         const { data, error } = await supabase
           .from('user_buyers')
           .select('tier, email')
-          .eq('email', user.email)
+          .eq('email', queryEmail)
           .single();
 
-        console.log('🔍 useTierAccess: Query by email result:', { data, error, email: user.email });
+        console.log('🔍 useTierAccess: Query by email result:', { data, error, email: queryEmail });
 
         if (error) {
           console.error('❌ Error fetching user tier:', error);

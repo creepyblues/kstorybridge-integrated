@@ -123,12 +123,7 @@ function TitleDetailContent() {
 
   const formatViews = (views: number) => {
     if (!views) return '0';
-    const formatted = views.toLocaleString();
-    // Check if the number is rounded (ends with multiple zeros)
-    if (views >= 1000 && views % 1000 === 0) {
-      return `${formatted} (est)`;
-    }
-    return formatted;
+    return views.toLocaleString();
   };
 
   const formatLikes = (likes: number) => {
@@ -464,7 +459,7 @@ function TitleDetailContent() {
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <h5 className="font-bold text-hanok-teal">Perfect For</h5>
-                        <span className="bg-rose-200/70 text-rose-800 text-[10px] px-2 py-1 rounded-full font-medium">
+                        <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium">
                           PRO PLAN
                         </span>
                       </div>
@@ -483,7 +478,7 @@ function TitleDetailContent() {
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <h5 className="font-bold text-hanok-teal">Comps</h5>
-                        <span className="bg-rose-200/70 text-rose-800 text-[10px] px-2 py-1 rounded-full font-medium">
+                        <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium">
                           PRO PLAN
                         </span>
                       </div>

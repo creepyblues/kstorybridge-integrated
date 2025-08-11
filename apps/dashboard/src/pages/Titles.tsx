@@ -408,13 +408,13 @@ function TitlesContent() {
                 </div>
                 <div className="col-span-1 relative flex flex-col items-center justify-center">
                   <span>Comps</span>
-                  <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
+                  <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium mt-1">
                     PRO PLAN
                   </span>
                 </div>
                 <div className="col-span-1 relative flex flex-col items-center justify-center">
                   <span>Audience</span>
-                  <span className="bg-rose-200/70 text-rose-800 text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-1">
+                  <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium mt-1">
                     PRO PLAN
                   </span>
                 </div>

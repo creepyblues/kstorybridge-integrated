@@ -110,12 +110,9 @@ The script generates SQL update queries in a timestamped file:
 ```sql
 -- title_updates_2025-08-11T10-30-45-123Z.sql
 
--- $1 = 137000
--- $2 = 15000
--- $3 = '2025-08-11T10:30:45.123Z'
 -- Update 웹툰 제목 (title-uuid-here)
 UPDATE titles 
-SET views = $1, likes = $2, updated_at = $3
+SET views = 137000, likes = 15000, updated_at = '2025-08-11T10:30:45.123Z'
 WHERE title_id = 'title-uuid-here';
 ```
 
@@ -167,7 +164,7 @@ npm run generate:scraper-data -- --limit=20
 2. Test queries on staging database
 3. Execute in Supabase SQL Editor:
    ```sql
-   -- Copy and paste the generated queries
+   -- Copy and paste the generated queries directly - no modifications needed
    UPDATE titles SET views = 137000, likes = 15000, updated_at = '2025-08-11T10:30:45.123Z' WHERE title_id = 'uuid-here';
    ```
 4. Verify the updated data in the admin interface

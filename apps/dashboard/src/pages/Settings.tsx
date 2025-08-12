@@ -1,4 +1,4 @@
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Switch } from "@kstorybridge/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Switch } from "@kstorybridge/ui";
 
 import { 
   Settings as SettingsIcon, 

@@ -63,23 +63,11 @@ export default function PremiumFeaturePopup({
     try {
       setLoading(true);
       
-      // Debug logging can be removed in production
-      console.log('🔍 PREMIUM REQUEST: Processing request for:', { 
-        titleId, 
-        requestType, 
-        titleName, 
-        userId: effectiveUser.id,
-        userEmail: effectiveUser.email,
-        bypassAuth: shouldBypassAuth()
-      });
       
       // For localhost development with auth bypass, skip database and send Slack notification directly
       if (shouldBypassAuth() && titleId && requestType) {
-        console.log('🔍 PREMIUM REQUEST: Localhost mode - skipping database, sending Slack notification directly');
-        
         // Send Slack notification if this is a pitch request
         if (requestType === 'pitch' && titleName) {
-          console.log('📄 PREMIUM REQUEST: Sending Slack notification for pitch request...');
           try {
             await notifyPitchRequest({
               userFullName: effectiveUser.user_metadata?.full_name || effectiveUser.email || 'Unknown User',
@@ -89,9 +77,8 @@ export default function PremiumFeaturePopup({
               requestType: requestType,
               company: effectiveUser.user_metadata?.company || undefined
             });
-            console.log('✅ PREMIUM REQUEST: Slack notification sent successfully!');
           } catch (slackError) {
-            console.warn('❌ PREMIUM REQUEST: Failed to send Slack notification:', slackError);
+            console.warn('Failed to send Slack notification:', slackError);
           }
         }
         
@@ -118,7 +105,6 @@ export default function PremiumFeaturePopup({
       // Production: If we have titleId and requestType, try to save to request table
       if (titleId && requestType) {
         try {
-          console.log('🔍 PREMIUM REQUEST: Attempting to save to database...');
           const { data: requestData, error: requestError } = await supabase
             .from('request')
             .insert({
@@ -128,8 +114,6 @@ export default function PremiumFeaturePopup({
             })
             .select('id')
             .single();
-
-          console.log('🔍 PREMIUM REQUEST: Database response:', { requestData, requestError });
 
           if (requestError) {
             // Handle specific error cases
@@ -147,12 +131,8 @@ export default function PremiumFeaturePopup({
             console.warn('Error saving to request table, falling back to user_buyers:', requestError);
             // If request table has an error, fall back to user_buyers table
           } else {
-            // Successfully saved to request table
-            console.log('✅ Request saved to database:', requestData?.id);
-            
             // Send Slack notification if this is a pitch request
             if (requestType === 'pitch' && requestData?.id && titleName) {
-              console.log('📄 PREMIUM REQUEST: Sending Slack notification for pitch request...');
               try {
                 await notifyPitchRequest({
                   userFullName: effectiveUser.user_metadata?.full_name || effectiveUser.email || 'Unknown User',
@@ -162,26 +142,10 @@ export default function PremiumFeaturePopup({
                   requestType: requestType,
                   company: effectiveUser.user_metadata?.company || undefined
                 });
-                console.log('✅ PREMIUM REQUEST: Slack notification sent successfully!');
               } catch (slackError) {
-                console.warn('❌ PREMIUM REQUEST: Failed to send Slack notification:', slackError);
+                console.warn('Failed to send Slack notification:', slackError);
                 // Don't fail the request if Slack notification fails
               }
-            }
-            
-            // Send admin notification email if this is a pitch request
-            if (requestType === 'pitch' && requestData?.id && titleName) {
-              console.log('📧 Email notification would be sent here');
-              console.log('Request details:', {
-                requestId: requestData.id,
-                titleId,
-                userId: effectiveUser.id,
-                type: requestType,
-                titleName
-              });
-              
-              // TODO: Deploy send-admin-notification function to Supabase
-              // await sendAdminNotification({...});
             }
           }
         } catch (dbError) {
@@ -193,7 +157,6 @@ export default function PremiumFeaturePopup({
       // Production: Always also save to user_buyers table for backwards compatibility and tracking
       // Skip for localhost development
       if (shouldBypassAuth()) {
-        console.log('🔍 PREMIUM REQUEST: Localhost mode - skipping user_buyers table operations');
         setLoading(false);
         return;
       }

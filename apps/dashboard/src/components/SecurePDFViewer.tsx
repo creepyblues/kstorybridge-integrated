@@ -14,8 +14,20 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   const [error, setError] = useState<string | null>(null);
   const [pdfVerified, setPdfVerified] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Check if we should bypass auth for localhost development
+  const shouldBypassAuth = () => {
+    const isLocalhost = window.location.hostname === 'localhost';
+    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
+    const isDev = import.meta.env.DEV;
+    return isLocalhost && (bypassEnabled || isDev);
+  };
+  
+  // For localhost auth bypass, consider as authenticated
+  const isAuthenticated = user || shouldBypassAuth();
+  
 
-  // Simple PDF verification and loading
+  // Simple PDF verification and loading with viewer fallback logic
   useEffect(() => {
     const verifyAndLoadPDF = async () => {
       if (!pdfUrl) {
@@ -29,7 +41,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         setError(null);
 
         // Basic authentication check
-        if (!user) {
+        if (!isAuthenticated) {
           setError('Please sign in to view this PDF');
           setLoading(false);
           return;
@@ -50,7 +62,6 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         }
 
         // Test direct access to PDF
-        console.log('🔍 Testing PDF access:', pdfUrl);
         const response = await fetch(pdfUrl, { method: 'HEAD' });
         
         if (!response.ok) {
@@ -62,11 +73,13 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           throw new Error('Invalid file type - not a PDF');
         }
 
-        console.log('✅ PDF verified and accessible');
-        console.log('📄 PDF Content-Type:', contentType);
-        console.log('📄 PDF Response Headers:', Object.fromEntries(response.headers.entries()));
         setPdfVerified(true);
         setLoading(false);
+
+        // Add viewer fallback logic after verification
+        setTimeout(() => {
+          setupViewerFallbacks();
+        }, 2000);
 
       } catch (err) {
         console.error('PDF verification failed:', err);
@@ -76,11 +89,27 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
       }
     };
 
+    const setupViewerFallbacks = () => {
+      // If Google Drive viewer fails, try direct iframe
+      const googleViewer = document.querySelector('iframe[src*="drive.google.com"]');
+      if (googleViewer) {
+        googleViewer.addEventListener('error', () => {
+          console.log('Google Drive viewer failed, switching to direct iframe');
+          const directViewer = document.getElementById('direct-iframe-viewer');
+          const googleContainer = googleViewer.parentElement;
+          if (directViewer && googleContainer) {
+            googleContainer.style.display = 'none';
+            directViewer.classList.remove('hidden');
+          }
+        });
+      }
+    };
+
     verifyAndLoadPDF();
-  }, [pdfUrl, user]);
+  }, [pdfUrl, user, isAuthenticated]);
 
   // Authentication check
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
@@ -167,128 +196,148 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   }
 
   return (
-    <div className="bg-white rounded-lg">
-      <div className="p-6">
-        {/* PDF Viewer */}
+    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-sm">
+      {/* PDF Viewer */}
+      <div 
+        ref={containerRef}
+        className="secure-pdf-viewer rounded-xl overflow-hidden relative"
+        style={{ 
+          maxHeight: '70vh',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          position: 'relative'
+        }}
+      >
+        {/* Security Watermark Overlay */}
         <div 
-          ref={containerRef}
-          className="secure-pdf-viewer border border-gray-200 rounded-lg overflow-auto relative"
-          style={{ 
-            maxHeight: '70vh',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-            position: 'relative'
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 100px,
+              rgba(0, 0, 0, 0.02) 100px,
+              rgba(0, 0, 0, 0.02) 120px
+            )`,
+            mixBlendMode: 'multiply'
           }}
         >
-          {/* Security Watermark Overlay */}
           <div 
-            className="absolute inset-0 pointer-events-none z-10"
+            className="absolute inset-0 flex items-center justify-center text-gray-200 text-6xl font-bold opacity-5 select-none"
             style={{
-              backgroundImage: `repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 100px,
-                rgba(0, 0, 0, 0.03) 100px,
-                rgba(0, 0, 0, 0.03) 120px
-              )`,
-              mixBlendMode: 'multiply'
+              transform: 'rotate(-45deg)',
+              fontSize: '6rem',
+              lineHeight: '1',
+              whiteSpace: 'nowrap'
             }}
           >
-            <div 
-              className="absolute inset-0 flex items-center justify-center text-gray-300 text-6xl font-bold opacity-10 select-none"
-              style={{
-                transform: 'rotate(-45deg)',
-                fontSize: '8rem',
-                lineHeight: '1',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              CONFIDENTIAL
-            </div>
+            CONFIDENTIAL
           </div>
-          
-          {pdfVerified ? (
-            <>
-              {/* Debug info */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-blue-800">
-                  <strong>Debug Info:</strong> PDF URL verified and accessible
+        </div>
+        
+        {pdfVerified ? (
+          <>
+            {/* PDF Viewer Header */}
+            <div className="bg-gradient-to-r from-white to-gray-50 border-b border-gray-100">
+              <div className="p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-hanok-teal rounded-full"></div>
+                  Secure Document Viewer
+                </h3>
+                <p className="text-sm text-gray-600">
+                  This document is protected and can only be viewed on this platform.
                 </p>
-                <p className="text-xs text-blue-600 break-all">
-                  URL: {pdfUrl}
-                </p>
-                <div className="mt-2 space-x-4">
-                  <a 
-                    href={pdfUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline text-sm"
-                  >
-                    📄 Open PDF in New Tab
-                  </a>
-                  <a 
-                    href={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-green-600 hover:text-green-800 underline text-sm"
-                  >
-                    🔧 Open with PDF controls
-                  </a>
-                </div>
               </div>
+            </div>
+            
+            {/* Secure PDF Viewer */}
+            <div 
+              className="bg-white relative"
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none'
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+              onDragStart={(e) => e.preventDefault()}
+              onSelectStart={(e) => e.preventDefault()}
+            >
+              {/* Multiple PDF viewing attempts */}
               
-              {/* Primary PDF iframe */}
-              <div className="border border-gray-300 rounded-lg overflow-hidden">
+              {/* Method 1: Google Drive PDF Viewer */}
+              <iframe
+                src={`https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(pdfUrl)}`}
+                width="100%"
+                height="700"
+                style={{ 
+                  border: 'none',
+                  userSelect: 'none',
+                  pointerEvents: 'auto'
+                }}
+                title="PDF Document Viewer"
+                className="w-full bg-white select-none"
+                onContextMenu={(e) => e.preventDefault()}
+                onError={() => {
+                  console.log('Google Drive viewer failed, trying alternative...');
+                }}
+              />
+              
+              {/* Method 2: Direct iframe fallback (hidden by default) */}
+              <div className="hidden" id="direct-iframe-viewer">
                 <iframe
                   src={pdfUrl}
                   width="100%"
-                  height="600"
+                  height="700"
                   style={{ 
                     border: 'none',
-                    backgroundColor: '#f9fafb'
+                    userSelect: 'none'
                   }}
-                  title="PDF Document"
-                  sandbox="allow-same-origin allow-scripts allow-downloads"
-                  onLoad={(e) => {
-                    console.log('✅ PDF loaded successfully via iframe');
-                    console.log('📄 Iframe contentWindow:', e.currentTarget.contentWindow);
-                  }}
-                  onError={(e) => {
-                    console.error('❌ Iframe failed to load PDF');
-                    console.error('❌ Error details:', e);
-                    setError('Failed to display PDF document');
-                  }}
+                  title="PDF Document - Direct Viewer"
+                  className="w-full bg-white select-none"
+                  onContextMenu={(e) => e.preventDefault()}
                 />
               </div>
               
-              {/* Alternative: Object embed as fallback */}
-              <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                <p className="text-sm text-gray-700 mb-2">
-                  Alternative viewer (if iframe doesn't work):
-                </p>
+              {/* Method 3: Object embed fallback (hidden by default) */}
+              <div className="hidden" id="object-embed-viewer">
                 <object
                   data={pdfUrl}
                   type="application/pdf"
                   width="100%"
-                  height="400"
-                  className="border border-gray-300 rounded"
+                  height="700"
+                  className="w-full bg-white select-none"
+                  style={{
+                    userSelect: 'none'
+                  }}
+                  onContextMenu={(e) => e.preventDefault()}
                 >
-                  <p className="p-4 text-center">
-                    PDF cannot be displayed in this browser. 
-                    <a 
-                      href={pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer" 
-                      className="text-blue-600 hover:text-blue-800 underline ml-1"
-                    >
-                      Click here to download the PDF
-                    </a>
-                  </p>
+                  <div className="p-12 text-center bg-gradient-to-br from-gray-50 to-white">
+                    <div className="max-w-md mx-auto">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">
+                        Document Protected
+                      </h3>
+                      <p className="text-gray-600 mb-4 leading-relaxed">
+                        This document is secured and can only be viewed within our platform. 
+                        PDF viewing is currently being processed.
+                      </p>
+                      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <strong>Security Notice:</strong> This document is protected against downloading and printing to maintain confidentiality.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </object>
               </div>
-            </>
-          ) : null}
-        </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );

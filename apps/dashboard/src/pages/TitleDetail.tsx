@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
 import { favoritesService } from "@/services/favoritesService";
 
@@ -370,6 +370,9 @@ function TitleDetailContent() {
                               <DialogTitle>
                                 Pitch Document - {title.title_name_en || title.title_name_kr}
                               </DialogTitle>
+                              <DialogDescription>
+                                View the complete pitch document with detailed information about this title, including market positioning and target audience.
+                              </DialogDescription>
                             </DialogHeader>
                             <div className="p-6 pt-0">
                               <SecurePDFViewer 

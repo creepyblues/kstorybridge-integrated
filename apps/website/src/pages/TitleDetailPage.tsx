@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
 import { Badge } from '@kstorybridge/ui';
 import { Button } from '@kstorybridge/ui';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
 import { ArrowLeft, Eye, Heart, Star, FileText, Crown, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -230,6 +230,9 @@ export default function TitleDetailPage() {
                         <span className="sr-only">Close</span>
                       </Button>
                     </DialogTitle>
+                    <DialogDescription>
+                      View the complete pitch document with comprehensive information about this title, including market positioning, target audience, and story details.
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="p-6 pt-0">
                     <SecurePDFViewer 

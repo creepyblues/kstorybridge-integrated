@@ -63,6 +63,8 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         }
 
         console.log('✅ PDF verified and accessible');
+        console.log('📄 PDF Content-Type:', contentType);
+        console.log('📄 PDF Response Headers:', Object.fromEntries(response.headers.entries()));
         setPdfVerified(true);
         setLoading(false);
 
@@ -206,20 +208,85 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           </div>
           
           {pdfVerified ? (
-            <iframe
-              src={pdfUrl}
-              width="100%"
-              height="600"
-              style={{ border: 'none' }}
-              title="PDF Document"
-              onLoad={() => {
-                console.log('✅ PDF loaded successfully via iframe');
-              }}
-              onError={() => {
-                console.error('❌ Iframe failed to load PDF');
-                setError('Failed to display PDF document');
-              }}
-            />
+            <>
+              {/* Debug info */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Debug Info:</strong> PDF URL verified and accessible
+                </p>
+                <p className="text-xs text-blue-600 break-all">
+                  URL: {pdfUrl}
+                </p>
+                <div className="mt-2 space-x-4">
+                  <a 
+                    href={pdfUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline text-sm"
+                  >
+                    📄 Open PDF in New Tab
+                  </a>
+                  <a 
+                    href={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:text-green-800 underline text-sm"
+                  >
+                    🔧 Open with PDF controls
+                  </a>
+                </div>
+              </div>
+              
+              {/* Primary PDF iframe */}
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <iframe
+                  src={pdfUrl}
+                  width="100%"
+                  height="600"
+                  style={{ 
+                    border: 'none',
+                    backgroundColor: '#f9fafb'
+                  }}
+                  title="PDF Document"
+                  sandbox="allow-same-origin allow-scripts allow-downloads"
+                  onLoad={(e) => {
+                    console.log('✅ PDF loaded successfully via iframe');
+                    console.log('📄 Iframe contentWindow:', e.currentTarget.contentWindow);
+                  }}
+                  onError={(e) => {
+                    console.error('❌ Iframe failed to load PDF');
+                    console.error('❌ Error details:', e);
+                    setError('Failed to display PDF document');
+                  }}
+                />
+              </div>
+              
+              {/* Alternative: Object embed as fallback */}
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <p className="text-sm text-gray-700 mb-2">
+                  Alternative viewer (if iframe doesn't work):
+                </p>
+                <object
+                  data={pdfUrl}
+                  type="application/pdf"
+                  width="100%"
+                  height="400"
+                  className="border border-gray-300 rounded"
+                >
+                  <p className="p-4 text-center">
+                    PDF cannot be displayed in this browser. 
+                    <a 
+                      href={pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer" 
+                      className="text-blue-600 hover:text-blue-800 underline ml-1"
+                    >
+                      Click here to download the PDF
+                    </a>
+                  </p>
+                </object>
+              </div>
+            </>
           ) : null}
         </div>
       </div>

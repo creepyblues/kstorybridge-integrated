@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, useToast } from "@kstorybridge/ui";
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, useToast } from "@kstorybridge/ui";
 
 import { Crown, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -280,6 +280,9 @@ export default function PremiumFeaturePopup({
           <DialogTitle className="text-2xl font-bold text-midnight-ink mb-2 text-center">
             Premium Feature
           </DialogTitle>
+          <DialogDescription className="text-center text-gray-600">
+            {featureName} - Submit a request to access this premium feature
+          </DialogDescription>
         </DialogHeader>
         
         <div className="text-center space-y-6">

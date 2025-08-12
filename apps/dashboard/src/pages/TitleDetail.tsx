@@ -365,7 +365,7 @@ function TitleDetailContent() {
                               <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+                          <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] p-0">
                             <DialogHeader className="p-6 pb-0">
                               <DialogTitle>
                                 Pitch Document - {title.title_name_en || title.title_name_kr}

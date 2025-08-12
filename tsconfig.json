@@ -19,7 +19,9 @@
     "paths": {
       "@dashboard/*": ["./apps/dashboard/src/*"],
       "@website/*": ["./apps/website/src/*"],
-      "@shared/*": ["./packages/*/src/*"]
+      "@kstorybridge/ui": ["./packages/ui/src"],
+      "@kstorybridge/auth": ["./packages/auth/src"],
+      "@kstorybridge/utils": ["./packages/utils/src"]
     }
   }
 }

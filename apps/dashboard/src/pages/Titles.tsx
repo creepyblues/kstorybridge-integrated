@@ -1,12 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
 import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
+import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
-import { useToast } from "@/components/ui/use-toast";
+
 import { useAuth } from "@/hooks/useAuth";
 import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
@@ -49,11 +48,14 @@ function TitlesContent() {
   useEffect(() => {
     // Only load data if cache is empty or stale
     const dataKey = isCreatorView ? 'creatorTitles' : 'titles';
-    if (titles.length === 0 || !isFresh(dataKey)) {
+    const shouldLoadTitles = titles.length === 0 || !isFresh(dataKey);
+    // Use shorter cache duration for featured titles (30 seconds) to ensure fresh data
+    const shouldLoadFeatured = !isCreatorView && (featuredTitles.length === 0 || !isFresh('featuredTitles', 30000));
+    
+    if (shouldLoadTitles || shouldLoadFeatured) {
       loadData();
     }
-  }, [isCreatorView, user, titles.length, isFresh]);
-
+  }, [isCreatorView, user, titles.length, featuredTitles.length]); // Remove isFresh from dependencies
 
   const loadData = async (force = false) => {
     try {

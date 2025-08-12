@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@kstorybridge/ui";
+
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@kstorybridge/ui';
+import { Badge } from '@kstorybridge/ui';
 import { AlertCircle, CheckCircle, XCircle, RefreshCw, Shield } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 

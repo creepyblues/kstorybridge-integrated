@@ -1,11 +1,11 @@
 
-import { Button } from '../ui/button';
+import { Button } from '@kstorybridge/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from '@kstorybridge/ui';
 import { Globe } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { trackLanguageChange } from '@/utils/analytics';

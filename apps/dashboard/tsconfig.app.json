@@ -23,7 +23,11 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@kstorybridge/ui": ["../../packages/ui/src"],
+      "@kstorybridge/auth": ["../../packages/auth/src"],
+      "@kstorybridge/api-client": ["../../packages/api-client/src"],
+      "@kstorybridge/utils": ["../../packages/utils/src"]
     }
   },
   "include": ["src"]

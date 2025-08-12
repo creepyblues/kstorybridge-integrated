@@ -1,21 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Button, Checkbox, Label } from "@kstorybridge/ui";
+
+import { Input } from '@kstorybridge/ui';
+import { Textarea } from '@kstorybridge/ui';
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from '@kstorybridge/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
 import { ArrowLeft, Save, AlertCircle } from "lucide-react";
 import { titlesService, type TitleInsert } from "@/services/titlesService";
-import { StringArrayInput } from '@/components/ui/string-array-input';
 import { scraperService, type ScrapingResult } from "@/services/scraperService";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { toast } from "sonner";

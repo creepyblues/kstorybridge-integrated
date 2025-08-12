@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Card, CardContent } from '../components/ui/card';
+import { Button } from '@kstorybridge/ui';
+import { Input } from '@kstorybridge/ui';
+import { Label } from '@kstorybridge/ui';
+import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
 import { getDashboardUrl } from '../config/urls';

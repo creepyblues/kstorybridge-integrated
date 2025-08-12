@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@kstorybridge/ui";
+
 import { useToast } from '@/hooks/use-toast';
 import stripePromise from '@/lib/stripe';
 import { supabase } from '@/integrations/supabase/client';

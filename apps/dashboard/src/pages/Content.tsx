@@ -1,21 +1,11 @@
-
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { Plus, Search, Filter } from "lucide-react";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Badge, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, useToast } from "@kstorybridge/ui";
 import { TitleCard } from "@/components/TitleCard";
 import { TitleForm } from "@/components/TitleForm";
 import { titlesService, type Title } from "@/services/titlesService";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/components/ui/use-toast";
 
 export default function Content() {
   const { user } = useAuth();

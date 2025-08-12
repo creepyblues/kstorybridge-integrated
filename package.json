@@ -14,8 +14,15 @@
     "build:dashboard": "npm run build --workspace=apps/dashboard",
     "build:website": "npm run build --workspace=apps/website",
     "build:admin": "npm run build --workspace=apps/admin",
-    "build:all": "npm run build:dashboard && npm run build:website && npm run build:admin",
+    "build:packages": "npm run build --workspace=packages/ui && npm run build --workspace=packages/api-client && npm run build --workspace=packages/utils && npm run build --workspace=packages/build-config && npm run build --workspace=packages/testing",
+    "build:all": "npm run build:packages && npm run build:dashboard && npm run build:website && npm run build:admin",
     "lint:all": "npm run lint --workspace=apps/dashboard && npm run lint --workspace=apps/website && npm run lint --workspace=apps/admin",
+    "test:all": "npm run test --workspace=apps/dashboard && npm run test --workspace=apps/website && npm run test --workspace=apps/admin",
+    "test:watch": "npm run test:watch --workspace=apps/dashboard",
+    "test:coverage": "npm run test:coverage --workspace=apps/dashboard && npm run test:coverage --workspace=apps/website",
+    "clean:all": "npm run clean --workspace=apps/dashboard && npm run clean --workspace=apps/website && npm run clean --workspace=apps/admin && npm run clean --workspace=packages/ui && npm run clean --workspace=packages/build-config",
+    "storybook": "npm run storybook --workspace=packages/storybook",
+    "build-storybook": "npm run build-storybook --workspace=packages/storybook",
     "install:all": "npm install"
   },
   "devDependencies": {

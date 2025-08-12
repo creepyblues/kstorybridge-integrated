@@ -1,33 +1,42 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster, TooltipProvider } from "@kstorybridge/ui";
+import { lazy, Suspense } from "react";
+
 import { LanguageProvider } from "./contexts/LanguageContext";
 import AnalyticsProvider from "./components/AnalyticsProvider";
-import HomePage from "./pages/HomePage";
-import HomePageNew from "./pages/HomePageNew";
-import CreatorsPage from "./pages/CreatorsPage";
-import BuyersPage from "./pages/BuyersPage";
-import PricingPage from "./pages/PricingPage";
-import AboutPage from "./pages/AboutPage";
-import SignupPage from "./pages/SignupPage";
-import BuyerSignupPage from "./pages/BuyerSignupPage";
-import CreatorSignupPage from "./pages/CreatorSignupPage";
-import SigninPage from "./pages/SigninPage";
-import TitleDetailPage from "./pages/TitleDetailPage";
-import DashboardInvited from "./pages/DashboardInvited";
-import CreatorInvited from "./pages/CreatorInvited";
-import NotFound from "./pages/NotFound";
+
+// Lazy load page components for code splitting
+const HomePage = lazy(() => import("./pages/HomePage"));
+const HomePageNew = lazy(() => import("./pages/HomePageNew"));
+const CreatorsPage = lazy(() => import("./pages/CreatorsPage"));
+const BuyersPage = lazy(() => import("./pages/BuyersPage"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const SignupPage = lazy(() => import("./pages/SignupPage"));
+const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
+const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
+const SigninPage = lazy(() => import("./pages/SigninPage"));
+const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
+const SampleTitleDetailPage = lazy(() => import("./pages/SampleTitleDetailPage"));
+const DashboardInvited = lazy(() => import("./pages/DashboardInvited"));
+const CreatorInvited = lazy(() => import("./pages/CreatorInvited"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
+  </div>
+);
 
 const App = () => (
   <LanguageProvider>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
       <BrowserRouter>
         <AnalyticsProvider />
-        <Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/new-design" element={<HomePageNew />} />
           <Route path="/creators" element={<CreatorsPage />} />
@@ -39,12 +48,14 @@ const App = () => (
           <Route path="/signup/creator" element={<CreatorSignupPage />} />
           <Route path="/signin" element={<SigninPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
+          <Route path="/sample/werewolves-going-crazy-over-me" element={<SampleTitleDetailPage />} />
           <Route path="/invited" element={<DashboardInvited />} />
           <Route path="/creator/invited" element={<CreatorInvited />} />
           {/* Legacy redirect for old dashboard routes */}
           <Route path="/dashboard/invited" element={<Navigate to="/invited" replace />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </LanguageProvider>

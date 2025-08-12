@@ -1,38 +1,48 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster, TooltipProvider } from "@kstorybridge/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { DataCacheProvider } from "@/contexts/DataCacheContext";
+import { lazy, Suspense } from "react";
+
 // Load debug utilities in development
 if (import.meta.env.DEV) {
   import("@/utils/debugGA").catch(console.error);
   import("@/utils/testSearchTracking").catch(console.error);
 }
+
+// Keep small, essential components as regular imports
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { RootRedirect } from "./components/RootRedirect";
-import Content from "./pages/Content";
-import Browse from "./pages/Browse";
-import Titles from "./pages/Titles";
-import AddTitle from "./pages/AddTitle";
-import TitleDetail from "./pages/TitleDetail";
-import Favorites from "./pages/Favorites";
-import MyRequests from "./pages/MyRequests";
-import Deals from "./pages/Deals";
-import Media from "./pages/Media";
-import Users from "./pages/Users";
-import Settings from "./pages/Settings";
-import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
-import BuyerDashboardNew from "./pages/BuyerDashboardNew";
+
+// Lazy load page components for code splitting
+const Content = lazy(() => import("./pages/Content"));
+const Browse = lazy(() => import("./pages/Browse"));
+const Titles = lazy(() => import("./pages/Titles"));
+const AddTitle = lazy(() => import("./pages/AddTitle"));
+const TitleDetail = lazy(() => import("./pages/TitleDetail"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const MyRequests = lazy(() => import("./pages/MyRequests"));
+const Deals = lazy(() => import("./pages/Deals"));
+const Media = lazy(() => import("./pages/Media"));
+const Users = lazy(() => import("./pages/Users"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Profile = lazy(() => import("./pages/Profile"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const BuyerDashboardNew = lazy(() => import("./pages/BuyerDashboardNew"));
 
 const queryClient = new QueryClient();
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -40,12 +50,11 @@ const App = () => (
       <AuthProvider>
         <DataCacheProvider>
           <Toaster />
-          <Sonner />
           <BrowserRouter>
             <AnalyticsProvider>
-              <SidebarProvider>
               <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-              <Routes>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={
                   <ProtectedLayout><RootRedirect /></ProtectedLayout>
@@ -139,15 +148,16 @@ const App = () => (
                 <Route path="/profile" element={
                   <ProtectedLayout><Profile /></ProtectedLayout>
                 } />
+                
                 <Route path="*" element={
                   <ProtectedRoute>
                     <NotFound />
                   </ProtectedRoute>
                 } />
               </Routes>
+              </Suspense>
               </div>
-            </SidebarProvider>
-          </AnalyticsProvider>
+            </AnalyticsProvider>
         </BrowserRouter>
         </DataCacheProvider>
       </AuthProvider>

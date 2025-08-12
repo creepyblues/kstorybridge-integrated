@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button, Tabs, TabsContent, TabsList, TabsTrigger, useToast } from "@kstorybridge/ui";
+
 import { 
   Search, 
   Grid,
@@ -15,7 +14,7 @@ import { TitleCard } from "@/components/dashboard/TitleCard";
 import { SearchAndFilter } from "@/components/dashboard/SearchAndFilter";
 import { FeaturedSection } from "@/components/dashboard/FeaturedSection";
 import { titlesService, type Title } from "@/services/titlesService";
-import { useToast } from "@/components/ui/use-toast";
+
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
 
@@ -124,7 +123,7 @@ export default function BuyerDashboard() {
     if (titles.length === 0 || !isFresh('titles')) {
       loadTitles();
     }
-  }, [titles.length, isFresh]);
+  }, [titles.length]); // Remove isFresh from dependencies to prevent infinite loop
 
   const loadTitles = async () => {
     try {

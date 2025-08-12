@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
+import { Button } from '@kstorybridge/ui';
+import { Card, CardContent } from '@kstorybridge/ui';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowRight, Star, Menu, X } from 'lucide-react';
 import { featuredService, type FeaturedWithTitle } from '../services/featuredService';

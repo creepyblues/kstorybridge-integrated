@@ -1,21 +1,34 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from "@kstorybridge/ui";
+import { lazy, Suspense } from 'react';
+
 import { AdminAuthProvider } from '@/hooks/useAdminAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import AdminLogin from '@/pages/AdminLogin';
-import AdminTitles from '@/pages/AdminTitles';
-import AdminTitleDetail from '@/pages/AdminTitleDetail';
-import AdminTitleEdit from '@/pages/AdminTitleEdit';
-import AdminFeaturedTitles from '@/pages/AdminFeaturedTitles';
-import AdminAddTitle from '@/pages/AdminAddTitle';
-import AdminScraperTest from '@/pages/AdminScraperTest';
-import { Toaster } from '@/components/ui/sonner';
+
+// Lazy load admin page components for code splitting
+const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
+const AdminTitles = lazy(() => import('@/pages/AdminTitles'));
+const AdminTitleDetail = lazy(() => import('@/pages/AdminTitleDetail'));
+const AdminTitleEdit = lazy(() => import('@/pages/AdminTitleEdit'));
+const AdminFeaturedTitles = lazy(() => import('@/pages/AdminFeaturedTitles'));
+const AdminAddTitle = lazy(() => import('@/pages/AdminAddTitle'));
+const AdminScraperTest = lazy(() => import('@/pages/AdminScraperTest'));
+
 import '@/index.css';
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
+  </div>
+);
 
 function App() {
   return (
     <AdminAuthProvider>
       <Router>
-        <Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
           <Route path="/login" element={<AdminLogin />} />
           <Route path="/titles" element={
             <ProtectedRoute>
@@ -49,7 +62,8 @@ function App() {
           } />
           <Route path="/" element={<Navigate to="/titles" replace />} />
           <Route path="*" element={<Navigate to="/titles" replace />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </Router>
       <Toaster />
     </AdminAuthProvider>

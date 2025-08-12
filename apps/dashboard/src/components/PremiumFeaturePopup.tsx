@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, useToast } from "@kstorybridge/ui";
+
 import { Crown, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import { trackPremiumFeatureRequest, trackEvent } from "@/utils/analytics";
 import { sendAdminNotification } from "@/utils/emailService";
 import { notifyPitchRequest } from "@/utils/slack";

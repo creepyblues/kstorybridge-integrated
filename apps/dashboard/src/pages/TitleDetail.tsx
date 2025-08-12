@@ -1,14 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X } from "lucide-react";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
 import { favoritesService } from "@/services/favoritesService";
-import { useToast } from "@/components/ui/use-toast";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
@@ -56,7 +53,7 @@ function TitleDetailContent() {
         checkIfFavorited(titleId);
       }
     }
-  }, [titleId, user, getTitleDetail, isFresh]);
+  }, [titleId, user, getTitleDetail]); // Remove isFresh from dependencies
 
   const loadTitle = async (id: string) => {
     try {
@@ -287,7 +284,6 @@ function TitleDetailContent() {
               </Badge>
             )}
           </div>
-
 
           {/* Note Card - Only show if note exists */}
           {title.note && (
@@ -656,9 +652,6 @@ function TitleDetailContent() {
               </div>
             </CardContent>
           </Card>
-
-
-
 
         </div>
       </div>

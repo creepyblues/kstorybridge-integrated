@@ -267,7 +267,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
               
               {/* Method 1: Google Drive PDF Viewer */}
               <iframe
-                src={`https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(pdfUrl)}`}
+                src={`https://drive.google.com/viewerng/viewer?embedded=true&chrome=false&nonce=${Date.now()}&url=${encodeURIComponent(pdfUrl)}`}
                 width="100%"
                 height="700"
                 style={{ 
@@ -280,6 +280,26 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
                 onContextMenu={(e) => e.preventDefault()}
                 onError={() => {
                   console.log('Google Drive viewer failed, trying alternative...');
+                }}
+                onLoad={() => {
+                  // Hide the pop-out button after iframe loads
+                  setTimeout(() => {
+                    const iframe = document.querySelector('iframe[src*="drive.google.com"]');
+                    if (iframe && iframe.contentDocument) {
+                      try {
+                        const style = iframe.contentDocument.createElement('style');
+                        style.textContent = `
+                          .ndfHFb-c4YZDc-Bz112c-LgbsSe { display: none !important; }
+                          [data-tooltip="Pop out"] { display: none !important; }
+                          [aria-label="Pop out"] { display: none !important; }
+                          .pop-out-button { display: none !important; }
+                        `;
+                        iframe.contentDocument.head.appendChild(style);
+                      } catch (e) {
+                        console.log('Could not access iframe content for styling');
+                      }
+                    }
+                  }, 1000);
                 }}
               />
               

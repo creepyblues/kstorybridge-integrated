@@ -35,6 +35,23 @@ function TitleDetailContent() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  
+  // Ensure modal renders properly with slight delay
+  useEffect(() => {
+    if (isPdfModalOpen) {
+      // Force re-render to ensure modal displays
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isPdfModalOpen]);
+  
+  
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const [premiumFeatureName, setPremiumFeatureName] = useState("");
 
@@ -348,39 +365,76 @@ function TitleDetailContent() {
                         <span className="font-semibold text-purple-800">Premium Content Available</span>
                       </div>
                       {isAuthenticated && (
-                        <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
-                          <DialogTrigger id="title-detail-view-pitch-btn" asChild>
-                            <Button id="title-detail-view-pitch-btn" className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group">
-                              {/* Shine effect */}
-                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                              
-                              {/* Icons */}
-                              <Crown className="h-3 w-3 mr-1 text-yellow-300 animate-pulse pointer-events-none" />
-                              <FileText className="h-3 w-3 mr-1 pointer-events-none" />
-                              
-                              {/* Text */}
-                              <span className="relative z-10 pointer-events-none">View Pitch</span>
-                              
-                              {/* Glow effect */}
-                              <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] p-0">
-                            <DialogHeader className="p-6 pb-0">
-                              <DialogTitle>
-                                Pitch Document - {title.title_name_en || title.title_name_kr}
-                              </DialogTitle>
-                              <DialogDescription>
-                                View the complete pitch document with detailed information about this title, including market positioning and target audience.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="p-6 pt-0">
-                              <SecurePDFViewer 
-                                pdfUrl={title.pitch}
-                              />
+                        <>
+                          <Button 
+                            id="title-detail-view-pitch-btn" 
+                            className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
+                            onClick={() => {
+                              // Small delay to ensure proper state update
+                              setTimeout(() => setIsPdfModalOpen(true), 10);
+                            }}
+                          >
+                            {/* Shine effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                            
+                            {/* Icons */}
+                            <Crown className="h-3 w-3 mr-1 text-yellow-300 animate-pulse pointer-events-none" />
+                            <FileText className="h-3 w-3 mr-1 pointer-events-none" />
+                            
+                            {/* Text */}
+                            <span className="relative z-10 pointer-events-none">View Pitch</span>
+                            
+                            {/* Glow effect */}
+                            <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
+                          </Button>
+                          
+                          {/* Reliable PDF Modal Implementation */}
+                          {isPdfModalOpen && (
+                            <div 
+                              className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center"
+                              onClick={() => setIsPdfModalOpen(false)}
+                              style={{ 
+                                animation: 'fadeIn 0.2s ease-out',
+                                backdropFilter: 'blur(4px)'
+                              }}
+                            >
+                              <div 
+                                className="bg-white rounded-lg shadow-2xl max-w-6xl w-[95vw] max-h-[90vh] relative overflow-hidden"
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ 
+                                  animation: 'slideIn 0.3s ease-out',
+                                  transform: 'translateY(0)'
+                                }}
+                              >
+                                {/* Header */}
+                                <div className="p-6 pb-0 border-b border-gray-200">
+                                  <h2 className="text-xl font-bold text-gray-900 mb-2">
+                                    Pitch Document - {title.title_name_en || title.title_name_kr}
+                                  </h2>
+                                  <p className="text-gray-600 text-sm">
+                                    View the complete pitch document with detailed information about this title, including market positioning and target audience.
+                                  </p>
+                                </div>
+                                
+                                {/* PDF Content */}
+                                <div className="p-6 pt-4 max-h-[calc(90vh-120px)] overflow-auto">
+                                  <SecurePDFViewer 
+                                    pdfUrl={title.pitch}
+                                  />
+                                </div>
+                                
+                                {/* Close Button */}
+                                <button
+                                  onClick={() => setIsPdfModalOpen(false)}
+                                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-colors duration-200 z-10"
+                                  aria-label="Close modal"
+                                >
+                                  <X className="h-5 w-5" />
+                                </button>
+                              </div>
                             </div>
-                          </DialogContent>
-                        </Dialog>
+                          )}
+                        </>
                       )}
                       {!isAuthenticated && (
                         <Button
@@ -679,8 +733,27 @@ function TitleDetailContent() {
 
 export default function TitleDetail() {
   return (
-    <TierProvider>
-      <TitleDetailContent />
-    </TierProvider>
+    <>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+          from { 
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+      `}</style>
+      <TierProvider>
+        <TitleDetailContent />
+      </TierProvider>
+    </>
   );
 }

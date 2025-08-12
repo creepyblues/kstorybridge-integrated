@@ -2,8 +2,7 @@ import { ArrowRight, CheckCircle, Globe, Shield, TrendingUp, Zap, Rocket, Star }
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import PageHeader from '../components/PageHeader';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const CreatorsPage = () => {

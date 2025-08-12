@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, Button } from "@kstorybridge/ui";
+
 import { Check } from 'lucide-react';
 
 interface PricingCardProps {

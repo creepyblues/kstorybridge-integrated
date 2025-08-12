@@ -1,14 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, useToast, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@kstorybridge/ui";
 import { ArrowLeft, Save } from "lucide-react";
 import { titlesService, type Title, type TitleUpdate } from "@/services/titlesService";
-import { useToast } from "@/components/ui/use-toast";
 import AdminLayout from "@/components/layout/AdminLayout";
 
 export default function AdminTitleEdit() {

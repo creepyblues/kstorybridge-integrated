@@ -1,7 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Calendar, ExternalLink } from "lucide-react";
+import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@kstorybridge/ui";
+
 import { styles } from "@/lib/styles";
 
 interface ActivityItem {

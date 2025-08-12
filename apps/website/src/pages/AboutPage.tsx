@@ -1,5 +1,5 @@
 import PageHeader from '../components/PageHeader';
-import { Card, CardContent } from '../components/ui/card';
+import { Card, CardContent } from '@kstorybridge/ui';
 import { ExternalLink } from 'lucide-react';
 import Footer from '../components/Footer';
 

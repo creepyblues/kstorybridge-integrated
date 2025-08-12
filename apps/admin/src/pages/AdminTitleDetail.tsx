@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, useToast } from "@kstorybridge/ui";
+
+import { Badge } from '@kstorybridge/ui';
+import { Button } from '@kstorybridge/ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
 import { Eye, Heart, Star, ArrowLeft, Crown, FileText, X, Edit } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
-import { useToast } from "@/components/ui/use-toast";
 import AdminLayout from "@/components/layout/AdminLayout";
 
 export default function AdminTitleDetail() {

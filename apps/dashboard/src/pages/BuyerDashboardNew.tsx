@@ -37,10 +37,9 @@ import {
 
 // Existing Services
 import { titlesService, type Title } from '@/services/titlesService';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast, Button } from '@kstorybridge/ui';
 import { enhancedSearch, getTitleSearchFields } from '@/utils/searchUtils';
 import { useDataCache } from '@/contexts/DataCacheContext';
-import { Button } from '@/components/ui/button';
 
 // Mock enhanced data for demonstration
 const mockBuyerStats = {
@@ -84,7 +83,7 @@ export default function BuyerDashboardNew() {
     if (titles.length === 0 || !isFresh('titles')) {
       loadTitles();
     }
-  }, [titles.length, isFresh]);
+  }, [titles.length]); // Remove isFresh from dependencies
 
   const loadTitles = async () => {
     try {

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@kstorybridge/ui";
+
+import { Button } from '@kstorybridge/ui';
 import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";

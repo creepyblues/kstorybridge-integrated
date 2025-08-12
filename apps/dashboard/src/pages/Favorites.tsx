@@ -1,21 +1,17 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Button, Card, CardContent, Input, Badge, useToast } from "@kstorybridge/ui";
+
 import { 
   Search, 
   Heart, 
   Eye, 
   Star,
-  Filter,
-  RefreshCw
+  Filter
 } from "lucide-react";
 import { favoritesService } from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/components/ui/use-toast";
+
 import type { Title } from "@/services/titlesService";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
@@ -32,7 +28,7 @@ type FavoriteWithTitle = {
 export default function Favorites() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { getFavorites, setFavorites, isFresh, refreshData } = useDataCache();
+  const { getFavorites, setFavorites, isFresh } = useDataCache();
   const [searchQuery, setSearchQuery] = useState(""); // What user types
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
   const [loading, setLoading] = useState(false);
@@ -45,7 +41,7 @@ export default function Favorites() {
     if (user && (favorites.length === 0 || !isFresh('favorites'))) {
       loadFavorites();
     }
-  }, [user, favorites.length, isFresh]);
+  }, [user, favorites.length]); // Remove isFresh from dependencies
 
   // Filter favorites based on search term
   const filteredFavorites = (() => {
@@ -84,11 +80,6 @@ export default function Favorites() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleRefresh = () => {
-    refreshData('favorites');
-    loadFavorites();
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -189,19 +180,8 @@ export default function Favorites() {
                 Content you've saved for later review.
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={handleRefresh}
-                disabled={loading}
-                variant="outline"
-                className="flex items-center gap-2 text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <div className="text-midnight-ink-600 text-lg font-medium">
-                {filteredFavorites.length} favorites
-              </div>
+            <div className="text-midnight-ink-600 text-lg font-medium">
+              {filteredFavorites.length} favorites
             </div>
           </div>
 

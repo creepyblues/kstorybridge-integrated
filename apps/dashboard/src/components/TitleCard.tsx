@@ -1,9 +1,8 @@
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { Link } from "react-router-dom";
 import { Eye, Heart, Star, Edit, Trash2 } from "lucide-react";
+import { Button, Card, CardContent, CardHeader, Badge } from "@kstorybridge/ui";
 import type { Title } from "@/services/titlesService";
 import { useAuth } from "@/hooks/useAuth";
 

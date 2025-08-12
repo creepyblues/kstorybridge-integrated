@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Search, Plus } from "lucide-react";
+import { Button, Input } from "@kstorybridge/ui";
+
 import { styles } from "@/lib/styles";
 
 interface DashboardHeaderProps {

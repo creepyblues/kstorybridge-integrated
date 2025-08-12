@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button, Card, CardContent, Input } from "@kstorybridge/ui";
+
 import { Search } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
-
 
 export default function TitlesList() {
   const [titles, setTitles] = useState<Title[]>([]);

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
+import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '../hooks/use-toast';
 import { featuredService, type FeaturedWithTitle } from '../services/featuredService';
 import Footer from '../components/Footer';

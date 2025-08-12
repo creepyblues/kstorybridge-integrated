@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { LogOut, Shield, User } from 'lucide-react';
+import { Button } from "@kstorybridge/ui";
 
 export default function AdminHeader() {
   const { adminProfile, signOut } = useAdminAuth();

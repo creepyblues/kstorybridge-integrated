@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Button } from '../ui/button';
+import { Button } from '@kstorybridge/ui';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { trackButtonClick } from '@/utils/analytics';
 import { User } from '@supabase/supabase-js';

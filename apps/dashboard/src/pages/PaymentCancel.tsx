@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@kstorybridge/ui";
+
 import { XCircle } from 'lucide-react';
 
 const PaymentCancel = () => {

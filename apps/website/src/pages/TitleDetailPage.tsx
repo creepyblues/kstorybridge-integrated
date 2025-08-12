@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
+import { Badge } from '@kstorybridge/ui';
+import { Button } from '@kstorybridge/ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
 import { ArrowLeft, Eye, Heart, Star, FileText, Crown, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';

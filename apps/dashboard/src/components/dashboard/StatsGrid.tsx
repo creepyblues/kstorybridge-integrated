@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@kstorybridge/ui";
+
 import { styles } from "@/lib/styles";
 
 interface StatItem {

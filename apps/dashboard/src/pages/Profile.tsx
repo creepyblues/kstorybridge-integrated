@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
+import { Button, Card, CardContent, CardHeader, CardTitle, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
+
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
-import { User, Mail, Building, Globe, Linkedin, Save, Edit3, X } from "lucide-react";
+import { Save, Edit3, X } from "lucide-react";
 
 // Define types for the actual table structures
 type BuyerProfile = {
@@ -413,12 +409,15 @@ export default function Profile() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <User className="w-8 h-8 text-hanok-teal" />
-          <h1 className="text-3xl font-bold text-slate-800">My Profile</h1>
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">MY PROFILE</h1>
+            <p className="text-xl text-midnight-ink-600 leading-relaxed">
+              Manage your account information and preferences.
+            </p>
+          </div>
         
         <div className="flex gap-2">
           {!isEditing ? (
@@ -452,301 +451,236 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Basic Information */}
-        <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-hanok-teal to-porcelain-blue-600 text-white">
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              Basic Information
-            </CardTitle>
+        {/* Profile Information Card */}
+        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-12">
+          <CardHeader>
+            <CardTitle className="text-midnight-ink text-xl">Profile Information</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name</Label>
-              {isEditing ? (
-                <Input
-                  id="full_name"
-                  value={formData.full_name || ""}
-                  onChange={(e) => handleInputChange("full_name", e.target.value)}
-                  placeholder="Enter your full name"
-                />
-              ) : (
-                <div className="flex items-center gap-3">
-                  <User className="w-4 h-4 text-slate-500" />
-                  <p className="font-medium text-slate-800">{profile.full_name || "Not provided"}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-slate-500" />
-                <p className="font-medium text-slate-800">{profile.email}</p>
-                <span className="text-xs text-slate-500 ml-auto">(Cannot be changed)</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Account Type</Label>
-              <div className="flex items-center gap-3">
-                <User className="w-4 h-4 text-slate-500" />
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-hanok-teal/10 text-hanok-teal border border-hanok-teal/20">
-                  {formatAccountType(profile.account_type)}
-                </span>
-                <span className="text-xs text-slate-500 ml-auto">(Cannot be changed)</span>
-              </div>
-            </div>
-
-            {profile.account_type === 'ip_owner' && (
-              <div className="space-y-2">
-                <Label htmlFor="pen_name">Pen Name / Studio Name</Label>
-                {isEditing ? (
-                  <Input
-                    id="pen_name"
-                    value={formData.pen_name || ""}
-                    onChange={(e) => handleInputChange("pen_name", e.target.value)}
-                    placeholder="Enter your pen name or studio name"
-                  />
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <User className="w-4 h-4 text-slate-500" />
-                    <p className="font-medium text-slate-800">{profile.pen_name || "Not provided"}</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Professional Information */}
-        <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-porcelain-blue-600 to-hanok-teal text-white">
-            <CardTitle className="flex items-center gap-2">
-              <Building className="w-5 h-5" />
-              Professional Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            {profile.account_type === "buyer" ? (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="buyer_company">Company</Label>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Column - Basic Information */}
+              <div className="space-y-4">
+                {/* Full Name */}
+                <div>
+                  <h5 className="font-semibold text-hanok-teal mb-1">Full Name</h5>
                   {isEditing ? (
                     <Input
-                      id="buyer_company"
-                      value={formData.buyer_company || ""}
-                      onChange={(e) => handleInputChange("buyer_company", e.target.value)}
-                      placeholder="Enter your company name"
+                      id="full_name"
+                      value={formData.full_name || ""}
+                      onChange={(e) => handleInputChange("full_name", e.target.value)}
+                      placeholder="Enter your full name"
                     />
                   ) : (
-                    <div className="flex items-center gap-3">
-                      <Building className="w-4 h-4 text-slate-500" />
-                      <p className="font-medium text-slate-800">{profile.buyer_company || "Not provided"}</p>
-                    </div>
+                    <p className="text-gray-600 text-sm">{profile.full_name || "Not specified"}</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="buyer_role">Role</Label>
-                  {isEditing ? (
-                    <Select
-                      value={formData.buyer_role || ""}
-                      onValueChange={(value) => handleInputChange("buyer_role", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="producer">Producer</SelectItem>
-                        <SelectItem value="executive">Executive</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
-                        <SelectItem value="content_scout">Content Scout</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <User className="w-4 h-4 text-slate-500" />
-                      <p className="font-medium text-slate-800">
-                        {profile.buyer_role ? 
-                          profile.buyer_role.split("_").map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                          ).join(" ") 
-                          : "Not provided"
-                        }
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="ip_owner_company">Company</Label>
-                  {isEditing ? (
-                    <Input
-                      id="ip_owner_company"
-                      value={formData.ip_owner_company || ""}
-                      onChange={(e) => handleInputChange("ip_owner_company", e.target.value)}
-                      placeholder="Enter your company name"
-                    />
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <Building className="w-4 h-4 text-slate-500" />
-                      <p className="font-medium text-slate-800">{profile.ip_owner_company || "Not provided"}</p>
-                    </div>
-                  )}
+                {/* Email */}
+                <div>
+                  <h5 className="font-semibold text-hanok-teal mb-1">Email Address</h5>
+                  <p className="text-gray-600 text-sm">{profile.email}</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="ip_owner_role">Role</Label>
-                  {isEditing ? (
-                    <Select
-                      value={formData.ip_owner_role || ""}
-                      onValueChange={(value) => handleInputChange("ip_owner_role", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="author">Author</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <User className="w-4 h-4 text-slate-500" />
-                      <p className="font-medium text-slate-800">
-                        {profile.ip_owner_role ? 
-                          profile.ip_owner_role.charAt(0).toUpperCase() + profile.ip_owner_role.slice(1)
-                          : "Not provided"
-                        }
-                      </p>
-                    </div>
-                  )}
+                {/* Account Type */}
+                <div>
+                  <h5 className="font-semibold text-hanok-teal mb-1">Account Type</h5>
+                  <p className="text-gray-600 text-sm">{formatAccountType(profile.account_type)}</p>
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Contact & Links */}
-        <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-sunrise-coral to-hanok-teal text-white">
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="w-5 h-5" />
-              Contact & Links
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            {profile.account_type === 'ip_owner' && (
-              <div className="space-y-2">
-                <Label htmlFor="website_url">Website URL</Label>
-                {isEditing ? (
-                  <Input
-                    id="website_url"
-                    value={formData.website_url || ""}
-                    onChange={(e) => handleInputChange("website_url", e.target.value)}
-                    placeholder="https://your-website.com"
-                    type="url"
-                  />
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <Globe className="w-4 h-4 text-slate-500" />
-                    {profile.website_url ? (
-                      <a
-                        href={profile.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
-                      >
-                        {profile.website_url}
-                      </a>
+                {/* Pen Name for IP Owners */}
+                {profile.account_type === 'ip_owner' && (
+                  <div>
+                    <h5 className="font-semibold text-hanok-teal mb-1">Pen Name / Studio Name</h5>
+                    {isEditing ? (
+                      <Input
+                        id="pen_name"
+                        value={formData.pen_name || ""}
+                        onChange={(e) => handleInputChange("pen_name", e.target.value)}
+                        placeholder="Enter your pen name or studio name"
+                      />
                     ) : (
-                      <p className="font-medium text-slate-800">Not provided</p>
+                      <p className="text-gray-600 text-sm">{profile.pen_name || "Not specified"}</p>
                     )}
                   </div>
                 )}
-              </div>
-            )}
 
-            {profile.account_type === 'buyer' && (
-              <div className="space-y-2">
-                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-                {isEditing ? (
-                  <Input
-                    id="linkedin_url"
-                    value={formData.linkedin_url || ""}
-                    onChange={(e) => handleInputChange("linkedin_url", e.target.value)}
-                    placeholder="https://linkedin.com/in/your-profile"
-                    type="url"
-                  />
+                {/* Member Since */}
+                <div>
+                  <h5 className="font-semibold text-hanok-teal mb-1">Member Since</h5>
+                  <p className="text-gray-600 text-sm">{formatDate(profile.created_at)}</p>
+                </div>
+              </div>
+
+              {/* Right Column - Professional Information */}
+              <div className="space-y-4">
+                {profile.account_type === "buyer" ? (
+                  <>
+                    {/* Company */}
+                    <div>
+                      <h5 className="font-semibold text-hanok-teal mb-1">Company</h5>
+                      {isEditing ? (
+                        <Input
+                          id="buyer_company"
+                          value={formData.buyer_company || ""}
+                          onChange={(e) => handleInputChange("buyer_company", e.target.value)}
+                          placeholder="Enter your company name"
+                        />
+                      ) : (
+                        <p className="text-gray-600 text-sm">{profile.buyer_company || "Not specified"}</p>
+                      )}
+                    </div>
+
+                    {/* Role */}
+                    <div>
+                      <h5 className="font-semibold text-hanok-teal mb-1">Role</h5>
+                      {isEditing ? (
+                        <Select
+                          value={formData.buyer_role || ""}
+                          onValueChange={(value) => handleInputChange("buyer_role", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="producer">Producer</SelectItem>
+                            <SelectItem value="executive">Executive</SelectItem>
+                            <SelectItem value="agent">Agent</SelectItem>
+                            <SelectItem value="content_scout">Content Scout</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-gray-600 text-sm">
+                          {profile.buyer_role ? 
+                            profile.buyer_role.split("_").map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                            ).join(" ") 
+                            : "Not specified"
+                          }
+                        </p>
+                      )}
+                    </div>
+
+                    {/* LinkedIn URL */}
+                    <div>
+                      <h5 className="font-semibold text-hanok-teal mb-1">LinkedIn URL</h5>
+                      {isEditing ? (
+                        <Input
+                          id="linkedin_url"
+                          value={formData.linkedin_url || ""}
+                          onChange={(e) => handleInputChange("linkedin_url", e.target.value)}
+                          placeholder="https://linkedin.com/in/your-profile"
+                          type="url"
+                        />
+                      ) : (
+                        <p className="text-gray-600 text-sm">
+                          {profile.linkedin_url ? (
+                            <a
+                              href={profile.linkedin_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                            >
+                              LinkedIn Profile
+                            </a>
+                          ) : (
+                            "Not specified"
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  </>
                 ) : (
-                  <div className="flex items-center gap-3">
-                    <Linkedin className="w-4 h-4 text-slate-500" />
-                    {profile.linkedin_url ? (
-                      <a
-                        href={profile.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
-                      >
-                        LinkedIn Profile
-                      </a>
-                    ) : (
-                      <p className="font-medium text-slate-800">Not provided</p>
-                    )}
+                  <>
+                    {/* Company */}
+                    <div>
+                      <h5 className="font-semibold text-hanok-teal mb-1">Company</h5>
+                      {isEditing ? (
+                        <Input
+                          id="ip_owner_company"
+                          value={formData.ip_owner_company || ""}
+                          onChange={(e) => handleInputChange("ip_owner_company", e.target.value)}
+                          placeholder="Enter your company name"
+                        />
+                      ) : (
+                        <p className="text-gray-600 text-sm">{profile.ip_owner_company || "Not specified"}</p>
+                      )}
+                    </div>
+
+                    {/* Role */}
+                    <div>
+                      <h5 className="font-semibold text-hanok-teal mb-1">Role</h5>
+                      {isEditing ? (
+                        <Select
+                          value={formData.ip_owner_role || ""}
+                          onValueChange={(value) => handleInputChange("ip_owner_role", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="author">Author</SelectItem>
+                            <SelectItem value="agent">Agent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-gray-600 text-sm">
+                          {profile.ip_owner_role ? 
+                            profile.ip_owner_role.charAt(0).toUpperCase() + profile.ip_owner_role.slice(1)
+                            : "Not specified"
+                          }
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Website URL */}
+                    <div>
+                      <h5 className="font-semibold text-hanok-teal mb-1">Website URL</h5>
+                      {isEditing ? (
+                        <Input
+                          id="website_url"
+                          value={formData.website_url || ""}
+                          onChange={(e) => handleInputChange("website_url", e.target.value)}
+                          placeholder="https://your-website.com"
+                          type="url"
+                        />
+                      ) : (
+                        <p className="text-gray-600 text-sm">
+                          {profile.website_url ? (
+                            <a
+                              href={profile.website_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                            >
+                              {profile.website_url}
+                            </a>
+                          ) : (
+                            "Not specified"
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Membership Tier */}
+                {profile.tier && (
+                  <div>
+                    <h5 className="font-semibold text-hanok-teal mb-1">Membership Tier</h5>
+                    <p className="text-gray-600 text-sm">
+                      {profile.tier === "suite" ? "Suite" : profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1)}
+                    </p>
                   </div>
                 )}
-              </div>
-            )}
 
-            {!profile.website_url && !profile.linkedin_url && (
-              <div className="text-center py-8 text-slate-500">
-                <Globe className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No contact links available</p>
+                {/* Last Updated */}
+                <div>
+                  <h5 className="font-semibold text-hanok-teal mb-1">Last Updated</h5>
+                  <p className="text-gray-600 text-sm">{formatDate(profile.updated_at)}</p>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Account Details */}
-        <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-slate-600 to-slate-700 text-white">
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              Account Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <div className="space-y-2">
-              <Label>Member Since</Label>
-              <p className="font-medium text-slate-800">{formatDate(profile.created_at)}</p>
             </div>
-
-            <div className="space-y-2">
-              <Label>Last Updated</Label>
-              <p className="font-medium text-slate-800">{formatDate(profile.updated_at)}</p>
-            </div>
-
-            {profile.tier && (
-              <div className="space-y-2">
-                <Label>Membership Tier</Label>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  profile.tier === "basic" || profile.tier === "pro" || profile.tier === "suite"
-                    ? profile.tier === "suite" 
-                      ? "bg-purple-100 text-purple-800 border border-purple-200"
-                      : profile.tier === "pro"
-                      ? "bg-blue-100 text-blue-800 border border-blue-200"
-                      : "bg-green-100 text-green-800 border border-green-200"
-                    : "bg-slate-100 text-slate-800 border border-slate-200"
-                }`}>
-                  {profile.tier === "suite" ? "Suite" : profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1)}
-                </span>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

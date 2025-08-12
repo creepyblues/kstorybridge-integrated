@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button, Card, CardContent, CardHeader, CardTitle, useToast } from "@kstorybridge/ui";
+
 import { 
   MessageSquare, 
   Calendar,
@@ -14,7 +13,6 @@ import {
 } from "lucide-react";
 import { requestsService, type RequestWithTitle } from "@/services/requestsService";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/components/ui/use-toast";
 import { useDataCache } from "@/contexts/DataCacheContext";
 
 export default function MyRequests() {
@@ -52,7 +50,7 @@ export default function MyRequests() {
     } else {
       console.log('🔍 MY REQUESTS: Not loading - no user and no bypass');
     }
-  }, [user, getMyRequests, isFresh]);
+  }, [user, getMyRequests]); // Remove isFresh from dependencies
 
   const loadRequests = async () => {
     // For localhost auth bypass, use a mock user ID when no real user exists

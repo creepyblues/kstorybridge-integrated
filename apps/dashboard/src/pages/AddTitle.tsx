@@ -1,19 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
+
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Save, FileText, Users, Palette, BookOpen, Globe } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { StringArrayInput } from "@/components/ui/string-array-input";
-
 type TitleInsert = Database["public"]["Tables"]["titles"]["Insert"];
 
 export default function AddTitle() {

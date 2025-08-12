@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 import { Title } from '@/services/titlesService';
 import { FeaturedWithTitle } from '@/services/featuredService';
 import { RequestWithTitle } from '@/services/requestsService';
@@ -91,10 +91,15 @@ const saveToStorage = (cache: DataCacheState) => {
 };
 
 export function DataCacheProvider({ children }: { children: ReactNode }) {
-  const [cache, setCache] = useState<DataCacheState>(loadFromStorage);
+  const [cache, setCache] = useState<DataCacheState>(() => loadFromStorage());
+  const isFirstRender = useRef(true);
 
-  // Save to localStorage whenever cache changes
+  // Save to localStorage whenever cache changes (but skip initial load)
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     saveToStorage(cache);
   }, [cache]);
 

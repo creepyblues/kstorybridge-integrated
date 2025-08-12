@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card, CardContent } from './ui/card';
+import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { useAuth } from '../hooks/useAuth';
 
 interface SecurePDFViewerProps {

@@ -1,18 +1,21 @@
-
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle, 
+  Input, 
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger
+} from "@kstorybridge/ui";
 import { Search, Filter, TrendingUp, Star } from "lucide-react";
 import { TitleCard } from "@/components/TitleCard";
 import { titlesService, type Title } from "@/services/titlesService";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@kstorybridge/ui";
 
 export default function Browse() {
   const { toast } = useToast();

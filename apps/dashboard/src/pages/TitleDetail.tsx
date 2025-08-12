@@ -29,7 +29,7 @@ function TitleDetailContent() {
 
   // For localhost auth bypass, consider as authenticated
   const isAuthenticated = user || shouldBypassAuth();
-  const { getTitleDetail, setTitleDetail, isFresh } = useDataCache();
+  const { getTitleDetail, setTitleDetail, isFresh, refreshData } = useDataCache();
   const [title, setTitle] = useState<Title | null>(null);
   const [loading, setLoading] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -54,6 +54,12 @@ function TitleDetailContent() {
   
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const [premiumFeatureName, setPremiumFeatureName] = useState("");
+  
+  // Debug premium popup state changes
+  useEffect(() => {
+    console.log('🚪 Premium popup state changed to:', premiumPopupOpen);
+    console.log('📝 Premium feature name:', premiumFeatureName);
+  }, [premiumPopupOpen, premiumFeatureName]);
 
   useEffect(() => {
     if (titleId) {
@@ -108,10 +114,16 @@ function TitleDetailContent() {
         await favoritesService.removeFromFavorites(user.id, titleId);
         setIsFavorited(false);
         toast({ title: "Removed from favorites" });
+        
+        // Invalidate favorites cache so Favorites page will refresh
+        refreshData('favorites');
       } else {
         await favoritesService.addToFavorites(user.id, titleId);
         setIsFavorited(true);
         toast({ title: "Added to favorites" });
+        
+        // Invalidate favorites cache so Favorites page will refresh
+        refreshData('favorites');
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -212,8 +224,12 @@ function TitleDetailContent() {
                 <Button 
                   id="title-detail-contact-creator-btn"
                   onClick={() => {
+                    console.log('🔥 Contact Creator button clicked!');
+                    console.log('📝 Setting premium feature name to: Contact Creator');
                     setPremiumFeatureName("Contact Creator");
+                    console.log('🚪 Opening premium popup...');
                     setPremiumPopupOpen(true);
+                    console.log('✅ Premium popup state set to true');
                   }}
                   variant="outline" 
                   className="border-gray-300 text-gray-700 hover:bg-gray-50 shadow-lg rounded-2xl px-6 py-3"
@@ -468,8 +484,12 @@ function TitleDetailContent() {
                         <Button 
                           id="title-detail-request-pitch-btn"
                           onClick={() => {
+                            console.log('🔥 Request Pitch button clicked!');
+                            console.log('📝 Setting premium feature name to: Request a pitch deck');
                             setPremiumFeatureName("Request a pitch deck");
+                            console.log('🚪 Opening premium popup...');
                             setPremiumPopupOpen(true);
+                            console.log('✅ Premium popup state set to true');
                           }}
                           className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
                         >

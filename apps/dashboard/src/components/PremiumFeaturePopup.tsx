@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, useToast } from "@kstorybridge/ui";
 
-import { Crown, Sparkles } from "lucide-react";
+import { Crown, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { trackPremiumFeatureRequest, trackEvent } from "@/utils/analytics";
@@ -31,6 +31,17 @@ export default function PremiumFeaturePopup({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [requested, setRequested] = useState(false);
+  
+  // Debug props received
+  useEffect(() => {
+    console.log('🎯 PremiumFeaturePopup props received:', {
+      isOpen,
+      featureName,
+      titleId,
+      requestType,
+      titleName
+    });
+  }, [isOpen, featureName, titleId, requestType, titleName]);
 
   // Track when premium popup is shown
   useEffect(() => {
@@ -231,8 +242,103 @@ export default function PremiumFeaturePopup({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-gradient-to-b from-white to-porcelain-blue-50 border-porcelain-blue-200 rounded-2xl">
+    <>
+      {/* Manual Premium Feature Modal */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center"
+          onClick={onClose}
+          style={{ 
+            animation: 'fadeIn 0.2s ease-out',
+            backdropFilter: 'blur(4px)'
+          }}
+        >
+          <div 
+            className="bg-gradient-to-b from-white to-porcelain-blue-50 border-porcelain-blue-200 rounded-2xl shadow-2xl max-w-md w-[90vw] relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+            style={{ 
+              animation: 'slideIn 0.3s ease-out',
+              transform: 'translateY(0)'
+            }}
+          >
+            {/* Header */}
+            <div className="text-center pb-4 p-6">
+              <div className="flex justify-center mb-4">
+                <div className="relative">
+                  <Crown className="h-16 w-16 text-sunrise-coral animate-pulse" />
+                  <Sparkles className="h-6 w-6 text-hanok-teal absolute -top-1 -right-1 animate-bounce" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-midnight-ink mb-2">
+                Premium Feature
+              </h2>
+              <p className="text-gray-600">
+                {featureName} - Submit a request to access this premium feature
+              </p>
+            </div>
+            
+            {/* Content */}
+            <div className="text-center space-y-6 px-6 pb-6">
+              {!requested ? (
+                <>
+                  <div className="space-y-4">
+                    <p className="text-midnight-ink-600 text-lg leading-relaxed">
+                      This feature is for premium members only.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Button
+                      id="premium-popup-request-btn"
+                      onClick={handleRequest}
+                      disabled={loading}
+                      className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Requesting...
+                        </div>
+                      ) : (
+                        "Request Access"
+                      )}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-4 py-4">
+                  <div className="flex justify-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                      <Crown className="h-8 w-8 text-green-600" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-bold text-midnight-ink">
+                      Thank you for your request!
+                    </h3>
+                    <p className="text-midnight-ink-600">
+                      We'll notify you when this premium feature becomes available.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-colors duration-200 z-10"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Hidden Dialog Component as fallback */}
+      <Dialog open={false} onOpenChange={onClose}>
+        <DialogContent className="max-w-md bg-gradient-to-b from-white to-porcelain-blue-50 border-porcelain-blue-200 rounded-2xl hidden">
         <DialogHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
             <div className="relative">
@@ -296,5 +402,6 @@ export default function PremiumFeaturePopup({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

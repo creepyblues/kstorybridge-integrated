@@ -2,9 +2,21 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { createVitestConfig } from "@kstorybridge/testing/src/vitest.config";
+import { fileURLToPath } from 'url';
+
+// ES module compatibility for __dirname
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Test configuration
+const testConfig = createVitestConfig({
+  rootDir: __dirname,
+  environment: 'jsdom',
+});
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  ...testConfig,
   server: {
     host: "::",
     port: 5173,

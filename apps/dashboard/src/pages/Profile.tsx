@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Card, CardContent, CardHeader, CardTitle, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,6 +57,32 @@ type UnifiedProfile = {
   updated_at: string;
 };
 
+// Check if we should use mock data for localhost development
+const shouldUseMockData = () => {
+  const isLocalhost = window.location.hostname === 'localhost';
+  const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
+  const isDev = import.meta.env.DEV;
+  
+  return isLocalhost && bypassEnabled && isDev;
+};
+
+// Mock profile data for localhost development
+const mockProfile: UnifiedProfile = {
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  user_id: "550e8400-e29b-41d4-a716-446655440000",
+  email: "sungho@dadble.com",
+  full_name: "Sungho Lee",
+  account_type: "buyer",
+  buyer_company: "Dadble Inc.",
+  buyer_role: "Senior Product Manager",
+  linkedin_url: "https://linkedin.com/in/sungholee",
+  plan: "pro",
+  tier: "pro",
+  website_url: "https://dadble.com",
+  created_at: "2024-12-01T10:00:00.000Z",
+  updated_at: "2025-08-12T06:00:00.000Z",
+};
+
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -68,8 +94,18 @@ export default function Profile() {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      // Handle localhost development with mock data
+      if (shouldUseMockData()) {
+        console.log("👤 PROFILE: Using mock profile data for localhost development");
+        setProfile(mockProfile);
+        setFormData(mockProfile);
+        setLoading(false);
+        return;
+      }
+
       if (!user) {
         console.log("No user found, skipping profile fetch");
+        setLoading(false);
         return;
       }
 
@@ -275,6 +311,26 @@ export default function Profile() {
   };
 
   const handleUpdateProfile = async () => {
+    // Handle localhost development with mock data
+    if (shouldUseMockData()) {
+      console.log("👤 PROFILE: Mock profile update for localhost development");
+      setUpdating(true);
+      
+      // Simulate async operation
+      setTimeout(() => {
+        const updatedProfile = { ...mockProfile, ...formData };
+        setProfile(updatedProfile);
+        setIsEditing(false);
+        setUpdating(false);
+        
+        toast({
+          title: "Success",
+          description: "Profile updated successfully (localhost mock)",
+        });
+      }, 500);
+      return;
+    }
+
     if (!user || !profile) return;
 
     try {

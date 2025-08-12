@@ -1,5 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
+import { fileURLToPath } from 'url';
+// ES module compatibility for __dirname
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export function createVitestConfig(options = {}) {
     const { rootDir = process.cwd(), environment = 'jsdom', setupFiles = [], alias = {}, coverage = {
         include: ['src/**/*.{ts,tsx}'],

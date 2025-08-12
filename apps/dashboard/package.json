@@ -9,6 +9,9 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
     "check:featured": "node scripts/check_featured_data.js",
     "check:cache": "node scripts/clear_cache_check.js",
     "test:tier-performance": "node scripts/test_tier_performance.js"

@@ -3,7 +3,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Select
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Edit3, X } from "lucide-react";
+import { Save, Edit3, X, LogOut } from "lucide-react";
 
 // Define types for the actual table structures
 type BuyerProfile = {
@@ -84,7 +84,7 @@ const mockProfile: UnifiedProfile = {
 };
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<UnifiedProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -444,6 +444,23 @@ export default function Profile() {
     });
   };
 
+  const handleSignOut = async () => {
+    try {
+      toast({
+        title: "Signing out...",
+        description: "You are being signed out of your account.",
+      });
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto py-8">
@@ -736,6 +753,34 @@ export default function Profile() {
                   <p className="text-gray-600 text-sm">{formatDate(profile.updated_at)}</p>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sign Out Section */}
+        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-midnight-ink mb-2">Account Actions</h3>
+                <p className="text-gray-600">
+                  Sign out of your account to end your current session.
+                </p>
+              </div>
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 shadow-lg rounded-2xl px-6 py-3 transition-all duration-300 group relative overflow-hidden"
+              >
+                {/* Subtle glow effect */}
+                <div className="absolute inset-0 rounded-2xl bg-red-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                
+                {/* Icon */}
+                <LogOut className="h-5 w-5 mr-2 relative z-10" />
+                
+                {/* Text */}
+                <span className="relative z-10">Sign Out</span>
+              </Button>
             </div>
           </CardContent>
         </Card>

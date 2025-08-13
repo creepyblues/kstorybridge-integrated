@@ -21,7 +21,9 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'open-sans': ['Open Sans', 'sans-serif'],
+				'serif': ['Merriweather', 'Georgia', 'serif'],
+				'sans': ['Inter', 'system-ui', 'sans-serif'],
+				'open-sans': ['Open Sans', 'sans-serif'], // Keep for backward compatibility
 				'noto-kr': ['Noto Sans KR', 'sans-serif'],
 			},
 			colors: {

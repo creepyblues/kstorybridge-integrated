@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,19 +98,28 @@
   }
 
   body {
-    @apply bg-white text-[#222222] font-open-sans;
+    @apply bg-white text-[#222222] font-sans;
+    font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Open Sans', 'Noto Sans KR', sans-serif;
+    font-family: 'Merriweather', Georgia, serif;
     line-height: 1.2;
     font-weight: 700;
   }
 
+  .serif-display {
+    font-family: 'Merriweather', Georgia, serif;
+  }
+
+  .sans-body {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
   .korean-text {
-    font-family: 'Noto Sans KR', 'Open Sans', sans-serif;
+    font-family: 'Noto Sans KR', 'Inter', sans-serif;
   }
 
   /* Override browser autofill yellow background - comprehensive mobile/desktop support */

@@ -2,13 +2,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
-  FileText,
-  Heart,
-  DollarSign,
-  User,
   Menu,
-  X,
-  MessageSquare
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,14 +11,14 @@ import { useAuth } from "@/hooks/useAuth";
 const getDiscoverItems = (accountType: string) => {
   if (accountType === "ip_owner") {
     return [
-      { title: "Titles", href: "/creators/titles", icon: FileText },
-      // { title: "My Requests", href: "/creators/requests", icon: MessageSquare },
+      { title: "Titles", href: "/creators/titles" },
+      // { title: "My Requests", href: "/creators/requests" },
     ];
   } else {
     return [
-      { title: "Titles", href: "/buyers/titles", icon: FileText },
-      { title: "Favorites", href: "/buyers/favorites", icon: Heart },
-      // { title: "My Requests", href: "/buyers/requests", icon: MessageSquare },
+      { title: "Titles", href: "/buyers/titles" },
+      { title: "Favorites", href: "/buyers/favorites" },
+      // { title: "My Requests", href: "/buyers/requests" },
     ];
   }
 };
@@ -31,11 +26,11 @@ const getDiscoverItems = (accountType: string) => {
 const getSettingsItems = (accountType: string) => {
   if (accountType === "ip_owner") {
     return [
-      { title: "Profile", href: "/creators/profile", icon: User },
+      { title: "Profile", href: "/creators/profile" },
     ];
   } else {
     return [
-      { title: "Profile", href: "/buyers/profile", icon: User },
+      { title: "Profile", href: "/buyers/profile" },
     ];
   }
 };
@@ -84,20 +79,18 @@ export function CMSSidebar() {
           <div className="space-y-2">
             {discoverItems.map((item) => {
               const isActive = location.pathname === item.href;
-              const Icon = item.icon;
               
               return (
                 <Link
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold transition-colors",
+                    "flex items-center px-3 py-2 rounded-lg text-sm font-bold transition-colors",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
                   )}
                 >
-                  <Icon className="w-4 h-4" />
                   {item.title}
                 </Link>
               );
@@ -114,20 +107,18 @@ export function CMSSidebar() {
         <div className="space-y-2">
           {settingsItems.map((item) => {
             const isActive = location.pathname === item.href;
-            const Icon = item.icon;
             
             return (
               <Link
                 key={item.href}
                 to={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   isActive
                     ? "bg-hanok-teal text-white"
                     : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
                 )}
               >
-                <Icon className="w-4 h-4" />
                 {item.title}
               </Link>
             );

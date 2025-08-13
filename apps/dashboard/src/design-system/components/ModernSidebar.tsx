@@ -9,12 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { 
   ChevronLeft,
   ChevronRight,
-  Home,
-  FileText,
-  Heart,
   User,
-  Settings,
-  HelpCircle,
   LogOut,
   Menu,
   X
@@ -26,25 +21,24 @@ const getNavigationItems = (accountType: string) => {
     {
       name: 'Dashboard',
       href: accountType === 'ip_owner' ? '/creators/dashboard' : '/buyers/dashboard',
-      icon: Home,
     },
   ];
 
   const roleSpecificItems = accountType === 'ip_owner' 
     ? [
-        { name: 'My Titles', href: '/creators/titles', icon: FileText },
-        { name: 'Analytics', href: '/creators/analytics', icon: Settings },
+        { name: 'My Titles', href: '/creators/titles' },
+        { name: 'Analytics', href: '/creators/analytics' },
       ]
     : [
-        { name: 'Browse Titles', href: '/buyers/titles', icon: FileText },
-        { name: 'Favorites', href: '/buyers/favorites', icon: Heart },
-        { name: 'Requests', href: '/buyers/requests', icon: Settings },
+        { name: 'Browse Titles', href: '/buyers/titles' },
+        { name: 'Favorites', href: '/buyers/favorites' },
+        { name: 'Requests', href: '/buyers/requests' },
       ];
 
   const settingsItems = [
-    { name: 'Profile', href: accountType === 'ip_owner' ? '/creators/profile' : '/buyers/profile', icon: User },
-    { name: 'Settings', href: '/settings', icon: Settings },
-    { name: 'Help', href: '/help', icon: HelpCircle },
+    { name: 'Profile', href: accountType === 'ip_owner' ? '/creators/profile' : '/buyers/profile' },
+    { name: 'Settings', href: '/settings' },
+    { name: 'Help', href: '/help' },
   ];
 
   return {
@@ -92,7 +86,6 @@ export const ModernSidebar: React.FC<ModernSidebarProps> = ({ className }) => {
   // Navigation Link Component
   const NavLink = ({ item, collapsed = false }: { item: any; collapsed?: boolean }) => {
     const isActive = isActiveLink(item.href);
-    const Icon = item.icon;
 
     return (
       <Link
@@ -108,10 +101,7 @@ export const ModernSidebar: React.FC<ModernSidebarProps> = ({ className }) => {
         )}
         title={collapsed ? item.name : undefined}
       >
-        <Icon className={cn('h-5 w-5 flex-shrink-0', !collapsed && 'mr-3')} />
-        {!collapsed && (
-          <span className="truncate">{item.name}</span>
-        )}
+        <span className="truncate">{item.name}</span>
       </Link>
     );
   };

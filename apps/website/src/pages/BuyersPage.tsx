@@ -290,11 +290,11 @@ const BuyersPage = () => {
                 <CardContent className="p-0">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For content scouts</div>
-                    <h3 className="text-3xl font-bold text-sunrise-coral mb-4">Free</h3>
+                    <h3 className="text-4xl font-bold text-sunrise-coral mb-4">Free</h3>
                     <p className="text-slate-600 text-sm mb-6">Browse Korean titles and get basic information to start your discovery.</p>
                     
                     <div className="mb-6">
-                      <div className="text-5xl font-bold text-midnight-ink">$0</div>
+                      <div className="text-3xl font-bold text-midnight-ink">$0</div>
                       <div className="text-slate-500 text-sm">/month</div>
                     </div>
                     
@@ -326,11 +326,11 @@ const BuyersPage = () => {
                 <CardContent className="p-0">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For selective buyers</div>
-                    <h3 className="text-3xl font-bold text-sunrise-coral mb-4">à la carte</h3>
+                    <h3 className="text-4xl font-bold text-sunrise-coral mb-4">à la carte</h3>
                     <p className="text-slate-600 text-sm mb-6">Pay only for what you need when exploring specific titles.</p>
                     
                     <div className="mb-6">
-                      <div className="text-4xl font-bold text-midnight-ink">Pay as you go</div>
+                      <div className="text-3xl font-bold text-midnight-ink">Pay as you go</div>
                       <div className="text-slate-500 text-sm">Per feature used</div>
                     </div>
                     
@@ -361,25 +361,25 @@ const BuyersPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Pro Plan - Featured */}
-              <Card className="relative border-0 shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-b from-hanok-teal-50 to-porcelain-blue-50 overflow-hidden">
+              {/* Pro Plan */}
+              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="bg-gradient-to-r from-hanok-teal to-porcelain-blue-600 p-6 rounded-t-3xl text-white">
-                    <div className="text-sm text-white/90 font-medium mb-2">For active buyers</div>
-                    <h3 className="text-3xl font-bold text-sunrise-coral mb-4">Pro</h3>
-                    <p className="text-white/90 text-sm mb-6">Full title access with premium insights and direct connections.</p>
+                  <div className="bg-slate-100 p-6 rounded-t-3xl">
+                    <div className="text-sm text-slate-600 font-medium mb-2">For active buyers</div>
+                    <h3 className="text-4xl font-bold text-sunrise-coral mb-4">Pro</h3>
+                    <p className="text-slate-600 text-sm mb-6">Full title access with premium insights and direct connections.</p>
                     
                     <div className="mb-6">
                       <div className="flex items-baseline space-x-2 mb-1">
-                        <span className="text-2xl font-bold text-white/60 line-through">$200</span>
-                        <div className="text-5xl font-bold text-white">$20</div>
-                        <span className="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold">Limited Time</span>
+                        <span className="text-lg font-bold text-slate-600 line-through">$200</span>
+                        <div className="text-3xl font-bold text-midnight-ink">$20</div>
+                        <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">Limited Time</span>
                       </div>
-                      <div className="text-white/90 text-sm">/month</div>
+                      <div className="text-slate-500 text-sm">/month</div>
                     </div>
                     
                     <Link to="/signup">
-                      <Button id="buyers-pricing-pro-btn" className="w-full bg-white text-hanok-teal hover:bg-slate-50 py-3 rounded-2xl font-medium transition-colors duration-300 shadow-lg">
+                      <Button id="buyers-pricing-pro-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
                         Start free trial
                       </Button>
                     </Link>
@@ -414,11 +414,11 @@ const BuyersPage = () => {
                 <CardContent className="p-0">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For studios & networks</div>
-                    <h3 className="text-3xl font-bold text-sunrise-coral mb-4">Suite</h3>
+                    <h3 className="text-4xl font-bold text-sunrise-coral mb-4">Suite</h3>
                     <p className="text-slate-600 text-sm mb-6">Custom solutions with expert guidance.</p>
                     
                     <div className="mb-6">
-                      <div className="text-5xl font-bold text-midnight-ink">Custom</div>
+                      <div className="text-3xl font-bold text-midnight-ink">Custom</div>
                       <div className="text-slate-500 text-sm">Contact for pricing</div>
                     </div>
                     

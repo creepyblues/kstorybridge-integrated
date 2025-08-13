@@ -1,0 +1,64 @@
+{
+  "title": "전지적 독자 시점",
+  "searchQuery": "웹툰 전지적 독자 시점",
+  "timestamp": "2025-08-13T06:04:58.496Z",
+  "mode": "live",
+  "sources": [],
+  "story": {
+    "synopsis": "",
+    "plot": "",
+    "genre": [],
+    "tags": [],
+    "themes": [],
+    "summary": ""
+  },
+  "characters": [],
+  "reviews": {
+    "positive": [],
+    "negative": [],
+    "neutral": [],
+    "ratings": [],
+    "overall_sentiment": "neutral"
+  },
+  "metadata": {
+    "author": "",
+    "artist": "",
+    "publisher": "",
+    "publication_year": "",
+    "status": "",
+    "chapters": "",
+    "platforms": [],
+    "views": "",
+    "likes": ""
+  },
+  "rawData": [],
+  "searchStrategies": [
+    {
+      "strategy": "webtoon_platforms",
+      "results": [
+        {
+          "platform": "네이버웹툰",
+          "searchUrl": "https://comic.naver.com/search?keyword=%EC%A0%84%EC%A7%80%EC%A0%81%20%EB%8F%85%EC%9E%90%20%EC%8B%9C%EC%A0%90",
+          "links": [],
+          "error": "fetch is not a function"
+        },
+        {
+          "platform": "카카오페이지",
+          "searchUrl": "https://page.kakao.com/search?keyword=%EC%A0%84%EC%A7%80%EC%A0%81%20%EB%8F%85%EC%9E%90%20%EC%8B%9C%EC%A0%90",
+          "links": [],
+          "error": "fetch is not a function"
+        },
+        {
+          "platform": "레진코믹스",
+          "searchUrl": "https://www.lezhin.com/ko/search?q=%EC%A0%84%EC%A7%80%EC%A0%81%20%EB%8F%85%EC%9E%90%20%EC%8B%9C%EC%A0%90",
+          "links": [],
+          "error": "fetch is not a function"
+        }
+      ]
+    },
+    {
+      "strategy": "korean_communities",
+      "results": []
+    }
+  ]
+}

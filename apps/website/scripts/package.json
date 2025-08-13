@@ -1,0 +1,27 @@
+{
+  "name": "webtoon-research-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for researching webtoon information from Korean sources",
+  "main": "webtoon-researcher-consolidated.js",
+  "scripts": {
+    "research": "node webtoon-researcher-consolidated.js",
+    "research:live": "node webtoon-researcher-consolidated.js --live",
+    "research:verbose": "node webtoon-researcher-consolidated.js --verbose",
+    "test": "node webtoon-researcher-consolidated.js \"운영자의 권한으로\"",
+    "test:live": "node webtoon-researcher-consolidated.js --live \"운영자의 권한으로\"",
+    "test:verbose": "node webtoon-researcher-consolidated.js --verbose \"운영자의 권한으로\""
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0",
+    "cheerio": "^1.0.0-rc.12"
+  },
+  "keywords": [
+    "webtoon",
+    "korean",
+    "research",
+    "scraping",
+    "comics"
+  ],
+  "author": "KStoryBridge",
+  "license": "MIT"
+}

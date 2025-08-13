@@ -85,8 +85,7 @@ const HomePage = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Button 
               id="homepage-header-signin-btn"
-              variant="outline"
-              className="border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
+              className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
               onClick={() => navigate('/signin')}
             >
               SIGN IN
@@ -154,8 +153,7 @@ const HomePage = () => {
             <div className="pt-4 border-t border-porcelain-blue-200 space-y-3">
               <Button 
                 id="homepage-mobile-signin-btn"
-                variant="outline"
-                className="w-full border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white py-2 rounded-full font-medium transition-colors"
+                className="w-full border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white py-2 rounded-full font-medium transition-colors"
                 onClick={() => {
                   navigate('/signin');
                   setMobileMenuOpen(false);

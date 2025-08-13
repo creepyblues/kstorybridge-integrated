@@ -63,12 +63,12 @@ export default function SampleTitleDetailPage() {
       
       <main className="max-w-7xl mx-auto px-6 py-16">
         {/* Sample Page Banner */}
-        <div className="mb-8 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+        <div className="mb-8 p-4 bg-gradient-to-r from-hanok-teal-50 to-porcelain-blue-50 border border-hanok-teal-200 rounded-lg">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-            <span className="font-semibold text-amber-800">Sample Page</span>
+            <div className="w-2 h-2 bg-hanok-teal-500 rounded-full animate-pulse"></div>
+            <span className="font-semibold text-hanok-teal-800">Sample Page</span>
           </div>
-          <p className="text-sm text-amber-700 mt-1">
+          <p className="text-sm text-hanok-teal-700 mt-1">
             This is a demo page showing how "Werewolves Going Crazy Over Me" would appear on the KStoryBridge platform.
           </p>
         </div>
@@ -302,19 +302,19 @@ export default function SampleTitleDetailPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-hanok-teal-500 rounded-full"></div>
               Sample Page
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
-            <p className="text-amber-800 text-center">
+          <div className="p-4 bg-gradient-to-br from-hanok-teal-50 to-porcelain-blue-50 rounded-lg border border-hanok-teal-200">
+            <p className="text-hanok-teal-800 text-center">
               This is a sample page showcasing how Korean content appears on KStoryBridge.
             </p>
           </div>
           <div className="flex justify-center pt-4">
             <Button 
               onClick={() => setSamplePopupOpen(false)}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-hanok-teal-500 hover:bg-hanok-teal-600 text-white"
             >
               Got it
             </Button>

@@ -63,8 +63,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
       <Button 
         id="header-signin-btn"
         asChild 
-        variant="outline" 
-        className={`border-primary text-primary hover:bg-primary hover:text-white ${buttonClasses}`}
+        className={`border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white transition-colors rounded-md px-4 py-2 font-medium ${buttonClasses}`}
         onClick={() => trackButtonClick('Sign In', 'header')}
       >
         <Link to="/signin">
@@ -74,7 +73,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
       <Button 
         id="header-get-started-btn"
         asChild 
-        className={`bg-primary hover:bg-primary/90 text-white ${buttonClasses}`}
+        className={`bg-sunrise-coral hover:bg-sunrise-coral-600 text-white transition-colors rounded-md px-4 py-2 font-medium ${buttonClasses}`}
         onClick={() => trackButtonClick('Get Started', 'header')}
       >
         <Link to="/signup">

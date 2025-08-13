@@ -42,8 +42,7 @@ const PageHeader = () => {
       <div className="flex items-center space-x-4">
         <Button 
           id="pageheader-signin-btn"
-          variant="outline"
-          className="border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
+          className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
           onClick={() => navigate('/signin')}
         >
           SIGN IN

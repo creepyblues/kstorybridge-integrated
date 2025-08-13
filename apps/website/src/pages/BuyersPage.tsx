@@ -370,17 +370,13 @@ const BuyersPage = () => {
                     <p className="text-slate-600 text-sm mb-6">Full title access with premium insights and direct connections.</p>
                     
                     <div className="mb-6">
-                      <div className="flex items-baseline space-x-2 mb-1">
-                        <span className="text-lg font-bold text-slate-600 line-through">$200</span>
-                        <div className="text-3xl font-bold text-midnight-ink">$20</div>
-                        <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">Limited Time</span>
-                      </div>
+                      <div className="text-3xl font-bold text-midnight-ink">$250</div>
                       <div className="text-slate-500 text-sm">/month</div>
                     </div>
                     
                     <Link to="/signup">
                       <Button id="buyers-pricing-pro-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
-                        Start free trial
+                        Get started
                       </Button>
                     </Link>
                   </div>

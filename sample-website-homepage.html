@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KStoryBridge - Sample Homepage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Text', 'Georgia', 'serif'],
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        'hanok-teal': {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        'midnight-ink': {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        'sunrise-coral': '#ff6b6b',
+                        'porcelain-blue': {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .serif-display { font-family: 'Crimson Text', Georgia, serif; }
+        .sans-body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-white sans-body">
+    <!-- Header -->
+    <header class="border-b border-gray-100 py-4">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+            <div class="serif-display text-2xl font-semibold text-midnight-ink-900">
+                KStoryBridge
+            </div>
+            <nav class="hidden md:flex space-x-8 text-sm font-medium text-midnight-ink-600">
+                <span class="cursor-pointer hover:text-midnight-ink-900">For Creators</span>
+                <span class="cursor-pointer hover:text-midnight-ink-900">For Buyers</span>
+                <span class="cursor-pointer hover:text-midnight-ink-900">About</span>
+                <span class="cursor-pointer hover:text-midnight-ink-900">Pricing</span>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-medium text-midnight-ink-600 cursor-pointer hover:text-midnight-ink-900">Sign In</span>
+                <button class="bg-midnight-ink-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-midnight-ink-800 transition-colors">
+                    Get Started
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="py-20 lg:py-32">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="serif-display text-5xl lg:text-7xl font-normal mb-8 text-midnight-ink-900 leading-tight tracking-tight">
+                    Connect Korean Stories with 
+                    <em class="text-hanok-teal-600">Global Audiences</em>
+                </h1>
+                <p class="text-xl lg:text-2xl text-midnight-ink-600 mb-12 leading-relaxed max-w-3xl mx-auto font-light">
+                    The bridge between Korea's most compelling content creators and international media buyers seeking their next global hit.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button class="bg-midnight-ink-900 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-midnight-ink-800 transition-colors">
+                        I'm a Creator
+                    </button>
+                    <button class="border-2 border-midnight-ink-900 text-midnight-ink-900 px-8 py-4 rounded-lg text-lg font-medium hover:bg-midnight-ink-900 hover:text-white transition-colors">
+                        I'm a Buyer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="serif-display text-4xl lg:text-5xl font-normal text-midnight-ink-900 mb-6">
+                    Why Choose KStoryBridge
+                </h2>
+                <p class="text-lg text-midnight-ink-600 max-w-2xl mx-auto font-light">
+                    We eliminate the barriers between Korean creativity and global opportunity
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-12">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-hanok-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-8">
+                        <span class="text-hanok-teal-600 text-2xl">📚</span>
+                    </div>
+                    <h3 class="serif-display text-2xl font-semibold text-midnight-ink-900 mb-4">Curated Content Library</h3>
+                    <p class="text-midnight-ink-600 leading-relaxed font-light">
+                        Access Korea's most promising stories with professional cultural context and adaptation insights.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-porcelain-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-8">
+                        <span class="text-porcelain-blue-600 text-2xl">🤝</span>
+                    </div>
+                    <h3 class="serif-display text-2xl font-semibold text-midnight-ink-900 mb-4">Direct Creator Access</h3>
+                    <p class="text-midnight-ink-600 leading-relaxed font-light">
+                        Connect straight to verified rights holders with deal authority, bypassing intermediaries.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-8">
+                        <span class="text-sunrise-coral text-2xl">⚖️</span>
+                    </div>
+                    <h3 class="serif-display text-2xl font-semibold text-midnight-ink-900 mb-4">Expert Deal Support</h3>
+                    <p class="text-midnight-ink-600 leading-relaxed font-light">
+                        Navigate complex Korean entertainment contracts with cultural and legal expertise.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="serif-display text-4xl lg:text-5xl font-normal text-midnight-ink-900 mb-6">
+                    Flexible Plans for Your Needs
+                </h2>
+            </div>
+            
+            <div class="grid lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                <!-- Free Plan -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-shadow">
+                    <div class="text-center">
+                        <div class="text-sm text-gray-600 font-medium mb-2">For content scouts</div>
+                        <h3 class="serif-display text-3xl font-semibold text-midnight-ink-900 mb-4">Free</h3>
+                        <p class="text-gray-600 text-sm mb-6 font-light">Browse Korean titles and get basic information.</p>
+                        
+                        <div class="mb-6">
+                            <div class="serif-display text-4xl font-normal text-midnight-ink-900">$0</div>
+                            <div class="text-gray-500 text-sm">/month</div>
+                        </div>
+                        
+                        <button class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                            Get Started
+                        </button>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h4 class="font-semibold text-midnight-ink-900 mb-4">Features:</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Browse limited catalog</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Basic title information</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- À la carte Plan -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-shadow">
+                    <div class="text-center">
+                        <div class="text-sm text-gray-600 font-medium mb-2">For selective buyers</div>
+                        <h3 class="serif-display text-3xl font-semibold text-midnight-ink-900 mb-4">à la carte</h3>
+                        <p class="text-gray-600 text-sm mb-6 font-light">Pay only for specific titles you explore.</p>
+                        
+                        <div class="mb-6">
+                            <div class="serif-display text-2xl font-normal text-midnight-ink-900">Pay as you go</div>
+                            <div class="text-gray-500 text-sm">Per feature used</div>
+                        </div>
+                        
+                        <button class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                            Get Started
+                        </button>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h4 class="font-semibold text-midnight-ink-900 mb-4">Everything in Free, plus:</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Premium feature access</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Creator contact info</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Pitch deck downloads</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="bg-white border-2 border-hanok-teal-600 rounded-2xl p-6 hover:shadow-lg transition-shadow relative">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-hanok-teal-600 text-white px-4 py-1 rounded-full text-xs font-medium">
+                        Most Popular
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-gray-600 font-medium mb-2">For active buyers</div>
+                        <h3 class="serif-display text-3xl font-semibold text-midnight-ink-900 mb-4">Pro</h3>
+                        <p class="text-gray-600 text-sm mb-6 font-light">Full access with premium insights and connections.</p>
+                        
+                        <div class="mb-6">
+                            <div class="flex items-baseline justify-center space-x-2">
+                                <span class="serif-display text-lg text-gray-400 line-through">$200</span>
+                                <div class="serif-display text-4xl font-normal text-midnight-ink-900">$20</div>
+                            </div>
+                            <div class="text-gray-500 text-sm">/month</div>
+                        </div>
+                        
+                        <button class="w-full bg-hanok-teal-600 text-white py-3 rounded-lg font-medium hover:bg-hanok-teal-700 transition-colors">
+                            Start Free Trial
+                        </button>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h4 class="font-semibold text-midnight-ink-900 mb-4">Everything in Free, plus:</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Full catalog access</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Exclusive top titles</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Personalized recommendations</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Rights holder contact</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suite Plan -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-shadow">
+                    <div class="text-center">
+                        <div class="text-sm text-gray-600 font-medium mb-2">For studios & networks</div>
+                        <h3 class="serif-display text-3xl font-semibold text-midnight-ink-900 mb-4">Suite</h3>
+                        <p class="text-gray-600 text-sm mb-6 font-light">Custom solutions with expert guidance.</p>
+                        
+                        <div class="mb-6">
+                            <div class="serif-display text-3xl font-normal text-midnight-ink-900">Custom</div>
+                            <div class="text-gray-500 text-sm">Contact for pricing</div>
+                        </div>
+                        
+                        <button class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
+                            Coming Soon
+                        </button>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h4 class="font-semibold text-midnight-ink-900 mb-4">Everything in Pro, plus:</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Custom recommendations</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Expert presentations</span>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <span class="text-hanok-teal-600 text-sm">✓</span>
+                                <span class="text-gray-600 text-sm font-light">Priority support</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-midnight-ink-900">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="serif-display text-4xl lg:text-5xl font-normal text-white mb-8 leading-tight">
+                Ready to Bridge Cultures?
+            </h2>
+            <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto font-light">
+                Join the platform connecting Korea's best stories with global audiences.
+            </p>
+            <button class="bg-hanok-teal-600 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-hanok-teal-700 transition-colors">
+                Get Started Today
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center">
+                <div class="serif-display text-2xl font-semibold text-midnight-ink-900 mb-4">
+                    KStoryBridge
+                </div>
+                <p class="text-gray-600 font-light">
+                    Connecting Korean Stories with Global Audiences
+                </p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

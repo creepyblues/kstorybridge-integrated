@@ -19,6 +19,11 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'serif': ['Merriweather', 'Georgia', 'serif'],
+				'sans': ['Inter', 'system-ui', 'sans-serif'],
+				'noto-kr': ['Noto Sans KR', 'sans-serif'],
+			},
 			colors: {
 				// KStoryBridge Brand Colors
 				...tailwindColors,

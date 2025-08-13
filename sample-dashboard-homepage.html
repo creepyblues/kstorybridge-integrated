@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KStoryBridge Dashboard - Sample</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Crimson Text', 'Georgia', 'serif'],
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        'hanok-teal': {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        'midnight-ink': {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        'sunrise-coral': '#ff6b6b',
+                        'porcelain-blue': {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .serif-display { font-family: 'Crimson Text', Georgia, serif; }
+        .sans-body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 sans-body">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                <div class="serif-display text-2xl font-semibold text-midnight-ink-900">
+                    KStoryBridge
+                </div>
+                <nav class="hidden md:flex space-x-6 text-sm font-medium text-midnight-ink-600">
+                    <span class="text-midnight-ink-900 border-b-2 border-hanok-teal-600 pb-1 cursor-pointer">Dashboard</span>
+                    <span class="cursor-pointer hover:text-midnight-ink-900">Catalog</span>
+                    <span class="cursor-pointer hover:text-midnight-ink-900">My Projects</span>
+                    <span class="cursor-pointer hover:text-midnight-ink-900">Analytics</span>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-hanok-teal-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        JD
+                    </div>
+                    <span class="text-sm font-medium text-midnight-ink-700">John Buyer</span>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="hidden lg:block w-64 bg-white border-r border-gray-200 min-h-screen">
+            <div class="p-6">
+                <div class="mb-8">
+                    <h3 class="serif-display text-lg font-semibold text-midnight-ink-900 mb-4">Browse</h3>
+                    <nav class="space-y-2">
+                        <div class="bg-hanok-teal-50 text-hanok-teal-700 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer">
+                            Recommendations
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            All Titles
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            Trending
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            New Releases
+                        </div>
+                    </nav>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="serif-display text-lg font-semibold text-midnight-ink-900 mb-4">Genres</h3>
+                    <nav class="space-y-2">
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            Romance
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            Fantasy
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            Drama
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            Action
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            Thriller
+                        </div>
+                    </nav>
+                </div>
+
+                <div>
+                    <h3 class="serif-display text-lg font-semibold text-midnight-ink-900 mb-4">My Lists</h3>
+                    <nav class="space-y-2">
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            Watchlist
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            In Progress
+                        </div>
+                        <div class="text-gray-600 hover:text-midnight-ink-900 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer hover:bg-gray-50">
+                            Completed
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Welcome Section -->
+            <div class="mb-8">
+                <h1 class="serif-display text-4xl font-normal text-midnight-ink-900 mb-2">
+                    Welcome back, <em>John</em>
+                </h1>
+                <p class="text-lg text-gray-600 font-light">
+                    Here are your personalized recommendations and latest updates
+                </p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-600">Titles Reviewed</h3>
+                        <span class="text-hanok-teal-600">📚</span>
+                    </div>
+                    <div class="serif-display text-3xl font-semibold text-midnight-ink-900">24</div>
+                    <p class="text-sm text-gray-500 font-light">+3 this week</p>
+                </div>
+                
+                <div class="bg-white rounded-xl border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-600">Active Projects</h3>
+                        <span class="text-porcelain-blue-600">🎬</span>
+                    </div>
+                    <div class="serif-display text-3xl font-semibold text-midnight-ink-900">5</div>
+                    <p class="text-sm text-gray-500 font-light">2 in negotiation</p>
+                </div>
+                
+                <div class="bg-white rounded-xl border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-600">Connections Made</h3>
+                        <span class="text-sunrise-coral">🤝</span>
+                    </div>
+                    <div class="serif-display text-3xl font-semibold text-midnight-ink-900">12</div>
+                    <p class="text-sm text-gray-500 font-light">8 this month</p>
+                </div>
+                
+                <div class="bg-white rounded-xl border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-600">Success Rate</h3>
+                        <span class="text-green-600">📈</span>
+                    </div>
+                    <div class="serif-display text-3xl font-semibold text-midnight-ink-900">78%</div>
+                    <p class="text-sm text-gray-500 font-light">Above average</p>
+                </div>
+            </div>
+
+            <!-- Recommended for You -->
+            <section class="mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="serif-display text-3xl font-semibold text-midnight-ink-900">
+                        Recommended for You
+                    </h2>
+                    <span class="text-sm text-gray-600 cursor-pointer hover:text-midnight-ink-900">View all</span>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                        <div class="aspect-[3/4] bg-gradient-to-br from-hanok-teal-100 to-porcelain-blue-100 p-6 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-hanok-teal-600 rounded-full flex items-center justify-center text-white text-2xl mb-2 group-hover:scale-110 transition-transform">
+                                    🌙
+                                </div>
+                                <div class="serif-display text-lg font-semibold text-midnight-ink-700">Moon Palace</div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="serif-display text-lg font-semibold text-midnight-ink-900 mb-1 line-clamp-2">
+                                The Moon Palace Chronicles
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2 font-light">
+                                A romantic fantasy set in ancient Korea's royal court
+                            </p>
+                            <div class="flex items-center justify-between">
+                                <span class="inline-block bg-hanok-teal-100 text-hanok-teal-700 px-2 py-1 rounded-full text-xs font-medium">
+                                    Romance
+                                </span>
+                                <div class="flex items-center space-x-1 text-yellow-500">
+                                    <span class="text-xs">⭐</span>
+                                    <span class="text-xs font-medium text-gray-600">4.8</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                        <div class="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-purple-100 p-6 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-porcelain-blue-600 rounded-full flex items-center justify-center text-white text-2xl mb-2 group-hover:scale-110 transition-transform">
+                                    ⚔️
+                                </div>
+                                <div class="serif-display text-lg font-semibold text-midnight-ink-700">Sword Master</div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="serif-display text-lg font-semibold text-midnight-ink-900 mb-1 line-clamp-2">
+                                Return of the Sword Master
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2 font-light">
+                                An action-packed tale of martial arts and redemption
+                            </p>
+                            <div class="flex items-center justify-between">
+                                <span class="inline-block bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">
+                                    Action
+                                </span>
+                                <div class="flex items-center space-x-1 text-yellow-500">
+                                    <span class="text-xs">⭐</span>
+                                    <span class="text-xs font-medium text-gray-600">4.6</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                        <div class="aspect-[3/4] bg-gradient-to-br from-purple-100 to-pink-100 p-6 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl mb-2 group-hover:scale-110 transition-transform">
+                                    🏫
+                                </div>
+                                <div class="serif-display text-lg font-semibold text-midnight-ink-700">High School</div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="serif-display text-lg font-semibold text-midnight-ink-900 mb-1 line-clamp-2">
+                                True Beauty High School
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2 font-light">
+                                Coming-of-age drama about friendship and self-acceptance
+                            </p>
+                            <div class="flex items-center justify-between">
+                                <span class="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">
+                                    Drama
+                                </span>
+                                <div class="flex items-center space-x-1 text-yellow-500">
+                                    <span class="text-xs">⭐</span>
+                                    <span class="text-xs font-medium text-gray-600">4.9</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                        <div class="aspect-[3/4] bg-gradient-to-br from-green-100 to-blue-100 p-6 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-white text-2xl mb-2 group-hover:scale-110 transition-transform">
+                                    🌟
+                                </div>
+                                <div class="serif-display text-lg font-semibold text-midnight-ink-700">Star Chef</div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="serif-display text-lg font-semibold text-midnight-ink-900 mb-1 line-clamp-2">
+                                The Star Chef's Journey
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2 font-light">
+                                Culinary competition meets personal growth
+                            </p>
+                            <div class="flex items-center justify-between">
+                                <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+                                    Slice of Life
+                                </span>
+                                <div class="flex items-center space-x-1 text-yellow-500">
+                                    <span class="text-xs">⭐</span>
+                                    <span class="text-xs font-medium text-gray-600">4.7</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                        <div class="aspect-[3/4] bg-gradient-to-br from-yellow-100 to-orange-100 p-6 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-yellow-600 rounded-full flex items-center justify-center text-white text-2xl mb-2 group-hover:scale-110 transition-transform">
+                                    👑
+                                </div>
+                                <div class="serif-display text-lg font-semibold text-midnight-ink-700">Royal Court</div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="serif-display text-lg font-semibold text-midnight-ink-900 mb-1 line-clamp-2">
+                                Secrets of the Royal Court
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-2 line-clamp-2 font-light">
+                                Political intrigue in the Joseon Dynasty
+                            </p>
+                            <div class="flex items-center justify-between">
+                                <span class="inline-block bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-medium">
+                                    Historical
+                                </span>
+                                <div class="flex items-center space-x-1 text-yellow-500">
+                                    <span class="text-xs">⭐</span>
+                                    <span class="text-xs font-medium text-gray-600">4.5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="serif-display text-3xl font-semibold text-midnight-ink-900">
+                        Recent Activity
+                    </h2>
+                </div>
+                
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="divide-y divide-gray-100">
+                        <div class="p-6 flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-hanok-teal-100 rounded-lg flex items-center justify-center">
+                                    <span class="text-hanok-teal-600">📝</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-midnight-ink-900">Added "Moon Palace Chronicles" to watchlist</h3>
+                                    <p class="text-sm text-gray-600 font-light">2 hours ago</p>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-400 cursor-pointer">View</span>
+                        </div>
+                        
+                        <div class="p-6 flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-porcelain-blue-100 rounded-lg flex items-center justify-center">
+                                    <span class="text-porcelain-blue-600">💬</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-midnight-ink-900">Contacted creator for "Sword Master Returns"</h3>
+                                    <p class="text-sm text-gray-600 font-light">5 hours ago</p>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-400 cursor-pointer">View</span>
+                        </div>
+                        
+                        <div class="p-6 flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <span class="text-green-600">✅</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-midnight-ink-900">Completed review of "True Beauty High School"</h3>
+                                    <p class="text-sm text-gray-600 font-light">1 day ago</p>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-400 cursor-pointer">View</span>
+                        </div>
+                        
+                        <div class="p-6 flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <span class="text-purple-600">🎯</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-midnight-ink-900">Started negotiation for "Star Chef's Journey"</h3>
+                                    <p class="text-sm text-gray-600 font-light">2 days ago</p>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-400 cursor-pointer">View</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

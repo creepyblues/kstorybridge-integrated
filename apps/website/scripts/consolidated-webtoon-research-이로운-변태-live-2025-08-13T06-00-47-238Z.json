@@ -1,0 +1,64 @@
+{
+  "title": "이로운 변태",
+  "searchQuery": "웹툰 이로운 변태",
+  "timestamp": "2025-08-13T06:00:47.235Z",
+  "mode": "live",
+  "sources": [],
+  "story": {
+    "synopsis": "",
+    "plot": "",
+    "genre": [],
+    "tags": [],
+    "themes": [],
+    "summary": ""
+  },
+  "characters": [],
+  "reviews": {
+    "positive": [],
+    "negative": [],
+    "neutral": [],
+    "ratings": [],
+    "overall_sentiment": "neutral"
+  },
+  "metadata": {
+    "author": "",
+    "artist": "",
+    "publisher": "",
+    "publication_year": "",
+    "status": "",
+    "chapters": "",
+    "platforms": [],
+    "views": "",
+    "likes": ""
+  },
+  "rawData": [],
+  "searchStrategies": [
+    {
+      "strategy": "webtoon_platforms",
+      "results": [
+        {
+          "platform": "네이버웹툰",
+          "searchUrl": "https://comic.naver.com/search?keyword=%EC%9D%B4%EB%A1%9C%EC%9A%B4%20%EB%B3%80%ED%83%9C",
+          "links": [],
+          "error": "fetch is not a function"
+        },
+        {
+          "platform": "카카오페이지",
+          "searchUrl": "https://page.kakao.com/search?keyword=%EC%9D%B4%EB%A1%9C%EC%9A%B4%20%EB%B3%80%ED%83%9C",
+          "links": [],
+          "error": "fetch is not a function"
+        },
+        {
+          "platform": "레진코믹스",
+          "searchUrl": "https://www.lezhin.com/ko/search?q=%EC%9D%B4%EB%A1%9C%EC%9A%B4%20%EB%B3%80%ED%83%9C",
+          "links": [],
+          "error": "fetch is not a function"
+        }
+      ]
+    },
+    {
+      "strategy": "korean_communities",
+      "results": []
+    }
+  ]
+}

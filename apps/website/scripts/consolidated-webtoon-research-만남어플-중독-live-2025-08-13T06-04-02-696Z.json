@@ -1,0 +1,64 @@
+{
+  "title": "만남어플 중독",
+  "searchQuery": "웹툰 만남어플 중독",
+  "timestamp": "2025-08-13T06:04:02.693Z",
+  "mode": "live",
+  "sources": [],
+  "story": {
+    "synopsis": "",
+    "plot": "",
+    "genre": [],
+    "tags": [],
+    "themes": [],
+    "summary": ""
+  },
+  "characters": [],
+  "reviews": {
+    "positive": [],
+    "negative": [],
+    "neutral": [],
+    "ratings": [],
+    "overall_sentiment": "neutral"
+  },
+  "metadata": {
+    "author": "",
+    "artist": "",
+    "publisher": "",
+    "publication_year": "",
+    "status": "",
+    "chapters": "",
+    "platforms": [],
+    "views": "",
+    "likes": ""
+  },
+  "rawData": [],
+  "searchStrategies": [
+    {
+      "strategy": "webtoon_platforms",
+      "results": [
+        {
+          "platform": "네이버웹툰",
+          "searchUrl": "https://comic.naver.com/search?keyword=%EB%A7%8C%EB%82%A8%EC%96%B4%ED%94%8C%20%EC%A4%91%EB%8F%85",
+          "links": [],
+          "error": "fetch is not a function"
+        },
+        {
+          "platform": "카카오페이지",
+          "searchUrl": "https://page.kakao.com/search?keyword=%EB%A7%8C%EB%82%A8%EC%96%B4%ED%94%8C%20%EC%A4%91%EB%8F%85",
+          "links": [],
+          "error": "fetch is not a function"
+        },
+        {
+          "platform": "레진코믹스",
+          "searchUrl": "https://www.lezhin.com/ko/search?q=%EB%A7%8C%EB%82%A8%EC%96%B4%ED%94%8C%20%EC%A4%91%EB%8F%85",
+          "links": [],
+          "error": "fetch is not a function"
+        }
+      ]
+    },
+    {
+      "strategy": "korean_communities",
+      "results": []
+    }
+  ]
+}

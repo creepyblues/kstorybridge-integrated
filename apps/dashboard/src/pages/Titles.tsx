@@ -385,9 +385,19 @@ function TitlesContent() {
               <Button
                 type="submit"
                 size="sm"
-                className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
+                className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
               >
-                Search
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                
+                {/* Search icon */}
+                <Search className="h-3 w-3 mr-1 pointer-events-none" />
+                
+                {/* Text */}
+                <span className="relative z-10 pointer-events-none">Search</span>
+                
+                {/* Glow effect */}
+                <div className="absolute inset-0 rounded-xl bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
               </Button>
             </div>
           </form>

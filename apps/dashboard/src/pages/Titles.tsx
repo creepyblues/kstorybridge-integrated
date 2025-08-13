@@ -99,12 +99,12 @@ function TitlesContent() {
     // Track the search query when submitted
     if (searchQuery.trim().length > 0) {
       // Calculate result count for the search
-      const { exactMatches, expandedMatches } = enhancedSearch(
+      const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
         titles,
         searchQuery.trim(),
         getTitleSearchFields()
       );
-      const resultCount = exactMatches.length + expandedMatches.length;
+      const resultCount = exactMatches.length + expandedMatches.length + phraseMatches.length;
       
       // Track the search query with enhanced context
       trackSearch(searchQuery.trim(), resultCount, {
@@ -184,16 +184,17 @@ function TitlesContent() {
     
     // Apply search filter first
     if (searchTerm) {
-      const { exactMatches, expandedMatches } = enhancedSearch(
+      const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
         titles,
         searchTerm,
         getTitleSearchFields()
       );
-      result = [...exactMatches, ...expandedMatches];
+      // Combine results with proper ordering: exact matches first, then phrase matches, then expanded matches
+      result = [...exactMatches, ...phraseMatches, ...expandedMatches];
     }
     
-    // Apply sorting
-    return sortTitles(result);
+    // Apply sorting (but preserve search relevance order when there's a search term)
+    return searchTerm ? result : sortTitles(result);
   })();
 
   // Reset pagination when search term or sorting changes
@@ -365,7 +366,7 @@ function TitlesContent() {
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search titles... (press Enter or click Search)"
+              placeholder="Find your next hit... Try 'binge worthy drama', 'viral comedy', or 'awards potential'"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-32 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"

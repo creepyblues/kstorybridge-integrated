@@ -1,4 +1,4 @@
-import{s as a}from"./index-opfOCVSx.js";const o={async getMostRecentFeatured(){const{data:t,error:e}=await a.from("featured").select(`
+import{s as a}from"./index-51_7LTNa.js";const o={async getMostRecentFeatured(){const{data:t,error:e}=await a.from("featured").select(`
         *,
         titles (*)
       `).order("created_at",{ascending:!1}).limit(1).single();if(e){if(e.code==="PGRST116")return null;throw new Error(`Failed to fetch most recent featured title: ${e.message}`)}return t},async getFeaturedByViews(t=5){const{data:e,error:r}=await a.from("featured").select(`

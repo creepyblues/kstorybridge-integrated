@@ -107,15 +107,12 @@ export default function AdminScraperTest() {
 
   return (
     <AdminLayout>
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-sunrise-coral rounded-full flex items-center justify-center">
-            <TestTube className="w-6 h-6 text-white" />
-          </div>
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-midnight-ink">Scraper Test Lab</h1>
-            <p className="text-midnight-ink-600 mt-2">
+            <h1 className="text-3xl font-bold text-midnight-ink">Scraper Test Lab</h1>
+            <p className="text-sm text-midnight-ink-600 mt-1">
               Test and validate title data extraction from various platforms
             </p>
           </div>

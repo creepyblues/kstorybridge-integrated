@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '../hooks/use-toast';
@@ -7,6 +7,7 @@ import { featuredService, type FeaturedWithTitle } from '../services/featuredSer
 import Footer from '../components/Footer';
 
 const BuyersPage = () => {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,6 +179,17 @@ const BuyersPage = () => {
                   <p className="text-midnight-ink-600 leading-relaxed">Complete rights acquisition with a clear chain of title for seamless adaptation.</p>
                 </div>
               </div>
+            </div>
+            
+            {/* Learn How It Works Button */}
+            <div className="text-center mt-12">
+              <Button 
+                onClick={() => navigate('/onboarding')}
+                size="lg" 
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                → Learn How It Works
+              </Button>
             </div>
           </div>
         </section>

@@ -20,6 +20,7 @@ const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
 const SampleTitleDetailPage = lazy(() => import("./pages/SampleTitleDetailPage"));
 const DashboardInvited = lazy(() => import("./pages/DashboardInvited"));
 const CreatorInvited = lazy(() => import("./pages/CreatorInvited"));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading fallback component
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/buyers" element={<BuyersPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signup/buyer" element={<BuyerSignupPage />} />
           <Route path="/signup/creator" element={<CreatorSignupPage />} />

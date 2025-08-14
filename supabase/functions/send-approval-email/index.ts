@@ -202,29 +202,36 @@ serve(async (req) => {
         if (!resendResponse.ok) {
           const errorText = await resendResponse.text()
           console.error('❌ Resend API error response:', errorText)
-          throw new Error(`Resend API failed with status ${resendResponse.status}: ${errorText}`)
-        }
-
-        const result = await resendResponse.json()
-        console.log('✅ Resend success! Email ID:', result.id)
-        
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: 'Approval email sent successfully via Resend!',
-            emailId: result.id,
-            method: 'resend',
-            debug: {
-              functionVersion: 'debug-v2.0',
-              timestamp: new Date().toISOString(),
-              envVarCount: Object.keys(allEnvVars).length
-            }
-          }),
-          { 
-            status: 200, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          
+          // Check for domain verification error (403)
+          if (resendResponse.status === 403 && errorText.includes('verify a domain')) {
+            console.log('🔧 Domain verification required - falling back to simulation')
+            // Don't throw error, fall through to simulation mode
+          } else {
+            throw new Error(`Resend API failed with status ${resendResponse.status}: ${errorText}`)
           }
-        )
+        } else {
+          const result = await resendResponse.json()
+          console.log('✅ Resend success! Email ID:', result.id)
+        
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              message: 'Approval email sent successfully via Resend!',
+              emailId: result.id,
+              method: 'resend',
+              debug: {
+                functionVersion: 'debug-v2.0',
+                timestamp: new Date().toISOString(),
+                envVarCount: Object.keys(allEnvVars).length
+              }
+            }),
+            { 
+              status: 200, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          )
+        }
       } catch (resendError) {
         console.error('❌ Resend error details:', resendError)
         console.error('❌ Error name:', resendError.name)
@@ -255,7 +262,7 @@ serve(async (req) => {
         },
         preview: {
           subject: emailSubject,
-          note: 'RESEND_API_KEY not configured or invalid. Set environment variable for real email sending.'
+          note: 'Resend API key found but domain verification required. Verify kstorybridge.com domain in Resend dashboard for production email sending.'
         }
       }),
       { 

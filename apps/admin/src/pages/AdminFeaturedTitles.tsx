@@ -139,23 +139,21 @@ export default function AdminFeaturedTitles() {
 
   return (
     <AdminLayout>
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">
-              FEATURED TITLES
-            </h1>
-            <p className="text-xl text-midnight-ink-600 leading-relaxed">
-              Manage which titles are featured on the homepage.
+            <h1 className="text-3xl font-bold text-midnight-ink">Featured Titles</h1>
+            <p className="text-sm text-midnight-ink-600 mt-1">
+              Manage which titles are featured on the homepage
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="text-midnight-ink-600 text-lg font-medium">
-              {filteredFeaturedTitles.length} featured titles
+            <div className="text-midnight-ink-600 text-sm text-right">
+              <div className="font-medium">{filteredFeaturedTitles.length} featured titles</div>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-hanok-teal hover:bg-hanok-teal/90 text-white px-6 py-3 rounded-lg font-medium">
+                <Button className="bg-hanok-teal hover:bg-hanok-teal/90 text-white">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Featured Title
                 </Button>

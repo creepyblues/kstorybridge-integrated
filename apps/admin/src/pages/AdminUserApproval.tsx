@@ -56,7 +56,12 @@ export default function AdminUserApproval() {
         return;
       }
 
-      // Fallback: Try the original user_buyers table structure (with email field)
+      // Log the view error but don't treat it as fatal
+      if (viewError) {
+        console.log('Note: user_buyers_with_email view not found, using fallback method');
+      }
+
+      // Fallback 1: Try the user_buyers table with email field (website version)
       const { data: buyersWithEmail, error: buyersWithEmailError } = await supabase
         .from('user_buyers')
         .select('id, email, full_name, tier, requested, created_at, user_id')
@@ -64,11 +69,11 @@ export default function AdminUserApproval() {
 
       if (!buyersWithEmailError && buyersWithEmail && buyersWithEmail.length > 0) {
         // Check if the first record has an email field
-        if (buyersWithEmail[0].email) {
-          // Original structure with email field
+        if (buyersWithEmail[0] && 'email' in buyersWithEmail[0] && buyersWithEmail[0].email) {
+          console.log('Using user_buyers table with email field');
           const usersData = buyersWithEmail.map(buyer => ({
             id: buyer.id,
-            user_id: buyer.user_id || buyer.id, // Use id as user_id if user_id doesn't exist
+            user_id: buyer.user_id || buyer.id,
             email: buyer.email,
             full_name: buyer.full_name || 'Unknown',
             tier: buyer.tier,
@@ -111,10 +116,8 @@ export default function AdminUserApproval() {
       setUsers(usersWithEmails);
       
       // Note to admin that emails couldn't be loaded
-      if (viewError) {
-        console.log('View not available. Please run the migration to create user_buyers_with_email view.');
-        toast.info('To see actual email addresses, please run the database migration.');
-      }
+      console.log('Using placeholder emails. To see real emails, run the database migration.');
+      toast.info('Using placeholder emails. Run the database migration for real email addresses.');
       
     } catch (error) {
       console.error('Error loading users:', error);
@@ -179,6 +182,27 @@ export default function AdminUserApproval() {
     });
   };
 
+  const openEmailClient = (userEmail: string) => {
+    const subject = encodeURIComponent('Your KStoryBridge Account Has Been Approved!');
+    const body = encodeURIComponent(`Congratulations!
+
+Your account has been approved and you can now navigate K Content ready for your review.
+
+Explore our curated collection of Korean stories, connect with creators, and discover content perfect for your needs.
+
+Get started: https://dashboard.kstorybridge.com
+
+Best regards,
+The KStoryBridge Team
+
+© 2025 KStoryBridge. All rights reserved.`);
+
+    const mailtoLink = `mailto:${userEmail}?subject=${subject}&body=${body}`;
+    
+    window.open(mailtoLink, '_blank');
+    toast.info(`Opening email client to send approval email to ${userEmail}`);
+  };
+
   const approveUser = async (userId: string, userEmail: string) => {
     try {
       setApprovingUsers(prev => new Set(prev).add(userId));
@@ -191,18 +215,47 @@ export default function AdminUserApproval() {
 
       if (updateError) throw updateError;
 
-      // Send approval email via Edge Function
-      const { error: emailError } = await supabase.functions.invoke('send-approval-email', {
-        body: {
-          email: userEmail
-        }
-      });
+      // Try to send approval email via Edge Function
+      try {
+        const { data, error: emailError } = await supabase.functions.invoke('send-approval-email', {
+          body: {
+            email: userEmail
+          }
+        });
 
-      if (emailError) {
-        console.error('Failed to send approval email:', emailError);
-        toast.warning('User approved but email notification failed');
-      } else {
-        toast.success('User approved and email sent successfully!');
+        if (emailError) {
+          console.error('Edge function error:', emailError);
+          toast.error(`Email function error: ${emailError.message || 'Unknown error'}`);
+          // Fallback to client-side email
+          openEmailClient(userEmail);
+        } else {
+          console.log('Email function response:', data);
+          
+          if (data?.success) {
+            if (data.method === 'resend') {
+              toast.success(`✅ User approved and email sent via Resend! (ID: ${data.emailId?.substring(0, 8) || 'N/A'})`);
+            } else if (data.method === 'simulation') {
+              if (data.debug?.resendKeyFound) {
+                toast.warning('⚠️ User approved! Resend domain verification required - opening email client for manual sending.');
+              } else {
+                toast.warning('⚠️ User approved! Email in simulation mode - opening email client for manual sending.');
+              }
+              // Open email client as backup in simulation mode
+              setTimeout(() => openEmailClient(userEmail), 1000);
+            } else {
+              toast.success('✅ User approved and email sent successfully!');
+            }
+          } else {
+            console.error('Email function returned unsuccessful response:', data);
+            toast.warning('⚠️ User approved but email sending failed. Opening email client.');
+            openEmailClient(userEmail);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to invoke email function:', error);
+        toast.error(`Failed to invoke email function: ${error.message || 'Unknown error'}`);
+        // Fallback to client-side email
+        openEmailClient(userEmail);
       }
 
       // Update local state
@@ -232,8 +285,13 @@ export default function AdminUserApproval() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-midnight-ink">User Approval</h1>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-midnight-ink">User Approval</h1>
+            <p className="text-sm text-midnight-ink-600 mt-1">
+              Manage user tiers and approve access requests
+            </p>
+          </div>
           <Button
             onClick={loadUsers}
             variant="outline"

@@ -234,51 +234,49 @@ export default function AdminTitles() {
 
   return (
     <AdminLayout>
-      <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+      <div className="space-y-6">
         {/* Header */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">TITLES</h1>
-              <p className="text-xl text-midnight-ink-600 leading-relaxed">
-                Manage and browse all Korean content titles.
-              </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-midnight-ink">Titles Management</h1>
+            <p className="text-sm text-midnight-ink-600 mt-1">
+              Manage and browse all Korean content titles
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-midnight-ink-600 text-sm text-right">
+              <div className="font-medium">{filteredTitles.length} titles</div>
+              {lastCacheUpdate && (
+                <div className="text-xs opacity-75">Updated: {new Date(lastCacheUpdate).toLocaleTimeString()}</div>
+              )}
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-midnight-ink-600 text-sm">
-                <div className="font-medium text-lg">{filteredTitles.length} titles</div>
-                {lastCacheUpdate && (
-                  <div className="text-xs opacity-75">Last updated: {lastCacheUpdate}</div>
-                )}
-              </div>
             <Button
               asChild
-              size="sm"
               className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
             >
-              <Link to="/titles/new">New title</Link>
+              <Link to="/titles/new">Add Title</Link>
             </Button>
-              <Button
-                onClick={handleRefresh}
-                variant="outline"
-                size="sm"
-                disabled={loading}
-                className="flex items-center gap-2 text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
-              >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-            </div>
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </div>
+        </div>
 
-          {/* Featured Titles Section */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Featured Titles</h2>
+        {/* Featured Titles Section */}
+        {featuredTitles.length > 0 && (
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold text-midnight-ink mb-4">Featured Titles</h2>
           
-            {loading ? (
-              <div className="text-center text-gray-500 py-8">Loading featured titles...</div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {loading ? (
+                <div className="text-center text-gray-500 py-4">Loading featured titles...</div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                 {featuredTitles.map((featured) => {
                   const title = featured.titles;
                   return (
@@ -342,45 +340,52 @@ export default function AdminTitles() {
                     </Link>
                   );
                 })}
-              </div>
-            )}
-          </div>
-          
-          {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-8">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search titles... (press Enter or click Search)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-32 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
-            />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
-              {searchTerm && (
-                <Button
-                  type="button"
-                  onClick={handleClearSearch}
-                  variant="ghost"
-                  size="sm"
-                  className="text-midnight-ink-400 hover:text-midnight-ink-600"
-                >
-                  Clear
-                </Button>
+                </div>
               )}
-              <Button
-                type="submit"
-                size="sm"
-                className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
-              >
-                Search
-              </Button>
-            </div>
-          </form>
+            </CardContent>
+          </Card>
+        )}
           
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b">
-              <div className="grid grid-cols-12 gap-4 items-center font-semibold text-gray-700">
+        {/* Search Bar */}
+        <Card>
+          <CardContent className="p-4">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search titles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-24 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-hanok-teal focus:border-transparent text-midnight-ink"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
+                {searchTerm && (
+                  <Button
+                    type="button"
+                    onClick={handleClearSearch}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    Clear
+                  </Button>
+                )}
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
+                >
+                  Search
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+          
+        {/* Titles Table */}
+        <Card>
+          <div className="overflow-hidden">
+            <div className="bg-gray-50 px-6 py-3 border-b">
+              <div className="grid grid-cols-12 gap-4 items-center text-sm font-medium text-gray-600">
                 <div className="col-span-1">Image</div>
                 <div className="col-span-3">
                   <SortableHeader field="title">Title</SortableHeader>
@@ -582,7 +587,7 @@ export default function AdminTitles() {
               </div>
             )}
           </div>
-        </div>
+        </Card>
       </div>
     </AdminLayout>
   );

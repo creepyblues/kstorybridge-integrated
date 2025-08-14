@@ -80,7 +80,7 @@ const OnboardingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+    <div className="min-h-screen bg-white">
       
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
@@ -213,8 +213,7 @@ const OnboardingPage = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm mx-6 my-8">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-12">
           {/* Header */}
           <div className="mb-16">
             <h1 className="text-5xl font-light text-gray-900 mb-4">How it works</h1>
@@ -323,7 +322,6 @@ const OnboardingPage = () => {
           </div>
           </div>
         </div>
-      </div>
 
       {/* Image Modal Overlay */}
       {imageModalOpen && (

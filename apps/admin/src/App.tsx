@@ -13,6 +13,7 @@ const AdminTitleEdit = lazy(() => import('@/pages/AdminTitleEdit'));
 const AdminFeaturedTitles = lazy(() => import('@/pages/AdminFeaturedTitles'));
 const AdminAddTitle = lazy(() => import('@/pages/AdminAddTitle'));
 const AdminScraperTest = lazy(() => import('@/pages/AdminScraperTest'));
+const AdminUserApproval = lazy(() => import('@/pages/AdminUserApproval'));
 
 import '@/index.css';
 
@@ -58,6 +59,11 @@ function App() {
           <Route path="/scraper-test" element={
             <ProtectedRoute>
               <AdminScraperTest />
+            </ProtectedRoute>
+          } />
+          <Route path="/user-approval" element={
+            <ProtectedRoute>
+              <AdminUserApproval />
             </ProtectedRoute>
           } />
           <Route path="/" element={<Navigate to="/titles" replace />} />

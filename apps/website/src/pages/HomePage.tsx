@@ -78,13 +78,6 @@ const HomePage = () => {
           >
             ABOUT
           </button>
-          <button 
-            id="nav-how-it-works-btn"
-            onClick={() => navigate('/onboarding')}
-            className="text-midnight-ink font-medium hover:text-hanok-teal transition-colors"
-          >
-            HOW IT WORKS
-          </button>
         </div>
         
         <div className="flex items-center space-x-4">
@@ -154,16 +147,6 @@ const HomePage = () => {
               className="block w-full text-left text-midnight-ink font-medium hover:text-hanok-teal transition-colors py-2"
             >
               ABOUT
-            </button>
-            <button 
-              id="homepage-mobile-how-it-works-btn"
-              onClick={() => {
-                navigate('/onboarding');
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left text-midnight-ink font-medium hover:text-hanok-teal transition-colors py-2"
-            >
-              HOW IT WORKS
             </button>
             
             {/* Mobile Sign In/Up buttons */}

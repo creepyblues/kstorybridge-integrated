@@ -48,7 +48,6 @@ export const Footer: React.FC<FooterProps> = ({
       { name: 'For Creators', href: '/creators' },
       { name: 'For Buyers', href: '/buyers' },
       { name: 'Pricing', href: '/pricing' },
-      { name: 'How It Works', href: '/how-it-works' },
     ],
     company: [
       { name: 'About Us', href: '/about' },

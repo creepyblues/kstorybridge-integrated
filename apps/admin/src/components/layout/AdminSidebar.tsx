@@ -7,6 +7,10 @@ const navigationItems = [
     href: '/titles',
   },
   {
+    title: 'User Approval',
+    href: '/user-approval',
+  },
+  {
     title: 'Scraper Test',
     href: '/scraper-test',
   },
@@ -36,7 +40,7 @@ export default function AdminSidebar() {
                 {item.title}
               </Link>
             );
-          })
+          })}
         </div>
       </nav>
     </div>

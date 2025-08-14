@@ -6,7 +6,7 @@ export default function Auth() {
   useEffect(() => {
     // Redirect to the external sign-in page
     console.log("Redirecting to website for authentication");
-    window.location.href = getWebsiteUrl();
+    window.location.href = `${getWebsiteUrl()}/signin`;
   }, []);
 
   // Show a loading state while redirecting

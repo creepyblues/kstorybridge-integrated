@@ -5,13 +5,11 @@ import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 export type UserFavorite = Tables<"user_favorites">;
 export type UserFavoriteInsert = TablesInsert<"user_favorites">;
 
-// Check if we should use mock data for localhost development
+// 🔧 LOCALHOST CONFIG: Always use real Supabase data for favorites
+// Only user authentication/tier data should be mocked on localhost
 const shouldUseMockData = () => {
-  const isLocalhost = window.location.hostname === 'localhost';
-  const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-  const isDev = import.meta.env.DEV;
-  
-  return isLocalhost && bypassEnabled && isDev;
+  // Favorites should always come from real Supabase, even on localhost
+  return false;
 };
 
 // Mock favorites data for localhost development - using real title data

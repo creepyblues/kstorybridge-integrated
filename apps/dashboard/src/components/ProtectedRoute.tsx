@@ -58,7 +58,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (!loading && !user && !hasAuthTokens && !bypassEnabled) {
       console.log('🚨 PROTECTED ROUTE: Redirecting to website - no user authenticated and no auth flow in progress');
       const websiteUrl = getWebsiteUrl();
-      const websiteUrlWithParam = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
+      const signinUrl = `${websiteUrl}/signin`;
+      const websiteUrlWithParam = `${signinUrl}${signinUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
       console.log('🚨 PROTECTED ROUTE: Redirecting to:', websiteUrlWithParam);
       console.log('🚨 PROTECTED ROUTE: Current URL:', window.location.href);
       
@@ -80,9 +81,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       authTimeoutRef.current = setTimeout(() => {
         console.log('⏰ PROTECTED ROUTE: Auth flow timeout - tokens may be invalid');
         if (!user) {
-          console.log('🚨 PROTECTED ROUTE: Timeout reached, redirecting to website');
+          console.log('🚨 PROTECTED ROUTE: Timeout reached, redirecting to website signin');
           const websiteUrl = getWebsiteUrl();
-          const websiteUrlWithParam = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
+          const signinUrl = `${websiteUrl}/signin`;
+          const websiteUrlWithParam = `${signinUrl}${signinUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
           window.location.href = websiteUrlWithParam;
         }
       }, 5000); // 5 second timeout

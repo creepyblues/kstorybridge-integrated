@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Shield, AlertTriangle } from 'lucide-react';
 import { Button, Card, CardContent } from '@kstorybridge/ui';
@@ -25,7 +25,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   const { user } = useAuth();
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.0);
+  const [scale, setScale] = useState<number>(0.63); // Start with a reasonable default
   const [rotation, setRotation] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -268,6 +268,11 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
             throw new Error('File too large. Maximum file size is 50MB.');
           }
           
+          // Verify blob type
+          if (!blob.type.includes('pdf')) {
+            console.warn('🔍 SECURE PDF: Blob type is not PDF:', blob.type);
+          }
+          
           console.log('🔍 SECURE PDF: Creating object URL...');
           const dataUrl = URL.createObjectURL(blob);
           console.log('🔍 SECURE PDF: Setting PDF data:', dataUrl);
@@ -286,6 +291,11 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
 
             const blob = await response.blob();
             console.log('🔍 SECURE PDF: Localhost blob size:', blob.size, 'bytes');
+            
+            // Verify blob type for localhost too
+            if (!blob.type.includes('pdf')) {
+              console.warn('🔍 SECURE PDF: Localhost blob type is not PDF:', blob.type);
+            }
             
             const dataUrl = URL.createObjectURL(blob);
             console.log('🔍 SECURE PDF: Localhost object URL created:', dataUrl);
@@ -318,14 +328,15 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     fetchPDF();
   }, [pdfUrl, user]);
 
-  // Separate useEffect for cleanup to avoid dependency issues
+  // Cleanup blob URL on unmount only
   useEffect(() => {
     return () => {
-      if (pdfData) {
+      // Only revoke on component unmount, not on pdfData changes
+      if (pdfData && pdfData.startsWith('blob:')) {
         URL.revokeObjectURL(pdfData);
       }
     };
-  }, [pdfData]);
+  }, []);
 
   // Add security event listeners and periodic session validation
   useEffect(() => {
@@ -335,10 +346,10 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
       const isValid = await validateAuth();
       if (!isValid) {
         // Clear PDF data if session becomes invalid
-        if (pdfData) {
+        if (pdfData && pdfData.startsWith('blob:')) {
           URL.revokeObjectURL(pdfData);
-          setPdfData(null);
         }
+        setPdfData(null);
       }
     };
 
@@ -347,6 +358,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     
     return () => clearInterval(interval);
   }, [authValidated, pdfData, validateAuth]);
+  
 
   // Security: Disable right-click, text selection, and keyboard shortcuts
   useEffect(() => {
@@ -455,6 +467,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     setNumPages(numPages);
     setLoading(false);
   };
+  
 
   const onDocumentLoadError = (error: Error) => {
     console.error('📄 REACT-PDF: Document load error:', error);
@@ -468,8 +481,12 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   const goToPrevPage = () => setPageNumber(prev => Math.max(1, prev - 1));
   const goToNextPage = () => setPageNumber(prev => Math.min(numPages, prev + 1));
   const zoomIn = () => setScale(prev => Math.min(3, prev + 0.2));
-  const zoomOut = () => setScale(prev => Math.max(0.5, prev - 0.2));
+  const zoomOut = () => setScale(prev => Math.max(0.3, prev - 0.2));
   const rotate = () => setRotation(prev => (prev + 90) % 360);
+  const fitToWidth = () => {
+    // Reset to default fit-to-width scale
+    setScale(0.63);
+  };
 
   // Enhanced authentication UI
   if (!user && !shouldBypassAuth) {
@@ -582,6 +599,11 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
             <Button variant="outline" size="sm" onClick={zoomIn}>
               <ZoomIn className="h-4 w-4" />
             </Button>
+            <Button variant="outline" size="sm" onClick={fitToWidth} title="Fit to Width">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            </Button>
             <Button variant="outline" size="sm" onClick={rotate}>
               <RotateCw className="h-4 w-4" />
             </Button>
@@ -591,12 +613,14 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         {/* PDF Viewer */}
         <div 
           ref={containerRef}
-          className="secure-pdf-viewer border border-gray-200 rounded-lg overflow-auto relative"
+          className="secure-pdf-viewer border border-gray-200 rounded-lg overflow-auto relative flex justify-center items-center"
           style={{ 
-            maxHeight: '70vh',
+            height: '70vh',
+            minHeight: '400px',
             userSelect: 'none',
             WebkitUserSelect: 'none',
-            position: 'relative'
+            position: 'relative',
+            backgroundColor: '#f5f5f5'
           }}
         >
           {/* Security Watermark Overlay */}
@@ -626,32 +650,23 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
             </div>
           </div>
           {pdfData && (
-            <Document
+            <div className="pdf-container flex justify-center items-center">
+              <Document
                 file={pdfData}
                 onLoadSuccess={onDocumentLoadSuccess}
                 onLoadError={onDocumentLoadError}
                 loading={<div className="p-8 text-center">Loading PDF...</div>}
-                options={{
-                  // Disable PDF.js built-in UI controls
-                  disableCreateObjectURL: false,
-                  disableWebGL: false,
-                  // Additional security options
-                  isEvalSupported: false,
-                  maxImageSize: 16777216, // Limit image size
-                  disableFontFace: false,
-                  fontExtraProperties: false
-                }}
               >
                 <Page
+                  key={`${pageNumber}-${rotation}`} // Force re-render only when page or rotation changes
                   pageNumber={pageNumber}
                   scale={scale}
                   rotate={rotation}
                   renderTextLayer={false} // Disable text layer for security
                   renderAnnotationLayer={false} // Disable annotations for security
-                  canvasBackground="white" // Set consistent background
-                  loading={<div className="p-4 text-center text-gray-500">Loading page...</div>}
                 />
               </Document>
+            </div>
           )}
         </div>
 

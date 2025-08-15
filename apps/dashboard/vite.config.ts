@@ -31,6 +31,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ['pdfjs-dist/build/pdf.worker.entry']
+  },
   build: {
     rollupOptions: {
       output: {
@@ -86,7 +89,10 @@ export default defineConfig(({ mode }) => ({
           ],
           
           // Charts and data visualization (if used)
-          charts: ['recharts']
+          charts: ['recharts'],
+          
+          // PDF viewing
+          pdf: ['react-pdf', 'pdfjs-dist']
         }
       }
     },

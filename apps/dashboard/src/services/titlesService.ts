@@ -6,13 +6,11 @@ export type Title = Tables<"titles">;
 export type TitleInsert = TablesInsert<"titles">;
 export type TitleUpdate = TablesUpdate<"titles">;
 
-// Check if we should use mock data for localhost development
+// 🔧 LOCALHOST CONFIG: Always use real Supabase data for titles
+// Only user authentication/tier data should be mocked on localhost
 const shouldUseMockData = () => {
-  const isLocalhost = window.location.hostname === 'localhost';
-  const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-  const isDev = import.meta.env.DEV;
-  
-  return isLocalhost && bypassEnabled && isDev;
+  // Titles should always come from real Supabase, even on localhost
+  return false;
 };
 
 // Mock titles data for localhost development - Enhanced real data from database

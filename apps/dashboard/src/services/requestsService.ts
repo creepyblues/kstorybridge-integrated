@@ -16,24 +16,11 @@ export type RequestWithTitle = Request & {
   } | null;
 };
 
-// Check if we should use mock data for localhost development
+// 🔧 LOCALHOST CONFIG: Always use real Supabase data for requests
+// Only user authentication/tier data should be mocked on localhost
 const shouldUseMockData = () => {
-  const isLocalhost = window.location.hostname === 'localhost';
-  const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-  const isDev = import.meta.env.DEV;
-  
-  // Force mock data for localhost development if auth bypass is working
-  const shouldUse = isLocalhost && (bypassEnabled || isDev);
-  
-  console.log('🔍 REQUESTS SERVICE: Mock data conditions:', {
-    isLocalhost,
-    bypassEnabled,
-    isDev,
-    envVar: import.meta.env.VITE_DISABLE_AUTH_LOCALHOST,
-    shouldUse
-  });
-  
-  return shouldUse;
+  // Requests should always come from real Supabase, even on localhost
+  return false;
 };
 
 // Mock requests data for localhost development - using real title data from database

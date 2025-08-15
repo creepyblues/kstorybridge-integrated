@@ -182,26 +182,6 @@ export default function AdminUserApproval() {
     });
   };
 
-  const openEmailClient = (userEmail: string) => {
-    const subject = encodeURIComponent('Your KStoryBridge Account Has Been Approved!');
-    const body = encodeURIComponent(`Congratulations!
-
-Your account has been approved and you can now navigate K Content ready for your review.
-
-Explore our curated collection of Korean stories, connect with creators, and discover content perfect for your needs.
-
-Get started: https://dashboard.kstorybridge.com
-
-Best regards,
-The KStoryBridge Team
-
-© 2025 KStoryBridge. All rights reserved.`);
-
-    const mailtoLink = `mailto:${userEmail}?subject=${subject}&body=${body}`;
-    
-    window.open(mailtoLink, '_blank');
-    toast.info(`Opening email client to send approval email to ${userEmail}`);
-  };
 
   const approveUser = async (userId: string, userEmail: string) => {
     try {
@@ -225,37 +205,20 @@ The KStoryBridge Team
 
         if (emailError) {
           console.error('Edge function error:', emailError);
-          toast.error(`Email function error: ${emailError.message || 'Unknown error'}`);
-          // Fallback to client-side email
-          openEmailClient(userEmail);
+          toast.error(`User approved but email failed: ${emailError.message || 'Unknown error'}`);
         } else {
           console.log('Email function response:', data);
           
           if (data?.success) {
-            if (data.method === 'resend') {
-              toast.success(`✅ User approved and email sent via Resend! (ID: ${data.emailId?.substring(0, 8) || 'N/A'})`);
-            } else if (data.method === 'simulation') {
-              if (data.debug?.resendKeyFound) {
-                toast.warning('⚠️ User approved! Resend domain verification required - opening email client for manual sending.');
-              } else {
-                toast.warning('⚠️ User approved! Email in simulation mode - opening email client for manual sending.');
-              }
-              // Open email client as backup in simulation mode
-              setTimeout(() => openEmailClient(userEmail), 1000);
-            } else {
-              toast.success('✅ User approved and email sent successfully!');
-            }
+            toast.success(`✅ User approved and email sent via Resend! (ID: ${data.emailId?.substring(0, 8) || 'N/A'})`);
           } else {
-            console.error('Email function returned unsuccessful response:', data);
-            toast.warning('⚠️ User approved but email sending failed. Opening email client.');
-            openEmailClient(userEmail);
+            console.error('Email function error:', data);
+            toast.error(`❌ User approved but email failed: ${data.message || 'Unknown error'}`);
           }
         }
       } catch (error) {
         console.error('Failed to invoke email function:', error);
-        toast.error(`Failed to invoke email function: ${error.message || 'Unknown error'}`);
-        // Fallback to client-side email
-        openEmailClient(userEmail);
+        toast.error(`User approved but email failed: ${error.message || 'Unknown error'}`);
       }
 
       // Update local state

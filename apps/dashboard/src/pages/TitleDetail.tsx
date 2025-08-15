@@ -424,12 +424,9 @@ function TitleDetailContent() {
                               >
                                 {/* Header */}
                                 <div className="p-6 pb-0 border-b border-gray-200">
-                                  <h2 className="text-xl font-bold text-gray-900 mb-2">
-                                    Pitch Document - {title.title_name_en || title.title_name_kr}
+                                  <h2 className="text-xl font-bold text-hanok-teal mb-2">
+                                    Pitch Deck - {title.title_name_en || title.title_name_kr}
                                   </h2>
-                                  <p className="text-gray-600 text-sm">
-                                    View the complete pitch document with detailed information about this title, including market positioning and target audience.
-                                  </p>
                                 </div>
                                 
                                 {/* PDF Content */}

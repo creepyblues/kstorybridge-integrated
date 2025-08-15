@@ -145,7 +145,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'KStoryBridge <send@kstorybridge.com>',
+        from: 'KStoryBridge <creepyblues@gmail.com>',
         to: email,
         subject: emailSubject,
         html: emailHtml,

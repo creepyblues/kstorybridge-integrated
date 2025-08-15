@@ -404,45 +404,71 @@ function TitleDetailContent() {
                             <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
                           </Button>
                           
-                          {/* Reliable PDF Modal Implementation */}
+                          {/* Enhanced PDF Modal with Modern Design */}
                           {isPdfModalOpen && (
                             <div 
-                              className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center"
+                              className="fixed inset-0 bg-gradient-to-br from-midnight-ink/80 via-midnight-ink/90 to-black/95 z-[9999] flex items-center justify-center p-4"
                               onClick={() => setIsPdfModalOpen(false)}
                               style={{ 
-                                animation: 'fadeIn 0.2s ease-out',
-                                backdropFilter: 'blur(4px)'
+                                animation: 'fadeIn 0.3s ease-out',
+                                backdropFilter: 'blur(8px)'
                               }}
                             >
                               <div 
-                                className="bg-white rounded-lg shadow-2xl max-w-6xl w-[95vw] max-h-[90vh] relative overflow-hidden"
+                                className="bg-white rounded-2xl shadow-2xl border border-porcelain-blue/20 max-w-7xl w-full max-h-[95vh] relative overflow-hidden"
                                 onClick={(e) => e.stopPropagation()}
                                 style={{ 
-                                  animation: 'slideIn 0.3s ease-out',
-                                  transform: 'translateY(0)'
+                                  animation: 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                                  transform: 'translateY(0)',
+                                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)'
                                 }}
                               >
-                                {/* Header */}
-                                <div className="p-6 pb-0 border-b border-gray-200">
-                                  <h2 className="text-xl font-bold text-hanok-teal mb-2">
-                                    Pitch Deck - {title.title_name_en || title.title_name_kr}
-                                  </h2>
+                                {/* Enhanced Header with Gradient */}
+                                <div className="relative bg-gradient-to-r from-hanok-teal to-hanok-teal/90 p-6 border-b border-hanok-teal/20">
+                                  <div className="absolute inset-0 bg-gradient-to-r from-hanok-teal/10 to-transparent"></div>
+                                  <div className="relative flex items-center justify-between">
+                                    <div>
+                                      <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">
+                                        Pitch Deck
+                                      </h2>
+                                      <p className="text-hanok-teal-100 text-sm font-medium">
+                                        {title.title_name_en || title.title_name_kr}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5">
+                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                        <span className="text-white text-xs font-medium">Secure View</span>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                                 
-                                {/* PDF Content */}
-                                <div className="p-6 pt-4 max-h-[calc(90vh-120px)] overflow-auto">
-                                  <SecurePDFViewer 
-                                    pdfUrl={title.pitch}
-                                  />
+                                {/* PDF Content Container with Refined Styling */}
+                                <div className="relative bg-gradient-to-b from-gray-50 to-white" style={{ height: 'calc(95vh - 80px)', width: '100%' }}>
+                                  <div className="p-1 h-full w-full">
+                                    <div className="bg-white rounded-xl shadow-inner border border-gray-100 overflow-hidden w-full h-full flex justify-center">
+                                      <div style={{ 
+                                        width: '75%',
+                                        height: '100%',
+                                        maxWidth: '1000px',
+                                        minWidth: '600px'
+                                      }}>
+                                        <SecurePDFViewer 
+                                          pdfUrl={title.pitch}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                                 
-                                {/* Close Button */}
+                                {/* Enhanced Close Button */}
                                 <button
                                   onClick={() => setIsPdfModalOpen(false)}
-                                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-colors duration-200 z-10"
+                                  className="absolute top-6 right-6 group bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 rounded-xl p-3 transition-all duration-300 z-10"
                                   aria-label="Close modal"
                                 >
-                                  <X className="h-5 w-5" />
+                                  <X className="h-5 w-5 text-white group-hover:text-white transition-colors duration-200" />
                                 </button>
                               </div>
                             </div>

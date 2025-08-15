@@ -216,8 +216,8 @@ const SigninPage = () => {
               {/* Sign In Form */}
               <Card className="border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardContent className="p-8">
-              {/* Google Sign In Button - Hidden for now */}
-              {false && (
+              {/* Google Sign In Button */}
+              {true && (
                 <div className="mb-6">
                   <Button 
                     id="signin-google-btn"

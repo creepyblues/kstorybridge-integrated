@@ -99,7 +99,7 @@ const SigninPage = () => {
       if (accountType === 'buyer') {
         const { data: profile, error } = await supabase
           .from('user_buyers')
-          .select('tier')
+          .select('plan')
           .eq('id', user.id)
           .maybeSingle();
         
@@ -110,8 +110,8 @@ const SigninPage = () => {
           return;
         }
         
-        if (profile?.tier && profile.tier !== 'invited') {
-          console.log('✅ SIGNIN: Buyer accepted (tier: ' + profile.tier + '), redirecting directly to dashboard');
+        if (profile?.plan && profile.plan !== 'free') {
+          console.log('✅ SIGNIN: Buyer accepted (plan: ' + profile.plan + '), redirecting directly to dashboard');
           await redirectToDashboard();
         } else {
           navigate('/invited');

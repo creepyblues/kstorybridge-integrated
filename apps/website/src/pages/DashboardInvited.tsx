@@ -1,14 +1,13 @@
 
-import PageHeader from '../components/PageHeader';
+import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { CheckCircle, Clock, Mail, ArrowRight } from 'lucide-react';
 import { Button } from '@kstorybridge/ui';
 import KoreanPattern from '../components/KoreanPattern';
-
 const DashboardInvited = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-hanok-teal/5">
-      <PageHeader />
+      <Header />
       
       <main className="flex-1 relative overflow-hidden">
         {/* Background Pattern */}
@@ -35,60 +34,11 @@ const DashboardInvited = () => {
                 </h1>
                 
                 <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-                  Thank you for your interest in <span className="text-hanok-teal font-semibold">K Story Bridge</span>. 
+                  Thank you for your interest in <span className="text-hanok-teal font-semibold">KStoryBridge</span>. 
                   We're currently reviewing your information and will get back to you shortly.
                 </p>
               </div>
 
-              {/* Status Cards */}
-              <div className="grid md:grid-cols-3 gap-6 mb-12">
-                
-                {/* Step 1 - Completed */}
-                <div className="relative group">
-                  <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:border-hanok-teal/30">
-                    <div className="flex items-center mb-4">
-                      <div className="w-10 h-10 bg-gradient-to-r from-hanok-teal to-emerald-500 rounded-full flex items-center justify-center mr-3">
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-midnight-ink">Application Received</h3>
-                    </div>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      Your application has been successfully submitted and is now in our system.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Step 2 - In Progress */}
-                <div className="relative group">
-                  <div className="bg-white rounded-2xl border border-porcelain-blue p-6 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:border-hanok-teal/30">
-                    <div className="flex items-center mb-4">
-                      <div className="w-10 h-10 bg-gradient-to-r from-porcelain-blue to-hanok-teal rounded-full flex items-center justify-center mr-3 relative">
-                        <Clock className="w-5 h-5 text-white" />
-                        <div className="absolute inset-0 rounded-full bg-porcelain-blue/30 animate-ping"></div>
-                      </div>
-                      <h3 className="text-lg font-semibold text-midnight-ink">Under Review</h3>
-                    </div>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      Our team is carefully reviewing your profile and qualifications.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Step 3 - Pending */}
-                <div className="relative group">
-                  <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:border-hanok-teal/30 opacity-60">
-                    <div className="flex items-center mb-4">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                        <Mail className="w-5 h-5 text-gray-500" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-500">Notification</h3>
-                    </div>
-                    <p className="text-gray-500 text-sm leading-relaxed">
-                      You'll receive an email notification once your account is approved.
-                    </p>
-                  </div>
-                </div>
-              </div>
 
               {/* Information Card */}
               <div className="bg-gradient-to-r from-hanok-teal/10 via-porcelain-blue/10 to-hanok-teal/10 rounded-2xl border border-hanok-teal/20 p-8 mb-12">

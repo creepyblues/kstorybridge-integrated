@@ -654,21 +654,21 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       value={(formData as BuyerFormData).buyerCompany}
                       onChange={(e) => updateFormData('buyerCompany', e.target.value)}
                       required
-                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
+                      className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                       placeholder="Your company name"
                     />
                   </div>
 
-                  <div>
+                  <div className="relative">
                     <Label htmlFor="buyerRole" className="text-base mb-2 block text-midnight-ink">Role</Label>
                     <Select 
                       value={(formData as BuyerFormData).buyerRole}
                       onValueChange={(value) => updateFormData('buyerRole', value)}
                     >
-                      <SelectTrigger className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg">
+                      <SelectTrigger className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg bg-white">
                         <SelectValue placeholder="Select your role (optional)" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[100] bg-white border-midnight-ink-200 shadow-lg">
                         <SelectItem value="producer">Producer</SelectItem>
                         <SelectItem value="executive">Executive</SelectItem>
                         <SelectItem value="agent">Agent</SelectItem>
@@ -685,7 +685,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       type="url"
                       value={(formData as BuyerFormData).linkedinUrl}
                       onChange={(e) => updateFormData('linkedinUrl', e.target.value)}
-                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
+                      className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                       placeholder="https://linkedin.com/in/yourprofile"
                     />
                   </div>
@@ -698,21 +698,21 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       id="penNameOrStudio"
                       value={(formData as CreatorFormData).penNameOrStudio}
                       onChange={(e) => updateFormData('penNameOrStudio', e.target.value)}
-                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
+                      className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                       placeholder="Your pen name (optional)"
                     />
                   </div>
 
-                  <div>
+                  <div className="relative">
                     <Label htmlFor="ipOwnerRole" className="text-base mb-2 block text-midnight-ink">Role</Label>
                     <Select 
                       value={(formData as CreatorFormData).ipOwnerRole}
                       onValueChange={(value) => updateFormData('ipOwnerRole', value)}
                     >
-                      <SelectTrigger className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg">
+                      <SelectTrigger className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg bg-white">
                         <SelectValue placeholder="Select your role (optional)" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[100] bg-white border-midnight-ink-200 shadow-lg">
                         <SelectItem value="author">Author</SelectItem>
                         <SelectItem value="agent">Agent</SelectItem>
                       </SelectContent>
@@ -725,7 +725,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       id="ipOwnerCompany"
                       value={(formData as CreatorFormData).ipOwnerCompany}
                       onChange={(e) => updateFormData('ipOwnerCompany', e.target.value)}
-                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
+                      className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                       placeholder="Your company or agency"
                     />
                   </div>
@@ -737,7 +737,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       type="url"
                       value={(formData as CreatorFormData).websiteUrl}
                       onChange={(e) => updateFormData('websiteUrl', e.target.value)}
-                      className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
+                      className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                       placeholder="https://yourwebsite.com"
                     />
                   </div>

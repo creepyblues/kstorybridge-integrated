@@ -204,14 +204,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         // Create profile in the appropriate table
         if (accountType === 'buyer') {
           console.log('💾 Inserting buyer profile to database...');
-          const insertData: any = {
+          const insertData = {
             id: oAuthUserId,
             email: formData.email,
             full_name: formData.fullName,
             buyer_company: (formData as BuyerFormData).buyerCompany,
             buyer_role: (formData as BuyerFormData).buyerRole || null,
             linkedin_url: (formData as BuyerFormData).linkedinUrl || null,
-            plan: 'basic'
+            plan: 'basic' as const
           };
           console.log('💾 Insert data:', insertData);
           

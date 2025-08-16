@@ -204,12 +204,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         // Create profile in the appropriate table
         if (accountType === 'buyer') {
           console.log('💾 Inserting buyer profile to database...');
-          // Start with absolute minimum fields to test database connection
           const insertData: any = {
             id: oAuthUserId,
             email: formData.email,
             full_name: formData.fullName,
-            buyer_company: (formData as BuyerFormData).buyerCompany
+            buyer_company: (formData as BuyerFormData).buyerCompany,
+            buyer_role: (formData as BuyerFormData).buyerRole || null,
+            linkedin_url: (formData as BuyerFormData).linkedinUrl || null,
+            plan: 'basic'
           };
           console.log('💾 Insert data:', insertData);
           
@@ -339,7 +341,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             account_type: 'buyer',
             buyer_company: (formData as BuyerFormData).buyerCompany,
             buyer_role: (formData as BuyerFormData).buyerRole || null,
-            linkedin_url: (formData as BuyerFormData).linkedinUrl || null
+            linkedin_url: (formData as BuyerFormData).linkedinUrl || null,
+            plan: 'basic'
           }
         : {
             full_name: formData.fullName,

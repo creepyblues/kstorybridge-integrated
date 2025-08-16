@@ -1,23 +1,24 @@
 
-import Header from '../components/Header';
+import PageHeader from '../components/PageHeader';
 import Footer from '../components/Footer';
 import { CheckCircle, Clock, Mail, ArrowRight } from 'lucide-react';
 import { Button } from '@kstorybridge/ui';
 import KoreanPattern from '../components/KoreanPattern';
 const DashboardInvited = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-hanok-teal/5">
-      <Header />
+    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+      <PageHeader />
       
-      <main className="flex-1 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <KoreanPattern />
-        </div>
-        
-        {/* Main Content */}
-        <div className="relative z-10 py-16 md:py-24">
-          <div className="container mx-auto px-4 lg:px-8">
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="py-16 lg:py-24 relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-5">
+            <KoreanPattern />
+          </div>
+          
+          {/* Main Content */}
+          <div className="relative z-10 max-w-7xl mx-auto px-6">
             <div className="max-w-4xl mx-auto">
               
               {/* Success Icon & Header */}
@@ -98,11 +99,11 @@ const DashboardInvited = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute top-20 right-10 w-32 h-32 bg-gradient-to-br from-hanok-teal/10 to-porcelain-blue/10 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-20 left-10 w-40 h-40 bg-gradient-to-br from-porcelain-blue/10 to-hanok-teal/10 rounded-full blur-2xl"></div>
+          
+          {/* Decorative Elements */}
+          <div className="absolute top-20 right-10 w-32 h-32 bg-gradient-to-br from-hanok-teal/10 to-porcelain-blue/10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-20 left-10 w-40 h-40 bg-gradient-to-br from-porcelain-blue/10 to-hanok-teal/10 rounded-full blur-2xl"></div>
+        </section>
       </main>
 
       <Footer />

@@ -110,10 +110,11 @@ const SigninPage = () => {
           return;
         }
         
-        if (profile?.tier && profile.tier !== 'invited' && profile.tier !== 'basic') {
+        if (profile?.tier && profile.tier !== 'invited') {
           console.log('✅ SIGNIN: Buyer accepted (tier: ' + profile.tier + '), redirecting directly to dashboard');
           await redirectToDashboard();
         } else {
+          console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + profile.tier + '), redirecting to invited page');
           navigate('/invited');
         }
       } else if (accountType === 'ip_owner') {

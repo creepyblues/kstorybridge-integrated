@@ -50,11 +50,11 @@ const AuthCallbackPage = () => {
         const tier = buyerProfile.tier;
         console.log('👤 AUTH CALLBACK: Buyer tier:', tier);
         
-        if (tier && tier !== 'invited' && tier !== 'basic') {
+        if (tier && tier !== 'invited') {
           console.log('✅ AUTH CALLBACK: Buyer accepted (tier: ' + tier + '), redirecting directly to dashboard');
           await redirectToDashboard();
         } else {
-          console.log('⚠️ AUTH CALLBACK: Buyer not fully accepted (tier: ' + tier + '), redirecting to invited page');
+          console.log('⚠️ AUTH CALLBACK: Buyer not accepted (tier: ' + tier + '), redirecting to invited page');
           navigate('/invited');
         }
       } else if (ipOwnerProfile) {

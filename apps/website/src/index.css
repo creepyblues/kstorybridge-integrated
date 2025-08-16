@@ -284,6 +284,36 @@
     --accent: 156 163 175 !important; /* gray-400 instead of any yellow */
     --accent-foreground: 55 65 81 !important; /* gray-700 */
   }
+
+  /* Fix Select dropdown positioning and styling */
+  [data-radix-popper-content-wrapper] {
+    z-index: 100 !important;
+  }
+
+  [role="listbox"] {
+    background-color: white !important;
+    border: 1px solid rgb(229 231 235) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* Ensure Select dropdown items have proper styling */
+  [role="option"] {
+    background-color: white !important;
+  }
+
+  [role="option"]:hover,
+  [role="option"]:focus {
+    background-color: rgb(243 244 246) !important; /* gray-100 */
+  }
+
+  [role="option"][data-state="checked"] {
+    background-color: rgb(236 253 245) !important; /* green-50 */
+  }
+
+  /* Fix Select trigger button styling */
+  [role="combobox"] {
+    background-color: white !important;
+  }
 }
 
 @layer utilities {

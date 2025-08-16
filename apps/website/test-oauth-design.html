@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Profile Completion Design Test</title>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(to bottom, white, #f3f8f8);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1c1c1c;
+            margin-bottom: 1rem;
+        }
+        .teal {
+            color: #4C9C9B;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            color: #878787;
+        }
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #1c1c1c;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            height: 48px;
+            padding: 0 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4C9C9B;
+            box-shadow: 0 0 0 3px rgba(76, 156, 155, 0.1);
+        }
+        .select-wrapper {
+            position: relative;
+        }
+        .select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 4px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        .select-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .select-option:hover {
+            background: #f3f4f6;
+        }
+        .button {
+            width: 100%;
+            height: 56px;
+            background: #4C9C9B;
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 2rem;
+        }
+        .button:hover {
+            background: #3D7D7C;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1c1c1c;
+            margin-bottom: 1.5rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Complete Your <span class="teal">Buyer</span> Profile</h1>
+            <p class="subtitle">Please provide additional information to complete your profile</p>
+        </div>
+
+        <div class="card">
+            <h3 class="section-title">Company Information</h3>
+            
+            <div class="form-group">
+                <label>Company *</label>
+                <input type="text" placeholder="Your company name" />
+            </div>
+
+            <div class="form-group">
+                <label>Role</label>
+                <div class="select-wrapper">
+                    <select>
+                        <option value="">Select your role (optional)</option>
+                        <option value="producer">Producer</option>
+                        <option value="executive">Executive</option>
+                        <option value="agent">Agent</option>
+                        <option value="content_scout">Content Scout</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>LinkedIn URL (Optional)</label>
+                <input type="url" placeholder="https://linkedin.com/in/yourprofile" />
+            </div>
+
+            <button class="button">Complete Profile</button>
+        </div>
+    </div>
+
+    <script>
+        // Demo dropdown behavior
+        const select = document.querySelector('select');
+        select.addEventListener('focus', function() {
+            console.log('Select focused - dropdown would appear here with proper z-index');
+        });
+    </script>
+</body>
+</html>

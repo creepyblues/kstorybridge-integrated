@@ -14,10 +14,10 @@ This document ensures consistent field naming across the KStoryBridge monorepo t
 - User metadata: Store as `pen_name`
 - UI labels: "Pen Name/Studio"
 
-**❌ DEPRECATED: `pen_name_or_studio`**
-- Legacy field name found in old migrations
+**❌ DEPRECATED: Legacy field name**
+- Old field name found in legacy migrations only
 - **Do NOT use in new code**
-- May exist in legacy user metadata (handle as fallback only)
+- Historical reference only
 
 ### Implementation Rules
 
@@ -33,7 +33,7 @@ const metadata = {
 ```typescript
 // ✅ Correct - Always use pen_name column
 const profile = {
-  pen_name: user.user_metadata?.pen_name || user.user_metadata?.pen_name_or_studio
+  pen_name: user.user_metadata?.pen_name
 }
 
 // ✅ Correct - Database queries
@@ -52,23 +52,23 @@ VALUES (NEW.raw_user_meta_data->>'pen_name', ...)
 ```typescript
 // ✅ Correct - Both dashboard and website
 interface IPOwnerProfile {
-  pen_name?: string | null;  // NOT pen_name_or_studio
+  pen_name?: string | null;  // Standard field name
 }
 ```
 
 ### Migration Compatibility Strategy
 
-To handle the transition from legacy `pen_name_or_studio` to standard `pen_name`:
+**Standard Implementation**:
 
 1. **New Code**: Always use `pen_name`
-2. **Legacy Support**: Read both fields with preference for `pen_name`
-3. **Database**: Always target `pen_name` column
+2. **Database**: Always target `pen_name` column
+3. **Metadata**: Store as `pen_name` key
 
 ```typescript
-// ✅ Backwards-compatible reading
-const penName = user.user_metadata?.pen_name || user.user_metadata?.pen_name_or_studio;
+// ✅ Standard implementation
+const penName = user.user_metadata?.pen_name;
 
-// ✅ Forward-compatible writing
+// ✅ Standard writing
 const metadata = { pen_name: penNameValue };
 ```
 
@@ -79,7 +79,7 @@ When working with IP owner profiles, verify:
 - [ ] Database operations use `pen_name` column
 - [ ] TypeScript interfaces use `pen_name` field
 - [ ] New metadata storage uses `pen_name` key
-- [ ] Legacy metadata reading includes fallback
+- [ ] Metadata uses standard `pen_name` key
 - [ ] Documentation references `pen_name` standard
 
 ## Files Updated for Consistency
@@ -105,7 +105,7 @@ When working with IP owner profiles, verify:
 ## Development Guidelines
 
 ### Code Review Checklist
-- [ ] New code uses `pen_name` not `pen_name_or_studio`
+- [ ] New code uses `pen_name` field consistently
 - [ ] Database queries target correct column names
 - [ ] TypeScript types match database schema
 - [ ] Metadata storage uses consistent field names
@@ -118,12 +118,10 @@ When working with IP owner profiles, verify:
 
 ## Future Considerations
 
-1. **Complete Migration**: Eventually remove `pen_name_or_studio` fallbacks after all users migrated
-2. **Data Cleanup**: Consider script to update legacy metadata to new format
-3. **Schema Validation**: Add database constraints to prevent inconsistencies
+1. **Schema Validation**: Add database constraints to prevent inconsistencies
+2. **Data Cleanup**: Consider script to clean any remaining legacy references
 
 ---
 
 **Last Updated**: 2025-08-16  
-**Status**: ✅ Active Standard  
-**Next Review**: When legacy user metadata is fully migrated
+**Status**: ✅ Active Standard - Zero Legacy References

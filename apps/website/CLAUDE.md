@@ -110,11 +110,11 @@ VALUES (NEW.raw_user_meta_data->>'pen_name', ...)
 ```
 
 **❌ Legacy Field (Do NOT Use):**
-- `pen_name_or_studio` - Old field name, inconsistent with database schema
-- Found in old migrations (historical, do not change)
-- May exist in legacy user metadata (handle as fallback only)
+- Old field name found in historical migrations only
+- **Do NOT use in new code**
+- Historical reference only
 
-**Migration Strategy:**
+**Standard Implementation:**
 - **New signups**: Always use `pen_name` in metadata and database
-- **Existing users**: Read `pen_name_or_studio` from metadata as fallback
 - **Database operations**: Always target `pen_name` column
+- **Metadata**: Store as `pen_name` key

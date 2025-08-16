@@ -5,16 +5,9 @@ import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
 
-// Configure PDF.js worker - use local file for localhost, CDN for production
-if (window.location.hostname === 'localhost') {
-  // Use local worker file for localhost to avoid CORS issues
-  pdfjs.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
-  console.log('📄 PDF.js: Using local worker for localhost');
-} else {
-  // Use CDN for production
-  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-  console.log('📄 PDF.js: Using CDN worker, version:', pdfjs.version);
-}
+// Configure PDF.js worker - use local worker file to avoid CORS issues
+pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+console.log('📄 PDF.js: Using local worker file');
 
 interface SecurePDFViewerProps {
   pdfUrl: string;

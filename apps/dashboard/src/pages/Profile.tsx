@@ -263,7 +263,7 @@ export default function Profile() {
         id: user.id, // Required for RLS policy
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
-        pen_name: user.user_metadata?.pen_name || user.user_metadata?.pen_name_or_studio,
+        pen_name: user.user_metadata?.pen_name,
         ip_owner_role: user.user_metadata?.ip_owner_role,
         ip_owner_company: user.user_metadata?.ip_owner_company,
         website_url: user.user_metadata?.website_url,

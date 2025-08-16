@@ -105,14 +105,14 @@ export default function MyPage() {
 
 **IP Owner Profiles (`user_ipowners` table):**
 - ✅ **CORRECT**: Use `pen_name` field for pen name/studio information
-- ❌ **INCORRECT**: Do NOT use `pen_name_or_studio` (legacy field name)
-- **Metadata Mapping**: Map user metadata `pen_name_or_studio` → database `pen_name`
+- ❌ **INCORRECT**: Do NOT use legacy field names
+- **Metadata Mapping**: Store and read as `pen_name` in metadata
 
-**Field Mapping Rules:**
+**Field Implementation Rules:**
 ```typescript
 // ✅ Correct Profile Creation
 const profile = {
-  pen_name: user.user_metadata?.pen_name || user.user_metadata?.pen_name_or_studio
+  pen_name: user.user_metadata?.pen_name
 }
 
 // ✅ Correct Database Query
@@ -120,7 +120,7 @@ const profile = {
 .from('user_ipowners')
 ```
 
-**Migration Compatibility:**
+**Standard Implementation:**
 - New signups: Store `pen_name` in metadata and database
-- Existing users: Read both `pen_name_or_studio` and `pen_name` from metadata
 - Database operations: Always use `pen_name` column
+- Metadata: Use `pen_name` key consistently

@@ -211,7 +211,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             buyer_company: (formData as BuyerFormData).buyerCompany,
             buyer_role: (formData as BuyerFormData).buyerRole || null,
             linkedin_url: (formData as BuyerFormData).linkedinUrl || null,
-            plan: 'basic' as const
+            tier: 'basic' as const
           };
           console.log('💾 Insert data:', insertData);
           
@@ -342,7 +342,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             buyer_company: (formData as BuyerFormData).buyerCompany,
             buyer_role: (formData as BuyerFormData).buyerRole || null,
             linkedin_url: (formData as BuyerFormData).linkedinUrl || null,
-            plan: 'basic'
+            tier: 'basic'
           }
         : {
             full_name: formData.fullName,

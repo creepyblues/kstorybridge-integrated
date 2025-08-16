@@ -128,7 +128,7 @@ export type Database = {
           id: string
           invitation_status: string | null
           linkedin_url: string | null
-          plan: Database["public"]["Enums"]["buyer_plan"]
+          tier: Database["public"]["Enums"]["user_tier"] | null
           updated_at: string
         }
         Insert: {
@@ -140,7 +140,7 @@ export type Database = {
           id: string
           invitation_status?: string | null
           linkedin_url?: string | null
-          plan?: Database["public"]["Enums"]["buyer_plan"]
+          tier?: Database["public"]["Enums"]["user_tier"] | null
           updated_at?: string
         }
         Update: {
@@ -152,7 +152,7 @@ export type Database = {
           id?: string
           invitation_status?: string | null
           linkedin_url?: string | null
-          plan?: Database["public"]["Enums"]["buyer_plan"]
+          tier?: Database["public"]["Enums"]["user_tier"] | null
           updated_at?: string
         }
         Relationships: []
@@ -234,7 +234,6 @@ export type Database = {
     }
     Enums: {
       account_type: "ip_owner" | "buyer"
-      buyer_plan: "basic" | "pro" | "a-la-carte" | "suite"
       buyer_role: "producer" | "executive" | "agent" | "content_scout" | "other"
       content_format:
         | "webtoon"
@@ -259,6 +258,7 @@ export type Database = {
         | "sports"
         | "other"
       ip_owner_role: "author" | "agent"
+      user_tier: "invited" | "basic" | "pro" | "suite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -387,7 +387,6 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["ip_owner", "buyer"],
-      buyer_plan: ["basic", "pro", "a-la-carte", "suite"],
       buyer_role: ["producer", "executive", "agent", "content_scout", "other"],
       content_format: [
         "webtoon",
@@ -414,6 +413,7 @@ export const Constants = {
         "other",
       ],
       ip_owner_role: ["author", "agent"],
+      user_tier: ["invited", "basic", "pro", "suite"],
     },
   },
 } as const

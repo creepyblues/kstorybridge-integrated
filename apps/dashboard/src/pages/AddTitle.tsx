@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea, useToast } from "@kstorybridge/ui";
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +36,14 @@ export default function AddTitle() {
     setFormData(prev => ({
       ...prev,
       tags: tags.length > 0 ? tags : null,
+    }));
+  };
+
+  const handleCompsChange = (compString: string) => {
+    const comps = compString.split(",").map(comp => comp.trim()).filter(comp => comp.length > 0);
+    setFormData(prev => ({
+      ...prev,
+      comps: comps.length > 0 ? comps : null,
     }));
   };
 
@@ -401,13 +409,15 @@ export default function AddTitle() {
                 />
               </div>
 
-              <StringArrayInput
-                id="comps"
-                label="Comparable Titles"
-                placeholder="Add similar successful titles"
-                value={formData.comps}
-                onChange={(value) => handleInputChange("comps", value)}
-              />
+              <div>
+                <Label htmlFor="comps">Comparable Titles</Label>
+                <Input
+                  id="comps"
+                  value={formData.comps?.join(", ") || ""}
+                  onChange={(e) => handleCompsChange(e.target.value)}
+                  placeholder="e.g., Attack on Titan, My Hero Academia, Demon Slayer"
+                />
+              </div>
 
               <div>
                 <Label htmlFor="tone">Tone</Label>

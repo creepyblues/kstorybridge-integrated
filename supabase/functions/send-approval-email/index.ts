@@ -147,6 +147,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'KStoryBridge <send@kstorybridge.com>',
         to: email,
+        bcc: 'kstorybridge@gmail.com',
         subject: emailSubject,
         html: emailHtml,
       }),

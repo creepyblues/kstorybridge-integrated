@@ -115,6 +115,12 @@ export default function PremiumFeaturePopup({
 
       // Production: If we have titleId and requestType, try to save to request table
       if (titleId && requestType) {
+        console.log('💾 Attempting to save request to database:', {
+          user_id: effectiveUser.id,
+          title_id: titleId,
+          type: requestType,
+          feature_name: featureName
+        });
         try {
           const { data: requestData, error: requestError } = await supabase
             .from('request')
@@ -127,6 +133,7 @@ export default function PremiumFeaturePopup({
             .single();
 
           if (requestError) {
+            console.error('❌ Request table insertion failed:', requestError);
             // Handle specific error cases
             if (requestError.code === '23505') {
               // Unique constraint violation - user already made this request
@@ -142,8 +149,9 @@ export default function PremiumFeaturePopup({
             console.warn('Error saving to request table, falling back to user_buyers:', requestError);
             // If request table has an error, fall back to user_buyers table
           } else {
-            // Send Slack notification if this is a pitch request
-            if (requestType === 'pitch' && requestData?.id && titleName) {
+            console.log('✅ Request successfully saved to database:', requestData);
+            // Send Slack notification for both pitch and contact requests
+            if ((requestType === 'pitch' || requestType === 'contact') && requestData?.id && titleName) {
               try {
                 await notifyPitchRequest({
                   userFullName: effectiveUser.user_metadata?.full_name || effectiveUser.email || 'Unknown User',

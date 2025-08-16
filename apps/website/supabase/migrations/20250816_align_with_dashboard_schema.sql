@@ -110,7 +110,8 @@ BEGIN
       pen_name_or_studio,
       ip_owner_role,
       ip_owner_company,
-      website_url
+      website_url,
+      invitation_status
     )
     VALUES (
       NEW.id,
@@ -123,7 +124,8 @@ BEGIN
         ELSE NULL
       END,
       NEW.raw_user_meta_data->>'ip_owner_company',
-      NEW.raw_user_meta_data->>'website_url'
+      NEW.raw_user_meta_data->>'website_url',
+      'invited'
     );
     
     RAISE LOG 'Successfully created IP owner profile for user: %', NEW.id;

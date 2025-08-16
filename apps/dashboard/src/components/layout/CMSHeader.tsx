@@ -20,7 +20,7 @@ export function CMSHeader() {
     email: 'demo@kstorybridge.com',
     user_metadata: {
       full_name: 'Demo User',
-      account_type: 'buyer'
+      account_type: user?.user_metadata?.account_type || 'buyer' // Use real account type if available
     }
   };
 

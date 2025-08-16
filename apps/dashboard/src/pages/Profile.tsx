@@ -25,7 +25,7 @@ type IPOwnerProfile = {
   user_id: string;
   email: string;
   full_name: string;
-  pen_name_or_studio?: string | null;
+  pen_name?: string | null;
   ip_owner_role?: string | null;
   ip_owner_company?: string | null;
   website_url?: string | null;
@@ -173,7 +173,7 @@ export default function Profile() {
             const unifiedProfile: UnifiedProfile = {
               ...data,
               account_type: 'ip_owner',
-              pen_name: data.pen_name_or_studio, // map to pen_name
+              pen_name: data.pen_name, // use correct column name
               buyer_company: null,
               buyer_role: null,
               linkedin_url: null,
@@ -261,7 +261,7 @@ export default function Profile() {
       const newProfile: Partial<IPOwnerProfile> = {
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
-        pen_name_or_studio: user.user_metadata?.pen_name_or_studio,
+        pen_name: user.user_metadata?.pen_name || user.user_metadata?.pen_name_or_studio,
         ip_owner_role: user.user_metadata?.ip_owner_role,
         ip_owner_company: user.user_metadata?.ip_owner_company,
         website_url: user.user_metadata?.website_url,
@@ -286,7 +286,7 @@ export default function Profile() {
         const unifiedProfile: UnifiedProfile = {
           ...data,
           account_type: 'ip_owner',
-          pen_name: data.pen_name_or_studio,
+          pen_name: data.pen_name,
           buyer_company: null,
           buyer_role: null,
           linkedin_url: null,
@@ -365,7 +365,7 @@ export default function Profile() {
       } else {
         const updateData = {
           full_name: formData.full_name,
-          pen_name_or_studio: formData.pen_name,
+          pen_name: formData.pen_name,
           ip_owner_role: formData.ip_owner_role,
           ip_owner_company: formData.ip_owner_company,
           website_url: formData.website_url,
@@ -385,7 +385,7 @@ export default function Profile() {
         const unifiedProfile: UnifiedProfile = {
           ...data,
           account_type: 'ip_owner',
-          pen_name: data.pen_name_or_studio,
+          pen_name: data.pen_name,
           buyer_company: null,
           buyer_role: null,
           linkedin_url: null,

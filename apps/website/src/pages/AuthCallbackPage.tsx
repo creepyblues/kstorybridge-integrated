@@ -2,10 +2,83 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import { useToast } from '../hooks/use-toast';
+import { getDashboardUrl } from '../config/urls';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const redirectToDashboard = async () => {
+    console.log('🔄 AUTH CALLBACK: Redirecting to dashboard');
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      const dashboardUrl = getDashboardUrl();
+      const sessionParams = new URLSearchParams({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token || '',
+        expires_at: session.expires_at?.toString() || '',
+        token_type: session.token_type || 'bearer'
+      });
+      const finalUrl = `${dashboardUrl}?${sessionParams.toString()}`;
+      console.log('🔄 AUTH CALLBACK: Redirecting to dashboard:', finalUrl.substring(0, 100) + '...');
+      
+      // Direct redirect to dashboard
+      window.location.href = finalUrl;
+    } else {
+      console.error('❌ AUTH CALLBACK: No session found for authenticated user');
+      toast({
+        title: "Session Error",
+        description: "Unable to redirect to dashboard. Please try signing in again.",
+        variant: "destructive"
+      });
+      navigate('/signin');
+    }
+  };
+
+  const checkTierAndRedirect = async (user: any, buyerProfile: any, ipOwnerProfile: any) => {
+    try {
+      console.log('🔍 AUTH CALLBACK: Checking tier for user:', { 
+        userId: user.id, 
+        email: user.email,
+        buyerProfile: !!buyerProfile,
+        ipOwnerProfile: !!ipOwnerProfile
+      });
+
+      if (buyerProfile) {
+        // Check buyer tier
+        const tier = buyerProfile.tier;
+        console.log('👤 AUTH CALLBACK: Buyer tier:', tier);
+        
+        if (tier && tier !== 'invited' && tier !== 'basic') {
+          console.log('✅ AUTH CALLBACK: Buyer accepted (tier: ' + tier + '), redirecting directly to dashboard');
+          await redirectToDashboard();
+        } else {
+          console.log('⚠️ AUTH CALLBACK: Buyer not fully accepted (tier: ' + tier + '), redirecting to invited page');
+          navigate('/invited');
+        }
+      } else if (ipOwnerProfile) {
+        // Check IP owner invitation status
+        const invitationStatus = ipOwnerProfile.invitation_status;
+        console.log('👤 AUTH CALLBACK: IP owner invitation status:', invitationStatus);
+        
+        if (invitationStatus === 'accepted') {
+          console.log('✅ AUTH CALLBACK: Creator accepted, redirecting directly to dashboard');
+          await redirectToDashboard();
+        } else {
+          console.log('⚠️ AUTH CALLBACK: Creator not accepted, redirecting to creator invited page');
+          navigate('/creator/invited');
+        }
+      } else {
+        // Fallback to invited page
+        console.log('⚠️ AUTH CALLBACK: No clear profile type, defaulting to invited page');
+        navigate('/invited');
+      }
+    } catch (error) {
+      console.error('❌ AUTH CALLBACK: Error checking tier:', error);
+      navigate('/invited');
+    }
+  };
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -67,9 +140,8 @@ const AuthCallbackPage = () => {
 
           // If profile exists in either table, user has completed signup
           if (buyerProfile.data || ipOwnerProfile.data) {
-            // User has completed profile, redirect to dashboard
-            const dashboardUrl = import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081';
-            window.location.href = dashboardUrl;
+            // User has completed profile, check their tier and redirect appropriately
+            await checkTierAndRedirect(user, buyerProfile.data, ipOwnerProfile.data);
           } else {
             // No profile exists, need to complete signup
             // Store OAuth user data in session storage for the signup form

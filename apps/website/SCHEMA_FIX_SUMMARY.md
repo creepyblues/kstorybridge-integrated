@@ -36,8 +36,8 @@ Created migration `20250816_align_with_dashboard_schema.sql` that:
 - Updates database trigger function to use `tier` field
 
 ### 3. Authentication Logic Updates
-- Users with `tier: 'basic'` or `tier: 'invited'` → directed to invited page
-- Users with `tier: 'pro'` or `tier: 'suite'` → directed to dashboard
+- Users with `tier: 'invited'` → directed to invited page  
+- Users with `tier: 'basic'`, `tier: 'pro'`, or `tier: 'suite'` → directed to dashboard
 
 ### 4. Signup Flow Updates
 - After successful OAuth profile completion → redirect to `/signin` page

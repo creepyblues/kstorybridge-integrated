@@ -289,16 +289,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
         toast({
           title: "Success!",
-          description: "Your profile has been completed successfully!"
+          description: "Your profile has been completed successfully! Please sign in to continue."
         });
 
-        // Redirect to dashboard or invited page
+        // Redirect to signin page so user can sign in and start using the service
         setTimeout(() => {
-          if (accountType === 'buyer') {
-            navigate('/invited');
-          } else {
-            navigate('/creator/invited');
-          }
+          navigate('/signin');
         }, 2000);
 
         setIsLoading(false);
@@ -465,11 +461,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         
         toast({
           title: "Success!",
-          description: "Account created successfully! Please check your email for verification."
+          description: "Account created successfully! Please check your email for verification, then sign in to continue."
         });
         
         setTimeout(() => {
-          navigate('/');
+          navigate('/signin');
         }, 2000);
       }
     } catch (error) {

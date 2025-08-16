@@ -39,6 +39,10 @@ Created migration `20250816_align_with_dashboard_schema.sql` that:
 - Users with `tier: 'basic'` or `tier: 'invited'` → directed to invited page
 - Users with `tier: 'pro'` or `tier: 'suite'` → directed to dashboard
 
+### 4. Signup Flow Updates
+- After successful OAuth profile completion → redirect to `/signin` page
+- After successful email signup → redirect to `/signin` page (instead of homepage)
+
 ## Database Migration Required
 
 **IMPORTANT**: You must apply the migration to fix the OAuth signup error:

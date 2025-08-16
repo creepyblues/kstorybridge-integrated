@@ -234,7 +234,7 @@ export type Database = {
     }
     Enums: {
       account_type: "ip_owner" | "buyer"
-      buyer_plan: "free" | "pro" | "a-la-carte" | "suite"
+      buyer_plan: "basic" | "pro" | "a-la-carte" | "suite"
       buyer_role: "producer" | "executive" | "agent" | "content_scout" | "other"
       content_format:
         | "webtoon"
@@ -387,7 +387,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["ip_owner", "buyer"],
-      buyer_plan: ["free", "pro", "a-la-carte", "suite"],
+      buyer_plan: ["basic", "pro", "a-la-carte", "suite"],
       buyer_role: ["producer", "executive", "agent", "content_scout", "other"],
       content_format: [
         "webtoon",

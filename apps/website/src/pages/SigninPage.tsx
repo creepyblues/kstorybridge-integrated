@@ -110,7 +110,7 @@ const SigninPage = () => {
           return;
         }
         
-        if (profile?.plan && profile.plan !== 'free') {
+        if (profile?.plan && profile.plan !== 'basic') {
           console.log('✅ SIGNIN: Buyer accepted (plan: ' + profile.plan + '), redirecting directly to dashboard');
           await redirectToDashboard();
         } else {

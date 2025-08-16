@@ -114,7 +114,7 @@ export const useAuth = () => {
             if (!result.error && result.data) {
               profile = {
                 account_type: 'buyer' as const,
-                invitation_status: result.data.plan === 'free' ? 'invited' : 'accepted',
+                invitation_status: result.data.plan === 'basic' ? 'invited' : 'accepted',
                 role: result.data.buyer_role
               };
             }

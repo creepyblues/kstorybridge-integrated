@@ -107,7 +107,7 @@ BEGIN
       id, 
       email, 
       full_name, 
-      pen_name_or_studio,
+      pen_name,
       ip_owner_role,
       ip_owner_company,
       website_url,
@@ -117,7 +117,7 @@ BEGIN
       NEW.id,
       NEW.email,
       COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-      NEW.raw_user_meta_data->>'pen_name_or_studio',
+      NEW.raw_user_meta_data->>'pen_name',
       CASE 
         WHEN NEW.raw_user_meta_data->>'ip_owner_role' IS NOT NULL AND NEW.raw_user_meta_data->>'ip_owner_role' != ''
         THEN (NEW.raw_user_meta_data->>'ip_owner_role')::public.ip_owner_role

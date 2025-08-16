@@ -55,7 +55,7 @@ CREATE TABLE user_ipowners (
   id UUID PRIMARY KEY,
   email TEXT NOT NULL,
   full_name TEXT NOT NULL,
-  pen_name_or_studio TEXT,
+  pen_name TEXT,
   ip_owner_role ip_owner_role, -- enum: 'author' | 'agent'
   ip_owner_company TEXT,
   website_url TEXT,
@@ -68,7 +68,7 @@ CREATE TABLE user_ipowners (
 ### Database Trigger
 - Routes `account_type: 'ip_owner'` to `user_ipowners` table
 - Sets `invitation_status: 'invited'` by default
-- Maps metadata fields correctly (`pen_name_or_studio`, not `pen_name`)
+- Maps metadata fields correctly (`pen_name`, not `pen_name`)
 
 ## Table Separation (Buyers vs Creators)
 
@@ -102,11 +102,11 @@ CREATE TABLE user_ipowners (
 
 ### 2. Metadata Field Fix
 - **Before**: Signup form used `pen_name` in metadata
-- **After**: Uses `pen_name_or_studio` to match database schema
+- **After**: Uses `pen_name` to match database schema
 
 ### 3. TypeScript Types Fix
 - **Before**: Types showed `pen_name` field
-- **After**: Updated to `pen_name_or_studio` to match database
+- **After**: Updated to `pen_name` to match database
 
 ### 4. Redirect Fix
 - **Before**: OAuth and email signup redirected to homepage/invited

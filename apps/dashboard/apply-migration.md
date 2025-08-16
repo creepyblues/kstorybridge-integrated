@@ -28,7 +28,7 @@ psql -h your-db-host -U your-username -d your-database -f supabase/migrations/20
 2. **Syncs existing user data** from `user_buyers` and `user_ipowners` tables into the new `profiles` table
 3. **Sets up Row Level Security (RLS)** policies for proper access control
 4. **Creates triggers** to automatically populate the profiles table for new users
-5. **Fixes field naming** (changes `pen_name_or_studio` to `pen_name` to match TypeScript types)
+5. **Uses consistent field naming** (`pen_name` field to match database schema and TypeScript types)
 
 ## After Running the Migration
 

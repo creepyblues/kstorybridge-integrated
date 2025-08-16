@@ -64,7 +64,7 @@ CREATE TABLE public.user_ipowners (
   user_id UUID NOT NULL, -- Duplicate reference for compatibility  
   email TEXT NOT NULL UNIQUE,
   full_name TEXT NOT NULL,
-  pen_name_or_studio TEXT NOT NULL,
+  pen_name TEXT,
   ip_owner_role ip_owner_role NOT NULL,
   ip_owner_company TEXT,
   website_url TEXT,

@@ -246,6 +246,7 @@ try {
 - Array fields (tags, comps) need special form handling
 - Handle both `rights` and `rights_owner` as distinct fields
 - Null/undefined value handling in displays
+- **IMPORTANT**: Always use `pen_name` field (NOT `pen_name_or_studio`) for IP owner profiles
 
 **Authentication:**
 - Mock vs real data configuration for localhost development

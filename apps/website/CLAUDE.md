@@ -90,3 +90,31 @@ The application uses Supabase with migrations in `supabase/migrations/`. Check t
 5. Build for production: `npm run build`
 
 The project is connected to Lovable for collaborative development, but can be developed locally using standard Node.js tools.
+
+## Database Schema Guidelines
+
+### User Profile Field Naming
+
+**Critical Requirement**: Always use `pen_name` for IP owner profiles.
+
+**✅ Correct Implementation:**
+```typescript
+// SignupForm metadata
+const metadata = {
+  pen_name: formData.penNameOrStudio  // Store as pen_name in metadata
+}
+
+// Database insertion (triggers)
+INSERT INTO user_ipowners (pen_name, ...) 
+VALUES (NEW.raw_user_meta_data->>'pen_name', ...)
+```
+
+**❌ Legacy Field (Do NOT Use):**
+- `pen_name_or_studio` - Old field name, inconsistent with database schema
+- Found in old migrations (historical, do not change)
+- May exist in legacy user metadata (handle as fallback only)
+
+**Migration Strategy:**
+- **New signups**: Always use `pen_name` in metadata and database
+- **Existing users**: Read `pen_name_or_studio` from metadata as fallback
+- **Database operations**: Always target `pen_name` column

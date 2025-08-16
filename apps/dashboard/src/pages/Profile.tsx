@@ -47,7 +47,7 @@ type UnifiedProfile = {
   plan?: string | null; // only for buyers
   
   // IP Owner fields
-  pen_name?: string | null; // mapped from pen_name_or_studio
+  pen_name?: string | null; // mapped from pen_name field
   ip_owner_role?: string | null;
   ip_owner_company?: string | null;
   website_url?: string | null;
@@ -263,7 +263,7 @@ export default function Profile() {
         id: user.id, // Required for RLS policy
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
-        pen_name: user.user_metadata?.pen_name_or_studio || user.user_metadata?.pen_name,
+        pen_name: user.user_metadata?.pen_name || user.user_metadata?.pen_name_or_studio,
         ip_owner_role: user.user_metadata?.ip_owner_role,
         ip_owner_company: user.user_metadata?.ip_owner_company,
         website_url: user.user_metadata?.website_url,

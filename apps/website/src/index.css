@@ -224,6 +224,66 @@
     background-image: none !important;
     -webkit-box-shadow: 0 0 0 1000px white inset !important;
   }
+
+  /* Override any Tailwind default yellow focus rings */
+  input:focus,
+  textarea:focus,
+  select:focus,
+  button:focus,
+  [role="textbox"]:focus,
+  [role="combobox"]:focus {
+    --tw-ring-color: rgb(76 156 155) !important; /* hanok-teal */
+    --tw-ring-opacity: 0.5 !important;
+    box-shadow: 0 0 0 2px rgba(76, 156, 155, 0.5) !important;
+    outline: none !important;
+  }
+
+  /* Remove any potential yellow from webkit/browser defaults */
+  *:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(76, 156, 155, 0.5) !important;
+  }
+
+  /* Specifically target yellow colors and replace them */
+  * {
+    --tw-ring-color: rgb(76 156 155) !important;
+  }
+
+  /* Override any Tailwind ring-yellow classes if they somehow appear */
+  .ring-yellow-400,
+  .ring-yellow-500,
+  .focus\\:ring-yellow-400:focus,
+  .focus\\:ring-yellow-500:focus {
+    --tw-ring-color: rgb(76 156 155) !important;
+  }
+
+  /* Aggressively override any Google button styling that might cause yellow */
+  #signin-google-btn,
+  #signup-google-btn,
+  button[id*="google"],
+  button[class*="google"] {
+    background-color: white !important;
+    background: white !important;
+    background-image: none !important;
+    border-color: rgb(209 213 219) !important; /* gray-300 */
+    color: rgb(55 65 81) !important; /* gray-700 */
+  }
+
+  #signin-google-btn:hover,
+  #signup-google-btn:hover,
+  button[id*="google"]:hover,
+  button[class*="google"]:hover {
+    background-color: rgb(249 250 251) !important; /* gray-50 */
+    background: rgb(249 250 251) !important;
+    background-image: none !important;
+    border-color: rgb(156 163 175) !important; /* gray-400 */
+  }
+
+  /* Override any potential yellow from CSS variables */
+  :root {
+    --accent: 156 163 175 !important; /* gray-400 instead of any yellow */
+    --accent-foreground: 55 65 81 !important; /* gray-700 */
+  }
 }
 
 @layer utilities {

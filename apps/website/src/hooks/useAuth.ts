@@ -94,35 +94,53 @@ export const useAuth = () => {
           
           let profile = null;
           if (accountType === 'buyer') {
-            const { data, error } = await supabase
-              .from('user_buyers')
-              .select('tier, buyer_role')
-              .eq('id', session.user.id)
-              .maybeSingle();
+            // Try both email and id as keys
+            const [dataById, dataByEmail] = await Promise.all([
+              supabase
+                .from('user_buyers')
+                .select('tier, buyer_role')
+                .eq('id', session.user.id)
+                .maybeSingle(),
+              supabase
+                .from('user_buyers')
+                .select('tier, buyer_role')
+                .eq('email', session.user.email)
+                .maybeSingle()
+            ]);
             
-            console.log('👤 WEBSITE: Buyer profile query result:', { data, error });
+            const result = dataById.data ? dataById : dataByEmail;
+            console.log('👤 WEBSITE: Buyer profile query result:', result);
             
-            if (!error && data) {
+            if (!result.error && result.data) {
               profile = {
                 account_type: 'buyer' as const,
-                invitation_status: data.tier === 'invited' ? 'invited' : 'accepted',
-                role: data.buyer_role
+                invitation_status: result.data.tier === 'invited' ? 'invited' : 'accepted',
+                role: result.data.buyer_role
               };
             }
           } else if (accountType === 'ip_owner') {
-            const { data, error } = await supabase
-              .from('user_ipowners')
-              .select('invitation_status, ip_owner_role')
-              .eq('id', session.user.id)
-              .maybeSingle();
+            // Try both email and id as keys
+            const [dataById, dataByEmail] = await Promise.all([
+              supabase
+                .from('user_ipowners')
+                .select('invitation_status, ip_owner_role')
+                .eq('id', session.user.id)
+                .maybeSingle(),
+              supabase
+                .from('user_ipowners')
+                .select('invitation_status, ip_owner_role')
+                .eq('email', session.user.email)
+                .maybeSingle()
+            ]);
             
-            console.log('👤 WEBSITE: IP owner profile query result:', { data, error });
+            const result = dataById.data ? dataById : dataByEmail;
+            console.log('👤 WEBSITE: IP owner profile query result:', result);
             
-            if (!error && data) {
+            if (!result.error && result.data) {
               profile = {
                 account_type: 'ip_owner' as const,
-                invitation_status: data.invitation_status || 'invited',
-                role: data.ip_owner_role
+                invitation_status: result.data.invitation_status || 'invited',
+                role: result.data.ip_owner_role
               };
             }
           }

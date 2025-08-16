@@ -188,6 +188,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 - Card-based layouts for content sections
 - Loading states and error handling
 
+**🚫 NEVER USE YELLOW COLORS:**
+- Do not use any yellow background colors (`bg-yellow-*`, `hover:bg-yellow-*`)
+- Do not use yellow borders, text colors, or icons
+- Replace yellow (#FBBC05, #FCD34D, etc.) with neutral colors like gray-500 (#6B7280) or brand colors
+- Use `hover:bg-white hover:border-gray-400 transition-colors` for button hover states
+
 **Form Patterns:**
 - React Hook Form + Zod validation
 - Array fields: comma-separated input with proper parsing

@@ -428,18 +428,12 @@ function TitleDetailContent() {
                                   <div className="absolute inset-0 bg-gradient-to-r from-hanok-teal/10 to-transparent"></div>
                                   <div className="relative flex items-center justify-between">
                                     <div>
-                                      <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">
+                                      <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
                                         Pitch Deck
                                       </h2>
-                                      <p className="text-hanok-teal-100 text-sm font-medium">
+                                      <p className="text-hanok-teal-100 text-lg font-semibold">
                                         {title.title_name_en || title.title_name_kr}
                                       </p>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                      <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5">
-                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                        <span className="text-white text-xs font-medium">Secure View</span>
-                                      </div>
                                     </div>
                                   </div>
                                 </div>

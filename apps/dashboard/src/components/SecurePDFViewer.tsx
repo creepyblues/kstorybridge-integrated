@@ -596,12 +596,9 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     <div className="bg-white rounded-lg">
       <div className="p-6">
         {title && (
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-800">{title}</h3>
-            <div className="flex items-center gap-2 text-sm text-green-600">
-              <Shield className="h-4 w-4" />
-              <span>Secure Session Active</span>
-            </div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-midnight-ink mb-2">{title}</h2>
+            <div className="h-1 w-16 bg-hanok-teal rounded-full"></div>
           </div>
         )}
         

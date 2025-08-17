@@ -266,6 +266,13 @@ function TitlesContent() {
                   <Link key={featured.id} to={`/titles/${title.title_id}`} className="block">
                     <Card className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col">
                       <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
+                        {title.pitch && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-1 rounded-full shadow-md">
+                              Pitch
+                            </span>
+                          </div>
+                        )}
                         {title.title_image ? (
                           <img 
                             src={title.title_image} 
@@ -282,7 +289,9 @@ function TitlesContent() {
                                 <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
                               </div>
                             </div>
-                            <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
+                            {!title.pitch && (
+                              <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
+                            )}
                           </>
                         )}
                       </div>
@@ -470,6 +479,13 @@ function TitlesContent() {
                         </div>
                         
                         <div className="col-span-3">
+                          {title.pitch && (
+                            <div className="mb-1">
+                              <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-full">
+                                Pitch
+                              </span>
+                            </div>
+                          )}
                           <div className="font-medium text-gray-800 line-clamp-1">
                             {title.title_name_en || title.title_name_kr}
                           </div>

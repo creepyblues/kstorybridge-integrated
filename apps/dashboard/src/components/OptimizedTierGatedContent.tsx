@@ -52,13 +52,10 @@ const OptimizedTierGatedContent: React.FC<OptimizedTierGatedContentProps> = ({
       
       {/* Premium overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-rose-50/80 to-purple-50/80 backdrop-blur-sm pointer-events-none flex items-center justify-center">
-        <div className="bg-white/90 border border-rose-200 rounded-lg px-3 py-2 shadow-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-rose-400 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium text-rose-800">
-              {premiumLabel}
-            </span>
-          </div>
+        <div className="bg-white/90 border border-rose-200 rounded-lg px-3 py-2 shadow-sm flex items-center justify-center">
+          <span className="text-xs font-medium text-rose-800 text-center block">
+            {premiumLabel}
+          </span>
         </div>
       </div>
     </div>

@@ -27,7 +27,7 @@ export function CMSHeader() {
   // 🧪 MOCK TESTING: Change this value when using mock data
   // Options: 'invited', 'basic', 'pro', 'suite'
   // NOTE: Should match the mockTier in useTierAccess.ts
-  const mockTier = 'pro';
+  const mockTier = 'basic';
 
   // Use mock data on localhost (unless real data is enabled), real data otherwise
   const displayUser = (isLocalhost && !useRealDataOnLocalhost) ? mockUser : user;

@@ -34,6 +34,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const BuyerDashboardNew = lazy(() => import("./pages/BuyerDashboardNew"));
+const BuyersPricing = lazy(() => import("./pages/BuyersPricing"));
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,9 @@ const App = () => (
                 } />
                 <Route path="/buyers/profile" element={
                   <ProtectedLayout><Profile /></ProtectedLayout>
+                } />
+                <Route path="/buyers/pricing" element={
+                  <ProtectedLayout><BuyersPricing /></ProtectedLayout>
                 } />
                 
                 {/* Creator routes */}

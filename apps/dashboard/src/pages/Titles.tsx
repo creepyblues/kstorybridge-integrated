@@ -236,7 +236,7 @@ function TitlesContent() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+    <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-8">
@@ -414,7 +414,7 @@ function TitlesContent() {
           
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="bg-gray-50 px-6 py-4 border-b">
-              <div className="grid grid-cols-12 gap-4 items-center font-semibold text-gray-700">
+              <div className="grid grid-cols-11 gap-4 items-center font-semibold text-gray-700">
                 <div className="col-span-1">Image</div>
                 <div className="col-span-3">
                   <SortableHeader field="title">Title</SortableHeader>
@@ -430,14 +430,8 @@ function TitlesContent() {
                 </div>
                 <div className="col-span-1 relative flex flex-col items-center justify-center">
                   <span>Comps</span>
-                  <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium mt-1">
-                    PRO PLAN
-                  </span>
-                </div>
-                <div className="col-span-1 relative flex flex-col items-center justify-center">
-                  <span>Audience</span>
-                  <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium mt-1">
-                    PRO PLAN
+                  <span className="inline-flex items-center justify-center text-center bg-gray-200 text-gray-600 text-[7px] px-2 py-0.5 rounded-full font-medium mt-1 min-w-[60px]">
+                    BASIC PLAN
                   </span>
                 </div>
               </div>
@@ -456,7 +450,7 @@ function TitlesContent() {
                   
                   return currentTitles.map((title) => (
                     <Link key={title.title_id} to={`/titles/${title.title_id}`} className="block">
-                      <div className="px-6 py-4 grid grid-cols-12 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                      <div className="px-6 py-4 grid grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
                         <div className="col-span-1">
                           {title.title_image ? (
                             <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden">
@@ -511,7 +505,7 @@ function TitlesContent() {
                                 </div>
                               )}
                               {Array.isArray(title.genre) && title.genre.length > 2 && (
-                                <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
+                                <span className="inline-flex items-center text-xs text-gray-500 ml-1">+{title.genre.length - 2}</span>
                               )}
                             </div>
                           ) : (
@@ -538,9 +532,9 @@ function TitlesContent() {
                                 </div>
                               ))}
                               {((title as any).keywords || title.tags).length > 2 && (
-                                <div className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
+                                <span className="inline-flex items-center text-gray-500 text-xs ml-1">
                                   +{((title as any).keywords || title.tags).length - 2}
-                                </div>
+                                </span>
                               )}
                             </div>
                           ) : (
@@ -549,26 +543,14 @@ function TitlesContent() {
                         </div>
                         
                         <div className="col-span-1">
-                          <OptimizedTierGatedContent requiredTier="pro">
+                          <OptimizedTierGatedContent requiredTier="basic">
                             {title.comps && title.comps.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {title.comps.map((comp, index) => (
-                                  <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                  <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium truncate max-w-[150px]" title={comp}>
                                     {comp}
                                   </div>
                                 ))}
-                              </div>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </OptimizedTierGatedContent>
-                        </div>
-                        
-                        <div className="col-span-1">
-                          <OptimizedTierGatedContent requiredTier="pro">
-                            {title.audience ? (
-                              <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
-                                {title.audience}
                               </div>
                             ) : (
                               <span className="text-gray-400">-</span>

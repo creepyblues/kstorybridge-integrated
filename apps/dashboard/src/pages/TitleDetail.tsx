@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
-import { Eye, Heart, Star, ExternalLink, Crown, FileText, X } from "lucide-react";
+import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock } from "lucide-react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
 import { favoritesService } from "@/services/favoritesService";
@@ -13,11 +13,19 @@ import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
+import { useTierAccess } from "@/hooks/useTierAccess";
 
 function TitleDetailContent() {
   const { titleId } = useParams<{ titleId: string }>();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const { tier, canAccessPremiumContent } = useTierAccess();
+  
+  // Debug logging for localhost
+  useEffect(() => {
+    console.log('🔍 TitleDetail - Tier access:', { tier, canAccessPremiumContent });
+  }, [tier, canAccessPremiumContent]);
   
   // Check if we should bypass auth for localhost development
   const shouldBypassAuth = () => {
@@ -34,7 +42,8 @@ function TitleDetailContent() {
   const [loading, setLoading] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState<boolean>(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   
   // Ensure modal renders properly with slight delay
   useEffect(() => {
@@ -174,23 +183,23 @@ function TitleDetailContent() {
   }
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Title Card */}
         <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-12">
-          <CardContent className="p-8">
+          <CardContent className="p-8 md:p-10">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h1 className="text-4xl font-bold text-midnight-ink mb-2">
+                <h1 className="text-4xl md:text-5xl font-bold text-midnight-ink mb-3 leading-tight">
                   {title.title_name_en || title.title_name_kr}
                 </h1>
                 {title.title_name_kr && title.title_name_en && (
-                  <p className="text-lg text-gray-500 font-medium mb-4">
+                  <p className="text-lg md:text-xl text-gray-500 font-medium mb-6">
                     {title.title_name_kr}
                   </p>
                 )}
                 
                 {/* Story and Art Authors */}
-                <div className="flex flex-wrap gap-4 text-sm text-gray-500 mt-4">
+                <div className="flex flex-wrap gap-6 text-sm text-gray-500 mt-6">
                   {title.story_author && (
                     <div>
                       <span className="font-semibold text-hanok-teal">Story by</span> <span className="text-gray-600">{title.story_author}</span>
@@ -204,7 +213,7 @@ function TitleDetailContent() {
                 </div>
               </div>
               
-              <div className="flex flex-col items-end gap-3 ml-6">
+              <div className="flex flex-col items-end gap-4 ml-8">
                 {isAuthenticated && (
                   <Button
                     id="title-detail-favorite-toggle-btn"
@@ -241,9 +250,9 @@ function TitleDetailContent() {
           </CardContent>
         </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-16">
         {/* Left Column - Cover Image and Title Info */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-8">
           {/* Cover Image */}
           <Card className="bg-white border-gray-200 shadow-lg rounded-2xl overflow-hidden">
             <CardContent className="p-0">
@@ -302,8 +311,8 @@ function TitleDetailContent() {
 
           {/* Tagline */}
           {title.tagline && (
-            <div className="py-3 px-4 bg-hanok-teal/5 rounded-lg border-l-4 border-hanok-teal">
-              <p className="text-gray-700 font-medium italic">
+            <div className="py-4 px-5 bg-hanok-teal/5 rounded-lg border-l-4 border-hanok-teal">
+              <p className="text-gray-700 font-medium italic text-base leading-relaxed">
                 "{title.tagline}"
               </p>
             </div>
@@ -339,24 +348,23 @@ function TitleDetailContent() {
         </div>
 
         {/* Right Column - Description and Details */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-8">
           {/* Synopsis */}
           <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-midnight-ink text-xl">Synopsis</CardTitle>
-
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+              <CardTitle className="text-midnight-ink text-2xl font-bold">Synopsis</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
+            <CardContent className="px-6 pb-8">
+              <div className="space-y-8">
                 {title.description ? (
-                  <p className="text-gray-600 leading-relaxed text-base">{title.description}</p>
+                  <p className="text-gray-600 leading-relaxed text-base lg:text-lg">{title.description}</p>
                 ) : (
-                  <p className="text-gray-500 italic text-sm">No description available for this title.</p>
+                  <p className="text-gray-500 italic text-base">No description available for this title.</p>
                 )}
 
                 {/* Keywords Section */}
-                <div className="pt-4 border-t border-gray-200">
-                  <h5 className="font-bold text-hanok-teal mb-3">Keywords</h5>
+                <div className="pt-6 border-t border-gray-200">
+                  <h5 className="font-bold text-hanok-teal mb-4 text-lg">Keywords</h5>
                   <div className="flex flex-wrap gap-2">
                     {(title.keywords || title.tags) && (title.keywords || title.tags).length > 0 ? (
                       (title.keywords || title.tags).map((tag, idx) => (
@@ -382,27 +390,54 @@ function TitleDetailContent() {
                       </div>
                       {isAuthenticated && (
                         <>
-                          <Button 
-                            id="title-detail-view-pitch-btn" 
-                            className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
-                            onClick={() => {
-                              // Small delay to ensure proper state update
-                              setTimeout(() => setIsPdfModalOpen(true), 10);
-                            }}
-                          >
-                            {/* Shine effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              id="title-detail-view-pitch-btn" 
+                              className={canAccessPremiumContent 
+                                ? "bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
+                                : "bg-gray-100 hover:bg-gray-200 text-gray-600 shadow-md border border-gray-300 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 relative"}
+                              onClick={() => {
+                                console.log('🔍 View Pitch clicked:', { canAccessPremiumContent, tier });
+                                if (canAccessPremiumContent) {
+                                  console.log('📄 Opening PDF modal');
+                                  // Small delay to ensure proper state update
+                                  setTimeout(() => setIsPdfModalOpen(true), 10);
+                                } else {
+                                  console.log('⬆️ Showing upgrade modal');
+                                  setShowUpgradeModal(true);
+                                }
+                              }}
+                            >
+                              {canAccessPremiumContent ? (
+                                <>
+                                  {/* Shine effect */}
+                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                                  
+                                  {/* Icons */}
+                                  <Crown className="h-3 w-3 mr-1 text-yellow-300 animate-pulse pointer-events-none" />
+                                  <FileText className="h-3 w-3 mr-1 pointer-events-none" />
+                                  
+                                  {/* Text */}
+                                  <span className="relative z-10 pointer-events-none">View Pitch</span>
+                                  
+                                  {/* Glow effect */}
+                                  <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
+                                </>
+                              ) : (
+                                <>
+                                  <Lock className="h-3 w-3 mr-1" />
+                                  <span>View Pitch</span>
+                                </>
+                              )}
+                            </Button>
                             
-                            {/* Icons */}
-                            <Crown className="h-3 w-3 mr-1 text-yellow-300 animate-pulse pointer-events-none" />
-                            <FileText className="h-3 w-3 mr-1 pointer-events-none" />
-                            
-                            {/* Text */}
-                            <span className="relative z-10 pointer-events-none">View Pitch</span>
-                            
-                            {/* Glow effect */}
-                            <div className="absolute inset-0 rounded-full bg-purple-400/50 blur-md group-hover:bg-purple-300/60 transition-colors duration-300 pointer-events-none"></div>
-                          </Button>
+                            {/* Pro Plan Badge for basic/invited users */}
+                            {!canAccessPremiumContent && (
+                              <Badge className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 px-2 py-1 text-xs font-bold">
+                                PRO PLAN
+                              </Badge>
+                            )}
+                          </div>
                           
                           {/* Enhanced PDF Modal with Modern Design */}
                           {isPdfModalOpen && (
@@ -544,18 +579,15 @@ function TitleDetailContent() {
                 )}
 
                 {/* Market Information */}
-                <div className="pt-6 border-t border-gray-200 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="pt-8 border-t border-gray-200 space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <h5 className="font-bold text-hanok-teal">Perfect For</h5>
-                        <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium">
-                          PRO PLAN
-                        </span>
+                      <div className="mb-4">
+                        <h5 className="font-bold text-hanok-teal text-lg">Perfect For</h5>
                       </div>
-                      <OptimizedTierGatedContent requiredTier="pro">
+                      <OptimizedTierGatedContent requiredTier="basic">
                         {title.perfect_for ? (
-                          <div className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                          <div className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium truncate max-w-[200px]" title={title.perfect_for}>
                             {title.perfect_for}
                           </div>
                         ) : (
@@ -566,17 +598,14 @@ function TitleDetailContent() {
                       </OptimizedTierGatedContent>
                     </div>
                     <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <h5 className="font-bold text-hanok-teal">Comps</h5>
-                        <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium">
-                          PRO PLAN
-                        </span>
+                      <div className="mb-4">
+                        <h5 className="font-bold text-hanok-teal text-lg">Comps</h5>
                       </div>
-                      <OptimizedTierGatedContent requiredTier="pro">
+                      <OptimizedTierGatedContent requiredTier="basic">
                         {title.comps && title.comps.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {title.comps.map((comp, index) => (
-                              <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                              <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium truncate max-w-[200px]" title={comp}>
                                 {comp}
                               </div>
                             ))}
@@ -590,9 +619,9 @@ function TitleDetailContent() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-3">Tone</h5>
+                      <h5 className="font-bold text-hanok-teal mb-4 text-lg">Tone</h5>
                       {title.tone ? (
                         <div className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
                           {title.tone}
@@ -604,7 +633,7 @@ function TitleDetailContent() {
                       )}
                     </div>
                     <div>
-                      <h5 className="font-bold text-hanok-teal mb-3">Genre</h5>
+                      <h5 className="font-bold text-hanok-teal mb-4 text-lg">Genre</h5>
                       {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) ? (
                         <div className="flex flex-wrap gap-2">
                           {Array.isArray(title.genre) ? (
@@ -633,24 +662,23 @@ function TitleDetailContent() {
 
           {/* Title Information and Details */}
           <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
-            <CardHeader>
-              <CardTitle className="text-midnight-ink text-xl">Title Information</CardTitle>
+            <CardHeader className="pb-6">
+              <CardTitle className="text-midnight-ink text-2xl font-bold">Title Information</CardTitle>
             </CardHeader>
-            <CardContent>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <CardContent className="px-6 pb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {/* Left Column - Creator Information */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {/* Views */}
                   <div>
-                    <h5 className="font-semibold text-hanok-teal mb-1">Views</h5>
-                    <p className="text-gray-600 text-sm">{formatViews(title.views || 0)}</p>
+                    <h5 className="font-semibold text-hanok-teal mb-2 text-base">Views</h5>
+                    <p className="text-gray-600 text-base">{formatViews(title.views || 0)}</p>
                   </div>
                   
                   {/* Series Status */}
                   <div>
-                    <h5 className="font-semibold text-hanok-teal mb-1">Series Status</h5>
-                    <p className="text-gray-600 text-sm">
+                    <h5 className="font-semibold text-hanok-teal mb-2 text-base">Series Status</h5>
+                    <p className="text-gray-600 text-base">
                       {title.completed !== null && title.completed !== undefined 
                         ? (title.completed ? 'Completed' : 'Ongoing') 
                         : 'Unknown'}
@@ -660,8 +688,8 @@ function TitleDetailContent() {
                   {/* Rating */}
                   {title.rating && title.rating_count && title.rating_count > 0 && (
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1">Rating</h5>
-                      <p className="text-gray-600 text-sm">{title.rating.toFixed(1)} ({title.rating_count} reviews)</p>
+                      <h5 className="font-semibold text-hanok-teal mb-2 text-base">Rating</h5>
+                      <p className="text-gray-600 text-base">{title.rating.toFixed(1)} ({title.rating_count} reviews)</p>
                     </div>
                   )}
                   
@@ -684,15 +712,15 @@ function TitleDetailContent() {
                     </div>
                   )}
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h5 className="font-semibold text-hanok-teal">Rights Owner</h5>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h5 className="font-semibold text-hanok-teal text-base">Rights Owner</h5>
                       <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium">
                         PRO PLAN
                       </span>
                     </div>
                     <OptimizedTierGatedContent requiredTier="pro">
                       {(title.rights_owner || title.rights) ? (
-                        <div className="inline-block bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs font-medium">
+                        <div className="inline-block bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs font-medium truncate max-w-[200px]" title={title.rights_owner || title.rights}>
                           {title.rights_owner || title.rights}
                         </div>
                       ) : (
@@ -705,15 +733,15 @@ function TitleDetailContent() {
                 </div>
 
                 {/* Right Column - Content Details */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {/* Likes */}
                   <div>
-                    <h5 className="font-semibold text-hanok-teal mb-1">Likes</h5>
-                    <p className="text-gray-600 text-sm">{formatLikes(title.likes || 0)}</p>
+                    <h5 className="font-semibold text-hanok-teal mb-2 text-base">Likes</h5>
+                    <p className="text-gray-600 text-base">{formatLikes(title.likes || 0)}</p>
                   </div>
                   <div>
-                    <h5 className="font-semibold text-hanok-teal mb-1">Number of Chapters</h5>
-                    <p className="text-gray-600 text-sm">
+                    <h5 className="font-semibold text-hanok-teal mb-2 text-base">Number of Chapters</h5>
+                    <p className="text-gray-600 text-base">
                       {title.chapters ? (
                         `${title.chapters.toLocaleString()}${title.completed !== 'completed' ? '+' : ''}`
                       ) : (
@@ -724,15 +752,12 @@ function TitleDetailContent() {
                   
                   {/* Audience */}
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h5 className="font-semibold text-hanok-teal">Audience</h5>
-                      <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium">
-                        PRO PLAN
-                      </span>
+                    <div className="mb-2">
+                      <h5 className="font-semibold text-hanok-teal text-base">Audience</h5>
                     </div>
-                    <OptimizedTierGatedContent requiredTier="pro">
+                    <OptimizedTierGatedContent requiredTier="basic">
                       {title.audience ? (
-                        <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
+                        <div className="inline-block bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium truncate max-w-[200px]" title={title.audience}>
                           {title.audience}
                         </div>
                       ) : (
@@ -763,6 +788,36 @@ function TitleDetailContent() {
           undefined
         }
       />
+      
+      {/* Upgrade Modal for View Pitch */}
+      {showUpgradeModal === true && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowUpgradeModal(false)} />
+          <div className="relative bg-white rounded-2xl p-6 max-w-[400px] w-full mx-4">
+            <div className="flex items-center justify-center mb-4">
+              <div className="p-3 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full">
+                <Crown className="h-8 w-8 text-purple-600" />
+              </div>
+            </div>
+            <h2 className="text-xl font-bold text-center text-midnight-ink mb-4">
+              Premium Feature
+            </h2>
+            <p className="text-center text-base text-gray-600 mb-6">
+              Pitch Deck is a premium feature and available only to Pro or Suite Plan users
+            </p>
+            <Button
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3"
+              onClick={() => {
+                console.log('Upgrade button clicked, navigating to pricing');
+                setShowUpgradeModal(false);
+                navigate('/buyers/pricing');
+              }}
+            >
+              Upgrade Your Plan
+            </Button>
+          </div>
+        </div>
+      )}
       
     </div>
   );

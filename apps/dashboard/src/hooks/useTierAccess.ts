@@ -38,7 +38,7 @@ export const useTierAccess = (): TierAccess => {
   // 🧪 MOCK TESTING: Change this value when using mock data
   // Options: 'invited', 'basic', 'pro', 'suite'
   // NOTE: Should match the mockTier in CMSHeader.tsx for consistency
-  const mockTier: UserTier = 'pro';
+  const mockTier: UserTier = 'basic';
 
   // Test email for real data queries (replace with your test account)
   const testEmail = 'sungho@dadble.com';

@@ -35,6 +35,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const BuyerDashboardNew = lazy(() => import("./pages/BuyerDashboardNew"));
 const BuyersPricing = lazy(() => import("./pages/BuyersPricing"));
+const Contact = lazy(() => import("./pages/Contact"));
 
 const queryClient = new QueryClient();
 
@@ -151,6 +152,11 @@ const App = () => (
                 } />
                 <Route path="/profile" element={
                   <ProtectedLayout><Profile /></ProtectedLayout>
+                } />
+                
+                {/* Contact page - accessible to all authenticated users */}
+                <Route path="/contact" element={
+                  <ProtectedLayout><Contact /></ProtectedLayout>
                 } />
                 
                 <Route path="*" element={

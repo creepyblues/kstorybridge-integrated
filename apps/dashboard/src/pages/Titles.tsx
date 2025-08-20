@@ -238,15 +238,15 @@ function TitlesContent() {
   return (
     <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
+        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
-              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">TITLES</h1>
-              <p className="text-xl text-midnight-ink-600 leading-relaxed">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">TITLES</h1>
+              <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
                 {isCreatorView ? "Manage your Korean content titles." : "Discover and browse Korean content titles."}
               </p>
             </div>
-            <div className="text-midnight-ink-600 text-lg font-medium">
+            <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">
               {filteredTitles.length} titles
             </div>
           </div>
@@ -254,12 +254,12 @@ function TitlesContent() {
         {/* Featured Titles Section - Only show for buyers */}
         {!isCreatorView && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Featured Titles</h2>
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Featured Titles</h2>
           
           {loading ? (
             <div className="text-center text-gray-500 py-8">Loading featured titles...</div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
               {featuredTitles.map((featured) => {
                 const title = featured.titles;
                 return (
@@ -346,23 +346,23 @@ function TitlesContent() {
 
         {/* All Titles Table */}
         <div>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-4xl font-bold text-midnight-ink">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-midnight-ink">
               {isCreatorView ? "MY TITLES" : "ALL TITLES"}
             </h2>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               <Button
                 onClick={handleRefresh}
                 disabled={loading}
                 variant="outline"
                 className="flex items-center gap-2 text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
               {isCreatorView && (
                 <Link to="/creators/titles/add">
-                  <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-6 py-3 rounded-lg font-medium">
+                  <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-medium">
                     + Add a new title
                   </Button>
                 </Link>
@@ -371,14 +371,14 @@ function TitlesContent() {
           </div>
           
           {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-8">
+          <form onSubmit={handleSearchSubmit} className="relative mb-6 sm:mb-8">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Find your next hit... Try 'binge worthy drama', 'viral comedy', or 'awards potential'"
+              placeholder="Search titles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-32 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
+              className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
               {searchTerm && (
@@ -413,8 +413,9 @@ function TitlesContent() {
           </form>
           
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b">
-              <div className="grid grid-cols-11 gap-4 items-center font-semibold text-gray-700">
+            {/* Desktop Table Header */}
+            <div className="hidden lg:block bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b">
+              <div className="grid grid-cols-11 gap-4 items-center font-semibold text-gray-700 text-xs sm:text-sm">
                 <div className="col-span-1">Image</div>
                 <div className="col-span-3">
                   <SortableHeader field="title">Title</SortableHeader>
@@ -437,6 +438,13 @@ function TitlesContent() {
               </div>
             </div>
             
+            {/* Mobile Header */}
+            <div className="lg:hidden bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 border-b">
+              <div className="text-xs sm:text-sm font-semibold text-gray-700">
+                All Titles ({filteredTitles.length})
+              </div>
+            </div>
+            
             <div className="divide-y">
               {loading ? (
                 <div className="px-6 py-12 text-center text-gray-500">
@@ -450,10 +458,12 @@ function TitlesContent() {
                   
                   return currentTitles.map((title) => (
                     <Link key={title.title_id} to={`/titles/${title.title_id}`} className="block">
-                      <div className="px-6 py-4 grid grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                      {/* Desktop Table Row */}
+                      <div className="hidden lg:grid px-4 sm:px-6 py-4 grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                        {/* Desktop content - keeping existing structure */}
                         <div className="col-span-1">
                           {title.title_image ? (
-                            <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden">
+                            <div className="w-12 h-16 sm:w-16 sm:h-20 bg-gray-200 rounded-lg overflow-hidden">
                               <img 
                                 src={title.title_image} 
                                 alt={title.title_name_en || title.title_name_kr}
@@ -466,7 +476,7 @@ function TitlesContent() {
                               />
                             </div>
                           ) : (
-                            <div className="w-16 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <div className="w-12 h-16 sm:w-16 sm:h-20 bg-gray-100 rounded-lg flex items-center justify-center">
                               <span className="text-xs text-gray-400">No Image</span>
                             </div>
                           )}
@@ -480,11 +490,11 @@ function TitlesContent() {
                               </span>
                             </div>
                           )}
-                          <div className="font-medium text-gray-800 line-clamp-1">
+                          <div className="font-medium text-gray-800 line-clamp-1 text-sm">
                             {title.title_name_en || title.title_name_kr}
                           </div>
                           {title.title_name_en && title.title_name_kr && (
-                            <div className="text-sm text-gray-500 line-clamp-1 mt-1">
+                            <div className="text-xs text-gray-500 line-clamp-1 mt-1">
                               {title.title_name_kr}
                             </div>
                           )}
@@ -556,6 +566,77 @@ function TitlesContent() {
                               <span className="text-gray-400">-</span>
                             )}
                           </OptimizedTierGatedContent>
+                        </div>
+                      </div>
+
+                      {/* Mobile Card Layout */}
+                      <div className="lg:hidden p-3 sm:p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <div className="flex gap-3 sm:gap-4">
+                          {/* Image */}
+                          <div className="flex-shrink-0">
+                            {title.title_image ? (
+                              <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gray-200 rounded-lg overflow-hidden">
+                                <img 
+                                  src={title.title_image} 
+                                  alt={title.title_name_en || title.title_name_kr}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <span className="text-xs text-gray-400">No Image</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="mb-2">
+                              {title.pitch && (
+                                <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-full mr-2">
+                                  Pitch
+                                </span>
+                              )}
+                              <h3 className="font-semibold text-gray-800 text-sm sm:text-base line-clamp-2">
+                                {title.title_name_en || title.title_name_kr}
+                              </h3>
+                              {title.title_name_en && title.title_name_kr && (
+                                <p className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-1">
+                                  {title.title_name_kr}
+                                </p>
+                              )}
+                            </div>
+                            
+                            {/* Tags */}
+                            <div className="space-y-2">
+                              {title.genre && (
+                                <div className="flex flex-wrap gap-1">
+                                  {Array.isArray(title.genre) ? (
+                                    title.genre.slice(0, 2).map((g, idx) => (
+                                      <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
+                                        {formatGenre(g)}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
+                                      {formatGenre(title.genre)}
+                                    </span>
+                                  )}
+                                  {Array.isArray(title.genre) && title.genre.length > 2 && (
+                                    <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {title.tone && (
+                                <div>
+                                  <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    {title.tone}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </Link>

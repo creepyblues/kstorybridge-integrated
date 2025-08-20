@@ -465,9 +465,9 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-slate-600">Loading profile...</div>
+          <div className="text-slate-600 text-sm sm:text-base">Loading profile...</div>
         </div>
       </div>
     );
@@ -475,9 +475,9 @@ export default function Profile() {
 
   if (!profile) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-slate-600">Profile not found</div>
+          <div className="text-slate-600 text-sm sm:text-base">Profile not found</div>
         </div>
       </div>
     );
@@ -485,40 +485,42 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
-            <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">MY PROFILE</h1>
-            <p className="text-xl text-midnight-ink-600 leading-relaxed">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">MY PROFILE</h1>
+            <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
               Manage your account information and preferences.
             </p>
           </div>
         
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           {!isEditing ? (
             <Button
               onClick={() => setIsEditing(true)}
-              className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
+              className="w-full sm:w-auto bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base"
             >
-              <Edit3 className="w-4 h-4 mr-2" />
-              Edit Profile
+              <Edit3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Edit Profile</span>
+              <span className="sm:hidden">Edit</span>
             </Button>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
                 onClick={handleUpdateProfile}
                 disabled={updating}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base"
               >
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 {updating ? "Saving..." : "Save Changes"}
               </Button>
               <Button
                 onClick={handleCancel}
                 variant="outline"
                 disabled={updating}
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base"
               >
-                <X className="w-4 h-4 mr-2" />
+                <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Cancel
               </Button>
             </div>
@@ -527,17 +529,17 @@ export default function Profile() {
       </div>
 
         {/* Profile Information Card */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-12">
-          <CardHeader>
-            <CardTitle className="text-midnight-ink text-xl">Profile Information</CardTitle>
+        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-midnight-ink text-lg sm:text-xl">Profile Information</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
               {/* Left Column - Basic Information */}
-              <div className="space-y-4">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Full Name */}
                 <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1">Full Name</h5>
+                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Full Name</h5>
                   {isEditing ? (
                     <Input
                       id="full_name"
@@ -546,26 +548,26 @@ export default function Profile() {
                       placeholder="Enter your full name"
                     />
                   ) : (
-                    <p className="text-gray-600 text-sm">{profile.full_name || "Not specified"}</p>
+                    <p className="text-gray-600 text-xs sm:text-sm">{profile.full_name || "Not specified"}</p>
                   )}
                 </div>
 
                 {/* Email */}
                 <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1">Email Address</h5>
-                  <p className="text-gray-600 text-sm">{profile.email}</p>
+                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Email Address</h5>
+                  <p className="text-gray-600 text-xs sm:text-sm break-all">{profile.email}</p>
                 </div>
 
                 {/* Account Type */}
                 <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1">Account Type</h5>
-                  <p className="text-gray-600 text-sm">{formatAccountType(profile.account_type)}</p>
+                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Account Type</h5>
+                  <p className="text-gray-600 text-xs sm:text-sm">{formatAccountType(profile.account_type)}</p>
                 </div>
 
                 {/* Pen Name for IP Owners */}
                 {profile.account_type === 'ip_owner' && (
                   <div>
-                    <h5 className="font-semibold text-hanok-teal mb-1">Pen Name / Studio Name</h5>
+                    <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Pen Name / Studio Name</h5>
                     {isEditing ? (
                       <Input
                         id="pen_name"
@@ -574,25 +576,25 @@ export default function Profile() {
                         placeholder="Enter your pen name or studio name"
                       />
                     ) : (
-                      <p className="text-gray-600 text-sm">{profile.pen_name || "Not specified"}</p>
+                      <p className="text-gray-600 text-xs sm:text-sm">{profile.pen_name || "Not specified"}</p>
                     )}
                   </div>
                 )}
 
                 {/* Member Since */}
                 <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1">Member Since</h5>
-                  <p className="text-gray-600 text-sm">{formatDate(profile.created_at)}</p>
+                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Member Since</h5>
+                  <p className="text-gray-600 text-xs sm:text-sm">{formatDate(profile.created_at)}</p>
                 </div>
               </div>
 
               {/* Right Column - Professional Information */}
-              <div className="space-y-4">
+              <div className="space-y-4 sm:space-y-6">
                 {profile.account_type === "buyer" ? (
                   <>
                     {/* Company */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1">Company</h5>
+                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Company</h5>
                       {isEditing ? (
                         <Input
                           id="buyer_company"
@@ -601,13 +603,13 @@ export default function Profile() {
                           placeholder="Enter your company name"
                         />
                       ) : (
-                        <p className="text-gray-600 text-sm">{profile.buyer_company || "Not specified"}</p>
+                        <p className="text-gray-600 text-xs sm:text-sm">{profile.buyer_company || "Not specified"}</p>
                       )}
                     </div>
 
                     {/* Role */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1">Role</h5>
+                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Role</h5>
                       {isEditing ? (
                         <Select
                           value={formData.buyer_role || ""}
@@ -625,7 +627,7 @@ export default function Profile() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-gray-600 text-xs sm:text-sm">
                           {profile.buyer_role ? 
                             profile.buyer_role.split("_").map(word => 
                               word.charAt(0).toUpperCase() + word.slice(1)
@@ -638,7 +640,7 @@ export default function Profile() {
 
                     {/* LinkedIn URL */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1">LinkedIn URL</h5>
+                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">LinkedIn URL</h5>
                       {isEditing ? (
                         <Input
                           id="linkedin_url"
@@ -648,13 +650,13 @@ export default function Profile() {
                           type="url"
                         />
                       ) : (
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-gray-600 text-xs sm:text-sm">
                           {profile.linkedin_url ? (
                             <a
                               href={profile.linkedin_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                              className="text-hanok-teal hover:text-hanok-teal-600 transition-colors break-all"
                             >
                               LinkedIn Profile
                             </a>
@@ -669,7 +671,7 @@ export default function Profile() {
                   <>
                     {/* Company */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1">Company</h5>
+                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Company</h5>
                       {isEditing ? (
                         <Input
                           id="ip_owner_company"
@@ -678,13 +680,13 @@ export default function Profile() {
                           placeholder="Enter your company name"
                         />
                       ) : (
-                        <p className="text-gray-600 text-sm">{profile.ip_owner_company || "Not specified"}</p>
+                        <p className="text-gray-600 text-xs sm:text-sm">{profile.ip_owner_company || "Not specified"}</p>
                       )}
                     </div>
 
                     {/* Role */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1">Role</h5>
+                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Role</h5>
                       {isEditing ? (
                         <Select
                           value={formData.ip_owner_role || ""}
@@ -699,7 +701,7 @@ export default function Profile() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-gray-600 text-xs sm:text-sm">
                           {profile.ip_owner_role ? 
                             profile.ip_owner_role.charAt(0).toUpperCase() + profile.ip_owner_role.slice(1)
                             : "Not specified"
@@ -710,7 +712,7 @@ export default function Profile() {
 
                     {/* Website URL */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1">Website URL</h5>
+                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Website URL</h5>
                       {isEditing ? (
                         <Input
                           id="website_url"
@@ -720,13 +722,13 @@ export default function Profile() {
                           type="url"
                         />
                       ) : (
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-gray-600 text-xs sm:text-sm">
                           {profile.website_url ? (
                             <a
                               href={profile.website_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                              className="text-hanok-teal hover:text-hanok-teal-600 transition-colors break-all"
                             >
                               {profile.website_url}
                             </a>
@@ -742,8 +744,8 @@ export default function Profile() {
                 {/* Membership Tier */}
                 {profile.tier && (
                   <div>
-                    <h5 className="font-semibold text-hanok-teal mb-1">Membership Tier</h5>
-                    <p className="text-gray-600 text-sm">
+                    <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Membership Tier</h5>
+                    <p className="text-gray-600 text-xs sm:text-sm">
                       {profile.tier === "suite" ? "Suite" : profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1)}
                     </p>
                   </div>
@@ -751,8 +753,8 @@ export default function Profile() {
 
                 {/* Last Updated */}
                 <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1">Last Updated</h5>
-                  <p className="text-gray-600 text-sm">{formatDate(profile.updated_at)}</p>
+                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Last Updated</h5>
+                  <p className="text-gray-600 text-xs sm:text-sm">{formatDate(profile.updated_at)}</p>
                 </div>
               </div>
             </div>
@@ -761,24 +763,24 @@ export default function Profile() {
 
         {/* Sign Out Section */}
         <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
-          <CardContent className="p-8">
-            <div className="flex items-center justify-between">
+          <CardContent className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
               <div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-2">Account Actions</h3>
-                <p className="text-gray-600">
+                <h3 className="text-lg sm:text-xl font-bold text-midnight-ink mb-2">Account Actions</h3>
+                <p className="text-gray-600 text-sm sm:text-base">
                   Sign out of your account to end your current session.
                 </p>
               </div>
               <Button
                 onClick={handleSignOut}
                 variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 shadow-lg rounded-2xl px-6 py-3 transition-all duration-300 group relative overflow-hidden"
+                className="w-full sm:w-auto border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden"
               >
                 {/* Subtle glow effect */}
                 <div className="absolute inset-0 rounded-2xl bg-red-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 
                 {/* Icon */}
-                <LogOut className="h-5 w-5 mr-2 relative z-10" />
+                <LogOut className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 relative z-10" />
                 
                 {/* Text */}
                 <span className="relative z-10">Sign Out</span>

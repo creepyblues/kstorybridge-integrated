@@ -187,23 +187,23 @@ function TitleDetailContent() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         {/* Title Card */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-12">
-          <CardContent className="p-8 md:p-10">
-            <div className="flex items-start justify-between">
+        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <CardContent className="p-4 sm:p-6 lg:p-8 xl:p-10">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
               <div className="flex-1">
-                <h1 className="text-4xl md:text-5xl font-bold text-midnight-ink mb-3 leading-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-2 sm:mb-3 leading-tight">
                   {title.title_name_en || title.title_name_kr}
                 </h1>
                 {title.title_name_kr && title.title_name_en && (
-                  <p className="text-lg md:text-xl text-gray-500 font-medium mb-6">
+                  <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-gray-500 font-medium mb-4 sm:mb-6">
                     {title.title_name_kr}
                   </p>
                 )}
                 
                 {/* Story and Art Authors */}
-                <div className="flex flex-wrap gap-6 text-sm text-gray-500 mt-6">
+                <div className="flex flex-wrap gap-3 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">
                   {title.story_author && (
                     <div>
                       <span className="font-semibold text-hanok-teal">Story by</span> <span className="text-gray-600">{title.story_author}</span>
@@ -217,20 +217,21 @@ function TitleDetailContent() {
                 </div>
               </div>
               
-              <div className="flex flex-col items-end gap-4 ml-8">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:ml-4 lg:ml-8">
                 {isAuthenticated && (
                   <Button
                     id="title-detail-favorite-toggle-btn"
                     onClick={handleFavoriteToggle}
                     disabled={favoriteLoading}
                     variant="outline"
-                    className={isFavorited 
-                      ? "border-hanok-teal bg-hanok-teal/5 text-hanok-teal hover:bg-hanok-teal hover:text-white shadow-lg rounded-2xl px-6 py-3" 
-                      : "border-gray-300 text-gray-600 hover:border-hanok-teal hover:text-hanok-teal hover:bg-hanok-teal/5 shadow-lg rounded-2xl px-6 py-3"
-                    }
+                    className={`w-full sm:w-auto shadow-lg rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base ${isFavorited 
+                      ? "border-hanok-teal bg-hanok-teal/5 text-hanok-teal hover:bg-hanok-teal hover:text-white" 
+                      : "border-gray-300 text-gray-600 hover:border-hanok-teal hover:text-hanok-teal hover:bg-hanok-teal/5"
+                    }`}
                   >
-                    <Heart className={`h-5 w-5 mr-2 ${isFavorited ? "fill-current" : ""}`} />
-                    {isFavorited ? "Remove from Favorites" : "Add to Favorites"}
+                    <Heart className={`h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 ${isFavorited ? "fill-current" : ""}`} />
+                    <span className="hidden sm:inline">{isFavorited ? "Remove from Favorites" : "Add to Favorites"}</span>
+                    <span className="sm:hidden">{isFavorited ? "Remove" : "Add"}</span>
                   </Button>
                 )}
                 
@@ -245,23 +246,24 @@ function TitleDetailContent() {
                     console.log('✅ Premium popup state set to true');
                   }}
                   variant="outline" 
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50 shadow-lg rounded-2xl px-6 py-3"
+                  className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50 shadow-lg rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base"
                 >
-                  Contact Creator
+                  <span className="hidden sm:inline">Contact Creator</span>
+                  <span className="sm:hidden">Contact</span>
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-16">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 xl:gap-12 mb-8 sm:mb-12 lg:mb-16">
         {/* Left Column - Cover Image and Title Info */}
-        <div className="lg:col-span-1 space-y-8">
+        <div className="lg:col-span-1 space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Cover Image */}
           <Card className="bg-white border-gray-200 shadow-lg rounded-2xl overflow-hidden">
             <CardContent className="p-0">
               {title.title_image ? (
-                <div className="w-full h-96 bg-gray-100 overflow-hidden">
+                <div className="w-full h-64 sm:h-80 lg:h-96 bg-gray-100 overflow-hidden">
                   <img 
                     src={title.title_image} 
                     alt={title.title_name_en || title.title_name_kr}

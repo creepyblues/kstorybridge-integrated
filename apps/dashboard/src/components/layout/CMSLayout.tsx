@@ -17,7 +17,8 @@ export function CMSLayout({ children }: CMSLayoutProps) {
       <div className="flex pt-[73px]">
         <CMSSidebar />
         <main className="flex-1 overflow-auto bg-gray-50 lg:ml-64 ml-0">
-          <div className="max-w-none mx-auto py-8 px-8">
+          {/* Mobile-optimized padding: narrower on mobile, same on desktop */}
+          <div className="max-w-none mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
             {children}
           </div>
         </main>

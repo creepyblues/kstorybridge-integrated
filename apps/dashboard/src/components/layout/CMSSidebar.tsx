@@ -1,10 +1,5 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
-import {
-  Menu,
-  X
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -38,7 +33,6 @@ const getSettingsItems = (accountType: string) => {
 export function CMSSidebar() {
   const { user } = useAuth();
   const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Get account type from user metadata, default to buyer
   const accountType = user?.user_metadata?.account_type || "buyer";
@@ -46,30 +40,8 @@ export function CMSSidebar() {
   const settingsItems = getSettingsItems(accountType);
 
   return (
-    <>
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-[85px] left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-porcelain-blue-200"
-        aria-label="Toggle menu"
-      >
-        {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
-
-      {/* Overlay for mobile */}
-      {isMobileMenuOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={cn(
-        "fixed left-0 top-[73px] w-64 bg-white border-r border-porcelain-blue-200 h-[calc(100vh-73px)] flex flex-col z-30 transition-transform duration-300 ease-in-out",
-        "lg:translate-x-0",
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      )}>
+    /* Desktop Sidebar - hidden on mobile */
+    <div className="hidden lg:block fixed left-0 top-[73px] w-64 bg-white border-r border-porcelain-blue-200 h-[calc(100vh-73px)] flex flex-col z-30">
       <nav className="p-4 flex-1">
         {/* DISCOVER Section */}
         <div className="mb-6 mt-8">
@@ -125,7 +97,6 @@ export function CMSSidebar() {
           })}
         </div>
       </div>
-      </div>
-    </>
+    </div>
   );
 }

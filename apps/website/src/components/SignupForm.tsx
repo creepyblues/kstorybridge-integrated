@@ -272,6 +272,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               company: (formData as BuyerFormData).buyerCompany,
               role: (formData as BuyerFormData).buyerRole,
               linkedinUrl: (formData as BuyerFormData).linkedinUrl,
+              authType: 'google', // OAuth signup via Google
             });
           } else {
             await notifyCreatorSignup({
@@ -281,6 +282,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               company: (formData as CreatorFormData).ipOwnerCompany,
               role: (formData as CreatorFormData).ipOwnerRole,
               websiteUrl: (formData as CreatorFormData).websiteUrl,
+              authType: 'google', // OAuth signup via Google
             });
           }
         } catch (slackError) {
@@ -441,6 +443,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               company: (formData as BuyerFormData).buyerCompany,
               role: (formData as BuyerFormData).buyerRole,
               linkedinUrl: (formData as BuyerFormData).linkedinUrl,
+              authType: 'email', // Email/password signup
             });
           } else {
             console.log('🔔 Sending creator signup notification...');
@@ -451,6 +454,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               company: (formData as CreatorFormData).ipOwnerCompany,
               role: (formData as CreatorFormData).ipOwnerRole,
               websiteUrl: (formData as CreatorFormData).websiteUrl,
+              authType: 'email', // Email/password signup
             });
           }
           console.log('✅ Slack notification completed successfully');

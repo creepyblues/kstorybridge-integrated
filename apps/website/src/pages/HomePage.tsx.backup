@@ -48,25 +48,86 @@ const HomePage = () => {
       {/* Navigation */}
       <UniversalHeader />
 
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white border-b border-porcelain-blue-200 shadow-lg">
+          <div className="max-w-7xl mx-auto px-6 py-4 space-y-4">
+            <button 
+              id="homepage-mobile-creators-btn"
+              onClick={() => {
+                navigate('/creators');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left text-midnight-ink font-medium hover:text-hanok-teal transition-colors py-2"
+            >
+              CREATORS
+            </button>
+            <button 
+              id="homepage-mobile-buyers-btn"
+              onClick={() => {
+                navigate('/buyers');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left text-midnight-ink font-medium hover:text-hanok-teal transition-colors py-2"
+            >
+              BUYERS
+            </button>
+            <button 
+              id="homepage-mobile-about-btn"
+              onClick={() => {
+                navigate('/about');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left text-midnight-ink font-medium hover:text-hanok-teal transition-colors py-2"
+            >
+              ABOUT
+            </button>
+            
+            {/* Mobile Sign In/Up buttons */}
+            <div className="pt-4 border-t border-porcelain-blue-200 space-y-3">
+              <Button 
+                id="homepage-mobile-signin-btn"
+                className="w-full border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white py-2 rounded-full font-medium transition-colors"
+                onClick={() => {
+                  navigate('/signin');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                SIGN IN
+              </Button>
+              <Button 
+                id="homepage-mobile-signup-btn"
+                className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white py-2 rounded-full font-medium"
+                onClick={() => {
+                  navigate('/signup');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                SIGN UP
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-          <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
             <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-midnight-ink leading-tight">
+              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight">
                 Where Korean Stories Meet Global Screens
               </h1>
-              <p className="text-base sm:text-lg lg:text-xl text-midnight-ink-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
+              <p className="text-xl text-midnight-ink-600 leading-relaxed max-w-lg">
                 KStoryBridge gives studios first-look access to Korea's next breakout hit, while creators keep control and capture more upside.
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+            <div className="flex gap-4">
               <Button 
                 id="homepage-creator-btn"
                 size="lg"
-                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-full font-medium w-full sm:w-auto"
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-lg rounded-full font-medium"
                 onClick={() => navigate('/creators')}
               >
                 I'M A CREATOR
@@ -74,7 +135,7 @@ const HomePage = () => {
               <Button 
                 id="homepage-buyer-btn"
                 size="lg"
-                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-full font-medium w-full sm:w-auto"
+                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium"
                 onClick={() => navigate('/buyers')}
               >
                 I'M A BUYER
@@ -82,10 +143,10 @@ const HomePage = () => {
             </div>
           </div>
           
-          <div className="relative order-first lg:order-last">
+          <div className="relative">
             <div className="relative z-10">
               {/* Hero Illustration */}
-              <div className="w-full max-w-md lg:max-w-lg mx-auto">
+              <div className="w-full max-w-lg mx-auto">
                 <img 
                   src="/hero-illustration.svg" 
                   alt="Korean content streaming across devices"
@@ -98,9 +159,9 @@ const HomePage = () => {
       </div>
 
       {/* Featured Titles Section */}
-      <div className="bg-porcelain-blue-200 py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-8 sm:mb-12 text-center lg:text-left">FEATURED TITLES</h2>
+      <div className="bg-porcelain-blue-200 py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-4xl font-bold text-midnight-ink mb-12">FEATURED TITLES</h2>
           
           {loading ? (
             <div className="text-center text-midnight-ink-600 py-8">Loading featured titles...</div>

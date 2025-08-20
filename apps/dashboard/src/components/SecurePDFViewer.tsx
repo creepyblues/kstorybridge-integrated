@@ -155,30 +155,37 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           const [, bucketName, filePath] = pathMatch;
           console.log('🔍 SECURE PDF: Bucket:', bucketName, 'FilePath:', filePath);
           
-          // Enhanced security: validate file path format (must be UUID/pitch.pdf)
+          // Enhanced security: validate file path format (must be UUID/pitch.pdf OR sample PDF)
           const pathRegex = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\/pitch\.pdf$/;
-          if (!pathRegex.test(filePath)) {
+          const sampleRegex = /Sample\.pdf$/i;
+          
+          if (!pathRegex.test(filePath) && !sampleRegex.test(filePath)) {
             console.log('❌ SECURE PDF: Invalid file path format');
             throw new Error('Invalid file path format. Access denied.');
           }
           
-          // Extract title ID for additional validation
-          const titleId = filePath.split('/')[0];
-          console.log('🔍 SECURE PDF: Title ID:', titleId);
+          // Extract title ID for additional validation (skip for sample PDFs)
+          const isSamplePdf = sampleRegex.test(filePath);
           
-          // Always validate title exists in database (use real Supabase data)
-          console.log('🔍 SECURE PDF: Validating title exists in database...');
-          // Verify title exists in database (additional security layer)
-          const { data: titleExists, error: titleError } = await supabase
-            .from('titles')
-            .select('title_id')
-            .eq('title_id', titleId)
-            .single();
-          
-          console.log('🔍 SECURE PDF: Database validation result:', { titleExists, titleError });
-          if (titleError || !titleExists) {
-            console.log('❌ SECURE PDF: Title not found in database');
-            throw new Error('Content not found or access denied');
+          if (!isSamplePdf) {
+            const titleId = filePath.split('/')[0];
+            console.log('🔍 SECURE PDF: Title ID:', titleId);
+            
+            // Validate title exists in database (use real Supabase data)
+            console.log('🔍 SECURE PDF: Validating title exists in database...');
+            const { data: titleExists, error: titleError } = await supabase
+              .from('titles')
+              .select('title_id')
+              .eq('title_id', titleId)
+              .single();
+            
+            console.log('🔍 SECURE PDF: Database validation result:', { titleExists, titleError });
+            if (titleError || !titleExists) {
+              console.log('❌ SECURE PDF: Title not found in database');
+              throw new Error('Content not found or access denied');
+            }
+          } else {
+            console.log('🔍 SECURE PDF: Skipping database validation for sample PDF');
           }
           
           // Try to create signed URL first, fallback to direct URL if storage API issues persist

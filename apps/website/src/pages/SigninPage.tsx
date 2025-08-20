@@ -8,7 +8,7 @@ import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
 import { getDashboardUrl } from '../config/urls';
-import PageHeader from '../components/PageHeader';
+import UniversalHeader from '../components/UniversalHeader';
 import Footer from '../components/Footer';
 
 const SigninPage = () => {
@@ -203,7 +203,7 @@ const SigninPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <PageHeader />
+      <UniversalHeader />
       
       <main className="flex-1">
         {/* Hero Section */}

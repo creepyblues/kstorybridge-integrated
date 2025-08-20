@@ -1,7 +1,7 @@
 import { ArrowRight, CheckCircle, Globe, Shield, TrendingUp, Zap, Rocket, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
-import PageHeader from '../components/PageHeader';
+import UniversalHeader from '../components/UniversalHeader';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -64,24 +64,24 @@ const CreatorsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <PageHeader />
+      <UniversalHeader />
 
       {/* Hero Section */}
-      <section className="relative py-16 lg:py-24 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="relative py-12 sm:py-16 lg:py-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-midnight-ink">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-midnight-ink">
               Turn Your Korean Stories Into{' '}
               <span className="text-hanok-teal block mt-2">Global Hits</span>
             </h1>
 
-            <p className="text-xl lg:text-2xl text-midnight-ink-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 max-w-3xl mx-auto leading-relaxed">
               Connect directly with international studios, streamers, and publishers.
               Get discovered, get paid, get global.
             </p>
 
             <div className="flex justify-center pt-8">
-              <Button id="creators-hero-get-started-btn" asChild size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full">
+              <Button id="creators-hero-get-started-btn" asChild size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-full">
                 <Link to="/signup/creator">
                   Get Started
                 </Link>
@@ -93,7 +93,7 @@ const CreatorsPage = () => {
 
       {/* Benefits Section */}
       <section className="py-20 bg-porcelain-blue-100">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-midnight-ink">
               Why Creators Choose KStoryBridge
@@ -127,7 +127,7 @@ const CreatorsPage = () => {
 
       {/* Process Section */}
       <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-midnight-ink">
               Your Path to Global Success
@@ -157,7 +157,7 @@ const CreatorsPage = () => {
 
       {/* Features Section */}
       <section className="py-20 bg-porcelain-blue-100">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import PageHeader from '../components/PageHeader';
+import UniversalHeader from '../components/UniversalHeader';
 import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '../hooks/use-toast';
 import { featuredService, type FeaturedWithTitle } from '../services/featuredService';
@@ -53,22 +53,22 @@ const BuyersPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <PageHeader />
+      <UniversalHeader />
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative py-16 lg:py-24 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="relative py-12 sm:py-16 lg:py-24 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-5xl lg:text-6xl font-bold mb-8 text-midnight-ink leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 sm:mb-8 text-midnight-ink leading-tight">
                 <span className="text-hanok-teal">Discover Korea's Next Global Hit Before the World Does</span>
               </h1>
-              <p className="text-xl lg:text-2xl text-midnight-ink-600 mb-12 leading-relaxed max-w-3xl mx-auto">
+              <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto">
                 Scout Korean Hits with Confidence
               </p>
               
               <Link to="/signup">
-                <Button id="buyers-hero-request-vip-btn" size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                <Button id="buyers-hero-request-vip-btn" size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
                   Request VIP Access
                 </Button>
               </Link>
@@ -77,10 +77,10 @@ const BuyersPage = () => {
         </section>
 
         {/* Quote Section */}
-        <section className="py-16 bg-hanok-teal">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="py-12 sm:py-16 bg-hanok-teal">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <blockquote className="text-3xl lg:text-4xl font-bold text-white italic leading-relaxed max-w-5xl mx-auto">
+              <blockquote className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-white italic leading-relaxed max-w-5xl mx-auto">
                 "Done with projects falling apart because nobody could figure out who had the authority to make decisions?"
               </blockquote>
             </div>
@@ -88,10 +88,10 @@ const BuyersPage = () => {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
+        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
                 Why Buyers Choose KStoryBridge
               </h2>
             </div>
@@ -131,10 +131,10 @@ const BuyersPage = () => {
         </section>
 
         {/* Process Section */}
-        <section className="py-20 bg-porcelain-blue-100">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
+        <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
                 How Buyers Find Their Next Hit
               </h2>
             </div>
@@ -195,10 +195,10 @@ const BuyersPage = () => {
         </section>
 
         {/* Quote Section */}
-        <section className="py-16 bg-hanok-teal">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="py-12 sm:py-16 bg-hanok-teal">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <blockquote className="text-3xl lg:text-4xl font-bold text-white italic leading-relaxed max-w-5xl mx-auto">
+              <blockquote className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-white italic leading-relaxed max-w-5xl mx-auto">
                 "Tired of hearing about amazing Korean IPs only after they've already blown up and become too expensive to acquire?"
               </blockquote>
             </div>
@@ -206,10 +206,10 @@ const BuyersPage = () => {
         </section>
 
         {/* Catalog Preview */}
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
+        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
                 The Biggest IP Catalog
               </h2>
               <p className="text-xl text-midnight-ink-600 leading-relaxed max-w-2xl mx-auto">
@@ -288,10 +288,10 @@ const BuyersPage = () => {
         </section>
 
         {/* Pricing Section */}
-        <section className="py-20 bg-porcelain-blue-100">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
+        <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
                 Flexible Plans for Your Needs
               </h2>
             </div>
@@ -459,7 +459,7 @@ const BuyersPage = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-hanok-teal to-porcelain-blue-600">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-hanok-teal to-porcelain-blue-600">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <div className="max-w-4xl mx-auto space-y-8">
               <h2 className="text-4xl lg:text-5xl font-bold text-white mb-12 leading-tight">

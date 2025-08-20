@@ -8,6 +8,9 @@ export interface SlackNotificationData {
   fullName: string;
   email: string;
   company?: string;
+  authType?: 'email' | 'google' | 'oauth';
+  timestamp?: string;
+  timezone?: string;
   additionalInfo?: Record<string, unknown>;
 }
 
@@ -78,13 +81,22 @@ export const notifyBuyerSignup = async (userData: {
   company?: string;
   role?: string;
   linkedinUrl?: string;
+  authType?: 'email' | 'google' | 'oauth';
 }) => {
+  // Get current timestamp and timezone
+  const now = new Date();
+  const timestamp = now.toISOString();
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
   await sendSlackNotification({
     event: 'New Buyer Signup',
     userType: 'buyer',
     fullName: userData.fullName,
     email: userData.email,
     company: userData.company,
+    authType: userData.authType || 'email',
+    timestamp: timestamp,
+    timezone: timezone,
     additionalInfo: {
       role: userData.role,
       linkedinUrl: userData.linkedinUrl,
@@ -99,13 +111,22 @@ export const notifyCreatorSignup = async (userData: {
   company?: string;
   role?: string;
   websiteUrl?: string;
+  authType?: 'email' | 'google' | 'oauth';
 }) => {
+  // Get current timestamp and timezone
+  const now = new Date();
+  const timestamp = now.toISOString();
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
   await sendSlackNotification({
     event: 'New Creator Signup',
     userType: 'creator',
     fullName: userData.fullName,
     email: userData.email,
     company: userData.company,
+    authType: userData.authType || 'email',
+    timestamp: timestamp,
+    timezone: timezone,
     additionalInfo: {
       penName: userData.penName,
       role: userData.role,

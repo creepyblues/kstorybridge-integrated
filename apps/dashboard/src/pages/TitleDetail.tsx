@@ -44,6 +44,10 @@ function TitleDetailContent() {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState<boolean>(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
+  const [currentPdfUrl, setCurrentPdfUrl] = useState<string>("");
+  
+  // Sample PDF URL from Supabase storage (properly encoded)
+  const SAMPLE_PDF_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/Werewolves%20Going%20Crazy%20Over%20Me-Sample.pdf";
   
   // Ensure modal renders properly with slight delay
   useEffect(() => {
@@ -400,6 +404,7 @@ function TitleDetailContent() {
                                 console.log('🔍 View Pitch clicked:', { canAccessPremiumContent, tier });
                                 if (canAccessPremiumContent) {
                                   console.log('📄 Opening PDF modal');
+                                  setCurrentPdfUrl(title.pitch || "");
                                   // Small delay to ensure proper state update
                                   setTimeout(() => setIsPdfModalOpen(true), 10);
                                 } else {
@@ -464,11 +469,8 @@ function TitleDetailContent() {
                                   <div className="relative flex items-center justify-between">
                                     <div>
                                       <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
-                                        Pitch Deck
+                                        SAMPLE PITCH DECK
                                       </h2>
-                                      <p className="text-hanok-teal-100 text-lg font-semibold">
-                                        {title.title_name_en || title.title_name_kr}
-                                      </p>
                                     </div>
                                   </div>
                                 </div>
@@ -484,7 +486,7 @@ function TitleDetailContent() {
                                         minWidth: '600px'
                                       }}>
                                         <SecurePDFViewer 
-                                          pdfUrl={title.pitch}
+                                          pdfUrl={currentPdfUrl}
                                         />
                                       </div>
                                     </div>
@@ -805,16 +807,29 @@ function TitleDetailContent() {
             <p className="text-center text-base text-gray-600 mb-6">
               Pitch Deck is a premium feature and available only to Pro or Suite Plan users
             </p>
-            <Button
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3"
-              onClick={() => {
-                console.log('Upgrade button clicked, navigating to pricing');
-                setShowUpgradeModal(false);
-                navigate('/buyers/pricing');
-              }}
-            >
-              Upgrade Your Plan
-            </Button>
+            <div className="space-y-3">
+              <Button
+                className="w-full bg-white hover:bg-gray-50 text-hanok-teal border-2 border-hanok-teal font-semibold py-3"
+                onClick={() => {
+                  console.log('View Sample Pitch clicked from upgrade modal');
+                  setCurrentPdfUrl(SAMPLE_PDF_URL);
+                  setShowUpgradeModal(false);
+                  setTimeout(() => setIsPdfModalOpen(true), 10);
+                }}
+              >
+                View Sample Pitch
+              </Button>
+              <Button
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3"
+                onClick={() => {
+                  console.log('Upgrade button clicked, navigating to pricing');
+                  setShowUpgradeModal(false);
+                  navigate('/buyers/pricing');
+                }}
+              >
+                Upgrade Your Plan
+              </Button>
+            </div>
           </div>
         </div>
       )}

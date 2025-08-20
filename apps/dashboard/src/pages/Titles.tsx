@@ -161,6 +161,10 @@ function TitlesContent() {
           aValue = Array.isArray(aKeywords) ? aKeywords.join(', ') : (aKeywords || '');
           bValue = Array.isArray(bKeywords) ? bKeywords.join(', ') : (bKeywords || '');
           break;
+        case 'comps':
+          aValue = Array.isArray(a.comps) ? a.comps.join(', ') : (a.comps || '');
+          bValue = Array.isArray(b.comps) ? b.comps.join(', ') : (b.comps || '');
+          break;
         default:
           return 0;
       }
@@ -429,11 +433,8 @@ function TitlesContent() {
                 <div className="col-span-2">
                   <SortableHeader field="keywords">Keywords</SortableHeader>
                 </div>
-                <div className="col-span-1 relative flex flex-col items-center justify-center">
-                  <span>Comps</span>
-                  <span className="inline-flex items-center justify-center text-center bg-gray-200 text-gray-600 text-[7px] px-2 py-0.5 rounded-full font-medium mt-1 min-w-[60px]">
-                    BASIC PLAN
-                  </span>
+                <div className="col-span-1">
+                  <SortableHeader field="comps">Comps</SortableHeader>
                 </div>
               </div>
             </div>

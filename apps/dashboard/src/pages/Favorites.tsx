@@ -144,12 +144,12 @@ export default function Favorites() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 px-3 sm:px-6 lg:px-8">
           <Card className="bg-white border-porcelain-blue-200 shadow-lg rounded-2xl">
-            <CardContent className="p-12 text-center">
-              <Heart className="h-12 w-12 text-midnight-ink-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-midnight-ink mb-2">Please log in</h3>
-              <p className="text-midnight-ink-600">
+            <CardContent className="p-6 sm:p-8 lg:p-12 text-center">
+              <Heart className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-midnight-ink-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-midnight-ink mb-2">Please log in</h3>
+              <p className="text-sm sm:text-base text-midnight-ink-600">
                 You need to be logged in to view your favorites.
               </p>
             </CardContent>
@@ -162,8 +162,8 @@ export default function Favorites() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-        <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="text-center text-midnight-ink-600 py-8">Loading favorites...</div>
+        <div className="max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 px-3 sm:px-6 lg:px-8">
+          <div className="text-center text-midnight-ink-600 py-6 sm:py-8 text-sm sm:text-base">Loading favorites...</div>
         </div>
       </div>
     );
@@ -172,37 +172,37 @@ export default function Favorites() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
         {/* Header */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
+        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
-              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">MY FAVORITES</h1>
-              <p className="text-xl text-midnight-ink-600 leading-relaxed">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">MY FAVORITES</h1>
+              <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
                 Content you've saved for later review.
               </p>
             </div>
-            <div className="text-midnight-ink-600 text-lg font-medium">
+            <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-center sm:text-right">
               {filteredFavorites.length} favorites
             </div>
           </div>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-8">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
+          <form onSubmit={handleSearchSubmit} className="relative mb-6 sm:mb-8">
+            <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-4 h-4 sm:w-5 sm:h-5" />
             <input
               type="text"
-              placeholder="Search your favorites... (press Enter or click Search)"
+              placeholder="Search your favorites..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-32 py-4 text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
+              className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
             />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
+            <div className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 flex gap-1 sm:gap-2">
               {searchTerm && (
                 <Button
                   type="button"
                   onClick={handleClearSearch}
                   variant="ghost"
                   size="sm"
-                  className="text-midnight-ink-400 hover:text-midnight-ink-600"
+                  className="text-midnight-ink-400 hover:text-midnight-ink-600 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
                 >
                   Clear
                 </Button>
@@ -210,16 +210,16 @@ export default function Favorites() {
               <Button
                 type="submit"
                 size="sm"
-                className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
+                className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
               >
                 {/* Shine effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
                 
                 {/* Search icon */}
-                <Search className="h-3 w-3 mr-1 pointer-events-none" />
+                <Search className="h-3 w-3 mr-0.5 sm:mr-1 pointer-events-none" />
                 
                 {/* Text */}
-                <span className="relative z-10 pointer-events-none">Search</span>
+                <span className="relative z-10 pointer-events-none hidden sm:inline">Search</span>
                 
                 {/* Glow effect */}
                 <div className="absolute inset-0 rounded-xl bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
@@ -228,10 +228,10 @@ export default function Favorites() {
           </form>
 
           {/* Divider */}
-          <div className="border-t border-gray-200 my-12"></div>
+          <div className="border-t border-gray-200 my-6 sm:my-8 lg:my-12"></div>
 
           {/* Favorites Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           {filteredFavorites.map((favorite) => {
             const title = favorite.titles;
             return (
@@ -242,7 +242,7 @@ export default function Favorites() {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveFromFavorites(title.title_id)}
-                  className="absolute top-2 right-2 z-10 text-red-500 hover:text-red-600 hover:bg-red-50/80 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-white/80 rounded-full p-2"
+                  className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10 text-red-500 hover:text-red-600 hover:bg-red-50/80 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-white/80 rounded-full p-1 sm:p-2"
                 >
                   <Heart className="h-3 w-3 fill-current" />
                 </Button>
@@ -269,9 +269,9 @@ export default function Favorites() {
                       </>
                     )}
                   </div>
-                  <CardContent className="p-3 flex flex-col flex-grow">
+                  <CardContent className="p-2 sm:p-3 flex flex-col flex-grow">
                     <div className="flex-grow">
-                      <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
+                      <h3 className="text-xs sm:text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
                         {title.title_name_en || title.title_name_kr}
                       </h3>
                       {title.title_name_en && title.title_name_kr && (
@@ -286,12 +286,12 @@ export default function Favorites() {
                         <div className="flex flex-wrap gap-1">
                           {Array.isArray(title.genre) ? (
                             title.genre.slice(0, 1).map((g, idx) => (
-                              <div key={idx} className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                              <div key={idx} className="inline-block bg-hanok-teal/10 text-hanok-teal px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium">
                                 {formatGenre(g)}
                               </div>
                             ))
                           ) : (
-                            <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                            <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium">
                               {formatGenre(title.genre)}
                             </div>
                           )}
@@ -310,10 +310,10 @@ export default function Favorites() {
 
           {filteredFavorites.length === 0 && (
             <Card className="bg-white border-porcelain-blue-200 shadow-lg rounded-2xl">
-              <CardContent className="p-12 text-center">
-                <Heart className="h-12 w-12 text-midnight-ink-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-midnight-ink mb-2">No favorites found</h3>
-                <p className="text-midnight-ink-600">
+              <CardContent className="p-6 sm:p-8 lg:p-12 text-center">
+                <Heart className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-midnight-ink-400 mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-base sm:text-lg font-medium text-midnight-ink mb-2">No favorites found</h3>
+                <p className="text-sm sm:text-base text-midnight-ink-600">
                   {searchTerm ? "No favorites match your search." : "Start browsing content to add favorites."}
                 </p>
               </CardContent>

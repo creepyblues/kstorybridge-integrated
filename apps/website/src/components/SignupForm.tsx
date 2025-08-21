@@ -9,6 +9,7 @@ import { useToast } from '../hooks/use-toast';
 import { supabase } from '../integrations/supabase/client';
 import { trackSignup, trackFormSubmission, trackButtonClick } from '@/utils/analytics';
 import { notifyBuyerSignup, notifyCreatorSignup } from '../utils/slack';
+import { notifySignupFailure, analyzeSignupFailure } from '../utils/slackNotifications';
 
 type AccountType = 'buyer' | 'creator';
 
@@ -40,6 +41,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isOAuthUser, setIsOAuthUser] = useState(false);
   const [oAuthUserId, setOAuthUserId] = useState<string | null>(null);
+  const [rejectionAlert, setRejectionAlert] = useState<{email: string; message: string} | null>(null);
   
   const [buyerFormData, setBuyerFormData] = useState<BuyerFormData>({
     email: '',
@@ -62,6 +64,35 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Check for signup rejection message and show alert
+  useEffect(() => {
+    const rejectionData = sessionStorage.getItem('signupRejection');
+    if (rejectionData) {
+      try {
+        const rejection = JSON.parse(rejectionData);
+        // Only show if it's recent (within last 30 seconds) to avoid stale messages
+        if (Date.now() - rejection.timestamp < 30000) {
+          setRejectionAlert({
+            email: rejection.email,
+            message: rejection.message
+          });
+          
+          toast({
+            title: "Google Signup Failed",
+            description: `${rejection.message} (${rejection.email})`,
+            variant: "destructive",
+            duration: 8000 // Show for longer duration
+          });
+        }
+        // Clear the rejection data
+        sessionStorage.removeItem('signupRejection');
+      } catch (error) {
+        console.error('Error parsing signup rejection data:', error);
+        sessionStorage.removeItem('signupRejection');
+      }
+    }
+  }, [toast]);
 
   // Check if this is an OAuth user completing their profile
   useEffect(() => {
@@ -193,12 +224,16 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           return;
         }
 
-        // Skip work email validation for OAuth users since they've already authenticated with Google
-        // Validate work email for buyers only (if they changed it) - but skip for OAuth users
+        // Validate work email for buyers (OAuth users are already validated in AuthCallbackPage)
         if (accountType === 'buyer' && !isWorkEmail(formData.email)) {
-          console.log('⚠️ OAuth user using personal email - this is allowed for OAuth');
-          // For OAuth users, we'll allow personal emails since they've authenticated via Google
-          // Only show warning for non-OAuth email signups
+          console.log('❌ OAuth user profile completion: Personal email not allowed for buyer account');
+          toast({
+            title: "Work Email Required",
+            description: "Personal email providers are not allowed for buyer accounts. Please use a work email address.",
+            variant: "destructive"
+          });
+          setIsLoading(false);
+          return;
         }
 
         // Create profile in the appropriate table
@@ -220,7 +255,29 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             .insert(insertData);
 
           if (error) {
-            console.error('❌ Error creating buyer profile:', error);
+            console.error('Error creating buyer profile:', error);
+            
+            // Send Slack notification for OAuth signup failure
+            const analysis = analyzeSignupFailure(error);
+            try {
+              await notifySignupFailure({
+                email: formData.email,
+                accountType: 'buyer',
+                errorMessage: error.message,
+                errorCode: error.code,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                additionalContext: {
+                  authType: 'OAuth (Google)',
+                  step: 'Profile creation',
+                  ...analysis,
+                  fullError: JSON.stringify(error)
+                }
+              });
+            } catch (slackError) {
+              console.error('Failed to send OAuth signup failure notification:', slackError);
+            }
+            
             toast({
               title: "Profile Creation Error",
               description: error.message,
@@ -250,6 +307,28 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
           if (error) {
             console.error('Error creating IP owner profile:', error);
+            
+            // Send Slack notification for OAuth signup failure
+            const analysis = analyzeSignupFailure(error);
+            try {
+              await notifySignupFailure({
+                email: formData.email,
+                accountType: 'creator',
+                errorMessage: error.message,
+                errorCode: error.code,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                additionalContext: {
+                  authType: 'OAuth (Google)',
+                  step: 'Profile creation',
+                  ...analysis,
+                  fullError: JSON.stringify(error)
+                }
+              });
+            } catch (slackError) {
+              console.error('Failed to send OAuth signup failure notification:', slackError);
+            }
+            
             toast({
               title: "Profile Creation Error",
               description: error.message,
@@ -363,6 +442,29 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       if (error) {
         console.error('Signup error:', error);
         trackFormSubmission(`${accountType}_signup_form`, false);
+        
+        // Send Slack notification for signup failure
+        const analysis = analyzeSignupFailure(error);
+        try {
+          await notifySignupFailure({
+            email: formData.email,
+            accountType,
+            errorMessage: error.message,
+            errorCode: error.code,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            additionalContext: {
+              authType: 'Email/Password',
+              step: 'Supabase Auth Signup',
+              ...analysis,
+              metadata,
+              fullError: JSON.stringify(error)
+            }
+          });
+        } catch (slackError) {
+          console.error('Failed to send signup failure notification:', slackError);
+        }
+        
         toast({
           title: "Signup Error",
           description: error.message,
@@ -516,6 +618,37 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         </p>
       </div>
 
+      {/* Personal Email Rejection Alert */}
+      {rejectionAlert && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-medium text-red-800">
+                Google Signup Failed
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{rejectionAlert.message}</p>
+                <p className="mt-1 font-medium">Email used: {rejectionAlert.email}</p>
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setRejectionAlert(null)}
+                  className="text-sm text-red-800 hover:text-red-900 font-medium underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Form Card */}
       <Card className="border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
         <CardContent className="p-8 md:p-12">
@@ -568,6 +701,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   </div>
                 )}
               </Button>
+
+              {/* Company Email Notice for Buyers */}
+              {isBuyer && !isOAuthUser && (
+                <div className="mt-3 text-center">
+                  <p className="text-xs text-gray-600">
+                    Please use your company email address for Google signup
+                  </p>
+                </div>
+              )}
 
               {/* Divider */}
               <div className="relative my-6">

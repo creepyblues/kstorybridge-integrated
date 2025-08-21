@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import { useToast } from '../hooks/use-toast';
 import { getDashboardUrl } from '../config/urls';
+import { notifySignupFailure, analyzeSignupFailure } from '../utils/slackNotifications';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -144,6 +145,76 @@ const AuthCallbackPage = () => {
             await checkTierAndRedirect(user, buyerProfile.data, ipOwnerProfile.data);
           } else {
             // No profile exists, need to complete signup
+            // First, check if this is a buyer account type and validate email domain
+            const urlParams = new URLSearchParams(window.location.search);
+            const accountType = urlParams.get('account_type') || 'buyer';
+            
+            // Apply email restrictions for buyer accounts
+            if (accountType === 'buyer') {
+              // List of common consumer email providers to exclude (same as SignupForm.tsx)
+              const consumerEmailProviders = [
+                'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com',
+                'icloud.com', 'protonmail.com', 'mail.com', 'yandex.com', 'zoho.com',
+                'live.com', 'msn.com', 'comcast.net', 'verizon.net', 'att.net',
+                'sbcglobal.net', 'cox.net', 'charter.net', 'earthlink.net', 'me.com'
+              ];
+              
+              const isWorkEmail = (email: string) => {
+                const domain = email.split('@')[1]?.toLowerCase();
+                return domain && !consumerEmailProviders.includes(domain);
+              };
+              
+              if (!isWorkEmail(user.email)) {
+                console.log('Personal email not allowed for buyer signup:', user.email);
+                
+                // Send Slack notification for OAuth signup failure due to personal email
+                try {
+                  const mockError = {
+                    message: 'Personal email addresses are not allowed for buyer accounts',
+                    code: 'personal_email_rejected'
+                  };
+                  const analysis = analyzeSignupFailure(mockError);
+                  
+                  await notifySignupFailure({
+                    email: user.email,
+                    accountType: 'buyer',
+                    errorMessage: 'Personal email addresses are not allowed for buyer accounts. Please use a work email address.',
+                    errorCode: 'personal_email_rejected',
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    additionalContext: {
+                      authType: 'OAuth (Google)',
+                      step: 'Email validation in auth callback',
+                      rejectionReason: 'Personal email domain detected',
+                      emailDomain: user.email.split('@')[1],
+                      ...analysis
+                    }
+                  });
+                } catch (slackError) {
+                  console.error('Failed to send personal email rejection notification:', slackError);
+                }
+                
+                // Store the rejection reason in sessionStorage to show on signup page
+                sessionStorage.setItem('signupRejection', JSON.stringify({
+                  reason: 'personal_email',
+                  email: user.email,
+                  message: 'Personal email addresses are not allowed for buyer accounts. Please use a work email address.',
+                  timestamp: Date.now()
+                }));
+                
+                toast({
+                  title: "Work Email Required",
+                  description: "Personal email providers are not allowed for buyer accounts. Please use a work email address.",
+                  variant: "destructive"
+                });
+                
+                // Sign out the user and redirect to signup page
+                await supabase.auth.signOut();
+                navigate('/signup/buyer');
+                return;
+              }
+            }
+            
             // Store OAuth user data in session storage for the signup form
             sessionStorage.setItem('oauthUser', JSON.stringify({
               id: user.id,
@@ -151,10 +222,6 @@ const AuthCallbackPage = () => {
               fullName: user.user_metadata?.full_name || user.user_metadata?.name || '',
               isOAuth: true
             }));
-            
-            // Determine account type from URL params or default to buyer
-            const urlParams = new URLSearchParams(window.location.search);
-            const accountType = urlParams.get('account_type') || 'buyer';
             
             // Redirect to appropriate signup completion page
             navigate(`/signup/${accountType}?complete=true`, { replace: true });

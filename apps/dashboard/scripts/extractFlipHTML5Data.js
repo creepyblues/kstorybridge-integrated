@@ -47,7 +47,7 @@ async function extractPageData(page, pageNumber) {
     });
     
     // Wait for FlipHTML5 content to render
-    await page.waitForTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Extract data from the page
     const pageData = await page.evaluate((pageNum) => {
@@ -200,7 +200,7 @@ async function main() {
       // Add delay between pages to be respectful
       if (pageNum < endPage) {
         console.log(`⏱️  Waiting ${DELAY_BETWEEN_PAGES/1000}s before next page...`);
-        await page.waitForTimeout(DELAY_BETWEEN_PAGES);
+        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_PAGES));
       }
       
       // Progress indicator

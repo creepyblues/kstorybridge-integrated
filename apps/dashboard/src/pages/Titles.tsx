@@ -242,7 +242,7 @@ function TitlesContent() {
   return (
     <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8">
+        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">TITLES</h1>
@@ -257,7 +257,7 @@ function TitlesContent() {
 
         {/* Featured Titles Section - Only show for buyers */}
         {!isCreatorView && (
-          <div className="mb-12">
+          <div className="mb-8 sm:mb-12">
             <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Featured Titles</h2>
           
           {loading ? (
@@ -346,7 +346,7 @@ function TitlesContent() {
         )}
 
         {/* Divider - Only show for buyers */}
-        {!isCreatorView && <div className="border-t border-gray-200 my-16"></div>}
+        {!isCreatorView && <div className="border-t border-gray-200 my-8 sm:my-12"></div>}
 
         {/* All Titles Table */}
         <div>
@@ -609,32 +609,28 @@ function TitlesContent() {
                             </div>
                             
                             {/* Tags */}
-                            <div className="space-y-2">
+                            <div className="flex flex-wrap gap-1 items-center">
                               {title.genre && (
-                                <div className="flex flex-wrap gap-1">
-                                  {Array.isArray(title.genre) ? (
-                                    title.genre.slice(0, 2).map((g, idx) => (
-                                      <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        {formatGenre(g)}
-                                      </span>
-                                    ))
-                                  ) : (
-                                    <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
-                                      {formatGenre(title.genre)}
+                                Array.isArray(title.genre) ? (
+                                  title.genre.slice(0, 2).map((g, idx) => (
+                                    <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                                      {formatGenre(g)}
                                     </span>
-                                  )}
-                                  {Array.isArray(title.genre) && title.genre.length > 2 && (
-                                    <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
-                                  )}
-                                </div>
+                                  ))
+                                ) : (
+                                  <span className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                                    {formatGenre(title.genre)}
+                                  </span>
+                                )
+                              )}
+                              {Array.isArray(title.genre) && title.genre.length > 2 && (
+                                <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
                               )}
                               
                               {title.tone && (
-                                <div>
-                                  <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
-                                    {title.tone}
-                                  </span>
-                                </div>
+                                <span className="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                                  {title.tone}
+                                </span>
                               )}
                             </div>
                           </div>

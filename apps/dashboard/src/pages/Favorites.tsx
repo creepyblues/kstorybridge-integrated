@@ -25,6 +25,62 @@ type FavoriteWithTitle = {
   titles: Title;
 };
 
+// Mock favorites data for localhost development
+const mockFavorites: FavoriteWithTitle[] = [
+  {
+    id: "fav-1",
+    user_id: "mock-user-12345",
+    title_id: "title-1",
+    created_at: "2024-01-15T10:00:00Z",
+    titles: {
+      title_id: "title-1",
+      title_name_en: "The Moon's Whisper",
+      title_name_kr: "달의 속삭임",
+      tagline: "A romantic fantasy about eternal love",
+      genre: ["romance", "fantasy"],
+      title_image: "https://via.placeholder.com/300x400/4A9B8E/ffffff?text=Moon",
+      pitch: "A love story that transcends time and space",
+      content_format: "webtoon",
+      synopsis: "Sample synopsis",
+      description: "Sample description"
+    } as Title
+  },
+  {
+    id: "fav-2",
+    user_id: "mock-user-12345",
+    title_id: "title-2",
+    created_at: "2024-01-14T10:00:00Z",
+    titles: {
+      title_id: "title-2",
+      title_name_en: "Seoul Shadows",
+      title_name_kr: "서울의 그림자",
+      tagline: "Mystery thriller in modern Seoul",
+      genre: ["thriller", "mystery"],
+      title_image: "https://via.placeholder.com/300x400/2C3E50/ffffff?text=Seoul",
+      content_format: "webtoon",
+      synopsis: "Sample synopsis",
+      description: "Sample description"
+    } as Title
+  },
+  {
+    id: "fav-3",
+    user_id: "mock-user-12345",
+    title_id: "title-3",
+    created_at: "2024-01-13T10:00:00Z",
+    titles: {
+      title_id: "title-3",
+      title_name_en: "Dragon's Legacy",
+      title_name_kr: "용의 유산",
+      tagline: "Epic adventure in ancient Korea",
+      genre: ["action", "adventure"],
+      title_image: "https://via.placeholder.com/300x400/8B4513/ffffff?text=Dragon",
+      content_format: "webtoon",
+      synopsis: "Sample synopsis",
+      description: "Sample description"
+    } as Title
+  }
+];
+
 export default function Favorites() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -33,8 +89,12 @@ export default function Favorites() {
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
   const [loading, setLoading] = useState(false);
 
-  // Get data from cache
-  const favorites = getFavorites();
+  // Localhost development configuration
+  const isLocalhost = window.location.hostname === 'localhost';
+  const useRealDataOnLocalhost = false; // Set to true to use real Supabase data
+
+  // Get data from cache or use mock data for localhost
+  const favorites = (isLocalhost && !useRealDataOnLocalhost && !user) ? mockFavorites : getFavorites();
 
   useEffect(() => {
     // Only load data if cache is empty or stale and user exists
@@ -114,6 +174,14 @@ export default function Favorites() {
   };
 
   const handleRemoveFromFavorites = async (titleId: string) => {
+    // Handle localhost mock data
+    if (isLocalhost && !useRealDataOnLocalhost && !user) {
+      // For localhost development, just show a toast
+      toast({ title: "Removed from favorites (localhost mock)" });
+      console.log("Mock remove from favorites:", titleId);
+      return;
+    }
+    
     if (!user) return;
 
     try {
@@ -141,9 +209,10 @@ export default function Favorites() {
     ).join(' ');
   };
 
-  if (!user) {
+  // Only show login prompt in production or when real data is requested
+  if (!user && (!isLocalhost || useRealDataOnLocalhost)) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 px-3 sm:px-6 lg:px-8">
           <Card className="bg-white border-porcelain-blue-200 shadow-lg rounded-2xl">
             <CardContent className="p-6 sm:p-8 lg:p-12 text-center">
@@ -161,7 +230,7 @@ export default function Favorites() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 px-3 sm:px-6 lg:px-8">
           <div className="text-center text-midnight-ink-600 py-6 sm:py-8 text-sm sm:text-base">Loading favorites...</div>
         </div>
@@ -170,7 +239,7 @@ export default function Favorites() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+    <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">

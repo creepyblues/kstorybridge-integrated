@@ -1,33 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import UniversalHeader from '../components/UniversalHeader';
-import { Button, Card, CardContent } from '@kstorybridge/ui';
+import { Button } from '@kstorybridge/ui';
 import { useToast } from '../hooks/use-toast';
-import { featuredService, type FeaturedWithTitle } from '../services/featuredService';
+import FeaturedTitlesCarousel from '../components/FeaturedTitlesCarousel';
 import Footer from '../components/Footer';
 
 const BuyersPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  useEffect(() => {
-    const loadFeaturedTitles = async () => {
-      try {
-        setLoading(true);
-        const titles = await featuredService.getFeaturedTitles();
-        setFeaturedTitles(titles);
-      } catch (error) {
-        console.error('Error loading featured titles:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadFeaturedTitles();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,12 +24,8 @@ const BuyersPage = () => {
     setIsSubmitting(false);
   };
 
-  const formatGenre = (genre: string | string[] | null) => {
-    if (!genre) return '';
-    if (Array.isArray(genre)) {
-      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ');
-    }
-    return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const handleTitleClick = (titleId: string) => {
+    navigate(`/title/${titleId}`);
   };
 
 
@@ -217,65 +195,12 @@ const BuyersPage = () => {
               </p>
             </div>
             
-            {loading ? (
-              <div className="text-center text-midnight-ink-600 py-8 mb-16">Loading featured titles...</div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-16">
-                {featuredTitles.map((featured) => {
-                  const title = featured.titles;
-                  return (
-                    <Card key={featured.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
-                        {title.title_image ? (
-                          <img 
-                            src={title.title_image} 
-                            alt={title.title_name_en || title.title_name_kr}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <>
-                            {/* Placeholder illustration */}
-                            <div className="w-12 h-12 bg-hanok-teal rounded-full flex items-center justify-center">
-                              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                                <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
-                              </div>
-                            </div>
-                            <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
-                          </>
-                        )}
-                      </div>
-                      <CardContent className="p-3 flex flex-col flex-grow">
-                        <div className="flex-grow">
-                          <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
-                            {title.title_name_en || title.title_name_kr}
-                          </h3>
-                          {title.title_name_en && title.title_name_kr && (
-                            <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
-                          )}
-                          <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
-                            {title.tagline || title.pitch || 'Discover this amazing Korean story'}
-                          </p>
-                        </div>
-                        {title.genre && (
-                          <div className="mt-auto">
-                            <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
-                              {formatGenre(title.genre)}
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-            
-            {!loading && featuredTitles.length === 0 && (
-              <div className="text-center text-midnight-ink-600 py-8 mb-16">No featured titles available.</div>
-            )}
+            <div className="mb-16">
+              <FeaturedTitlesCarousel 
+                onTitleClick={handleTitleClick}
+                className=""
+              />
+            </div>
             
             <div className="text-center">
               <Link to="/signup">

@@ -370,7 +370,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
         toast({
           title: "Success!",
-          description: "Your profile has been completed successfully! Please sign in to continue."
+          description: "Your profile has been completed successfully! You can now sign in to continue."
         });
 
         // Redirect to signin page so user can sign in and start using the service
@@ -566,12 +566,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         }
         
         toast({
-          title: "Success!",
-          description: "Account created successfully! Please check your email for verification, then sign in to continue."
+          title: "Account Created Successfully!",
+          description: "Please check your inbox for a confirmation email. You must verify your email before you can sign in.",
+          duration: 8000
         });
         
         setTimeout(() => {
-          navigate('/signin');
+          navigate('/signin?from=signup&email=' + encodeURIComponent(formData.email));
         }, 2000);
       }
     } catch (error) {

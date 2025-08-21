@@ -284,7 +284,7 @@ export default function AdminFeaturedTitles() {
                   <TableHead className="w-20">Image</TableHead>
                   <TableHead className="w-80">Title</TableHead>
                   <TableHead className="w-32">Genre</TableHead>
-                  <TableHead className="flex-1">Note</TableHead>
+                  <TableHead className="flex-1">Special Note by Kevin</TableHead>
                   <TableHead className="w-32">Added</TableHead>
                   <TableHead className="w-32">Actions</TableHead>
                 </TableRow>

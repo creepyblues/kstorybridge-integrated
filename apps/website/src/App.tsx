@@ -16,6 +16,8 @@ const SignupPage = lazy(() => import("./pages/SignupPage"));
 const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
 const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
 const SigninPage = lazy(() => import("./pages/SigninPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
 const SampleTitleDetailPage = lazy(() => import("./pages/SampleTitleDetailPage"));
 const DashboardInvited = lazy(() => import("./pages/DashboardInvited"));
@@ -50,6 +52,8 @@ const App = () => (
           <Route path="/signup/buyer" element={<BuyerSignupPage />} />
           <Route path="/signup/creator" element={<CreatorSignupPage />} />
           <Route path="/signin" element={<SigninPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
           <Route path="/sample/werewolves-going-crazy-over-me" element={<SampleTitleDetailPage />} />

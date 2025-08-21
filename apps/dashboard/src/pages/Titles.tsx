@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
 import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
-import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
+import FeaturedTitlesCarousel from "@/components/FeaturedTitlesCarousel";
 
 import { useAuth } from "@/hooks/useAuth";
 import PremiumColumn from "@/components/PremiumColumn";
@@ -20,10 +20,8 @@ function TitlesContent() {
   const location = useLocation();
   const { 
     getTitles, 
-    getFeaturedTitles, 
     getCreatorTitles, 
     setTitles, 
-    setFeaturedTitles, 
     setCreatorTitles, 
     isFresh, 
     refreshData 
@@ -43,19 +41,16 @@ function TitlesContent() {
 
   // Get data from cache
   const titles = isCreatorView ? getCreatorTitles() : getTitles();
-  const featuredTitles = getFeaturedTitles();
 
   useEffect(() => {
     // Only load data if cache is empty or stale
     const dataKey = isCreatorView ? 'creatorTitles' : 'titles';
     const shouldLoadTitles = titles.length === 0 || !isFresh(dataKey);
-    // Use shorter cache duration for featured titles (30 seconds) to ensure fresh data
-    const shouldLoadFeatured = !isCreatorView && (featuredTitles.length === 0 || !isFresh('featuredTitles', 30000));
     
-    if (shouldLoadTitles || shouldLoadFeatured) {
+    if (shouldLoadTitles) {
       loadData();
     }
-  }, [isCreatorView, user, titles.length, featuredTitles.length]); // Remove isFresh from dependencies
+  }, [isCreatorView, user, titles.length]); // Remove isFresh from dependencies
 
   const loadData = async (force = false) => {
     try {
@@ -70,9 +65,7 @@ function TitlesContent() {
         const allTitles = await titlesService.getAllTitles();
         setTitles(allTitles);
         
-        // Load featured titles for buyers
-        const featured = await featuredService.getFeaturedTitles();
-        setFeaturedTitles(featured);
+        // Featured titles are now loaded by the FeaturedTitlesCarousel component
       }
       
     } catch (error) {
@@ -86,7 +79,7 @@ function TitlesContent() {
   const handleRefresh = () => {
     const dataKey = isCreatorView ? 'creatorTitles' : 'titles';
     refreshData(dataKey);
-    refreshData('featuredTitles');
+    // Featured titles refresh is handled by the FeaturedTitlesCarousel component
     loadData(true);
   };
 
@@ -259,89 +252,8 @@ function TitlesContent() {
         {!isCreatorView && (
           <div className="mb-8 sm:mb-12">
             <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Featured Titles</h2>
-          
-          {loading ? (
-            <div className="text-center text-gray-500 py-8">Loading featured titles...</div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
-              {featuredTitles.map((featured) => {
-                const title = featured.titles;
-                return (
-                  <Link key={featured.id} to={`/titles/${title.title_id}`} className="block">
-                    <Card className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col">
-                      <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
-                        {title.pitch && (
-                          <div className="absolute top-2 right-2 z-10">
-                            <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-1 rounded-full shadow-md">
-                              Pitch
-                            </span>
-                          </div>
-                        )}
-                        {title.title_image ? (
-                          <img 
-                            src={title.title_image} 
-                            alt={title.title_name_en || title.title_name_kr}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <>
-                            <div className="w-12 h-12 bg-hanok-teal rounded-full flex items-center justify-center">
-                              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                                <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
-                              </div>
-                            </div>
-                            {!title.pitch && (
-                              <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                      <CardContent className="p-3 flex flex-col flex-grow">
-                        <div className="flex-grow">
-                          <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
-                            {title.title_name_en || title.title_name_kr}
-                          </h3>
-                          {title.title_name_en && title.title_name_kr && (
-                            <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
-                          )}
-                          <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
-                            {title.tagline || title.pitch || 'Discover this amazing Korean story'}
-                          </p>
-                        </div>
-                        {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
-                          <div className="mt-auto">
-                            <div className="flex flex-wrap gap-1">
-                              {Array.isArray(title.genre) ? (
-                                title.genre.slice(0, 1).map((g, idx) => (
-                                  <div key={`${title.title_id}-card-genre-${idx}`} className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
-                                    {formatGenre(g)}
-                                  </div>
-                                ))
-                              ) : (
-                                <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
-                                  {formatGenre(title.genre)}
-                                </div>
-                              )}
-                              {Array.isArray(title.genre) && title.genre.length > 1 && (
-                                <span className="text-xs text-gray-500">+{title.genre.length - 1}</span>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-          
-          {!loading && featuredTitles.length === 0 && (
-            <div className="text-center text-midnight-ink-600 py-8">No featured titles available.</div>
-          )}
+            
+            <FeaturedTitlesCarousel className="" />
           </div>
         )}
 

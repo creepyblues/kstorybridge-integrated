@@ -26,40 +26,18 @@ import {
 } from '@/design-system';
 
 // Existing Services
-import { featuredService, type FeaturedWithTitle } from '../services/featuredService';
+import FeaturedTitlesCarouselNew from '../components/FeaturedTitlesCarouselNew';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const HomePageNew = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
-  const [loading, setLoading] = useState(true);
   
   const { user, userProfile, isLoading, isRedirecting } = useAuth();
 
-  useEffect(() => {
-    const loadFeaturedTitles = async () => {
-      try {
-        setLoading(true);
-        const titles = await featuredService.getFeaturedTitles();
-        setFeaturedTitles(titles);
-      } catch (error) {
-        console.error('Error loading featured titles:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadFeaturedTitles();
-  }, []);
-
-  const formatGenre = (genre: string | string[] | null) => {
-    if (!genre) return '';
-    if (Array.isArray(genre)) {
-      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ');
-    }
-    return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const handleTitleClick = (titleId: string) => {
+    navigate(`/title/${titleId}`);
   };
 
   return (
@@ -162,73 +140,10 @@ const HomePageNew = () => {
               </LeadText>
             </div>
             
-            {loading ? (
-              <div className="text-center py-12">
-                <BodyText color="secondary">Loading featured titles...</BodyText>
-              </div>
-            ) : featuredTitles.length > 0 ? (
-              <Grid cols={6} gap="lg" responsive>
-                {featuredTitles.map((featured) => {
-                  const title = featured.titles;
-                  return (
-                    <Card 
-                      key={featured.id} 
-                      variant="elevated"
-                      className="group cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden"
-                    >
-                      {/* Title Image */}
-                      <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
-                        {title.title_image ? (
-                          <img 
-                            src={title.title_image} 
-                            alt={title.title_name_en || title.title_name_kr}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-hanok-teal-500 rounded-xl flex items-center justify-center">
-                            <div className="w-8 h-8 bg-white rounded-lg opacity-80"></div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Content */}
-                      <div className="p-4">
-                        <Stack spacing="sm">
-                          <CardTitle className="line-clamp-2">
-                            {title.title_name_en || title.title_name_kr}
-                          </CardTitle>
-                          
-                          {title.title_name_en && title.title_name_kr && (
-                            <Caption className="line-clamp-1">
-                              {title.title_name_kr}
-                            </Caption>
-                          )}
-                          
-                          <BodyText size="sm" color="secondary" className="line-clamp-2">
-                            {title.tagline || title.pitch || 'Discover this amazing Korean story'}
-                          </BodyText>
-                          
-                          {title.genre && (
-                            <div className="inline-flex">
-                              <span className="bg-hanok-teal-100 text-hanok-teal-700 px-2 py-1 rounded-full text-xs font-medium">
-                                {formatGenre(title.genre)}
-                              </span>
-                            </div>
-                          )}
-                        </Stack>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </Grid>
-            ) : (
-              <div className="text-center py-12">
-                <BodyText color="secondary">No featured titles available.</BodyText>
-              </div>
-            )}
+            <FeaturedTitlesCarouselNew 
+              onTitleClick={handleTitleClick}
+              className=""
+            />
           </Stack>
         </Container>
       </Section>

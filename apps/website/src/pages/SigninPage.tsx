@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@kstorybridge/ui';
 import { Input } from '@kstorybridge/ui';
@@ -24,6 +24,26 @@ const SigninPage = () => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Check if user is coming from signup and show verification reminder
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromSignup = urlParams.get('from') === 'signup';
+    const emailParam = urlParams.get('email');
+    
+    if (fromSignup && emailParam) {
+      setUnverifiedEmail(emailParam);
+      setFormData(prev => ({ ...prev, email: emailParam }));
+      setShowEmailVerificationAlert(true);
+      
+      // Show toast message
+      toast({
+        title: "Email Verification Required",
+        description: `A verification email has been sent to ${emailParam}. Please check your inbox and click the verification link before signing in.`,
+        duration: 8000
+      });
+    }
+  }, [toast]);
 
   const redirectToDashboard = async () => {
     console.log('🔄 SIGNIN: Redirecting to dashboard');
@@ -387,9 +407,17 @@ const SigninPage = () => {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium text-midnight-ink">
-                    Password
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-sm font-medium text-midnight-ink">
+                      Password
+                    </Label>
+                    <Link 
+                      to="/forgot-password" 
+                      className="text-sm font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                   <Input
                     id="password"
                     type="password"

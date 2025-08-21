@@ -139,7 +139,7 @@ const BuyersPricing = () => {
                     >
                       Current Plan
                     </Button>
-                  ) : tierHierarchy[tier || 'invited'] > tierHierarchy[plan.tierLevel] ? (
+                  ) : tierHierarchy[tier || 'basic'] > tierHierarchy[plan.tierLevel] ? (
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button className="w-full bg-slate-400 hover:bg-slate-500 text-white py-3 rounded-2xl font-medium transition-colors duration-300">

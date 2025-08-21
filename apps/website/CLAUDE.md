@@ -93,6 +93,22 @@ The project is connected to Lovable for collaborative development, but can be de
 
 ## Database Schema Guidelines
 
+### User Tier System
+
+**Buyer Tier Management:**
+- Default tier for new signups: 'basic' (changed from 'invited' in 2025-08-21 update)
+- All signup methods (email and OAuth) set tier to 'basic'
+- Tier hierarchy: basic (default), invited (legacy), pro, suite
+
+**✅ Correct Signup Implementation:**
+```typescript
+// Both email and OAuth signups
+const metadata = {
+  tier: 'basic', // Always set to 'basic' for new signups
+  account_type: 'buyer'
+}
+```
+
 ### User Profile Field Naming
 
 **Critical Requirement**: Always use `pen_name` for IP owner profiles.

@@ -80,17 +80,17 @@ export const useTierAccess = (): TierAccess => {
 
         if (error) {
           console.error('❌ Error fetching user tier:', error);
-          console.log('Setting tier to invited due to error');
-          setTier('invited'); // Default to most restrictive
+          console.log('Setting tier to basic due to error');
+          setTier('basic'); // Default to basic tier
         } else {
-          const finalTier = data.tier || 'invited';
+          const finalTier = data.tier || 'basic';
           console.log('✅ Setting tier to:', finalTier, '(raw data.tier:', data.tier, ')');
           setTier(finalTier);
         }
       } catch (error) {
         console.error('❌ Exception fetching user tier:', error);
-        console.log('Setting tier to invited due to exception');
-        setTier('invited'); // Default to most restrictive
+        console.log('Setting tier to basic due to exception');
+        setTier('basic'); // Default to basic tier
       } finally {
         setLoading(false);
       }

@@ -138,7 +138,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 - Always include error handling with try/catch blocks
 
 **User Table Structure:**
-- `user_buyers` - Buyer accounts with `tier` field (invited|basic|pro|suite)
+- `user_buyers` - Buyer accounts with `tier` field (basic|invited|pro|suite, default: 'basic')
 - `user_ipowners` - Creator/IP owner accounts
 - `profiles` - Legacy profile data (being phased out)
 - Query by `email` field, not `user_id`
@@ -146,14 +146,15 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 ### Tier System (Dashboard)
 
 **Buyer Tier Hierarchy:**
-- `invited` (0) - Restricted access
-- `basic` (1) - Basic features
+- `basic` (1) - Default tier, standard features
+- `invited` (0) - Restricted access (legacy/special cases)
 - `pro` (2) - Premium content access
 - `suite` (3) - Full feature access
 
 **Implementation:**
 - Use `useTierAccess()` hook for tier checking
 - Field `tier` in `user_buyers` table (replaced `invitation_status`)
+- Default tier for new signups: 'basic' (changed from 'invited' in 2025-08-21 update)
 - Premium content gating with `TierGatedContent` component
 
 ### Content Management (Titles Table)

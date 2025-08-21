@@ -103,6 +103,11 @@ export default function MyPage() {
 
 ### User Profile Fields
 
+**Buyer Profiles (`user_buyers` table):**
+- ✅ **CORRECT**: Use `tier` field for user access level (default: 'basic')
+- **Tier Hierarchy**: basic (default), invited, pro, suite
+- **New Signups**: Default to 'basic' tier (changed from 'invited' in 2025-08-21 update)
+
 **IP Owner Profiles (`user_ipowners` table):**
 - ✅ **CORRECT**: Use `pen_name` field for pen name/studio information
 - ❌ **INCORRECT**: Do NOT use legacy field names
@@ -112,7 +117,8 @@ export default function MyPage() {
 ```typescript
 // ✅ Correct Profile Creation
 const profile = {
-  pen_name: user.user_metadata?.pen_name
+  pen_name: user.user_metadata?.pen_name,
+  tier: user.user_metadata?.tier || 'basic' // Default to basic
 }
 
 // ✅ Correct Database Query
@@ -124,3 +130,4 @@ const profile = {
 - New signups: Store `pen_name` in metadata and database
 - Database operations: Always use `pen_name` column
 - Metadata: Use `pen_name` key consistently
+- Tier system: Default to 'basic' for new user_buyers

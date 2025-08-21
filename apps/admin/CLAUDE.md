@@ -188,7 +188,7 @@ The `titles` table contains all fields for title management. **Always show ALL f
 - Used for admin authentication and access control
 
 **User Tables (Shared with Dashboard/Website):**
-- `user_buyers` - Buyer user accounts with `tier` field
+- `user_buyers` - Buyer user accounts with `tier` field (default: 'basic')
 - `user_ipowners` - Creator/IP owner accounts
 - `profiles` - Legacy user profile data
 

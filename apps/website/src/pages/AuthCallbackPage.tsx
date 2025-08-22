@@ -148,6 +148,27 @@ const AuthCallbackPage = () => {
           if (buyerProfile.data || ipOwnerProfile.data) {
             // User has completed profile, check their tier and redirect appropriately
             await checkTierAndRedirect(user, buyerProfile.data, ipOwnerProfile.data);
+          } else if (user.user_metadata?.account_type === 'buyer') {
+            // User is marked as buyer but has no profile - create one with basic tier
+            console.log('📝 AUTH CALLBACK: Creating buyer profile with basic tier for existing auth user');
+            const { data: newProfile, error: createError } = await supabase
+              .from('user_buyers')
+              .insert({
+                id: user.id,
+                email: user.email,
+                tier: 'basic',
+                created_at: new Date().toISOString()
+              })
+              .select()
+              .single();
+            
+            if (!createError && newProfile) {
+              console.log('✅ AUTH CALLBACK: Created buyer profile with basic tier');
+              await redirectToDashboard();
+            } else {
+              console.error('Error creating buyer profile:', createError);
+              navigate('/invited');
+            }
           } else {
             // No profile exists, need to complete signup
             // First, check if this is a buyer account type and validate email domain

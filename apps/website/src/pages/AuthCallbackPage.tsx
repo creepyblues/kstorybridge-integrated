@@ -47,15 +47,20 @@ const AuthCallbackPage = () => {
       });
 
       if (buyerProfile) {
-        // Check buyer tier
+        // Check buyer tier - 'basic', 'pro', 'suite' should all go to dashboard
         const tier = buyerProfile.tier;
-        console.log('👤 AUTH CALLBACK: Buyer tier:', tier);
+        console.log('👤 AUTH CALLBACK: Buyer profile:', {
+          email: buyerProfile.email,
+          tier: buyerProfile.tier,
+          id: buyerProfile.id
+        });
         
+        // Only 'invited' or missing tier should go to invited page
         if (tier && tier !== 'invited') {
           console.log('✅ AUTH CALLBACK: Buyer accepted (tier: ' + tier + '), redirecting directly to dashboard');
           await redirectToDashboard();
         } else {
-          console.log('⚠️ AUTH CALLBACK: Buyer not accepted (tier: ' + tier + '), redirecting to invited page');
+          console.log('⚠️ AUTH CALLBACK: Buyer not accepted (tier: ' + (tier || 'null') + '), redirecting to invited page');
           navigate('/invited');
         }
       } else if (ipOwnerProfile) {

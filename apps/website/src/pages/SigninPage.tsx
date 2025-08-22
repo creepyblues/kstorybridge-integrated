@@ -120,11 +120,30 @@ const SigninPage = () => {
       const accountType = user.user_metadata?.account_type;
       
       if (accountType === 'buyer') {
-        const { data: profile, error } = await supabase
+        // Try fetching by both id and email to handle any potential mismatch
+        const { data: profileById, error: errorById } = await supabase
           .from('user_buyers')
-          .select('tier')
+          .select('tier, email')
           .eq('id', user.id)
           .maybeSingle();
+        
+        const { data: profileByEmail, error: errorByEmail } = await supabase
+          .from('user_buyers')
+          .select('tier, email')
+          .eq('email', user.email)
+          .maybeSingle();
+        
+        const profile = profileById || profileByEmail;
+        const error = errorById && errorByEmail;
+        
+        console.log('🔍 SIGNIN: Buyer profile lookup:', {
+          userId: user.id,
+          userEmail: user.email,
+          profileById,
+          profileByEmail,
+          finalProfile: profile,
+          error
+        });
         
         if (error) {
           console.error('Error fetching buyer profile:', error);
@@ -133,11 +152,13 @@ const SigninPage = () => {
           return;
         }
         
+        // Check tier - 'basic', 'pro', 'suite' should all go to dashboard
+        // Only 'invited' or missing tier should go to invited page
         if (profile?.tier && profile.tier !== 'invited') {
           console.log('✅ SIGNIN: Buyer accepted (tier: ' + profile.tier + '), redirecting directly to dashboard');
           await redirectToDashboard();
         } else {
-          console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + profile.tier + '), redirecting to invited page');
+          console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + (profile?.tier || 'null') + '), redirecting to invited page');
           navigate('/invited');
         }
       } else if (accountType === 'ip_owner') {

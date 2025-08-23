@@ -3,7 +3,8 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Select
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Edit3, X, LogOut } from "lucide-react";
+import { Save, Edit3, X, LogOut, KeyRound } from "lucide-react";
+import PasswordResetModal from "@/components/PasswordResetModal";
 
 // Define types for the actual table structures
 type BuyerProfile = {
@@ -91,6 +92,7 @@ export default function Profile() {
   const [updating, setUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UnifiedProfile>>({});
+  const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -761,34 +763,59 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        {/* Sign Out Section */}
+        {/* Account Actions Section */}
         <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
           <CardContent className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-midnight-ink mb-2">Account Actions</h3>
                 <p className="text-gray-600 text-sm sm:text-base">
-                  Sign out of your account to end your current session.
+                  Manage your account security and session settings.
                 </p>
               </div>
-              <Button
-                onClick={handleSignOut}
-                variant="outline"
-                className="w-full sm:w-auto border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden"
-              >
-                {/* Subtle glow effect */}
-                <div className="absolute inset-0 rounded-2xl bg-red-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                
-                {/* Icon */}
-                <LogOut className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 relative z-10" />
-                
-                {/* Text */}
-                <span className="relative z-10">Sign Out</span>
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* Password Reset Button */}
+                <Button
+                  onClick={() => setIsPasswordResetModalOpen(true)}
+                  variant="outline"
+                  className="w-full sm:w-auto border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden"
+                >
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 rounded-2xl bg-hanok-teal/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  
+                  {/* Icon */}
+                  <KeyRound className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 relative z-10" />
+                  
+                  {/* Text */}
+                  <span className="relative z-10">Reset Password</span>
+                </Button>
+
+                {/* Sign Out Button */}
+                <Button
+                  onClick={handleSignOut}
+                  variant="outline"
+                  className="w-full sm:w-auto border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden"
+                >
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 rounded-2xl bg-red-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  
+                  {/* Icon */}
+                  <LogOut className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 relative z-10" />
+                  
+                  {/* Text */}
+                  <span className="relative z-10">Sign Out</span>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Password Reset Modal */}
+      <PasswordResetModal 
+        isOpen={isPasswordResetModalOpen} 
+        onClose={() => setIsPasswordResetModalOpen(false)} 
+      />
     </div>
   );
 }

@@ -274,6 +274,18 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   fullError: JSON.stringify(error)
                 }
               });
+              
+              // Also send with the new notification system
+              await notifyBuyerSignup({
+                fullName: formData.fullName,
+                email: formData.email,
+                company: (formData as BuyerFormData).buyerCompany,
+                role: (formData as BuyerFormData).buyerRole,
+                linkedinUrl: (formData as BuyerFormData).linkedinUrl,
+                authType: 'google',
+                success: false,
+                errorMessage: error.message
+              });
             } catch (slackError) {
               console.error('Failed to send OAuth signup failure notification:', slackError);
             }
@@ -325,6 +337,19 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   fullError: JSON.stringify(error)
                 }
               });
+              
+              // Also send with the new notification system
+              await notifyCreatorSignup({
+                fullName: formData.fullName,
+                email: formData.email,
+                penName: (formData as CreatorFormData).penNameOrStudio,
+                company: (formData as CreatorFormData).ipOwnerCompany,
+                role: (formData as CreatorFormData).ipOwnerRole,
+                websiteUrl: (formData as CreatorFormData).websiteUrl,
+                authType: 'google',
+                success: false,
+                errorMessage: error.message
+              });
             } catch (slackError) {
               console.error('Failed to send OAuth signup failure notification:', slackError);
             }
@@ -352,6 +377,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               role: (formData as BuyerFormData).buyerRole,
               linkedinUrl: (formData as BuyerFormData).linkedinUrl,
               authType: 'google', // OAuth signup via Google
+              success: true,
+              tier: 'basic'
             });
           } else {
             await notifyCreatorSignup({
@@ -362,6 +389,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               role: (formData as CreatorFormData).ipOwnerRole,
               websiteUrl: (formData as CreatorFormData).websiteUrl,
               authType: 'google', // OAuth signup via Google
+              success: true,
+              invitationStatus: 'invited'
             });
           }
         } catch (slackError) {
@@ -461,6 +490,32 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               fullError: JSON.stringify(error)
             }
           });
+          
+          // Also send with the new notification system
+          if (accountType === 'buyer') {
+            await notifyBuyerSignup({
+              fullName: formData.fullName,
+              email: formData.email,
+              company: (formData as BuyerFormData).buyerCompany,
+              role: (formData as BuyerFormData).buyerRole,
+              linkedinUrl: (formData as BuyerFormData).linkedinUrl,
+              authType: 'email',
+              success: false,
+              errorMessage: error.message
+            });
+          } else {
+            await notifyCreatorSignup({
+              fullName: formData.fullName,
+              email: formData.email,
+              penName: (formData as CreatorFormData).penNameOrStudio,
+              company: (formData as CreatorFormData).ipOwnerCompany,
+              role: (formData as CreatorFormData).ipOwnerRole,
+              websiteUrl: (formData as CreatorFormData).websiteUrl,
+              authType: 'email',
+              success: false,
+              errorMessage: error.message
+            });
+          }
         } catch (slackError) {
           console.error('Failed to send signup failure notification:', slackError);
         }
@@ -546,6 +601,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               role: (formData as BuyerFormData).buyerRole,
               linkedinUrl: (formData as BuyerFormData).linkedinUrl,
               authType: 'email', // Email/password signup
+              success: true,
+              tier: 'basic'
             });
           } else {
             console.log('🔔 Sending creator signup notification...');
@@ -557,6 +614,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               role: (formData as CreatorFormData).ipOwnerRole,
               websiteUrl: (formData as CreatorFormData).websiteUrl,
               authType: 'email', // Email/password signup
+              success: true,
+              invitationStatus: 'invited'
             });
           }
           console.log('✅ Slack notification completed successfully');

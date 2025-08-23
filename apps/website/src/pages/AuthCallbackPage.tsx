@@ -4,6 +4,7 @@ import { supabase } from '../integrations/supabase/client';
 import { useToast } from '../hooks/use-toast';
 import { getDashboardUrl } from '../config/urls';
 import { notifySignupFailure, analyzeSignupFailure } from '../utils/slackNotifications';
+import { notifyBuyerSignin, notifyCreatorSignin } from '../utils/slack';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -58,9 +59,41 @@ const AuthCallbackPage = () => {
         // Only 'invited' or missing tier should go to invited page
         if (tier && tier !== 'invited') {
           console.log('✅ AUTH CALLBACK: Buyer accepted (tier: ' + tier + '), redirecting directly to dashboard');
+          
+          // Send Slack notification for successful OAuth buyer signin
+          try {
+            await notifyBuyerSignin({
+              fullName: buyerProfile.full_name,
+              email: buyerProfile.email,
+              authType: 'google',
+              success: true,
+              tier: tier,
+              redirectedTo: 'dashboard',
+              company: buyerProfile.buyer_company
+            });
+          } catch (slackError) {
+            console.error('Failed to send OAuth buyer signin notification:', slackError);
+          }
+          
           await redirectToDashboard();
         } else {
           console.log('⚠️ AUTH CALLBACK: Buyer not accepted (tier: ' + (tier || 'null') + '), redirecting to invited page');
+          
+          // Send Slack notification for OAuth buyer signin to invited page
+          try {
+            await notifyBuyerSignin({
+              fullName: buyerProfile.full_name,
+              email: buyerProfile.email,
+              authType: 'google',
+              success: true,
+              tier: tier || 'null',
+              redirectedTo: 'invited',
+              company: buyerProfile.buyer_company
+            });
+          } catch (slackError) {
+            console.error('Failed to send OAuth buyer signin notification:', slackError);
+          }
+          
           navigate('/invited');
         }
       } else if (ipOwnerProfile) {
@@ -70,9 +103,41 @@ const AuthCallbackPage = () => {
         
         if (invitationStatus === 'accepted') {
           console.log('✅ AUTH CALLBACK: Creator accepted, redirecting directly to dashboard');
+          
+          // Send Slack notification for successful OAuth creator signin
+          try {
+            await notifyCreatorSignin({
+              fullName: ipOwnerProfile.full_name,
+              email: ipOwnerProfile.email,
+              authType: 'google',
+              success: true,
+              invitationStatus: invitationStatus,
+              redirectedTo: 'dashboard',
+              penName: ipOwnerProfile.pen_name
+            });
+          } catch (slackError) {
+            console.error('Failed to send OAuth creator signin notification:', slackError);
+          }
+          
           await redirectToDashboard();
         } else {
           console.log('⚠️ AUTH CALLBACK: Creator not accepted, redirecting to creator invited page');
+          
+          // Send Slack notification for OAuth creator signin to invited page
+          try {
+            await notifyCreatorSignin({
+              fullName: ipOwnerProfile.full_name,
+              email: ipOwnerProfile.email,
+              authType: 'google',
+              success: true,
+              invitationStatus: invitationStatus || 'invited',
+              redirectedTo: 'creator/invited',
+              penName: ipOwnerProfile.pen_name
+            });
+          } catch (slackError) {
+            console.error('Failed to send OAuth creator signin notification:', slackError);
+          }
+          
           navigate('/creator/invited');
         }
       } else {
@@ -185,6 +250,21 @@ const AuthCallbackPage = () => {
             
             if (!createError && newProfile) {
               console.log('✅ AUTH CALLBACK: Created buyer profile with basic tier');
+              
+              // Send Slack notification for new OAuth profile creation
+              try {
+                await notifyBuyerSignin({
+                  fullName: 'OAuth Profile Created',
+                  email: user.email,
+                  authType: 'google',
+                  success: true,
+                  tier: 'basic',
+                  redirectedTo: 'dashboard'
+                });
+              } catch (slackError) {
+                console.error('Failed to send OAuth profile creation notification:', slackError);
+              }
+              
               await redirectToDashboard();
             } else {
               console.error('Error creating buyer profile:', createError);

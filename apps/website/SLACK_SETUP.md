@@ -1,14 +1,16 @@
-# Slack Notifications Setup for Signup Failures
+# Slack Notifications Setup for Authentication Events
 
-This guide explains how to set up Slack notifications to receive alerts when users fail to sign up.
+This guide explains how to set up Slack notifications to receive comprehensive alerts for all user authentication activities including signups and logins.
 
 ## Features
 
-- 🚨 Real-time alerts for signup failures
-- 📊 Detailed error information and analysis
-- 🔍 Possible failure reasons and suggested actions
-- 📱 Works for both OAuth (Google) and email/password signups
-- 🛡️ Privacy-focused (emails are partially masked)
+- 🚨 Real-time alerts for all signup attempts (successful and failed)
+- 📱 Real-time alerts for all signin attempts (successful and failed)
+- 📊 Detailed information for each authentication event
+- 🔍 Error analysis with possible failure reasons and suggested actions
+- 🌐 Works for both OAuth (Google) and email/password authentication
+- 🛡️ Privacy-focused (emails are partially masked, sensitive data excluded)
+- 📈 Complete audit trail of user authentication activity
 
 ## Setup Instructions
 
@@ -59,27 +61,72 @@ Add in Site settings → Environment variables
 **Other platforms:**
 Add `VITE_SLACK_WEBHOOK_URL` to your environment configuration
 
-## Notification Format
+## Notification Formats
 
-When a signup fails, you'll receive a Slack message with:
+### Signup Notifications
 
+**Successful Signup:**
 ```
-🚨 Signup Failed: us***@example.com
+✅ New Buyer Signup / New Creator Signup
 
 Email: us***@example.com
-Account Type: buyer/creator
-Error Message: [Detailed error message]
-Error Code: [If available]
+Full Name: [Name]
+Company: [Company] (buyers only)
+Pen Name: [Pen Name] (creators only)
+Role: [Role]
+Auth Type: email/google
+Tier: basic/pro/suite (buyers)
+Invitation Status: invited/accepted (creators)
+Success: true
 Timestamp: [Date and time]
 Environment: production/development
-URL: https://kstorybridge.com
+```
+
+**Failed Signup:**
+```
+🚨 Failed Buyer Signup / Failed Creator Signup
+
+Email: us***@example.com
+Auth Type: email/google
+Success: false
+Error Message: [Detailed error message]
+Timestamp: [Date and time]
+Environment: production/development
 
 Possible Reason: [Automated analysis]
 Suggested Action: [Recommended fix]
 Severity: low/medium/high/critical
+```
 
-Additional Context: [Any extra information]
-User Agent: [Browser information]
+### Signin Notifications
+
+**Successful Signin:**
+```
+✅ User Signin Success
+
+Email: us***@example.com
+Full Name: [Name]
+Account Type: buyer/creator
+Auth Type: email/google
+Success: true
+Tier: basic/pro/suite (buyers)
+Invitation Status: invited/accepted (creators)  
+Redirected To: dashboard/invited/creator/invited
+Timestamp: [Date and time]
+Session ID: [First 8 chars]...
+```
+
+**Failed Signin:**
+```
+🚨 User Signin Failed
+
+Email: us***@example.com
+Auth Type: email/google
+Success: false
+Error Message: [Error details]
+Account Type: unknown (if not determinable)
+Timestamp: [Date and time]
+User Agent: [Browser info]
 ```
 
 ## Error Analysis
@@ -106,8 +153,33 @@ The system automatically analyzes failures and provides:
 To test in development:
 
 1. Set `VITE_SLACK_ENABLE_DEV=true` in `.env.local`
-2. Try to sign up with an invalid email or existing account
-3. Check your Slack channel for the notification
+2. Test different scenarios:
+   - **Signup Success:** Complete a new buyer/creator signup
+   - **Signup Failure:** Try to sign up with an existing email or invalid data
+   - **Signin Success:** Sign in with valid credentials 
+   - **Signin Failure:** Try to sign in with invalid credentials
+   - **OAuth Flows:** Test Google OAuth for both signup and signin
+3. Check your Slack channel for notifications
+4. Verify all notification types are working
+
+### Test Scenarios to Verify
+
+#### Signup Tests:
+- ✅ Successful buyer email signup
+- ✅ Successful creator email signup  
+- ✅ Successful buyer OAuth signup
+- ✅ Successful creator OAuth signup
+- ❌ Failed email signup (existing email, weak password)
+- ❌ Failed OAuth signup (profile creation error)
+- ❌ Personal email rejection for buyer OAuth
+
+#### Signin Tests:
+- ✅ Successful buyer signin → dashboard
+- ✅ Successful buyer signin → invited page (invited tier)
+- ✅ Successful creator signin → dashboard (accepted status)
+- ✅ Successful creator signin → creator invited page
+- ✅ Successful OAuth signin (existing user)
+- ❌ Failed signin (invalid credentials, unverified email)
 
 ## Privacy & Security
 
@@ -140,11 +212,32 @@ curl -X POST -H 'Content-type: application/json' \
 
 ## Monitoring Best Practices
 
-1. **Create a dedicated channel** (e.g., #signup-failures)
-2. **Set up alerts** for critical failures
-3. **Review weekly** for patterns in failures
-4. **Update UI** based on common failure reasons
-5. **Document fixes** for recurring issues
+1. **Create dedicated channels:**
+   - `#auth-events` - All authentication activity
+   - `#signup-alerts` - Signup-specific notifications  
+   - `#signin-alerts` - Signin-specific notifications
+   - `#auth-failures` - Failed authentication attempts only
+
+2. **Set up alerts:**
+   - Critical failures (database errors, auth config issues)
+   - Unusual patterns (multiple failures from same IP)
+   - High-value user activities (enterprise signups)
+
+3. **Regular monitoring:**
+   - **Daily:** Review failed authentications
+   - **Weekly:** Analyze signup/signin trends  
+   - **Monthly:** Review notification effectiveness
+
+4. **Actionable insights:**
+   - Update UI based on common failure patterns
+   - Improve error messages for frequent issues
+   - Identify and fix authentication bottlenecks
+   - Monitor conversion rates from signup to signin
+
+5. **Data-driven improvements:**
+   - Track success rates by auth method (email vs OAuth)
+   - Identify drop-off points in auth flows
+   - Monitor tier distribution and invitation approvals
 
 ## Support
 

@@ -82,14 +82,19 @@ export const notifyBuyerSignup = async (userData: {
   role?: string;
   linkedinUrl?: string;
   authType?: 'email' | 'google' | 'oauth';
+  success?: boolean;
+  errorMessage?: string;
+  tier?: string;
 }) => {
   // Get current timestamp and timezone
   const now = new Date();
   const timestamp = now.toISOString();
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   
+  const event = userData.success !== false ? 'New Buyer Signup' : 'Failed Buyer Signup';
+  
   await sendSlackNotification({
-    event: 'New Buyer Signup',
+    event,
     userType: 'buyer',
     fullName: userData.fullName,
     email: userData.email,
@@ -100,6 +105,10 @@ export const notifyBuyerSignup = async (userData: {
     additionalInfo: {
       role: userData.role,
       linkedinUrl: userData.linkedinUrl,
+      success: userData.success !== false,
+      errorMessage: userData.errorMessage,
+      tier: userData.tier,
+      signupStep: userData.success !== false ? 'completed' : 'failed'
     }
   });
 };
@@ -112,14 +121,19 @@ export const notifyCreatorSignup = async (userData: {
   role?: string;
   websiteUrl?: string;
   authType?: 'email' | 'google' | 'oauth';
+  success?: boolean;
+  errorMessage?: string;
+  invitationStatus?: string;
 }) => {
   // Get current timestamp and timezone
   const now = new Date();
   const timestamp = now.toISOString();
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   
+  const event = userData.success !== false ? 'New Creator Signup' : 'Failed Creator Signup';
+  
   await sendSlackNotification({
-    event: 'New Creator Signup',
+    event,
     userType: 'creator',
     fullName: userData.fullName,
     email: userData.email,
@@ -131,6 +145,86 @@ export const notifyCreatorSignup = async (userData: {
       penName: userData.penName,
       role: userData.role,
       websiteUrl: userData.websiteUrl,
+      success: userData.success !== false,
+      errorMessage: userData.errorMessage,
+      invitationStatus: userData.invitationStatus,
+      signupStep: userData.success !== false ? 'completed' : 'failed'
     }
+  });
+};
+
+// New signin notification functions
+export const notifyUserSignin = async (userData: {
+  fullName?: string;
+  email: string;
+  accountType?: 'buyer' | 'creator' | 'unknown';
+  authType?: 'email' | 'google' | 'oauth';
+  success?: boolean;
+  errorMessage?: string;
+  redirectedTo?: string;
+  tier?: string;
+  invitationStatus?: string;
+  sessionId?: string;
+}) => {
+  // Get current timestamp and timezone
+  const now = new Date();
+  const timestamp = now.toISOString();
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  const event = userData.success !== false ? 'User Signin Success' : 'User Signin Failed';
+  const userType = userData.accountType || 'unknown';
+  
+  await sendSlackNotification({
+    event,
+    userType: userType === 'unknown' ? 'buyer' : userType as 'buyer' | 'creator', // Fallback for typing
+    fullName: userData.fullName || 'Unknown User',
+    email: userData.email,
+    authType: userData.authType || 'email',
+    timestamp: timestamp,
+    timezone: timezone,
+    additionalInfo: {
+      accountType: userData.accountType,
+      success: userData.success !== false,
+      errorMessage: userData.errorMessage,
+      redirectedTo: userData.redirectedTo,
+      tier: userData.tier,
+      invitationStatus: userData.invitationStatus,
+      sessionId: userData.sessionId?.substring(0, 8) + '...', // Only show first 8 chars for privacy
+      signinAttempt: userData.success !== false ? 'successful' : 'failed',
+      userAgent: navigator.userAgent?.substring(0, 100) // Truncated user agent
+    }
+  });
+};
+
+// Specific signin notification functions
+export const notifyBuyerSignin = async (userData: {
+  fullName?: string;
+  email: string;
+  authType?: 'email' | 'google' | 'oauth';
+  success?: boolean;
+  errorMessage?: string;
+  tier?: string;
+  redirectedTo?: string;
+  company?: string;
+}) => {
+  await notifyUserSignin({
+    ...userData,
+    accountType: 'buyer',
+  });
+};
+
+export const notifyCreatorSignin = async (userData: {
+  fullName?: string;
+  email: string;
+  authType?: 'email' | 'google' | 'oauth';
+  success?: boolean;
+  errorMessage?: string;
+  invitationStatus?: string;
+  redirectedTo?: string;
+  penName?: string;
+}) => {
+  await notifyUserSignin({
+    ...userData,
+    accountType: 'creator',
   });
 };

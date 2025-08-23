@@ -10,6 +10,7 @@ import { supabase } from '../integrations/supabase/client';
 import { getDashboardUrl } from '../config/urls';
 import UniversalHeader from '../components/UniversalHeader';
 import Footer from '../components/Footer';
+import { notifyBuyerSignin, notifyCreatorSignin, notifyUserSignin } from '../utils/slack';
 
 const SigninPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -150,9 +151,37 @@ const SigninPage = () => {
           // User exists in buyers table, treat as buyer
           if (buyerCheck.tier && buyerCheck.tier !== 'invited') {
             console.log('✅ SIGNIN: Buyer accepted (tier: ' + buyerCheck.tier + '), redirecting to dashboard');
+            
+            // Send Slack notification for successful buyer signin
+            try {
+              await notifyBuyerSignin({
+                email: user.email,
+                authType: 'email',
+                success: true,
+                tier: buyerCheck.tier,
+                redirectedTo: 'dashboard'
+              });
+            } catch (slackError) {
+              console.error('Failed to send buyer signin notification:', slackError);
+            }
+            
             await redirectToDashboard();
           } else {
             console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + (buyerCheck.tier || 'null') + '), redirecting to invited page');
+            
+            // Send Slack notification for buyer signin to invited page
+            try {
+              await notifyBuyerSignin({
+                email: user.email,
+                authType: 'email',
+                success: true,
+                tier: buyerCheck.tier || 'null',
+                redirectedTo: 'invited'
+              });
+            } catch (slackError) {
+              console.error('Failed to send buyer signin notification:', slackError);
+            }
+            
             navigate('/invited');
           }
           return;
@@ -209,6 +238,21 @@ const SigninPage = () => {
           }
           
           console.log('✅ SIGNIN: Created buyer profile with basic tier, redirecting to dashboard');
+          
+          // Send Slack notification for new profile creation during signin
+          try {
+            await notifyBuyerSignin({
+              fullName: 'New Profile Created',
+              email: user.email,
+              authType: 'email',
+              success: true,
+              tier: 'basic',
+              redirectedTo: 'dashboard'
+            });
+          } catch (slackError) {
+            console.error('Failed to send new profile creation notification:', slackError);
+          }
+          
           await redirectToDashboard();
           return;
         }
@@ -217,9 +261,41 @@ const SigninPage = () => {
         // Only 'invited' tier should go to invited page
         if (profile.tier && profile.tier !== 'invited') {
           console.log('✅ SIGNIN: Buyer accepted (tier: ' + profile.tier + '), redirecting directly to dashboard');
+          
+          // Send Slack notification for successful buyer signin
+          try {
+            await notifyBuyerSignin({
+              fullName: profile.full_name,
+              email: profile.email,
+              authType: 'email',
+              success: true,
+              tier: profile.tier,
+              redirectedTo: 'dashboard',
+              company: profile.buyer_company
+            });
+          } catch (slackError) {
+            console.error('Failed to send buyer signin notification:', slackError);
+          }
+          
           await redirectToDashboard();
         } else {
           console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + (profile.tier || 'null') + '), redirecting to invited page');
+          
+          // Send Slack notification for buyer signin to invited page
+          try {
+            await notifyBuyerSignin({
+              fullName: profile.full_name,
+              email: profile.email,
+              authType: 'email',
+              success: true,
+              tier: profile.tier || 'null',
+              redirectedTo: 'invited',
+              company: profile.buyer_company
+            });
+          } catch (slackError) {
+            console.error('Failed to send buyer signin notification:', slackError);
+          }
+          
           navigate('/invited');
         }
       } else if (accountType === 'ip_owner') {
@@ -238,8 +314,39 @@ const SigninPage = () => {
         
         if (profile?.invitation_status === 'accepted') {
           console.log('✅ SIGNIN: Creator accepted, redirecting directly to dashboard');
+          
+          // Send Slack notification for successful creator signin
+          try {
+            await notifyCreatorSignin({
+              fullName: profile.full_name,
+              email: profile.email,
+              authType: 'email',
+              success: true,
+              invitationStatus: profile.invitation_status,
+              redirectedTo: 'dashboard',
+              penName: profile.pen_name
+            });
+          } catch (slackError) {
+            console.error('Failed to send creator signin notification:', slackError);
+          }
+          
           await redirectToDashboard();
         } else {
+          // Send Slack notification for creator signin to invited page
+          try {
+            await notifyCreatorSignin({
+              fullName: profile?.full_name,
+              email: user.email,
+              authType: 'email',
+              success: true,
+              invitationStatus: profile?.invitation_status || 'invited',
+              redirectedTo: 'creator/invited',
+              penName: profile?.pen_name
+            });
+          } catch (slackError) {
+            console.error('Failed to send creator signin notification:', slackError);
+          }
+          
           navigate('/creator/invited');
         }
       } else {
@@ -303,6 +410,19 @@ const SigninPage = () => {
         
         // Set error state for visual feedback
         setSigninError(errorMessage);
+        
+        // Send Slack notification for signin failure
+        try {
+          await notifyUserSignin({
+            email: formData.email,
+            authType: 'email',
+            success: false,
+            errorMessage: errorMessage,
+            accountType: 'unknown' // We don't know the account type at this point
+          });
+        } catch (slackError) {
+          console.error('Failed to send signin failure notification:', slackError);
+        }
         
         // Always show the toast with error
         toast({

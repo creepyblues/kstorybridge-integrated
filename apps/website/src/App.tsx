@@ -24,6 +24,8 @@ const DashboardInvited = lazy(() => import("./pages/DashboardInvited"));
 const CreatorInvited = lazy(() => import("./pages/CreatorInvited"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
+const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
+const ProfileCompletionPage = lazy(() => import("./pages/ProfileCompletionPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading fallback component
@@ -55,6 +57,8 @@ const App = () => (
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="/invitation/accept" element={<InvitationAcceptPage />} />
+          <Route path="/profile/complete" element={<ProfileCompletionPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
           <Route path="/sample/werewolves-going-crazy-over-me" element={<SampleTitleDetailPage />} />
           <Route path="/invited" element={<DashboardInvited />} />

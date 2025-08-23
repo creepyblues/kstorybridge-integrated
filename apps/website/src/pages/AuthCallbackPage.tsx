@@ -89,6 +89,27 @@ const AuthCallbackPage = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // Check URL parameters to detect invitation type
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const type = urlParams.get('type') || hashParams.get('type');
+        const inviteToken = urlParams.get('invite_token') || hashParams.get('invite_token');
+        const invitationToken = urlParams.get('invitation_token') || hashParams.get('invitation_token');
+        
+        console.log('🔍 AUTH CALLBACK: Detected type:', type);
+        console.log('🔍 AUTH CALLBACK: Invite token:', inviteToken ? 'present' : 'not present');
+        console.log('🔍 AUTH CALLBACK: Invitation token:', invitationToken ? 'present' : 'not present');
+        console.log('🔍 AUTH CALLBACK: URL params:', Object.fromEntries(urlParams));
+        console.log('🔍 AUTH CALLBACK: Hash params:', Object.fromEntries(hashParams));
+        
+        // Handle invitation links specifically
+        // Supabase invitation links typically have type=invite or type=invitation, or contain invite/invitation tokens
+        if (type === 'invite' || type === 'invitation' || inviteToken || invitationToken) {
+          console.log('🎯 AUTH CALLBACK: Invitation link detected, redirecting to invitation setup');
+          navigate('/invitation/accept');
+          return;
+        }
+        
         // Get the session from the URL hash
         const { data: { session }, error } = await supabase.auth.getSession();
         

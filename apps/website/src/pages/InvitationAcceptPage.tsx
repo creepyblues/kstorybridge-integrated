@@ -28,6 +28,34 @@ const InvitationAcceptPage = () => {
   useEffect(() => {
     const checkInvitation = async () => {
       try {
+        // Check URL parameters for invitation tokens first
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        
+        const type = urlParams.get('type') || hashParams.get('type');
+        const inviteToken = urlParams.get('invite_token') || hashParams.get('invite_token');
+        const invitationToken = urlParams.get('invitation_token') || hashParams.get('invitation_token');
+        const accessToken = urlParams.get('access_token') || hashParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token') || hashParams.get('refresh_token');
+        
+        console.log('🔍 INVITATION ACCEPT: Checking invitation parameters');
+        console.log('🔍 INVITATION ACCEPT: Type:', type);
+        console.log('🔍 INVITATION ACCEPT: Access token:', accessToken ? 'present' : 'not present');
+        console.log('🔍 INVITATION ACCEPT: Refresh token:', refreshToken ? 'present' : 'not present');
+        
+        // If we have access tokens in the URL, set the session manually
+        if (accessToken && refreshToken) {
+          console.log('🔄 INVITATION ACCEPT: Setting session from URL tokens');
+          const { error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          
+          if (setSessionError) {
+            console.error('Error setting session:', setSessionError);
+          }
+        }
+        
         // Check if we have a valid session from the invitation link
         const { data: { session }, error } = await supabase.auth.getSession();
         

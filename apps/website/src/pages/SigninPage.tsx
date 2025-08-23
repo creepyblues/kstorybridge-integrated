@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@kstorybridge/ui';
 import { Input } from '@kstorybridge/ui';
 import { Label } from '@kstorybridge/ui';
@@ -17,6 +17,7 @@ const SigninPage = () => {
   const [isResendingVerification, setIsResendingVerification] = useState(false);
   const [showEmailVerificationAlert, setShowEmailVerificationAlert] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [signinError, setSigninError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -24,6 +25,7 @@ const SigninPage = () => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check if user is coming from signup and show verification reminder
   useEffect(() => {
@@ -43,7 +45,16 @@ const SigninPage = () => {
         duration: 8000
       });
     }
-  }, [toast]);
+    
+    // Check if coming from password reset
+    if (location.state?.message) {
+      toast({
+        title: "Success!",
+        description: location.state.message,
+        duration: 6000
+      });
+    }
+  }, [toast, location]);
 
   const redirectToDashboard = async () => {
     console.log('🔄 SIGNIN: Redirecting to dashboard');
@@ -244,14 +255,18 @@ const SigninPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setSigninError(''); // Clear previous errors
 
     try {
       if (!formData.email || !formData.password) {
+        const errorMsg = "Please fill in all fields";
+        setSigninError(errorMsg);
         toast({
           title: "Error",
-          description: "Please fill in all fields",
+          description: errorMsg,
           variant: "destructive"
         });
+        setIsLoading(false);
         return;
       }
 
@@ -263,25 +278,41 @@ const SigninPage = () => {
       if (error) {
         console.error('Signin error:', error);
         
-        // Check if it's an email verification error
-        if (error.message?.includes('Email not confirmed') || 
-            error.message?.includes('email_not_confirmed') ||
-            error.message?.includes('not confirmed')) {
+        // Provide user-friendly error messages
+        let errorTitle = "Sign In Failed";
+        let errorMessage = error.message;
+        
+        // Check for specific error types and provide better messages
+        if (error.message?.includes('Invalid login credentials')) {
+          errorTitle = "Invalid Credentials";
+          errorMessage = "The email or password you entered is incorrect. Please try again.";
+        } else if (error.message?.includes('Email not confirmed') || 
+                   error.message?.includes('email_not_confirmed') ||
+                   error.message?.includes('not confirmed')) {
+          errorTitle = "Email Not Verified";
+          errorMessage = "Please check your email and click the verification link before signing in.";
           setUnverifiedEmail(formData.email);
           setShowEmailVerificationAlert(true);
-          toast({
-            title: "Email Not Verified",
-            description: "Please check your email and click the verification link before signing in.",
-            variant: "destructive",
-            duration: 6000
-          });
-        } else {
-          toast({
-            title: "Signin Error",
-            description: error.message,
-            variant: "destructive"
-          });
+        } else if (error.message?.includes('Invalid email')) {
+          errorTitle = "Invalid Email";
+          errorMessage = "Please enter a valid email address.";
+        } else if (error.message?.includes('User not found')) {
+          errorTitle = "Account Not Found";
+          errorMessage = "No account found with this email. Please sign up first.";
         }
+        
+        // Set error state for visual feedback
+        setSigninError(errorMessage);
+        
+        // Always show the toast with error
+        toast({
+          title: errorTitle,
+          description: errorMessage,
+          variant: "destructive",
+          duration: 5000
+        });
+        
+        setIsLoading(false);
         return;
       }
       
@@ -419,6 +450,37 @@ const SigninPage = () => {
               {/* Sign In Form */}
               <Card className="border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardContent className="p-8">
+              
+              {/* Error Alert */}
+              {signinError && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-red-800">
+                        {signinError}
+                      </p>
+                    </div>
+                    <div className="ml-auto pl-3">
+                      <button
+                        type="button"
+                        onClick={() => setSigninError('')}
+                        className="inline-flex text-red-400 hover:text-red-500"
+                      >
+                        <span className="sr-only">Dismiss</span>
+                        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* Google Sign In Button */}
               {true && (
                 <div className="mb-6">

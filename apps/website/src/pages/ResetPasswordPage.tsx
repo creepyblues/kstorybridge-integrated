@@ -17,6 +17,8 @@ const ResetPasswordPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -112,14 +114,17 @@ const ResetPasswordPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(''); // Clear any previous errors
 
     try {
       // Validate password
       const passwordErrors = validatePassword(password);
       if (passwordErrors.length > 0) {
+        const errorMsg = passwordErrors.join('. ');
+        setErrorMessage(errorMsg);
         toast({
           title: "Password Requirements",
-          description: passwordErrors.join('. '),
+          description: errorMsg,
           variant: "destructive",
           duration: 8000
         });
@@ -128,9 +133,11 @@ const ResetPasswordPage = () => {
 
       // Check password confirmation
       if (password !== confirmPassword) {
+        const errorMsg = "Passwords do not match. Please try again.";
+        setErrorMessage(errorMsg);
         toast({
           title: "Password Mismatch",
-          description: "Passwords do not match. Please try again.",
+          description: errorMsg,
           variant: "destructive"
         });
         return;
@@ -141,17 +148,30 @@ const ResetPasswordPage = () => {
       
       if (!session) {
         console.error('No active session for password update');
+        const errorMsg = "Your reset session has expired. Please request a new password reset link.";
+        setErrorMessage(errorMsg);
         toast({
           title: "Session Expired",
-          description: "Your reset session has expired. Please request a new password reset link.",
+          description: errorMsg,
           variant: "destructive",
           duration: 6000
         });
-        navigate('/forgot-password', { replace: true });
+        
+        // Redirect after showing error
+        setTimeout(() => {
+          navigate('/forgot-password', { replace: true });
+        }, 3000);
         return;
       }
 
       console.log('Updating password for user:', session.user.email);
+      
+      // Show progress toast
+      toast({
+        title: "Updating Password...",
+        description: "Please wait while we update your password.",
+        duration: 3000
+      });
       
       // Update the password
       const { data, error } = await supabase.auth.updateUser({
@@ -162,16 +182,19 @@ const ResetPasswordPage = () => {
         console.error('Password update error:', error);
         
         // Provide more specific error messages
-        let errorMessage = error.message;
+        let errorMsg = error.message;
         if (error.message.includes('JWT')) {
-          errorMessage = "Your reset link has expired. Please request a new one.";
+          errorMsg = "Your reset link has expired. Please request a new one.";
         } else if (error.message.includes('same password')) {
-          errorMessage = "New password must be different from your current password.";
+          errorMsg = "New password must be different from your current password.";
+        } else if (error.message.includes('password')) {
+          errorMsg = "Password update failed. Please check your password requirements and try again.";
         }
         
+        setErrorMessage(errorMsg);
         toast({
           title: "Update Failed",
-          description: errorMessage,
+          description: errorMsg,
           variant: "destructive",
           duration: 6000
         });
@@ -180,10 +203,13 @@ const ResetPasswordPage = () => {
         if (error.message.includes('JWT') || error.message.includes('expired')) {
           setTimeout(() => {
             navigate('/forgot-password', { replace: true });
-          }, 2000);
+          }, 3000);
         }
       } else {
         console.log('Password update successful:', data);
+        
+        // Set success state
+        setIsSuccess(true);
         
         toast({
           title: "Password Updated Successfully!",
@@ -201,17 +227,22 @@ const ResetPasswordPage = () => {
             replace: true,
             state: { message: 'Password updated successfully. Please sign in with your new password.' }
           });
-        }, 1500);
+        }, 3000); // Increased delay to let user see success message
       }
     } catch (error) {
       console.error('Unexpected error during password update:', error);
+      const errorMsg = "Something went wrong. Please try again.";
+      setErrorMessage(errorMsg);
       toast({
         title: "Unexpected Error",
-        description: "Something went wrong. Please try again.",
+        description: errorMsg,
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      // Only stop loading if not successful (success state handles its own loading)
+      if (!isSuccess) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -278,6 +309,52 @@ const ResetPasswordPage = () => {
     );
   }
 
+  // Success state - show success message
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+        <UniversalHeader />
+        
+        <main className="flex-1">
+          <section className="py-16 lg:py-24">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="max-w-md mx-auto text-center">
+                {/* Success Icon */}
+                <div className="mb-8">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+                    <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                
+                <h1 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
+                  Password Updated!
+                </h1>
+                <p className="text-xl text-midnight-ink-600 mb-8">
+                  Your password has been successfully changed. You'll be redirected to the sign-in page in a moment.
+                </p>
+                
+                {/* Progress indicator */}
+                <div className="bg-white rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-hanok-teal mr-3"></div>
+                    <span className="text-midnight-ink">Redirecting to sign-in page...</span>
+                  </div>
+                  <p className="text-sm text-midnight-ink-500">
+                    Please use your new password to sign in.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+        
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
       <UniversalHeader />
@@ -299,6 +376,39 @@ const ResetPasswordPage = () => {
               {/* Reset Form */}
               <Card className="border-0 shadow-lg rounded-2xl hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardContent className="p-8">
+                  {/* Error Message Display */}
+                  {errorMessage && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3 flex-1">
+                          <h3 className="text-sm font-medium text-red-800">
+                            Password Reset Error
+                          </h3>
+                          <div className="mt-2 text-sm text-red-700">
+                            <p>{errorMessage}</p>
+                          </div>
+                        </div>
+                        <div className="ml-auto pl-3">
+                          <button
+                            type="button"
+                            onClick={() => setErrorMessage('')}
+                            className="inline-flex text-red-400 hover:text-red-500"
+                          >
+                            <span className="sr-only">Dismiss</span>
+                            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* New Password Field */}
                     <div className="space-y-2">
@@ -335,9 +445,32 @@ const ResetPasswordPage = () => {
                           </svg>
                         </button>
                       </div>
-                      <p className="text-xs text-midnight-ink-500">
-                        Password must be at least 8 characters with uppercase, lowercase, and numbers
-                      </p>
+                      <div className="mt-2">
+                        <p className="text-xs text-midnight-ink-500 mb-2">
+                          Password requirements:
+                        </p>
+                        {password && (
+                          <div className="space-y-1 text-xs">
+                            {[
+                              { test: password.length >= 8, text: "At least 8 characters" },
+                              { test: /(?=.*[a-z])/.test(password), text: "One lowercase letter" },
+                              { test: /(?=.*[A-Z])/.test(password), text: "One uppercase letter" },
+                              { test: /(?=.*\d)/.test(password), text: "One number" }
+                            ].map((req, index) => (
+                              <div key={index} className={`flex items-center ${req.test ? 'text-green-600' : 'text-red-500'}`}>
+                                <svg className="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                  {req.test ? (
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  ) : (
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                  )}
+                                </svg>
+                                {req.text}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Confirm Password Field */}
@@ -375,23 +508,48 @@ const ResetPasswordPage = () => {
                           </svg>
                         </button>
                       </div>
+                      {confirmPassword && (
+                        <div className="mt-2">
+                          <div className={`flex items-center text-xs ${password === confirmPassword ? 'text-green-600' : 'text-red-500'}`}>
+                            <svg className="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                              {password === confirmPassword ? (
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              ) : (
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                              )}
+                            </svg>
+                            {password === confirmPassword ? 'Passwords match' : 'Passwords do not match'}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Submit Button */}
                     <Button 
                       type="submit" 
-                      className="w-full h-12 text-base bg-hanok-teal hover:bg-hanok-teal-600 text-white font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl" 
-                      disabled={isLoading}
+                      className="w-full h-12 text-base bg-hanok-teal hover:bg-hanok-teal-600 text-white font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" 
+                      disabled={isLoading || !password || !confirmPassword}
                     >
                       {isLoading ? (
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Updating Password...
+                          <span>
+                            {isSuccess ? 'Password Updated!' : 'Updating Password...'}
+                          </span>
                         </div>
                       ) : (
                         'Update Password'
                       )}
                     </Button>
+                    
+                    {/* Progress indicator when loading */}
+                    {isLoading && !isSuccess && (
+                      <div className="mt-4 text-center">
+                        <p className="text-sm text-midnight-ink-500">
+                          Please wait while we securely update your password...
+                        </p>
+                      </div>
+                    )}
                   </form>
                 </CardContent>
               </Card>

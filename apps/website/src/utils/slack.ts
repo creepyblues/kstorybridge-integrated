@@ -2,6 +2,42 @@
  * Utility functions for sending Slack notifications
  */
 
+// Email addresses and domains to exclude from Slack notifications
+const EXCLUDED_EMAILS = [
+  'kevin@sandstoneartists.com',
+  'creepyblues@gmail.com', 
+  'sungho101@gmail.com'
+];
+
+const EXCLUDED_DOMAINS = [
+  'dadble.com',
+  'kstorybridge.com'
+];
+
+/**
+ * Check if an email should be excluded from Slack notifications
+ */
+const shouldExcludeEmail = (email: string): boolean => {
+  if (!email) return false;
+  
+  const emailLower = email.toLowerCase();
+  
+  // Check exact email matches
+  if (EXCLUDED_EMAILS.some(excluded => excluded.toLowerCase() === emailLower)) {
+    console.log(`🚫 Skipping Slack notification for excluded email: ${email}`);
+    return true;
+  }
+  
+  // Check domain matches  
+  const domain = emailLower.split('@')[1];
+  if (domain && EXCLUDED_DOMAINS.includes(domain)) {
+    console.log(`🚫 Skipping Slack notification for excluded domain: ${domain}`);
+    return true;
+  }
+  
+  return false;
+};
+
 export interface SlackNotificationData {
   event: string;
   userType: 'buyer' | 'creator';
@@ -15,6 +51,11 @@ export interface SlackNotificationData {
 }
 
 export const sendSlackNotification = async (data: SlackNotificationData): Promise<void> => {
+  // Check if email should be excluded from notifications
+  if (shouldExcludeEmail(data.email)) {
+    return;
+  }
+
   // Use Supabase Edge Function to proxy the Slack webhook request
   // This avoids CORS issues when making requests directly from the browser
   const SUPABASE_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co";

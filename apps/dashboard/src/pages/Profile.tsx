@@ -774,7 +774,7 @@ export default function Profile() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                {/* Password Reset Button */}
+                {/* Change Password Button */}
                 <Button
                   onClick={() => setIsPasswordResetModalOpen(true)}
                   variant="outline"
@@ -787,7 +787,7 @@ export default function Profile() {
                   <KeyRound className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 relative z-10" />
                   
                   {/* Text */}
-                  <span className="relative z-10">Reset Password</span>
+                  <span className="relative z-10">Change Password</span>
                 </Button>
 
                 {/* Sign Out Button */}

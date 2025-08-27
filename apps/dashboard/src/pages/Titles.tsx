@@ -24,7 +24,8 @@ function TitlesContent() {
     setTitles, 
     setCreatorTitles, 
     isFresh, 
-    refreshData 
+    refreshData,
+    clearCache 
   } = useDataCache();
   
   const [searchQuery, setSearchQuery] = useState(""); // What user types
@@ -78,8 +79,8 @@ function TitlesContent() {
   };
 
   const handleRefresh = () => {
-    const dataKey = isCreatorView ? 'creatorTitles' : 'titles';
-    refreshData(dataKey);
+    // Clear all cache data including titles, title details, favorites, etc.
+    clearCache();
     // Featured titles refresh is handled by the FeaturedTitlesCarousel component
     loadData(true);
   };

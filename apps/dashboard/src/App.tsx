@@ -37,6 +37,8 @@ const BuyerDashboardNew = lazy(() => import("./pages/BuyerDashboardNew"));
 const BuyersPricing = lazy(() => import("./pages/BuyersPricing"));
 const Contact = lazy(() => import("./pages/Contact"));
 const News = lazy(() => import("./pages/News"));
+const SendMessage = lazy(() => import("./pages/SendMessage"));
+const SendMessageTest = lazy(() => import("./pages/SendMessageTest"));
 
 const queryClient = new QueryClient();
 
@@ -59,6 +61,9 @@ const App = () => (
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                 <Route path="/auth" element={<Auth />} />
+                
+                {/* Test route - no authentication required */}
+                <Route path="/test-send-message" element={<SendMessageTest />} />
                 <Route path="/" element={
                   <ProtectedLayout><RootRedirect /></ProtectedLayout>
                 } />
@@ -106,6 +111,9 @@ const App = () => (
                 <Route path="/buyers/news" element={
                   <ProtectedLayout><News /></ProtectedLayout>
                 } />
+                <Route path="/buyers/send-message" element={
+                  <ProtectedLayout><SendMessage /></ProtectedLayout>
+                } />
                 
                 {/* Creator routes */}
                 <Route path="/creators" element={
@@ -128,6 +136,9 @@ const App = () => (
                 } />
                 <Route path="/creators/news" element={
                   <ProtectedLayout><News /></ProtectedLayout>
+                } />
+                <Route path="/creators/send-message" element={
+                  <ProtectedLayout><SendMessage /></ProtectedLayout>
                 } />
                 
                 {/* Legacy IP Owner/Creator routes */}

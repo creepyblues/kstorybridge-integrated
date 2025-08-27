@@ -23,10 +23,12 @@ const getDiscoverItems = (accountType: string) => {
 const getSettingsItems = (accountType: string) => {
   if (accountType === "ip_owner") {
     return [
+      // { title: "Send msg", href: "/creators/send-message" }, // Hidden for now - needs database setup
       { title: "Profile", href: "/creators/profile" },
     ];
   } else {
     return [
+      // { title: "Send msg", href: "/buyers/send-message" }, // Hidden for now - needs database setup
       { title: "Profile", href: "/buyers/profile" },
     ];
   }

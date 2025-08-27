@@ -137,3 +137,26 @@ export const notifyCreatorSignup = async (userData: {
     }
   });
 };
+
+// Convenience function for user feedback messages
+export const notifyUserFeedback = async (feedbackData: {
+  userFullName: string;
+  userEmail: string;
+  userId: string;
+  message: string;
+  userType: 'buyer' | 'creator';
+  company?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'User Feedback Received',
+    userType: feedbackData.userType,
+    fullName: feedbackData.userFullName,
+    email: feedbackData.userEmail,
+    company: feedbackData.company,
+    additionalInfo: {
+      userId: feedbackData.userId,
+      message: feedbackData.message,
+      timestamp: new Date().toISOString(),
+    }
+  });
+};

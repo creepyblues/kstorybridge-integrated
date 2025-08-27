@@ -86,17 +86,12 @@ export async function notifySignupFailure(data: SignupFailureData): Promise<void
     const environment = import.meta.env.MODE || 'unknown';
     const appUrl = window.location.origin;
     
-    // Sanitize email for privacy (show partial)
-    const sanitizedEmail = data.email ? 
-      data.email.replace(/^(.{2}).*(@.*)$/, '$1***$2') : 
-      'Not provided';
-
     // Prepare notification data for the Supabase proxy
     const notificationData = {
       event: 'Signup Failure',
       userType: data.accountType || 'unknown',
       fullName: 'Failed Signup Attempt',
-      email: sanitizedEmail,
+      email: data.email || 'Not provided',
       authType: data.additionalContext?.authType || 'unknown',
       timestamp: data.timestamp,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

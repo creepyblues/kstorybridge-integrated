@@ -314,6 +314,33 @@
   [role="combobox"] {
     background-color: white !important;
   }
+
+  /* Custom dropdown option styling to remove borders and fix highlights */
+  .dropdown-option {
+    border: none !important; /* remove inner borders */
+  }
+
+  .dropdown-option:hover,
+  .dropdown-option[aria-selected="true"] {
+    background-color: hsl(var(--hanok-teal)) !important; /* teal highlight */
+    color: white !important;
+    outline: none !important; /* no default outline */
+  }
+
+  /* Additional Radix UI Select overrides */
+  [data-radix-select-item] {
+    border: none !important;
+    outline: none !important;
+  }
+
+  [data-radix-select-item]:hover,
+  [data-radix-select-item]:focus,
+  [data-radix-select-item][data-highlighted] {
+    background-color: hsl(var(--hanok-teal)) !important;
+    color: white !important;
+    outline: none !important;
+    border: none !important;
+  }
 }
 
 @layer utilities {

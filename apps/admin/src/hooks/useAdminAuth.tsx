@@ -34,33 +34,43 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log(`Admin Auth: Loading profile for ${email}`);
       
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Profile loading timeout')), 10000);
-      });
+      // Create a timeout with AbortController for better control
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 15000); // Increased timeout to 15 seconds
 
-      const profilePromise = supabase
-        .from('admin')
-        .select('*')
-        .eq('email', email)
-        .eq('active', true)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('admin')
+          .select('*')
+          .eq('email', email)
+          .eq('active', true)
+          .maybeSingle()
+          .abortSignal(controller.signal);
+        
+        clearTimeout(timeoutId);
 
-      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
+        if (error) {
+          console.error('Admin Auth: Profile query error:', error);
+          throw error;
+        }
 
-      if (error) {
-        console.error('Admin Auth: Profile query error:', error);
-        throw error;
-      }
-
-      if (data) {
-        console.log('Admin Auth: Profile loaded successfully');
-        setAdminProfile(data);
-        clearError();
-      } else {
-        console.log('Admin Auth: No admin profile found');
-        setError(`No admin access found for ${email}. Contact IT support.`);
-        setAdminProfile(null);
+        if (data) {
+          console.log('Admin Auth: Profile loaded successfully');
+          setAdminProfile(data);
+          clearError();
+        } else {
+          console.log('Admin Auth: No admin profile found');
+          setError(`No admin access found for ${email}. Contact IT support.`);
+          setAdminProfile(null);
+        }
+      } catch (innerError: any) {
+        clearTimeout(timeoutId);
+        if (innerError?.name === 'AbortError' || innerError?.message?.includes('aborted')) {
+          throw new Error('Profile loading timeout');
+        }
+        throw innerError;
       }
     } catch (error) {
       console.error('Admin Auth: Profile loading failed:', error);

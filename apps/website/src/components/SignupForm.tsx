@@ -873,12 +873,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       <SelectTrigger className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg bg-white">
                         <SelectValue placeholder="Select your role (optional)" />
                       </SelectTrigger>
-                      <SelectContent className="z-[100] bg-white border-midnight-ink-200 shadow-lg">
-                        <SelectItem value="producer">Producer</SelectItem>
-                        <SelectItem value="executive">Executive</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
-                        <SelectItem value="content_scout">Content Scout</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                      <SelectContent className="z-[100] bg-white shadow-lg">
+                        <SelectItem className="dropdown-option" value="producer">Producer</SelectItem>
+                        <SelectItem className="dropdown-option" value="executive">Executive</SelectItem>
+                        <SelectItem className="dropdown-option" value="agent">Agent</SelectItem>
+                        <SelectItem className="dropdown-option" value="content_scout">Content Scout</SelectItem>
+                        <SelectItem className="dropdown-option" value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -917,9 +917,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       <SelectTrigger className="h-12 text-base border border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg bg-white">
                         <SelectValue placeholder="Select your role (optional)" />
                       </SelectTrigger>
-                      <SelectContent className="z-[100] bg-white border-midnight-ink-200 shadow-lg">
-                        <SelectItem value="author">Author</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
+                      <SelectContent className="z-[100] bg-white shadow-lg">
+                        <SelectItem className="dropdown-option" value="author">Author</SelectItem>
+                        <SelectItem className="dropdown-option" value="agent">Agent</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

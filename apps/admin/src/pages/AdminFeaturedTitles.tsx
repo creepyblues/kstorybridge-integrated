@@ -115,7 +115,7 @@ export default function AdminFeaturedTitles() {
       title.title_name_en?.toLowerCase().includes(searchLower) ||
       title.title_name_kr?.toLowerCase().includes(searchLower) ||
       featured.note?.toLowerCase().includes(searchLower) ||
-      title.genre?.toLowerCase().includes(searchLower)
+      (typeof title.genre === 'string' && title.genre.toLowerCase().includes(searchLower))
     );
   });
 

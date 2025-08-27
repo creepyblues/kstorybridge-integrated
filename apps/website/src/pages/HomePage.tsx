@@ -15,6 +15,20 @@ const HomePage = () => {
   // Add authentication hook to handle redirects
   const { user, userProfile, isLoading, isRedirecting } = useAuth();
 
+  // Load Beehiiv script for newsletter
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://subscribe-forms.beehiiv.com/embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
   // Check for invitation links that might land on homepage
   useEffect(() => {
     const checkForInvitationLink = () => {
@@ -172,6 +186,30 @@ const HomePage = () => {
           />
         </div>
       </div>
+
+      {/* Newsletter Section */}
+      <section className="bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 lg:pt-10 pb-12 sm:pb-16 lg:pb-20" style={{ marginBottom: '-144px' }}>
+          <iframe 
+            src="https://subscribe-forms.beehiiv.com/44fe1ec1-b67e-4431-9ed2-84a8bb05dbbc" 
+            className="beehiiv-embed" 
+            data-test-id="beehiiv-embed" 
+            frameBorder="0" 
+            scrolling="no" 
+            style={{
+              width: '1014px',
+              height: '288px',
+              margin: '0 auto',
+              borderRadius: '0px',
+              backgroundColor: 'transparent',
+              boxShadow: '0 0 #0000',
+              maxWidth: '100%',
+              display: 'block'
+            }}
+          />
+        </div>
+      </section>
+      
       <Footer />
     </div>
   );

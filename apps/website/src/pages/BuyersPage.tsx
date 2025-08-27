@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
@@ -11,6 +11,21 @@ const BuyersPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Load Beehiiv script
+    const script = document.createElement('script');
+    script.src = 'https://subscribe-forms.beehiiv.com/embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -384,19 +399,26 @@ const BuyersPage = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-hanok-teal to-porcelain-blue-600">
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <div className="max-w-4xl mx-auto space-y-8">
-              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-12 leading-tight">
-                Ready to Scout Your Next Hit?
-              </h2>
-              <Link to="/signup">
-                <Button id="buyers-cta-scout-catalog-btn" size="lg" className="bg-white text-hanok-teal hover:bg-snow-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
-                  Scout Catalog Now
-                </Button>
-              </Link>
-            </div>
+        {/* Newsletter Section */}
+        <section className="bg-white overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 lg:pt-10 pb-12 sm:pb-16 lg:pb-20" style={{ marginBottom: '-144px' }}>
+            <iframe 
+              src="https://subscribe-forms.beehiiv.com/44fe1ec1-b67e-4431-9ed2-84a8bb05dbbc" 
+              className="beehiiv-embed" 
+              data-test-id="beehiiv-embed" 
+              frameBorder="0" 
+              scrolling="no" 
+              style={{
+                width: '1014px',
+                height: '288px',
+                margin: '0 auto',
+                borderRadius: '0px',
+                backgroundColor: 'transparent',
+                boxShadow: '0 0 #0000',
+                maxWidth: '100%',
+                display: 'block'
+              }}
+            />
           </div>
         </section>
       </main>

@@ -36,6 +36,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const BuyerDashboardNew = lazy(() => import("./pages/BuyerDashboardNew"));
 const BuyersPricing = lazy(() => import("./pages/BuyersPricing"));
 const Contact = lazy(() => import("./pages/Contact"));
+const News = lazy(() => import("./pages/News"));
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,9 @@ const App = () => (
                 <Route path="/buyers/pricing" element={
                   <ProtectedLayout><BuyersPricing /></ProtectedLayout>
                 } />
+                <Route path="/buyers/news" element={
+                  <ProtectedLayout><News /></ProtectedLayout>
+                } />
                 
                 {/* Creator routes */}
                 <Route path="/creators" element={
@@ -121,6 +125,9 @@ const App = () => (
                 } />
                 <Route path="/creators/profile" element={
                   <ProtectedLayout><Profile /></ProtectedLayout>
+                } />
+                <Route path="/creators/news" element={
+                  <ProtectedLayout><News /></ProtectedLayout>
                 } />
                 
                 {/* Legacy IP Owner/Creator routes */}

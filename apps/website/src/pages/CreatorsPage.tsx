@@ -1,5 +1,6 @@
 import { ArrowRight, CheckCircle, Globe, Shield, TrendingUp, Zap, Rocket, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import Footer from '../components/Footer';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
@@ -7,6 +8,20 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const CreatorsPage = () => {
   const { t } = useLanguage();
+
+  // Load Beehiiv script for newsletter
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://subscribe-forms.beehiiv.com/embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
 
   const benefits = [
     {
@@ -248,6 +263,30 @@ const CreatorsPage = () => {
         </div>
       </section>
       */}
+
+      {/* Newsletter Section */}
+      <section className="bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 lg:pt-10 pb-12 sm:pb-16 lg:pb-20" style={{ marginBottom: '-144px' }}>
+          <iframe 
+            src="https://subscribe-forms.beehiiv.com/44fe1ec1-b67e-4431-9ed2-84a8bb05dbbc" 
+            className="beehiiv-embed" 
+            data-test-id="beehiiv-embed" 
+            frameBorder="0" 
+            scrolling="no" 
+            style={{
+              width: '1014px',
+              height: '288px',
+              margin: '0 auto',
+              borderRadius: '0px',
+              backgroundColor: 'transparent',
+              boxShadow: '0 0 #0000',
+              maxWidth: '100%',
+              display: 'block'
+            }}
+          />
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

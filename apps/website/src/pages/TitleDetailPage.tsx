@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ArrowLeft, Eye, Heart, Star, FileText, Crown, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
-import PageHeader from '../components/PageHeader';
+import UniversalHeader from '../components/UniversalHeader';
 import SecurePDFViewer from '../components/SecurePDFViewer';
 
 type Title = {
@@ -80,7 +80,7 @@ export default function TitleDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-        <PageHeader />
+        <UniversalHeader />
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="text-center text-gray-600">Loading title...</div>
         </div>
@@ -91,7 +91,7 @@ export default function TitleDetailPage() {
   if (error || !title) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-        <PageHeader />
+        <UniversalHeader />
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="text-center text-red-600">{error || 'Title not found'}</div>
         </div>
@@ -101,7 +101,7 @@ export default function TitleDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <PageHeader />
+      <UniversalHeader />
       
       <main className="max-w-7xl mx-auto px-6 py-16">
         {/* Back Button */}

@@ -1,12 +1,12 @@
 
-import PageHeader from '../components/PageHeader';
+import UniversalHeader from '../components/UniversalHeader';
 import SignupForm from '../components/SignupForm';
 import Footer from '../components/Footer';
 
 const BuyerSignupPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <PageHeader />
+      <UniversalHeader />
       
       <main className="flex-1">
         <section className="py-16 lg:py-24">

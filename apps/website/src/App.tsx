@@ -51,7 +51,9 @@ const App = () => (
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />
-          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/buyers/onboarding" element={<OnboardingPage />} />
+          {/* Redirect old onboarding route */}
+          <Route path="/onboarding" element={<Navigate to="/buyers/onboarding" replace />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signup/buyer" element={<BuyerSignupPage />} />
           <Route path="/signup/creator" element={<CreatorSignupPage />} />

@@ -178,7 +178,7 @@ const BuyersPage = () => {
             {/* Learn How It Works Button */}
             <div className="text-center mt-12">
               <Button 
-                onClick={() => navigate('/onboarding')}
+                onClick={() => navigate('/buyers/onboarding')}
                 size="lg" 
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
               >

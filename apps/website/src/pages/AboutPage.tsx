@@ -1,4 +1,4 @@
-import PageHeader from '../components/PageHeader';
+import UniversalHeader from '../components/UniversalHeader';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { ExternalLink } from 'lucide-react';
 import Footer from '../components/Footer';
@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 const AboutPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <PageHeader />
+      <UniversalHeader />
       
       <main className="flex-1">
         {/* Hero Section */}

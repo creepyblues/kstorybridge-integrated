@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import Header from '../components/Header';
+import UniversalHeader from '../components/UniversalHeader';
 import Footer from '../components/Footer';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '@kstorybridge/ui';
@@ -10,7 +10,7 @@ import PaymentButton from '../components/PaymentButton';
 const PricingPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <UniversalHeader />
       
       <main className="flex-1">
         {/* Hero Section */}

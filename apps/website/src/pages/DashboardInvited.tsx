@@ -1,5 +1,5 @@
 
-import PageHeader from '../components/PageHeader';
+import UniversalHeader from '../components/UniversalHeader';
 import Footer from '../components/Footer';
 import { CheckCircle, Clock, Mail, ArrowRight } from 'lucide-react';
 import { Button } from '@kstorybridge/ui';
@@ -7,7 +7,7 @@ import KoreanPattern from '../components/KoreanPattern';
 const DashboardInvited = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <PageHeader />
+      <UniversalHeader />
       
       <main className="flex-1">
         {/* Hero Section */}

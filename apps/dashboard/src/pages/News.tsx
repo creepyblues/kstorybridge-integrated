@@ -35,7 +35,7 @@ export default function News() {
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
 
   const RSS_FEED_URL = "https://rss.beehiiv.com/feeds/oaQs6YbGE8.xml";
-  const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+  const CORS_PROXY = "https://corsproxy.io/?url=";
 
   useEffect(() => {
     fetchNewsArticles();

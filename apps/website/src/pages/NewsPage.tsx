@@ -29,7 +29,7 @@ export default function NewsPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const RSS_FEED_URL = "https://rss.beehiiv.com/feeds/oaQs6YbGE8.xml";
-  const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+  const CORS_PROXY = "https://corsproxy.io/?url=";
 
   useEffect(() => {
     fetchNewsArticles();

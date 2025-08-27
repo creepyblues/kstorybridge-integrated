@@ -27,6 +27,7 @@ const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
 const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
 const ProfileCompletionPage = lazy(() => import("./pages/ProfileCompletionPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const NewsPage = lazy(() => import("./pages/NewsPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -49,6 +50,7 @@ const App = () => (
           <Route path="/buyers" element={<BuyersPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/news" element={<NewsPage />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signup/buyer" element={<BuyerSignupPage />} />

@@ -15,6 +15,7 @@ const Navigation = ({ isLoggedIn, isMobile = false, onLinkClick }: NavigationPro
   const navItems = [
     { name: t('nav.creators'), path: '/creators' },
     { name: t('nav.buyers'), path: '/buyers' },
+    { name: 'News', path: '/news' },
     { name: 'About', path: '/about' },
   ];
 

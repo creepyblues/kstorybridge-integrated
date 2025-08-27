@@ -31,7 +31,7 @@ const UniversalHeader = () => {
             />
           </div>
           
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation and Auth Buttons */}
           <div className="hidden md:flex items-center space-x-8">
             <button 
               onClick={() => navigate('/creators')}
@@ -54,6 +54,16 @@ const UniversalHeader = () => {
               BUYERS
             </button>
             <button 
+              onClick={() => navigate('/news')}
+              className={`font-medium transition-colors ${
+                isActive('/news') 
+                  ? 'text-hanok-teal' 
+                  : 'text-midnight-ink hover:text-hanok-teal'
+              }`}
+            >
+              NEWS
+            </button>
+            <button 
               onClick={() => navigate('/about')}
               className={`font-medium transition-colors ${
                 isActive('/about') 
@@ -63,10 +73,8 @@ const UniversalHeader = () => {
             >
               ABOUT
             </button>
-          </div>
-          
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+            
+            {/* Auth Buttons */}
             <Button 
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
               onClick={() => navigate('/signin')}
@@ -127,6 +135,19 @@ const UniversalHeader = () => {
                 }`}
               >
                 BUYERS
+              </button>
+              <button 
+                onClick={() => {
+                  navigate('/news');
+                  setMobileMenuOpen(false);
+                }}
+                className={`block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors ${
+                  isActive('/news')
+                    ? 'bg-hanok-teal/10 text-hanok-teal'
+                    : 'text-midnight-ink hover:bg-gray-50'
+                }`}
+              >
+                NEWS
               </button>
               <button 
                 onClick={() => {

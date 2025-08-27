@@ -287,29 +287,13 @@ export default function News() {
       `}</style>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">K-CONTENT NEWS</h1>
               <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
-                The latest hot news around K-content you don't want to miss
+                The latest hot K-content news you don't want to miss
               </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={fetchNewsArticles}
-                disabled={loading}
-                variant="outline"
-                className="flex items-center gap-2 text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5"
-              >
-                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              {lastUpdated && (
-                <div className="text-sm text-midnight-ink-400">
-                  Updated: {lastUpdated.toLocaleTimeString()}
-                </div>
-              )}
             </div>
           </div>
 
@@ -373,7 +357,7 @@ export default function News() {
               return (
                 <div
                   key={`section-${index}`} 
-                  className="rounded-[20px] p-5 mx-8 my-8 newsletter-section"
+                  className="rounded-[20px] p-3 sm:p-5 mx-1 sm:mx-8 my-4 sm:my-8 newsletter-section"
                   style={{ backgroundColor: '#BCDFF4' }}
                 >
                   {/* Tags */}

@@ -10,11 +10,13 @@ const getDiscoverItems = (accountType: string) => {
   if (accountType === "ip_owner") {
     return [
       { title: "Titles", href: "/creators/titles" },
+      { title: "News", href: "/creators/news" },
     ];
   } else {
     return [
       { title: "Titles", href: "/buyers/titles" },
       { title: "Favorites", href: "/buyers/favorites" },
+      { title: "News", href: "/buyers/news" },
     ];
   }
 };

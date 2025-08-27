@@ -237,10 +237,10 @@ const BuyersPage = () => {
               </h2>
             </div>
             
-            <div className="grid lg:grid-cols-4 gap-6">
+            <div className="grid lg:grid-cols-3 gap-6 items-start">
               {/* Free Plan */}
-              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
-                <CardContent className="p-0">
+              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-white overflow-hidden h-full flex flex-col">
+                <CardContent className="p-0 flex flex-col h-full">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For content scouts</div>
                     <h3 className="text-4xl font-bold text-sunrise-coral mb-4">Free</h3>
@@ -258,7 +258,7 @@ const BuyersPage = () => {
                     </Link>
                   </div>
                   
-                  <div className="p-6 bg-white">
+                  <div className="p-6 bg-white flex-1">
                     <h4 className="font-bold text-midnight-ink mb-4">Features you'll love:</h4>
                     <div className="space-y-3">
                       <div className="flex items-start space-x-3">
@@ -274,49 +274,10 @@ const BuyersPage = () => {
                 </CardContent>
               </Card>
 
-              {/* À la carte Plan */}
-              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="bg-slate-100 p-6 rounded-t-3xl">
-                    <div className="text-sm text-slate-600 font-medium mb-2">For selective buyers</div>
-                    <h3 className="text-4xl font-bold text-sunrise-coral mb-4">à la carte</h3>
-                    <p className="text-slate-600 text-sm mb-6">Pay only for what you need when exploring specific titles.</p>
-                    
-                    <div className="mb-6">
-                      <div className="text-3xl font-bold text-midnight-ink">Pay as you go</div>
-                      <div className="text-slate-500 text-sm">Per feature used</div>
-                    </div>
-                    
-                    <Link to="/signup">
-                      <Button id="buyers-pricing-alacarte-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
-                        Get started
-                      </Button>
-                    </Link>
-                  </div>
-                  
-                  <div className="p-6 bg-white">
-                    <h4 className="font-bold text-midnight-ink mb-4">Everything in Free, plus:</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-start space-x-3">
-                        <span className="text-hanok-teal text-lg">✓</span>
-                        <span className="text-slate-600 text-sm">Pay per premium feature</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <span className="text-hanok-teal text-lg">✓</span>
-                        <span className="text-slate-600 text-sm">Contact creator access</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <span className="text-hanok-teal text-lg">✓</span>
-                        <span className="text-slate-600 text-sm">Pitch deck downloads</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* Pro Plan */}
-              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
-                <CardContent className="p-0">
+              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-white overflow-hidden h-full flex flex-col">
+                <CardContent className="p-0 flex flex-col h-full">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For active buyers</div>
                     <h3 className="text-4xl font-bold text-sunrise-coral mb-4">Pro</h3>
@@ -334,7 +295,7 @@ const BuyersPage = () => {
                     </Link>
                   </div>
                   
-                  <div className="p-6 bg-white">
+                  <div className="p-6 bg-white flex-1">
                     <h4 className="font-bold text-midnight-ink mb-4">Everything in Free, plus:</h4>
                     <div className="space-y-3">
                       <div className="flex items-start space-x-3">
@@ -359,12 +320,12 @@ const BuyersPage = () => {
               </Card>
 
               {/* Suite Plan */}
-              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-slate-50 overflow-hidden">
-                <CardContent className="p-0">
+              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-white overflow-hidden h-full flex flex-col">
+                <CardContent className="p-0 flex flex-col h-full">
                   <div className="bg-slate-100 p-6 rounded-t-3xl">
                     <div className="text-sm text-slate-600 font-medium mb-2">For studios & networks</div>
                     <h3 className="text-4xl font-bold text-sunrise-coral mb-4">Suite</h3>
-                    <p className="text-slate-600 text-sm mb-6">Custom solutions with expert guidance.</p>
+                    <p className="text-slate-600 text-sm mb-6">Custom solutions with expert guidance and dedicated support.</p>
                     
                     <div className="mb-6">
                       <div className="text-3xl font-bold text-midnight-ink">Custom</div>
@@ -376,7 +337,7 @@ const BuyersPage = () => {
                     </Button>
                   </div>
                   
-                  <div className="p-6 bg-white">
+                  <div className="p-6 bg-white flex-1">
                     <h4 className="font-bold text-midnight-ink mb-4">Everything in Pro, plus:</h4>
                     <div className="space-y-3">
                       <div className="flex items-start space-x-3">

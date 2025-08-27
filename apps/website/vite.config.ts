@@ -17,9 +17,24 @@ const testConfig = createVitestConfig({
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   ...testConfig,
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@kstorybridge/ui',
+      'lucide-react'
+    ]
+  },
   server: {
     host: "::",
     port: 5173,
+    hmr: {
+      overlay: false
+    },
+    fs: {
+      strict: false
+    }
   },
   plugins: [
     react(),

@@ -178,13 +178,13 @@ export default function AdminTitles() {
     
     // Apply search filter first
     if (searchTerm) {
-      const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
+      const { exactMatches, expandedMatches } = enhancedSearch(
         titles,
         searchTerm,
         getTitleSearchFields()
       );
-      // Combine results with proper ordering: exact matches first, then phrase matches, then expanded matches
-      result = [...exactMatches, ...phraseMatches, ...expandedMatches];
+      // Combine results with proper ordering: exact matches first, then expanded matches
+      result = [...exactMatches, ...expandedMatches];
     }
     
     // Apply sorting (but preserve search relevance order when there's a search term)

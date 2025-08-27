@@ -34,6 +34,7 @@ function TitlesContent() {
   const [itemsPerPage] = useState(50);
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
 
   // Determine if this is creator view based on route
   const isCreatorView = location.pathname.startsWith('/creators');
@@ -179,10 +180,15 @@ function TitlesContent() {
   const filteredTitles = (() => {
     let result = titles;
     
-    // Apply search filter first
+    // Apply pitch filter first
+    if (showOnlyWithPitch) {
+      result = result.filter(title => title.pitch && title.pitch.trim() !== '');
+    }
+    
+    // Apply search filter
     if (searchTerm) {
       const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
-        titles,
+        result,
         searchTerm,
         getTitleSearchFields()
       );
@@ -194,10 +200,10 @@ function TitlesContent() {
     return searchTerm ? result : sortTitles(result);
   })();
 
-  // Reset pagination when search term or sorting changes
+  // Reset pagination when search term, sorting, or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortField, sortDirection]);
+  }, [searchTerm, sortField, sortDirection, showOnlyWithPitch]);
 
   const formatGenre = (genre: string | string[]) => {
     if (Array.isArray(genre)) {
@@ -328,6 +334,23 @@ function TitlesContent() {
             </div>
           </form>
           
+          {/* Filters Section */}
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-sm font-bold text-midnight-ink-600">POPULAR FILTERS:</span>
+              <button 
+                onClick={() => setShowOnlyWithPitch(!showOnlyWithPitch)}
+                className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border transition-colors duration-200 ${
+                  showOnlyWithPitch 
+                    ? 'bg-hanok-teal text-white border-hanok-teal' 
+                    : 'bg-hanok-teal/10 text-hanok-teal border-hanok-teal/20 hover:bg-hanok-teal hover:text-white'
+                }`}
+              >
+                titles with pitch deck
+              </button>
+            </div>
+          </div>
+          
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             {/* Desktop Table Header */}
             <div className="hidden lg:block bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b">
@@ -415,20 +438,17 @@ function TitlesContent() {
                         
                         <div className="col-span-2">
                           {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) ? (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-1 max-h-[3.5rem] overflow-hidden">
                               {Array.isArray(title.genre) ? (
-                                title.genre.slice(0, 2).map((g, idx) => (
-                                  <div key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
+                                title.genre.map((g, idx) => (
+                                  <div key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={formatGenre(g)}>
                                     {formatGenre(g)}
                                   </div>
                                 ))
                               ) : (
-                                <div className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">
+                                <div className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={formatGenre(title.genre)}>
                                   {formatGenre(title.genre)}
                                 </div>
-                              )}
-                              {Array.isArray(title.genre) && title.genre.length > 2 && (
-                                <span className="inline-flex items-center text-xs text-gray-500 ml-1">+{title.genre.length - 2}</span>
                               )}
                             </div>
                           ) : (
@@ -438,7 +458,7 @@ function TitlesContent() {
                         
                         <div className="col-span-2">
                           {title.tone ? (
-                            <div className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                            <div className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-xs font-medium">
                               {title.tone}
                             </div>
                           ) : (
@@ -448,17 +468,12 @@ function TitlesContent() {
                         
                         <div className="col-span-2">
                           {((title as any).keywords || title.tags) && ((title as any).keywords || title.tags).length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {((title as any).keywords || title.tags).slice(0, 2).map((tag: string, idx: number) => (
-                                <div key={`${title.title_id}-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                            <div className="flex flex-wrap gap-1 max-h-[3.5rem] overflow-hidden">
+                              {((title as any).keywords || title.tags).map((tag: string, idx: number) => (
+                                <div key={`${title.title_id}-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={tag}>
                                   {tag}
                                 </div>
                               ))}
-                              {((title as any).keywords || title.tags).length > 2 && (
-                                <span className="inline-flex items-center text-gray-500 text-xs ml-1">
-                                  +{((title as any).keywords || title.tags).length - 2}
-                                </span>
-                              )}
                             </div>
                           ) : (
                             <span className="text-gray-400">-</span>
@@ -470,7 +485,7 @@ function TitlesContent() {
                             {title.comps && title.comps.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {title.comps.map((comp, index) => (
-                                  <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium truncate max-w-[150px]" title={comp}>
+                                  <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[150px]" title={comp}>
                                     {comp}
                                   </div>
                                 ))}
@@ -506,7 +521,7 @@ function TitlesContent() {
                           <div className="flex-1 min-w-0">
                             <div className="mb-2">
                               {title.pitch && (
-                                <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-full mr-2">
+                                <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-lg mr-2">
                                   Pitch
                                 </span>
                               )}
@@ -525,12 +540,12 @@ function TitlesContent() {
                               {title.genre && (
                                 Array.isArray(title.genre) ? (
                                   title.genre.slice(0, 2).map((g, idx) => (
-                                    <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                                    <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
                                       {formatGenre(g)}
                                     </span>
                                   ))
                                 ) : (
-                                  <span className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                                  <span className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
                                     {formatGenre(title.genre)}
                                   </span>
                                 )
@@ -540,7 +555,7 @@ function TitlesContent() {
                               )}
                               
                               {title.tone && (
-                                <span className="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                                <span className="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
                                   {title.tone}
                                 </span>
                               )}

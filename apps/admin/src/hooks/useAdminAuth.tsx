@@ -38,7 +38,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
-      }, 15000); // Increased timeout to 15 seconds
+      }, 10000); // Reduced timeout to 10 seconds for faster feedback
 
       try {
         const { data, error } = await supabase
@@ -76,25 +76,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       console.error('Admin Auth: Profile loading failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       if (errorMessage === 'Profile loading timeout') {
-        // If timeout but we know the user should have access, create a temporary profile
-        console.log('Admin Auth: Timeout detected, attempting fallback...');
-        try {
-          // Create a minimal admin profile to allow access
-          const fallbackProfile = {
-            id: 'temp-' + Date.now(),
-            email: email,
-            full_name: email.split('@')[0],
-            active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-          setAdminProfile(fallbackProfile as any);
-          clearError();
-          console.log('Admin Auth: Fallback profile created');
-        } catch (fallbackError) {
-          setError('Profile loading timed out. Please refresh the page or clear your session.');
-          setAdminProfile(null);
-        }
+        console.log('Admin Auth: Timeout detected');
+        setError('Profile loading timed out. Please check your connection and try again.');
+        setAdminProfile(null);
       } else {
         setError(`Failed to load admin profile: ${errorMessage}`);
         setAdminProfile(null);
@@ -155,8 +139,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           setIsLoading(false);
         } else if (session?.user?.email) {
           setIsLoading(true);
-          await loadAdminProfile(session.user.email);
-          setIsLoading(false);
+          try {
+            await loadAdminProfile(session.user.email);
+          } finally {
+            setIsLoading(false);
+          }
         } else {
           setAdminProfile(null);
           setIsLoading(false);
@@ -287,8 +274,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const retryProfileLoad = async (): Promise<void> => {
     if (user?.email) {
       console.log('Admin Auth: Retrying profile load...');
+      setIsLoading(true);
       clearError();
-      await loadAdminProfile(user.email);
+      try {
+        await loadAdminProfile(user.email);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 

@@ -167,21 +167,46 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   };
 
   const validateBuyerForm = (data: BuyerFormData) => {
-    if (!data.email || !data.password || !data.fullName || !data.buyerCompany || !data.buyerRole) {
-      return "Please fill in all required fields";
-    }
-    if (data.password.length < 6) {
-      return "Password must be at least 6 characters long";
+    // For OAuth users, password is not required
+    if (isOAuthUser) {
+      if (!data.email || !data.fullName || !data.buyerCompany || !data.buyerRole) {
+        console.log('❌ OAuth buyer validation failed. Missing:', {
+          email: !data.email,
+          fullName: !data.fullName,
+          buyerCompany: !data.buyerCompany,
+          buyerRole: !data.buyerRole
+        });
+        return "Please fill in all required fields";
+      }
+    } else {
+      if (!data.email || !data.password || !data.fullName || !data.buyerCompany || !data.buyerRole) {
+        return "Please fill in all required fields";
+      }
+      if (data.password.length < 6) {
+        return "Password must be at least 6 characters long";
+      }
     }
     return null;
   };
 
   const validateCreatorForm = (data: CreatorFormData) => {
-    if (!data.email || !data.password || !data.fullName || !data.penNameOrStudio) {
-      return "Please fill in all required fields";
-    }
-    if (data.password.length < 6) {
-      return "Password must be at least 6 characters long";
+    // For OAuth users, password is not required
+    if (isOAuthUser) {
+      if (!data.email || !data.fullName || !data.penNameOrStudio) {
+        console.log('❌ OAuth creator validation failed. Missing:', {
+          email: !data.email,
+          fullName: !data.fullName,
+          penNameOrStudio: !data.penNameOrStudio
+        });
+        return "Please fill in all required fields";
+      }
+    } else {
+      if (!data.email || !data.password || !data.fullName || !data.penNameOrStudio) {
+        return "Please fill in all required fields";
+      }
+      if (data.password.length < 6) {
+        return "Password must be at least 6 characters long";
+      }
     }
     return null;
   };
@@ -207,10 +232,26 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       // Handle OAuth completion vs new signup
       if (isOAuthUser && oAuthUserId) {
         // OAuth user completing profile - get existing auth session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          throw new Error('OAuth session not found');
+        console.log('🔄 OAuth completion: Getting session for user:', oAuthUserId);
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('❌ OAuth session error:', sessionError);
+          throw new Error(`OAuth session error: ${sessionError.message}`);
         }
+        
+        if (!session?.user) {
+          console.error('❌ OAuth session not found or invalid');
+          toast({
+            title: "Session Expired",
+            description: "Your login session has expired. Please sign in again.",
+            variant: "destructive"
+          });
+          navigate('/signin');
+          return;
+        }
+        
+        console.log('✅ OAuth session found for user:', session.user.email);
         authResult = { data: { user: session.user }, error: null };
       } else {
         // Regular email signup
@@ -251,6 +292,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
       if (data.user) {
         // Create buyer profile
+        console.log('👤 Creating buyer profile for user:', data.user.email);
         const profileData = {
           id: data.user.id,
           email: buyerFormData.email,
@@ -260,20 +302,24 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           linkedin_url: buyerFormData.linkedinUrl || null,
           tier: 'basic' // Default tier for new signups
         };
+        
+        console.log('📝 Profile data to insert:', profileData);
 
         const { error: profileError } = await supabase
           .from('user_buyers')
           .insert(profileData);
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
+          console.error('❌ Profile creation error:', profileError);
           toast({
             title: "Profile Creation Failed",
-            description: "Your account was created but there was an issue setting up your profile. Please contact support.",
+            description: `Profile creation failed: ${profileError.message}. Please try again.`,
             variant: "destructive"
           });
           return;
         }
+        
+        console.log('✅ Buyer profile created successfully');
 
         // Success handling
         if (isOAuthUser) {
@@ -323,10 +369,26 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       // Handle OAuth completion vs new signup
       if (isOAuthUser && oAuthUserId) {
         // OAuth user completing profile - get existing auth session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          throw new Error('OAuth session not found');
+        console.log('🔄 OAuth completion: Getting session for creator user:', oAuthUserId);
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('❌ OAuth session error:', sessionError);
+          throw new Error(`OAuth session error: ${sessionError.message}`);
         }
+        
+        if (!session?.user) {
+          console.error('❌ OAuth session not found or invalid');
+          toast({
+            title: "Session Expired",
+            description: "Your login session has expired. Please sign in again.",
+            variant: "destructive"
+          });
+          navigate('/signin');
+          return;
+        }
+        
+        console.log('✅ OAuth session found for creator user:', session.user.email);
         authResult = { data: { user: session.user }, error: null };
       } else {
         // Regular email signup
@@ -368,6 +430,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
       if (data.user) {
         // Create creator profile
+        console.log('👤 Creating creator profile for user:', data.user.email);
         const profileData = {
           id: data.user.id,
           email: creatorFormData.email,
@@ -378,20 +441,24 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           website_url: creatorFormData.websiteUrl || null,
           invitation_status: 'invited' // Default status for creators
         };
+        
+        console.log('📝 Creator profile data to insert:', profileData);
 
         const { error: profileError } = await supabase
           .from('user_ipowners')
           .insert(profileData);
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
+          console.error('❌ Creator profile creation error:', profileError);
           toast({
             title: "Profile Creation Failed",
-            description: "Your account was created but there was an issue setting up your profile. Please contact support.",
+            description: `Profile creation failed: ${profileError.message}. Please try again.`,
             variant: "destructive"
           });
           return;
         }
+        
+        console.log('✅ Creator profile created successfully');
 
         // Success handling
         if (isOAuthUser) {

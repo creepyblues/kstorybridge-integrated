@@ -36,7 +36,7 @@ function TitlesContent() {
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
-  const [activeGenreFilters, setActiveGenreFilters] = useState<Set<string>>(new Set());
+  const [activeGenreFilter, setActiveGenreFilter] = useState<string | null>(null);
 
   // Determine if this is creator view based on route
   const isCreatorView = location.pathname.startsWith('/creators');
@@ -187,33 +187,16 @@ function TitlesContent() {
       result = result.filter(title => title.pitch && title.pitch.trim() !== '');
     }
     
-    // Apply genre filters - use the same search logic as regular search
-    if (activeGenreFilters.size > 0) {
-      // Combine all active filters into a search query
-      const filterQuery = Array.from(activeGenreFilters).join(' ');
+    // Apply genre filter - use the same search logic as regular search
+    if (activeGenreFilter) {
+      const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
+        result,
+        activeGenreFilter,
+        getTitleSearchFields()
+      );
       
-      // Use the enhanced search function for each filter
-      let combinedResults: Title[] = [];
-      const seenIds = new Set<string>();
-      
-      for (const filter of activeGenreFilters) {
-        const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
-          result,
-          filter,
-          getTitleSearchFields()
-        );
-        
-        // Combine all matches and deduplicate
-        const allMatches = [...exactMatches, ...phraseMatches, ...expandedMatches];
-        for (const title of allMatches) {
-          if (!seenIds.has(title.title_id)) {
-            seenIds.add(title.title_id);
-            combinedResults.push(title);
-          }
-        }
-      }
-      
-      result = combinedResults;
+      // Combine all matches
+      result = [...exactMatches, ...phraseMatches, ...expandedMatches];
     }
     
     // Apply search filter
@@ -234,7 +217,7 @@ function TitlesContent() {
   // Reset pagination when search term, sorting, or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortField, sortDirection, showOnlyWithPitch, activeGenreFilters]);
+  }, [searchTerm, sortField, sortDirection, showOnlyWithPitch, activeGenreFilter]);
 
   const formatGenre = (genre: string | string[]) => {
     if (Array.isArray(genre)) {
@@ -255,13 +238,12 @@ function TitlesContent() {
   ];
 
   const handleGenreFilter = (genre: string) => {
-    const newFilters = new Set(activeGenreFilters);
-    if (newFilters.has(genre)) {
-      newFilters.delete(genre);
+    // Toggle: if same genre is clicked, clear it; otherwise set the new genre
+    if (activeGenreFilter === genre) {
+      setActiveGenreFilter(null);
     } else {
-      newFilters.add(genre);
+      setActiveGenreFilter(genre);
     }
-    setActiveGenreFilters(newFilters);
   };
 
   const SortableHeader = ({ field, children, className = "" }: { 
@@ -405,7 +387,7 @@ function TitlesContent() {
                     key={genre}
                     onClick={() => handleGenreFilter(genre)}
                     className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors duration-200 ${
-                      activeGenreFilters.has(genre)
+                      activeGenreFilter === genre
                         ? 'bg-purple-600 text-white border-purple-600' 
                         : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-600 hover:text-white hover:border-purple-600'
                     }`}
@@ -417,13 +399,13 @@ function TitlesContent() {
             </div>
             
             {/* Active filters summary */}
-            {(showOnlyWithPitch || activeGenreFilters.size > 0) && (
+            {(showOnlyWithPitch || activeGenreFilter) && (
               <div className="mt-3 text-xs text-midnight-ink-500">
-                Active filters: {showOnlyWithPitch && "Pitch deck"}{showOnlyWithPitch && activeGenreFilters.size > 0 && ", "}{Array.from(activeGenreFilters).join(", ")}
+                Active filters: {showOnlyWithPitch && "Pitch deck"}{showOnlyWithPitch && activeGenreFilter && ", "}{activeGenreFilter}
                 <button 
                   onClick={() => {
                     setShowOnlyWithPitch(false);
-                    setActiveGenreFilters(new Set());
+                    setActiveGenreFilter(null);
                   }}
                   className="ml-2 text-hanok-teal hover:text-hanok-teal-600 underline"
                 >

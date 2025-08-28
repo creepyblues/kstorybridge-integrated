@@ -5,15 +5,12 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowRight } from 'lucide-react';
 import UniversalHeader from '../components/UniversalHeader';
 import FeaturedTitlesCarousel from '../components/FeaturedTitlesCarousel';
-import { useAuth } from '../hooks/useAuth';
 import Footer from '../components/Footer';
 
 const HomePage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   
-  // Add authentication hook to handle redirects
-  const { user, userProfile, isLoading, isRedirecting } = useAuth();
 
   // Load Beehiiv script for newsletter
   useEffect(() => {

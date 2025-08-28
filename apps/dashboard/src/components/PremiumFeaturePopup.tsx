@@ -51,22 +51,8 @@ export default function PremiumFeaturePopup({
   }, [isOpen, featureName]);
 
   const handleRequest = async () => {
-    // Check if we should bypass auth for localhost development
-    const shouldBypassAuth = () => {
-      const isLocalhost = window.location.hostname === 'localhost';
-      const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-      const isDev = import.meta.env.DEV;
-      return isLocalhost && (bypassEnabled || isDev);
-    };
 
-    // For localhost auth bypass, use a mock user ID when no real user exists
-    const effectiveUser = user || (shouldBypassAuth() ? {
-      id: '550e8400-e29b-41d4-a716-446655440000',
-      email: 'sungho@dadble.com',
-      user_metadata: { full_name: 'Sungho Lee', company: 'Dadble' }
-    } : null);
-
-    if (!effectiveUser) {
+    if (!user) {
       console.error('❌ No user available for request');
       return;
     }
@@ -75,48 +61,11 @@ export default function PremiumFeaturePopup({
       setLoading(true);
       
       
-      // For localhost development with auth bypass, skip database and send Slack notification directly
-      if (shouldBypassAuth() && titleId && requestType) {
-        // Send Slack notification if this is a pitch request
-        if (requestType === 'pitch' && titleName) {
-          try {
-            await notifyPitchRequest({
-              userFullName: effectiveUser.user_metadata?.full_name || effectiveUser.email || 'Unknown User',
-              userEmail: effectiveUser.email || 'unknown@email.com',
-              titleName: titleName,
-              titleId: titleId,
-              requestType: requestType,
-              company: effectiveUser.user_metadata?.company || undefined
-            });
-          } catch (slackError) {
-            console.warn('Failed to send Slack notification:', slackError);
-          }
-        }
-        
-        // Skip database operations for localhost and go directly to success
-        setRequested(true);
-        
-        // Track the premium feature request via analytics
-        try {
-          trackPremiumFeatureRequest(featureName);
-        } catch (analyticsError) {
-          console.warn('Analytics tracking failed:', analyticsError);
-        }
-        
-        // Show success message for 2 seconds, then close
-        setTimeout(() => {
-          onClose();
-          setRequested(false);
-        }, 2000);
-        
-        setLoading(false);
-        return; // Skip the database logic below
-      }
 
       // Production: If we have titleId and requestType, try to save to request table
       if (titleId && requestType) {
         console.log('💾 Attempting to save request to database:', {
-          user_id: effectiveUser.id,
+          user_id: user.id,
           title_id: titleId,
           type: requestType,
           feature_name: featureName
@@ -125,7 +74,7 @@ export default function PremiumFeaturePopup({
           const { data: requestData, error: requestError } = await supabase
             .from('request')
             .insert({
-              user_id: effectiveUser.id,
+              user_id: user.id,
               title_id: titleId,
               type: requestType
             })
@@ -154,12 +103,12 @@ export default function PremiumFeaturePopup({
             if ((requestType === 'pitch' || requestType === 'contact') && requestData?.id && titleName) {
               try {
                 await notifyPitchRequest({
-                  userFullName: effectiveUser.user_metadata?.full_name || effectiveUser.email || 'Unknown User',
-                  userEmail: effectiveUser.email || 'unknown@email.com',
+                  userFullName: user.user_metadata?.full_name || user.email || 'Unknown User',
+                  userEmail: user.email || 'unknown@email.com',
                   titleName: titleName,
                   titleId: titleId,
                   requestType: requestType,
-                  company: effectiveUser.user_metadata?.company || undefined
+                  company: user.user_metadata?.company || undefined
                 });
               } catch (slackError) {
                 console.warn('Failed to send Slack notification:', slackError);
@@ -174,18 +123,13 @@ export default function PremiumFeaturePopup({
       }
 
       // Production: Always also save to user_buyers table for backwards compatibility and tracking
-      // Skip for localhost development
-      if (shouldBypassAuth()) {
-        setLoading(false);
-        return;
-      }
       
       try {
         // First check if user_buyers record exists, if not create it
         const { data: existingRecord, error: fetchError } = await supabase
           .from('user_buyers')
           .select('*')
-          .eq('email', effectiveUser.email)
+          .eq('email', user.email)
           .single();
 
         if (fetchError && fetchError.code !== 'PGRST116') {
@@ -197,7 +141,7 @@ export default function PremiumFeaturePopup({
           const { error: insertError } = await supabase
             .from('user_buyers')
             .insert({
-              email: effectiveUser.email,
+              email: user.email,
               requested: true
             });
 
@@ -210,7 +154,7 @@ export default function PremiumFeaturePopup({
           const { error: updateError } = await supabase
             .from('user_buyers')
             .update({ requested: true })
-            .eq('email', effectiveUser.email);
+            .eq('email', user.email);
 
           if (updateError) {
             console.warn('Could not update user_buyers record:', updateError);

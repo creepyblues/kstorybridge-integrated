@@ -28,39 +28,22 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
 
-  // For localhost auth bypass, consider as authenticated
-  const isLocalhost = window.location.hostname === 'localhost';
-  const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-  const isDev = import.meta.env.DEV;
-  const shouldBypassAuth = isLocalhost && (bypassEnabled || isDev);
-  const isAuthenticated = user || shouldBypassAuth;
+  const isAuthenticated = !!user;
 
   // Validate user authentication and session
   const validateAuth = useCallback(async () => {
     console.log('🔐 AUTH: Starting validateAuth...');
     console.log('🔐 AUTH: User exists:', !!user);
     
-    const isLocalhost = window.location.hostname === 'localhost';
-    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-    const isDev = import.meta.env.DEV;
-    const bypassAuth = isLocalhost && (bypassEnabled || isDev);
-    
-    console.log('🔐 AUTH: Should bypass auth:', bypassAuth);
-    
     try {
       // Check if user exists
-      if (!user && !bypassAuth) {
-        console.log('❌ AUTH: No user and not bypassing auth');
+      if (!user) {
+        console.log('❌ AUTH: No user authenticated');
         setError('Authentication required to view PDF');
         setAuthValidated(false);
         return false;
       }
 
-      if (bypassAuth) {
-        console.log('✅ AUTH: Bypassing auth for localhost');
-        setAuthValidated(true);
-        return true;
-      }
 
       console.log('🔐 AUTH: Getting Supabase session...');
       // Validate session with Supabase
@@ -128,11 +111,6 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
 
         console.log('🔍 SECURE PDF: Starting authentication validation...');
         
-        // Check auth bypass first
-        const isLocalhost = window.location.hostname === 'localhost';
-        const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-        const isDev = import.meta.env.DEV;
-        const bypassAuth = isLocalhost && (bypassEnabled || isDev);
         
         // First validate authentication
         const isAuthValid = await validateAuth();
@@ -189,7 +167,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           }
           
           // Try to create signed URL first, fallback to direct URL if storage API issues persist
-          if (!bypassAuth) {
+          {
             console.log('🔍 SECURE PDF: Attempting to create signed URL...');
             try {
               const { data: signedUrlData, error: urlError } = await supabase.storage
@@ -213,8 +191,6 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
               finalUrl = pdfUrl;
               console.log('⚠️ Using direct URL fallback due to storage API exception');
             }
-          } else {
-            console.log('🔍 SECURE PDF: Using direct URL (localhost bypass)');
           }
         } else if (!pdfUrl.includes('supabase.co/storage')) {
           // Non-Supabase URLs should not be allowed for security
@@ -225,7 +201,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         console.log('🔍 SECURE PDF: Final URL to fetch:', finalUrl);
         
         // Add authentication headers and fetch PDF data
-        if (!bypassAuth) {
+        {
           console.log('🔍 SECURE PDF: Fetching with authentication...');
           const { data: { session } } = await supabase.auth.getSession();
           console.log('🔍 SECURE PDF: Session exists:', !!session);
@@ -278,35 +254,6 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           const dataUrl = URL.createObjectURL(blob);
           console.log('🔍 SECURE PDF: Setting PDF data:', dataUrl);
           setPdfData(dataUrl);
-        } else {
-          console.log('🔍 SECURE PDF: Using direct fetch for localhost bypass');
-          // For localhost bypass, still need to fetch the PDF for react-pdf to work
-          try {
-            console.log('🔍 SECURE PDF: Fetching PDF for localhost...');
-            const response = await fetch(finalUrl);
-            console.log('🔍 SECURE PDF: Localhost fetch response:', response.status, response.statusText);
-            
-            if (!response.ok) {
-              throw new Error(`Failed to load PDF: ${response.status} ${response.statusText}`);
-            }
-
-            const blob = await response.blob();
-            console.log('🔍 SECURE PDF: Localhost blob size:', blob.size, 'bytes');
-            
-            // Verify blob type for localhost too
-            if (!blob.type.includes('pdf')) {
-              console.warn('🔍 SECURE PDF: Localhost blob type is not PDF:', blob.type);
-            }
-            
-            const dataUrl = URL.createObjectURL(blob);
-            console.log('🔍 SECURE PDF: Localhost object URL created:', dataUrl);
-            setPdfData(dataUrl);
-          } catch (fetchError) {
-            console.log('🔍 SECURE PDF: Localhost fetch failed, trying direct URL...');
-            console.error('Localhost fetch error:', fetchError);
-            // Fallback to direct URL for localhost
-            setPdfData(finalUrl);
-          }
         }
         
         console.log('✅ SECURE PDF: PDF fetch completed successfully!');
@@ -536,7 +483,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   };
 
   // Enhanced authentication UI
-  if (!user && !shouldBypassAuth) {
+  if (!user) {
     return (
       <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">

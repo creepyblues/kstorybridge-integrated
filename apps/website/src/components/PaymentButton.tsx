@@ -4,8 +4,8 @@ import { Button } from "@kstorybridge/ui";
 import { useToast } from '@/hooks/use-toast';
 import stripePromise from '@/lib/stripe';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { getDashboardUrl } from '../config/urls';
 
 interface PaymentButtonProps {
   planType: 'creator_premium' | 'buyer_pro' | 'buyer_enterprise';
@@ -18,7 +18,8 @@ interface PaymentButtonProps {
 const PaymentButton = ({ planType, priceId, children, className, isFree = false }: PaymentButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  // No local authentication - redirect to dashboard
+  const user = null;
   const navigate = useNavigate();
 
   const handleSubscribe = async () => {
@@ -28,7 +29,7 @@ const PaymentButton = ({ planType, priceId, children, className, isFree = false 
         description: 'Please sign in to subscribe to a plan.',
         variant: 'destructive',
       });
-      navigate('/signin');
+      window.location.href = `${getDashboardUrl()}/signin`;
       return;
     }
 

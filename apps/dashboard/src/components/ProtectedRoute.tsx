@@ -2,7 +2,6 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
-import { getWebsiteUrl } from "@/config/urls";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,26 +11,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const authTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Check if we should bypass auth for localhost development
-  const shouldBypassAuth = () => {
-    const isLocalhost = window.location.hostname === 'localhost';
-    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-    const isDev = import.meta.env.DEV;
-    
-    console.log('🚨 PROTECTED ROUTE BYPASS CHECK:', {
-      isLocalhost,
-      bypassEnabled,
-      isDev,
-      envVar: import.meta.env.VITE_DISABLE_AUTH_LOCALHOST,
-      shouldBypass: isLocalhost && bypassEnabled && isDev
-    });
-    
-    if (isLocalhost && bypassEnabled && isDev) {
-      console.log('🚨 PROTECTED ROUTE BYPASS: Auth bypass enabled for localhost');
-      return true;
-    }
-    return false;
-  };
 
   useEffect(() => {
     // Check if we have auth tokens in URL indicating auth flow in progress
@@ -51,22 +30,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     });
     
     // Don't redirect if auth is still loading OR if we have auth tokens in URL (auth flow in progress)
-    // Also don't redirect if localhost auth bypass is enabled
-    const bypassEnabled = shouldBypassAuth();
-    console.log('🚨 PROTECTED ROUTE: Auth bypass check:', { bypassEnabled });
-    
-    if (!loading && !user && !hasAuthTokens && !bypassEnabled) {
-      console.log('🚨 PROTECTED ROUTE: Redirecting to website - no user authenticated and no auth flow in progress');
-      const websiteUrl = getWebsiteUrl();
-      const signinUrl = `${websiteUrl}/signin`;
-      const websiteUrlWithParam = `${signinUrl}${signinUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
-      console.log('🚨 PROTECTED ROUTE: Redirecting to:', websiteUrlWithParam);
+    if (!loading && !user && !hasAuthTokens) {
+      console.log('🚨 PROTECTED ROUTE: Redirecting to dashboard signin - no user authenticated and no auth flow in progress');
       console.log('🚨 PROTECTED ROUTE: Current URL:', window.location.href);
       
       // Small delay to prevent rapid redirects
       setTimeout(() => {
-        console.log('🚨 PROTECTED ROUTE: Executing redirect now');
-        window.location.href = websiteUrlWithParam;
+        console.log('🚨 PROTECTED ROUTE: Executing redirect to dashboard signin');
+        window.location.href = '/signin';
       }, 200);
     } else if (!loading && user) {
       console.log('✅ PROTECTED ROUTE: User authenticated, allowing access');
@@ -81,11 +52,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       authTimeoutRef.current = setTimeout(() => {
         console.log('⏰ PROTECTED ROUTE: Auth flow timeout - tokens may be invalid');
         if (!user) {
-          console.log('🚨 PROTECTED ROUTE: Timeout reached, redirecting to website signin');
-          const websiteUrl = getWebsiteUrl();
-          const signinUrl = `${websiteUrl}/signin`;
-          const websiteUrlWithParam = `${signinUrl}${signinUrl.includes('?') ? '&' : '?'}from_dashboard=true`;
-          window.location.href = websiteUrlWithParam;
+          console.log('🚨 PROTECTED ROUTE: Timeout reached, redirecting to dashboard signin');
+          window.location.href = '/signin';
         }
       }, 5000); // 5 second timeout
     }
@@ -105,11 +73,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // If auth bypass is enabled, always allow access even without a user object
-  if (shouldBypassAuth()) {
-    console.log('🚨 PROTECTED ROUTE BYPASS: Allowing access due to localhost auth bypass');
-    return <>{children}</>;
-  }
 
   if (!user) {
     return (

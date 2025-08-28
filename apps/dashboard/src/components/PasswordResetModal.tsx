@@ -42,14 +42,6 @@ export default function PasswordResetModal({ isOpen, onClose }: PasswordResetMod
     return errors;
   };
 
-  // Check if we should use mock data for localhost development
-  const shouldUseMockData = () => {
-    const isLocalhost = window.location.hostname === 'localhost';
-    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-    const isDev = import.meta.env.DEV;
-    
-    return isLocalhost && bypassEnabled && isDev;
-  };
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,26 +94,6 @@ export default function PasswordResetModal({ isOpen, onClose }: PasswordResetMod
         duration: 3000
       });
 
-      // Handle mock mode for localhost development
-      if (shouldUseMockData()) {
-        // Simulate async operation
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // For mock mode, just simulate success
-        toast({
-          title: "Password Updated Successfully!",
-          description: "Your password has been changed successfully (mock mode).",
-          duration: 6000
-        });
-        
-        // Reset form and close modal
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        setErrorMessage('');
-        onClose();
-        return;
-      }
 
       // Update the password using Supabase
       const { data, error } = await supabase.auth.updateUser({

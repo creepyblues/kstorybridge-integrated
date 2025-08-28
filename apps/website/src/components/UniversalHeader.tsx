@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@kstorybridge/ui';
 import { Menu, X } from 'lucide-react';
+import { getDashboardUrl } from '../config/urls';
 
 const UniversalHeader = () => {
   const navigate = useNavigate();
@@ -77,13 +78,13 @@ const UniversalHeader = () => {
             {/* Auth Buttons */}
             <Button 
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
-              onClick={() => navigate('/signin')}
+              onClick={() => window.location.href = `${getDashboardUrl()}/signin`}
             >
               SIGN IN
             </Button>
             <Button 
               className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-2 rounded-full font-medium"
-              onClick={() => navigate('/signup')}
+              onClick={() => window.location.href = `${getDashboardUrl()}/signup`}
             >
               SIGN UP
             </Button>
@@ -169,7 +170,7 @@ const UniversalHeader = () => {
               <Button 
                 className="w-full border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-3 rounded-full font-medium transition-colors"
                 onClick={() => {
-                  navigate('/signin');
+                  window.location.href = `${getDashboardUrl()}/signin`;
                   setMobileMenuOpen(false);
                 }}
               >
@@ -178,7 +179,7 @@ const UniversalHeader = () => {
               <Button 
                 className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-3 rounded-full font-medium"
                 onClick={() => {
-                  navigate('/signup');
+                  window.location.href = `${getDashboardUrl()}/signup`;
                   setMobileMenuOpen(false);
                 }}
               >

@@ -12,20 +12,8 @@ const CreatorsPage = lazy(() => import("./pages/CreatorsPage"));
 const BuyersPage = lazy(() => import("./pages/BuyersPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
-const SignupPage = lazy(() => import("./pages/SignupPage"));
-const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
-const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
-const SigninPage = lazy(() => import("./pages/SigninPage"));
-const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
 const SampleTitleDetailPage = lazy(() => import("./pages/SampleTitleDetailPage"));
-const DashboardInvited = lazy(() => import("./pages/DashboardInvited"));
-const CreatorInvited = lazy(() => import("./pages/CreatorInvited"));
-const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
-const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
-const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
-const ProfileCompletionPage = lazy(() => import("./pages/ProfileCompletionPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
 
@@ -51,24 +39,8 @@ const App = () => (
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />
-          <Route path="/buyers/onboarding" element={<OnboardingPage />} />
-          {/* Redirect old onboarding route */}
-          <Route path="/onboarding" element={<Navigate to="/buyers/onboarding" replace />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/signup/buyer" element={<BuyerSignupPage />} />
-          <Route path="/signup/creator" element={<CreatorSignupPage />} />
-          <Route path="/signin" element={<SigninPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route path="/invitation/accept" element={<InvitationAcceptPage />} />
-          <Route path="/profile/complete" element={<ProfileCompletionPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
           <Route path="/sample/werewolves-going-crazy-over-me" element={<SampleTitleDetailPage />} />
-          <Route path="/invited" element={<DashboardInvited />} />
-          <Route path="/creator/invited" element={<CreatorInvited />} />
-          {/* Legacy redirect for old dashboard routes */}
-          <Route path="/dashboard/invited" element={<Navigate to="/invited" replace />} />
           <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

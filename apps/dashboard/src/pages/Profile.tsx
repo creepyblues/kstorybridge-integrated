@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -58,14 +59,6 @@ type UnifiedProfile = {
   updated_at: string;
 };
 
-// Check if we should use mock data for localhost development
-const shouldUseMockData = () => {
-  const isLocalhost = window.location.hostname === 'localhost';
-  const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-  const isDev = import.meta.env.DEV;
-  
-  return isLocalhost && bypassEnabled && isDev;
-};
 
 // Mock profile data for localhost development
 const mockProfile: UnifiedProfile = {
@@ -96,14 +89,6 @@ export default function Profile() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      // Handle localhost development with mock data
-      if (shouldUseMockData()) {
-        console.log("👤 PROFILE: Using mock profile data for localhost development");
-        setProfile(mockProfile);
-        setFormData(mockProfile);
-        setLoading(false);
-        return;
-      }
 
       if (!user) {
         console.log("No user found, skipping profile fetch");
@@ -316,24 +301,6 @@ export default function Profile() {
 
   const handleUpdateProfile = async () => {
     // Handle localhost development with mock data
-    if (shouldUseMockData()) {
-      console.log("👤 PROFILE: Mock profile update for localhost development");
-      setUpdating(true);
-      
-      // Simulate async operation
-      setTimeout(() => {
-        const updatedProfile = { ...mockProfile, ...formData };
-        setProfile(updatedProfile);
-        setIsEditing(false);
-        setUpdating(false);
-        
-        toast({
-          title: "Success",
-          description: "Profile updated successfully (localhost mock)",
-        });
-      }, 500);
-      return;
-    }
 
     if (!user || !profile) return;
 
@@ -762,6 +729,36 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* AI Chatbot Section - Only for specific users */}
+        {(profile.email === 'sungho@dadble.com' || profile.email === 'kevin@sandstoneartists.com') && (
+          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+            <CardContent className="p-4 sm:p-6 lg:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-midnight-ink mb-2">AI IP Discovery</h3>
+                  <p className="text-gray-600 text-sm sm:text-base">
+                    Use our AI chatbot to find Korean IPs that match your specific requirements.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link to="/ai-chatbot">
+                    <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                      
+                      {/* Text */}
+                      <span className="relative z-10">🤖 AI CHATBOT</span>
+                      
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-purple-500/50 blur-md group-hover:bg-purple-500/60 transition-colors duration-300 pointer-events-none"></div>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Account Actions Section */}
         <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">

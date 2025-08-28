@@ -30,6 +30,71 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const clearError = () => setError(null);
 
+  // Check if we should auto-login for localhost development
+  const shouldAutoLogin = () => {
+    const isLocalhost = window.location.hostname === 'localhost';
+    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
+    const isDev = import.meta.env.DEV;
+    const mode = import.meta.env.MODE;
+    
+    // Multiple safety checks to ensure this NEVER runs in production
+    const isProduction = mode === 'production' && window.location.hostname !== 'localhost';
+    const hasProductionDomain = window.location.hostname.includes('kstorybridge.com');
+    
+    if (isProduction || hasProductionDomain) {
+      console.log('🛡️ ADMIN PRODUCTION SAFETY: Auto-login blocked for production environment');
+      return false;
+    }
+    
+    if (isLocalhost && bypassEnabled && isDev) {
+      console.log('🚨 ADMIN AUTO LOGIN: Auto-login enabled for localhost development');
+      console.log('🚨 ADMIN AUTO LOGIN: This should NEVER happen in production!');
+      console.log('🚨 ADMIN AUTO LOGIN: Environment checks:', {
+        hostname: window.location.hostname,
+        bypassEnabled,
+        isDev,
+        mode
+      });
+      return true;
+    }
+    return false;
+  };
+
+  // Auto-login with real Supabase credentials for localhost development
+  const performAutoLogin = async (): Promise<{ session: any; error: any }> => {
+    console.log('🔑 ADMIN AUTO LOGIN: Attempting auto-login for sungho@dadble.com');
+    
+    try {
+      // First check if already signed in
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email === 'sungho@dadble.com') {
+        console.log('✅ ADMIN AUTO LOGIN: Already signed in as sungho@dadble.com');
+        return { session, error: null };
+      }
+
+      // Sign in with email and password
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'sungho@dadble.com',
+        password: 'dadble2024!'
+      });
+
+      if (error) {
+        console.error('❌ ADMIN AUTO LOGIN: Sign in failed:', error);
+        return { session: null, error };
+      }
+
+      if (data.session) {
+        console.log('✅ ADMIN AUTO LOGIN: Successfully signed in as sungho@dadble.com');
+        return { session: data.session, error: null };
+      }
+
+      return { session: null, error: new Error('No session returned') };
+    } catch (err) {
+      console.error('❌ ADMIN AUTO LOGIN: Exception during auto-login:', err);
+      return { session: null, error: err };
+    }
+  };
+
   const loadAdminProfile = async (email: string): Promise<void> => {
     try {
       console.log(`Admin Auth: Loading profile for ${email}`);
@@ -95,6 +160,34 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     const initAuth = async () => {
       try {
+        // Check if we should auto-login for localhost development
+        if (shouldAutoLogin()) {
+          console.log('🚨 ADMIN AUTO LOGIN: Attempting auto-login...');
+          const { session, error: loginError } = await performAutoLogin();
+          
+          if (mounted) {
+            if (session?.user) {
+              setUser(session.user);
+              setSession(session);
+              console.log('✅ ADMIN AUTO LOGIN: Auto-login successful, loading admin profile...');
+              
+              // Load admin profile for the auto-logged user
+              try {
+                await loadAdminProfile(session.user.email);
+              } catch (profileError) {
+                console.error('❌ ADMIN AUTO LOGIN: Failed to load admin profile:', profileError);
+              } finally {
+                setIsLoading(false);
+              }
+              return;
+            } else {
+              console.log('❌ ADMIN AUTO LOGIN: Auto-login failed, proceeding with normal flow');
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (!mounted) return;

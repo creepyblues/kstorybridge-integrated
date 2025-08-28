@@ -39,6 +39,17 @@ const Contact = lazy(() => import("./pages/Contact"));
 const News = lazy(() => import("./pages/News"));
 const SendMessage = lazy(() => import("./pages/SendMessage"));
 const SendMessageTest = lazy(() => import("./pages/SendMessageTest"));
+const AIChatbot = lazy(() => import("./pages/AIChatbot"));
+
+// Authentication pages
+const SigninPage = lazy(() => import("./pages/SigninPage"));
+const SignupPage = lazy(() => import("./pages/SignupPage"));
+const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
+const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
+const InvitedPage = lazy(() => import("./pages/InvitedPage"));
+const CreatorInvitedPage = lazy(() => import("./pages/CreatorInvitedPage"));
 
 const queryClient = new QueryClient();
 
@@ -60,7 +71,18 @@ const App = () => (
               <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
-                <Route path="/auth" element={<Auth />} />
+                {/* Authentication routes - no authentication required */}
+                <Route path="/signin" element={<SigninPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/signup/buyer" element={<BuyerSignupPage />} />
+                <Route path="/signup/creator" element={<CreatorSignupPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/invited" element={<InvitedPage />} />
+                <Route path="/creator/invited" element={<CreatorInvitedPage />} />
+                
+                {/* Legacy auth route - redirect to signin */}
+                <Route path="/auth" element={<SigninPage />} />
                 
                 {/* Test route - no authentication required */}
                 <Route path="/test-send-message" element={<SendMessageTest />} />
@@ -175,6 +197,11 @@ const App = () => (
                 {/* Contact page - accessible to all authenticated users */}
                 <Route path="/contact" element={
                   <ProtectedLayout><Contact /></ProtectedLayout>
+                } />
+                
+                {/* AI Chatbot - restricted access */}
+                <Route path="/ai-chatbot" element={
+                  <ProtectedLayout><AIChatbot /></ProtectedLayout>
                 } />
                 
                 <Route path="*" element={

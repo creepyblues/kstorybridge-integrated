@@ -282,11 +282,13 @@ export default function SampleTitleDetailPage() {
               Join KStoryBridge to access our full catalog of premium Korean titles and connect with creators.
             </p>
             <div className="flex justify-center gap-4">
-              <Link to="/signup">
-                <Button size="lg" className="bg-white text-hanok-teal hover:bg-gray-100">
-                  Sign Up Now
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                className="bg-white text-hanok-teal hover:bg-gray-100"
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
+              >
+                Sign Up Now
+              </Button>
               <Link to="/">
                 <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-hanok-teal">
                   Browse More Titles

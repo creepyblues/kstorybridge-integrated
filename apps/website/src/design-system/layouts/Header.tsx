@@ -83,8 +83,8 @@ export const Header: React.FC<HeaderProps> = ({
             <Button variant="ghost" asChild>
               <Link to="/login">Sign In</Link>
             </Button>
-            <Button asChild>
-              <Link to="/signup">Get Started</Link>
+            <Button onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}>
+              Get Started
             </Button>
           </div>
 
@@ -130,10 +130,14 @@ export const Header: React.FC<HeaderProps> = ({
                     Sign In
                   </Link>
                 </Button>
-                <Button fullWidth asChild>
-                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                    Get Started
-                  </Link>
+                <Button 
+                  fullWidth 
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`;
+                  }}
+                >
+                  Get Started
                 </Button>
               </div>
             </nav>

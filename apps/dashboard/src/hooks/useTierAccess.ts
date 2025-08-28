@@ -33,7 +33,7 @@ export const useTierAccess = (): TierAccess => {
 
   // 🧪 LOCALHOST CONFIG: Control data source for development
   // Set to true to use real Supabase data, false for mock data
-  const useRealDataOnLocalhost = false; // Change this to true for real data testing
+  const useRealDataOnLocalhost = true; // Now using real data for localhost testing
 
   // 🧪 MOCK TESTING: Change this value when using mock data
   // Options: 'invited', 'basic', 'pro', 'suite'

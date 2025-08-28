@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Shield, AlertTria
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '../hooks/useAuth';
+import { getDashboardUrl } from '../config/urls';
 
 // Configure PDF.js worker - use local worker file to avoid CORS issues
 pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
@@ -15,7 +15,8 @@ interface SecurePDFViewerProps {
 }
 
 export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps) {
-  const { user } = useAuth();
+  // Redirect to dashboard login for PDF access
+  const user = null; // No local authentication
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
@@ -370,7 +371,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
                 }
               </p>
               <Button 
-                onClick={() => window.location.href = '/signin'}
+                onClick={() => window.location.href = `${getDashboardUrl()}/signin`}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 Sign In to Continue
@@ -403,7 +404,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
               <p className="text-red-600 mb-4">{error}</p>
               {(error.includes('Access denied') || error.includes('sign in again') || sessionExpired) && (
                 <Button 
-                  onClick={() => window.location.href = '/signin'}
+                  onClick={() => window.location.href = `${getDashboardUrl()}/signin`}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   Sign In Again

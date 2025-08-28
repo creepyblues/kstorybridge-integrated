@@ -61,11 +61,14 @@ const BuyersPage = () => {
                 Scout Korean Hits with Confidence
               </p>
               
-              <Link to="/signup">
-                <Button id="buyers-hero-request-vip-btn" size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
-                  Request VIP Access
-                </Button>
-              </Link>
+              <Button 
+                id="buyers-hero-request-vip-btn" 
+                size="lg" 
+                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
+              >
+                Request VIP Access
+              </Button>
             </div>
           </div>
         </section>
@@ -219,11 +222,14 @@ const BuyersPage = () => {
             </div>
             
             <div className="text-center">
-              <Link to="/signup">
-                <Button id="buyers-catalog-join-btn" size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300">
-                  Join to View Full Catalog
-                </Button>
-              </Link>
+              <Button 
+                id="buyers-catalog-join-btn" 
+                size="lg" 
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
+              >
+                Join to View Full Catalog
+              </Button>
             </div>
           </div>
         </section>
@@ -251,11 +257,13 @@ const BuyersPage = () => {
                       <div className="text-slate-500 text-sm">/month</div>
                     </div>
                     
-                    <Link to="/signup">
-                      <Button id="buyers-pricing-free-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
-                        Get started
-                      </Button>
-                    </Link>
+                    <Button 
+                      id="buyers-pricing-free-btn" 
+                      className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300"
+                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
+                    >
+                      Get started
+                    </Button>
                   </div>
                   
                   <div className="p-6 bg-white flex-1">
@@ -288,11 +296,13 @@ const BuyersPage = () => {
                       <div className="text-slate-500 text-sm">/month</div>
                     </div>
                     
-                    <Link to="/signup">
-                      <Button id="buyers-pricing-pro-btn" className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
-                        Get started
-                      </Button>
-                    </Link>
+                    <Button 
+                      id="buyers-pricing-pro-btn" 
+                      className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300"
+                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
+                    >
+                      Get started
+                    </Button>
                   </div>
                   
                   <div className="p-6 bg-white flex-1">

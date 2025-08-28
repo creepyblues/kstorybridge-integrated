@@ -1,13 +1,15 @@
 
 import { useEffect } from "react";
-import { getWebsiteUrl } from "@/config/urls";
+import { useNavigate } from "react-router-dom";
 
 export default function Auth() {
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // Redirect to the external sign-in page
-    console.log("Redirecting to website for authentication");
-    window.location.href = `${getWebsiteUrl()}/signin`;
-  }, []);
+    // Redirect to the dashboard's sign-in page
+    console.log("Redirecting to dashboard signin");
+    navigate('/signin', { replace: true });
+  }, [navigate]);
 
   // Show a loading state while redirecting
   return (

@@ -27,14 +27,17 @@ import {
 
 // Existing Services
 import FeaturedTitlesCarouselNew from '../components/FeaturedTitlesCarouselNew';
-import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const HomePageNew = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   
-  const { user, userProfile, isLoading, isRedirecting } = useAuth();
+  // No local authentication - redirect to dashboard
+  const user = null;
+  const userProfile = null;
+  const isLoading = false;
+  const isRedirecting = false;
 
   const handleTitleClick = (titleId: string) => {
     navigate(`/title/${titleId}`);
@@ -217,7 +220,7 @@ const HomePageNew = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <CTAButton 
                   size="xl"
-                  onClick={() => navigate('/signup')}
+                  onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
                 >
                   Get Started Today
                 </CTAButton>

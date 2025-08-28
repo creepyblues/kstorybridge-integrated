@@ -24,7 +24,6 @@ export default function MyRequests() {
 
   useEffect(() => {
     // Load requests if we have a user OR auth bypass is enabled
-    const bypassEnabled = shouldBypassAuth();
     console.log('🔍 MY REQUESTS: useEffect triggered:', {
       hasUser: !!user,
       userEmail: user?.email,
@@ -53,9 +52,8 @@ export default function MyRequests() {
   }, [user, getMyRequests]); // Remove isFresh from dependencies
 
   const loadRequests = async () => {
-    // For localhost auth bypass, use a mock user ID when no real user exists
-    const userId = user?.id || (shouldBypassAuth() ? '550e8400-e29b-41d4-a716-446655440000' : null);
-    const userEmail = user?.email || (shouldBypassAuth() ? 'sungho@dadble.com' : null);
+    const userId = user?.id;
+    const userEmail = user?.email;
     
     if (!userId) return;
     
@@ -113,23 +111,8 @@ export default function MyRequests() {
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  // Check if we should bypass auth for localhost development
-  const shouldBypassAuth = () => {
-    const isLocalhost = window.location.hostname === 'localhost';
-    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-    const isDev = import.meta.env.DEV;
-    
-    console.log('🔍 MY REQUESTS: Auth bypass check:', {
-      isLocalhost,
-      bypassEnabled,
-      isDev,
-      shouldBypass: isLocalhost && bypassEnabled && isDev
-    });
-    
-    return isLocalhost && bypassEnabled && isDev;
-  };
 
-  if (!user && !shouldBypassAuth()) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
         <div className="max-w-7xl mx-auto px-6 py-16">

@@ -96,10 +96,13 @@ const CreatorsPage = () => {
             </p>
 
             <div className="flex justify-center pt-8">
-              <Button id="creators-hero-get-started-btn" asChild size="lg" className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-full">
-                <Link to="/signup/creator">
-                  Get Started
-                </Link>
+              <Button 
+                id="creators-hero-get-started-btn" 
+                size="lg" 
+                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-full"
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
+              >
+                Get Started
               </Button>
             </div>
           </div>
@@ -212,15 +215,13 @@ const CreatorsPage = () => {
                   {/* Enhanced button */}
                   <Button 
                     id="creators-features-create-account-btn" 
-                    asChild 
                     size="lg" 
-                    className="bg-white text-hanok-teal hover:bg-white/95 rounded-full font-semibold text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="bg-white text-hanok-teal hover:bg-white/95 rounded-full font-semibold text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-3"
+                    onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
                   >
-                    <Link to="/signup/creator" className="flex items-center gap-3">
-                      <Rocket className="w-5 h-5" />
-                      Create Account 
-                      <ArrowRight className="w-5 h-5" />
-                    </Link>
+                    <Rocket className="w-5 h-5" />
+                    Create Account 
+                    <ArrowRight className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
@@ -255,10 +256,13 @@ const CreatorsPage = () => {
             </div>
           </div>
 
-          <Button id="creators-cta-get-started-btn" asChild size="lg" className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-lg rounded-full">
-            <Link to="/signup/creator">
-              Get Started
-            </Link>
+          <Button 
+            id="creators-cta-get-started-btn" 
+            size="lg" 
+            className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-lg rounded-full"
+            onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
+          >
+            Get Started
           </Button>
         </div>
       </section>

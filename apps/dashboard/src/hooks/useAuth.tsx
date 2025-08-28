@@ -1,7 +1,6 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { getWebsiteUrl } from "@/config/urls";
 
 interface AuthContextType {
   user: User | null;
@@ -17,53 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if we should bypass auth for localhost development
-  const shouldBypassAuth = () => {
-    const isLocalhost = window.location.hostname === 'localhost';
-    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-    const isDev = import.meta.env.DEV;
-    
-    if (isLocalhost && bypassEnabled && isDev) {
-      console.log('🚨 AUTH BYPASS: Authentication bypassed for localhost development');
-      console.log('🚨 AUTH BYPASS: This should NEVER happen in production!');
-      console.log('🚨 AUTH BYPASS: Loading test data for sungho@dadble.com');
-      return true;
-    }
-    return false;
-  };
 
-  // Create mock user for localhost development
-  const createMockUser = (): User => {
-    console.log('🏗️ AUTH BYPASS: Creating mock user for sungho@dadble.com');
-    return {
-      id: '550e8400-e29b-41d4-a716-446655440000', // Fixed UUID for consistency - matches mock data in services
-      email: 'sungho@dadble.com',
-      app_metadata: {},
-      user_metadata: { 
-        account_type: 'buyer',
-        full_name: 'Sungho Lee (Local Dev)'
-      },
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      email_confirmed_at: new Date().toISOString(),
-      last_sign_in_at: new Date().toISOString(),
-      role: 'authenticated',
-      confirmation_sent_at: new Date().toISOString(),
-    } as User;
-  };
-
-  // Create mock session for localhost development
-  const createMockSession = (mockUser: User): Session => {
-    return {
-      access_token: 'mock-access-token',
-      refresh_token: 'mock-refresh-token',
-      expires_in: 3600,
-      expires_at: Math.floor(Date.now() / 1000) + 3600,
-      token_type: 'bearer',
-      user: mockUser,
-    } as Session;
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -72,18 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log('🚀 DASHBOARD: Initializing auth...');
         
-        // Check if we should bypass auth for localhost development
-        if (shouldBypassAuth()) {
-          const mockUser = createMockUser();
-          const mockSession = createMockSession(mockUser);
-          
-          if (mounted) {
-            setUser(mockUser);
-            setSession(mockSession);
-            setLoading(false);
-          }
-          return;
-        }
         // Check for session parameters in URL (for cross-domain auth)
         const urlParams = new URLSearchParams(window.location.search);
         console.log('🔍 DASHBOARD: URL params check:', {
@@ -207,20 +148,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     console.log('🚪 DASHBOARD: Starting sign out process');
-    // Redirect immediately before clearing auth state
-    const websiteUrl = getWebsiteUrl();
-    const signOutUrl = `${websiteUrl}${websiteUrl.includes('?') ? '&' : '?'}signed_out=true`;
-    console.log('🚪 DASHBOARD: Sign out - websiteUrl:', websiteUrl);
-    console.log('🚪 DASHBOARD: Sign out - signOutUrl:', signOutUrl);
+    
+    // Sign out from Supabase
+    await supabase.auth.signOut();
+    
+    // Redirect to dashboard signin page with signed_out parameter
+    const signOutUrl = `/signin?signed_out=true`;
+    console.log('🚪 DASHBOARD: Sign out - redirecting to:', signOutUrl);
     console.log('🚪 DASHBOARD: Sign out - current location:', window.location.href);
     
-    // Redirect first, then sign out to prevent ProtectedRoute from interfering
     window.location.href = signOutUrl;
-    
-    // Sign out after redirect is initiated
-    setTimeout(async () => {
-      await supabase.auth.signOut();
-    }, 100);
   };
 
   return (

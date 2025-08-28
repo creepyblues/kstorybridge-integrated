@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
 import Logo from './header/Logo';
 import Navigation from './header/Navigation';
 import LanguageSelector from './header/LanguageSelector';
@@ -9,7 +8,10 @@ import MobileMenu from './header/MobileMenu';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, userProfile, signOut, isLoading, isRedirecting } = useAuth();
+  // No local authentication - redirect to dashboard
+  const user = null;
+  const userProfile = null;
+  const signOut = () => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signin`;
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">

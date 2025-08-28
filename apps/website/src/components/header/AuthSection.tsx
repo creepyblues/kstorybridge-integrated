@@ -1,9 +1,9 @@
 
-import { Link } from 'react-router-dom';
 import { Button } from '@kstorybridge/ui';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { trackButtonClick } from '@/utils/analytics';
 import { User } from '@supabase/supabase-js';
+import { getDashboardUrl } from '../../config/urls';
 
 interface AuthSectionProps {
   user: User | null;
@@ -58,27 +58,31 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
   const containerClasses = isMobile ? "flex flex-col space-y-2" : "flex space-x-2";
   const buttonClasses = isMobile ? "w-full" : "";
 
+  const handleSignInClick = () => {
+    trackButtonClick('Sign In', 'header');
+    window.location.href = `${getDashboardUrl()}/signin`;
+  };
+
+  const handleGetStartedClick = () => {
+    trackButtonClick('Get Started', 'header');
+    window.location.href = `${getDashboardUrl()}/signup`;
+  };
+
   return (
     <div className={containerClasses}>
       <Button 
         id="header-signin-btn"
-        asChild 
         className={`border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white transition-colors rounded-md px-4 py-2 font-medium ${buttonClasses}`}
-        onClick={() => trackButtonClick('Sign In', 'header')}
+        onClick={handleSignInClick}
       >
-        <Link to="/signin">
-          Sign In
-        </Link>
+        Sign In
       </Button>
       <Button 
         id="header-get-started-btn"
-        asChild 
         className={`bg-sunrise-coral hover:bg-sunrise-coral-600 text-white transition-colors rounded-md px-4 py-2 font-medium ${buttonClasses}`}
-        onClick={() => trackButtonClick('Get Started', 'header')}
+        onClick={handleGetStartedClick}
       >
-        <Link to="/signup">
-          Get Started
-        </Link>
+        Get Started
       </Button>
     </div>
   );

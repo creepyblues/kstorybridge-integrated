@@ -1,16 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@kstorybridge/ui';
 import { Input } from '@kstorybridge/ui';
 import { Label } from '@kstorybridge/ui';
 import { Card, CardContent } from '@kstorybridge/ui';
-import { useToast } from '../hooks/use-toast';
-import { supabase } from '../integrations/supabase/client';
-import { getDashboardUrl } from '../config/urls';
-import UniversalHeader from '../components/UniversalHeader';
-import Footer from '../components/Footer';
-import { notifyBuyerSignin, notifyCreatorSignin, notifyUserSignin } from '../utils/slack';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const SigninPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +28,7 @@ const SigninPage = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const fromSignup = urlParams.get('from') === 'signup';
     const emailParam = urlParams.get('email');
+    const signedOut = urlParams.get('signed_out') === 'true';
     
     if (fromSignup && emailParam) {
       setUnverifiedEmail(emailParam);
@@ -47,6 +43,15 @@ const SigninPage = () => {
       });
     }
     
+    // Check if coming from sign out
+    if (signedOut) {
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+        duration: 4000
+      });
+    }
+    
     // Check if coming from password reset
     if (location.state?.message) {
       toast({
@@ -57,33 +62,6 @@ const SigninPage = () => {
     }
   }, [toast, location]);
 
-  const redirectToDashboard = async () => {
-    console.log('🔄 SIGNIN: Redirecting to dashboard');
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-      const dashboardUrl = getDashboardUrl();
-      const sessionParams = new URLSearchParams({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token || '',
-        expires_at: session.expires_at?.toString() || '',
-        token_type: session.token_type || 'bearer'
-      });
-      const finalUrl = `${dashboardUrl}?${sessionParams.toString()}`;
-      console.log('🔄 SIGNIN: Redirecting to dashboard:', finalUrl.substring(0, 100) + '...');
-      
-      // Direct redirect to dashboard
-      window.location.href = finalUrl;
-    } else {
-      console.error('❌ SIGNIN: No session found for authenticated user');
-      toast({
-        title: "Session Error",
-        description: "Unable to redirect to dashboard. Please try signing in again.",
-        variant: "destructive"
-      });
-    }
-  };
-
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     
@@ -91,7 +69,7 @@ const SigninPage = () => {
       // Force localhost for development
       const isDev = window.location.hostname === 'localhost';
       const redirectUrl = isDev 
-        ? `http://localhost:5173/auth/callback`
+        ? `http://localhost:8081/auth/callback`
         : `${window.location.origin}/auth/callback`;
       
       console.log('🔄 OAuth signin redirect URL:', redirectUrl);
@@ -151,37 +129,9 @@ const SigninPage = () => {
           // User exists in buyers table, treat as buyer
           if (buyerCheck.tier && buyerCheck.tier !== 'invited') {
             console.log('✅ SIGNIN: Buyer accepted (tier: ' + buyerCheck.tier + '), redirecting to dashboard');
-            
-            // Send Slack notification for successful buyer signin
-            try {
-              await notifyBuyerSignin({
-                email: user.email,
-                authType: 'email',
-                success: true,
-                tier: buyerCheck.tier,
-                redirectedTo: 'dashboard'
-              });
-            } catch (slackError) {
-              console.error('Failed to send buyer signin notification:', slackError);
-            }
-            
-            await redirectToDashboard();
+            navigate('/buyers/titles');
           } else {
             console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + (buyerCheck.tier || 'null') + '), redirecting to invited page');
-            
-            // Send Slack notification for buyer signin to invited page
-            try {
-              await notifyBuyerSignin({
-                email: user.email,
-                authType: 'email',
-                success: true,
-                tier: buyerCheck.tier || 'null',
-                redirectedTo: 'invited'
-              });
-            } catch (slackError) {
-              console.error('Failed to send buyer signin notification:', slackError);
-            }
-            
             navigate('/invited');
           }
           return;
@@ -190,7 +140,7 @@ const SigninPage = () => {
       
       if (accountType === 'buyer' || !accountType) {
         // Try fetching by email first (most reliable), then by id
-        const { data: profileByEmail, error: errorByEmail } = await supabase
+        const { data: profileByEmail } = await supabase
           .from('user_buyers')
           .select('tier, email, id')
           .eq('email', user.email?.toLowerCase())
@@ -200,7 +150,7 @@ const SigninPage = () => {
         
         // If not found by email, try by ID
         if (!profile) {
-          const { data: profileById, error: errorById } = await supabase
+          const { data: profileById } = await supabase
             .from('user_buyers')
             .select('tier, email, id')
             .eq('id', user.id)
@@ -238,22 +188,7 @@ const SigninPage = () => {
           }
           
           console.log('✅ SIGNIN: Created buyer profile with basic tier, redirecting to dashboard');
-          
-          // Send Slack notification for new profile creation during signin
-          try {
-            await notifyBuyerSignin({
-              fullName: 'New Profile Created',
-              email: user.email,
-              authType: 'email',
-              success: true,
-              tier: 'basic',
-              redirectedTo: 'dashboard'
-            });
-          } catch (slackError) {
-            console.error('Failed to send new profile creation notification:', slackError);
-          }
-          
-          await redirectToDashboard();
+          navigate('/buyers/titles');
           return;
         }
         
@@ -261,41 +196,9 @@ const SigninPage = () => {
         // Only 'invited' tier should go to invited page
         if (profile.tier && profile.tier !== 'invited') {
           console.log('✅ SIGNIN: Buyer accepted (tier: ' + profile.tier + '), redirecting directly to dashboard');
-          
-          // Send Slack notification for successful buyer signin
-          try {
-            await notifyBuyerSignin({
-              fullName: profile.full_name,
-              email: profile.email,
-              authType: 'email',
-              success: true,
-              tier: profile.tier,
-              redirectedTo: 'dashboard',
-              company: profile.buyer_company
-            });
-          } catch (slackError) {
-            console.error('Failed to send buyer signin notification:', slackError);
-          }
-          
-          await redirectToDashboard();
+          navigate('/buyers/titles');
         } else {
           console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + (profile.tier || 'null') + '), redirecting to invited page');
-          
-          // Send Slack notification for buyer signin to invited page
-          try {
-            await notifyBuyerSignin({
-              fullName: profile.full_name,
-              email: profile.email,
-              authType: 'email',
-              success: true,
-              tier: profile.tier || 'null',
-              redirectedTo: 'invited',
-              company: profile.buyer_company
-            });
-          } catch (slackError) {
-            console.error('Failed to send buyer signin notification:', slackError);
-          }
-          
           navigate('/invited');
         }
       } else if (accountType === 'ip_owner') {
@@ -314,39 +217,8 @@ const SigninPage = () => {
         
         if (profile?.invitation_status === 'accepted') {
           console.log('✅ SIGNIN: Creator accepted, redirecting directly to dashboard');
-          
-          // Send Slack notification for successful creator signin
-          try {
-            await notifyCreatorSignin({
-              fullName: profile.full_name,
-              email: profile.email,
-              authType: 'email',
-              success: true,
-              invitationStatus: profile.invitation_status,
-              redirectedTo: 'dashboard',
-              penName: profile.pen_name
-            });
-          } catch (slackError) {
-            console.error('Failed to send creator signin notification:', slackError);
-          }
-          
-          await redirectToDashboard();
+          navigate('/creators/titles');
         } else {
-          // Send Slack notification for creator signin to invited page
-          try {
-            await notifyCreatorSignin({
-              fullName: profile?.full_name,
-              email: user.email,
-              authType: 'email',
-              success: true,
-              invitationStatus: profile?.invitation_status || 'invited',
-              redirectedTo: 'creator/invited',
-              penName: profile?.pen_name
-            });
-          } catch (slackError) {
-            console.error('Failed to send creator signin notification:', slackError);
-          }
-          
           navigate('/creator/invited');
         }
       } else {
@@ -410,19 +282,6 @@ const SigninPage = () => {
         
         // Set error state for visual feedback
         setSigninError(errorMessage);
-        
-        // Send Slack notification for signin failure
-        try {
-          await notifyUserSignin({
-            email: formData.email,
-            authType: 'email',
-            success: false,
-            errorMessage: errorMessage,
-            accountType: 'unknown' // We don't know the account type at this point
-          });
-        } catch (slackError) {
-          console.error('Failed to send signin failure notification:', slackError);
-        }
         
         // Always show the toast with error
         toast({
@@ -502,8 +361,6 @@ const SigninPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
-      <UniversalHeader />
-      
       <main className="flex-1">
         {/* Hero Section */}
         <section className="py-16 lg:py-24">
@@ -602,44 +459,42 @@ const SigninPage = () => {
               )}
               
               {/* Google Sign In Button */}
-              {true && (
-                <div className="mb-6">
-                  <Button 
-                    id="signin-google-btn"
-                    type="button"
-                    className="w-full h-12 text-base font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors rounded-md"
-                    onClick={handleGoogleSignIn}
-                    disabled={isGoogleLoading}
-                  >
-                    {isGoogleLoading ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
-                        Signing in with Google...
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center">
-                        <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                          <path fill="#6B7280" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        Continue with Google
-                      </div>
-                    )}
-                  </Button>
+              <div className="mb-6">
+                <Button 
+                  id="signin-google-btn"
+                  type="button"
+                  className="w-full h-12 text-base font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors rounded-md"
+                  onClick={handleGoogleSignIn}
+                  disabled={isGoogleLoading}
+                >
+                  {isGoogleLoading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
+                      Signing in with Google...
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#6B7280" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                      </svg>
+                      Continue with Google
+                    </div>
+                  )}
+                </Button>
 
-                  {/* Divider */}
-                  <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-gray-200" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-4 bg-white text-gray-500">Or continue with email</span>
-                    </div>
+                {/* Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-200" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white text-gray-500">Or continue with email</span>
                   </div>
                 </div>
-              )}
+              </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email Field */}
@@ -725,8 +580,6 @@ const SigninPage = () => {
           </div>
         </section>
       </main>
-      
-      <Footer />
     </div>
   );
 };

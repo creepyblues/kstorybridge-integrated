@@ -91,7 +91,7 @@ export default function Favorites() {
 
   // Localhost development configuration
   const isLocalhost = window.location.hostname === 'localhost';
-  const useRealDataOnLocalhost = false; // Set to true to use real Supabase data
+  const useRealDataOnLocalhost = true; // Now using real Supabase data for localhost testing
 
   // Get data from cache or use mock data for localhost
   const favorites = (isLocalhost && !useRealDataOnLocalhost && !user) ? mockFavorites : getFavorites();

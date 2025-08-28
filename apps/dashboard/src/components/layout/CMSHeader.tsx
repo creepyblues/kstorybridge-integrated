@@ -45,7 +45,7 @@ export function CMSHeader() {
   // 🧪 LOCALHOST CONFIG: Control data source for development
   // Set to true to use real Supabase data, false for mock data
   // NOTE: Should match the setting in useTierAccess.ts
-  const useRealDataOnLocalhost = false; // Change this to true for real data testing
+  const useRealDataOnLocalhost = true; // Now using real data for localhost testing
 
   const mockUser = {
     id: 'mock-user-12345',

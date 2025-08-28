@@ -27,16 +27,7 @@ function TitleDetailContent() {
     console.log('🔍 TitleDetail - Tier access:', { tier, canAccessPremiumContent });
   }, [tier, canAccessPremiumContent]);
   
-  // Check if we should bypass auth for localhost development
-  const shouldBypassAuth = () => {
-    const isLocalhost = window.location.hostname === 'localhost';
-    const bypassEnabled = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST === 'true';
-    const isDev = import.meta.env.DEV;
-    return isLocalhost && (bypassEnabled || isDev);
-  };
-
-  // For localhost auth bypass, consider as authenticated
-  const isAuthenticated = user || shouldBypassAuth();
+  const isAuthenticated = !!user;
   const { getTitleDetail, setTitleDetail, isFresh, refreshData } = useDataCache();
   const [title, setTitle] = useState<Title | null>(null);
   const [loading, setLoading] = useState(false);

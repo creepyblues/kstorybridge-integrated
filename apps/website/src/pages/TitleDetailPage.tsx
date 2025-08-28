@@ -6,7 +6,6 @@ import { Button } from '@kstorybridge/ui';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
 import { ArrowLeft, Eye, Heart, Star, FileText, Crown, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '../hooks/useAuth';
 import UniversalHeader from '../components/UniversalHeader';
 import SecurePDFViewer from '../components/SecurePDFViewer';
 
@@ -29,7 +28,8 @@ type Title = {
 
 export default function TitleDetailPage() {
   const { titleId } = useParams<{ titleId: string }>();
-  const { user } = useAuth();
+  // No local authentication - redirect to dashboard
+  const user = null;
   const [title, setTitle] = useState<Title | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -297,11 +297,12 @@ export default function TitleDetailPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Premium Content Available</h3>
               <p className="text-gray-600 mb-4">Please sign in to view the detailed pitch document for this title.</p>
-              <Link to="/signin">
-                <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white">
-                  Sign In to View Pitch
-                </Button>
-              </Link>
+              <Button 
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signin`}
+              >
+                Sign In to View Pitch
+              </Button>
             </CardContent>
           </Card>
         )}

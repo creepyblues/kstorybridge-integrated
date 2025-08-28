@@ -36,6 +36,7 @@ function TitlesContent() {
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
+  const [activeGenreFilters, setActiveGenreFilters] = useState<Set<string>>(new Set());
 
   // Determine if this is creator view based on route
   const isCreatorView = location.pathname.startsWith('/creators');
@@ -186,6 +187,27 @@ function TitlesContent() {
       result = result.filter(title => title.pitch && title.pitch.trim() !== '');
     }
     
+    // Apply genre filters
+    if (activeGenreFilters.size > 0) {
+      result = result.filter(title => {
+        // Check if title has any of the active genre filters
+        const titleGenres = Array.isArray(title.genre) ? title.genre : [title.genre];
+        const titleTags = Array.isArray(title.tags) ? title.tags : (title.tags ? [title.tags] : []);
+        const allTitleTerms = [
+          ...titleGenres.map(g => g?.toLowerCase() || ''),
+          ...titleTags.map(t => t?.toLowerCase() || ''),
+          title.title_name_en?.toLowerCase() || '',
+          title.title_name_kr?.toLowerCase() || '',
+          title.description?.toLowerCase() || '',
+          title.synopsis?.toLowerCase() || '',
+        ];
+        
+        return Array.from(activeGenreFilters).some(filter => 
+          allTitleTerms.some(term => term.includes(filter.toLowerCase()))
+        );
+      });
+    }
+    
     // Apply search filter
     if (searchTerm) {
       const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
@@ -204,7 +226,7 @@ function TitlesContent() {
   // Reset pagination when search term, sorting, or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortField, sortDirection, showOnlyWithPitch]);
+  }, [searchTerm, sortField, sortDirection, showOnlyWithPitch, activeGenreFilters]);
 
   const formatGenre = (genre: string | string[]) => {
     if (Array.isArray(genre)) {
@@ -215,6 +237,23 @@ function TitlesContent() {
 
   const formatContentFormat = (format: string) => {
     return format.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const genreFilters = [
+    "Romantasy", "Contemporary Romance", "rom-com", "romantic thriller", "LGBTQ+ Romance",
+    "spy thriller", "crime thriller", "comedy", "slice of life", "character drama",
+    "true story", "action", "high fantasy", "supernatural drama", "horror",
+    "grounded sci-fi", "sci-fi"
+  ];
+
+  const handleGenreFilter = (genre: string) => {
+    const newFilters = new Set(activeGenreFilters);
+    if (newFilters.has(genre)) {
+      newFilters.delete(genre);
+    } else {
+      newFilters.add(genre);
+    }
+    setActiveGenreFilters(newFilters);
   };
 
   const SortableHeader = ({ field, children, className = "" }: { 
@@ -337,19 +376,53 @@ function TitlesContent() {
           
           {/* Filters Section */}
           <div className="mb-6 sm:mb-8">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm font-bold text-midnight-ink-600">POPULAR FILTERS:</span>
-              <button 
-                onClick={() => setShowOnlyWithPitch(!showOnlyWithPitch)}
-                className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border transition-colors duration-200 ${
-                  showOnlyWithPitch 
-                    ? 'bg-hanok-teal text-white border-hanok-teal' 
-                    : 'bg-hanok-teal/10 text-hanok-teal border-hanok-teal/20 hover:bg-hanok-teal hover:text-white'
-                }`}
-              >
-                titles with pitch deck
-              </button>
+            <div className="flex items-start gap-3 flex-wrap">
+              <span className="text-sm font-bold text-hanok-teal mt-1">POPULAR FILTERS:</span>
+              <div className="flex flex-wrap gap-2">
+                {/* Pitch deck filter */}
+                <button 
+                  onClick={() => setShowOnlyWithPitch(!showOnlyWithPitch)}
+                  className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors duration-200 ${
+                    showOnlyWithPitch 
+                      ? 'bg-hanok-teal text-white border-hanok-teal' 
+                      : 'bg-hanok-teal/10 text-hanok-teal border-hanok-teal/20 hover:bg-hanok-teal hover:text-white'
+                  }`}
+                >
+                  titles with pitch deck
+                </button>
+                
+                {/* Genre filters */}
+                {genreFilters.map((genre) => (
+                  <button 
+                    key={genre}
+                    onClick={() => handleGenreFilter(genre)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors duration-200 ${
+                      activeGenreFilters.has(genre)
+                        ? 'bg-purple-600 text-white border-purple-600' 
+                        : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-600 hover:text-white hover:border-purple-600'
+                    }`}
+                  >
+                    {genre}
+                  </button>
+                ))}
+              </div>
             </div>
+            
+            {/* Active filters summary */}
+            {(showOnlyWithPitch || activeGenreFilters.size > 0) && (
+              <div className="mt-3 text-xs text-midnight-ink-500">
+                Active filters: {showOnlyWithPitch && "Pitch deck"}{showOnlyWithPitch && activeGenreFilters.size > 0 && ", "}{Array.from(activeGenreFilters).join(", ")}
+                <button 
+                  onClick={() => {
+                    setShowOnlyWithPitch(false);
+                    setActiveGenreFilters(new Set());
+                  }}
+                  className="ml-2 text-hanok-teal hover:text-hanok-teal-600 underline"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
           </div>
           
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">

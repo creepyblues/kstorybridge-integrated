@@ -392,3 +392,5 @@ export default function Favorites() {
     </div>
   );
 }
+
+export default Favorites;

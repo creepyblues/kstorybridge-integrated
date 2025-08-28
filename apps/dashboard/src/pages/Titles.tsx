@@ -187,25 +187,33 @@ function TitlesContent() {
       result = result.filter(title => title.pitch && title.pitch.trim() !== '');
     }
     
-    // Apply genre filters
+    // Apply genre filters - use the same search logic as regular search
     if (activeGenreFilters.size > 0) {
-      result = result.filter(title => {
-        // Check if title has any of the active genre filters
-        const titleGenres = Array.isArray(title.genre) ? title.genre : [title.genre];
-        const titleTags = Array.isArray(title.tags) ? title.tags : (title.tags ? [title.tags] : []);
-        const allTitleTerms = [
-          ...titleGenres.map(g => g?.toLowerCase() || ''),
-          ...titleTags.map(t => t?.toLowerCase() || ''),
-          title.title_name_en?.toLowerCase() || '',
-          title.title_name_kr?.toLowerCase() || '',
-          title.description?.toLowerCase() || '',
-          title.synopsis?.toLowerCase() || '',
-        ];
-        
-        return Array.from(activeGenreFilters).some(filter => 
-          allTitleTerms.some(term => term.includes(filter.toLowerCase()))
+      // Combine all active filters into a search query
+      const filterQuery = Array.from(activeGenreFilters).join(' ');
+      
+      // Use the enhanced search function for each filter
+      let combinedResults: Title[] = [];
+      const seenIds = new Set<string>();
+      
+      for (const filter of activeGenreFilters) {
+        const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
+          result,
+          filter,
+          getTitleSearchFields()
         );
-      });
+        
+        // Combine all matches and deduplicate
+        const allMatches = [...exactMatches, ...phraseMatches, ...expandedMatches];
+        for (const title of allMatches) {
+          if (!seenIds.has(title.title_id)) {
+            seenIds.add(title.title_id);
+            combinedResults.push(title);
+          }
+        }
+      }
+      
+      result = combinedResults;
     }
     
     // Apply search filter

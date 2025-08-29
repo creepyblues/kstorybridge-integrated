@@ -188,7 +188,7 @@ const FIELD_TYPES = {
   // Fuzzy match fields - allow flexible matching
   fuzzy: ['tone', 'genre', 'audience', 'perfect_for', 'tags'],
   // Content fields - search in descriptions and content
-  content: ['tagline', 'description', 'synopsis', 'pitch', 'note'],
+  content: ['tagline', 'synopsis', 'pitch', 'note'],
   // Rights fields - exact matching for rights and ownership
   rights: ['rights', 'rights_owner', 'creator_id']
 };
@@ -400,7 +400,6 @@ export function getTitleSearchFields(): string[] {
     'rights',
     'rights_owner',
     'tagline',
-    'description',
     'synopsis',
     'note',
     'perfect_for',

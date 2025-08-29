@@ -229,9 +229,9 @@ What type of Korean IP are you looking for today?`,
             )}
           </div>
           
-          {title.description && (
+          {title.synopsis && (
             <p className="text-xs text-gray-600 line-clamp-2">
-              {title.description}
+              {title.synopsis}
             </p>
           )}
         </div>

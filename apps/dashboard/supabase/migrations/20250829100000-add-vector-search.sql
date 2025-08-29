@@ -12,6 +12,7 @@ ALTER TABLE titles
   ADD COLUMN IF NOT EXISTS content_embedding vector(1536),
   ADD COLUMN IF NOT EXISTS title_embedding vector(1536),
   ADD COLUMN IF NOT EXISTS description_embedding vector(1536),
+  ADD COLUMN IF NOT EXISTS synopsis_embedding vector(1536),
   ADD COLUMN IF NOT EXISTS combined_embedding vector(1536),
   ADD COLUMN IF NOT EXISTS embedding_model TEXT DEFAULT 'text-embedding-ada-002',
   ADD COLUMN IF NOT EXISTS embedding_created_at TIMESTAMPTZ,

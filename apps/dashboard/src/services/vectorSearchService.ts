@@ -6,7 +6,7 @@ export interface VectorSearchResult {
   title_id: string;
   title_name_en?: string;
   title_name_kr?: string;
-  description?: string;
+  synopsis?: string;
   similarity: number;
   score?: number; // Additional computed score
 }
@@ -461,7 +461,7 @@ class VectorSearchService {
     try {
       const { data: trending, error } = await supabase
         .from('titles')
-        .select('title_id, title_name_en, title_name_kr, description, views, likes')
+        .select('title_id, title_name_en, title_name_kr, synopsis, views, likes')
         .not('combined_embedding', 'is', null)
         .order('views', { ascending: false })
         .limit(limit);

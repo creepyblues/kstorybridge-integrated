@@ -33,22 +33,6 @@ interface CreatorFormData {
   websiteUrl: string;
 }
 
-// Map form role values to database enum values
-const mapBuyerRoleToEnum = (formRole: string): string => {
-  const roleMapping: { [key: string]: string } = {
-    'Content Acquisitions': 'content_scout',
-    'Producer': 'producer',
-    'Director of Development': 'executive',
-    'Creative Executive': 'executive',
-    'Development Executive': 'executive',
-    'Content Strategist': 'content_scout',
-    'Media Buyer': 'agent',
-    'Business Development': 'agent',
-    'CEO/Founder': 'executive',
-    'Other': 'other'
-  };
-  return roleMapping[formRole] || 'other';
-};
 
 const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -272,19 +256,58 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         authResult = { data: { user: session.user }, error: null };
       } else {
         // Regular email signup
-        authResult = await supabase.auth.signUp({
-          email: buyerFormData.email,
-          password: buyerFormData.password,
-          options: {
-            data: {
+        console.log('🔐 Attempting regular email signup...');
+        console.log('📡 Testing Supabase connection first...');
+        
+        try {
+          // Test basic connectivity
+          const { data: testData, error: testError } = await supabase
+            .from('user_buyers')
+            .select('count')
+            .limit(1);
+          
+          console.log('✅ Supabase connection test:', { testData, testError });
+          
+          console.log('📤 Starting auth signup with data:', {
+            email: buyerFormData.email,
+            hasPassword: !!buyerFormData.password,
+            metadata: {
               full_name: buyerFormData.fullName,
               account_type: 'buyer',
               buyer_company: buyerFormData.buyerCompany,
-              buyer_role: buyerFormData.buyerRole,
-              linkedin_url: buyerFormData.linkedinUrl || null
+              buyer_role: buyerFormData.buyerRole
             }
-          }
-        });
+          });
+          
+          // Auth signup with metadata (database trigger will create profile)
+          console.log('🔐 Attempting auth signup with metadata...');
+          authResult = await supabase.auth.signUp({
+            email: buyerFormData.email,
+            password: buyerFormData.password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/signin?verified=true`,
+              data: {
+                full_name: buyerFormData.fullName,
+                account_type: 'buyer',
+                buyer_company: buyerFormData.buyerCompany,
+                buyer_role: buyerFormData.buyerRole,
+                linkedin_url: buyerFormData.linkedinUrl || null
+              }
+            }
+          });
+          
+          console.log('✅ Auth signup result:', authResult);
+          
+        } catch (networkError) {
+          console.error('❌ Network error during signup:', networkError);
+          toast({
+            title: "Connection Error", 
+            description: "Unable to connect to the authentication service. Please check your internet connection and try again.",
+            variant: "destructive"
+          });
+          setIsLoading(false);
+          return;
+        }
       }
 
       const { data, error } = authResult;
@@ -308,35 +331,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       }
 
       if (data.user) {
-        // Create buyer profile in the profiles table
-        console.log('👤 Creating buyer profile for user:', data.user.email);
-        const profileData = {
-          id: data.user.id,
-          email: buyerFormData.email,
-          full_name: buyerFormData.fullName,
-          account_type: 'buyer' as const,
-          buyer_company: buyerFormData.buyerCompany,
-          buyer_role: mapBuyerRoleToEnum(buyerFormData.buyerRole) as any,
-          linkedin_url: buyerFormData.linkedinUrl || null
-        };
-        
-        console.log('📝 Profile data to insert:', profileData);
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert(profileData);
-
-        if (profileError) {
-          console.error('❌ Profile creation error:', profileError);
-          toast({
-            title: "Profile Creation Failed",
-            description: `Profile creation failed: ${profileError.message}. Please try again.`,
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        console.log('✅ Buyer profile created successfully');
+        console.log('✅ User created successfully:', data.user.email);
+        console.log('📝 Profile should be created by database trigger from metadata');
 
         // Success handling
         if (isOAuthUser) {
@@ -413,6 +409,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           email: creatorFormData.email,
           password: creatorFormData.password,
           options: {
+            emailRedirectTo: `${window.location.origin}/signin?verified=true`,
             data: {
               full_name: creatorFormData.fullName,
               account_type: 'ip_owner',
@@ -446,24 +443,27 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       }
 
       if (data.user) {
-        // Create creator profile in the profiles table
+        // Create creator profile in user_ipowners table
         console.log('👤 Creating creator profile for user:', data.user.email);
         const profileData = {
           id: data.user.id,
           email: creatorFormData.email,
           full_name: creatorFormData.fullName,
-          account_type: 'ip_owner' as const,
           pen_name: creatorFormData.penNameOrStudio,
           ip_owner_role: creatorFormData.ipOwnerRole || null,
           ip_owner_company: creatorFormData.ipOwnerCompany || null,
-          website_url: creatorFormData.websiteUrl || null
+          website_url: creatorFormData.websiteUrl || null,
+          invitation_status: 'invited' // Default status for creators
         };
         
         console.log('📝 Creator profile data to insert:', profileData);
 
         const { error: profileError } = await supabase
-          .from('profiles')
-          .insert(profileData);
+          .from('user_ipowners')
+          .upsert(profileData, { 
+            onConflict: 'id',
+            ignoreDuplicates: false 
+          });
 
         if (profileError) {
           console.error('❌ Creator profile creation error:', profileError);
@@ -691,16 +691,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Content Acquisitions">Content Acquisitions</SelectItem>
-                      <SelectItem value="Producer">Producer</SelectItem>
-                      <SelectItem value="Director of Development">Director of Development</SelectItem>
-                      <SelectItem value="Creative Executive">Creative Executive</SelectItem>
-                      <SelectItem value="Development Executive">Development Executive</SelectItem>
-                      <SelectItem value="Content Strategist">Content Strategist</SelectItem>
-                      <SelectItem value="Media Buyer">Media Buyer</SelectItem>
-                      <SelectItem value="Business Development">Business Development</SelectItem>
-                      <SelectItem value="CEO/Founder">CEO/Founder</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="producer">Producer</SelectItem>
+                      <SelectItem value="executive">Executive</SelectItem>
+                      <SelectItem value="agent">Agent</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

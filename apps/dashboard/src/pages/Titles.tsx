@@ -11,6 +11,7 @@ import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
+import { enhancedTitleSearchService, type SearchResult } from "@/services/enhancedTitleSearchService";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
 
@@ -31,12 +32,20 @@ function TitlesContent() {
   const [searchQuery, setSearchQuery] = useState(""); // What user types
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
   const [loading, setLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(50);
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
   const [activeGenreFilter, setActiveGenreFilter] = useState<string | null>(null);
+  
+  // Enhanced search state
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchType, setSearchType] = useState<'vector' | 'traditional' | 'hybrid'>('traditional');
+  const [vectorSearchAvailable, setVectorSearchAvailable] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Determine if this is creator view based on route
   const isCreatorView = location.pathname.startsWith('/creators');
@@ -54,6 +63,22 @@ function TitlesContent() {
       loadData();
     }
   }, [isCreatorView, user, titles.length]); // Remove isFresh from dependencies
+
+  // Check vector search capabilities
+  useEffect(() => {
+    const checkVectorCapabilities = async () => {
+      try {
+        const capabilities = await enhancedTitleSearchService.getSearchCapabilities();
+        setVectorSearchAvailable(capabilities.vectorSearchAvailable);
+        console.log(`🔍 Vector search available: ${capabilities.vectorSearchAvailable} (${capabilities.totalIndexedTitles} titles indexed)`);
+      } catch (error) {
+        console.warn('Failed to check vector search capabilities:', error);
+        setVectorSearchAvailable(false);
+      }
+    };
+
+    checkVectorCapabilities();
+  }, []);
 
   const loadData = async (force = false) => {
     try {
@@ -86,38 +111,104 @@ function TitlesContent() {
     loadData(true);
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Update the actual search term (which triggers filtering)
-    setSearchTerm(searchQuery.trim());
+    const query = searchQuery.trim();
+    setSearchTerm(query);
+    setShowSuggestions(false);
     
-    // Track the search query when submitted
-    if (searchQuery.trim().length > 0) {
-      // Calculate result count for the search
-      const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
-        titles,
-        searchQuery.trim(),
-        getTitleSearchFields()
-      );
-      const resultCount = exactMatches.length + expandedMatches.length + phraseMatches.length;
-      
-      // Track the search query with enhanced context
-      trackSearch(searchQuery.trim(), resultCount, {
-        userType: isCreatorView ? 'creator' : 'buyer',
-        searchContext: 'main',
-        page: location.pathname
-      });
+    if (!query) {
+      setSearchResults([]);
+      setCurrentPage(1);
+      return;
     }
+
+    setSearchLoading(true);
     
-    // Reset to first page on new search
-    setCurrentPage(1);
+    try {
+      // Use enhanced search service with vector search capabilities
+      const searchResponse = await enhancedTitleSearchService.searchWithFilters(
+        query,
+        titles,
+        {
+          showOnlyWithPitch,
+          activeGenreFilter
+        },
+        {
+          useVectorSearch: vectorSearchAvailable,
+          userId: user?.id,
+          hybridMode: true,
+          maxResults: 100 // Get more results for better ranking
+        }
+      );
+
+      setSearchResults(searchResponse.results);
+      setSearchType(searchResponse.searchType);
+
+      console.log(`🎯 Search completed: ${searchResponse.results.length} results using ${searchResponse.searchType} search`);
+      
+      // Track search analytics
+      try {
+        await trackSearch(query, searchResponse.searchType, searchResponse.results.length, user?.id);
+      } catch (error) {
+        console.warn('Failed to track search:', error);
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+      toast({
+        title: "Search Error",
+        description: "Search failed. Using traditional search instead.",
+        variant: "destructive"
+      });
+      
+      // Fallback to traditional search
+      setSearchResults([]);
+      setSearchType('traditional');
+    } finally {
+      setSearchLoading(false);
+      setCurrentPage(1);
+    }
   };
 
   const handleClearSearch = () => {
     setSearchQuery("");
     setSearchTerm("");
+    setSearchResults([]);
+    setSearchType('traditional');
     setCurrentPage(1);
+  };
+
+  const handleSearchInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    // Get search suggestions when query length is appropriate
+    if (value.length >= 2 && vectorSearchAvailable) {
+      try {
+        const suggestions = await enhancedTitleSearchService.getSearchSuggestions(value);
+        setSearchSuggestions(suggestions);
+        setShowSuggestions(suggestions.length > 0);
+      } catch (error) {
+        console.warn('Failed to get search suggestions:', error);
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
+      }
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    // Auto-submit search
+    const form = document.querySelector('form');
+    if (form) {
+      const event = new Event('submit', { bubbles: true, cancelable: true });
+      form.dispatchEvent(event);
+    }
   };
 
   const handleSort = (field: string) => {
@@ -180,6 +271,12 @@ function TitlesContent() {
   };
 
   const filteredTitles = (() => {
+    // If we have search results from enhanced search, use those
+    if (searchTerm && searchResults.length > 0) {
+      return searchResults.map(result => result.title);
+    }
+    
+    // Otherwise use traditional filtering
     let result = titles;
     
     // Apply pitch filter first
@@ -199,8 +296,8 @@ function TitlesContent() {
       result = [...exactMatches, ...phraseMatches, ...expandedMatches];
     }
     
-    // Apply search filter
-    if (searchTerm) {
+    // Apply search filter (fallback for non-enhanced search)
+    if (searchTerm && searchResults.length === 0) {
       const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
         result,
         searchTerm,
@@ -323,46 +420,104 @@ function TitlesContent() {
           </div>
           
           {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-6 sm:mb-8">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search titles..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
-            />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
-              {searchTerm && (
+          <div className="relative mb-6 sm:mb-8">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors ${
+                searchLoading ? 'text-hanok-teal animate-pulse' : 'text-midnight-ink-400'
+              }`} />
+              <input
+                type="text"
+                placeholder={vectorSearchAvailable ? "Search titles with AI-powered semantic search..." : "Search titles..."}
+                value={searchQuery}
+                onChange={handleSearchInputChange}
+                onFocus={() => setShowSuggestions(searchSuggestions.length > 0)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} // Delay to allow clicking suggestions
+                disabled={searchLoading}
+                className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
+                {searchTerm && (
+                  <Button
+                    type="button"
+                    onClick={handleClearSearch}
+                    variant="ghost"
+                    size="sm"
+                    className="text-midnight-ink-400 hover:text-midnight-ink-600"
+                    disabled={searchLoading}
+                  >
+                    Clear
+                  </Button>
+                )}
                 <Button
-                  type="button"
-                  onClick={handleClearSearch}
-                  variant="ghost"
+                  type="submit"
                   size="sm"
-                  className="text-midnight-ink-400 hover:text-midnight-ink-600"
+                  disabled={searchLoading}
+                  className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  Clear
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                  
+                  {/* Search icon */}
+                  {searchLoading ? (
+                    <RefreshCw className="h-3 w-3 mr-1 pointer-events-none animate-spin" />
+                  ) : (
+                    <Search className="h-3 w-3 mr-1 pointer-events-none" />
+                  )}
+                  
+                  {/* Text */}
+                  <span className="relative z-10 pointer-events-none">
+                    {searchLoading ? 'Searching...' : 'Search'}
+                  </span>
+                  
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 rounded-xl bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
                 </Button>
-              )}
-              <Button
-                type="submit"
-                size="sm"
-                className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
-              >
-                {/* Shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                
-                {/* Search icon */}
-                <Search className="h-3 w-3 mr-1 pointer-events-none" />
-                
-                {/* Text */}
-                <span className="relative z-10 pointer-events-none">Search</span>
-                
-                {/* Glow effect */}
-                <div className="absolute inset-0 rounded-xl bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
-              </Button>
-            </div>
-          </form>
+              </div>
+            </form>
+
+            {/* Search Suggestions Dropdown */}
+            {showSuggestions && searchSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                <div className="p-2">
+                  <div className="text-xs font-medium text-midnight-ink-500 mb-2 px-2">Suggestions:</div>
+                  {searchSuggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="w-full text-left px-3 py-2 text-sm text-midnight-ink-700 hover:bg-hanok-teal/5 hover:text-hanok-teal rounded-lg transition-colors"
+                    >
+                      <Search className="inline w-3 h-3 mr-2 opacity-50" />
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Search Status Indicator */}
+            {(searchTerm || vectorSearchAvailable) && (
+              <div className="flex items-center justify-between mt-2 px-2">
+                <div className="flex items-center gap-2 text-xs text-midnight-ink-500">
+                  {vectorSearchAvailable && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-hanok-teal/10 text-hanok-teal rounded-full">
+                      <div className="w-2 h-2 bg-hanok-teal rounded-full animate-pulse"></div>
+                      AI Search Active
+                    </span>
+                  )}
+                  {searchTerm && searchResults.length > 0 && (
+                    <span className="text-midnight-ink-600">
+                      {searchResults.length} results • {searchType === 'vector' ? 'Semantic' : searchType === 'hybrid' ? 'AI + Text' : 'Text'} search
+                    </span>
+                  )}
+                </div>
+                {searchTerm && !searchLoading && (
+                  <span className="text-xs text-midnight-ink-400">
+                    Search completed in {searchType === 'vector' || searchType === 'hybrid' ? 'AI-powered mode' : 'traditional mode'}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           
           {/* Filters Section */}
           <div className="mb-6 sm:mb-8">

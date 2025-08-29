@@ -29,6 +29,16 @@ const SigninPage = () => {
     const fromSignup = urlParams.get('from') === 'signup';
     const emailParam = urlParams.get('email');
     const signedOut = urlParams.get('signed_out') === 'true';
+    const verified = urlParams.get('verified') === 'true';
+    
+    // Check if coming from email verification
+    if (verified) {
+      toast({
+        title: "Email Verified!",
+        description: "Your email has been successfully verified. You can now sign in to your account.",
+        duration: 8000
+      });
+    }
     
     if (fromSignup && emailParam) {
       setUnverifiedEmail(emailParam);

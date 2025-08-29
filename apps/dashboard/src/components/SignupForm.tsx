@@ -40,6 +40,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   const [isOAuthUser, setIsOAuthUser] = useState(false);
   const [oAuthUserId, setOAuthUserId] = useState<string | null>(null);
   const [rejectionAlert, setRejectionAlert] = useState<{email: string; message: string} | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [roleError, setRoleError] = useState<string | null>(null);
   
   const [buyerFormData, setBuyerFormData] = useState<BuyerFormData>({
     email: '',
@@ -62,6 +64,51 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Password validation function
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 6) {
+      return "Password must be at least 6 characters long";
+    }
+    
+    // Check for at least one lowercase letter
+    if (!/[a-z]/.test(password)) {
+      return "Password must contain at least one lowercase letter";
+    }
+    
+    // Check for at least one uppercase letter
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain at least one uppercase letter";
+    }
+    
+    // Check for at least one number
+    if (!/[0-9]/.test(password)) {
+      return "Password must contain at least one number";
+    }
+    
+    // Check for at least one special character
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password)) {
+      return "Password must contain at least one special character";
+    }
+    
+    return null;
+  };
+
+  // Handle password change with validation
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    if (accountType === 'buyer') {
+      setBuyerFormData(prev => ({ ...prev, password: newPassword }));
+    } else {
+      setCreatorFormData(prev => ({ ...prev, password: newPassword }));
+    }
+    
+    // Clear error when user starts typing
+    if (passwordError && newPassword.length > 0) {
+      const error = validatePassword(newPassword);
+      setPasswordError(error);
+    }
+  };
 
   // Check for signup rejection message and show alert
   useEffect(() => {
@@ -168,6 +215,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   };
 
   const validateBuyerForm = (data: BuyerFormData) => {
+    // Clear previous errors
+    setRoleError(null);
+    
     // For OAuth users, password is not required
     if (isOAuthUser) {
       if (!data.email || !data.fullName || !data.buyerCompany || !data.buyerRole) {
@@ -178,14 +228,27 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           buyerRole: !data.buyerRole
         });
         console.log('❌ Current form data:', data);
+        
+        // Set specific error for role field
+        if (!data.buyerRole) {
+          setRoleError("Please select your role");
+        }
+        
         return "Please fill in all required fields";
       }
     } else {
       if (!data.email || !data.password || !data.fullName || !data.buyerCompany || !data.buyerRole) {
+        // Set specific error for role field
+        if (!data.buyerRole) {
+          setRoleError("Please select your role");
+        }
         return "Please fill in all required fields";
       }
-      if (data.password.length < 6) {
-        return "Password must be at least 6 characters long";
+      // Validate password complexity
+      const passwordValidationError = validatePassword(data.password);
+      if (passwordValidationError) {
+        setPasswordError(passwordValidationError);
+        return passwordValidationError;
       }
     }
     console.log('✅ Buyer form validation passed:', data);
@@ -207,8 +270,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       if (!data.email || !data.password || !data.fullName || !data.penNameOrStudio) {
         return "Please fill in all required fields";
       }
-      if (data.password.length < 6) {
-        return "Password must be at least 6 characters long";
+      // Validate password complexity
+      const passwordValidationError = validatePassword(data.password);
+      if (passwordValidationError) {
+        setPasswordError(passwordValidationError);
+        return passwordValidationError;
       }
     }
     return null;
@@ -322,6 +388,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           errorMessage = "An account with this email already exists. Please sign in instead.";
         } else if (error.message?.includes('Invalid email')) {
           errorMessage = "Please enter a valid email address.";
+        } else if (error.message?.includes('Password should contain') || error.message?.includes('AuthWeakPasswordError')) {
+          // Handle Supabase password validation error
+          errorMessage = "Password must contain at least: 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (minimum 6 characters)";
+          setPasswordError(errorMessage);
         }
         
         toast({
@@ -468,6 +538,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           errorMessage = "An account with this email already exists. Please sign in instead.";
         } else if (error.message?.includes('Invalid email')) {
           errorMessage = "Please enter a valid email address.";
+        } else if (error.message?.includes('Password should contain') || error.message?.includes('AuthWeakPasswordError')) {
+          // Handle Supabase password validation error
+          errorMessage = "Password must contain at least: 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (minimum 6 characters)";
+          setPasswordError(errorMessage);
         }
         
         toast({
@@ -673,12 +747,26 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   id="password"
                   type="password"
                   value={formData.password}
-                  onChange={(e) => updateFormData('password' as any, e.target.value)}
-                  className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
-                  placeholder="Create a password (min. 6 characters)"
+                  onChange={handlePasswordChange}
+                  onBlur={() => {
+                    const password = accountType === 'buyer' ? buyerFormData.password : creatorFormData.password;
+                    if (password) {
+                      const error = validatePassword(password);
+                      setPasswordError(error);
+                    }
+                  }}
+                  className={`h-12 text-base ${passwordError ? 'border-red-500' : 'border-midnight-ink-200'} focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg`}
+                  placeholder="Min. 6 chars, include uppercase, lowercase, number & special char"
                   required
-                  minLength={6}
                 />
+                {passwordError && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {passwordError}
+                  </p>
+                )}
+                <p className="text-xs text-midnight-ink-500 mt-1">
+                  Password must contain at least: 1 uppercase, 1 lowercase, 1 number, and 1 special character
+                </p>
               </div>
             )}
 
@@ -721,19 +809,27 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   </Label>
                   <Select
                     value={buyerFormData.buyerRole}
-                    onValueChange={(value) => updateBuyerFormData('buyerRole', value)}
+                    onValueChange={(value) => {
+                      updateBuyerFormData('buyerRole', value);
+                      setRoleError(null); // Clear error when user selects a role
+                    }}
                   >
-                    <SelectTrigger className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg">
+                    <SelectTrigger className={`h-12 text-base ${roleError ? 'border-red-500' : 'border-midnight-ink-200'} focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg [&>span]:pr-2`}>
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="producer">Producer</SelectItem>
-                      <SelectItem value="executive">Executive</SelectItem>
-                      <SelectItem value="agent">Agent</SelectItem>
-                      <SelectItem value="content_scout">Content Scout</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                    <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                      <SelectItem value="producer" className="pr-2">Producer</SelectItem>
+                      <SelectItem value="executive" className="pr-2">Executive</SelectItem>
+                      <SelectItem value="agent" className="pr-2">Agent</SelectItem>
+                      <SelectItem value="content_scout" className="pr-2">Content Scout</SelectItem>
+                      <SelectItem value="other" className="pr-2">Other</SelectItem>
                     </SelectContent>
                   </Select>
+                  {roleError && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {roleError}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">

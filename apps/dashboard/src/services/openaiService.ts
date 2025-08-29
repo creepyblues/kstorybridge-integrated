@@ -20,19 +20,47 @@ class OpenAIService {
 
   private initializeClient() {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    const isProduction = import.meta.env.PROD;
+    const isEnabled = import.meta.env.VITE_OPENAI_ENABLED === 'true';
+    
+    // Check if OpenAI is disabled
+    if (!isEnabled) {
+      console.warn('🔒 OpenAI is disabled in this environment');
+      return;
+    }
     
     if (!apiKey || apiKey === 'sk-your_actual_api_key_here') {
-      console.warn('OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your .env.local file');
+      const envFile = isProduction ? 'deployment platform environment variables' : '.env.local file';
+      console.warn(`⚠️ OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your ${envFile}`);
       return;
+    }
+
+    // Security check for production
+    if (isProduction) {
+      console.error('🚨 SECURITY WARNING: OpenAI client should NOT run in production browsers!');
+      console.error('🚨 Move OpenAI functionality to a secure backend API endpoint.');
+      console.error('🚨 Current implementation exposes API keys to client-side code.');
+      
+      // In production, disable the client to prevent security risks
+      if (import.meta.env.VITE_FORCE_OPENAI_PRODUCTION !== 'true') {
+        console.warn('🔒 OpenAI client disabled in production for security. Set VITE_FORCE_OPENAI_PRODUCTION=true to override (NOT RECOMMENDED)');
+        return;
+      }
     }
 
     try {
       this.client = new OpenAI({
         apiKey: apiKey,
-        dangerouslyAllowBrowser: true, // Only for development - move to backend for production
-        baseURL: 'https://api.openai.com/v1', // Ensure we're using the correct endpoint
+        dangerouslyAllowBrowser: true, // ONLY for development - NEVER use in production
+        baseURL: 'https://api.openai.com/v1',
       });
-      console.log('✅ OpenAI client initialized successfully');
+      
+      const environment = isProduction ? 'PRODUCTION (INSECURE)' : 'DEVELOPMENT';
+      console.log(`✅ OpenAI client initialized successfully [${environment}]`);
+      
+      if (isProduction) {
+        console.warn('🚨 PRODUCTION WARNING: API key exposed in browser! Move to backend ASAP!');
+      }
     } catch (error) {
       console.error('❌ Failed to initialize OpenAI client:', error);
     }

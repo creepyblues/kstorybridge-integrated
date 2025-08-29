@@ -177,6 +177,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           buyerCompany: !data.buyerCompany,
           buyerRole: !data.buyerRole
         });
+        console.log('❌ Current form data:', data);
         return "Please fill in all required fields";
       }
     } else {
@@ -187,6 +188,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         return "Password must be at least 6 characters long";
       }
     }
+    console.log('✅ Buyer form validation passed:', data);
     return null;
   };
 
@@ -331,17 +333,51 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       }
 
       if (data.user) {
-        console.log('✅ User created successfully:', data.user.email);
-        console.log('📝 Profile should be created by database trigger from metadata');
-
-        // Success handling
+        console.log('✅ User found/created successfully:', data.user.email);
+        
+        // For OAuth users, we need to update/create the profile in user_buyers table
         if (isOAuthUser) {
+          console.log('📝 Creating/updating buyer profile for OAuth user...');
+          
+          const profileData = {
+            id: data.user.id,
+            email: buyerFormData.email,
+            full_name: buyerFormData.fullName,
+            buyer_company: buyerFormData.buyerCompany,
+            buyer_role: buyerFormData.buyerRole,
+            linkedin_url: buyerFormData.linkedinUrl || null,
+            tier: 'basic' // Default tier for new signups
+          };
+          
+          console.log('💾 Profile data to upsert:', profileData);
+          
+          const { data: insertResult, error: profileError } = await supabase
+            .from('user_buyers')
+            .upsert(profileData, {
+              onConflict: 'id'
+            });
+          
+          console.log('💾 Database upsert result:', { insertResult, profileError });
+          
+          if (profileError) {
+            console.error('❌ Profile update error:', profileError);
+            console.error('❌ Full error details:', JSON.stringify(profileError, null, 2));
+            toast({
+              title: "Profile Update Failed",
+              description: `Failed to save profile data: ${profileError.message}`,
+              variant: "destructive"
+            });
+            return;
+          }
+          
+          console.log('✅ OAuth buyer profile saved successfully');
           toast({
             title: "Profile Completed!",
             description: "Your buyer profile has been created successfully."
           });
           navigate('/buyers/titles');
         } else {
+          console.log('📝 Profile should be created by database trigger from metadata');
           toast({
             title: "Account Created Successfully!",
             description: "Please check your email for verification before signing in."
@@ -694,6 +730,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                       <SelectItem value="producer">Producer</SelectItem>
                       <SelectItem value="executive">Executive</SelectItem>
                       <SelectItem value="agent">Agent</SelectItem>
+                      <SelectItem value="content_scout">Content Scout</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>

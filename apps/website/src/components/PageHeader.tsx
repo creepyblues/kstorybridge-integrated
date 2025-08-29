@@ -45,7 +45,7 @@ const PageHeader = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          {/* Desktop Sign In/Up buttons */}
+          {/* Desktop Sign In button */}
           <div className="hidden md:flex items-center space-x-4">
             <Button 
               id="pageheader-signin-btn"
@@ -53,13 +53,6 @@ const PageHeader = () => {
               onClick={() => window.location.href = `${getDashboardUrl()}/signin`}
             >
               SIGN IN
-            </Button>
-            <Button 
-              id="pageheader-signup-btn"
-              className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-2 rounded-full font-medium"
-              onClick={() => window.location.href = `${getDashboardUrl()}/signup`}
-            >
-              SIGN UP
             </Button>
           </div>
           
@@ -122,16 +115,6 @@ const PageHeader = () => {
                 }}
               >
                 SIGN IN
-              </Button>
-              <Button 
-                id="pageheader-mobile-signup-btn"
-                className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-3 rounded-full font-medium"
-                onClick={() => {
-                  window.location.href = `${getDashboardUrl()}/signup`;
-                  setMobileMenuOpen(false);
-                }}
-              >
-                SIGN UP
               </Button>
             </div>
           </div>

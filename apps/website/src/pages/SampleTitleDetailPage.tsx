@@ -6,6 +6,7 @@ import { Button } from '@kstorybridge/ui';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
 import { ArrowLeft, Eye, Heart, Star, FileText, Crown, X } from 'lucide-react';
 import UniversalHeader from '../components/UniversalHeader';
+import Footer from '../components/Footer';
 import SecurePDFViewer from '../components/SecurePDFViewer';
 import { useToast } from '@kstorybridge/ui';
 
@@ -323,6 +324,7 @@ export default function SampleTitleDetailPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <Footer />
     </div>
   );
 }

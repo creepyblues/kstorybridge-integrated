@@ -10,6 +10,7 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const HomePageNew = lazy(() => import("./pages/HomePageNew"));
 const CreatorsPage = lazy(() => import("./pages/CreatorsPage"));
 const BuyersPage = lazy(() => import("./pages/BuyersPage"));
+const BuyersOnboardingPage = lazy(() => import("./pages/BuyersOnboardingPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/new-design" element={<HomePageNew />} />
           <Route path="/creators" element={<CreatorsPage />} />
           <Route path="/buyers" element={<BuyersPage />} />
+          <Route path="/buyers/onboarding" element={<BuyersOnboardingPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/news" element={<NewsPage />} />

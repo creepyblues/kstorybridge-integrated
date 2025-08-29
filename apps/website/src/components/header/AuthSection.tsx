@@ -63,11 +63,6 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
     window.location.href = `${getDashboardUrl()}/signin`;
   };
 
-  const handleGetStartedClick = () => {
-    trackButtonClick('Get Started', 'header');
-    window.location.href = `${getDashboardUrl()}/signup`;
-  };
-
   return (
     <div className={containerClasses}>
       <Button 
@@ -76,13 +71,6 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
         onClick={handleSignInClick}
       >
         Sign In
-      </Button>
-      <Button 
-        id="header-get-started-btn"
-        className={`bg-sunrise-coral hover:bg-sunrise-coral-600 text-white transition-colors rounded-md px-4 py-2 font-medium ${buttonClasses}`}
-        onClick={handleGetStartedClick}
-      >
-        Get Started
       </Button>
     </div>
   );

@@ -82,12 +82,6 @@ const UniversalHeader = () => {
             >
               SIGN IN
             </Button>
-            <Button 
-              className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-2 rounded-full font-medium"
-              onClick={() => window.location.href = `${getDashboardUrl()}/signup`}
-            >
-              SIGN UP
-            </Button>
           </div>
           
           {/* Mobile menu button - improved touch target */}
@@ -175,15 +169,6 @@ const UniversalHeader = () => {
                 }}
               >
                 SIGN IN
-              </Button>
-              <Button 
-                className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-6 py-3 rounded-full font-medium"
-                onClick={() => {
-                  window.location.href = `${getDashboardUrl()}/signup`;
-                  setMobileMenuOpen(false);
-                }}
-              >
-                SIGN UP
               </Button>
             </div>
           </div>

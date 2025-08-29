@@ -178,14 +178,14 @@ const BuyersPage = () => {
               </div>
             </div>
             
-            {/* Learn How It Works Button */}
+            {/* Get Started Button */}
             <div className="text-center mt-12">
               <Button 
-                onClick={() => navigate('/buyers/onboarding')}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
                 size="lg" 
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                → Learn How It Works
+                Get Started
               </Button>
             </div>
           </div>

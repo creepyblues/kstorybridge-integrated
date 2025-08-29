@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ArrowLeft, Eye, Heart, Star, FileText, Crown, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import UniversalHeader from '../components/UniversalHeader';
+import Footer from '../components/Footer';
 import SecurePDFViewer from '../components/SecurePDFViewer';
 
 type Title = {
@@ -307,6 +308,7 @@ export default function TitleDetailPage() {
           </Card>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

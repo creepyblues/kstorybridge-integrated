@@ -40,6 +40,7 @@ const News = lazy(() => import("./pages/News"));
 const SendMessage = lazy(() => import("./pages/SendMessage"));
 const SendMessageTest = lazy(() => import("./pages/SendMessageTest"));
 const AIChatbot = lazy(() => import("./pages/AIChatbot"));
+const OpenAITest = lazy(() => import("./pages/OpenAITest"));
 
 // Authentication pages
 const SigninPage = lazy(() => import("./pages/SigninPage"));
@@ -202,6 +203,11 @@ const App = () => (
                 {/* AI Chatbot - restricted access */}
                 <Route path="/ai-chatbot" element={
                   <ProtectedLayout><AIChatbot /></ProtectedLayout>
+                } />
+                
+                {/* OpenAI Test page - temporary for debugging */}
+                <Route path="/openai-test" element={
+                  <ProtectedLayout><OpenAITest /></ProtectedLayout>
                 } />
                 
                 <Route path="*" element={

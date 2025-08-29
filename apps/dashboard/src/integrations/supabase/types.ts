@@ -118,7 +118,6 @@ export type Database = {
           content_format: Database["public"]["Enums"]["content_format"] | null
           created_at: string
           creator_id: string
-          description: string | null
           genre: string[] | null
           illustrator: string | null
           likes: number | null
@@ -153,7 +152,6 @@ export type Database = {
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id: string
-          description?: string | null
           genre?: string[] | null
           illustrator?: string | null
           likes?: number | null
@@ -188,7 +186,6 @@ export type Database = {
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id?: string
-          description?: string | null
           genre?: string[] | null
           illustrator?: string | null
           likes?: number | null

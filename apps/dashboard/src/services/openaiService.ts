@@ -1,10 +1,13 @@
 import OpenAI from 'openai';
 import { titlesService, type Title } from './titlesService';
+import { vectorSearchService } from './vectorSearchService';
 
 interface LLMChatResponse {
   message: string;
   recommendedTitles: Title[];
   suggestedQueries?: string[];
+  vectorSearchUsed?: boolean;
+  searchContext?: any;
 }
 
 class OpenAIService {
@@ -63,7 +66,7 @@ class OpenAIService {
       genre: title.genre,
       tone: title.tone,
       content_format: title.content_format,
-      description: title.description?.substring(0, 150) + '...',
+      synopsis: title.synopsis?.substring(0, 150) + '...',
     }));
 
     return `You are an expert assistant specializing in Korean intellectual properties (IPs) including webtoons, novels, manhwa, and other content. You help users discover Korean content that matches their preferences.
@@ -87,19 +90,76 @@ Your role:
 Always be enthusiastic and knowledgeable about Korean content!`;
   }
 
-  private findRelevantTitles(query: string, aiResponse: string): Title[] {
-    const queryWords = query.toLowerCase().split(' ');
-    const responseWords = aiResponse.toLowerCase().split(' ');
-    const allWords = [...queryWords, ...responseWords];
+  private async findRelevantTitlesWithVector(query: string, userId?: string): Promise<{ titles: Title[], vectorSearchUsed: boolean, searchContext?: any }> {
+    try {
+      // Try vector search first if available
+      console.log('🔍 Attempting vector search for:', query.substring(0, 50) + '...');
+      
+      const vectorResults = await vectorSearchService.vectorSearch(query, {
+        user_id: userId,
+        session_id: `chat-${Date.now()}`,
+      }, {
+        threshold: 0.65, // Lower threshold for more results
+        limit: 8,
+        includeAnalysis: true
+      });
 
-    // Score titles based on relevance to query and AI response
+      if (vectorResults && vectorResults.length > 0) {
+        console.log(`✅ Vector search found ${vectorResults.length} semantic matches`);
+        
+        // Convert vector results to Title format and add scores
+        const vectorTitles = await Promise.all(
+          vectorResults.map(async (result) => {
+            const fullTitle = await titlesService.getTitleById(result.title_id);
+            if (fullTitle) {
+              return {
+                ...fullTitle,
+                score: Math.round(result.similarity * 100) // Convert similarity to score
+              };
+            }
+            return null;
+          })
+        );
+
+        const validTitles = vectorTitles.filter(title => title !== null) as Title[];
+        
+        return {
+          titles: validTitles,
+          vectorSearchUsed: true,
+          searchContext: {
+            searchType: 'vector',
+            averageScore: vectorResults.reduce((acc, r) => acc + r.similarity, 0) / vectorResults.length,
+            resultCount: vectorResults.length
+          }
+        };
+      }
+    } catch (error) {
+      console.warn('⚠️ Vector search failed, falling back to text search:', error);
+    }
+
+    // Fallback to traditional text-based search
+    console.log('📝 Using traditional text-based search');
+    return {
+      titles: this.findRelevantTitlesLegacy(query),
+      vectorSearchUsed: false,
+      searchContext: {
+        searchType: 'text_fallback',
+        reason: 'vector_search_unavailable'
+      }
+    };
+  }
+
+  private findRelevantTitlesLegacy(query: string): Title[] {
+    const queryWords = query.toLowerCase().split(' ');
+
+    // Score titles based on relevance to query
     const scoredTitles = this.allTitles.map(title => {
       let score = 0;
       
       const titleText = [
         title.title_name_en,
         title.title_name_kr,
-        title.description,
+        title.synopsis,
         title.synopsis,
         ...(Array.isArray(title.genre) ? title.genre : [title.genre]),
         title.tone,
@@ -107,7 +167,7 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       ].filter(Boolean).join(' ').toLowerCase();
 
       // Score based on word matches
-      allWords.forEach(word => {
+      queryWords.forEach(word => {
         if (word.length > 2 && titleText.includes(word)) {
           score += 1;
         }
@@ -133,7 +193,7 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       .slice(0, 6);
   }
 
-  async generateChatResponse(userQuery: string, conversationHistory: string[] = []): Promise<LLMChatResponse> {
+  async generateChatResponse(userQuery: string, conversationHistory: string[] = [], userId?: string): Promise<LLMChatResponse> {
     if (!this.client) {
       throw new Error('OpenAI client not initialized. Please check your API key configuration.');
     }
@@ -187,16 +247,24 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       
       console.log('✅ Received response from OpenAI');
 
-      // Find titles that are most relevant to the query and AI response
-      const recommendedTitles = this.findRelevantTitles(userQuery, aiResponse);
+      // Find titles using vector search with fallback to text search
+      const searchResult = await this.findRelevantTitlesWithVector(userQuery, userId);
 
       // Extract suggested queries from the AI response (simple parsing)
       const suggestedQueries = this.extractSuggestedQueries(aiResponse);
 
+      // Enhance AI response if vector search was used
+      let enhancedResponse = aiResponse;
+      if (searchResult.vectorSearchUsed && searchResult.titles.length > 0) {
+        enhancedResponse = `🎯 *Using AI-powered semantic search to find your perfect matches*\n\n${aiResponse}`;
+      }
+
       return {
-        message: aiResponse,
-        recommendedTitles,
+        message: enhancedResponse,
+        recommendedTitles: searchResult.titles,
         suggestedQueries,
+        vectorSearchUsed: searchResult.vectorSearchUsed,
+        searchContext: searchResult.searchContext,
       };
 
     } catch (error: any) {

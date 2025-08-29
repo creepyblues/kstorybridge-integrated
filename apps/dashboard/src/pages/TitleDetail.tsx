@@ -353,10 +353,10 @@ function TitleDetailContent() {
             </CardHeader>
             <CardContent className="px-6 pb-8">
               <div className="space-y-8">
-                {title.description ? (
-                  <p className="text-gray-600 leading-relaxed text-base lg:text-lg">{title.description}</p>
+                {title.synopsis ? (
+                  <p className="text-gray-600 leading-relaxed text-base lg:text-lg">{title.synopsis}</p>
                 ) : (
-                  <p className="text-gray-500 italic text-base">No description available for this title.</p>
+                  <p className="text-gray-500 italic text-base">No synopsis available for this title.</p>
                 )}
 
                 {/* Keywords Section */}

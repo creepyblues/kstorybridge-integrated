@@ -140,7 +140,6 @@ export class ChatbotService {
 
     if (context.themes && context.themes.length > 0) {
       const titleContent = [
-        title.description,
         title.synopsis,
         title.tagline,
         ...(Array.isArray(title.tags) ? title.tags : [])

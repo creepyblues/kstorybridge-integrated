@@ -291,22 +291,22 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       }
 
       if (data.user) {
-        // Create buyer profile
+        // Create buyer profile in the profiles table
         console.log('👤 Creating buyer profile for user:', data.user.email);
         const profileData = {
           id: data.user.id,
           email: buyerFormData.email,
           full_name: buyerFormData.fullName,
+          account_type: 'buyer' as const,
           buyer_company: buyerFormData.buyerCompany,
           buyer_role: buyerFormData.buyerRole,
-          linkedin_url: buyerFormData.linkedinUrl || null,
-          tier: 'basic' // Default tier for new signups
+          linkedin_url: buyerFormData.linkedinUrl || null
         };
         
         console.log('📝 Profile data to insert:', profileData);
 
         const { error: profileError } = await supabase
-          .from('user_buyers')
+          .from('profiles')
           .insert(profileData);
 
         if (profileError) {
@@ -429,23 +429,23 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       }
 
       if (data.user) {
-        // Create creator profile
+        // Create creator profile in the profiles table
         console.log('👤 Creating creator profile for user:', data.user.email);
         const profileData = {
           id: data.user.id,
           email: creatorFormData.email,
           full_name: creatorFormData.fullName,
+          account_type: 'ip_owner' as const,
           pen_name: creatorFormData.penNameOrStudio,
           ip_owner_role: creatorFormData.ipOwnerRole || null,
           ip_owner_company: creatorFormData.ipOwnerCompany || null,
-          website_url: creatorFormData.websiteUrl || null,
-          invitation_status: 'invited' // Default status for creators
+          website_url: creatorFormData.websiteUrl || null
         };
         
         console.log('📝 Creator profile data to insert:', profileData);
 
         const { error: profileError } = await supabase
-          .from('user_ipowners')
+          .from('profiles')
           .insert(profileData);
 
         if (profileError) {

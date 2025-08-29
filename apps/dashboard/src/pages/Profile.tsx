@@ -4,7 +4,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Select
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Edit3, X, LogOut, KeyRound } from "lucide-react";
+import { Save, Edit3, X, LogOut, KeyRound, History } from "lucide-react";
 import PasswordResetModal from "@/components/PasswordResetModal";
 
 // Define types for the actual table structures
@@ -738,7 +738,7 @@ export default function Profile() {
                 <div>
                   <h3 className="text-lg sm:text-xl font-bold text-midnight-ink mb-2">AI IP Discovery</h3>
                   <p className="text-gray-600 text-sm sm:text-base">
-                    Use our AI chatbot to find Korean IPs that match your specific requirements.
+                    Access AI-powered Korean IP discovery tools and view your conversation history and analytics.
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -749,6 +749,45 @@ export default function Profile() {
                       
                       {/* Text */}
                       <span className="relative z-10">🤖 AI CHATBOT</span>
+                      
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-purple-500/50 blur-md group-hover:bg-purple-500/60 transition-colors duration-300 pointer-events-none"></div>
+                    </Button>
+                  </Link>
+                  
+                  <Link to="/openai-chatbot">
+                    <Button className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                      
+                      {/* Text */}
+                      <span className="relative z-10">🧠 OPENAI CHAT</span>
+                      
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-emerald-500/50 blur-md group-hover:bg-emerald-500/60 transition-colors duration-300 pointer-events-none"></div>
+                    </Button>
+                  </Link>
+                  
+                  <Link to="/chat-history">
+                    <Button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                      
+                      {/* Text */}
+                      <span className="relative z-10">📊 CHAT HISTORY</span>
+                      
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-indigo-500/50 blur-md group-hover:bg-indigo-500/60 transition-colors duration-300 pointer-events-none"></div>
+                    </Button>
+                  </Link>
+
+                  <Link to="/vector-search-manager">
+                    <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+                      
+                      {/* Text */}
+                      <span className="relative z-10">🔍 VECTOR SEARCH</span>
                       
                       {/* Glow effect */}
                       <div className="absolute inset-0 rounded-2xl bg-purple-500/50 blur-md group-hover:bg-purple-500/60 transition-colors duration-300 pointer-events-none"></div>

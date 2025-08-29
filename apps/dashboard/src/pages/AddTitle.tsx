@@ -167,12 +167,12 @@ export default function AddTitle() {
               </div>
 
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="synopsis">Synopsis</Label>
                 <Textarea
-                  id="description"
-                  value={formData.description || ""}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
-                  placeholder="Brief description of the title"
+                  id="synopsis"
+                  value={formData.synopsis || ""}
+                  onChange={(e) => handleInputChange("synopsis", e.target.value))
+                  placeholder="Brief synopsis of the title"
                   rows={3}
                 />
               </div>

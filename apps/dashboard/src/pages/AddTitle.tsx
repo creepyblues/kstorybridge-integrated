@@ -171,7 +171,7 @@ export default function AddTitle() {
                 <Textarea
                   id="synopsis"
                   value={formData.synopsis || ""}
-                  onChange={(e) => handleInputChange("synopsis", e.target.value))
+                  onChange={(e) => handleInputChange("synopsis", e.target.value)}
                   placeholder="Brief synopsis of the title"
                   rows={3}
                 />

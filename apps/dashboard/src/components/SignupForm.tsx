@@ -33,6 +33,23 @@ interface CreatorFormData {
   websiteUrl: string;
 }
 
+// Map form role values to database enum values
+const mapBuyerRoleToEnum = (formRole: string): string => {
+  const roleMapping: { [key: string]: string } = {
+    'Content Acquisitions': 'content_scout',
+    'Producer': 'producer',
+    'Director of Development': 'executive',
+    'Creative Executive': 'executive',
+    'Development Executive': 'executive',
+    'Content Strategist': 'content_scout',
+    'Media Buyer': 'agent',
+    'Business Development': 'agent',
+    'CEO/Founder': 'executive',
+    'Other': 'other'
+  };
+  return roleMapping[formRole] || 'other';
+};
+
 const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -299,7 +316,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           full_name: buyerFormData.fullName,
           account_type: 'buyer' as const,
           buyer_company: buyerFormData.buyerCompany,
-          buyer_role: buyerFormData.buyerRole,
+          buyer_role: mapBuyerRoleToEnum(buyerFormData.buyerRole) as any,
           linkedin_url: buyerFormData.linkedinUrl || null
         };
         

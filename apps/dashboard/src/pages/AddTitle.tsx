@@ -177,16 +177,6 @@ export default function AddTitle() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="synopsis">Synopsis</Label>
-                <Textarea
-                  id="synopsis"
-                  value={formData.synopsis || ""}
-                  onChange={(e) => handleInputChange("synopsis", e.target.value)}
-                  placeholder="Detailed synopsis of the story"
-                  rows={4}
-                />
-              </div>
             </CardContent>
           </Card>
 

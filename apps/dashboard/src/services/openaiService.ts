@@ -342,7 +342,7 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       }
 
       // Call the backend API
-      const response = await fetch('/api/openai-chat', {
+      const response = await fetch('/api/openai-simple', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

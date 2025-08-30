@@ -1,13 +1,14 @@
 // Vercel Serverless Function for OpenAI Chat
 // This function handles OpenAI API calls securely on the server-side
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Add extensive error handling to prevent crashes
   try {
     console.log('🚀 OpenAI Chat API started');
     
-    // Dynamic imports to prevent module resolution issues
-    const OpenAI = (await import('openai')).default;
+    // Dynamic imports for ES modules
+    const { default: OpenAI } = await import('openai');
     const { createClient } = await import('@supabase/supabase-js');
     
     console.log('📦 Modules loaded successfully');

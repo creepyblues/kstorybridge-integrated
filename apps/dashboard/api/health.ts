@@ -1,5 +1,7 @@
 // Simple health check endpoint to verify API deployment
-export default async function handler(req: any, res: any) {
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,7 +24,7 @@ export default async function handler(req: any, res: any) {
     // Test dynamic imports
     let importTest = { success: false, error: null };
     try {
-      const OpenAI = (await import('openai')).default;
+      const { default: OpenAI } = await import('openai');
       const { createClient } = await import('@supabase/supabase-js');
       importTest.success = true;
     } catch (error: any) {
@@ -33,7 +35,7 @@ export default async function handler(req: any, res: any) {
     let openaiTest = { success: false, error: null };
     if (process.env.OPENAI_API_KEY) {
       try {
-        const OpenAI = (await import('openai')).default;
+        const { default: OpenAI } = await import('openai');
         const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
         openaiTest.success = true;
       } catch (error: any) {

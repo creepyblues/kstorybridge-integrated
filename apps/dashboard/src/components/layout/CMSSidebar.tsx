@@ -20,18 +20,36 @@ const getDiscoverItems = (accountType: string) => {
   }
 };
 
-const getSettingsItems = (accountType: string) => {
-  if (accountType === "ip_owner") {
-    return [
-      // { title: "Send msg", href: "/creators/send-message" }, // Hidden for now - needs database setup
-      { title: "Profile", href: "/creators/profile" },
-    ];
-  } else {
-    return [
-      // { title: "Send msg", href: "/buyers/send-message" }, // Hidden for now - needs database setup
-      { title: "Profile", href: "/buyers/profile" },
-    ];
+const getSettingsItems = (accountType: string, userEmail?: string) => {
+  const isAuthorizedForChatbot = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
+  
+  const baseItems = accountType === "ip_owner" 
+    ? [
+        // { title: "Send msg", href: "/creators/send-message" }, // Hidden for now - needs database setup
+        { title: "Profile", href: "/creators/profile" },
+      ]
+    : [
+        // { title: "Send msg", href: "/buyers/send-message" }, // Hidden for now - needs database setup
+        { title: "Profile", href: "/buyers/profile" },
+      ];
+  
+  // Add chatbot items for authorized users right after Profile
+  if (isAuthorizedForChatbot) {
+    const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
+    const chatbotItems = accountType === "ip_owner" 
+      ? [
+          { title: "OpenAI Chatbot", href: "/creators/openai-chatbot", badge: "experiment" },
+          { title: "AI Chatbot", href: "/creators/ai-chatbot", badge: "experiment" },
+        ]
+      : [
+          { title: "OpenAI Chatbot", href: "/buyers/openai-chatbot", badge: "experiment" },
+          { title: "AI Chatbot", href: "/buyers/ai-chatbot", badge: "experiment" },
+        ];
+    
+    baseItems.splice(profileIndex + 1, 0, ...chatbotItems);
   }
+  
+  return baseItems;
 };
 
 export function CMSSidebar() {
@@ -40,8 +58,9 @@ export function CMSSidebar() {
 
   // Get account type from user metadata, default to buyer
   const accountType = user?.user_metadata?.account_type || "buyer";
+  const userEmail = user?.email;
   const discoverItems = getDiscoverItems(accountType);
-  const settingsItems = getSettingsItems(accountType);
+  const settingsItems = getSettingsItems(accountType, userEmail);
 
   return (
     /* Desktop Sidebar - hidden on mobile */
@@ -89,13 +108,18 @@ export function CMSSidebar() {
                 key={item.href}
                 to={item.href}
                 className={cn(
-                  "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   isActive
                     ? "bg-hanok-teal text-white"
                     : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
                 )}
               >
-                {item.title}
+                <span>{item.title}</span>
+                {item.badge && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full uppercase tracking-wider">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}

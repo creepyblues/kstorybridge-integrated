@@ -4,5 +4,10 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/openai-chat.ts": {
+      "maxDuration": 30
+    }
+  }
 }

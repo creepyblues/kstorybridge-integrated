@@ -19,6 +19,14 @@ class OpenAIService {
   }
 
   private initializeClient() {
+    console.log('🔧 DEBUG: Initializing OpenAI client...');
+    console.log('🔧 DEBUG: Environment variables:', {
+      VITE_OPENAI_ENABLED: import.meta.env.VITE_OPENAI_ENABLED,
+      VITE_OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY ? import.meta.env.VITE_OPENAI_API_KEY.substring(0, 15) + '...' : 'undefined',
+      PROD: import.meta.env.PROD,
+      MODE: import.meta.env.MODE
+    });
+    
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     const isProduction = import.meta.env.PROD;
     const isEnabled = import.meta.env.VITE_OPENAI_ENABLED === 'true';
@@ -29,9 +37,10 @@ class OpenAIService {
       return;
     }
     
-    if (!apiKey || apiKey === 'sk-your_actual_api_key_here') {
+    if (!apiKey || apiKey === 'sk-your_actual_api_key_here' || apiKey.trim() === '') {
       const envFile = isProduction ? 'deployment platform environment variables' : '.env.local file';
       console.warn(`⚠️ OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your ${envFile}`);
+      console.warn(`⚠️ Current API key value: "${apiKey ? apiKey.substring(0, 10) + '...' : 'undefined'}"`);
       return;
     }
 
@@ -118,14 +127,14 @@ Your role:
 Always be enthusiastic and knowledgeable about Korean content!`;
   }
 
-  private async findRelevantTitlesWithVector(query: string, userId?: string): Promise<{ titles: Title[], vectorSearchUsed: boolean, searchContext?: any }> {
+  private async findRelevantTitlesWithVector(query: string, userId?: string, sessionId?: string): Promise<{ titles: Title[], vectorSearchUsed: boolean, searchContext?: any }> {
     try {
       // Try vector search first if available
       console.log('🔍 Attempting vector search for:', query.substring(0, 50) + '...');
       
       const vectorResults = await vectorSearchService.vectorSearch(query, {
         user_id: userId,
-        session_id: `chat-${Date.now()}`,
+        session_id: sessionId, // Use the actual session ID from chat session
       }, {
         threshold: 0.65, // Lower threshold for more results
         limit: 8,
@@ -163,6 +172,11 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       }
     } catch (error) {
       console.warn('⚠️ Vector search failed, falling back to text search:', error);
+      // Log more details for debugging
+      if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+        console.error('🗄️ Database schema issue detected:', error.message);
+        console.error('🔧 Consider running database migrations or updating the vector search function');
+      }
     }
 
     // Fallback to traditional text-based search
@@ -172,7 +186,7 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       vectorSearchUsed: false,
       searchContext: {
         searchType: 'text_fallback',
-        reason: 'vector_search_unavailable'
+        reason: 'vector_search_failed'
       }
     };
   }
@@ -221,7 +235,13 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       .slice(0, 6);
   }
 
-  async generateChatResponse(userQuery: string, conversationHistory: string[] = [], userId?: string): Promise<LLMChatResponse> {
+  async generateChatResponse(userQuery: string, conversationHistory: string[] = [], userId?: string, sessionId?: string): Promise<LLMChatResponse> {
+    // In production, use the secure backend API
+    if (import.meta.env.PROD) {
+      return this.generateChatResponseViaAPI(userQuery, conversationHistory, userId, sessionId);
+    }
+
+    // Development: use direct client
     if (!this.client) {
       throw new Error('OpenAI client not initialized. Please check your API key configuration.');
     }
@@ -276,7 +296,7 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       console.log('✅ Received response from OpenAI');
 
       // Find titles using vector search with fallback to text search
-      const searchResult = await this.findRelevantTitlesWithVector(userQuery, userId);
+      const searchResult = await this.findRelevantTitlesWithVector(userQuery, userId, sessionId);
 
       // Extract suggested queries from the AI response (simple parsing)
       const suggestedQueries = this.extractSuggestedQueries(aiResponse);
@@ -307,6 +327,66 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       }
       
       throw new Error('Failed to generate AI response. Please try again.');
+    }
+  }
+
+  private async generateChatResponseViaAPI(userQuery: string, conversationHistory: string[] = [], userId?: string, sessionId?: string): Promise<LLMChatResponse> {
+    try {
+      console.log('🔒 Using secure backend API for OpenAI request...');
+      
+      // Get the current user's auth token
+      const { data: { session } } = await (await import('@/integrations/supabase/client')).supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
+      // Call the backend API
+      const response = await fetch('/api/openai-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          query: userQuery,
+          conversationHistory: conversationHistory.slice(-6), // Limit context to last 6 messages
+          userId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || `API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Received response from backend API');
+
+      // Find relevant titles (using local search since API doesn't have access to titles)
+      await this.initialize();
+      const searchResult = await this.findRelevantTitlesWithVector(userQuery, userId, sessionId);
+
+      return {
+        message: data.message,
+        recommendedTitles: searchResult.titles,
+        suggestedQueries: data.suggestedQueries || [],
+        vectorSearchUsed: searchResult.vectorSearchUsed,
+        searchContext: searchResult.searchContext,
+      };
+
+    } catch (error: any) {
+      console.error('❌ Backend API Error:', error);
+      
+      if (error.message?.includes('Authentication required')) {
+        throw new Error('Please sign in to use the OpenAI chatbot');
+      } else if (error.message?.includes('not authorized')) {
+        throw new Error('You do not have permission to use the OpenAI chatbot');
+      } else if (error.message?.includes('Too many requests')) {
+        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      }
+      
+      throw new Error(`Failed to generate AI response: ${error.message}`);
     }
   }
 

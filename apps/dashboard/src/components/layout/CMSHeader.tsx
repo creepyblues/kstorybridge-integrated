@@ -21,16 +21,34 @@ const getDiscoverItems = (accountType: string) => {
   }
 };
 
-const getSettingsItems = (accountType: string) => {
-  if (accountType === "ip_owner") {
-    return [
-      { title: "Profile", href: "/creators/profile" },
-    ];
-  } else {
-    return [
-      { title: "Profile", href: "/buyers/profile" },
-    ];
+const getSettingsItems = (accountType: string, userEmail?: string) => {
+  const isAuthorizedForChatbot = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
+  
+  const baseItems = accountType === "ip_owner" 
+    ? [
+        { title: "Profile", href: "/creators/profile" },
+      ]
+    : [
+        { title: "Profile", href: "/buyers/profile" },
+      ];
+  
+  // Add chatbot items for authorized users right after Profile
+  if (isAuthorizedForChatbot) {
+    const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
+    const chatbotItems = accountType === "ip_owner" 
+      ? [
+          { title: "OpenAI Chatbot", href: "/creators/openai-chatbot", badge: "experiment" },
+          { title: "AI Chatbot", href: "/creators/ai-chatbot", badge: "experiment" },
+        ]
+      : [
+          { title: "OpenAI Chatbot", href: "/buyers/openai-chatbot", badge: "experiment" },
+          { title: "AI Chatbot", href: "/buyers/ai-chatbot", badge: "experiment" },
+        ];
+    
+    baseItems.splice(profileIndex + 1, 0, ...chatbotItems);
   }
+  
+  return baseItems;
 };
 
 export function CMSHeader() {
@@ -69,10 +87,11 @@ export function CMSHeader() {
   // Get account type for display
   const accountType = displayUser?.user_metadata?.account_type || "buyer";
   const displayTitle = accountType === "ip_owner" ? "Creator Dashboard" : "Buyer Dashboard";
+  const userEmail = displayUser?.email;
   
   // Get menu items
   const discoverItems = getDiscoverItems(accountType);
-  const settingsItems = getSettingsItems(accountType);
+  const settingsItems = getSettingsItems(accountType, userEmail);
 
   // Get tier display info
   const getTierDisplay = (tier: string | null) => {
@@ -190,13 +209,18 @@ export function CMSHeader() {
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center px-4 py-3 text-base font-medium transition-colors",
+                    "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink hover:bg-gray-50"
                   )}
                 >
-                  {item.title}
+                  <span>{item.title}</span>
+                  {item.badge && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full uppercase tracking-wider">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

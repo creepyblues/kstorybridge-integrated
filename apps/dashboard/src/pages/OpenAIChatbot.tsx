@@ -108,6 +108,7 @@ export default function OpenAIChatbot() {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check if user is authorized (same users as existing chatbot)
@@ -124,11 +125,13 @@ export default function OpenAIChatbot() {
       return;
     }
 
-    // Initialize chat session
+    // Initialize chat session and load history
     const initializeSession = async () => {
       if (!user) return;
 
       try {
+        setIsLoadingHistory(true);
+        
         // Check for existing active session or create new one
         let session = await chatHistoryService.getActiveSession(user.id, 'openai');
         
@@ -143,19 +146,29 @@ export default function OpenAIChatbot() {
         if (session) {
           setCurrentSession(session);
           console.log('📝 Chat session initialized:', session.id);
-        }
-      } catch (error) {
-        console.error('Failed to initialize chat session:', error);
-      }
-    };
-
-    initializeSession();
-
-    // Initial greeting message
-    setMessages([
-      {
-        id: Date.now().toString(),
-        content: `🤖 Hello! I'm your OpenAI-powered assistant for Korean IP discovery. I use advanced AI to understand your preferences and provide personalized recommendations.
+          
+          // Load conversation history from this session
+          const history = await chatHistoryService.getSessionMessages(session.id);
+          
+          if (history && history.length > 0) {
+            // Convert database messages to UI messages
+            const restoredMessages: Message[] = history.map(msg => ({
+              id: msg.id,
+              content: msg.content,
+              sender: msg.message_type === 'user_prompt' ? 'user' : 'bot',
+              timestamp: new Date(msg.created_at),
+              messageId: msg.id
+            }));
+            
+            // Add greeting message at the beginning if not already there
+            const hasGreeting = restoredMessages.some(msg => 
+              msg.sender === 'bot' && msg.content.includes('Hello! I\'m your OpenAI-powered assistant')
+            );
+            
+            if (!hasGreeting) {
+              restoredMessages.unshift({
+                id: 'greeting',
+                content: `🤖 Hello! I'm your OpenAI-powered assistant for Korean IP discovery. I use advanced AI to understand your preferences and provide personalized recommendations.
 
 **What makes me different:**
 • **Smart Understanding** - I comprehend nuanced requests and context
@@ -170,17 +183,73 @@ export default function OpenAIChatbot() {
 • "Recommend something completely different from what's popular"
 
 What kind of Korean content are you in the mood for today?`,
-        sender: 'bot',
-        timestamp: new Date(),
-      }
-    ]);
+                sender: 'bot',
+                timestamp: new Date(session.created_at),
+              });
+            }
+            
+            setMessages(restoredMessages);
+            console.log(`📚 Loaded ${history.length} messages from session history`);
+          } else {
+            // No history, show initial greeting
+            setMessages([
+              {
+                id: Date.now().toString(),
+                content: `🤖 Hello! I'm your OpenAI-powered assistant for Korean IP discovery. I use advanced AI to understand your preferences and provide personalized recommendations.
 
-    // Cleanup function to end session when component unmounts
-    return () => {
-      if (currentSession) {
-        chatHistoryService.endSession(currentSession.id).catch(console.error);
+**What makes me different:**
+• **Smart Understanding** - I comprehend nuanced requests and context
+• **Conversational** - Ask follow-up questions and have natural discussions
+• **Comprehensive Analysis** - I analyze themes, tones, and complex criteria
+• **Learning** - I remember our conversation to give better suggestions
+
+**Try asking me things like:**
+• "I love dark psychological thrillers like 'Strangers from Hell'. What would you recommend?"
+• "What are some heartwarming family dramas similar to 'Reply 1988'?"
+• "I'm looking for strong female protagonists in fantasy webtoons"
+• "Recommend something completely different from what's popular"
+
+What kind of Korean content are you in the mood for today?`,
+                sender: 'bot',
+                timestamp: new Date(),
+              }
+            ]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to initialize chat session:', error);
+        // Still show greeting message even if session fails
+        setMessages([
+          {
+            id: Date.now().toString(),
+            content: `🤖 Hello! I'm your OpenAI-powered assistant for Korean IP discovery. I use advanced AI to understand your preferences and provide personalized recommendations.
+
+**What makes me different:**
+• **Smart Understanding** - I comprehend nuanced requests and context
+• **Conversational** - Ask follow-up questions and have natural discussions
+• **Comprehensive Analysis** - I analyze themes, tones, and complex criteria
+• **Learning** - I remember our conversation to give better suggestions
+
+**Try asking me things like:**
+• "I love dark psychological thrillers like 'Strangers from Hell'. What would you recommend?"
+• "What are some heartwarming family dramas similar to 'Reply 1988'?"
+• "I'm looking for strong female protagonists in fantasy webtoons"
+• "Recommend something completely different from what's popular"
+
+What kind of Korean content are you in the mood for today?`,
+            sender: 'bot',
+            timestamp: new Date(),
+          }
+        ]);
+      } finally {
+        setIsLoadingHistory(false);
       }
     };
+
+    initializeSession();
+
+    // Don't end session on unmount - keep it active for the user's session
+    // Sessions will be managed by activity timeout or explicit logout
   }, [isAuthorized, navigate, toast, user]);
 
   useEffect(() => {
@@ -228,7 +297,8 @@ What kind of Korean content are you in the mood for today?`,
       const response = await openaiService.generateChatResponse(
         userMessage.content, 
         conversationHistory,
-        user?.id
+        user?.id,
+        currentSession.id // Pass the actual session ID
       );
       
       const responseTime = Date.now() - startTime;
@@ -518,10 +588,27 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
         </div>
 
         {/* Chat Container */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl h-[600px] flex flex-col">
+        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl h-[500px] sm:h-[600px] lg:h-[700px] flex flex-col">
           {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+            {/* Loading History Indicator */}
+            {isLoadingHistory && (
+              <div className="flex items-center justify-center py-8">
+                <div className="flex items-center gap-3 text-gray-500">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm">Loading conversation history...</span>
+                </div>
+              </div>
+            )}
+            
+            {!isLoadingHistory && messages.length === 0 && (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-gray-500 text-sm">Start a conversation to discover Korean content!</p>
+              </div>
+            )}
+            
+            {!isLoadingHistory &&
+            messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
@@ -539,7 +626,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
 
                 {/* Message Content */}
                 <div className={`flex-1 ${message.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                  <div className={`inline-block max-w-[80%] px-4 py-3 rounded-2xl ${
+                  <div className={`inline-block max-w-[90%] sm:max-w-[85%] lg:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-2xl ${
                     message.sender === 'user'
                       ? 'bg-hanok-teal text-white'
                       : 'bg-gray-100 text-gray-800'
@@ -601,27 +688,27 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
           </div>
 
           {/* Input Area */}
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex gap-3">
+          <div className="border-t border-gray-200 p-3 sm:p-4">
+            <div className="flex gap-2 sm:gap-3">
               <div className="flex-1 relative">
                 <textarea
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  placeholder="Ask me anything about Korean IPs... I can understand complex preferences and context!"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  placeholder="Ask me anything about Korean IPs..."
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm"
                   rows={2}
-                  disabled={isLoading}
+                  disabled={isLoading || isLoadingHistory}
                 />
-                <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs text-gray-400">
+                <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs text-gray-400 hidden sm:flex">
                   <Sparkles size={12} />
-                  <span>OpenAI Powered</span>
+                  <span>OpenAI</span>
                 </div>
               </div>
               <Button
                 onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isLoading}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 py-3 rounded-xl self-end"
+                disabled={!inputMessage.trim() || isLoading || isLoadingHistory}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl self-end"
               >
                 <Send size={16} />
               </Button>

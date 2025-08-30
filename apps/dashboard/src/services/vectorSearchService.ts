@@ -68,12 +68,15 @@ class VectorSearchService {
       includeAnalysis?: boolean;
     }
   ): Promise<VectorSearchResult[]> {
+    // Re-enabled with better error handling
+    console.log('🔍 Vector search enabled - attempting with fallback handling');
     const startTime = Date.now();
     
     try {
       console.log(`🔍 Starting vector search for: "${query}"`);
 
-      // Generate embedding for the search query
+      // Generate real embedding for the search query
+      console.log('🔄 Generating embedding for search query...');
       const queryEmbedding = await embeddingService.generateEmbedding(query);
       if (!queryEmbedding) {
         throw new Error('Failed to generate query embedding');
@@ -96,19 +99,29 @@ class VectorSearchService {
 
       console.log(`✅ Vector search completed: ${searchResults.length} results in ${searchDuration}ms`);
 
-      // Record search analytics
-      await this.recordSearchAnalytics({
-        query,
-        search_type: 'vector_only',
-        result_count: searchResults.length,
-        search_duration_ms: searchDuration,
-        similarity_scores: searchResults.map(r => r.similarity)
-      }, context);
+      // Record search analytics (only if we have a valid session ID)
+      if (context?.session_id && this.isValidUUID(context.session_id)) {
+        await this.recordSearchAnalytics({
+          query,
+          search_type: 'vector_only',
+          result_count: searchResults.length,
+          search_duration_ms: searchDuration,
+          similarity_scores: searchResults.map(r => r.similarity)
+        }, context);
+      }
 
       // Apply additional filtering and ranking if context provided
       return this.enhanceSearchResults(searchResults, context, options?.includeAnalysis);
     } catch (error) {
       console.error('Vector search error:', error);
+      
+      // If it's a database schema error, provide helpful debugging
+      if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+        console.error('🗄️ Database schema issue - the vector search function may need to be updated');
+        console.error('🔧 Consider running: npx supabase db reset --local');
+      }
+      
+      // Re-throw the error so the calling code can handle fallback
       throw error;
     }
   }
@@ -366,16 +379,27 @@ class VectorSearchService {
     if (!context?.user_id) return;
 
     try {
+      // Handle session_id - if it's not a UUID, skip recording or create a proper UUID
+      let sessionId = context.session_id;
+      
+      // Check if session_id is a valid UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      
+      if (!sessionId || !uuidRegex.test(sessionId)) {
+        console.warn('⚠️ Invalid session_id format, skipping analytics recording:', sessionId);
+        return;
+      }
+
       const { error } = await supabase
         .from('vector_search_analytics')
         .insert({
           user_id: context.user_id,
-          session_id: context.session_id,
+          session_id: sessionId,
           original_query: analytics.query,
           search_type: analytics.search_type,
           result_count: analytics.result_count,
           search_duration_ms: analytics.search_duration_ms,
-          top_similarity_scores: analytics.similarity_scores.slice(0, 5),
+          top_similarity_scores: analytics.similarity_scores?.slice(0, 5) || [],
           embedding_model: 'text-embedding-ada-002'
         });
 
@@ -482,6 +506,12 @@ class VectorSearchService {
       console.error('Error getting trending content:', error);
       return [];
     }
+  }
+
+  // UUID validation helper
+  private isValidUUID(uuid: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
   }
 
   // Health check and status

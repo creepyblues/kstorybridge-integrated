@@ -140,6 +140,12 @@ const App = () => (
                 <Route path="/buyers/send-message" element={
                   <ProtectedLayout><SendMessage /></ProtectedLayout>
                 } />
+                <Route path="/buyers/openai-chatbot" element={
+                  <ProtectedLayout><OpenAIChatbot /></ProtectedLayout>
+                } />
+                <Route path="/buyers/ai-chatbot" element={
+                  <ProtectedLayout><AIChatbot /></ProtectedLayout>
+                } />
                 
                 {/* Creator routes */}
                 <Route path="/creators" element={
@@ -165,6 +171,12 @@ const App = () => (
                 } />
                 <Route path="/creators/send-message" element={
                   <ProtectedLayout><SendMessage /></ProtectedLayout>
+                } />
+                <Route path="/creators/openai-chatbot" element={
+                  <ProtectedLayout><OpenAIChatbot /></ProtectedLayout>
+                } />
+                <Route path="/creators/ai-chatbot" element={
+                  <ProtectedLayout><AIChatbot /></ProtectedLayout>
                 } />
                 
                 {/* Legacy IP Owner/Creator routes */}

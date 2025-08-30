@@ -17,6 +17,9 @@
     },
     "api/pure.js": {
       "maxDuration": 5
+    },
+    "api/openai-simple.js": {
+      "maxDuration": 30
     }
   }
 }

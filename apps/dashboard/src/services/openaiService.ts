@@ -356,11 +356,32 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || `API request failed: ${response.status}`);
+        let errorMessage = `API request failed: ${response.status}`;
+        try {
+          const error = await response.json();
+          errorMessage = error.error || errorMessage;
+        } catch (parseError) {
+          // If response is not JSON (e.g., HTML error page), get text
+          try {
+            const errorText = await response.text();
+            console.error('Non-JSON error response:', errorText.substring(0, 200));
+            errorMessage = `Server error (${response.status}): ${errorText.includes('FUNCTION_INVOCATION_FAILED') ? 'Function crashed' : 'Invalid response format'}`;
+          } catch (textError) {
+            console.error('Could not parse error response:', parseError);
+          }
+        }
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('Failed to parse successful response as JSON:', parseError);
+        const responseText = await response.text();
+        console.error('Response text:', responseText.substring(0, 500));
+        throw new Error('Server returned invalid JSON response');
+      }
       console.log('✅ Received response from backend API');
 
       // Find relevant titles (using local search since API doesn't have access to titles)

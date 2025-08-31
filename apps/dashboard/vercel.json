@@ -23,6 +23,9 @@
     },
     "api/test-minimal.js": {
       "maxDuration": 30
+    },
+    "api/test-ui.js": {
+      "maxDuration": 5
     }
   }
 }

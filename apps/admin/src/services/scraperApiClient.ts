@@ -5,7 +5,6 @@
 export interface ScrapedTitleData {
   title_name_kr: string;
   title_name_en?: string;
-  description?: string;
   synopsis?: string;
   logline?: string;
   tagline?: string;

@@ -6,7 +6,6 @@
 export interface ScrapedTitleData {
   title_name_kr: string;
   title_name_en?: string;
-  description?: string;
   synopsis?: string;
   logline?: string;
   tagline?: string;
@@ -290,8 +289,8 @@ class TitleScraperService {
       
       const description = this.extractBySelectors(html, descSelectors);
       if (description) {
-        data.description = description.trim();
-        extractedFields.push('description');
+        data.synopsis = description.trim();
+        extractedFields.push('synopsis');
       }
 
       // Extract cover image
@@ -365,8 +364,8 @@ class TitleScraperService {
       for (const pattern of descPatterns) {
         const match = html.match(pattern);
         if (match && match[1]) {
-          data.description = match[1].trim();
-          extractedFields.push('description');
+          data.synopsis = match[1].trim();
+          extractedFields.push('synopsis');
           break;
         }
       }
@@ -496,8 +495,8 @@ class TitleScraperService {
         if (match && match[1]) {
           const description = match[1].trim().replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
           if (description.length > 10) {
-            data.description = description;
-            extractedFields.push('description');
+            data.synopsis = description;
+            extractedFields.push('synopsis');
             break;
           }
         }
@@ -687,8 +686,8 @@ class TitleScraperService {
       for (const pattern of descPatterns) {
         const match = html.match(pattern);
         if (match && match[1] && match[1].length > 20) {
-          data.description = match[1].trim();
-          extractedFields.push('description');
+          data.synopsis = match[1].trim();
+          extractedFields.push('synopsis');
           break;
         }
       }
@@ -1095,8 +1094,8 @@ class TitleScraperService {
       for (const pattern of descPatterns) {
         const match = html.match(pattern);
         if (match && match[1] && match[1].length > 20) {
-          data.description = match[1].trim();
-          extractedFields.push('description');
+          data.synopsis = match[1].trim();
+          extractedFields.push('synopsis');
           break;
         }
       }
@@ -1304,8 +1303,8 @@ class TitleScraperService {
       for (const pattern of descPatterns) {
         const match = html.match(pattern);
         if (match && match[1] && match[1].length > 20) {
-          data.description = match[1].trim();
-          extractedFields.push('description');
+          data.synopsis = match[1].trim();
+          extractedFields.push('synopsis');
           break;
         }
       }
@@ -1426,7 +1425,7 @@ class TitleScraperService {
     return {
       title_name_kr: data.title_name_kr || 'N/A',
       title_name_en: data.title_name_en || 'N/A',
-      description: data.description || 'N/A',
+      synopsis: data.synopsis || 'N/A',
       synopsis: data.synopsis || 'N/A',
       logline: data.logline || 'N/A',
       tagline: data.tagline || 'N/A',
@@ -1610,8 +1609,7 @@ class TitleScraperService {
     const weights = {
       'title_name_kr': 0.3,
       'title_name_en': 0.25,
-      'description': 0.15,
-      'synopsis': 0.15,
+      'synopsis': 0.3,
       'author': 0.1,
       'genre': 0.1,
       'title_image': 0.1,

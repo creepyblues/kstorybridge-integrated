@@ -328,13 +328,13 @@ export default function AdminTitleDetail() {
                     </div>
                   )}
                   
-                  {/* Description */}
+                  {/* Synopsis */}
                   <div>
-                    <h5 className="font-bold text-hanok-teal mb-2">Description</h5>
-                    {title.description ? (
-                      <p className="text-gray-600 leading-relaxed text-base">{title.description}</p>
+                    <h5 className="font-bold text-hanok-teal mb-2">Synopsis</h5>
+                    {title.synopsis ? (
+                      <p className="text-gray-600 leading-relaxed text-base">{title.synopsis}</p>
                     ) : (
-                      <p className="text-gray-500 italic text-sm">No description available for this title.</p>
+                      <p className="text-gray-500 italic text-sm">No synopsis available for this title.</p>
                     )}
                   </div>
                   

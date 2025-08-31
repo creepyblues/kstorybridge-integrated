@@ -12,32 +12,11 @@
     "api/health.ts": {
       "maxDuration": 10
     },
-    "api/simple.js": {
-      "maxDuration": 5
-    },
-    "api/pure.js": {
-      "maxDuration": 5
-    },
-    "api/openai-simple.js": {
-      "maxDuration": 30
-    },
     "api/embeddings.js": {
       "maxDuration": 30
     },
     "api/openai-enhanced.js": {
       "maxDuration": 30
-    },
-    "api/test-database.js": {
-      "maxDuration": 10
-    },
-    "api/debug-titles.js": {
-      "maxDuration": 10
-    },
-    "api/test-enhanced.js": {
-      "maxDuration": 10
-    },
-    "api/debug-openai.js": {
-      "maxDuration": 15
     }
   }
 }

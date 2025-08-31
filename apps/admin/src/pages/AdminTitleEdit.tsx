@@ -379,12 +379,12 @@ export default function AdminTitleEdit() {
                   
                   <div>
                     <label className="block text-sm font-semibold text-hanok-teal mb-2">
-                      Description
+                      Synopsis
                     </label>
                     <Textarea
-                      value={formData.description || ''}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      placeholder="Detailed description of the content"
+                      value={formData.synopsis || ''}
+                      onChange={(e) => handleInputChange('synopsis', e.target.value))
+                      placeholder="Brief synopsis of the content"
                       rows={4}
                     />
                   </div>

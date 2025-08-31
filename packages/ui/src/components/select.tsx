@@ -75,7 +75,7 @@ const SelectContent = React.forwardRef<
       className={cn(
         "relative z-50 max-h-96 overflow-hidden rounded-md bg-white text-gray-900 shadow-lg border-none outline-none ring-0 focus:ring-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         position === "popper" &&
-          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1 w-[var(--radix-select-trigger-width)]",
+          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1 min-w-[var(--radix-select-trigger-width)] w-full",
         className
       )}
       position={position}
@@ -84,7 +84,7 @@ const SelectContent = React.forwardRef<
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          "py-3 px-1 w-full",
+          "py-3 px-0 w-full",
           position === "popper" &&
             "min-w-[var(--radix-select-trigger-width)]"
         )}
@@ -116,7 +116,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "group relative flex w-full cursor-pointer select-none items-center py-2.5 pl-10 pr-6 text-sm outline-none border-none ring-0 focus:ring-0 focus:outline-none hover:bg-hanok-teal hover:text-white focus:bg-hanok-teal focus:text-white data-[state=checked]:text-hanok-teal data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-all duration-150",
+      "group relative flex w-full cursor-pointer select-none items-center py-2.5 pl-10 pr-3 text-sm outline-none border-none ring-0 focus:ring-0 focus:outline-none hover:bg-hanok-teal hover:text-white focus:bg-hanok-teal focus:text-white data-[state=checked]:text-hanok-teal data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-all duration-150",
       className
     )}
     {...props}

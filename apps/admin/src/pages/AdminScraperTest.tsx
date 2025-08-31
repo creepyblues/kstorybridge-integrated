@@ -330,7 +330,7 @@ export default function AdminScraperTest() {
                       ];
                       if (excludedFields.includes(field)) return null;
                       
-                      const isTextArea = ['description'].includes(field);
+                      const isTextArea = ['synopsis'].includes(field);
                       const isBoolean = typeof value === 'boolean';
                       const isNumber = ['chapters', 'likes'].includes(field);
                       const isImage = field === 'title_image';

@@ -248,7 +248,6 @@ export function getTitleSearchFields(): string[] {
     'rights',
     'rights_owner',
     'tagline',
-    'description',
     'synopsis',
     'note',
     'perfect_for',

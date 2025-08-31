@@ -59,7 +59,6 @@ export default function AdminAddTitle() {
     genre: undefined,
     content_format: undefined,
     tagline: "",
-    description: "",
     synopsis: "",
     pitch: "",
     author: "",
@@ -143,7 +142,6 @@ export default function AdminAddTitle() {
           ...prev,
           ...(scrapedData.title_name_kr && { title_name_kr: scrapedData.title_name_kr }),
           ...(scrapedData.title_name_en && { title_name_en: scrapedData.title_name_en }),
-          ...(scrapedData.description && { description: scrapedData.description }),
           ...(scrapedData.synopsis && { synopsis: scrapedData.synopsis }),
           ...(scrapedData.tagline && { tagline: scrapedData.tagline }),
           ...(scrapedData.author && { author: scrapedData.author }),
@@ -203,12 +201,12 @@ export default function AdminAddTitle() {
         title_name_kr: "시간을 되돌리는 용사",
         genre: "fantasy",
         author: "Kim Writer",
-        description: "A fantasy webtoon about a hero who goes back in time to save the world.",
+        synopsis: "A fantasy webtoon about a hero who goes back in time to save the world.",
         content_format: "webtoon",
         title_image: "https://via.placeholder.com/300x400?text=Webtoons+Cover",
         title_url: url
       };
-      extractedFields = ['title_name_en', 'title_name_kr', 'genre', 'author', 'description', 'content_format', 'title_image'];
+      extractedFields = ['title_name_en', 'title_name_kr', 'genre', 'author', 'synopsis', 'content_format', 'title_image'];
     } else if (hostname.includes('naver.com') || hostname.includes('series.naver.com')) {
       mockData = {
         title_name_kr: "테스트 제목",
@@ -216,7 +214,7 @@ export default function AdminAddTitle() {
         genre: "drama",
         author: "네이버작가",
         writer: "네이버작가",
-        description: "웹사이트에서 추출된 설명입니다. 네이버 시리즈의 인기 작품으로 많은 독자들의 사랑을 받고 있습니다.",
+        synopsis: "웹사이트에서 추출된 설명입니다. 네이버 시리즈의 인기 작품으로 많은 독자들의 사랑을 받고 있습니다.",
         synopsis: "주인공이 겪는 다양한 모험과 성장 이야기를 담은 드라마 장르의 작품입니다.",
         content_format: "web_novel",
         chapters: 120,
@@ -224,15 +222,15 @@ export default function AdminAddTitle() {
         completed: true,
         title_url: url
       };
-      extractedFields = ['title_name_kr', 'title_name_en', 'genre', 'author', 'writer', 'description', 'synopsis', 'content_format', 'chapters', 'title_image'];
+      extractedFields = ['title_name_kr', 'title_name_en', 'genre', 'author', 'writer', 'synopsis', 'content_format', 'chapters', 'title_image'];
     } else {
       mockData = {
         title_name_kr: "테스트 제목",
-        description: "웹사이트에서 추출된 설명입니다.",
+        synopsis: "웹사이트에서 추출된 설명입니다.",
         title_image: "https://via.placeholder.com/300x400?text=Generic+Cover",
         title_url: url
       };
-      extractedFields = ['title_name_kr', 'description', 'title_image'];
+      extractedFields = ['title_name_kr', 'synopsis', 'title_image'];
     }
 
     return {
@@ -262,7 +260,7 @@ export default function AdminAddTitle() {
         // Convert empty strings to null for optional fields
         title_name_en: formData.title_name_en?.trim() || null,
         tagline: formData.tagline?.trim() || null,
-        description: formData.description?.trim() || null,
+        synopsis: formData.synopsis?.trim() || null,
         synopsis: formData.synopsis?.trim() || null,
         pitch: formData.pitch?.trim() || null,
         author: formData.author?.trim() || null,
@@ -524,10 +522,10 @@ export default function AdminAddTitle() {
                     <td className="py-4 w-48 text-sm font-semibold text-gray-700 align-top">Description</td>
                     <td className="py-4 pl-6">
                       <Textarea
-                        id="description"
-                        value={formData.description || ""}
-                        onChange={(e) => handleInputChange("description", e.target.value)}
-                        placeholder="Detailed description of the title"
+                        id="synopsis"
+                        value={formData.synopsis || ""}
+                        onChange={(e) => handleInputChange("synopsis", e.target.value))
+                        placeholder="Brief synopsis of the title"
                         rows={4}
                       />
                     </td>

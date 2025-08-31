@@ -1,4 +1,4 @@
-// Test endpoint to verify database access and title loading
+// Test endpoint to verify database access and title loading - v2
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async function handler(req, res) {

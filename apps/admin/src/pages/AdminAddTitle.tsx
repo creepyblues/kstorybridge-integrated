@@ -214,7 +214,6 @@ export default function AdminAddTitle() {
         genre: "drama",
         author: "네이버작가",
         writer: "네이버작가",
-        synopsis: "웹사이트에서 추출된 설명입니다. 네이버 시리즈의 인기 작품으로 많은 독자들의 사랑을 받고 있습니다.",
         synopsis: "주인공이 겪는 다양한 모험과 성장 이야기를 담은 드라마 장르의 작품입니다.",
         content_format: "web_novel",
         chapters: 120,
@@ -260,7 +259,6 @@ export default function AdminAddTitle() {
         // Convert empty strings to null for optional fields
         title_name_en: formData.title_name_en?.trim() || null,
         tagline: formData.tagline?.trim() || null,
-        synopsis: formData.synopsis?.trim() || null,
         synopsis: formData.synopsis?.trim() || null,
         pitch: formData.pitch?.trim() || null,
         author: formData.author?.trim() || null,
@@ -524,7 +522,7 @@ export default function AdminAddTitle() {
                       <Textarea
                         id="synopsis"
                         value={formData.synopsis || ""}
-                        onChange={(e) => handleInputChange("synopsis", e.target.value))
+                        onChange={(e) => handleInputChange("synopsis", e.target.value)}
                         placeholder="Brief synopsis of the title"
                         rows={4}
                       />

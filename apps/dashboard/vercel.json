@@ -32,6 +32,9 @@
     },
     "api/debug-titles.js": {
       "maxDuration": 10
+    },
+    "api/test-enhanced.js": {
+      "maxDuration": 10
     }
   }
 }

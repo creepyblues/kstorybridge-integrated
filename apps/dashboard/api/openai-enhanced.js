@@ -172,28 +172,44 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
     return res.status(200).json({
       message: aiResponse,
       recommendedTitles: relevantTitles.map(title => ({
-        title_id: title.title_id,
-        title_name_en: title.title_name_en,
-        title_name_kr: title.title_name_kr,
-        synopsis: title.synopsis,
-        genre: title.genre,
-        tone: title.tone,
-        author: title.story_author || title.art_author,
+        title_id: title.title_id || '',
+        title_name_en: title.title_name_en || '',
+        title_name_kr: title.title_name_kr || '',
+        synopsis: title.synopsis || '',
+        genre: title.genre || '',
+        tone: title.tone || '',
+        author: title.story_author || title.art_author || '',
         score: title.score || 0
       })),
-      suggestedQueries,
+      suggestedQueries: suggestedQueries || [],
       databaseStats: {
         totalTitles: titles.length,
         relevantTitles: relevantTitles.length,
-        vectorSearchUsed: relevantTitles.some(t => t.vectorScore > 0)
+        vectorSearchUsed: false // Vector search not implemented yet
       },
       usage: completion.usage,
     });
 
   } catch (error) {
     console.error('❌ Enhanced OpenAI API error:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack?.split('\n').slice(0, 5)
+    });
+    
+    // More specific error messages
+    let errorMessage = 'Internal server error';
+    if (error.message?.includes('column')) {
+      errorMessage = 'Database schema error';
+    } else if (error.message?.includes('OpenAI')) {
+      errorMessage = 'AI service error';
+    } else if (error.message?.includes('rate')) {
+      errorMessage = 'Rate limit exceeded';
+    }
+    
     return res.status(500).json({ 
-      error: 'Internal server error',
+      error: errorMessage,
       message: error.message,
       timestamp: new Date().toISOString(),
     });

@@ -410,8 +410,10 @@ async function findRelevantTitles(query, titles, openai) {
       }
       
       // Boost for genre/tone matches
-      if (title.genre?.toLowerCase().includes(word) || 
-          title.tone?.toLowerCase().includes(word)) {
+      const genreStr = Array.isArray(title.genre) ? title.genre.join(' ').toLowerCase() : (title.genre || '').toLowerCase();
+      const toneStr = (title.tone || '').toLowerCase();
+      
+      if (genreStr.includes(word) || toneStr.includes(word)) {
         score += 3;
       }
     });

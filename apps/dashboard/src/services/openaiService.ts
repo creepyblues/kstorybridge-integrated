@@ -345,7 +345,7 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
-      const response = await fetch('/api/debug-enhanced', {
+      const response = await fetch('/api/openai-enhanced', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

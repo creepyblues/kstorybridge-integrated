@@ -150,7 +150,7 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
         synopsis: title.synopsis,
         genre: title.genre,
         tone: title.tone,
-        author: title.author,
+        author: title.story_author || title.art_author,
         score: title.score || 0
       })),
       suggestedQueries,
@@ -196,7 +196,8 @@ async function loadTitlesFromDatabase(supabase) {
         genre,
         tone,
         tags,
-        author,
+        story_author,
+        art_author,
         content_format,
         completed,
         rights_owner,
@@ -248,7 +249,8 @@ async function findRelevantTitles(query, titles, openai) {
       Array.isArray(title.genre) ? title.genre.join(' ') : title.genre,
       title.tone,
       Array.isArray(title.tags) ? title.tags.join(' ') : title.tags,
-      title.author,
+      title.story_author,
+      title.art_author,
       title.perfect_for,
       title.audience
     ].filter(Boolean).join(' ').toLowerCase();
@@ -317,7 +319,7 @@ Available formats: ${formats.join(', ')}
       if (title.synopsis) context += `   Synopsis: ${title.synopsis.substring(0, 150)}...\n`;
       if (title.genre) context += `   Genre: ${Array.isArray(title.genre) ? title.genre.join(', ') : title.genre}\n`;
       if (title.tone) context += `   Tone: ${title.tone}\n`;
-      if (title.author) context += `   Author: ${title.author}\n`;
+      if (title.story_author || title.art_author) context += `   Author: ${title.story_author || title.art_author}\n`;
       context += `\n`;
     });
   }

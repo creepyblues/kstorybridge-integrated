@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
     console.log('Loading titles from database...');
     const { data: titles, error } = await supabase
       .from('titles')
-      .select('title_id, title_name_en, title_name_kr, genre, tone, author')
+      .select('title_id, title_name_en, title_name_kr, genre, tone, story_author')
       .limit(10);
 
     if (error) {

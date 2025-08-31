@@ -20,6 +20,9 @@
     },
     "api/health-check.js": {
       "maxDuration": 10
+    },
+    "api/test-minimal.js": {
+      "maxDuration": 30
     }
   }
 }

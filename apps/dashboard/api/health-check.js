@@ -108,13 +108,14 @@ module.exports = async function handler(req, res) {
 
     // Overall status
     const allChecks = Object.values(results.checks);
-    const failedChecks = allChecks.filter(check => !check.success);
+    const failedChecks = allChecks.filter(check => check.success === false);
     
     if (failedChecks.length === 0) {
       results.status = 'healthy';
     } else {
       results.status = 'issues_detected';
       results.failedChecks = failedChecks.length;
+      results.failedCheckDetails = failedChecks;
     }
 
     return res.status(200).json(results);

@@ -68,12 +68,18 @@ class EmbeddingService {
 
   // Generate embedding for a single text
   async generateEmbedding(text: string): Promise<EmbeddingResult | null> {
-    if (!this.client) {
-      throw new Error('OpenAI client not initialized');
-    }
-
     if (!text || text.trim().length === 0) {
       throw new Error('Text cannot be empty');
+    }
+
+    // In production, use the secure backend API
+    if (import.meta.env.PROD) {
+      return this.generateEmbeddingViaAPI(text);
+    }
+
+    // Development: use direct client
+    if (!this.client) {
+      throw new Error('OpenAI client not initialized');
     }
 
     try {
@@ -109,9 +115,74 @@ class EmbeddingService {
     }
   }
 
+  private async generateEmbeddingViaAPI(text: string): Promise<EmbeddingResult | null> {
+    try {
+      console.log(`🔒 Using backend API for embedding generation: "${text.substring(0, 50)}..."`);
+      
+      // Get the current user's auth token
+      const { data: { session } } = await (await import('@/integrations/supabase/client')).supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
+      // Call the backend API
+      const response = await fetch('/api/embeddings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          text: text.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = `API request failed: ${response.status}`;
+        try {
+          const error = await response.json();
+          errorMessage = error.error || errorMessage;
+        } catch (parseError) {
+          try {
+            const errorText = await response.text();
+            console.error('Non-JSON error response:', errorText.substring(0, 200));
+            errorMessage = `Server error (${response.status}): ${errorText.includes('FUNCTION_INVOCATION_FAILED') ? 'Function crashed' : 'Invalid response format'}`;
+          } catch (textError) {
+            console.error('Could not parse error response:', parseError);
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Generated embedding via backend API with ${data.embedding.length} dimensions`);
+
+      return {
+        embedding: data.embedding,
+        model: data.model,
+        usage: data.usage,
+      };
+
+    } catch (error: any) {
+      console.error('❌ Backend Embedding API Error:', error);
+      
+      if (error.message?.includes('Authentication required')) {
+        throw new Error('Please sign in to use vector search');
+      } else if (error.message?.includes('Rate limit exceeded')) {
+        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      }
+      
+      throw new Error(`Failed to generate embedding: ${error.message}`);
+    }
+  }
+
   // Generate multiple embeddings for a title's content
   async generateTitleEmbeddings(title: Title): Promise<ContentEmbeddings> {
-    if (!this.client) {
+    // In production, use the backend API; in development, use direct client
+    const useBackendAPI = import.meta.env.PROD;
+    
+    if (!useBackendAPI && !this.client) {
       throw new Error('OpenAI client not initialized');
     }
 

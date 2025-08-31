@@ -20,6 +20,9 @@
     },
     "api/openai-simple.js": {
       "maxDuration": 30
+    },
+    "api/embeddings.js": {
+      "maxDuration": 30
     }
   }
 }

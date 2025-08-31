@@ -54,7 +54,18 @@ module.exports = async function handler(req, res) {
     }
 
     // Initialize clients
-    const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+    let openai;
+    try {
+      openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+      console.log('✅ OpenAI client initialized');
+    } catch (initError) {
+      console.error('❌ OpenAI client initialization failed:', initError);
+      return res.status(500).json({
+        error: 'OpenAI service configuration error',
+        message: 'Failed to initialize AI service'
+      });
+    }
+    
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     // Authentication
@@ -153,16 +164,49 @@ Additional Guidelines:
 Remember: Your job is to promote and recommend titles from OUR DATABASE, not to provide general Korean content recommendations.`;
 
     // Call OpenAI API
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 800,
-      temperature: 0.7,
-      presence_penalty: 0.1,
-      frequency_penalty: 0.1,
-    });
-
-    const aiResponse = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+    let completion, aiResponse;
+    try {
+      console.log(`🤖 Calling OpenAI with prompt length: ${prompt.length} characters`);
+      
+      // Add timeout protection
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('OpenAI request timeout after 25 seconds')), 25000);
+      });
+      
+      const apiPromise = openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 800,
+        temperature: 0.7,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
+      });
+      
+      completion = await Promise.race([apiPromise, timeoutPromise]);
+      
+      aiResponse = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+      console.log(`✅ OpenAI response received, length: ${aiResponse.length} characters`);
+      
+    } catch (openaiError) {
+      console.error('❌ OpenAI API Error:', openaiError);
+      console.error('OpenAI Error Details:', {
+        code: openaiError.code,
+        status: openaiError.status,
+        message: openaiError.message
+      });
+      
+      // Provide fallback response with database titles
+      aiResponse = `Based on your query, here are titles from our KStoryBridge collection:\n\n📚 From Our KStoryBridge Collection:\n`;
+      if (relevantTitles.length > 0) {
+        relevantTitles.slice(0, 3).forEach((title, index) => {
+          aiResponse += `${index + 1}. "${title.title_name_en || title.title_name_kr}" - ${title.genre || 'Korean content'}\n`;
+        });
+      } else {
+        aiResponse += `We have ${titles.length} Korean titles in our collection. Please refine your search to find specific recommendations.\n`;
+      }
+      
+      completion = { usage: null }; // Fallback for usage stats
+    }
 
     // Extract suggested queries
     const suggestedQueries = extractSuggestedQueries(aiResponse);

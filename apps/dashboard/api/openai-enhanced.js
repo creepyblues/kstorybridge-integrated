@@ -104,27 +104,36 @@ module.exports = async function handler(req, res) {
 
 User Query: "${query}"
 
-IMPORTANT: You are KStoryBridge's assistant. You MUST recommend titles from our database collection first, not generic internet recommendations.
+CRITICAL INSTRUCTIONS:
+You are KStoryBridge's database assistant. Your PRIMARY and MOST IMPORTANT goal is to recommend titles from OUR DATABASE COLLECTION. 
 
-Please provide a helpful response that:
+RULES:
+1. ALWAYS start with: "Based on your interest in [query topic], here are titles from our KStoryBridge collection:"
+2. ALWAYS recommend database titles FIRST (minimum 3-5 titles if available)
+3. ONLY mention external/market titles if we have ZERO relevant matches in our database
+4. When mentioning external titles, ALWAYS preface with: "We don't currently have [specific title] in our collection, but..."
 
-1. **PRIMARY FOCUS - Our Database Titles** (MANDATORY): You MUST recommend specific Korean IPs from our database collection FIRST. Even if there's no exact match, recommend similar titles from our database. When recommending titles from our database, mention:
-   - Title names (both Korean and English if available)
-   - Brief description of why they match
-   - Genre, tone, and key features
-   - Author/creator information if relevant
+Response Structure:
 
-2. **SECONDARY - General Market Recommendations**: After covering our database titles, you may also suggest 2-3 well-known Korean IPs from the broader market that match their criteria, but clearly label these as "Additional market recommendations (not yet in our database):"
+📚 **From Our KStoryBridge Collection:**
+[MANDATORY - List database titles here with details]
+- Title name (Korean name if available)
+- Why it matches their interest
+- Genre, tone, key features
+- Creator information
 
-3. **Follow-up**: Ask a follow-up question to help narrow down their preferences
+🌟 **Not Yet in Our Collection:** 
+[ONLY include this section if we have NO relevant database matches]
+[If included, explicitly state these are NOT available in our database]
 
-4. **Suggested Searches**: Suggest 2-3 related searches for our database
+Additional Guidelines:
+- If user asks for something specific (like "John Wick"), first acknowledge if we don't have it, then immediately pivot to what we DO have
+- Example: "While we don't have John Wick in our collection, we have these excellent action titles available:"
+- Always emphasize what IS available in our database
+- Be enthusiastic about our collection
+- Ask follow-up questions to help find more titles in our database
 
-Format your response to clearly distinguish between:
-- 📚 **From Our Database:** [titles we have]
-- 🌟 **Additional Market Suggestions:** [popular titles not in our database yet]
-
-Keep your response conversational, enthusiastic, and focused on Korean content discovery.`;
+Remember: Your job is to promote and recommend titles from OUR DATABASE, not to provide general Korean content recommendations.`;
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
@@ -235,7 +244,16 @@ async function findRelevantTitles(query, titles, openai) {
     return [];
   }
 
-  const queryWords = query.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+  const queryLower = query.toLowerCase();
+  const queryWords = queryLower.split(/\s+/).filter(word => word.length > 2);
+  
+  // Check for action-related keywords
+  const isActionQuery = queryLower.includes('action') || 
+                       queryLower.includes('fight') || 
+                       queryLower.includes('combat') ||
+                       queryLower.includes('john wick') ||
+                       queryLower.includes('martial') ||
+                       queryLower.includes('assassin');
   
   // Score each title based on relevance
   const scoredTitles = titles.map(title => {
@@ -274,6 +292,17 @@ async function findRelevantTitles(query, titles, openai) {
         score += 3;
       }
     });
+    
+    // Special scoring for action queries
+    if (isActionQuery) {
+      const genreStr = Array.isArray(title.genre) ? title.genre.join(' ').toLowerCase() : (title.genre || '').toLowerCase();
+      const toneStr = (title.tone || '').toLowerCase();
+      
+      if (genreStr.includes('action') || genreStr.includes('thriller')) score += 10;
+      if (toneStr.includes('intense') || toneStr.includes('exciting')) score += 5;
+      if (searchableText.includes('fight') || searchableText.includes('combat')) score += 3;
+      if (searchableText.includes('assassin') || searchableText.includes('revenge')) score += 3;
+    }
 
     // Additional scoring factors
     if (title.synopsis && title.synopsis.trim().length > 50) score += 1;
@@ -325,18 +354,32 @@ Available formats: ${formats.join(', ')}
       context += `\n`;
     });
   } else {
-    // No exact matches, but provide genre-based suggestions
-    context += `No exact matches found for this query in our database.\n\n`;
-    context += `However, here are some titles from our collection you should recommend based on genre/theme:\n\n`;
+    // No exact matches, but provide alternative recommendations from database
+    context += `IMPORTANT: No exact matches for "${query}" in our database.\n`;
+    context += `You MUST still recommend titles from our collection. Here are titles to recommend instead:\n\n`;
     
-    // Get random sample of titles to recommend
-    const sampleTitles = allTitles.slice(0, 10);
-    sampleTitles.forEach((title, index) => {
-      if (index < 5) {
-        context += `- "${title.title_name_en || title.title_name_kr}" (${Array.isArray(title.genre) ? title.genre[0] : title.genre})\n`;
+    // Try to find titles with relevant genres or tones
+    const actionTitles = allTitles.filter(t => 
+      (Array.isArray(t.genre) ? t.genre.join(' ') : t.genre || '').toLowerCase().includes('action') ||
+      (Array.isArray(t.genre) ? t.genre.join(' ') : t.genre || '').toLowerCase().includes('thriller') ||
+      (t.tone || '').toLowerCase().includes('intense') ||
+      (t.tone || '').toLowerCase().includes('exciting')
+    ).slice(0, 5);
+    
+    const titlesToRecommend = actionTitles.length > 0 ? actionTitles : allTitles.slice(0, 8);
+    
+    context += `Recommended titles from our database:\n`;
+    titlesToRecommend.forEach((title, index) => {
+      context += `${index + 1}. "${title.title_name_en || title.title_name_kr}"`;
+      if (title.title_name_kr && title.title_name_en) {
+        context += ` (${title.title_name_kr})`;
       }
+      context += `\n`;
+      if (title.genre) context += `   Genre: ${Array.isArray(title.genre) ? title.genre.join(', ') : title.genre}\n`;
+      if (title.tone) context += `   Tone: ${title.tone}\n`;
+      if (title.synopsis) context += `   Synopsis: ${title.synopsis.substring(0, 100)}...\n`;
+      context += `\n`;
     });
-    context += `\n`;
   }
 
   return context;

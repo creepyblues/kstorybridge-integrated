@@ -331,7 +331,9 @@ What kind of Korean content are you in the mood for today?`,
       console.log('🔍 OPENAI CHATBOT: Creating bot message with titles:', {
         hasRecommendedTitles: !!response.recommendedTitles,
         titlesLength: response.recommendedTitles?.length,
-        firstTitleStructure: response.recommendedTitles?.[0] ? Object.keys(response.recommendedTitles[0]) : 'No titles'
+        firstTitleStructure: response.recommendedTitles?.[0] ? Object.keys(response.recommendedTitles[0]) : 'No titles',
+        firstTitleData: response.recommendedTitles?.[0],
+        allTitlesHaveId: response.recommendedTitles?.every(t => !!t.title_id)
       });
 
       const botMessage: Message = {
@@ -692,6 +694,12 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                     )}
                     
                     {/* Title Recommendations */}
+                    {console.log('🎯 RENDERING TITLES:', {
+                      hasTitles: !!message.titles,
+                      titlesLength: message.titles?.length,
+                      firstTitle: message.titles?.[0],
+                      messageSender: message.sender
+                    })}
                     {message.titles && message.titles.length > 0 && (
                       <div className="mt-4 space-y-3">
                         <p className="text-xs font-medium text-gray-600">📚 Recommended titles:</p>

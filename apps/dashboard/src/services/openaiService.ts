@@ -341,17 +341,19 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
         throw new Error('Authentication required');
       }
 
-      // Call the backend API
+      // Call the backend API with cache busting
       const response = await fetch('/api/openai-enhanced', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
+          'Cache-Control': 'no-cache',
         },
         body: JSON.stringify({
           query: userQuery,
           conversationHistory: conversationHistory.slice(-6), // Limit context to last 6 messages
           userId,
+          timestamp: Date.now(), // Cache busting
         }),
       });
 

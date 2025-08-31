@@ -205,15 +205,26 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
       completion = await Promise.race([apiPromise, timeoutPromise]);
       
       aiResponse = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
-      console.log(`✅ OpenAI response received, length: ${aiResponse.length} characters`);
+      console.log(`✅ OpenAI API SUCCESS: Response received, length: ${aiResponse.length} characters`);
+      
+      // Add AI-powered indicator to successful responses
+      if (aiResponse && !aiResponse.includes('🎯 *Using AI-powered semantic search')) {
+        aiResponse = `🎯 *Using AI-powered semantic search to find your perfect matches*\n\n${aiResponse}`;
+      }
       
     } catch (openaiError) {
-      console.error('❌ OpenAI API Error:', openaiError);
-      console.error('OpenAI Error Details:', {
+      console.error('❌ OpenAI API Error (DETAILED):', {
+        name: openaiError.name,
+        message: openaiError.message,
         code: openaiError.code,
         status: openaiError.status,
-        message: openaiError.message
+        type: openaiError.type,
+        stack: openaiError.stack?.substring(0, 200),
+        fullError: openaiError
       });
+      
+      // Log what we're about to return as fallback
+      console.log('🔄 Falling back to database-only response due to OpenAI error');
       
       // Provide fallback response with database titles
       aiResponse = `Based on your query, here are titles from our KStoryBridge collection:\n\n📚 From Our KStoryBridge Collection:\n`;
@@ -232,6 +243,13 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
     const suggestedQueries = extractSuggestedQueries(aiResponse);
 
     console.log('✅ Sending enhanced response with database context');
+    console.log('📤 RESPONSE SUMMARY:', {
+      messageLength: aiResponse.length,
+      titleCount: relevantTitles.length,
+      usesAI: aiResponse.includes('AI-powered semantic search'),
+      hasFallback: aiResponse.includes('From Our KStoryBridge Collection'),
+      firstTitleHasId: relevantTitles[0]?.title_id ? 'YES' : 'NO'
+    });
 
     return res.status(200).json({
       message: aiResponse,

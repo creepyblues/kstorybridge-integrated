@@ -565,9 +565,9 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
-      <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+      <div className="w-full flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-4 sm:mb-6">
+        <div className="flex items-center gap-4 mb-3 px-3 sm:px-4 pt-3 sm:pt-4">
           <Button
             onClick={() => navigate("/profile")}
             variant="outline"
@@ -578,17 +578,17 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
             Back to Profile
           </Button>
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink leading-tight mb-2">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-midnight-ink leading-tight mb-1">
               🧠 OpenAI Powered Chatbot
             </h1>
-            <p className="text-sm sm:text-base text-midnight-ink-600">
+            <p className="text-xs sm:text-sm text-midnight-ink-600">
               Advanced AI conversations for Korean IP discovery
             </p>
           </div>
         </div>
 
-        {/* Chat Container - Flex-1 to take remaining height */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl flex-1 flex flex-col overflow-hidden">
+        {/* Chat Container - Full width and height with minimal margins */}
+        <Card className="bg-white border border-gray-200 shadow-lg rounded-xl flex-1 flex flex-col overflow-hidden mx-2 sm:mx-3 mb-2 sm:mb-3">
           {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
             {/* Loading History Indicator */}

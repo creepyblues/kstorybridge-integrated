@@ -244,10 +244,10 @@ What type of Korean IP are you looking for today?`,
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+    <div className="h-screen bg-gray-50 flex flex-col">
+      <div className="w-full flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-4 mb-3 px-3 sm:px-4 pt-3 sm:pt-4">
           <Button
             onClick={() => navigate("/profile")}
             variant="outline"
@@ -258,19 +258,19 @@ What type of Korean IP are you looking for today?`,
             Back to Profile
           </Button>
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink leading-tight mb-2">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-midnight-ink leading-tight mb-1">
               🤖 AI IP Discovery Chatbot
             </h1>
-            <p className="text-sm sm:text-base text-midnight-ink-600">
+            <p className="text-xs sm:text-sm text-midnight-ink-600">
               Find the perfect Korean IPs using natural language search
             </p>
           </div>
         </div>
 
-        {/* Chat Container */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl h-[600px] flex flex-col">
+        {/* Chat Container - Full width and height with minimal margins */}
+        <Card className="bg-white border border-gray-200 shadow-lg rounded-xl flex-1 flex flex-col overflow-hidden mx-2 sm:mx-3 mb-2 sm:mb-3">
           {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -289,7 +289,7 @@ What type of Korean IP are you looking for today?`,
 
                 {/* Message Content */}
                 <div className={`flex-1 ${message.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                  <div className={`inline-block max-w-[80%] px-4 py-3 rounded-2xl ${
+                  <div className={`inline-block max-w-[90%] sm:max-w-[85%] lg:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-2xl ${
                     message.sender === 'user'
                       ? 'bg-hanok-teal text-white'
                       : 'bg-gray-100 text-gray-800'
@@ -330,19 +330,19 @@ What type of Korean IP are you looking for today?`,
           </div>
 
           {/* Input Area */}
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex gap-3">
+          <div className="border-t border-gray-200 p-3 sm:p-4">
+            <div className="flex gap-2 sm:gap-3">
               <div className="flex-1 relative">
                 <textarea
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder="Ask me about Korean IPs... e.g., 'romantic comedy webtoons' or 'dark thriller like Squid Game'"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-hanok-teal text-sm"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-hanok-teal text-xs sm:text-sm"
                   rows={2}
                   disabled={isLoading}
                 />
-                <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs text-gray-400">
+                <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs text-gray-400 hidden sm:flex">
                   <Sparkles size={12} />
                   <span>AI Powered</span>
                 </div>
@@ -350,20 +350,13 @@ What type of Korean IP are you looking for today?`,
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || isLoading}
-                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 py-3 rounded-xl self-end"
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl self-end"
               >
                 <Send size={16} />
               </Button>
             </div>
           </div>
         </Card>
-
-        {/* Help Text */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
-            💡 <strong>Pro tip:</strong> Be specific with genres, themes, or comparable titles for better results
-          </p>
-        </div>
       </div>
     </div>
   );

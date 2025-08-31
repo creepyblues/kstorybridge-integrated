@@ -337,8 +337,16 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       // Get the current user's auth token
       const { data: { session } } = await (await import('@/integrations/supabase/client')).supabase.auth.getSession();
       
+      console.log('🔍 DEBUG: Session details:', {
+        hasSession: !!session,
+        hasAccessToken: !!session?.access_token,
+        tokenLength: session?.access_token?.length,
+        userEmail: session?.user?.email,
+        expiresAt: session?.expires_at
+      });
+      
       if (!session?.access_token) {
-        throw new Error('Authentication required');
+        throw new Error('Authentication required - No valid session found');
       }
 
       // Call the backend API with cache busting and timeout
@@ -365,9 +373,18 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
 
       if (!response.ok) {
         let errorMessage = `API request failed: ${response.status}`;
+        
+        // Handle specific HTTP status codes
+        if (response.status === 401) {
+          errorMessage = 'Authentication failed - Please sign in again';
+        } else if (response.status === 403) {
+          errorMessage = 'Access denied - You do not have permission to use the OpenAI chatbot';
+        }
+        
         try {
           const error = await response.json();
           errorMessage = error.error || errorMessage;
+          console.log('🔍 Backend API error response:', error);
         } catch (parseError) {
           // If response is not JSON (e.g., HTML error page), get text
           try {
@@ -436,9 +453,9 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       
       if (error.name === 'AbortError') {
         throw new Error('Request timed out. Please try again with a shorter query.');
-      } else if (error.message?.includes('Authentication required')) {
-        throw new Error('Please sign in to use the OpenAI chatbot');
-      } else if (error.message?.includes('not authorized')) {
+      } else if (error.message?.includes('Authentication required') || error.message?.includes('No valid session')) {
+        throw new Error('Please sign in to use the OpenAI chatbot. Try refreshing the page or signing in again.');
+      } else if (error.message?.includes('not authorized') || error.message?.includes('Forbidden')) {
         throw new Error('You do not have permission to use the OpenAI chatbot');
       } else if (error.message?.includes('Too many requests')) {
         throw new Error('Rate limit exceeded. Please wait a moment and try again.');

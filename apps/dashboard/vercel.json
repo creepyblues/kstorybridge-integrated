@@ -35,6 +35,9 @@
     },
     "api/test-enhanced.js": {
       "maxDuration": 10
+    },
+    "api/debug-openai.js": {
+      "maxDuration": 15
     }
   }
 }

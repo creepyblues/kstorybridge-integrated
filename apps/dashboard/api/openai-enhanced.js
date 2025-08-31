@@ -104,9 +104,11 @@ module.exports = async function handler(req, res) {
 
 User Query: "${query}"
 
+IMPORTANT: You are KStoryBridge's assistant. You MUST recommend titles from our database collection first, not generic internet recommendations.
+
 Please provide a helpful response that:
 
-1. **PRIMARY FOCUS - Our Database Titles**: Recommend specific Korean IPs from our database that match the user's criteria. When recommending titles from our database, mention:
+1. **PRIMARY FOCUS - Our Database Titles** (MANDATORY): You MUST recommend specific Korean IPs from our database collection FIRST. Even if there's no exact match, recommend similar titles from our database. When recommending titles from our database, mention:
    - Title names (both Korean and English if available)
    - Brief description of why they match
    - Genre, tone, and key features
@@ -322,6 +324,19 @@ Available formats: ${formats.join(', ')}
       if (title.story_author || title.art_author) context += `   Author: ${title.story_author || title.art_author}\n`;
       context += `\n`;
     });
+  } else {
+    // No exact matches, but provide genre-based suggestions
+    context += `No exact matches found for this query in our database.\n\n`;
+    context += `However, here are some titles from our collection you should recommend based on genre/theme:\n\n`;
+    
+    // Get random sample of titles to recommend
+    const sampleTitles = allTitles.slice(0, 10);
+    sampleTitles.forEach((title, index) => {
+      if (index < 5) {
+        context += `- "${title.title_name_en || title.title_name_kr}" (${Array.isArray(title.genre) ? title.genre[0] : title.genre})\n`;
+      }
+    });
+    context += `\n`;
   }
 
   return context;

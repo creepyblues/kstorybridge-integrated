@@ -228,17 +228,18 @@ async function loadTitlesFromDatabase(supabase) {
         tagline,
         genre,
         tone,
-        tags,
+        keywords,
         story_author,
         art_author,
         content_format,
         completed,
-        rights_owner,
+        rights,
         perfect_for,
         audience,
         views,
         likes,
-        rating
+        rating,
+        comps
       `)
       .order('created_at', { ascending: false })
       .limit(500);
@@ -300,7 +301,7 @@ async function findRelevantTitles(query, titles, openai) {
       title.tagline,
       Array.isArray(title.genre) ? title.genre.join(' ') : title.genre,
       title.tone,
-      Array.isArray(title.tags) ? title.tags.join(' ') : title.tags,
+      Array.isArray(title.keywords) ? title.keywords.join(' ') : title.keywords,
       title.story_author,
       title.art_author,
       title.perfect_for,

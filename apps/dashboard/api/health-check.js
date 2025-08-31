@@ -35,15 +35,39 @@ module.exports = async function handler(req, res) {
       if (process.env.OPENAI_API_KEY) {
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
         results.checks.openai_client = { success: true };
+        
+        // Check 4: Actual OpenAI API Call
+        try {
+          const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [{ role: "user", content: "Say hello" }],
+            max_tokens: 10,
+          });
+          
+          results.checks.openai_api = { 
+            success: true, 
+            response: completion.choices[0]?.message?.content || 'no content',
+            usage: completion.usage
+          };
+        } catch (apiError) {
+          results.checks.openai_api = { 
+            success: false, 
+            error: apiError.message,
+            code: apiError.code,
+            type: apiError.type,
+            status: apiError.status
+          };
+        }
       } else {
         results.checks.openai_client = { success: false, error: 'No API key' };
+        results.checks.openai_api = { success: false, error: 'No API key' };
       }
     } catch (error) {
       results.checks.openai_import = { success: false, error: error.message };
       results.checks.openai_client = { success: false, error: 'Import failed' };
     }
 
-    // Check 4: Supabase Connection
+    // Check 5: Supabase Connection
     try {
       if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
         const supabase = createClient(

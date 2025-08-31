@@ -10,11 +10,23 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 module.exports = async function handler(req, res) {
   try {
     console.log('🚀 Enhanced OpenAI Chat API started');
+    console.log('📊 Request details:', {
+      method: req.method,
+      origin: req.headers.origin,
+      userAgent: req.headers['user-agent']?.substring(0, 50),
+      hasAuth: !!req.headers.authorization
+    });
 
     // Environment variables
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+    
+    console.log('🔧 Environment check:', {
+      OPENAI_API_KEY: !!OPENAI_API_KEY ? 'present' : 'missing',
+      SUPABASE_URL: !!SUPABASE_URL ? 'present' : 'missing',
+      SUPABASE_SERVICE_KEY: !!SUPABASE_SERVICE_KEY ? 'present' : 'missing'
+    });
 
     // CORS headers
     const allowedOrigins = [
@@ -69,23 +81,31 @@ module.exports = async function handler(req, res) {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     // Authentication
+    console.log('🔐 Starting authentication...');
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ No auth header provided');
       return res.status(401).json({ error: 'Unauthorized - No token provided' });
     }
 
     const token = authHeader.substring(7);
+    console.log('🔑 Token received, length:', token.length);
+    
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
+      console.log('❌ Authentication failed:', authError?.message || 'No user returned');
       return res.status(401).json({ error: 'Unauthorized - Invalid token' });
     }
 
     // Check authorized users
+    console.log('✅ User authenticated:', user.email);
     const ALLOWED_USERS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
     if (!ALLOWED_USERS.includes(user.email)) {
+      console.log('❌ User not authorized:', user.email);
       return res.status(403).json({ error: 'Forbidden - User not authorized' });
     }
+    console.log('✅ User authorized for OpenAI chatbot');
 
     // Get request data
     const { query, conversationHistory } = req.body || {};
@@ -236,10 +256,12 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
 
   } catch (error) {
     console.error('❌ Enhanced OpenAI API error:', error);
-    console.error('Error details:', {
+    console.error('🔍 Error details:', {
       name: error.name,
       message: error.message,
-      stack: error.stack?.split('\n').slice(0, 5)
+      stack: error.stack?.split('\n').slice(0, 5),
+      cause: error.cause,
+      type: typeof error
     });
     
     // More specific error messages

@@ -342,7 +342,7 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       }
 
       // Call the backend API
-      const response = await fetch('/api/openai-simple', {
+      const response = await fetch('/api/openai-enhanced', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -384,16 +384,32 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       }
       console.log('✅ Received response from backend API');
 
-      // Find relevant titles (using local search since API doesn't have access to titles)
-      await this.initialize();
-      const searchResult = await this.findRelevantTitlesWithVector(userQuery, userId, sessionId);
+      // Enhanced backend API now provides titles directly from database
+      const recommendedTitles = data.recommendedTitles || [];
+      const databaseStats = data.databaseStats || {};
+      
+      // Convert backend titles to frontend Title format
+      const formattedTitles = recommendedTitles.map(title => ({
+        title_id: title.title_id,
+        title_name_en: title.title_name_en,
+        title_name_kr: title.title_name_kr,
+        synopsis: title.synopsis,
+        genre: title.genre,
+        tone: title.tone,
+        author: title.author,
+        score: title.score || 0
+      }));
 
       return {
         message: data.message,
-        recommendedTitles: searchResult.titles,
+        recommendedTitles: formattedTitles,
         suggestedQueries: data.suggestedQueries || [],
-        vectorSearchUsed: searchResult.vectorSearchUsed,
-        searchContext: searchResult.searchContext,
+        vectorSearchUsed: databaseStats.vectorSearchUsed || false,
+        searchContext: {
+          totalTitles: databaseStats.totalTitles,
+          relevantTitles: databaseStats.relevantTitles,
+          source: 'backend-database'
+        },
       };
 
     } catch (error: any) {

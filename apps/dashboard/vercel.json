@@ -23,6 +23,9 @@
     },
     "api/embeddings.js": {
       "maxDuration": 30
+    },
+    "api/openai-enhanced.js": {
+      "maxDuration": 30
     }
   }
 }

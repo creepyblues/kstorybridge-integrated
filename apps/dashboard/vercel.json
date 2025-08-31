@@ -26,6 +26,9 @@
     },
     "api/openai-enhanced.js": {
       "maxDuration": 30
+    },
+    "api/test-database.js": {
+      "maxDuration": 10
     }
   }
 }

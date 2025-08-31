@@ -188,15 +188,15 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
     try {
       console.log(`🤖 Calling OpenAI with prompt length: ${prompt.length} characters`);
       
-      // Add timeout protection
+      // Add timeout protection (reduced for reliability)
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('OpenAI request timeout after 25 seconds')), 25000);
+        setTimeout(() => reject(new Error('OpenAI request timeout after 20 seconds')), 20000);
       });
       
       const apiPromise = openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 800,
+        max_tokens: 500, // Reduced for faster responses
         temperature: 0.7,
         presence_penalty: 0.1,
         frequency_penalty: 0.1,

@@ -113,6 +113,14 @@ export default function OpenAIChatbot() {
 
   // Check if user is authorized (same users as existing chatbot)
   const isAuthorized = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  
+  console.log('🚀 OPENAI CHATBOT COMPONENT LOADED:', {
+    system: 'OpenAI API with Vector Search',
+    service: 'openaiService.generateChatResponse',
+    user: user?.email,
+    isAuthorized,
+    environment: import.meta.env.PROD ? 'production' : 'development'
+  });
 
   useEffect(() => {
     if (!isAuthorized) {
@@ -263,6 +271,14 @@ What kind of Korean content are you in the mood for today?`,
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !currentSession || !user) return;
 
+    console.log('🤖 OPENAI CHATBOT: Starting message processing', {
+      system: 'OpenAI API with Vector Search',
+      service: 'openaiService.generateChatResponse',
+      query: inputMessage.trim(),
+      user: user?.email,
+      sessionId: currentSession.id
+    });
+
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputMessage.trim(),
@@ -302,6 +318,13 @@ What kind of Korean content are you in the mood for today?`,
       );
       
       const responseTime = Date.now() - startTime;
+      console.log('✅ OPENAI CHATBOT SUCCESS:', {
+        system: 'OpenAI API with Vector Search',
+        responseTime: responseTime + 'ms',
+        titlesFound: response.recommendedTitles?.length || 0,
+        vectorSearchUsed: response.vectorSearchUsed,
+        user: user?.email
+      });
       
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -355,7 +378,14 @@ What kind of Korean content are you in the mood for today?`,
 
       setMessages(prev => [...prev, botMessage]);
     } catch (error: any) {
-      console.error("Error processing message:", error);
+      console.error("🚨 OPENAI CHATBOT ERROR:", {
+        system: 'OpenAI API with Vector Search',
+        service: 'openaiService.generateChatResponse',
+        error: error.message,
+        fullError: error,
+        user: user?.email,
+        query: inputMessage
+      });
       
       const responseTime = Date.now() - startTime;
       const errorMessage: Message = {

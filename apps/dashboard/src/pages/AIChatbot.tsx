@@ -30,6 +30,14 @@ export default function AIChatbot() {
 
   // Check if user is authorized
   const isAuthorized = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  
+  console.log('🔍 AI CHATBOT COMPONENT LOADED:', {
+    system: 'KStoryBridge Database Search',
+    service: 'chatbotService.searchTitles',
+    user: user?.email,
+    isAuthorized,
+    environment: import.meta.env.PROD ? 'production' : 'development'
+  });
 
   useEffect(() => {
     if (!isAuthorized) {
@@ -121,6 +129,13 @@ What type of Korean IP are you looking for today?`,
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
+    console.log('🔍 AI CHATBOT: Starting message processing', {
+      system: 'KStoryBridge Database Search',
+      service: 'chatbotService.searchTitles',
+      query: inputMessage.trim(),
+      user: user?.email
+    });
+
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputMessage.trim(),
@@ -135,6 +150,13 @@ What type of Korean IP are you looking for today?`,
     try {
       const response = await analyzeUserQuery(userMessage.content);
       
+      console.log('✅ AI CHATBOT SUCCESS:', {
+        system: 'KStoryBridge Database Search',
+        titlesFound: response.titles?.length || 0,
+        user: user?.email,
+        hasSearchQuery: !!response.searchQuery
+      });
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: response.message,
@@ -144,8 +166,15 @@ What type of Korean IP are you looking for today?`,
       };
 
       setMessages(prev => [...prev, botMessage]);
-    } catch (error) {
-      console.error("Error processing message:", error);
+    } catch (error: any) {
+      console.error("🚨 AI CHATBOT ERROR:", {
+        system: 'KStoryBridge Database Search',
+        service: 'chatbotService.searchTitles',
+        error: error.message,
+        fullError: error,
+        user: user?.email,
+        query: inputMessage
+      });
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),

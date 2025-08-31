@@ -564,10 +564,10 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+    <div className="h-screen bg-gray-50 flex flex-col">
+      <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-4 mb-4 sm:mb-6">
           <Button
             onClick={() => navigate("/profile")}
             variant="outline"
@@ -587,8 +587,8 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
           </div>
         </div>
 
-        {/* Chat Container */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl h-[500px] sm:h-[600px] lg:h-[700px] flex flex-col">
+        {/* Chat Container - Flex-1 to take remaining height */}
+        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl flex-1 flex flex-col overflow-hidden">
           {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
             {/* Loading History Indicator */}
@@ -715,13 +715,6 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
             </div>
           </div>
         </Card>
-
-        {/* Help Text */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
-            🧠 <strong>Powered by OpenAI:</strong> This AI understands complex requests and remembers our conversation context
-          </p>
-        </div>
       </div>
     </div>
   );

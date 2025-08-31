@@ -341,7 +341,10 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
         throw new Error('Authentication required');
       }
 
-      // Call the backend API with cache busting
+      // Call the backend API with cache busting and timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const response = await fetch('/api/openai-enhanced', {
         method: 'POST',
         headers: {
@@ -355,7 +358,10 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
           userId,
           timestamp: Date.now(), // Cache busting
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorMessage = `API request failed: ${response.status}`;
@@ -377,12 +383,23 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
 
       let data;
       try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error('Failed to parse successful response as JSON:', parseError);
         const responseText = await response.text();
-        console.error('Response text:', responseText.substring(0, 500));
-        throw new Error('Server returned invalid JSON response');
+        console.log('🔍 Raw response preview:', responseText.substring(0, 200) + '...');
+        
+        if (!responseText || responseText.trim() === '') {
+          throw new Error('Server returned empty response');
+        }
+        
+        // Check if response looks like HTML error page
+        if (responseText.trim().startsWith('<')) {
+          console.error('❌ Received HTML instead of JSON:', responseText.substring(0, 300));
+          throw new Error('Server configuration error - received HTML instead of JSON');
+        }
+        
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error('Server returned malformed response. Please try again.');
       }
       console.log('✅ Received response from backend API');
 
@@ -417,15 +434,33 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
     } catch (error: any) {
       console.error('❌ Backend API Error:', error);
       
-      if (error.message?.includes('Authentication required')) {
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again with a shorter query.');
+      } else if (error.message?.includes('Authentication required')) {
         throw new Error('Please sign in to use the OpenAI chatbot');
       } else if (error.message?.includes('not authorized')) {
         throw new Error('You do not have permission to use the OpenAI chatbot');
       } else if (error.message?.includes('Too many requests')) {
         throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      } else if (error.message?.includes('timeout') || error.message?.includes('TIMEOUT')) {
+        throw new Error('Request timed out. Please try again with a shorter query.');
+      } else if (error.message?.includes('Function crashed') || error.message?.includes('FUNCTION_INVOCATION_FAILED')) {
+        throw new Error('Service temporarily unavailable. Please try again in a moment.');
+      } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+        throw new Error('Network error. Please check your connection and try again.');
       }
       
-      throw new Error(`Failed to generate AI response: ${error.message}`);
+      // Enhanced error handling with fallback message
+      const errorMsg = error.message || 'Unknown error occurred';
+      console.error('❌ Full error details:', {
+        message: errorMsg,
+        stack: error.stack,
+        name: error.name,
+        cause: error.cause,
+        type: typeof error
+      });
+      
+      throw new Error(`AI service error: ${errorMsg.includes('Internal server error') ? 'Service temporarily unavailable' : errorMsg}`);
     }
   }
 

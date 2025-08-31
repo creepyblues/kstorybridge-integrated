@@ -87,6 +87,15 @@ module.exports = async function handler(req, res) {
     // Load titles from database (with caching)
     let titles = await loadTitlesFromDatabase(supabase);
     console.log(`📚 Loaded ${titles.length} titles from database`);
+    
+    // If no titles loaded, try once more without cache
+    if (!titles || titles.length === 0) {
+      console.log('⚠️ No titles loaded, clearing cache and retrying...');
+      titlesCache = null;
+      cacheTimestamp = null;
+      titles = await loadTitlesFromDatabase(supabase);
+      console.log(`📚 Retry loaded ${titles.length} titles from database`);
+    }
 
     // Find relevant titles using vector search and text matching
     let relevantTitles = await findRelevantTitles(query, titles, openai);
@@ -187,15 +196,28 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
 async function loadTitlesFromDatabase(supabase) {
   const now = Date.now();
   
-  // Return cached titles if still valid
-  if (titlesCache && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
-    console.log('📦 Using cached titles');
+  // Only use cache if it has actual titles (not empty)
+  if (titlesCache && titlesCache.length > 0 && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
+    console.log(`📦 Using cached titles (${titlesCache.length} titles)`);
     return titlesCache;
   }
 
   try {
-    console.log('🔄 Loading titles from database...');
+    console.log('🔄 Loading fresh titles from database...');
     
+    // First try a simple query to test connection
+    const { data: testData, error: testError } = await supabase
+      .from('titles')
+      .select('title_id')
+      .limit(1);
+    
+    if (testError) {
+      console.error('❌ Database connection test failed:', testError);
+      // Don't cache empty results
+      return [];
+    }
+    
+    // Now load full data with proper column names
     const { data: titles, error } = await supabase
       .from('titles')
       .select(`
@@ -219,21 +241,31 @@ async function loadTitlesFromDatabase(supabase) {
         rating
       `)
       .order('created_at', { ascending: false })
-      .limit(500); // Limit for performance
+      .limit(500);
 
     if (error) {
-      console.error('❌ Database error:', error);
+      console.error('❌ Database query error:', error.message);
+      console.error('Full error:', error);
+      // Don't cache empty results on error
       return [];
     }
 
-    // Cache the results
-    titlesCache = titles || [];
+    if (!titles || titles.length === 0) {
+      console.error('⚠️ No titles returned from database');
+      // Don't cache empty results
+      return [];
+    }
+
+    // Only cache if we got actual titles
+    titlesCache = titles;
     cacheTimestamp = now;
     
-    console.log(`✅ Loaded ${titlesCache.length} titles from database`);
-    return titlesCache;
+    console.log(`✅ Loaded ${titles.length} titles from database`);
+    return titles;
   } catch (error) {
-    console.error('❌ Failed to load titles:', error);
+    console.error('❌ Failed to load titles:', error.message);
+    console.error('Full error:', error);
+    // Don't cache errors
     return [];
   }
 }

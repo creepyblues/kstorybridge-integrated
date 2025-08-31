@@ -17,6 +17,9 @@
     },
     "api/openai-enhanced.js": {
       "maxDuration": 30
+    },
+    "api/health-check.js": {
+      "maxDuration": 10
     }
   }
 }

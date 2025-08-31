@@ -323,9 +323,17 @@ What kind of Korean content are you in the mood for today?`,
         responseTime: responseTime + 'ms',
         titlesFound: response.recommendedTitles?.length || 0,
         vectorSearchUsed: response.vectorSearchUsed,
-        user: user?.email
+        user: user?.email,
+        titlesData: response.recommendedTitles?.slice(0, 2), // Show first 2 titles for debugging
+        hasValidTitles: response.recommendedTitles?.some(t => t.title_id)
       });
       
+      console.log('🔍 OPENAI CHATBOT: Creating bot message with titles:', {
+        hasRecommendedTitles: !!response.recommendedTitles,
+        titlesLength: response.recommendedTitles?.length,
+        firstTitleStructure: response.recommendedTitles?.[0] ? Object.keys(response.recommendedTitles[0]) : 'No titles'
+      });
+
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: response.message,

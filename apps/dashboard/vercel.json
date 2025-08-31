@@ -29,6 +29,9 @@
     },
     "api/test-database.js": {
       "maxDuration": 10
+    },
+    "api/debug-titles.js": {
+      "maxDuration": 10
     }
   }
 }

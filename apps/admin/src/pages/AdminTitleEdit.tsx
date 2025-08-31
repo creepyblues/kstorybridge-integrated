@@ -383,7 +383,7 @@ export default function AdminTitleEdit() {
                     </label>
                     <Textarea
                       value={formData.synopsis || ''}
-                      onChange={(e) => handleInputChange('synopsis', e.target.value))
+                      onChange={(e) => handleInputChange('synopsis', e.target.value)}
                       placeholder="Brief synopsis of the content"
                       rows={4}
                     />

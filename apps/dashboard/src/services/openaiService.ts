@@ -79,9 +79,9 @@ class OpenAIService {
     if (this.allTitles.length === 0) {
       try {
         console.log('📚 Loading titles for LLM context...');
-        // Add timeout for titles loading
+        // Add timeout for titles loading (increased to 10 seconds for slower connections)
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Titles loading timeout after 5 seconds')), 5000);
+          setTimeout(() => reject(new Error('Titles loading timeout after 10 seconds')), 10000);
         });
 
         const titlesPromise = titlesService.getAllTitles();

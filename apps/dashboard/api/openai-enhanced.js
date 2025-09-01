@@ -254,8 +254,15 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
       completion = { usage: null }; // Fallback for usage stats
     }
 
+    // Post-process AI response to ensure database title names are used
+    let processedResponse = aiResponse;
+    if (relevantTitles.length > 0) {
+      console.log('🔧 Post-processing AI response to fix title names...');
+      processedResponse = replaceWithDatabaseTitles(aiResponse, relevantTitles);
+    }
+
     // Extract suggested queries
-    const suggestedQueries = extractSuggestedQueries(aiResponse);
+    const suggestedQueries = extractSuggestedQueries(processedResponse);
 
     console.log('✅ Sending enhanced response with database context');
     console.log('📤 RESPONSE SUMMARY:', {
@@ -267,7 +274,7 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
     });
 
     return res.status(200).json({
-      message: aiResponse,
+      message: processedResponse,
       recommendedTitles: relevantTitles.map(title => ({
         title_id: title.title_id || '',
         title_name_en: title.title_name_en || '',
@@ -563,4 +570,37 @@ function extractSuggestedQueries(aiResponse) {
   });
   
   return suggestions.slice(0, 3);
+}
+
+// Replace any fictional titles in AI response with actual database titles
+function replaceWithDatabaseTitles(aiResponse, relevantTitles) {
+  let processedResponse = aiResponse;
+  
+  // Find numbered list items (1. 2. 3. etc.) with quotes
+  const numberedItems = aiResponse.match(/^\d+\.\s+".*?"/gm) || [];
+  
+  console.log('🔍 Found numbered items to replace:', numberedItems);
+  
+  numberedItems.forEach((item, index) => {
+    if (index < relevantTitles.length) {
+      const databaseTitle = relevantTitles[index];
+      const actualTitleName = databaseTitle.title_name_en || databaseTitle.title_name_kr;
+      
+      // Extract the number and create the replacement
+      const numberMatch = item.match(/^(\d+\.\s+)/);
+      if (numberMatch && actualTitleName) {
+        const numberPart = numberMatch[1];
+        const koreanPart = databaseTitle.title_name_kr && databaseTitle.title_name_en 
+          ? ` (${databaseTitle.title_name_kr})`
+          : '';
+        
+        const replacement = `${numberPart}"${actualTitleName}"${koreanPart}`;
+        
+        console.log(`🔄 Replacing: ${item} → ${replacement}`);
+        processedResponse = processedResponse.replace(item, replacement);
+      }
+    }
+  });
+  
+  return processedResponse;
 }

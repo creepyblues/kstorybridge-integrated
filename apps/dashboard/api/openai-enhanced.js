@@ -577,7 +577,16 @@ function replaceWithDatabaseTitles(aiResponse, relevantTitles) {
   let processedResponse = aiResponse;
   
   // Find numbered list items (1. 2. 3. etc.) with quotes
-  const numberedItems = aiResponse.match(/^\d+\.\s+".*?"/gm) || [];
+  // Try multiple patterns to catch different AI output formats
+  const numberedItems = aiResponse.match(/^\d+\.\s*"[^"]*"/gm) || 
+                        aiResponse.match(/^\d+\.\s*".*?"/gm) || 
+                        aiResponse.match(/^\d+\.\s+\*\*[^*]+\*\*/gm) || 
+                        [];
+  
+  console.log('🔍 AI Response preview:', aiResponse.substring(0, 500));
+  console.log('🔍 Looking for numbered items with patterns:');
+  console.log('   - Quote pattern: /^\\d+\\.\\s*"[^"]*"/gm');
+  console.log('   - Bold pattern: /^\\d+\\.\\s+\\*\\*[^*]+\\*\\*/gm');
   
   console.log('🔍 Found numbered items to replace:', numberedItems);
   
@@ -587,7 +596,7 @@ function replaceWithDatabaseTitles(aiResponse, relevantTitles) {
       const actualTitleName = databaseTitle.title_name_en || databaseTitle.title_name_kr;
       
       // Extract the number and create the replacement
-      const numberMatch = item.match(/^(\d+\.\s+)/);
+      const numberMatch = item.match(/^(\d+\.\s*)/);
       if (numberMatch && actualTitleName) {
         const numberPart = numberMatch[1];
         const koreanPart = databaseTitle.title_name_kr && databaseTitle.title_name_en 
@@ -595,9 +604,19 @@ function replaceWithDatabaseTitles(aiResponse, relevantTitles) {
           : '';
         
         const titleId = databaseTitle.title_id.substring(0, 8); // First 8 chars for debugging
-        const replacement = `${numberPart}"${actualTitleName}" [ID: ${titleId}]${koreanPart}`;
         
-        console.log(`🔄 Replacing: ${item} → ${replacement}`);
+        // Handle both quote and bold formats
+        let replacement;
+        if (item.includes('"')) {
+          replacement = `${numberPart}"${actualTitleName}" [ID: ${titleId}]${koreanPart}`;
+        } else if (item.includes('**')) {
+          replacement = `${numberPart}"${actualTitleName}" [ID: ${titleId}]${koreanPart}`;
+        } else {
+          replacement = `${numberPart}"${actualTitleName}" [ID: ${titleId}]${koreanPart}`;
+        }
+        
+        console.log(`🔄 Replacing: ${item}`);
+        console.log(`    → ${replacement}`);
         processedResponse = processedResponse.replace(item, replacement);
       }
     }

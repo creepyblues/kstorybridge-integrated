@@ -18,7 +18,7 @@ interface Message {
 }
 
 // Component to format markdown-like content - simplified, no title matching
-const FormattedMessage = ({ content }: { content: string }) => {
+const FormattedMessage = ({ content, navigate }: { content: string, navigate: any }) => {
   const formatText = (text: string) => {
     // Split by lines to preserve line breaks
     return text.split('\n').map((line, idx) => {
@@ -73,7 +73,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
             <span key={partIdx} className="inline-flex items-center gap-2">
               <span className="font-medium">"{quotedText}"</span>
               <button
-                onClick={() => navigate(`/titles?search=${encodeURIComponent(quotedText)}`)}
+                onClick={() => navigate(`/search-results?search=${encodeURIComponent(quotedText)}`)}
                 className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
                 title={`Search for "${quotedText}"`}
               >
@@ -94,7 +94,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
             <span key={partIdx} className="inline-flex items-center gap-2">
               <strong className="font-semibold">{boldText}</strong>
               <button
-                onClick={() => navigate(`/titles?search=${encodeURIComponent(boldText)}`)}
+                onClick={() => navigate(`/search-results?search=${encodeURIComponent(boldText)}`)}
                 className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
                 title={`Search for "${boldText}"`}
               >
@@ -751,7 +751,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <div className="text-sm prose prose-sm max-w-none">
-                      <FormattedMessage content={message.content} />
+                      <FormattedMessage content={message.content} navigate={navigate} />
                     </div>
                     
                     {/* Suggested Queries */}

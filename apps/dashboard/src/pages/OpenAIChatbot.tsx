@@ -582,6 +582,11 @@ What kind of Korean content are you in the mood for today?`,
     setMessages(prev => [...prev, userMessage]);
     setInputMessage("");
     setIsLoading(true);
+    
+    // Reset to truncated view when starting new conversation
+    if (showAllMessages) {
+      setShowAllMessages(false);
+    }
 
     // Record user message in database
     const userDbMessage = await chatHistoryService.recordMessage({
@@ -926,8 +931,23 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
               </div>
             )}
             
+            {/* Show older messages button if messages are truncated */}
+            {!isLoadingHistory && getHiddenMessagesCount() > 0 && !showAllMessages && (
+              <div className="flex justify-center py-4">
+                <button
+                  onClick={() => setShowAllMessages(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm rounded-lg transition-colors"
+                >
+                  <span>Show {getHiddenMessagesCount()} older messages</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
+            
             {!isLoadingHistory &&
-            messages.map((message) => (
+            getDisplayMessages().map((message) => (
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
@@ -1004,6 +1024,21 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                     <span className="text-sm">AI is thinking...</span>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Show collapse button if all messages are shown and there are hidden messages */}
+            {!isLoadingHistory && showAllMessages && messages.length > 5 && (
+              <div className="flex justify-center py-4">
+                <button
+                  onClick={() => setShowAllMessages(false)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm rounded-lg transition-colors"
+                >
+                  <span>Show recent messages only</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
               </div>
             )}
             

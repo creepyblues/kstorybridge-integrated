@@ -261,6 +261,16 @@ What kind of Korean content are you in the mood for today?`,
   }, [isAuthorized, navigate, toast, user]);
 
   useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.sender === 'bot') {
+      console.log('🔄 MESSAGES STATE UPDATED:', {
+        totalMessages: messages.length,
+        lastMessageId: lastMessage.id,
+        lastMessageHasTitles: !!lastMessage.titles,
+        lastMessageTitlesCount: lastMessage.titles?.length,
+        lastMessageTitlesFirstTitle: lastMessage.titles?.[0]
+      });
+    }
     scrollToBottom();
   }, [messages]);
 
@@ -412,7 +422,15 @@ What kind of Korean content are you in the mood for today?`,
         titlesCountBeforeState: botMessage.titles?.length
       });
 
-      setMessages(prev => [...prev, botMessage]);
+      setMessages(prev => {
+        console.log('⚡ SETTING MESSAGES STATE:', {
+          prevLength: prev.length,
+          addingMessage: botMessage.id,
+          addingMessageHasTitles: !!botMessage.titles,
+          addingMessageTitlesCount: botMessage.titles?.length
+        });
+        return [...prev, botMessage];
+      });
     } catch (error: any) {
       console.error("🚨 OPENAI CHATBOT ERROR:", {
         system: 'OpenAI API with Vector Search',

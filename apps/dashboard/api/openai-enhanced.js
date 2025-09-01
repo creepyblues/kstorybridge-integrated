@@ -403,11 +403,6 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
       aiResponse = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
       console.log(`✅ OpenAI API SUCCESS: Response received, length: ${aiResponse.length} characters`);
       
-      // Add AI-powered indicator to successful responses
-      if (aiResponse && !aiResponse.includes('🎯 *Using AI-powered semantic search')) {
-        aiResponse = `🎯 *Using AI-powered semantic search to find your perfect matches*\n\n${aiResponse}`;
-      }
-      
     } catch (openaiError) {
       // Use standardized error handling
       const standardError = ChatbotErrorHandler.categorizeError(openaiError, 'production');
@@ -476,6 +471,8 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
         genre: title.genre || '',
         tone: title.tone || '',
         author: title.story_author || title.art_author || '',
+        title_image: title.title_image || '',
+        pitch: title.pitch || '',
         score: title.score || 0
       })),
       suggestedQueries: suggestedQueries || [],

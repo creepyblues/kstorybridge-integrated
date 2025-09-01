@@ -127,50 +127,38 @@ const FormattedMessage = ({ content, navigate, titleData }: { content: string, n
         const quotedText = part.slice(1, -1);
         if (isNumberedRecommendation) {
           // Check if the quoted text contains a title ID pattern [ID: xxxxx] (Title Name)
-          const titleIdMatch = quotedText.match(/\[ID:\s*([a-f0-9-]{8,})\]\s*\((.*?)\)/i);
+          // Extract just the title name without the ID pattern
+          const titleIdPattern = /\[ID:\s*([a-f0-9-]{8,})\]\s*\(([^)]+)\)/i;
+          const titleIdMatch = quotedText.match(titleIdPattern);
           
           if (titleIdMatch) {
             const titleId = titleIdMatch[1];
             const titleName = titleIdMatch[2];
+            // Return just the clickable title name without the FIND MORE button
             return (
-              <span key={partIdx} className="inline-flex items-center gap-2">
-                <button
-                  onClick={() => navigate(`/titles/${titleId}`)}
-                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                  title={`View "${titleName}" details`}
-                >
-                  "{titleName}"
-                </button>
-                <button
-                  onClick={() => navigate(`/titles/${titleId}`)}
-                  className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                  title={`View "${titleName}" details`}
-                >
-                  → FIND MORE
-                </button>
-              </span>
+              <button
+                key={partIdx}
+                onClick={() => navigate(`/titles/${titleId}`)}
+                className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                title={`View "${titleName}" details`}
+              >
+                "{titleName}"
+              </button>
             );
           } else {
             // Try to find title ID by name lookup
             const foundTitleId = findTitleIdByName(quotedText);
             if (foundTitleId) {
+              // Return just the clickable title name
               return (
-                <span key={partIdx} className="inline-flex items-center gap-2">
-                  <button
-                    onClick={() => navigate(`/titles/${foundTitleId}`)}
-                    className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                    title={`View "${quotedText}" details`}
-                  >
-                    "{quotedText}"
-                  </button>
-                  <button
-                    onClick={() => navigate(`/titles/${foundTitleId}`)}
-                    className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                    title={`View "${quotedText}" details`}
-                  >
-                    → FIND MORE
-                  </button>
-                </span>
+                <button
+                  key={partIdx}
+                  onClick={() => navigate(`/titles/${foundTitleId}`)}
+                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                  title={`View "${quotedText}" details`}
+                >
+                  "{quotedText}"
+                </button>
               );
             } else {
               // Fallback to search if no title ID found
@@ -199,50 +187,37 @@ const FormattedMessage = ({ content, navigate, titleData }: { content: string, n
         const boldText = part.slice(2, -2);
         if (isNumberedRecommendation) {
           // Check if the bold text contains a title ID pattern [ID: xxxxx] (Title Name)
-          const titleIdMatch = boldText.match(/\[ID:\s*([a-f0-9-]{8,})\]\s*\((.*?)\)/i);
+          const titleIdPattern = /\[ID:\s*([a-f0-9-]{8,})\]\s*\(([^)]+)\)/i;
+          const titleIdMatch = boldText.match(titleIdPattern);
           
           if (titleIdMatch) {
             const titleId = titleIdMatch[1];
             const titleName = titleIdMatch[2];
+            // Return just the clickable title name without the FIND MORE button
             return (
-              <span key={partIdx} className="inline-flex items-center gap-2">
-                <button
-                  onClick={() => navigate(`/titles/${titleId}`)}
-                  className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                  title={`View "${titleName}" details`}
-                >
-                  {titleName}
-                </button>
-                <button
-                  onClick={() => navigate(`/titles/${titleId}`)}
-                  className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                  title={`View "${titleName}" details`}
-                >
-                  → FIND MORE
-                </button>
-              </span>
+              <button
+                key={partIdx}
+                onClick={() => navigate(`/titles/${titleId}`)}
+                className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                title={`View "${titleName}" details`}
+              >
+                {titleName}
+              </button>
             );
           } else {
             // Try to find title ID by name lookup
             const foundTitleId = findTitleIdByName(boldText);
             if (foundTitleId) {
+              // Return just the clickable title name
               return (
-                <span key={partIdx} className="inline-flex items-center gap-2">
-                  <button
-                    onClick={() => navigate(`/titles/${foundTitleId}`)}
-                    className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                    title={`View "${boldText}" details`}
-                  >
-                    {boldText}
-                  </button>
-                  <button
-                    onClick={() => navigate(`/titles/${foundTitleId}`)}
-                    className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                    title={`View "${boldText}" details`}
-                  >
-                    → FIND MORE
-                  </button>
-                </span>
+                <button
+                  key={partIdx}
+                  onClick={() => navigate(`/titles/${foundTitleId}`)}
+                  className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                  title={`View "${boldText}" details`}
+                >
+                  {boldText}
+                </button>
               );
             } else {
               // Fallback to search if no title ID found

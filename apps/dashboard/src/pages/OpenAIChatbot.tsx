@@ -336,13 +336,14 @@ What kind of Korean content are you in the mood for today?`,
         allTitlesHaveId: response.recommendedTitles?.every(t => !!t.title_id)
       });
 
+      // Create defensive copy to prevent mutation during database operations
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: response.message,
         sender: 'bot',
         timestamp: new Date(),
-        titles: response.recommendedTitles,
-        suggestedQueries: response.suggestedQueries
+        titles: response.recommendedTitles ? [...response.recommendedTitles] : undefined,
+        suggestedQueries: response.suggestedQueries ? [...response.suggestedQueries] : undefined
       };
 
       console.log('✨ CREATED BOT MESSAGE:', {
@@ -380,6 +381,12 @@ What kind of Korean content are you in the mood for today?`,
           await chatHistoryService.recordRecommendations(recommendations);
         }
 
+        console.log('📝 AFTER RECORD RECOMMENDATIONS:', {
+          messageId: botMessage.id,
+          stillHasTitles: !!botMessage.titles,
+          titlesCount: botMessage.titles?.length
+        });
+
         // Record suggested queries if any
         if (response.suggestedQueries && response.suggestedQueries.length > 0) {
           const suggestedQueries = response.suggestedQueries.map((query, index) => ({
@@ -391,6 +398,12 @@ What kind of Korean content are you in the mood for today?`,
 
           await chatHistoryService.recordSuggestedQueries(suggestedQueries);
         }
+
+        console.log('📝 AFTER RECORD QUERIES:', {
+          messageId: botMessage.id,
+          stillHasTitles: !!botMessage.titles,
+          titlesCount: botMessage.titles?.length
+        });
       }
 
       console.log('🚀 ADDING MESSAGE TO STATE:', {

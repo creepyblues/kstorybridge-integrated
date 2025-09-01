@@ -172,10 +172,18 @@ Response Structure:
 
 📚 From Our KStoryBridge Collection:
 [MANDATORY - Use EXACT title names from the numbered database list above]
-1. "EXACT_TITLE_FROM_DATABASE" (Korean name if available)
-   • Why it matches your interest: [explanation]
-   • Genre: [from database]
-   • Tone: [from database]
+
+You MUST format each recommendation exactly like this:
+1. "[COPY THE EXACT ENGLISH TITLE FROM THE DATABASE LIST ABOVE]" ([Korean name if available])
+   • Why it matches your interest: [explanation based on synopsis and genre]
+   • Genre: [copy exact genre from database]
+   • Tone: [copy exact tone from database]
+
+EXAMPLE FORMAT (using the actual database titles provided above):
+1. "Terrarium Adventure"
+   • Why it matches your interest: This story follows...
+   • Genre: SF/Action/Adventure  
+   • Tone: Suspenseful
 
 🌟 Not Yet in Our Collection:
 [ONLY include this section if we have NO relevant database matches]

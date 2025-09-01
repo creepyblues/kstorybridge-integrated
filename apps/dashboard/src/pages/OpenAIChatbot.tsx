@@ -61,7 +61,7 @@ const FormattedMessage = ({ content, navigate }: { content: string, navigate: an
     });
   };
   
-  // Helper function to extract English title only
+  // Helper function to extract English title only and clean formatting
   const extractEnglishTitle = (text: string): string => {
     // Remove Korean text in parentheses, e.g., "Title (한글제목)" -> "Title"
     let cleanedText = text.replace(/\s*\([^)]*[\u3131-\uD79D][^)]*\)/g, '').trim();
@@ -80,6 +80,9 @@ const FormattedMessage = ({ content, navigate }: { content: string, navigate: an
         cleanedText = matches[0].trim();
       }
     }
+    
+    // Remove asterisks used for formatting (e.g., "*Title*" -> "Title")
+    cleanedText = cleanedText.replace(/\*/g, '').trim();
     
     return cleanedText;
   };

@@ -37,19 +37,22 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
         if (match) {
           const [, number, text] = match;
           
-          // Try to find matching title for this numbered item
+          // Get the title for this numbered recommendation by position
           let matchingTitle = null;
           if (titles && titles.length > 0) {
-            // Extract potential title from bold text **title**
-            const boldMatch = text.match(/\*\*(.*?)\*\*/);
-            if (boldMatch) {
-              const titleText = boldMatch[1];
-              matchingTitle = titles.find(title => 
-                title.title_name_en?.includes(titleText) || 
-                title.title_name_kr?.includes(titleText) ||
-                titleText.includes(title.title_name_en || '') ||
-                titleText.includes(title.title_name_kr || '')
-              );
+            // Extract number from "1. " -> 1
+            const recommendationNumber = parseInt(number.replace('.', '').trim());
+            // Use zero-based index (1st recommendation -> index 0)
+            const titleIndex = recommendationNumber - 1;
+            
+            if (titleIndex >= 0 && titleIndex < titles.length) {
+              matchingTitle = titles[titleIndex];
+              console.log(`🎯 Mapping recommendation ${recommendationNumber} to title:`, {
+                position: recommendationNumber,
+                titleIndex,
+                title: matchingTitle.title_name_en || matchingTitle.title_name_kr,
+                titleId: matchingTitle.title_id
+              });
             }
           }
           
@@ -57,7 +60,7 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
             <div key={idx} className="mt-3">
               <div className="flex">
                 <span className="font-medium mr-2 text-blue-600">{number}</span>
-                <div className="flex-1">{formatInlineText(text)}</div>
+                <div className="flex-1">{formatInlineText(text, titleIndex)}</div>
               </div>
               
               {/* Inline title card if match found */}
@@ -91,63 +94,22 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
     });
   };
   
-  const formatInlineText = (text: string) => {
+  const formatInlineText = (text: string, titleIndex?: number) => {
     // Handle bold text **text** and make titles clickable links
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, partIdx) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
         
-        // Try to find matching title for this bold text
+        // If we have a titleIndex (from numbered recommendations), use that title
         let matchingTitle = null;
-        if (titles && titles.length > 0) {
-          console.log('🔍 Trying to match bold text:', boldText, 'against', titles.length, 'titles');
-          
-          // Special debug for "Alone on the Island"
-          if (boldText.includes('Alone on the Island')) {
-            console.log('🏝️ Special debug for "Alone on the Island":');
-            console.log('Looking for title ID: d5d4bd2b-7772-4905-8fbe-bcb21991491b');
-            const specificTitle = titles.find(t => t.title_id === 'd5d4bd2b-7772-4905-8fbe-bcb21991491b');
-            if (specificTitle) {
-              console.log('✅ Found specific title in database:', specificTitle);
-              console.log('EN name:', specificTitle.title_name_en);
-              console.log('KR name:', specificTitle.title_name_kr);
-            } else {
-              console.log('❌ Title d5d4bd2b-7772-4905-8fbe-bcb21991491b not found in titles array');
-            }
-          }
-          
-          matchingTitle = titles.find(title => {
-            // Clean up the bold text (remove quotes, trim spaces)
-            const cleanBoldText = boldText.replace(/['"]/g, '').trim();
-            const cleanEnTitle = title.title_name_en?.replace(/['"]/g, '').trim() || '';
-            const cleanKrTitle = title.title_name_kr?.replace(/['"]/g, '').trim() || '';
-            
-            // Try various matching strategies
-            const matches = [
-              // Exact matches (case insensitive)
-              cleanBoldText.toLowerCase() === cleanEnTitle.toLowerCase(),
-              cleanBoldText.toLowerCase() === cleanKrTitle.toLowerCase(),
-              // Contains matches
-              cleanBoldText.toLowerCase().includes(cleanEnTitle.toLowerCase()) && cleanEnTitle.length > 3,
-              cleanBoldText.toLowerCase().includes(cleanKrTitle.toLowerCase()) && cleanKrTitle.length > 3,
-              cleanEnTitle.toLowerCase().includes(cleanBoldText.toLowerCase()) && cleanBoldText.length > 3,
-              cleanKrTitle.toLowerCase().includes(cleanBoldText.toLowerCase()) && cleanBoldText.length > 3,
-              // Remove common prefixes/suffixes and try again
-              cleanBoldText.replace(/^(the|a|an)\s+/i, '').toLowerCase() === cleanEnTitle.replace(/^(the|a|an)\s+/i, '').toLowerCase()
-            ].some(match => match);
-            
-            if (matches) {
-              console.log('✅ Found match:', boldText, '→', title.title_name_en || title.title_name_kr);
-            }
-            
-            return matches;
+        if (titles && titles.length > 0 && titleIndex !== undefined && titleIndex >= 0 && titleIndex < titles.length) {
+          matchingTitle = titles[titleIndex];
+          console.log(`🔗 Making bold text "${boldText}" clickable using positional title:`, {
+            titleIndex,
+            title: matchingTitle.title_name_en || matchingTitle.title_name_kr,
+            titleId: matchingTitle.title_id
           });
-          
-          if (!matchingTitle) {
-            console.log('❌ No match found for:', boldText);
-            console.log('Available titles:', titles.map(t => ({ en: t.title_name_en, kr: t.title_name_kr })).slice(0, 3));
-          }
         }
         
         // If we found a matching title, make it a clickable link

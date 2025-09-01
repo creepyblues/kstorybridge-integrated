@@ -62,19 +62,41 @@ const FormattedMessage = ({ content }: { content: string }) => {
   };
   
   const formatInlineText = (text: string) => {
-    // Simple text formatting - just handle bold and quotes, no clickable functionality
+    // Handle quoted and bold text with "FIND MORE" links
     const parts = text.split(/(".*?"|[\*]{2}.*?[\*]{2})/g);
     return parts.map((part, partIdx) => {
-      // Handle quoted text
+      // Handle quoted text with search link
       if (part.startsWith('"') && part.endsWith('"')) {
         const quotedText = part.slice(1, -1);
-        return <span key={partIdx} className="font-medium">"{quotedText}"</span>;
+        return (
+          <span key={partIdx} className="inline-flex items-center gap-2">
+            <span className="font-medium">"{quotedText}"</span>
+            <button
+              onClick={() => navigate(`/titles?search=${encodeURIComponent(quotedText)}`)}
+              className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+              title={`Search for "${quotedText}"`}
+            >
+              → FIND MORE
+            </button>
+          </span>
+        );
       }
       
-      // Handle bold text
+      // Handle bold text with search link
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
-        return <strong key={partIdx} className="font-semibold">{boldText}</strong>;
+        return (
+          <span key={partIdx} className="inline-flex items-center gap-2">
+            <strong className="font-semibold">{boldText}</strong>
+            <button
+              onClick={() => navigate(`/titles?search=${encodeURIComponent(boldText)}`)}
+              className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+              title={`Search for "${boldText}"`}
+            >
+              → FIND MORE
+            </button>
+          </span>
+        );
       }
       
       return part;

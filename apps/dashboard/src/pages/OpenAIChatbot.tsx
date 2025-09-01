@@ -101,15 +101,39 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
         // Try to find matching title for this bold text
         let matchingTitle = null;
         if (titles && titles.length > 0) {
-          matchingTitle = titles.find(title => 
-            title.title_name_en?.includes(boldText) || 
-            title.title_name_kr?.includes(boldText) ||
-            boldText.includes(title.title_name_en || '') ||
-            boldText.includes(title.title_name_kr || '') ||
-            // Also try partial matches
-            (title.title_name_en && boldText.toLowerCase().includes(title.title_name_en.toLowerCase())) ||
-            (title.title_name_kr && boldText.includes(title.title_name_kr))
-          );
+          console.log('🔍 Trying to match bold text:', boldText, 'against', titles.length, 'titles');
+          
+          matchingTitle = titles.find(title => {
+            // Clean up the bold text (remove quotes, trim spaces)
+            const cleanBoldText = boldText.replace(/['"]/g, '').trim();
+            const cleanEnTitle = title.title_name_en?.replace(/['"]/g, '').trim() || '';
+            const cleanKrTitle = title.title_name_kr?.replace(/['"]/g, '').trim() || '';
+            
+            // Try various matching strategies
+            const matches = [
+              // Exact matches (case insensitive)
+              cleanBoldText.toLowerCase() === cleanEnTitle.toLowerCase(),
+              cleanBoldText.toLowerCase() === cleanKrTitle.toLowerCase(),
+              // Contains matches
+              cleanBoldText.toLowerCase().includes(cleanEnTitle.toLowerCase()) && cleanEnTitle.length > 3,
+              cleanBoldText.toLowerCase().includes(cleanKrTitle.toLowerCase()) && cleanKrTitle.length > 3,
+              cleanEnTitle.toLowerCase().includes(cleanBoldText.toLowerCase()) && cleanBoldText.length > 3,
+              cleanKrTitle.toLowerCase().includes(cleanBoldText.toLowerCase()) && cleanBoldText.length > 3,
+              // Remove common prefixes/suffixes and try again
+              cleanBoldText.replace(/^(the|a|an)\s+/i, '').toLowerCase() === cleanEnTitle.replace(/^(the|a|an)\s+/i, '').toLowerCase()
+            ].some(match => match);
+            
+            if (matches) {
+              console.log('✅ Found match:', boldText, '→', title.title_name_en || title.title_name_kr);
+            }
+            
+            return matches;
+          });
+          
+          if (!matchingTitle) {
+            console.log('❌ No match found for:', boldText);
+            console.log('Available titles:', titles.map(t => ({ en: t.title_name_en, kr: t.title_name_kr })).slice(0, 3));
+          }
         }
         
         // If we found a matching title, make it a clickable link

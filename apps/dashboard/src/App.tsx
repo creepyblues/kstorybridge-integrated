@@ -44,6 +44,7 @@ const OpenAIChatbot = lazy(() => import("./pages/OpenAIChatbot"));
 const ChatHistory = lazy(() => import("./pages/ChatHistory"));
 const VectorSearchManager = lazy(() => import("./pages/VectorSearchManager"));
 const OpenAITest = lazy(() => import("./pages/OpenAITest"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
 
 // Authentication pages
 const SigninPage = lazy(() => import("./pages/SigninPage"));
@@ -190,6 +191,9 @@ const App = () => (
                 } />
                 <Route path="/titles/:titleId" element={
                   <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                } />
+                <Route path="/search-results" element={
+                  <ProtectedLayout><SearchResults /></ProtectedLayout>
                 } />
                 <Route path="/favorites" element={
                   <ProtectedLayout><Favorites /></ProtectedLayout>

@@ -95,7 +95,7 @@ function SearchResultsContent() {
       setSearchLoading(true);
       
       // Use enhanced search service with vector search capabilities
-      const searchResponse = await enhancedTitleSearchService.searchWithFilters(
+      let searchResponse = await enhancedTitleSearchService.searchWithFilters(
         query,
         {
           contentFormat: null,
@@ -109,6 +109,33 @@ function SearchResultsContent() {
           maxRating: null,
         }
       );
+      
+      // If no results found, try a more flexible search with individual keywords
+      if (searchResponse.results.length === 0 && query.length > 3) {
+        console.log(`🔄 No exact matches for "${query}", trying flexible search...`);
+        const keywords = query.split(' ').filter(word => word.length > 2);
+        for (const keyword of keywords) {
+          const keywordSearch = await enhancedTitleSearchService.searchWithFilters(
+            keyword,
+            {
+              contentFormat: null,
+              genre: activeGenreFilter,
+              tone: null,
+              audience: null,
+              hasAttachment: showOnlyWithPitch,
+              minViews: null,
+              maxViews: null,
+              minRating: null,
+              maxRating: null,
+            }
+          );
+          if (keywordSearch.results.length > 0) {
+            searchResponse = keywordSearch;
+            console.log(`✅ Found ${keywordSearch.results.length} results for keyword "${keyword}"`);
+            break;
+          }
+        }
+      }
       
       setSearchResults(searchResponse.results);
       setSearchType(searchResponse.searchType);
@@ -574,18 +601,25 @@ function SearchResultsContent() {
             </h3>
             <p className="text-midnight-ink-600 mb-4">
               {searchTerm ? 
-                `Try adjusting your search terms or filters` :
+                `We tried searching for individual keywords from "${searchTerm}" but couldn't find matches. Try different search terms or browse all titles.` :
                 'Check back later for new content'
               }
             </p>
             {searchTerm && (
-              <Button
-                onClick={handleClearSearch}
-                variant="outline"
-                className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5"
-              >
-                Clear Search
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  onClick={handleClearSearch}
+                  variant="outline"
+                  className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5"
+                >
+                  Clear Search
+                </Button>
+                <Link to="/titles">
+                  <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white">
+                    Browse All Titles
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         )}

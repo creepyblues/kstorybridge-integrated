@@ -61,6 +61,29 @@ const FormattedMessage = ({ content, navigate }: { content: string, navigate: an
     });
   };
   
+  // Helper function to extract English title only
+  const extractEnglishTitle = (text: string): string => {
+    // Remove Korean text in parentheses, e.g., "Title (한글제목)" -> "Title"
+    let cleanedText = text.replace(/\s*\([^)]*[\u3131-\uD79D][^)]*\)/g, '').trim();
+    
+    // Remove Korean text after slash, e.g., "Title / 한글제목" -> "Title"
+    cleanedText = cleanedText.replace(/\s*\/\s*.*[\u3131-\uD79D].*/g, '').trim();
+    
+    // Remove Korean text after hyphen, e.g., "Title - 한글제목" -> "Title"
+    cleanedText = cleanedText.replace(/\s*-\s*.*[\u3131-\uD79D].*/g, '').trim();
+    
+    // If the whole text starts with Korean, try to find English after separators
+    if (/^[\u3131-\uD79D]/.test(cleanedText)) {
+      // Try to find English text after common separators
+      const matches = text.match(/[A-Za-z][^\/\-\(\)]*[A-Za-z]/g);
+      if (matches && matches.length > 0) {
+        cleanedText = matches[0].trim();
+      }
+    }
+    
+    return cleanedText;
+  };
+
   const formatInlineText = (text: string, isNumberedRecommendation = false) => {
     // Handle quoted and bold text - add "FIND MORE" links only for numbered recommendations
     const parts = text.split(/(".*?"|[\*]{2}.*?[\*]{2})/g);
@@ -69,13 +92,14 @@ const FormattedMessage = ({ content, navigate }: { content: string, navigate: an
       if (part.startsWith('"') && part.endsWith('"')) {
         const quotedText = part.slice(1, -1);
         if (isNumberedRecommendation) {
+          const searchQuery = extractEnglishTitle(quotedText);
           return (
             <span key={partIdx} className="inline-flex items-center gap-2">
               <span className="font-medium">"{quotedText}"</span>
               <button
-                onClick={() => navigate(`/search-results?search=${encodeURIComponent(quotedText)}`)}
+                onClick={() => navigate(`/search-results?search=${encodeURIComponent(searchQuery)}`)}
                 className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                title={`Search for "${quotedText}"`}
+                title={`Search for "${searchQuery}"`}
               >
                 → FIND MORE
               </button>
@@ -90,13 +114,14 @@ const FormattedMessage = ({ content, navigate }: { content: string, navigate: an
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
         if (isNumberedRecommendation) {
+          const searchQuery = extractEnglishTitle(boldText);
           return (
             <span key={partIdx} className="inline-flex items-center gap-2">
               <strong className="font-semibold">{boldText}</strong>
               <button
-                onClick={() => navigate(`/search-results?search=${encodeURIComponent(boldText)}`)}
+                onClick={() => navigate(`/search-results?search=${encodeURIComponent(searchQuery)}`)}
                 className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                title={`Search for "${boldText}"`}
+                title={`Search for "${searchQuery}"`}
               >
                 → FIND MORE
               </button>

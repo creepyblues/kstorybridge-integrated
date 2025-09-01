@@ -35,7 +35,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
           return (
             <div key={idx} className="mt-1 flex">
               <span className="font-medium mr-2 text-blue-600">{number}</span>
-              <div className="flex-1">{formatInlineText(text)}</div>
+              <div className="flex-1">{formatInlineText(text, true)}</div>
             </div>
           );
         }
@@ -61,42 +61,50 @@ const FormattedMessage = ({ content }: { content: string }) => {
     });
   };
   
-  const formatInlineText = (text: string) => {
-    // Handle quoted and bold text with "FIND MORE" links
+  const formatInlineText = (text: string, isNumberedRecommendation = false) => {
+    // Handle quoted and bold text - add "FIND MORE" links only for numbered recommendations
     const parts = text.split(/(".*?"|[\*]{2}.*?[\*]{2})/g);
     return parts.map((part, partIdx) => {
-      // Handle quoted text with search link
+      // Handle quoted text
       if (part.startsWith('"') && part.endsWith('"')) {
         const quotedText = part.slice(1, -1);
-        return (
-          <span key={partIdx} className="inline-flex items-center gap-2">
-            <span className="font-medium">"{quotedText}"</span>
-            <button
-              onClick={() => navigate(`/titles?search=${encodeURIComponent(quotedText)}`)}
-              className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-              title={`Search for "${quotedText}"`}
-            >
-              → FIND MORE
-            </button>
-          </span>
-        );
+        if (isNumberedRecommendation) {
+          return (
+            <span key={partIdx} className="inline-flex items-center gap-2">
+              <span className="font-medium">"{quotedText}"</span>
+              <button
+                onClick={() => navigate(`/titles?search=${encodeURIComponent(quotedText)}`)}
+                className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                title={`Search for "${quotedText}"`}
+              >
+                → FIND MORE
+              </button>
+            </span>
+          );
+        } else {
+          return <span key={partIdx} className="font-medium">"{quotedText}"</span>;
+        }
       }
       
-      // Handle bold text with search link
+      // Handle bold text
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
-        return (
-          <span key={partIdx} className="inline-flex items-center gap-2">
-            <strong className="font-semibold">{boldText}</strong>
-            <button
-              onClick={() => navigate(`/titles?search=${encodeURIComponent(boldText)}`)}
-              className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-              title={`Search for "${boldText}"`}
-            >
-              → FIND MORE
-            </button>
-          </span>
-        );
+        if (isNumberedRecommendation) {
+          return (
+            <span key={partIdx} className="inline-flex items-center gap-2">
+              <strong className="font-semibold">{boldText}</strong>
+              <button
+                onClick={() => navigate(`/titles?search=${encodeURIComponent(boldText)}`)}
+                className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                title={`Search for "${boldText}"`}
+              >
+                → FIND MORE
+              </button>
+            </span>
+          );
+        } else {
+          return <strong key={partIdx} className="font-semibold">{boldText}</strong>;
+        }
       }
       
       return part;

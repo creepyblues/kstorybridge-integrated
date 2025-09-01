@@ -103,6 +103,20 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
         if (titles && titles.length > 0) {
           console.log('🔍 Trying to match bold text:', boldText, 'against', titles.length, 'titles');
           
+          // Special debug for "Alone on the Island"
+          if (boldText.includes('Alone on the Island')) {
+            console.log('🏝️ Special debug for "Alone on the Island":');
+            console.log('Looking for title ID: d5d4bd2b-7772-4905-8fbe-bcb21991491b');
+            const specificTitle = titles.find(t => t.title_id === 'd5d4bd2b-7772-4905-8fbe-bcb21991491b');
+            if (specificTitle) {
+              console.log('✅ Found specific title in database:', specificTitle);
+              console.log('EN name:', specificTitle.title_name_en);
+              console.log('KR name:', specificTitle.title_name_kr);
+            } else {
+              console.log('❌ Title d5d4bd2b-7772-4905-8fbe-bcb21991491b not found in titles array');
+            }
+          }
+          
           matchingTitle = titles.find(title => {
             // Clean up the bold text (remove quotes, trim spaces)
             const cleanBoldText = boldText.replace(/['"]/g, '').trim();

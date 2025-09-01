@@ -738,27 +738,6 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                     )}
                     
                     {/* Title Recommendations */}
-                    {message.sender === 'bot' && console.log('🎯 RENDERING BOT TITLES:', {
-                      messageId: message.id,
-                      hasTitles: !!message.titles,
-                      titlesLength: message.titles?.length,
-                      firstTitle: message.titles?.[0],
-                      conditionPasses: !!(message.titles && message.titles.length > 0)
-                    })}
-                    {(() => {
-                      if (message.sender === 'bot' && message.titles) {
-                        console.log('🔍 CHECKING RENDER CONDITION FOR MESSAGE WITH TITLES:', {
-                          messageId: message.id,
-                          titlesExists: !!message.titles,
-                          titlesType: typeof message.titles,
-                          titlesIsArray: Array.isArray(message.titles),
-                          titlesLength: message.titles?.length,
-                          lengthCheck: message.titles?.length > 0,
-                          finalCondition: !!(message.titles && message.titles.length > 0)
-                        });
-                      }
-                      return null;
-                    })()}
                     {message.titles && message.titles.length > 0 && (
                       <div className="mt-4 space-y-3">
                         {console.log('🎉 TITLES SECTION RENDERING!:', {

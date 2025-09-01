@@ -97,9 +97,45 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
   };
   
   const formatInlineText = (text: string, titleIndex?: number) => {
-    // Handle bold text **text** and make titles clickable links
-    const parts = text.split(/(\*\*.*?\*\*)/g);
+    // Handle quoted text "text" and bold text **text** and make titles clickable links
+    const parts = text.split(/(".*?"|[\*]{2}.*?[\*]{2})/g);
     return parts.map((part, partIdx) => {
+      // Handle quoted titles "Title Name" (AI uses quotes for title names)
+      if (part.startsWith('"') && part.endsWith('"')) {
+        const quotedText = part.slice(1, -1); // Remove quotes
+        
+        // If we have a titleIndex (from numbered recommendations), use that title
+        let matchingTitle = null;
+        if (titles && titles.length > 0 && titleIndex !== undefined && titleIndex >= 0 && titleIndex < titles.length) {
+          matchingTitle = titles[titleIndex];
+          console.log(`🔗 Making quoted text "${quotedText}" clickable using positional title:`, {
+            titleIndex,
+            title: matchingTitle.title_name_en || matchingTitle.title_name_kr,
+            titleId: matchingTitle.title_id
+          });
+        }
+        
+        // If we found a matching title, make it a clickable link
+        if (matchingTitle && onTitleCardClick) {
+          return (
+            <span 
+              key={partIdx} 
+              className="font-semibold text-hanok-teal hover:text-hanok-teal-600 cursor-pointer underline decoration-dotted hover:decoration-solid transition-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTitleCardClick(matchingTitle);
+              }}
+            >
+              "{quotedText}"
+            </span>
+          );
+        }
+        
+        // If no match, just show quoted text normally
+        return <span key={partIdx}>"{quotedText}"</span>;
+      }
+      
+      // Handle bold text **text** (fallback for any bold formatting)
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
         
@@ -133,6 +169,7 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
         // If no match, just make it bold
         return <strong key={partIdx} className="font-semibold">{boldText}</strong>;
       }
+      
       return part;
     });
   };

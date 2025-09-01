@@ -97,12 +97,22 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
   };
   
   const formatInlineText = (text: string, titleIndex?: number) => {
-    // Handle quoted text "text" and bold text **text** and make titles clickable links
-    const parts = text.split(/(".*?"|[\*]{2}.*?[\*]{2})/g);
+    // Handle quoted text "text" (with optional [ID: xxx]) and bold text **text** and make titles clickable links
+    const parts = text.split(/(".*?(?:\s*\[ID:\s*[^\]]+\])?"|[\*]{2}.*?[\*]{2})/g);
     return parts.map((part, partIdx) => {
-      // Handle quoted titles "Title Name" (AI uses quotes for title names)
-      if (part.startsWith('"') && part.endsWith('"')) {
-        const quotedText = part.slice(1, -1); // Remove quotes
+      // Handle quoted titles "Title Name" or "Title Name [ID: xxx]" (AI uses quotes for title names)
+      if (part.startsWith('"') && (part.endsWith('"') || part.includes('[ID:'))) {
+        let quotedText = part.slice(1); // Remove opening quote
+        // Handle closing quote and optional ID
+        if (quotedText.endsWith('"')) {
+          quotedText = quotedText.slice(0, -1); // Remove closing quote
+        } else {
+          // Handle format like: "Title Name [ID: xxx]"
+          const match = quotedText.match(/^(.*?)\s*\[ID:\s*[^\]]+\]"?$/);
+          if (match) {
+            quotedText = match[1]; // Extract title name without ID
+          }
+        }
         
         // If we have a titleIndex (from numbered recommendations), use that title
         let matchingTitle = null;

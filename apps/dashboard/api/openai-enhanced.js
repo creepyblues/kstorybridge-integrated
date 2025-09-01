@@ -594,7 +594,8 @@ function replaceWithDatabaseTitles(aiResponse, relevantTitles) {
           ? ` (${databaseTitle.title_name_kr})`
           : '';
         
-        const replacement = `${numberPart}"${actualTitleName}"${koreanPart}`;
+        const titleId = databaseTitle.title_id.substring(0, 8); // First 8 chars for debugging
+        const replacement = `${numberPart}"${actualTitleName}" [ID: ${titleId}]${koreanPart}`;
         
         console.log(`🔄 Replacing: ${item} → ${replacement}`);
         processedResponse = processedResponse.replace(item, replacement);

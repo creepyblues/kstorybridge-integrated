@@ -780,12 +780,18 @@ Available formats: ${formats.join(', ')}
   context += `
 Your role:
 1. Understand user preferences and intent  
-2. Recommend specific Korean IPs that match their criteria using the EXACT title names from the numbered list above
-3. Explain WHY each recommendation fits their request
-4. Ask clarifying questions to better understand their taste
-5. Suggest related searches they might be interested in
+2. Recommend specific Korean IPs that match their criteria from our database
+3. When recommending titles, use this EXACT format: "Title Name" (without any IDs or extra text)
+4. Explain WHY each recommendation fits their request
+5. Ask clarifying questions to better understand their taste
+6. Suggest related searches they might be interested in
 
-CRITICAL: Always use the exact title names from the numbered list above. Do not create or modify title names.
+IMPORTANT FORMATTING RULES:
+- Use only the English title name in quotes, e.g., "The Devil and His Sacrifice"
+- Do NOT include IDs, Korean names in the quoted title
+- You may mention the Korean name separately if relevant
+- If the user asks for specific themes (like "human vs devil"), try to find titles that actually match those themes
+
 Always be enthusiastic and knowledgeable about Korean content!`;
 
   return context;
@@ -821,53 +827,8 @@ function extractSuggestedQueries(aiResponse) {
 
 // Replace any fictional titles in AI response with actual database titles
 function replaceWithDatabaseTitles(aiResponse, relevantTitles) {
-  let processedResponse = aiResponse;
-  
-  // Find numbered list items (1. 2. 3. etc.) with quotes
-  // Try multiple patterns to catch different AI output formats
-  const numberedItems = aiResponse.match(/^\d+\.\s*"[^"]*"/gm) || 
-                        aiResponse.match(/^\d+\.\s*".*?"/gm) || 
-                        aiResponse.match(/^\d+\.\s+\*\*[^*]+\*\*/gm) || 
-                        [];
-  
-  console.log('🔍 AI Response preview:', aiResponse.substring(0, 500));
-  console.log('🔍 Looking for numbered items with patterns:');
-  console.log('   - Quote pattern: /^\\d+\\.\\s*"[^"]*"/gm');
-  console.log('   - Bold pattern: /^\\d+\\.\\s+\\*\\*[^*]+\\*\\*/gm');
-  
-  console.log('🔍 Found numbered items to replace:', numberedItems);
-  
-  numberedItems.forEach((item, index) => {
-    if (index < relevantTitles.length) {
-      const databaseTitle = relevantTitles[index];
-      const actualTitleName = databaseTitle.title_name_en || databaseTitle.title_name_kr;
-      
-      // Extract the number and create the replacement
-      const numberMatch = item.match(/^(\d+\.\s*)/);
-      if (numberMatch && actualTitleName) {
-        const numberPart = numberMatch[1];
-        const koreanPart = databaseTitle.title_name_kr && databaseTitle.title_name_en 
-          ? ` (${databaseTitle.title_name_kr})`
-          : '';
-        
-        const titleId = databaseTitle.title_id.substring(0, 8); // First 8 chars for debugging
-        
-        // Handle both quote and bold formats
-        let replacement;
-        if (item.includes('"')) {
-          replacement = `${numberPart}"${actualTitleName}" [ID: ${titleId}]${koreanPart}`;
-        } else if (item.includes('**')) {
-          replacement = `${numberPart}"${actualTitleName}" [ID: ${titleId}]${koreanPart}`;
-        } else {
-          replacement = `${numberPart}"${actualTitleName}" [ID: ${titleId}]${koreanPart}`;
-        }
-        
-        console.log(`🔄 Replacing: ${item}`);
-        console.log(`    → ${replacement}`);
-        processedResponse = processedResponse.replace(item, replacement);
-      }
-    }
-  });
-  
-  return processedResponse;
+  // Don't do any replacement - let the AI response stay as is
+  // The AI already has access to real titles in the context
+  console.log('📝 Keeping original AI response without title replacement');
+  return aiResponse;
 }

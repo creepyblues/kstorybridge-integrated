@@ -2,10 +2,184 @@
 const OpenAI = require('openai');
 const { createClient } = require('@supabase/supabase-js');
 
-// Cache for titles to avoid repeated database queries
+// Unified cache system (matches frontend implementation)
+class UnifiedCacheManager {
+  static CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  static caches = new Map();
+  
+  static set(key, data, environment) {
+    const entry = {
+      data,
+      timestamp: Date.now(),
+      environment
+    };
+    this.caches.set(key, entry);
+    
+    console.log('💾 CACHE SET:', {
+      key,
+      dataSize: Array.isArray(data) ? data.length : typeof data,
+      environment,
+      timestamp: new Date(entry.timestamp).toISOString()
+    });
+  }
+  
+  static get(key, environment) {
+    const entry = this.caches.get(key);
+    
+    if (!entry) {
+      console.log('📦 CACHE MISS:', {
+        key,
+        reason: 'no-entry',
+        environment
+      });
+      return null;
+    }
+    
+    const now = Date.now();
+    const isExpired = (now - entry.timestamp) >= this.CACHE_DURATION;
+    
+    if (isExpired) {
+      this.caches.delete(key);
+      console.log('📦 CACHE MISS:', {
+        key,
+        reason: 'expired',
+        age: `${Math.round((now - entry.timestamp) / 1000)}s`,
+        maxAge: `${Math.round(this.CACHE_DURATION / 1000)}s`,
+        environment
+      });
+      return null;
+    }
+    
+    console.log('📦 CACHE HIT:', {
+      key,
+      dataSize: Array.isArray(entry.data) ? entry.data.length : typeof entry.data,
+      age: `${Math.round((now - entry.timestamp) / 1000)}s`,
+      remainingTime: `${Math.round((this.CACHE_DURATION - (now - entry.timestamp)) / 1000)}s`,
+      environment
+    });
+    
+    return entry.data;
+  }
+  
+  static clear(key) {
+    if (key) {
+      const deleted = this.caches.delete(key);
+      console.log('🗑️ CACHE CLEAR:', { key, deleted });
+    } else {
+      const size = this.caches.size;
+      this.caches.clear();
+      console.log('🗑️ CACHE CLEAR ALL:', { clearedEntries: size });
+    }
+  }
+  
+  static getStats() {
+    return {
+      totalEntries: this.caches.size,
+      keys: Array.from(this.caches.keys())
+    };
+  }
+}
+
+// Legacy cache variables (kept for backward compatibility)
 let titlesCache = null;
 let cacheTimestamp = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Standardized error handler (matches frontend implementation)
+class ChatbotErrorHandler {
+  static categorizeError(error, environment = 'production') {
+    // OpenAI API specific errors
+    if (error.code === 'invalid_api_key' || error.message?.includes('api key')) {
+      return {
+        category: 'openai_api',
+        message: 'Invalid OpenAI API key',
+        userMessage: 'AI service configuration error. Please try again in a moment.',
+        retryable: false,
+        suggestedAction: 'Contact support if the issue persists.',
+        originalError: error.message
+      };
+    }
+    
+    if (error.code === 'insufficient_quota' || error.code === 'rate_limit_exceeded' || error.message?.includes('quota') || error.message?.includes('rate limit')) {
+      return {
+        category: 'openai_api', 
+        message: 'OpenAI API quota or rate limit exceeded',
+        userMessage: 'AI service is temporarily busy. Please wait a moment and try again.',
+        retryable: true,
+        suggestedAction: 'Try again in 1-2 minutes.',
+        originalError: error.message
+      };
+    }
+    
+    // Authentication errors
+    if (error.name === 'AuthenticationError' || error.message?.includes('Unauthorized') || error.message?.includes('Invalid token')) {
+      return {
+        category: 'authentication',
+        message: 'Authentication failed',
+        userMessage: 'Please sign in to use the AI chatbot.',
+        retryable: true,
+        suggestedAction: 'Try refreshing the page or signing in again.',
+        originalError: error.message
+      };
+    }
+    
+    // Authorization errors  
+    if (error.message?.includes('Forbidden') || error.message?.includes('not authorized')) {
+      return {
+        category: 'authorization',
+        message: 'User not authorized',
+        userMessage: 'You do not have permission to use the AI chatbot.',
+        retryable: false,
+        suggestedAction: 'Contact support if you believe this is an error.',
+        originalError: error.message
+      };
+    }
+    
+    // Database errors
+    if (error.message?.includes('column') || error.message?.includes('database') || error.message?.includes('schema') || error.message?.includes('relation')) {
+      return {
+        category: 'database',
+        message: 'Database error',
+        userMessage: 'There was an issue accessing the content database. Please try again.',
+        retryable: true,
+        suggestedAction: 'Try again in a moment.',
+        originalError: error.message
+      };
+    }
+    
+    // Server/Function errors
+    if (error.message?.includes('Function') || error.message?.includes('timeout') || error.message?.includes('Internal server')) {
+      return {
+        category: 'server',
+        message: 'Server error',
+        userMessage: 'Service temporarily unavailable. Please try again in a moment.',
+        retryable: true,
+        suggestedAction: 'Try again in a few minutes.',
+        originalError: error.message
+      };
+    }
+    
+    // Unknown errors
+    return {
+      category: 'unknown',
+      message: error.message || 'Unknown error occurred',
+      userMessage: 'An unexpected error occurred. Please try again.',
+      retryable: true,
+      suggestedAction: 'Try again, or contact support if the issue persists.',
+      originalError: error.message
+    };
+  }
+  
+  static formatErrorForUser(errorResponse) {
+    let message = errorResponse.userMessage;
+    
+    if (errorResponse.suggestedAction) {
+      message += ` ${errorResponse.suggestedAction}`;
+    }
+    
+    return message;
+  }
+}
 
 module.exports = async function handler(req, res) {
   try {
@@ -132,8 +306,15 @@ module.exports = async function handler(req, res) {
     let relevantTitles = await findRelevantTitles(query, titles, openai);
     console.log(`🎯 Found ${relevantTitles.length} relevant titles`);
 
-    // Create context for AI with our database titles
-    const databaseContext = createDatabaseContext(titles, relevantTitles);
+    // Create unified context for AI with our database titles (same as frontend)
+    const databaseContext = createUnifiedKoreanIPContext(titles, relevantTitles, query);
+    
+    console.log('🔧 Context created:', {
+      contextMethod: 'unified-korean-ip-context',
+      allTitlesCount: titles.length,
+      relevantTitlesCount: relevantTitles.length,
+      contextLength: databaseContext.length
+    });
     
     // Prepare conversation context
     const historyContext = conversationHistory && conversationHistory.length > 0 
@@ -228,30 +409,42 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
       }
       
     } catch (openaiError) {
-      console.error('❌ OpenAI API Error (DETAILED):', {
+      // Use standardized error handling
+      const standardError = ChatbotErrorHandler.categorizeError(openaiError, 'production');
+      
+      console.error('❌ OpenAI API Error (STANDARDIZED):', {
+        category: standardError.category,
+        message: standardError.message,
+        userMessage: standardError.userMessage,
+        retryable: standardError.retryable,
+        originalError: standardError.originalError,
         name: openaiError.name,
-        message: openaiError.message,
         code: openaiError.code,
         status: openaiError.status,
         type: openaiError.type,
-        stack: openaiError.stack?.substring(0, 200),
-        fullError: openaiError
+        stack: openaiError.stack?.substring(0, 200)
       });
       
-      // Log what we're about to return as fallback
-      console.log('🔄 Falling back to database-only response due to OpenAI error');
-      
-      // Provide fallback response with database titles
-      aiResponse = `Based on your query, here are titles from our KStoryBridge collection:\n\n📚 From Our KStoryBridge Collection:\n`;
-      if (relevantTitles.length > 0) {
-        relevantTitles.slice(0, 3).forEach((title, index) => {
-          aiResponse += `${index + 1}. "${title.title_name_en || title.title_name_kr}" - ${title.genre || 'Korean content'}\n`;
-        });
+      // For OpenAI errors, provide fallback response instead of failing completely
+      if (standardError.category === 'openai_api') {
+        console.log('🔄 Falling back to database-only response due to OpenAI error');
+        
+        // Provide fallback response with database titles
+        aiResponse = `I apologize, but our AI service is temporarily experiencing issues. However, I can still help you discover great Korean content from our database!\n\n📚 From Our KStoryBridge Collection:\n`;
+        if (relevantTitles.length > 0) {
+          relevantTitles.slice(0, 3).forEach((title, index) => {
+            aiResponse += `${index + 1}. "${title.title_name_en || title.title_name_kr}" - ${title.genre || 'Korean content'}\n`;
+          });
+          aiResponse += `\nThese titles were selected based on your search. Try asking again in a moment for AI-powered recommendations!`;
+        } else {
+          aiResponse += `We have ${titles.length} Korean titles in our collection. Please refine your search to find specific recommendations, or try again in a moment for AI-powered suggestions.`;
+        }
+        
+        completion = { usage: null }; // Fallback for usage stats
       } else {
-        aiResponse += `We have ${titles.length} Korean titles in our collection. Please refine your search to find specific recommendations.\n`;
+        // For non-OpenAI errors, throw to be handled by global error handler
+        throw openaiError;
       }
-      
-      completion = { usage: null }; // Fallback for usage stats
     }
 
     // Post-process AI response to ensure database title names are used
@@ -289,47 +482,60 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
       databaseStats: {
         totalTitles: titles.length,
         relevantTitles: relevantTitles.length,
-        vectorSearchUsed: false // Vector search not implemented yet
+        vectorSearchUsed: false, // Vector search not implemented yet
+        contextMethod: 'unified-korean-ip-context'
       },
       usage: completion.usage,
     });
 
   } catch (error) {
-    console.error('❌ Enhanced OpenAI API error:', error);
-    console.error('🔍 Error details:', {
+    // Use standardized error handling
+    const standardError = ChatbotErrorHandler.categorizeError(error, 'production');
+    const userMessage = ChatbotErrorHandler.formatErrorForUser(standardError);
+    
+    console.error('❌ Enhanced OpenAI API Global Error (STANDARDIZED):', {
+      category: standardError.category,
+      message: standardError.message,
+      userMessage: userMessage,
+      retryable: standardError.retryable,
+      originalError: standardError.originalError,
       name: error.name,
-      message: error.message,
       stack: error.stack?.split('\n').slice(0, 5),
       cause: error.cause,
-      type: typeof error
+      type: typeof error,
+      timestamp: new Date().toISOString()
     });
     
-    // More specific error messages
-    let errorMessage = 'Internal server error';
-    if (error.message?.includes('column')) {
-      errorMessage = 'Database schema error';
-    } else if (error.message?.includes('OpenAI')) {
-      errorMessage = 'AI service error';
-    } else if (error.message?.includes('rate')) {
-      errorMessage = 'Rate limit exceeded';
+    // Determine HTTP status code based on error category
+    let statusCode = 500;
+    if (standardError.category === 'authentication') {
+      statusCode = 401;
+    } else if (standardError.category === 'authorization') {
+      statusCode = 403;
+    } else if (standardError.category === 'network' || standardError.category === 'timeout') {
+      statusCode = 408;
+    } else if (standardError.category === 'openai_api') {
+      statusCode = 503; // Service unavailable
     }
     
-    return res.status(500).json({ 
-      error: errorMessage,
-      message: error.message,
+    return res.status(statusCode).json({ 
+      error: userMessage,
+      category: standardError.category,
+      retryable: standardError.retryable,
       timestamp: new Date().toISOString(),
     });
   }
 };
 
-// Load titles from database with caching
+// Load titles from database with unified caching
 async function loadTitlesFromDatabase(supabase) {
-  const now = Date.now();
+  const environment = 'PRODUCTION';
+  const cacheKey = 'titles_database';
   
-  // Only use cache if it has actual titles (not empty)
-  if (titlesCache && titlesCache.length > 0 && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
-    console.log(`📦 Using cached titles (${titlesCache.length} titles)`);
-    return titlesCache;
+  // Try unified cache first
+  const cachedTitles = UnifiedCacheManager.get(cacheKey, environment);
+  if (cachedTitles && cachedTitles.length > 0) {
+    return cachedTitles;
   }
 
   try {
@@ -343,7 +549,8 @@ async function loadTitlesFromDatabase(supabase) {
     
     if (testError) {
       console.error('❌ Database connection test failed:', testError);
-      // Don't cache empty results
+      // Store empty array in cache to prevent repeated failures
+      UnifiedCacheManager.set(cacheKey, [], environment);
       return [];
     }
     
@@ -377,53 +584,58 @@ async function loadTitlesFromDatabase(supabase) {
     if (error) {
       console.error('❌ Database query error:', error.message);
       console.error('Full error:', error);
-      // Don't cache empty results on error
+      // Store empty array in cache to prevent repeated failures
+      UnifiedCacheManager.set(cacheKey, [], environment);
       return [];
     }
 
     if (!titles || titles.length === 0) {
       console.error('⚠️ No titles returned from database');
-      // Don't cache empty results
+      // Store empty array in cache
+      UnifiedCacheManager.set(cacheKey, [], environment);
       return [];
     }
 
-    // Only cache if we got actual titles
-    titlesCache = titles;
-    cacheTimestamp = now;
+    // Store successful result in unified cache
+    UnifiedCacheManager.set(cacheKey, titles, environment);
     
-    console.log(`✅ Loaded ${titles.length} titles from database`);
+    // Also update legacy cache for backward compatibility
+    titlesCache = titles;
+    cacheTimestamp = Date.now();
+    
+    console.log(`✅ Loaded ${titles.length} titles from database`, {
+      cacheKey,
+      environment,
+      cacheStats: UnifiedCacheManager.getStats()
+    });
+    
     return titles;
   } catch (error) {
     console.error('❌ Failed to load titles:', error.message);
     console.error('Full error:', error);
-    // Don't cache errors
+    // Store empty array in cache to prevent repeated failures
+    UnifiedCacheManager.set(cacheKey, [], environment);
     return [];
   }
 }
 
-// Find relevant titles using text matching and scoring
-async function findRelevantTitles(query, titles, openai) {
-  if (!titles || titles.length === 0) {
-    return [];
-  }
-
-  const queryLower = query.toLowerCase();
-  const queryWords = queryLower.split(/\s+/).filter(word => word.length > 2);
-  
-  // Check for action-related keywords
-  const isActionQuery = queryLower.includes('action') || 
-                       queryLower.includes('fight') || 
-                       queryLower.includes('combat') ||
-                       queryLower.includes('john wick') ||
-                       queryLower.includes('martial') ||
-                       queryLower.includes('assassin');
-  
-  // Score each title based on relevance
-  const scoredTitles = titles.map(title => {
+// Unified title scoring system (matches frontend implementation)
+class UnifiedTitleScorer {
+  static scoreTitle(title, query, queryWords) {
     let score = 0;
     let vectorScore = 0; // Placeholder for future vector search
     
-    // Create searchable text from title
+    const queryLower = query.toLowerCase();
+    
+    // Check for special query types (same as frontend)
+    const isActionQuery = queryLower.includes('action') || 
+                         queryLower.includes('fight') || 
+                         queryLower.includes('combat') ||
+                         queryLower.includes('john wick') ||
+                         queryLower.includes('martial') ||
+                         queryLower.includes('assassin');
+    
+    // Create comprehensive searchable text from title (same as frontend)
     const searchableText = [
       title.title_name_en,
       title.title_name_kr,
@@ -431,25 +643,27 @@ async function findRelevantTitles(query, titles, openai) {
       title.tagline,
       Array.isArray(title.genre) ? title.genre.join(' ') : title.genre,
       title.tone,
-      Array.isArray(title.keywords) ? title.keywords.join(' ') : title.keywords,
+      Array.isArray(title.keywords) ? title.keywords.join(' ') : (title.keywords || ''),
       title.story_author,
       title.art_author,
       title.perfect_for,
       title.audience
     ].filter(Boolean).join(' ').toLowerCase();
 
-    // Text-based scoring
+    // Text-based scoring with count multipliers (same as frontend)
     queryWords.forEach(word => {
-      const count = (searchableText.match(new RegExp(word, 'g')) || []).length;
-      score += count * 2;
+      if (word.length <= 2) return; // Skip short words
       
-      // Boost for exact matches in titles
+      const count = (searchableText.match(new RegExp(word, 'g')) || []).length;
+      score += count * 2; // Base score: 2 points per occurrence
+      
+      // Boost for exact matches in titles (+5 points)
       if (title.title_name_en?.toLowerCase().includes(word) || 
           title.title_name_kr?.toLowerCase().includes(word)) {
         score += 5;
       }
       
-      // Boost for genre/tone matches
+      // Boost for genre/tone matches (+3 points)
       const genreStr = Array.isArray(title.genre) ? title.genre.join(' ').toLowerCase() : (title.genre || '').toLowerCase();
       const toneStr = (title.tone || '').toLowerCase();
       
@@ -458,7 +672,7 @@ async function findRelevantTitles(query, titles, openai) {
       }
     });
     
-    // Special scoring for action queries
+    // Special scoring for action queries (same as frontend)
     if (isActionQuery) {
       const genreStr = Array.isArray(title.genre) ? title.genre.join(' ').toLowerCase() : (title.genre || '').toLowerCase();
       const toneStr = (title.tone || '').toLowerCase();
@@ -469,11 +683,16 @@ async function findRelevantTitles(query, titles, openai) {
       if (searchableText.includes('assassin') || searchableText.includes('revenge')) score += 3;
     }
 
-    // Additional scoring factors
+    // Additional scoring factors (same as frontend)
     if (title.synopsis && title.synopsis.trim().length > 50) score += 1;
     if (title.tagline && title.tagline.trim().length > 10) score += 1;
     if (title.views && title.views > 10000) score += 1;
     if (title.completed) score += 1;
+    
+    // Legacy bonus: pitch deck boost (from old frontend algorithm)
+    if (title.pitch && title.pitch.trim()) {
+      score += 2;
+    }
 
     return { 
       ...title, 
@@ -481,17 +700,36 @@ async function findRelevantTitles(query, titles, openai) {
       vectorScore,
       relevance: score > 0 ? 'text-match' : 'none'
     };
-  });
+  }
+  
+  static findRelevantTitles(titles, query, maxResults = 8) {
+    if (!titles || titles.length === 0) {
+      return [];
+    }
 
-  // Return top 8 most relevant titles
-  return scoredTitles
-    .filter(title => title.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 8);
+    const queryWords = query.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+    
+    // Score each title
+    const scoredTitles = titles.map(title => this.scoreTitle(title, query, queryWords));
+
+    // Return top results sorted by score (same as frontend)
+    return scoredTitles
+      .filter(title => title.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxResults);
+  }
 }
 
-// Create database context for AI
-function createDatabaseContext(allTitles, relevantTitles) {
+// Legacy function - now uses unified scoring system
+async function findRelevantTitles(query, titles, openai) {
+  console.log('⚠️ Using legacy findRelevantTitles - now uses UnifiedTitleScorer');
+  
+  // Use unified scoring system (matches frontend)
+  return UnifiedTitleScorer.findRelevantTitles(titles, query, 8);
+}
+
+// Unified context creation function (matches frontend implementation)
+function createUnifiedKoreanIPContext(allTitles, relevantTitles, userQuery = '') {
   const totalTitles = allTitles.length;
   const genres = [...new Set(allTitles.map(t => Array.isArray(t.genre) ? t.genre.join(', ') : t.genre).filter(Boolean))].slice(0, 15);
   const formats = [...new Set(allTitles.map(t => t.content_format).filter(Boolean))];
@@ -503,7 +741,7 @@ Available formats: ${formats.join(', ')}
 
 `;
 
-  if (relevantTitles.length > 0) {
+  if (relevantTitles && relevantTitles.length > 0) {
     context += `Most relevant titles from our database for this query:\n\n`;
     
     relevantTitles.slice(0, 6).forEach((title, index) => {
@@ -519,22 +757,17 @@ Available formats: ${formats.join(', ')}
       context += `\n`;
     });
   } else {
-    // No exact matches, but provide alternative recommendations from database
-    context += `IMPORTANT: No exact matches for "${query}" in our database.\n`;
-    context += `You MUST still recommend titles from our collection. Here are titles to recommend instead:\n\n`;
+    // Fallback: provide sample titles when no specific matches
+    const sampleTitles = allTitles.slice(0, 8);
     
-    // Try to find titles with relevant genres or tones
-    const actionTitles = allTitles.filter(t => 
-      (Array.isArray(t.genre) ? t.genre.join(' ') : t.genre || '').toLowerCase().includes('action') ||
-      (Array.isArray(t.genre) ? t.genre.join(' ') : t.genre || '').toLowerCase().includes('thriller') ||
-      (t.tone || '').toLowerCase().includes('intense') ||
-      (t.tone || '').toLowerCase().includes('exciting')
-    ).slice(0, 5);
+    if (userQuery && userQuery.trim()) {
+      context += `IMPORTANT: No exact matches for "${userQuery}" in our database.\n`;
+      context += `You MUST still recommend titles from our collection. Here are titles to recommend instead:\n\n`;
+    } else {
+      context += `Sample titles from our database:\n\n`;
+    }
     
-    const titlesToRecommend = actionTitles.length > 0 ? actionTitles : allTitles.slice(0, 8);
-    
-    context += `Recommended titles from our database:\n`;
-    titlesToRecommend.forEach((title, index) => {
+    sampleTitles.forEach((title, index) => {
       context += `${index + 1}. "${title.title_name_en || title.title_name_kr}"`;
       if (title.title_name_kr && title.title_name_en) {
         context += ` (${title.title_name_kr})`;
@@ -547,7 +780,24 @@ Available formats: ${formats.join(', ')}
     });
   }
 
+  context += `
+Your role:
+1. Understand user preferences and intent  
+2. Recommend specific Korean IPs that match their criteria using the EXACT title names from the numbered list above
+3. Explain WHY each recommendation fits their request
+4. Ask clarifying questions to better understand their taste
+5. Suggest related searches they might be interested in
+
+CRITICAL: Always use the exact title names from the numbered list above. Do not create or modify title names.
+Always be enthusiastic and knowledgeable about Korean content!`;
+
   return context;
+}
+
+// Legacy function for backward compatibility - redirects to unified function
+function createDatabaseContext(allTitles, relevantTitles, userQuery = '') {
+  console.log('⚠️ Using legacy createDatabaseContext - consider migrating to createUnifiedKoreanIPContext');
+  return createUnifiedKoreanIPContext(allTitles, relevantTitles, userQuery);
 }
 
 // Extract suggested queries from AI response

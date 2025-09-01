@@ -17,8 +17,8 @@ interface Message {
   messageId?: string; // Database message ID for tracking
 }
 
-// Component to format markdown-like content - simplified, no title matching
-const FormattedMessage = ({ content, navigate }: { content: string, navigate: any }) => {
+// Component to format markdown-like content with title matching and linking
+const FormattedMessage = ({ content, navigate, titleData }: { content: string, navigate: any, titleData?: any[] }) => {
   const formatText = (text: string) => {
     // Split by lines to preserve line breaks
     return text.split('\n').map((line, idx) => {
@@ -61,6 +61,37 @@ const FormattedMessage = ({ content, navigate }: { content: string, navigate: an
     });
   };
   
+  // Helper function to find title ID by title name from available title data
+  const findTitleIdByName = (titleName: string): string | null => {
+    if (!titleData || !Array.isArray(titleData)) return null;
+    
+    const cleanedName = titleName.replace(/["""'']/g, '"').trim();
+    
+    // Try exact match first
+    const exactMatch = titleData.find(title => 
+      title.title_name_en === cleanedName || 
+      title.title_name_kr === cleanedName
+    );
+    
+    if (exactMatch) return exactMatch.title_id;
+    
+    // Try case-insensitive match
+    const caseInsensitiveMatch = titleData.find(title => 
+      title.title_name_en?.toLowerCase() === cleanedName.toLowerCase() || 
+      title.title_name_kr?.toLowerCase() === cleanedName.toLowerCase()
+    );
+    
+    if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
+    
+    // Try partial match (contains)
+    const partialMatch = titleData.find(title => 
+      title.title_name_en?.toLowerCase().includes(cleanedName.toLowerCase()) ||
+      title.title_name_kr?.toLowerCase().includes(cleanedName.toLowerCase())
+    );
+    
+    return partialMatch ? partialMatch.title_id : null;
+  };
+
   // Helper function to extract English title only and clean formatting
   const extractEnglishTitle = (text: string): string => {
     // Remove Korean text in parentheses, e.g., "Title (한글제목)" -> "Title"
@@ -91,45 +122,145 @@ const FormattedMessage = ({ content, navigate }: { content: string, navigate: an
     // Handle quoted and bold text - add "FIND MORE" links only for numbered recommendations
     const parts = text.split(/(".*?"|[\*]{2}.*?[\*]{2})/g);
     return parts.map((part, partIdx) => {
-      // Handle quoted text
+      // Handle quoted text with possible title ID
       if (part.startsWith('"') && part.endsWith('"')) {
         const quotedText = part.slice(1, -1);
         if (isNumberedRecommendation) {
-          const searchQuery = extractEnglishTitle(quotedText);
-          return (
-            <span key={partIdx} className="inline-flex items-center gap-2">
-              <span className="font-medium">"{quotedText}"</span>
-              <button
-                onClick={() => navigate(`/search-results?search=${encodeURIComponent(searchQuery)}`)}
-                className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                title={`Search for "${searchQuery}"`}
-              >
-                → FIND MORE
-              </button>
-            </span>
-          );
+          // Check if the quoted text contains a title ID pattern [ID: xxxxx] (Title Name)
+          const titleIdMatch = quotedText.match(/\[ID:\s*([a-f0-9-]{8,})\]\s*\((.*?)\)/i);
+          
+          if (titleIdMatch) {
+            const titleId = titleIdMatch[1];
+            const titleName = titleIdMatch[2];
+            return (
+              <span key={partIdx} className="inline-flex items-center gap-2">
+                <button
+                  onClick={() => navigate(`/titles/${titleId}`)}
+                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                  title={`View "${titleName}" details`}
+                >
+                  "{titleName}"
+                </button>
+                <button
+                  onClick={() => navigate(`/titles/${titleId}`)}
+                  className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                  title={`View "${titleName}" details`}
+                >
+                  → FIND MORE
+                </button>
+              </span>
+            );
+          } else {
+            // Try to find title ID by name lookup
+            const foundTitleId = findTitleIdByName(quotedText);
+            if (foundTitleId) {
+              return (
+                <span key={partIdx} className="inline-flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(`/titles/${foundTitleId}`)}
+                    className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                    title={`View "${quotedText}" details`}
+                  >
+                    "{quotedText}"
+                  </button>
+                  <button
+                    onClick={() => navigate(`/titles/${foundTitleId}`)}
+                    className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                    title={`View "${quotedText}" details`}
+                  >
+                    → FIND MORE
+                  </button>
+                </span>
+              );
+            } else {
+              // Fallback to search if no title ID found
+              const searchQuery = extractEnglishTitle(quotedText);
+              return (
+                <span key={partIdx} className="inline-flex items-center gap-2">
+                  <span className="font-medium">"{quotedText}"</span>
+                  <button
+                    onClick={() => navigate(`/search-results?search=${encodeURIComponent(searchQuery)}`)}
+                    className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                    title={`Search for "${searchQuery}"`}
+                  >
+                    → FIND MORE
+                  </button>
+                </span>
+              );
+            }
+          }
         } else {
           return <span key={partIdx} className="font-medium">"{quotedText}"</span>;
         }
       }
       
-      // Handle bold text
+      // Handle bold text with possible title ID
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
         if (isNumberedRecommendation) {
-          const searchQuery = extractEnglishTitle(boldText);
-          return (
-            <span key={partIdx} className="inline-flex items-center gap-2">
-              <strong className="font-semibold">{boldText}</strong>
-              <button
-                onClick={() => navigate(`/search-results?search=${encodeURIComponent(searchQuery)}`)}
-                className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                title={`Search for "${searchQuery}"`}
-              >
-                → FIND MORE
-              </button>
-            </span>
-          );
+          // Check if the bold text contains a title ID pattern [ID: xxxxx] (Title Name)
+          const titleIdMatch = boldText.match(/\[ID:\s*([a-f0-9-]{8,})\]\s*\((.*?)\)/i);
+          
+          if (titleIdMatch) {
+            const titleId = titleIdMatch[1];
+            const titleName = titleIdMatch[2];
+            return (
+              <span key={partIdx} className="inline-flex items-center gap-2">
+                <button
+                  onClick={() => navigate(`/titles/${titleId}`)}
+                  className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                  title={`View "${titleName}" details`}
+                >
+                  {titleName}
+                </button>
+                <button
+                  onClick={() => navigate(`/titles/${titleId}`)}
+                  className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                  title={`View "${titleName}" details`}
+                >
+                  → FIND MORE
+                </button>
+              </span>
+            );
+          } else {
+            // Try to find title ID by name lookup
+            const foundTitleId = findTitleIdByName(boldText);
+            if (foundTitleId) {
+              return (
+                <span key={partIdx} className="inline-flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(`/titles/${foundTitleId}`)}
+                    className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                    title={`View "${boldText}" details`}
+                  >
+                    {boldText}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/titles/${foundTitleId}`)}
+                    className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                    title={`View "${boldText}" details`}
+                  >
+                    → FIND MORE
+                  </button>
+                </span>
+              );
+            } else {
+              // Fallback to search if no title ID found
+              const searchQuery = extractEnglishTitle(boldText);
+              return (
+                <span key={partIdx} className="inline-flex items-center gap-2">
+                  <strong className="font-semibold">{boldText}</strong>
+                  <button
+                    onClick={() => navigate(`/search-results?search=${encodeURIComponent(searchQuery)}`)}
+                    className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
+                    title={`Search for "${searchQuery}"`}
+                  >
+                    → FIND MORE
+                  </button>
+                </span>
+              );
+            }
+          }
         } else {
           return <strong key={partIdx} className="font-semibold">{boldText}</strong>;
         }
@@ -779,7 +910,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <div className="text-sm prose prose-sm max-w-none">
-                      <FormattedMessage content={message.content} navigate={navigate} />
+                      <FormattedMessage content={message.content} navigate={navigate} titleData={message.titles} />
                     </div>
                     
                     {/* Suggested Queries */}

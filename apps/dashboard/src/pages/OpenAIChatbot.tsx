@@ -39,11 +39,13 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
           
           // Get the title for this numbered recommendation by position
           let matchingTitle = null;
+          let titleIndex = undefined;
+          
           if (titles && titles.length > 0) {
             // Extract number from "1. " -> 1
             const recommendationNumber = parseInt(number.replace('.', '').trim());
             // Use zero-based index (1st recommendation -> index 0)
-            const titleIndex = recommendationNumber - 1;
+            titleIndex = recommendationNumber - 1;
             
             if (titleIndex >= 0 && titleIndex < titles.length) {
               matchingTitle = titles[titleIndex];
@@ -778,17 +780,17 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       <FormattedMessage 
                         content={message.content} 
                         titles={message.titles}
-                        onTitleCardClick={(title) => {
+                        onTitleCardClick={async (title) => {
                           // Use the same click handler as the main formatTitleCard
                           if (currentSession && user) {
-                            chatHistoryService.recordInteraction({
+                            await chatHistoryService.recordInteraction({
                               session_id: currentSession.id,
                               user_id: user.id,
                               interaction_type: 'title_view',
                               target_id: title.title_id,
                               target_title: title.title_name_en || title.title_name_kr || 'Unknown Title',
                               metadata: {
-                                source: 'inline_title_card',
+                                source: 'inline_title_click',
                                 title_name_en: title.title_name_en,
                                 title_name_kr: title.title_name_kr,
                                 recommendation_score: title.score,

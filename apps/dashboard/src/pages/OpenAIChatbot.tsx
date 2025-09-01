@@ -345,6 +345,13 @@ What kind of Korean content are you in the mood for today?`,
         suggestedQueries: response.suggestedQueries
       };
 
+      console.log('✨ CREATED BOT MESSAGE:', {
+        messageId: botMessage.id,
+        hasTitles: !!botMessage.titles,
+        titlesCount: botMessage.titles?.length,
+        firstTitleInMessage: botMessage.titles?.[0]
+      });
+
       // Record AI response in database
       const botDbMessage = await chatHistoryService.recordMessage({
         session_id: currentSession.id,
@@ -385,6 +392,12 @@ What kind of Korean content are you in the mood for today?`,
           await chatHistoryService.recordSuggestedQueries(suggestedQueries);
         }
       }
+
+      console.log('🚀 ADDING MESSAGE TO STATE:', {
+        messageId: botMessage.id,
+        hasTitlesBeforeState: !!botMessage.titles,
+        titlesCountBeforeState: botMessage.titles?.length
+      });
 
       setMessages(prev => [...prev, botMessage]);
     } catch (error: any) {

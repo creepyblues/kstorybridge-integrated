@@ -18,7 +18,11 @@ interface Message {
 }
 
 // Component to format markdown-like content
-const FormattedMessage = ({ content }: { content: string }) => {
+const FormattedMessage = ({ content, titles, onTitleCardClick }: { 
+  content: string; 
+  titles?: any[]; 
+  onTitleCardClick?: (title: any) => void;
+}) => {
   const formatText = (text: string) => {
     // Split by lines to preserve line breaks
     return text.split('\n').map((line, idx) => {
@@ -27,15 +31,41 @@ const FormattedMessage = ({ content }: { content: string }) => {
         return <div key={idx} className="h-2" />;
       }
       
-      // Handle numbered lists (1. 2. etc.)
+      // Handle numbered lists (1. 2. etc.) with inline title cards
       if (/^\d+\.\s/.test(line)) {
         const match = line.match(/^(\d+\.\s)(.*)/);
         if (match) {
           const [, number, text] = match;
+          
+          // Try to find matching title for this numbered item
+          let matchingTitle = null;
+          if (titles && titles.length > 0) {
+            // Extract potential title from bold text **title**
+            const boldMatch = text.match(/\*\*(.*?)\*\*/);
+            if (boldMatch) {
+              const titleText = boldMatch[1];
+              matchingTitle = titles.find(title => 
+                title.title_name_en?.includes(titleText) || 
+                title.title_name_kr?.includes(titleText) ||
+                titleText.includes(title.title_name_en || '') ||
+                titleText.includes(title.title_name_kr || '')
+              );
+            }
+          }
+          
           return (
-            <div key={idx} className="mt-1 flex">
-              <span className="font-medium mr-2 text-blue-600">{number}</span>
-              <div>{formatInlineText(text)}</div>
+            <div key={idx} className="mt-3">
+              <div className="flex">
+                <span className="font-medium mr-2 text-blue-600">{number}</span>
+                <div className="flex-1">{formatInlineText(text)}</div>
+              </div>
+              
+              {/* Inline title card if match found */}
+              {matchingTitle && onTitleCardClick && (
+                <div className="ml-6 mt-3">
+                  {renderTitleCard(matchingTitle, onTitleCardClick)}
+                </div>
+              )}
             </div>
           );
         }
@@ -71,6 +101,75 @@ const FormattedMessage = ({ content }: { content: string }) => {
       }
       return part;
     });
+  };
+
+  const renderTitleCard = (title: any, onTitleCardClick: (title: any) => void) => {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+           onClick={() => onTitleCardClick(title)}>
+        <div className="flex gap-3">
+        {title.title_image ? (
+          <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+            <img 
+              src={title.title_image} 
+              alt={title.title_name_en || title.title_name_kr}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-16 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="text-xs text-gray-400">No Image</span>
+          </div>
+        )}
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-2 mb-1">
+            <h4 className="font-semibold text-sm text-gray-800 line-clamp-2">
+              {title.title_name_en || title.title_name_kr}
+            </h4>
+            {title.pitch && title.pitch.trim() && (
+              <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0">
+                Pitch
+              </span>
+            )}
+          </div>
+          
+          {title.title_name_en && title.title_name_kr && (
+            <p className="text-xs text-gray-500 mb-2 line-clamp-1">
+              {title.title_name_kr}
+            </p>
+          )}
+          
+          <div className="flex flex-wrap gap-1 mb-2">
+            {title.genre && (
+              Array.isArray(title.genre) ? (
+                title.genre.slice(0, 2).map((g: string, idx: number) => (
+                  <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded text-xs">
+                    {g.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                  </span>
+                ))
+              ) : (
+                <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded text-xs">
+                  {title.genre.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                </span>
+              )
+            )}
+            {title.tone && (
+              <span className="inline-block bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs">
+                {title.tone}
+              </span>
+            )}
+          </div>
+          
+          {title.synopsis && (
+            <p className="text-xs text-gray-600 line-clamp-2">
+              {title.synopsis}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+    );
   };
 
   return <div>{formatText(content)}</div>;
@@ -644,7 +743,30 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <div className="text-sm prose prose-sm max-w-none">
-                      <FormattedMessage content={message.content} />
+                      <FormattedMessage 
+                        content={message.content} 
+                        titles={message.titles}
+                        onTitleCardClick={(title) => {
+                          // Use the same click handler as the main formatTitleCard
+                          if (currentSession && user) {
+                            chatHistoryService.recordInteraction({
+                              session_id: currentSession.id,
+                              user_id: user.id,
+                              interaction_type: 'title_view',
+                              target_id: title.title_id,
+                              target_title: title.title_name_en || title.title_name_kr || 'Unknown Title',
+                              metadata: {
+                                source: 'inline_title_card',
+                                title_name_en: title.title_name_en,
+                                title_name_kr: title.title_name_kr,
+                                recommendation_score: title.score,
+                                timestamp: new Date().toISOString()
+                              }
+                            });
+                          }
+                          navigate(`/titles/${title.title_id}`);
+                        }}
+                      />
                     </div>
                     
                     {/* Suggested Queries */}
@@ -665,18 +787,31 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       </div>
                     )}
                     
-                    {/* Title Recommendations */}
-                    {message.titles && message.titles.length > 0 && (
-                      <div className="mt-4 space-y-3">
-                        {console.log('🎉 TITLES SECTION RENDERING!:', {
-                          messageId: message.id,
-                          titlesCount: message.titles.length,
-                          firstTitleName: message.titles[0]?.title_name_en || message.titles[0]?.title_name_kr
-                        })}
-                        <p className="text-xs font-medium text-gray-600">📚 Recommended titles:</p>
-                        {message.titles.map(formatTitleCard)}
-                      </div>
-                    )}
+                    {/* Title Recommendations - Only show if there are titles not already shown inline */}
+                    {(() => {
+                      if (!message.titles || message.titles.length === 0) return null;
+                      
+                      // Check if message has numbered lists (which would show inline title cards)
+                      const hasNumberedLists = /^\d+\.\s/m.test(message.content);
+                      
+                      // If no numbered lists, show all title cards at bottom (traditional way)
+                      if (!hasNumberedLists) {
+                        return (
+                          <div className="mt-4 space-y-3">
+                            {console.log('🎉 TITLES SECTION RENDERING (BOTTOM)!:', {
+                              messageId: message.id,
+                              titlesCount: message.titles.length,
+                              firstTitleName: message.titles[0]?.title_name_en || message.titles[0]?.title_name_kr
+                            })}
+                            <p className="text-xs font-medium text-gray-600">📚 Recommended titles:</p>
+                            {message.titles.map(formatTitleCard)}
+                          </div>
+                        );
+                      }
+                      
+                      // If has numbered lists, don't show bottom cards (they're shown inline)
+                      return null;
+                    })()}
                   </div>
                   
                   <div className="text-xs text-gray-500 mt-1">

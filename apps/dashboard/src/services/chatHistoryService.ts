@@ -288,7 +288,7 @@ class ChatHistoryService {
     }
   }
 
-  // Get messages with their related recommendations and suggested queries
+  // Get messages with their related recommendations and suggested queries (OPTIMIZED)
   async getSessionMessagesWithData(sessionId: string): Promise<any[]> {
     try {
       // Clean up messages older than 24 hours
@@ -296,61 +296,127 @@ class ChatHistoryService {
 
       const messages = await this.getSessionMessages(sessionId);
       
-      // Enhance messages with related data
-      const enhancedMessages = await Promise.all(
-        messages.map(async (message) => {
-          const baseMessage = {
-            id: message.id,
-            content: message.content,
-            sender: message.message_type === 'user_prompt' ? 'user' : 'bot',
-            timestamp: new Date(message.created_at),
-            messageId: message.id
-          };
+      if (messages.length === 0) {
+        return [];
+      }
 
-          // Only add related data for bot messages
-          if (message.message_type === 'ai_response') {
-            const [recommendations, suggestedQueries] = await Promise.all([
-              this.getMessageRecommendations(message.id),
-              this.getMessageSuggestedQueries(message.id)
-            ]);
-
-            // For recommendations, we need to fetch full title data
-            let fullTitles = undefined;
-            if (recommendations.length > 0) {
-              const { titlesService } = await import('./titlesService');
-              const titlePromises = recommendations.map(async (rec) => {
-                try {
-                  const fullTitle = await titlesService.getTitleById(rec.title_id);
-                  return fullTitle ? {
-                    ...fullTitle,
-                    score: rec.recommendation_score || 0
-                  } : null;
-                } catch (error) {
-                  console.warn(`Failed to fetch title ${rec.title_id}:`, error);
-                  return {
-                    title_id: rec.title_id,
-                    title_name_en: rec.title_name_en,
-                    title_name_kr: rec.title_name_kr,
-                    score: rec.recommendation_score || 0
-                  };
-                }
-              });
-              
-              const resolvedTitles = await Promise.all(titlePromises);
-              fullTitles = resolvedTitles.filter(title => title !== null);
+      // Extract all message IDs for batch queries
+      const messageIds = messages.map(msg => msg.id);
+      
+      // Batch fetch all recommendations and suggested queries in parallel
+      const [allRecommendations, allSuggestedQueries] = await Promise.all([
+        // Get all recommendations for all messages in one query
+        supabase
+          .from('chat_title_recommendations')
+          .select('*')
+          .in('message_id', messageIds)
+          .order('recommendation_score', { ascending: false })
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Error batch fetching recommendations:', error);
+              return [];
             }
+            return data || [];
+          }),
+        
+        // Get all suggested queries for all messages in one query  
+        supabase
+          .from('chat_suggested_queries')
+          .select('*')
+          .in('message_id', messageIds)
+          .order('query_position', { ascending: true })
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Error batch fetching suggested queries:', error);
+              return [];
+            }
+            return data || [];
+          })
+      ]);
 
-            return {
-              ...baseMessage,
-              titles: fullTitles,
-              suggestedQueries: suggestedQueries.length > 0 ? suggestedQueries.map(sq => sq.suggested_query) : undefined
-            };
+      // Extract unique title IDs and batch fetch all titles
+      const uniqueTitleIds = [...new Set(allRecommendations.map(rec => rec.title_id))];
+      let titleLookup: Record<string, any> = {};
+      
+      if (uniqueTitleIds.length > 0) {
+        const { titlesService } = await import('./titlesService');
+        const { data: titles, error } = await supabase
+          .from('titles')
+          .select('*')
+          .in('title_id', uniqueTitleIds);
+          
+        if (!error && titles) {
+          // Create lookup map for O(1) title access
+          titleLookup = titles.reduce((acc, title) => {
+            acc[title.title_id] = title;
+            return acc;
+          }, {} as Record<string, any>);
+        }
+      }
+
+      // Group recommendations and queries by message ID for O(1) lookup
+      const recsByMessageId: Record<string, any[]> = {};
+      const queriesByMessageId: Record<string, string[]> = {};
+      
+      allRecommendations.forEach(rec => {
+        if (!recsByMessageId[rec.message_id]) {
+          recsByMessageId[rec.message_id] = [];
+        }
+        recsByMessageId[rec.message_id].push(rec);
+      });
+      
+      allSuggestedQueries.forEach(query => {
+        if (!queriesByMessageId[query.message_id]) {
+          queriesByMessageId[query.message_id] = [];
+        }
+        queriesByMessageId[query.message_id].push(query.suggested_query);
+      });
+
+      // Build enhanced messages with O(1) lookups
+      const enhancedMessages = messages.map((message) => {
+        const baseMessage = {
+          id: message.id,
+          content: message.content,
+          sender: message.message_type === 'user_prompt' ? 'user' : 'bot',
+          timestamp: new Date(message.created_at),
+          messageId: message.id
+        };
+
+        // Only add related data for bot messages
+        if (message.message_type === 'ai_response') {
+          const recommendations = recsByMessageId[message.id] || [];
+          const suggestedQueries = queriesByMessageId[message.id] || [];
+
+          // Map recommendations to full title data using lookup
+          let fullTitles = undefined;
+          if (recommendations.length > 0) {
+            fullTitles = recommendations
+              .map(rec => {
+                const fullTitle = titleLookup[rec.title_id];
+                return fullTitle ? {
+                  ...fullTitle,
+                  score: rec.recommendation_score || 0
+                } : {
+                  title_id: rec.title_id,
+                  title_name_en: rec.title_name_en,
+                  title_name_kr: rec.title_name_kr,
+                  score: rec.recommendation_score || 0
+                };
+              })
+              .filter(Boolean);
           }
 
-          return baseMessage;
-        })
-      );
+          return {
+            ...baseMessage,
+            titles: fullTitles,
+            suggestedQueries: suggestedQueries.length > 0 ? suggestedQueries : undefined
+          };
+        }
 
+        return baseMessage;
+      });
+
+      console.log(`📚 Optimized batch load: ${messages.length} messages, ${allRecommendations.length} recommendations, ${uniqueTitleIds.length} unique titles`);
       return enhancedMessages;
     } catch (error) {
       console.error('Exception fetching enhanced session messages:', error);

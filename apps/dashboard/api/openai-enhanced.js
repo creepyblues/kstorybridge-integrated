@@ -573,7 +573,9 @@ async function loadTitlesFromDatabase(supabase) {
         views,
         likes,
         rating,
-        comps
+        comps,
+        title_image,
+        pitch
       `)
       .order('created_at', { ascending: false })
       .limit(500);

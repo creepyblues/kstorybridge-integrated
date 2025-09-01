@@ -35,6 +35,23 @@
             a.appendChild(r);
         })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
     </script>
+    <!-- Passive Event Listener Polyfill for Third-Party Scripts -->
+    <script>
+      // Override addEventListener to make touchstart/touchmove passive by default
+      (function() {
+        var originalAddEventListener = EventTarget.prototype.addEventListener;
+        EventTarget.prototype.addEventListener = function(type, listener, options) {
+          var passiveEvents = ['touchstart', 'touchmove', 'wheel', 'mousewheel'];
+          if (passiveEvents.indexOf(type) !== -1 && typeof options !== 'boolean') {
+            options = options || {};
+            if (options.passive === undefined) {
+              options.passive = true;
+            }
+          }
+          return originalAddEventListener.call(this, type, listener, options);
+        };
+      })();
+    </script>
   </head>
 
   <body>

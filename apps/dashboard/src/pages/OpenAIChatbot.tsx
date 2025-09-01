@@ -746,8 +746,8 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       conditionPasses: !!(message.titles && message.titles.length > 0)
                     })}
                     {(() => {
-                      if (message.sender === 'bot') {
-                        console.log('🔍 CHECKING RENDER CONDITION:', {
+                      if (message.sender === 'bot' && message.titles) {
+                        console.log('🔍 CHECKING RENDER CONDITION FOR MESSAGE WITH TITLES:', {
                           messageId: message.id,
                           titlesExists: !!message.titles,
                           titlesType: typeof message.titles,
@@ -761,6 +761,11 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                     })()}
                     {message.titles && message.titles.length > 0 && (
                       <div className="mt-4 space-y-3">
+                        {console.log('🎉 TITLES SECTION RENDERING!:', {
+                          messageId: message.id,
+                          titlesCount: message.titles.length,
+                          firstTitleName: message.titles[0]?.title_name_en || message.titles[0]?.title_name_kr
+                        })}
                         <p className="text-xs font-medium text-gray-600">📚 Recommended titles:</p>
                         {message.titles.map(formatTitleCard)}
                       </div>

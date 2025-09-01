@@ -351,10 +351,45 @@ export default function OpenAIChatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [showAllMessages, setShowAllMessages] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check if user is authorized (same users as existing chatbot)
   const isAuthorized = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+
+  // Function to get messages to display (truncated or full)
+  const getDisplayMessages = () => {
+    if (showAllMessages || messages.length <= 5) {
+      return messages;
+    }
+    
+    // Show greeting + last 4 messages (2 conversations: user->bot, user->bot)
+    const greeting = messages.find(msg => 
+      msg.sender === 'bot' && msg.content.includes('Hello! I\'m your OpenAI-powered assistant')
+    );
+    
+    const lastFourMessages = messages.slice(-4);
+    
+    if (greeting && !lastFourMessages.includes(greeting)) {
+      return [greeting, ...lastFourMessages];
+    }
+    
+    return lastFourMessages;
+  };
+
+  // Calculate how many messages are hidden
+  const getHiddenMessagesCount = () => {
+    if (showAllMessages || messages.length <= 5) {
+      return 0;
+    }
+    
+    const greeting = messages.find(msg => 
+      msg.sender === 'bot' && msg.content.includes('Hello! I\'m your OpenAI-powered assistant')
+    );
+    
+    const visibleCount = greeting ? 5 : 4; // greeting + 4 recent, or just 4 recent
+    return Math.max(0, messages.length - visibleCount);
+  };
   
   console.log('🚀 OPENAI CHATBOT COMPONENT LOADED:', {
     system: 'OpenAI API with Vector Search',
@@ -372,6 +407,12 @@ export default function OpenAIChatbot() {
         variant: "destructive",
       });
       navigate("/profile");
+      return;
+    }
+
+    // Prevent re-initialization if we already have a session and messages
+    if (currentSession && messages.length > 0) {
+      console.log('📝 Session already initialized, skipping initialization');
       return;
     }
 
@@ -500,7 +541,7 @@ What kind of Korean content are you in the mood for today?`,
 
     // Don't end session on unmount - keep it active for the user's session
     // Sessions will be managed by activity timeout or explicit logout
-  }, [isAuthorized, navigate, toast, user]);
+  }, [isAuthorized, user?.id]); // Reduced dependencies - only re-run when user changes or authorization status changes
 
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
@@ -935,7 +976,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                     {message.titles && message.titles.length > 0 && (
                       <div className="mt-4 space-y-3">
                         <div className="border-t border-gray-200 pt-3">
-                          <p className="text-sm font-semibold text-gray-700 mb-3">📚 Here are the actual titles from our database:</p>
+                          <p className="text-sm font-semibold text-gray-700 mb-3">📚 Here are additional titles you may want to consider:</p>
                           <div className="space-y-2">
                             {message.titles.map(formatTitleCard)}
                           </div>

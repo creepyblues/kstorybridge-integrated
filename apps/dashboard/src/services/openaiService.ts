@@ -818,11 +818,8 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
       // Extract suggested queries from the AI response (simple parsing)
       const suggestedQueries = this.extractSuggestedQueries(aiResponse);
 
-      // Enhance AI response if vector search was used
+      // Use AI response as-is without additional enhancement text
       let enhancedResponse = aiResponse;
-      if (searchResult.vectorSearchUsed && relevantTitles.length > 0) {
-        enhancedResponse = `🎯 *Using AI-powered semantic search to find your perfect matches*\n\n${aiResponse}`;
-      }
 
       const responseTime = Date.now() - startTime;
       
@@ -985,6 +982,7 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
         genre: title.genre,
         tone: title.tone,
         author: title.author,
+        title_image: title.title_image,
         score: title.score || 0
       }));
 

@@ -225,6 +225,9 @@ class ChatHistoryService {
 
   async getSessionMessages(sessionId: string): Promise<ChatMessage[]> {
     try {
+      // Clean up messages older than 24 hours
+      await this.cleanupOldMessages(sessionId);
+
       const { data: messages, error } = await supabase
         .from('chat_messages')
         .select('*')
@@ -240,6 +243,141 @@ class ChatHistoryService {
     } catch (error) {
       console.error('Exception fetching session messages:', error);
       return [];
+    }
+  }
+
+  // Get recommendations for a specific message
+  async getMessageRecommendations(messageId: string): Promise<ChatTitleRecommendation[]> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_title_recommendations')
+        .select('*')
+        .eq('message_id', messageId)
+        .order('recommendation_score', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching message recommendations:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Exception fetching message recommendations:', error);
+      return [];
+    }
+  }
+
+  // Get suggested queries for a specific message
+  async getMessageSuggestedQueries(messageId: string): Promise<ChatSuggestedQuery[]> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_suggested_queries')
+        .select('*')
+        .eq('message_id', messageId)
+        .order('query_position', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching suggested queries:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Exception fetching suggested queries:', error);
+      return [];
+    }
+  }
+
+  // Get messages with their related recommendations and suggested queries
+  async getSessionMessagesWithData(sessionId: string): Promise<any[]> {
+    try {
+      // Clean up messages older than 24 hours
+      await this.cleanupOldMessages(sessionId);
+
+      const messages = await this.getSessionMessages(sessionId);
+      
+      // Enhance messages with related data
+      const enhancedMessages = await Promise.all(
+        messages.map(async (message) => {
+          const baseMessage = {
+            id: message.id,
+            content: message.content,
+            sender: message.message_type === 'user_prompt' ? 'user' : 'bot',
+            timestamp: new Date(message.created_at),
+            messageId: message.id
+          };
+
+          // Only add related data for bot messages
+          if (message.message_type === 'ai_response') {
+            const [recommendations, suggestedQueries] = await Promise.all([
+              this.getMessageRecommendations(message.id),
+              this.getMessageSuggestedQueries(message.id)
+            ]);
+
+            // For recommendations, we need to fetch full title data
+            let fullTitles = undefined;
+            if (recommendations.length > 0) {
+              const { titlesService } = await import('./titlesService');
+              const titlePromises = recommendations.map(async (rec) => {
+                try {
+                  const fullTitle = await titlesService.getTitleById(rec.title_id);
+                  return fullTitle ? {
+                    ...fullTitle,
+                    score: rec.recommendation_score || 0
+                  } : null;
+                } catch (error) {
+                  console.warn(`Failed to fetch title ${rec.title_id}:`, error);
+                  return {
+                    title_id: rec.title_id,
+                    title_name_en: rec.title_name_en,
+                    title_name_kr: rec.title_name_kr,
+                    score: rec.recommendation_score || 0
+                  };
+                }
+              });
+              
+              const resolvedTitles = await Promise.all(titlePromises);
+              fullTitles = resolvedTitles.filter(title => title !== null);
+            }
+
+            return {
+              ...baseMessage,
+              titles: fullTitles,
+              suggestedQueries: suggestedQueries.length > 0 ? suggestedQueries.map(sq => sq.suggested_query) : undefined
+            };
+          }
+
+          return baseMessage;
+        })
+      );
+
+      return enhancedMessages;
+    } catch (error) {
+      console.error('Exception fetching enhanced session messages:', error);
+      return [];
+    }
+  }
+
+  // Clean up messages older than 24 hours
+  async cleanupOldMessages(sessionId: string): Promise<void> {
+    try {
+      const twentyFourHoursAgo = new Date();
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+      // Delete old messages (this will cascade to related recommendations and queries)
+      const { error } = await supabase
+        .from('chat_messages')
+        .delete()
+        .eq('session_id', sessionId)
+        .lt('created_at', twentyFourHoursAgo.toISOString());
+
+      if (error) {
+        console.error('Error cleaning up old messages:', error);
+      } else {
+        console.log('🧹 Cleaned up messages older than 24 hours');
+      }
+    } catch (error) {
+      console.error('Exception cleaning up old messages:', error);
     }
   }
 
@@ -267,26 +405,6 @@ class ChatHistoryService {
     } catch (error) {
       console.error('Exception recording title recommendations:', error);
       return false;
-    }
-  }
-
-  async getMessageRecommendations(messageId: string): Promise<ChatTitleRecommendation[]> {
-    try {
-      const { data: recommendations, error } = await supabase
-        .from('chat_title_recommendations')
-        .select('*')
-        .eq('message_id', messageId)
-        .order('recommendation_score', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching message recommendations:', error);
-        return [];
-      }
-
-      return recommendations || [];
-    } catch (error) {
-      console.error('Exception fetching message recommendations:', error);
-      return [];
     }
   }
 

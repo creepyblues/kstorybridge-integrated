@@ -438,18 +438,12 @@ export default function OpenAIChatbot() {
           setCurrentSession(session);
           console.log('📝 Chat session initialized:', session.id);
           
-          // Load conversation history from this session
-          const history = await chatHistoryService.getSessionMessages(session.id);
+          // Load conversation history with related data from this session
+          const history = await chatHistoryService.getSessionMessagesWithData(session.id);
           
           if (history && history.length > 0) {
-            // Convert database messages to UI messages
-            const restoredMessages: Message[] = history.map(msg => ({
-              id: msg.id,
-              content: msg.content,
-              sender: msg.message_type === 'user_prompt' ? 'user' : 'bot',
-              timestamp: new Date(msg.created_at),
-              messageId: msg.id
-            }));
+            // Messages are already enhanced with titles and suggestedQueries
+            const restoredMessages: Message[] = history;
             
             // Add greeting message at the beginning if not already there
             const hasGreeting = restoredMessages.some(msg => 

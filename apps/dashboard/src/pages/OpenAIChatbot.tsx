@@ -92,11 +92,43 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
   };
   
   const formatInlineText = (text: string) => {
-    // Handle bold text **text** - just make it bold, no clickable functionality
+    // Handle bold text **text** and make titles clickable links
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, partIdx) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
+        
+        // Try to find matching title for this bold text
+        let matchingTitle = null;
+        if (titles && titles.length > 0) {
+          matchingTitle = titles.find(title => 
+            title.title_name_en?.includes(boldText) || 
+            title.title_name_kr?.includes(boldText) ||
+            boldText.includes(title.title_name_en || '') ||
+            boldText.includes(title.title_name_kr || '') ||
+            // Also try partial matches
+            (title.title_name_en && boldText.toLowerCase().includes(title.title_name_en.toLowerCase())) ||
+            (title.title_name_kr && boldText.includes(title.title_name_kr))
+          );
+        }
+        
+        // If we found a matching title, make it a clickable link
+        if (matchingTitle && onTitleCardClick) {
+          return (
+            <strong 
+              key={partIdx} 
+              className="font-semibold text-hanok-teal hover:text-hanok-teal-600 cursor-pointer underline decoration-dotted hover:decoration-solid transition-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTitleCardClick(matchingTitle);
+              }}
+            >
+              {boldText}
+            </strong>
+          );
+        }
+        
+        // If no match, just make it bold
         return <strong key={partIdx} className="font-semibold">{boldText}</strong>;
       }
       return part;

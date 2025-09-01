@@ -18,7 +18,7 @@ interface Message {
 }
 
 // Component to format markdown-like content
-const FormattedMessage = ({ content, onTitleClick }: { content: string; onTitleClick?: (title: string) => void }) => {
+const FormattedMessage = ({ content }: { content: string }) => {
   const formatText = (text: string) => {
     // Split by lines to preserve line breaks
     return text.split('\n').map((line, idx) => {
@@ -62,35 +62,11 @@ const FormattedMessage = ({ content, onTitleClick }: { content: string; onTitleC
   };
   
   const formatInlineText = (text: string) => {
-    // Handle bold text **text** and potential title links
+    // Handle bold text **text** - just make it bold, no clickable functionality
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, partIdx) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
-        
-        // Check if this looks like a Korean title
-        const isKoreanTitle = (
-          // Contains Korean characters (Hangul or Hanja)
-          /[\u3131-\u3163\u4e00-\u9fff\uac00-\ud7af]/.test(boldText) || 
-          // Contains parentheses (common for Korean/English title pairs)
-          /\([^)]*\)/.test(boldText) ||
-          // Common title patterns
-          /^(The|A|An)\s+\w+/.test(boldText) ||
-          // Title-like capitalization (multiple capital words)
-          /^[A-Z][a-z]*(\s+[A-Z][a-z]*){1,}/.test(boldText) ||
-          // Common words found in Korean content titles
-          /(Owner|Master|Extreme|Two-Time|Perfect|Divine|Ultimate|Secret|Love|Heart|Dream|Night|Day|Time|King|Queen|Princess|Prince|Story|Tale|Legend|Chronicles|Diary|Dark|Light|Shadow|Dragon|Phoenix|Tiger|Wolf|Magic|Power|Strength|Hero|Villain|Warrior|Knight|Samurai|Ninja|Hunter|Guardian|Emperor|God|Devil|Angel|Demon|Ghost|Spirit|Soul|Life|Death|Birth|Marriage|Family|Romance|Friendship|School|Academy|University|Hospital|Hotel|Restaurant|Cafe|House|Home|City|Village|Island|Mountain|Sea|River|Lake|Sky|Cloud|Rain|Snow|Wind|Fire|Water|Earth|Stone|Metal|Gold|Silver|Diamond|Crystal)/.test(boldText)
-        ) && boldText.length > 3 && boldText.length < 100;
-        
-        if (isKoreanTitle && onTitleClick) {
-          return (
-            <strong key={partIdx} className="font-semibold text-hanok-teal cursor-pointer hover:text-hanok-teal-600 underline decoration-dotted" 
-                    onClick={() => onTitleClick(boldText)}>
-              {boldText}
-            </strong>
-          );
-        }
-        
         return <strong key={partIdx} className="font-semibold">{boldText}</strong>;
       }
       return part;
@@ -503,54 +479,6 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
     }
   };
 
-  const handleTitleClick = async (titleName: string) => {
-    try {
-      // Search for the title by name
-      const allTitles = await titlesService.getAllTitles();
-      const matchingTitle = allTitles.find(title => 
-        title.title_name_en?.includes(titleName) || 
-        title.title_name_kr?.includes(titleName) ||
-        titleName.includes(title.title_name_en || '') ||
-        titleName.includes(title.title_name_kr || '')
-      );
-
-      // Record title click interaction
-      if (currentSession && user) {
-        await chatHistoryService.recordInteraction({
-          session_id: currentSession.id,
-          user_id: user.id,
-          interaction_type: 'title_click',
-          target_id: matchingTitle?.title_id || 'unknown',
-          target_title: titleName,
-          metadata: {
-            clicked_title_name: titleName,
-            found_match: !!matchingTitle,
-            matched_title_id: matchingTitle?.title_id,
-            matched_title_name_en: matchingTitle?.title_name_en,
-            matched_title_name_kr: matchingTitle?.title_name_kr,
-            timestamp: new Date().toISOString()
-          }
-        });
-      }
-
-      if (matchingTitle) {
-        navigate(`/titles/${matchingTitle.title_id}`);
-      } else {
-        toast({
-          title: "Title Not Found",
-          description: `Could not find details for "${titleName}"`,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error finding title:", error);
-      toast({
-        title: "Error",
-        description: "Failed to find title details",
-        variant: "destructive",
-      });
-    }
-  };
 
   const formatTitleCard = (title: any) => {
     const handleTitleCardClick = async () => {
@@ -716,7 +644,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <div className="text-sm prose prose-sm max-w-none">
-                      <FormattedMessage content={message.content} onTitleClick={handleTitleClick} />
+                      <FormattedMessage content={message.content} />
                     </div>
                     
                     {/* Suggested Queries */}

@@ -80,7 +80,7 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
         return (
           <div key={idx} className="mt-1 flex">
             <span className="mr-2 text-blue-600">•</span>
-            <div>{formatInlineText(cleanedLine)}</div>
+            <div>{formatInlineText(cleanedLine, undefined)}</div>
           </div>
         );
       }
@@ -88,7 +88,7 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
       // Regular line
       return (
         <div key={idx} className={idx > 0 ? 'mt-1' : ''}>
-          {formatInlineText(line)}
+          {formatInlineText(line, undefined)}
         </div>
       );
     });

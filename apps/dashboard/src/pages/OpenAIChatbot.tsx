@@ -17,12 +17,8 @@ interface Message {
   messageId?: string; // Database message ID for tracking
 }
 
-// Component to format markdown-like content
-const FormattedMessage = ({ content, titles, onTitleCardClick }: { 
-  content: string; 
-  titles?: any[]; 
-  onTitleCardClick?: (title: any) => void;
-}) => {
+// Component to format markdown-like content - simplified, no title matching
+const FormattedMessage = ({ content }: { content: string }) => {
   const formatText = (text: string) => {
     // Split by lines to preserve line breaks
     return text.split('\n').map((line, idx) => {
@@ -31,46 +27,15 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
         return <div key={idx} className="h-2" />;
       }
       
-      // Handle numbered lists (1. 2. etc.) with inline title cards
+      // Handle numbered lists (1. 2. etc.) - simple formatting only
       if (/^\d+\.\s/.test(line)) {
         const match = line.match(/^(\d+\.\s)(.*)/);
         if (match) {
           const [, number, text] = match;
-          
-          // Get the title for this numbered recommendation by position
-          let matchingTitle = null;
-          let titleIndex = undefined;
-          
-          if (titles && titles.length > 0) {
-            // Extract number from "1. " -> 1
-            const recommendationNumber = parseInt(number.replace('.', '').trim());
-            // Use zero-based index (1st recommendation -> index 0)
-            titleIndex = recommendationNumber - 1;
-            
-            if (titleIndex >= 0 && titleIndex < titles.length) {
-              matchingTitle = titles[titleIndex];
-              console.log(`🎯 Mapping recommendation ${recommendationNumber} to title:`, {
-                position: recommendationNumber,
-                titleIndex,
-                title: matchingTitle.title_name_en || matchingTitle.title_name_kr,
-                titleId: matchingTitle.title_id
-              });
-            }
-          }
-          
           return (
-            <div key={idx} className="mt-3">
-              <div className="flex">
-                <span className="font-medium mr-2 text-blue-600">{number}</span>
-                <div className="flex-1">{formatInlineText(text, titleIndex)}</div>
-              </div>
-              
-              {/* Inline title card if match found */}
-              {matchingTitle && onTitleCardClick && (
-                <div className="ml-6 mt-3">
-                  {renderTitleCard(matchingTitle, onTitleCardClick)}
-                </div>
-              )}
+            <div key={idx} className="mt-1 flex">
+              <span className="font-medium mr-2 text-blue-600">{number}</span>
+              <div className="flex-1">{formatInlineText(text)}</div>
             </div>
           );
         }
@@ -82,7 +47,7 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
         return (
           <div key={idx} className="mt-1 flex">
             <span className="mr-2 text-blue-600">•</span>
-            <div>{formatInlineText(cleanedLine, undefined)}</div>
+            <div>{formatInlineText(cleanedLine)}</div>
           </div>
         );
       }
@@ -90,93 +55,25 @@ const FormattedMessage = ({ content, titles, onTitleCardClick }: {
       // Regular line
       return (
         <div key={idx} className={idx > 0 ? 'mt-1' : ''}>
-          {formatInlineText(line, undefined)}
+          {formatInlineText(line)}
         </div>
       );
     });
   };
   
-  const formatInlineText = (text: string, titleIndex?: number) => {
-    // Handle quoted text "text" (with optional [ID: xxx]) and bold text **text** and make titles clickable links
-    const parts = text.split(/(".*?(?:\s*\[ID:\s*[^\]]+\])?"|[\*]{2}.*?[\*]{2})/g);
+  const formatInlineText = (text: string) => {
+    // Simple text formatting - just handle bold and quotes, no clickable functionality
+    const parts = text.split(/(".*?"|[\*]{2}.*?[\*]{2})/g);
     return parts.map((part, partIdx) => {
-      // Handle quoted titles "Title Name" or "Title Name [ID: xxx]" (AI uses quotes for title names)
-      if (part.startsWith('"') && (part.endsWith('"') || part.includes('[ID:'))) {
-        let quotedText = part.slice(1); // Remove opening quote
-        // Handle closing quote and optional ID
-        if (quotedText.endsWith('"')) {
-          quotedText = quotedText.slice(0, -1); // Remove closing quote
-        } else {
-          // Handle format like: "Title Name [ID: xxx]"
-          const match = quotedText.match(/^(.*?)\s*\[ID:\s*[^\]]+\]"?$/);
-          if (match) {
-            quotedText = match[1]; // Extract title name without ID
-          }
-        }
-        
-        // If we have a titleIndex (from numbered recommendations), use that title
-        let matchingTitle = null;
-        if (titles && titles.length > 0 && titleIndex !== undefined && titleIndex >= 0 && titleIndex < titles.length) {
-          matchingTitle = titles[titleIndex];
-          console.log(`🔗 Making quoted text "${quotedText}" clickable using positional title:`, {
-            titleIndex,
-            title: matchingTitle.title_name_en || matchingTitle.title_name_kr,
-            titleId: matchingTitle.title_id
-          });
-        }
-        
-        // If we found a matching title, make it a clickable link
-        if (matchingTitle && onTitleCardClick) {
-          return (
-            <span 
-              key={partIdx} 
-              className="font-semibold text-hanok-teal hover:text-hanok-teal-600 cursor-pointer underline decoration-dotted hover:decoration-solid transition-all"
-              onClick={(e) => {
-                e.stopPropagation();
-                onTitleCardClick(matchingTitle);
-              }}
-            >
-              "{quotedText}"
-            </span>
-          );
-        }
-        
-        // If no match, just show quoted text normally
-        return <span key={partIdx}>"{quotedText}"</span>;
+      // Handle quoted text
+      if (part.startsWith('"') && part.endsWith('"')) {
+        const quotedText = part.slice(1, -1);
+        return <span key={partIdx} className="font-medium">"{quotedText}"</span>;
       }
       
-      // Handle bold text **text** (fallback for any bold formatting)
+      // Handle bold text
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2);
-        
-        // If we have a titleIndex (from numbered recommendations), use that title
-        let matchingTitle = null;
-        if (titles && titles.length > 0 && titleIndex !== undefined && titleIndex >= 0 && titleIndex < titles.length) {
-          matchingTitle = titles[titleIndex];
-          console.log(`🔗 Making bold text "${boldText}" clickable using positional title:`, {
-            titleIndex,
-            title: matchingTitle.title_name_en || matchingTitle.title_name_kr,
-            titleId: matchingTitle.title_id
-          });
-        }
-        
-        // If we found a matching title, make it a clickable link
-        if (matchingTitle && onTitleCardClick) {
-          return (
-            <strong 
-              key={partIdx} 
-              className="font-semibold text-hanok-teal hover:text-hanok-teal-600 cursor-pointer underline decoration-dotted hover:decoration-solid transition-all"
-              onClick={(e) => {
-                e.stopPropagation();
-                onTitleCardClick(matchingTitle);
-              }}
-            >
-              {boldText}
-            </strong>
-          );
-        }
-        
-        // If no match, just make it bold
         return <strong key={partIdx} className="font-semibold">{boldText}</strong>;
       }
       
@@ -824,30 +721,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <div className="text-sm prose prose-sm max-w-none">
-                      <FormattedMessage 
-                        content={message.content} 
-                        titles={message.titles}
-                        onTitleCardClick={async (title) => {
-                          // Use the same click handler as the main formatTitleCard
-                          if (currentSession && user) {
-                            await chatHistoryService.recordInteraction({
-                              session_id: currentSession.id,
-                              user_id: user.id,
-                              interaction_type: 'title_view',
-                              target_id: title.title_id,
-                              target_title: title.title_name_en || title.title_name_kr || 'Unknown Title',
-                              metadata: {
-                                source: 'inline_title_click',
-                                title_name_en: title.title_name_en,
-                                title_name_kr: title.title_name_kr,
-                                recommendation_score: title.score,
-                                timestamp: new Date().toISOString()
-                              }
-                            });
-                          }
-                          navigate(`/titles/${title.title_id}`);
-                        }}
-                      />
+                      <FormattedMessage content={message.content} />
                     </div>
                     
                     {/* Suggested Queries */}
@@ -868,31 +742,17 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       </div>
                     )}
                     
-                    {/* Title Recommendations - Only show if there are titles not already shown inline */}
-                    {(() => {
-                      if (!message.titles || message.titles.length === 0) return null;
-                      
-                      // Check if message has numbered lists (which would show inline title cards)
-                      const hasNumberedLists = /^\d+\.\s/m.test(message.content);
-                      
-                      // If no numbered lists, show all title cards at bottom (traditional way)
-                      if (!hasNumberedLists) {
-                        return (
-                          <div className="mt-4 space-y-3">
-                            {console.log('🎉 TITLES SECTION RENDERING (BOTTOM)!:', {
-                              messageId: message.id,
-                              titlesCount: message.titles.length,
-                              firstTitleName: message.titles[0]?.title_name_en || message.titles[0]?.title_name_kr
-                            })}
-                            <p className="text-xs font-medium text-gray-600">📚 Recommended titles:</p>
+                    {/* Always show actual database titles - simple and reliable */}
+                    {message.titles && message.titles.length > 0 && (
+                      <div className="mt-4 space-y-3">
+                        <div className="border-t border-gray-200 pt-3">
+                          <p className="text-sm font-semibold text-gray-700 mb-3">📚 Here are the actual titles from our database:</p>
+                          <div className="space-y-2">
                             {message.titles.map(formatTitleCard)}
                           </div>
-                        );
-                      }
-                      
-                      // If has numbered lists, don't show bottom cards (they're shown inline)
-                      return null;
-                    })()}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="text-xs text-gray-500 mt-1">

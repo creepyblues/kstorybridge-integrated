@@ -20,7 +20,7 @@ interface Message {
 }
 
 // Component to format markdown-like content with title matching and linking
-const FormattedMessage = ({ content, navigate, titleData }: { content: string, navigate: any, titleData?: any[] }) => {
+const FormattedMessage = ({ content, navigate, titleData, allMessages }: { content: string, navigate: any, titleData?: any[], allMessages?: Message[] }) => {
   const formatText = (text: string) => {
     // Split by lines to preserve line breaks
     return text.split('\n').map((line, idx) => {
@@ -65,33 +65,69 @@ const FormattedMessage = ({ content, navigate, titleData }: { content: string, n
   
   // Helper function to find title ID by title name from available title data
   const findTitleIdByName = (titleName: string): string | null => {
-    if (!titleData || !Array.isArray(titleData)) return null;
-    
     const cleanedName = titleName.replace(/["""'']/g, '"').trim();
     
-    // Try exact match first
-    const exactMatch = titleData.find(title => 
-      title.title_name_en === cleanedName || 
-      title.title_name_kr === cleanedName
-    );
+    // First, try to find in current message's titles (these are most relevant)
+    if (titleData && Array.isArray(titleData)) {
+      // Try exact match first
+      const exactMatch = titleData.find(title => 
+        title.title_name_en === cleanedName || 
+        title.title_name_kr === cleanedName
+      );
+      
+      if (exactMatch) return exactMatch.title_id;
+      
+      // Try case-insensitive match
+      const caseInsensitiveMatch = titleData.find(title => 
+        title.title_name_en?.toLowerCase() === cleanedName.toLowerCase() || 
+        title.title_name_kr?.toLowerCase() === cleanedName.toLowerCase()
+      );
+      
+      if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
+    }
     
-    if (exactMatch) return exactMatch.title_id;
+    // Then, search across ALL messages' titles (for cross-references)
+    if (allMessages && Array.isArray(allMessages)) {
+      const allAvailableTitles: any[] = [];
+      allMessages.forEach(msg => {
+        if (msg.titles && Array.isArray(msg.titles)) {
+          allAvailableTitles.push(...msg.titles);
+        }
+      });
+      
+      // Remove duplicates by title_id
+      const uniqueTitles = Array.from(
+        new Map(allAvailableTitles.map(item => [item.title_id, item])).values()
+      );
+      
+      if (uniqueTitles.length > 0) {
+        // Try exact match
+        const exactMatch = uniqueTitles.find(title => 
+          title.title_name_en === cleanedName || 
+          title.title_name_kr === cleanedName
+        );
+        
+        if (exactMatch) return exactMatch.title_id;
+        
+        // Try case-insensitive match
+        const caseInsensitiveMatch = uniqueTitles.find(title => 
+          title.title_name_en?.toLowerCase() === cleanedName.toLowerCase() || 
+          title.title_name_kr?.toLowerCase() === cleanedName.toLowerCase()
+        );
+        
+        if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
+        
+        // Try partial match (contains) - last resort
+        const partialMatch = uniqueTitles.find(title => 
+          title.title_name_en?.toLowerCase().includes(cleanedName.toLowerCase()) || 
+          title.title_name_kr?.toLowerCase().includes(cleanedName.toLowerCase())
+        );
+        
+        if (partialMatch) return partialMatch.title_id;
+      }
+    }
     
-    // Try case-insensitive match
-    const caseInsensitiveMatch = titleData.find(title => 
-      title.title_name_en?.toLowerCase() === cleanedName.toLowerCase() || 
-      title.title_name_kr?.toLowerCase() === cleanedName.toLowerCase()
-    );
-    
-    if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
-    
-    // Try partial match (contains)
-    const partialMatch = titleData.find(title => 
-      title.title_name_en?.toLowerCase().includes(cleanedName.toLowerCase()) ||
-      title.title_name_kr?.toLowerCase().includes(cleanedName.toLowerCase())
-    );
-    
-    return partialMatch ? partialMatch.title_id : null;
+    return null;
   };
 
   // Helper function to extract English title only and clean formatting
@@ -901,7 +937,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <div className="text-sm prose prose-sm max-w-none">
-                      <FormattedMessage content={message.content} navigate={navigate} titleData={message.titles} />
+                      <FormattedMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} />
                     </div>
                     
                     {/* Suggested Queries */}

@@ -453,34 +453,45 @@ class OpenAIService {
   }
 
   async initialize(): Promise<void> {
+    // ⚡ LAZY LOADING OPTIMIZATION: Don't load all titles on page init
+    // This was causing 10+ second delays in production when loading thousands of titles
+    // Now we only load titles when actually needed for chat responses
+    console.log('⚡ FAST INIT: OpenAI service initialized with lazy loading (no upfront database load)');
+    
+    const environment = import.meta.env.PROD ? 'PRODUCTION' : 'DEVELOPMENT';
+    console.log(`🚀 Ready for ${environment} OpenAI requests with on-demand title loading`);
+  }
+
+  // Load titles only when needed for chat responses
+  private async loadTitlesOnDemand(): Promise<Title[]> {
     const environment = import.meta.env.PROD ? 'PRODUCTION' : 'DEVELOPMENT';
     
     // Try to get from unified cache first
     const cachedTitles = UnifiedCacheManager.get<Title[]>(OpenAIService.TITLES_CACHE_KEY, environment);
     
     if (cachedTitles && cachedTitles.length > 0) {
-      // Cache hit - titles are still fresh
-      return;
+      console.log(`📦 CACHE HIT: Using ${cachedTitles.length} cached titles (no database query needed)`);
+      return cachedTitles;
     }
     
     // Cache miss - need to load fresh data
     const startTime = Date.now();
     try {
-      console.log('📚 DATABASE LOADING: Starting titles load for LLM context...');
+      console.log('📚 ON-DEMAND LOADING: Loading titles for chat response...');
       
-      // Add timeout for titles loading (increased to 10 seconds for slower connections)
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Titles loading timeout after 10 seconds')), 10000);
+      // Add timeout for titles loading (reduced to 8 seconds for faster feedback)
+      const timeoutPromise = new Promise<Title[]>((_, reject) => {
+        setTimeout(() => reject(new Error('Titles loading timeout after 8 seconds')), 8000);
       });
 
       const titlesPromise = titlesService.getAllTitles();
-      const freshTitles = await Promise.race([titlesPromise, timeoutPromise]) as Title[];
+      const freshTitles = await Promise.race([titlesPromise, timeoutPromise]);
       const loadTime = Date.now() - startTime;
       
       // Store in unified cache
       UnifiedCacheManager.set(OpenAIService.TITLES_CACHE_KEY, freshTitles, environment);
       
-      console.log('📊 DATABASE QUERY SUCCESS:', {
+      console.log('📊 ON-DEMAND LOAD SUCCESS:', {
         titlesLoaded: freshTitles.length,
         loadTime: loadTime + 'ms',
         cacheUsed: false,
@@ -493,9 +504,11 @@ class OpenAIService {
         cacheStats: UnifiedCacheManager.getStats()
       });
       
+      return freshTitles;
+      
     } catch (error) {
       const loadTime = Date.now() - startTime;
-      console.warn('📊 DATABASE QUERY FAILED:', {
+      console.warn('📊 ON-DEMAND LOAD FAILED:', {
         error: error.message,
         loadTime: loadTime + 'ms',
         fallbackUsed: true,
@@ -505,6 +518,7 @@ class OpenAIService {
       
       // Store empty array in cache to prevent repeated failures
       UnifiedCacheManager.set(OpenAIService.TITLES_CACHE_KEY, [], environment);
+      return [];
     }
   }
   
@@ -512,6 +526,11 @@ class OpenAIService {
   private getAllTitlesFromCache(): Title[] {
     const environment = import.meta.env.PROD ? 'PRODUCTION' : 'DEVELOPMENT';
     return UnifiedCacheManager.get<Title[]>(OpenAIService.TITLES_CACHE_KEY, environment) || [];
+  }
+  
+  // Async version that loads titles if not cached
+  private async getAllTitles(): Promise<Title[]> {
+    return await this.loadTitlesOnDemand();
   }
 
   private createUnifiedKoreanIPContext(allTitles: Title[], relevantTitles: Title[], userQuery: string = ''): string {
@@ -640,7 +659,7 @@ Always be enthusiastic and knowledgeable about Korean content!`;
     // Fallback to traditional text-based search
     console.log('📝 Using traditional text-based search');
     try {
-      const legacyTitles = this.findRelevantTitlesLegacy(query);
+      const legacyTitles = await this.findRelevantTitlesLegacy(query);
       return {
         titles: Array.isArray(legacyTitles) ? legacyTitles : [],
         vectorSearchUsed: false,
@@ -664,8 +683,8 @@ Always be enthusiastic and knowledgeable about Korean content!`;
   }
 
   // Legacy method - now uses unified scoring system
-  private findRelevantTitlesLegacy(query: string): Title[] {
-    const allTitles = this.getAllTitlesFromCache();
+  private async findRelevantTitlesLegacy(query: string): Promise<Title[]> {
+    const allTitles = await this.getAllTitles(); // Load titles on-demand
     console.log('⚠️ Using legacy findRelevantTitlesLegacy - now uses UnifiedTitleScorer');
     
     // Use unified scoring system (matches production)
@@ -702,9 +721,14 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       throw new Error('OpenAI client not initialized. Please check your API key configuration.');
     }
 
-    await this.initialize();
+    // Skip the old initialize() call that loaded all titles upfront
+    // Now using lazy loading for better performance
 
     try {
+      // Load titles on-demand (this will be cached after first request)
+      console.log(`📚 [${requestId}] Loading titles on-demand for chat context...`);
+      const allTitles = await this.getAllTitles();
+      
       // Find relevant titles first to create proper context
       console.log(`🔍 [${requestId}] Finding relevant titles for context...`);
       const searchResult = await this.findRelevantTitlesWithVector(userQuery, userId, sessionId);
@@ -713,9 +737,6 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       if (!searchResult) {
         throw new Error('Search result is undefined - fallback search failed');
       }
-      
-      // Get titles from unified cache
-      const allTitles = this.getAllTitlesFromCache();
       
       // Ensure searchResult.titles is an array
       const relevantTitles = Array.isArray(searchResult.titles) ? searchResult.titles : [];

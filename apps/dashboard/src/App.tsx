@@ -45,6 +45,8 @@ const ChatHistory = lazy(() => import("./pages/ChatHistory"));
 const VectorSearchManager = lazy(() => import("./pages/VectorSearchManager"));
 const OpenAITest = lazy(() => import("./pages/OpenAITest"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
+const ChatbotFeedbackAnalysis = lazy(() => import("./pages/ChatbotFeedbackAnalysis"));
+const Experiment = lazy(() => import("./pages/Experiment"));
 
 // Authentication pages
 const SigninPage = lazy(() => import("./pages/SigninPage"));
@@ -242,6 +244,16 @@ const App = () => (
                 {/* OpenAI Test page - temporary for debugging */}
                 <Route path="/openai-test" element={
                   <ProtectedLayout><OpenAITest /></ProtectedLayout>
+                } />
+                
+                {/* Chatbot Feedback Analysis - admin only */}
+                <Route path="/chatbot-feedback" element={
+                  <ProtectedLayout><ChatbotFeedbackAnalysis /></ProtectedLayout>
+                } />
+                
+                {/* Experiment page - admin only */}
+                <Route path="/experiment" element={
+                  <ProtectedLayout><Experiment /></ProtectedLayout>
                 } />
                 
                 <Route path="*" element={

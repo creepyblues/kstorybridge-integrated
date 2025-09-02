@@ -3,7 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
-const getDiscoverItems = (accountType: string) => {
+interface MenuItem {
+  title: string;
+  href: string;
+  badge?: string;
+  icon?: string;
+}
+
+const getDiscoverItems = (accountType: string): MenuItem[] => {
   if (accountType === "ip_owner") {
     return [
       { title: "Titles", href: "/creators/titles" },
@@ -20,8 +27,8 @@ const getDiscoverItems = (accountType: string) => {
   }
 };
 
-const getSettingsItems = (accountType: string, userEmail?: string) => {
-  const isAuthorizedForChatbot = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
+const getSettingsItems = (accountType: string, userEmail?: string): MenuItem[] => {
+  const isAdmin = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
   
   const baseItems = accountType === "ip_owner" 
     ? [
@@ -33,20 +40,15 @@ const getSettingsItems = (accountType: string, userEmail?: string) => {
         { title: "Profile", href: "/buyers/profile" },
       ];
   
-  // Add chatbot items for authorized users right after Profile
-  if (isAuthorizedForChatbot) {
+  // Add Experiment page for admin users right after Profile
+  if (isAdmin) {
     const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
-    const chatbotItems = accountType === "ip_owner" 
-      ? [
-          { title: "OpenAI Chatbot", href: "/creators/openai-chatbot", badge: "experiment" },
-          { title: "AI Chatbot", href: "/creators/ai-chatbot", badge: "experiment" },
-        ]
-      : [
-          { title: "OpenAI Chatbot", href: "/buyers/openai-chatbot", badge: "experiment" },
-          { title: "AI Chatbot", href: "/buyers/ai-chatbot", badge: "experiment" },
-        ];
-    
-    baseItems.splice(profileIndex + 1, 0, ...chatbotItems);
+    baseItems.splice(profileIndex + 1, 0, {
+      title: "Experiment",
+      href: "/experiment",
+      badge: "admin",
+      icon: "⚡"
+    });
   }
   
   return baseItems;
@@ -114,9 +116,17 @@ export function CMSSidebar() {
                     : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
                 )}
               >
-                <span>{item.title}</span>
+                <div className="flex items-center gap-2">
+                  {item.icon && <span className="text-base">{item.icon}</span>}
+                  <span>{item.title}</span>
+                </div>
                 {item.badge && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full uppercase tracking-wider">
+                  <span className={cn(
+                    "px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider",
+                    item.badge === 'admin' 
+                      ? "bg-purple-500 text-white"
+                      : "bg-red-500 text-white"
+                  )}>
                     {item.badge}
                   </span>
                 )}

@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { openaiService } from "@/services/openaiService";
 import { titlesService } from "@/services/titlesService";
 import { chatHistoryService, type ChatSession } from "@/services/chatHistoryService";
+import { ChatbotFeedback } from "@/components/ChatbotFeedback";
+import { TitleFeedback } from "@/components/TitleFeedback";
 
 interface Message {
   id: string;
@@ -366,13 +368,7 @@ export default function OpenAIChatbot() {
     return Math.max(0, messages.length - visibleCount);
   };
   
-  console.log('🚀 OPENAI CHATBOT COMPONENT LOADED:', {
-    system: 'OpenAI API with Vector Search',
-    service: 'openaiService.generateChatResponse',
-    user: user?.email,
-    isAuthorized,
-    environment: import.meta.env.PROD ? 'production' : 'development'
-  });
+  // Debug logging removed to prevent console alerts
 
   useEffect(() => {
     if (!isAuthorized) {
@@ -387,7 +383,7 @@ export default function OpenAIChatbot() {
 
     // Prevent re-initialization if we already have a session and messages
     if (currentSession && messages.length > 0) {
-      console.log('📝 Session already initialized, skipping initialization');
+      // Session already initialized, skipping initialization
       return;
     }
 
@@ -411,7 +407,7 @@ export default function OpenAIChatbot() {
 
         if (session) {
           setCurrentSession(session);
-          console.log('📝 Chat session initialized:', session.id);
+          // Chat session initialized
           
           // Load conversation history with related data from this session
           const history = await chatHistoryService.getSessionMessagesWithData(session.id);
@@ -449,7 +445,7 @@ What kind of Korean content are you in the mood for today?`,
             }
             
             setMessages(restoredMessages);
-            console.log(`📚 Loaded ${history.length} messages from session history`);
+            // Loaded messages from session history
           } else {
             // No history, show initial greeting
             setMessages([
@@ -515,13 +511,7 @@ What kind of Korean content are you in the mood for today?`,
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.sender === 'bot') {
-      console.log('🔄 MESSAGES STATE UPDATED:', {
-        totalMessages: messages.length,
-        lastMessageId: lastMessage.id,
-        lastMessageHasTitles: !!lastMessage.titles,
-        lastMessageTitlesCount: lastMessage.titles?.length,
-        lastMessageTitlesFirstTitle: lastMessage.titles?.[0]
-      });
+      // Messages state updated
     }
     scrollToBottom();
   }, [messages]);
@@ -533,13 +523,7 @@ What kind of Korean content are you in the mood for today?`,
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !currentSession || !user) return;
 
-    console.log('🤖 OPENAI CHATBOT: Starting message processing', {
-      system: 'OpenAI API with Vector Search',
-      service: 'openaiService.generateChatResponse',
-      query: inputMessage.trim(),
-      user: user?.email,
-      sessionId: currentSession.id
-    });
+    // Starting message processing
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -585,23 +569,7 @@ What kind of Korean content are you in the mood for today?`,
       );
       
       const responseTime = Date.now() - startTime;
-      console.log('✅ OPENAI CHATBOT SUCCESS:', {
-        system: 'OpenAI API with Vector Search',
-        responseTime: responseTime + 'ms',
-        titlesFound: response.recommendedTitles?.length || 0,
-        vectorSearchUsed: response.vectorSearchUsed,
-        user: user?.email,
-        titlesData: response.recommendedTitles?.slice(0, 2), // Show first 2 titles for debugging
-        hasValidTitles: response.recommendedTitles?.some(t => t.title_id)
-      });
-      
-      console.log('🔍 OPENAI CHATBOT: Creating bot message with titles:', {
-        hasRecommendedTitles: !!response.recommendedTitles,
-        titlesLength: response.recommendedTitles?.length,
-        firstTitleStructure: response.recommendedTitles?.[0] ? Object.keys(response.recommendedTitles[0]) : 'No titles',
-        firstTitleData: response.recommendedTitles?.[0],
-        allTitlesHaveId: response.recommendedTitles?.every(t => !!t.title_id)
-      });
+      // OpenAI chatbot success - response processed
 
       // Create defensive copy to prevent mutation during database operations
       const botMessage: Message = {
@@ -613,12 +581,7 @@ What kind of Korean content are you in the mood for today?`,
         suggestedQueries: response.suggestedQueries ? [...response.suggestedQueries] : undefined
       };
 
-      console.log('✨ CREATED BOT MESSAGE:', {
-        messageId: botMessage.id,
-        hasTitles: !!botMessage.titles,
-        titlesCount: botMessage.titles?.length,
-        firstTitleInMessage: botMessage.titles?.[0]
-      });
+      // Created bot message with titles
 
       // Record AI response in database
       const botDbMessage = await chatHistoryService.recordMessage({
@@ -648,11 +611,7 @@ What kind of Korean content are you in the mood for today?`,
           await chatHistoryService.recordRecommendations(recommendations);
         }
 
-        console.log('📝 AFTER RECORD RECOMMENDATIONS:', {
-          messageId: botMessage.id,
-          stillHasTitles: !!botMessage.titles,
-          titlesCount: botMessage.titles?.length
-        });
+        // Recorded recommendations
 
         // Record suggested queries if any
         if (response.suggestedQueries && response.suggestedQueries.length > 0) {
@@ -666,26 +625,13 @@ What kind of Korean content are you in the mood for today?`,
           await chatHistoryService.recordSuggestedQueries(suggestedQueries);
         }
 
-        console.log('📝 AFTER RECORD QUERIES:', {
-          messageId: botMessage.id,
-          stillHasTitles: !!botMessage.titles,
-          titlesCount: botMessage.titles?.length
-        });
+        // Recorded queries
       }
 
-      console.log('🚀 ADDING MESSAGE TO STATE:', {
-        messageId: botMessage.id,
-        hasTitlesBeforeState: !!botMessage.titles,
-        titlesCountBeforeState: botMessage.titles?.length
-      });
+      // Adding message to state
 
       setMessages(prev => {
-        console.log('⚡ SETTING MESSAGES STATE:', {
-          prevLength: prev.length,
-          addingMessage: botMessage.id,
-          addingMessageHasTitles: !!botMessage.titles,
-          addingMessageTitlesCount: botMessage.titles?.length
-        });
+        // Setting messages state
         return [...prev, botMessage];
       });
     } catch (error: any) {
@@ -761,7 +707,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
   };
 
 
-  const formatTitleCard = (title: any) => {
+  const formatTitleCard = (title: any, messageId?: string, userPrompt?: string) => {
     const handleTitleCardClick = async () => {
       // Record title view interaction
       if (currentSession && user) {
@@ -785,70 +731,85 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
     };
 
     return (
-      <div key={title.title_id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
-           onClick={handleTitleCardClick}>
-        <div className="flex gap-3">
-        {title.title_image ? (
-          <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-            <img 
-              src={title.title_image} 
-              alt={title.title_name_en || title.title_name_kr}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="w-16 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-xs text-gray-400">No Image</span>
-          </div>
-        )}
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start gap-2 mb-1">
-            <h4 className="font-semibold text-sm text-gray-800 line-clamp-2">
-              {title.title_name_en || title.title_name_kr}
-            </h4>
-            {title.pitch && title.pitch.trim() && (
-              <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0">
-                Pitch
-              </span>
-            )}
-          </div>
-          
-          {title.title_name_en && title.title_name_kr && (
-            <p className="text-xs text-gray-500 mb-2 line-clamp-1">
-              {title.title_name_kr}
-            </p>
+      <div key={title.title_id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow group relative">
+        <div className="flex gap-3" onClick={handleTitleCardClick} style={{cursor: 'pointer'}}>
+          {title.title_image ? (
+            <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+              <img 
+                src={title.title_image} 
+                alt={title.title_name_en || title.title_name_kr}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-16 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-xs text-gray-400">No Image</span>
+            </div>
           )}
           
-          <div className="flex flex-wrap gap-1 mb-2">
-            {title.genre && (
-              Array.isArray(title.genre) ? (
-                title.genre.slice(0, 2).map((g: string, idx: number) => (
-                  <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded text-xs">
-                    {g.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <div className="flex items-start gap-2">
+                <h4 className="font-semibold text-sm text-gray-800 line-clamp-2">
+                  {title.title_name_en || title.title_name_kr}
+                </h4>
+                {title.pitch && title.pitch.trim() && (
+                  <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0">
+                    Pitch
                   </span>
-                ))
-              ) : (
-                <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded text-xs">
-                  {title.genre.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                </span>
-              )
+                )}
+              </div>
+              
+              {/* Per-Title Feedback Component */}
+              {messageId && userPrompt && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <TitleFeedback
+                    title={title}
+                    messageId={messageId}
+                    userPrompt={userPrompt}
+                    onFeedbackSubmitted={() => {
+                      // Title feedback submitted
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            
+            {title.title_name_en && title.title_name_kr && (
+              <p className="text-xs text-gray-500 mb-2 line-clamp-1">
+                {title.title_name_kr}
+              </p>
             )}
-            {title.tone && (
-              <span className="inline-block bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs">
-                {title.tone}
-              </span>
+            
+            <div className="flex flex-wrap gap-1 mb-2">
+              {title.genre && (
+                Array.isArray(title.genre) ? (
+                  title.genre.slice(0, 2).map((g: string, idx: number) => (
+                    <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded text-xs">
+                      {g.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                    </span>
+                  ))
+                ) : (
+                  <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded text-xs">
+                    {title.genre.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                  </span>
+                )
+              )}
+              {title.tone && (
+                <span className="inline-block bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs">
+                  {title.tone}
+                </span>
+              )}
+            </div>
+            
+            {title.synopsis && (
+              <p className="text-xs text-gray-600 line-clamp-2">
+                {title.synopsis}
+              </p>
             )}
           </div>
-          
-          {title.synopsis && (
-            <p className="text-xs text-gray-600 line-clamp-2">
-              {title.synopsis}
-            </p>
-          )}
         </div>
       </div>
-    </div>
     );
   };
 
@@ -916,7 +877,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
             )}
             
             {!isLoadingHistory &&
-            getDisplayMessages().map((message) => (
+            getDisplayMessages().map((message, index, messagesArray) => (
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
@@ -962,17 +923,40 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                     )}
                     
                     {/* Always show actual database titles - simple and reliable */}
-                    {message.titles && message.titles.length > 0 && (
-                      <div className="mt-4 space-y-3">
-                        <div className="border-t border-gray-200 pt-3">
-                          <p className="text-sm font-semibold text-gray-700 mb-3">📚 Here are additional titles you may want to consider:</p>
-                          <div className="space-y-2">
-                            {message.titles.map(formatTitleCard)}
+                    {message.titles && message.titles.length > 0 && (() => {
+                      // Find the preceding user message for context
+                      const userMessage = messagesArray.slice(0, index).reverse().find(m => m.sender === 'user');
+                      const userPrompt = userMessage?.content || "User query";
+                      
+                      return (
+                        <div className="mt-4 space-y-3">
+                          <div className="border-t border-gray-200 pt-3">
+                            <p className="text-sm font-semibold text-gray-700 mb-3">📚 Here are additional titles you may want to consider:</p>
+                            <div className="space-y-2">
+                              {message.titles.map(title => formatTitleCard(title, message.messageId, userPrompt))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
+                  
+                  {/* Feedback Component for Bot Messages - Disabled in favor of per-title feedback */}
+                  {false && message.sender === 'bot' && message.messageId && !message.content.includes('Hello! I\'m your OpenAI-powered assistant') && (() => {
+                    // Find the preceding user message for context
+                    const userMessage = messagesArray.slice(0, index).reverse().find(m => m.sender === 'user');
+                    return (
+                      <ChatbotFeedback
+                        messageId={message.messageId}
+                        userPrompt={userMessage?.content || "User query"}
+                        aiResponse={message.content}
+                        recommendedTitles={message.titles || []}
+                        onFeedbackSubmitted={() => {
+                          // Feedback submitted for message
+                        }}
+                      />
+                    );
+                  })()}
                   
                   <div className="text-xs text-gray-500 mt-1">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

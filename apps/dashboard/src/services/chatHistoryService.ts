@@ -55,6 +55,20 @@ export interface ChatSuggestedQuery {
   created_at: string;
 }
 
+export interface ChatMessageFeedback {
+  id: string;
+  message_id: string;
+  session_id: string;
+  user_id: string;
+  overall_rating: number;
+  response_quality: 'excellent' | 'good' | 'fair' | 'poor';
+  title_relevance: 'excellent' | 'good' | 'fair' | 'poor';
+  title_feedback: any; // JSON field
+  general_feedback?: string;
+  suggested_improvements?: string;
+  created_at: string;
+}
+
 export interface CreateSessionData {
   user_id: string;
   user_email: string;
@@ -658,6 +672,159 @@ class ChatHistoryService {
     } catch (error) {
       console.error('Exception cleaning up old sessions:', error);
       return false;
+    }
+  }
+
+  // Submit feedback for a message
+  async submitMessageFeedback(messageId: string, feedbackData: any): Promise<ChatMessageFeedback | null> {
+    try {
+      // First get the message to extract session_id and user_id
+      const { data: message, error: messageError } = await supabase
+        .from('chat_messages')
+        .select('session_id, user_id')
+        .eq('id', messageId)
+        .single();
+
+      if (messageError || !message) {
+        console.error('Error fetching message for feedback:', messageError);
+        return null;
+      }
+
+      const { data, error } = await supabase
+        .from('chat_message_feedback')
+        .insert([{
+          message_id: messageId,
+          session_id: message.session_id,
+          user_id: message.user_id,
+          overall_rating: feedbackData.overall_rating,
+          response_quality: feedbackData.response_quality,
+          title_relevance: feedbackData.title_relevance,
+          title_feedback: feedbackData.title_feedback,
+          general_feedback: feedbackData.general_feedback,
+          suggested_improvements: feedbackData.suggested_improvements
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error submitting message feedback:', error);
+        return null;
+      }
+
+      console.log('📝 Message feedback submitted successfully:', data.id);
+      return data;
+    } catch (error) {
+      console.error('Exception submitting message feedback:', error);
+      return null;
+    }
+  }
+
+  // Get feedback for a specific message
+  async getMessageFeedback(messageId: string): Promise<ChatMessageFeedback[]> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_message_feedback')
+        .select('*')
+        .eq('message_id', messageId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching message feedback:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Exception fetching message feedback:', error);
+      return [];
+    }
+  }
+
+  // Get all feedback for analysis (admin function)
+  async getAllFeedback(limit: number = 100): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_message_feedback')
+        .select(`
+          *,
+          chat_messages (
+            content,
+            message_type,
+            session_id,
+            created_at
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error('Error fetching all feedback:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Exception fetching all feedback:', error);
+      return [];
+    }
+  }
+
+  // Get feedback analytics
+  async getFeedbackAnalytics(): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_message_feedback')
+        .select('overall_rating, response_quality, title_relevance, created_at');
+
+      if (error) {
+        console.error('Error fetching feedback analytics:', error);
+        return null;
+      }
+
+      if (!data || data.length === 0) {
+        return {
+          totalFeedbacks: 0,
+          averageRating: 0,
+          qualityBreakdown: {},
+          relevanceBreakdown: {},
+          feedbackOverTime: []
+        };
+      }
+
+      // Calculate analytics
+      const totalFeedbacks = data.length;
+      const averageRating = data.reduce((sum, f) => sum + f.overall_rating, 0) / totalFeedbacks;
+      
+      const qualityBreakdown = data.reduce((acc, f) => {
+        acc[f.response_quality] = (acc[f.response_quality] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const relevanceBreakdown = data.reduce((acc, f) => {
+        acc[f.title_relevance] = (acc[f.title_relevance] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Group by day for trend analysis
+      const feedbackOverTime = data.reduce((acc, f) => {
+        const date = new Date(f.created_at).toISOString().split('T')[0];
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      return {
+        totalFeedbacks,
+        averageRating: Math.round(averageRating * 100) / 100,
+        qualityBreakdown,
+        relevanceBreakdown,
+        feedbackOverTime: Object.entries(feedbackOverTime).map(([date, count]) => ({
+          date,
+          count
+        }))
+      };
+    } catch (error) {
+      console.error('Exception calculating feedback analytics:', error);
+      return null;
     }
   }
 }

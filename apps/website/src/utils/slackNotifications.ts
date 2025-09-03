@@ -5,8 +5,7 @@
 // Email addresses and domains to exclude from Slack notifications
 const EXCLUDED_EMAILS = [
   'kevin@sandstoneartists.com',
-  'creepyblues@gmail.com', 
-  'sungho101@gmail.com'
+  'creepyblues@gmail.com'
 ];
 
 const EXCLUDED_DOMAINS = [

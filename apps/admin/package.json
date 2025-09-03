@@ -19,7 +19,9 @@
     "generate:scraper-data:dry-run": "node scripts/data_generator_scraper.js --dry-run",
     "generate:scraper-data:limit": "node scripts/data_generator_scraper.js --limit=10",
     "generate:scraper-data:views": "node scripts/data_generator_scraper.js --field=views",
-    "generate:scraper-data:likes": "node scripts/data_generator_scraper.js --field=likes"
+    "generate:scraper-data:likes": "node scripts/data_generator_scraper.js --field=likes",
+    "setup-env": "bash setup-dev-env.sh",
+    "verify-env": "node verify-env.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

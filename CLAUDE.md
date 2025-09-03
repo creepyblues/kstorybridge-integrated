@@ -273,3 +273,4 @@ try {
 The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide detailed app-specific guidance and should be consulted for application-specific development tasks.
 - always reference DATABASE_SCHEMA.md for database related coding.
 - always consider both desktop and mobile
+- do not auto commit to github

@@ -11,6 +11,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 - `npm run lint` - Run ESLint on all files
 - `npm run preview` - Preview production build locally
 
+### Environment Setup Commands
+- `npm run setup-env` - Interactive setup for development environment
+- `npm run verify-env` - Verify environment configuration is correct
+
 ### Data Generation Scripts
 - `npm run generate:taglines` - Generate taglines for all titles without them
 - `npm run generate:taglines:dry-run` - Test tagline generation without database changes
@@ -98,6 +102,9 @@ apps/admin/
 - **Active Status**: Admin records can be deactivated
 - **Row Level Security**: Enabled on admin table
 - **No Cross-Domain Issues**: Completely isolated from other apps
+- **Environment-Based Auth**: Development credentials stored securely in environment variables
+- **Production Safety**: Multiple checks prevent auto-login in production environments
+- **Credential Isolation**: Development and production authentication completely separate
 
 ### Design Consistency
 - Uses same color scheme as dashboard (hanok-teal, midnight-ink, porcelain-blue)
@@ -112,10 +119,24 @@ apps/admin/
 - Same database types and service patterns
 
 ### Development Workflow
-1. Start admin server: `npm run dev:admin` (from monorepo root)
-2. Access via http://localhost:8082
-3. Login with admin credentials
-4. Manage titles through admin interface
+1. **Setup Environment**: Copy `.env.local.example` to `.env.local` and update credentials
+2. **Start Server**: `npm run dev:admin` (from monorepo root) or `npm run dev` (from apps/admin/)
+3. **Access Portal**: http://localhost:8082
+4. **Auto-Login**: Configured for localhost development (see Environment Setup below)
+5. **Manage Content**: Access titles and admin features through interface
+
+### Environment Setup
+For localhost development auto-login, configure `.env.local`:
+```bash
+# Copy the example file
+cp .env.local.example .env.local
+
+# Update with your admin credentials
+VITE_DEV_ADMIN_EMAIL=your_admin_email
+VITE_DEV_ADMIN_PASSWORD=your_admin_password
+```
+
+⚠️ **Security**: These variables only work on localhost in development mode and are blocked in production.
 
 ### Deployment
 - Intended for admin.kstorybridge.com subdomain

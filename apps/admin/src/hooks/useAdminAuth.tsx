@@ -37,45 +37,72 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const isDev = import.meta.env.DEV;
     const mode = import.meta.env.MODE;
     
-    // Multiple safety checks to ensure this NEVER runs in production
+    // CRITICAL SECURITY: Multiple safety checks to ensure this NEVER runs in production
     const isProduction = mode === 'production' && window.location.hostname !== 'localhost';
     const hasProductionDomain = window.location.hostname.includes('kstorybridge.com');
+    const isHttps = window.location.protocol === 'https:';
+    const hasDevCredentials = import.meta.env.VITE_DEV_ADMIN_EMAIL && import.meta.env.VITE_DEV_ADMIN_PASSWORD;
     
-    if (isProduction || hasProductionDomain) {
+    // Block if any production indicators are present
+    if (isProduction || hasProductionDomain || (isHttps && !isLocalhost)) {
       console.log('🛡️ ADMIN PRODUCTION SAFETY: Auto-login blocked for production environment');
+      console.log('🛡️ ADMIN PRODUCTION SAFETY: Environment checks:', {
+        hostname: window.location.hostname,
+        protocol: window.location.protocol,
+        mode,
+        isProduction,
+        hasProductionDomain
+      });
       return false;
     }
     
-    if (isLocalhost && bypassEnabled && isDev) {
+    // Only allow if ALL development conditions are met
+    if (isLocalhost && bypassEnabled && isDev && hasDevCredentials) {
       console.log('🚨 ADMIN AUTO LOGIN: Auto-login enabled for localhost development');
       console.log('🚨 ADMIN AUTO LOGIN: This should NEVER happen in production!');
       console.log('🚨 ADMIN AUTO LOGIN: Environment checks:', {
         hostname: window.location.hostname,
         bypassEnabled,
         isDev,
-        mode
+        mode,
+        hasCredentials: !!hasDevCredentials
       });
       return true;
     }
+    
+    if (isLocalhost && bypassEnabled && !hasDevCredentials) {
+      console.warn('⚠️ ADMIN AUTO LOGIN: Auto-login requested but credentials not configured');
+      console.warn('⚠️ ADMIN AUTO LOGIN: Set VITE_DEV_ADMIN_EMAIL and VITE_DEV_ADMIN_PASSWORD in .env.local');
+    }
+    
     return false;
   };
 
-  // Auto-login with real Supabase credentials for localhost development
+  // Auto-login with environment credentials for localhost development
   const performAutoLogin = async (): Promise<{ session: any; error: any }> => {
-    console.log('🔑 ADMIN AUTO LOGIN: Attempting auto-login for sungho@dadble.com');
+    const devEmail = import.meta.env.VITE_DEV_ADMIN_EMAIL;
+    const devPassword = import.meta.env.VITE_DEV_ADMIN_PASSWORD;
+    
+    if (!devEmail || !devPassword) {
+      console.error('❌ ADMIN AUTO LOGIN: Development credentials not configured');
+      console.error('❌ ADMIN AUTO LOGIN: Set VITE_DEV_ADMIN_EMAIL and VITE_DEV_ADMIN_PASSWORD in .env.local');
+      return { session: null, error: new Error('Development credentials not configured') };
+    }
+    
+    console.log(`🔑 ADMIN AUTO LOGIN: Attempting auto-login for ${devEmail}`);
     
     try {
       // First check if already signed in
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.email === 'sungho@dadble.com') {
-        console.log('✅ ADMIN AUTO LOGIN: Already signed in as sungho@dadble.com');
+      if (session?.user?.email === devEmail) {
+        console.log(`✅ ADMIN AUTO LOGIN: Already signed in as ${devEmail}`);
         return { session, error: null };
       }
 
-      // Sign in with email and password
+      // Sign in with environment credentials
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'sungho@dadble.com',
-        password: 'dadble2024!'
+        email: devEmail,
+        password: devPassword
       });
 
       if (error) {
@@ -84,7 +111,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.session) {
-        console.log('✅ ADMIN AUTO LOGIN: Successfully signed in as sungho@dadble.com');
+        console.log(`✅ ADMIN AUTO LOGIN: Successfully signed in as ${devEmail}`);
         return { session: data.session, error: null };
       }
 

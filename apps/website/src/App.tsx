@@ -4,6 +4,7 @@ import { lazy, Suspense } from "react";
 
 import { LanguageProvider } from "./contexts/LanguageContext";
 import AnalyticsProvider from "./components/AnalyticsProvider";
+import SessionTracker from "./components/SessionTracker";
 
 // Lazy load page components for code splitting
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -31,6 +32,7 @@ const App = () => (
       <Toaster />
       <BrowserRouter>
         <AnalyticsProvider />
+        <SessionTracker />
         <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<HomePage />} />

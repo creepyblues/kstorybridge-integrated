@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Slack Webhook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Slack Webhook Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Direct Webhook (Session Notification)</h2>
+        <button onclick="testSessionNotification('anonymous')">Test Anonymous Session</button>
+        <button onclick="testSessionNotification('logged-in')">Test Logged-In Session</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Signup Notification</h2>
+        <button onclick="testSignupNotification()">Test Signup Notification</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Clear Session Storage</h2>
+        <button onclick="clearSession()">Clear Session Storage</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        const SUPABASE_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA";
+
+        function updateResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            resultDiv.innerHTML = `[${timestamp}] ${message}\n` + resultDiv.innerHTML;
+            resultDiv.style.color = isError ? 'red' : 'green';
+        }
+
+        async function testSessionNotification(type) {
+            updateResult(`Testing ${type} session notification...`);
+            
+            const notificationData = {
+                event: 'User Session Started',
+                userType: type === 'logged-in' ? 'buyer' : 'anonymous',
+                fullName: type === 'logged-in' ? 'Test User' : 'Anonymous User',
+                email: type === 'logged-in' ? 'test@example.com' : 'not-logged-in@anonymous.user',
+                additionalInfo: {
+                    url: window.location.href,
+                    userAgent: navigator.userAgent,
+                    referrer: document.referrer || 'Direct',
+                    timestamp: new Date().toISOString(),
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    sessionId: `test-${Date.now()}`,
+                    isLoggedIn: type === 'logged-in'
+                }
+            };
+
+            try {
+                const proxyUrl = `${SUPABASE_URL}/functions/v1/slack-webhook-proxy`;
+                
+                const response = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    },
+                    body: JSON.stringify(notificationData),
+                });
+
+                const responseText = await response.text();
+                
+                if (response.ok) {
+                    updateResult(`✅ Success! Response: ${responseText}`);
+                } else {
+                    updateResult(`❌ Failed! Status: ${response.status}, Response: ${responseText}`, true);
+                }
+            } catch (error) {
+                updateResult(`❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function testSignupNotification() {
+            updateResult('Testing signup notification...');
+            
+            const notificationData = {
+                event: 'New Buyer Signup',
+                userType: 'buyer',
+                fullName: 'Test Buyer',
+                email: 'testbuyer@example.com',
+                company: 'Test Company',
+                additionalInfo: {
+                    timestamp: new Date().toISOString(),
+                    environment: 'test'
+                }
+            };
+
+            try {
+                const proxyUrl = `${SUPABASE_URL}/functions/v1/slack-webhook-proxy`;
+                
+                const response = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    },
+                    body: JSON.stringify(notificationData),
+                });
+
+                const responseText = await response.text();
+                
+                if (response.ok) {
+                    updateResult(`✅ Success! Response: ${responseText}`);
+                } else {
+                    updateResult(`❌ Failed! Status: ${response.status}, Response: ${responseText}`, true);
+                }
+            } catch (error) {
+                updateResult(`❌ Error: ${error.message}`, true);
+            }
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem('kstorybridge_session_notified');
+            updateResult('✅ Session storage cleared');
+        }
+    </script>
+</body>
+</html>

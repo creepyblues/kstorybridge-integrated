@@ -125,6 +125,48 @@ serve(async (req) => {
 function formatSlackMessage(data: SlackNotificationData): string {
   const { event, userType, fullName, email, company, additionalInfo } = data
   
+  // Special formatting for session events
+  if (event === 'User Session Started') {
+    const isLoggedIn = additionalInfo?.isLoggedIn
+    const url = additionalInfo?.url || 'Unknown URL'
+    
+    if (isLoggedIn) {
+      // Logged-in user format
+      let message = `👤 *User Session Started (Logged In)*\n`
+      message += `📧 *Email:* ${email}\n`
+      message += `🔗 *URL:* ${url}\n`
+      
+      if (additionalInfo?.referrer && additionalInfo.referrer !== 'Direct') {
+        message += `📍 *Referrer:* ${additionalInfo.referrer}\n`
+      }
+      
+      message += `\n⏰ *Time:* ${new Date().toLocaleString('en-US', { 
+        timeZone: 'America/New_York',
+        dateStyle: 'short',
+        timeStyle: 'short'
+      })}`
+      
+      return message
+    } else {
+      // Anonymous user format - just show URL
+      let message = `👻 *Anonymous Session Started*\n`
+      message += `🔗 *URL:* ${url}\n`
+      
+      if (additionalInfo?.referrer && additionalInfo.referrer !== 'Direct') {
+        message += `📍 *Referrer:* ${additionalInfo.referrer}\n`
+      }
+      
+      message += `\n⏰ *Time:* ${new Date().toLocaleString('en-US', { 
+        timeZone: 'America/New_York',
+        dateStyle: 'short',
+        timeStyle: 'short'
+      })}`
+      
+      return message
+    }
+  }
+  
+  // Default formatting for other events
   const userTypeEmoji = userType === 'buyer' ? '🛒' : '✍️'
   const eventEmoji = getEventEmoji(event)
   
@@ -139,7 +181,7 @@ function formatSlackMessage(data: SlackNotificationData): string {
   
   if (additionalInfo) {
     Object.entries(additionalInfo).forEach(([key, value]) => {
-      if (value) {
+      if (value && key !== 'isLoggedIn' && key !== 'url' && key !== 'referrer') {
         const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
         message += `• *${formattedKey}:* ${value}\n`
       }

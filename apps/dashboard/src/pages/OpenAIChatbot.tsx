@@ -65,23 +65,40 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
   
   // Helper function to find title ID by title name from available title data
   const findTitleIdByName = (titleName: string): string | null => {
-    const cleanedName = titleName.replace(/["""'']/g, '"').trim();
+    // Clean the title name by normalizing outer quotes and removing trailing punctuation
+    let cleanedName = titleName
+      .replace(/^["""'']+|["""'']+$/g, '"')  // Normalize only leading/trailing quotes
+      .replace(/[.,!?;:]+$/, '')  // Remove only trailing punctuation
+      .trim();
+    
+    // Debug logging in development
+    if (import.meta.env.DEV && titleName.toLowerCase().includes('first love')) {
+      console.log('🔍 Title matching debug:', {
+        originalTitle: titleName,
+        cleanedName,
+        messageSpecificTitles: titleData?.length || 0,
+        allMessagesCount: allMessages?.length || 0
+      });
+    }
     
     // First, try to find in current message's titles (these are most relevant)
     if (titleData && Array.isArray(titleData)) {
       // Try exact match first
-      const exactMatch = titleData.find(title => 
-        title.title_name_en === cleanedName || 
-        title.title_name_kr === cleanedName
-      );
+      const exactMatch = titleData.find(title => {
+        const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+        const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+        return titleEn === cleanedName || titleKr === cleanedName;
+      });
       
       if (exactMatch) return exactMatch.title_id;
       
       // Try case-insensitive match
-      const caseInsensitiveMatch = titleData.find(title => 
-        title.title_name_en?.toLowerCase() === cleanedName.toLowerCase() || 
-        title.title_name_kr?.toLowerCase() === cleanedName.toLowerCase()
-      );
+      const caseInsensitiveMatch = titleData.find(title => {
+        const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+        const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+        const searchName = cleanedName.toLowerCase();
+        return titleEn === searchName || titleKr === searchName;
+      });
       
       if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
     }
@@ -102,26 +119,31 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
       
       if (uniqueTitles.length > 0) {
         // Try exact match
-        const exactMatch = uniqueTitles.find(title => 
-          title.title_name_en === cleanedName || 
-          title.title_name_kr === cleanedName
-        );
+        const exactMatch = uniqueTitles.find(title => {
+          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+          return titleEn === cleanedName || titleKr === cleanedName;
+        });
         
         if (exactMatch) return exactMatch.title_id;
         
         // Try case-insensitive match
-        const caseInsensitiveMatch = uniqueTitles.find(title => 
-          title.title_name_en?.toLowerCase() === cleanedName.toLowerCase() || 
-          title.title_name_kr?.toLowerCase() === cleanedName.toLowerCase()
-        );
+        const caseInsensitiveMatch = uniqueTitles.find(title => {
+          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+          const searchName = cleanedName.toLowerCase();
+          return titleEn === searchName || titleKr === searchName;
+        });
         
         if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
         
         // Try partial match (contains) - last resort
-        const partialMatch = uniqueTitles.find(title => 
-          title.title_name_en?.toLowerCase().includes(cleanedName.toLowerCase()) || 
-          title.title_name_kr?.toLowerCase().includes(cleanedName.toLowerCase())
-        );
+        const partialMatch = uniqueTitles.find(title => {
+          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+          const searchName = cleanedName.toLowerCase();
+          return titleEn?.includes(searchName) || titleKr?.includes(searchName);
+        });
         
         if (partialMatch) return partialMatch.title_id;
       }

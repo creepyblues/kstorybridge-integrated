@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
+import { sendWelcomeEmail } from '@/services/emailService';
 
 type AccountType = 'buyer' | 'creator';
 
@@ -459,6 +460,20 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           } catch (slackError) {
             console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
           }
+
+          // Send welcome email
+          try {
+            await sendWelcomeEmail({
+              userName: buyerFormData.fullName,
+              userEmail: buyerFormData.email,
+              accountType: 'buyer',
+              dashboardUrl: window.location.origin + '/buyers/titles',
+              loginUrl: window.location.origin + '/signin'
+            });
+            console.log('✅ Welcome email sent for buyer signup');
+          } catch (emailError) {
+            console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
+          }
           
           toast({
             title: "Profile Completed!",
@@ -483,6 +498,20 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             console.log('✅ Slack notification sent for buyer signup');
           } catch (slackError) {
             console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
+          }
+
+          // Send welcome email (after email verification)
+          try {
+            await sendWelcomeEmail({
+              userName: buyerFormData.fullName,
+              userEmail: buyerFormData.email,
+              accountType: 'buyer',
+              dashboardUrl: window.location.origin + '/buyers/titles',
+              loginUrl: window.location.origin + '/signin'
+            });
+            console.log('✅ Welcome email sent for buyer signup');
+          } catch (emailError) {
+            console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
           }
           
           toast({
@@ -640,6 +669,20 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           console.log('✅ Slack notification sent for creator signup');
         } catch (slackError) {
           console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
+        }
+
+        // Send welcome email
+        try {
+          await sendWelcomeEmail({
+            userName: creatorFormData.fullName,
+            userEmail: creatorFormData.email,
+            accountType: 'creator',
+            dashboardUrl: window.location.origin + '/creators/titles',
+            loginUrl: window.location.origin + '/signin'
+          });
+          console.log('✅ Welcome email sent for creator signup');
+        } catch (emailError) {
+          console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
         }
 
         // Success handling

@@ -206,7 +206,7 @@ function getEmailTemplates() {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         .header {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #4C9C9B 0%, #3a7a79 100%);
             color: white;
             padding: 40px 30px;
             text-align: center;
@@ -271,7 +271,7 @@ function getEmailTemplates() {
             content: "✓";
             position: absolute;
             left: 0;
-            color: #059669;
+            color: #4C9C9B;
             font-weight: bold;
         }
         .cta-section {
@@ -280,7 +280,7 @@ function getEmailTemplates() {
         }
         .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #4C9C9B 0%, #3a7a79 100%);
             color: white;
             text-decoration: none;
             padding: 16px 32px;
@@ -294,7 +294,7 @@ function getEmailTemplates() {
             transform: translateY(-2px);
         }
         .footer {
-            background-color: #059669;
+            background-color: #4C9C9B;
             color: white;
             padding: 32px 30px;
             text-align: center;

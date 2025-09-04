@@ -37,11 +37,7 @@ export async function notifySessionStart() {
       email: user ? user.email : 'not-logged-in@anonymous.user',
       additionalInfo: {
         url: currentUrl,
-        userAgent: navigator.userAgent,
         referrer: document.referrer || 'Direct',
-        timestamp: new Date().toISOString(),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        sessionId: user?.id || `anonymous-${Date.now()}`,
         isLoggedIn: !!user
       }
     };

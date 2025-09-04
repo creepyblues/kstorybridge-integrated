@@ -160,3 +160,24 @@ export const notifyUserFeedback = async (feedbackData: {
     }
   });
 };
+
+// Convenience function for user signin notifications
+export const notifyUserSignin = async (userData: {
+  fullName: string;
+  email: string;
+  userType: 'buyer' | 'creator';
+  signinMethod: 'email' | 'oauth';
+  company?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'User Login',
+    userType: userData.userType,
+    fullName: userData.fullName,
+    email: userData.email,
+    company: userData.company,
+    additionalInfo: {
+      signinMethod: userData.signinMethod,
+      timestamp: new Date().toISOString(),
+    }
+  });
+};

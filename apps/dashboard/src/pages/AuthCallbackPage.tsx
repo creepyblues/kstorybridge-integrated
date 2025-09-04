@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { notifyUserSignin } from '@/utils/slack';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
@@ -113,6 +114,33 @@ const AuthCallbackPage = () => {
           buyerTier: buyerProfile?.tier,
           creatorStatus: ipOwnerProfile?.invitation_status
         });
+
+        // Send signin notification (non-blocking)
+        try {
+          const fullName = user.user_metadata?.full_name || buyerProfile?.full_name || ipOwnerProfile?.full_name || user.email?.split('@')[0] || 'User';
+          let userType: 'buyer' | 'creator' = 'buyer';
+          let company = user.user_metadata?.company;
+          
+          if (ipOwnerProfile) {
+            userType = 'creator';
+            company = ipOwnerProfile.pen_name || company;
+          } else if (buyerProfile) {
+            userType = 'buyer';
+            company = buyerProfile.buyer_company || company;
+          }
+          
+          notifyUserSignin({
+            fullName,
+            email: user.email,
+            userType,
+            signinMethod: 'oauth',
+            company
+          }).catch(error => {
+            console.error('Failed to send OAuth signin notification:', error);
+          });
+        } catch (error) {
+          console.error('Error preparing OAuth signin notification:', error);
+        }
 
         await checkTierAndRedirect(user, buyerProfile, ipOwnerProfile);
       } catch (error) {

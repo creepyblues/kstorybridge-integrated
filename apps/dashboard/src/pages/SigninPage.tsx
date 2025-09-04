@@ -6,6 +6,7 @@ import { Label } from '@kstorybridge/ui';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { notifyUserSignin } from '@/utils/slack';
 
 const SigninPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -112,6 +113,49 @@ const SigninPage = () => {
       });
     } finally {
       setIsGoogleLoading(false);
+    }
+  };
+
+  const sendSigninNotification = async (user: any, signinMethod: 'email' | 'oauth') => {
+    try {
+      // Determine user type and company info
+      const accountType = user.user_metadata?.account_type;
+      const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      
+      let userType: 'buyer' | 'creator' = 'buyer'; // default
+      let company = user.user_metadata?.company;
+
+      // Check if user is a creator
+      if (accountType === 'ip_owner') {
+        userType = 'creator';
+        company = user.user_metadata?.pen_name || company; // Use pen name as company for creators
+      } else if (accountType === 'buyer' || !accountType) {
+        // For buyers, try to get company from user_buyers table
+        const { data: buyerProfile } = await supabase
+          .from('user_buyers')
+          .select('company')
+          .eq('email', user.email?.toLowerCase())
+          .maybeSingle();
+        
+        if (buyerProfile?.company) {
+          company = buyerProfile.company;
+        }
+      }
+
+      // Send Slack notification (non-blocking)
+      notifyUserSignin({
+        fullName,
+        email: user.email,
+        userType,
+        signinMethod,
+        company
+      }).catch(error => {
+        console.error('Failed to send signin notification:', error);
+        // Don't throw - notifications shouldn't block signin
+      });
+    } catch (error) {
+      console.error('Error preparing signin notification:', error);
+      // Don't throw - notifications shouldn't block signin
     }
   };
 
@@ -310,6 +354,9 @@ const SigninPage = () => {
           title: "Success!",
           description: "You have been signed in successfully."
         });
+        
+        // Send signin notification (non-blocking)
+        await sendSigninNotification(data.user, 'email');
         
         // Check invitation status and redirect accordingly
         await checkInvitationStatusAndRedirect(data.user);

@@ -140,15 +140,15 @@ function formatSlackMessage(data: SlackNotificationData): string {
         message += `📍 *Referrer:* ${additionalInfo.referrer}\n`
       }
       
-      message += `\n⏰ *Time:* ${new Date().toLocaleString('en-US', { 
-        timeZone: 'America/New_York',
+      message += `\n⏰ *Time (PT):* ${new Date().toLocaleString('en-US', { 
+        timeZone: 'America/Los_Angeles',
         dateStyle: 'short',
         timeStyle: 'short'
       })}`
       
       return message
     } else {
-      // Anonymous user format - just show URL
+      // Anonymous user format - simplified
       let message = `👻 *Anonymous Session Started*\n`
       message += `🔗 *URL:* ${url}\n`
       
@@ -156,8 +156,8 @@ function formatSlackMessage(data: SlackNotificationData): string {
         message += `📍 *Referrer:* ${additionalInfo.referrer}\n`
       }
       
-      message += `\n⏰ *Time:* ${new Date().toLocaleString('en-US', { 
-        timeZone: 'America/New_York',
+      message += `\n⏰ *Timestamp (PT):* ${new Date().toLocaleString('en-US', { 
+        timeZone: 'America/Los_Angeles',
         dateStyle: 'short',
         timeStyle: 'short'
       })}`
@@ -188,8 +188,8 @@ function formatSlackMessage(data: SlackNotificationData): string {
     })
   }
   
-  message += `\n⏰ *Time:* ${new Date().toLocaleString('en-US', { 
-    timeZone: 'America/New_York',
+  message += `\n⏰ *Time (PT):* ${new Date().toLocaleString('en-US', { 
+    timeZone: 'America/Los_Angeles',
     dateStyle: 'short',
     timeStyle: 'short'
   })}`

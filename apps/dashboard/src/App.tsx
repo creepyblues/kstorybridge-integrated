@@ -22,6 +22,7 @@ import { RootRedirect } from "./components/RootRedirect";
 const Content = lazy(() => import("./pages/Content"));
 const Browse = lazy(() => import("./pages/Browse"));
 const Titles = lazy(() => import("./pages/Titles"));
+const TitleList = lazy(() => import("./pages/TitleList"));
 const AddTitle = lazy(() => import("./pages/AddTitle"));
 const TitleDetail = lazy(() => import("./pages/TitleDetail"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -105,6 +106,9 @@ const App = () => (
                   <ProtectedLayout><BuyerDashboardNew /></ProtectedLayout>
                 } />
                 <Route path="/buyers/titles" element={
+                  <ProtectedLayout><TitleList /></ProtectedLayout>
+                } />
+                <Route path="/buyers/title-list" element={
                   <ProtectedLayout><Titles /></ProtectedLayout>
                 } />
                 <Route path="/buyers/titles/:titleId" element={

@@ -546,7 +546,7 @@ function SearchResultsContent() {
                       )}
                       {title.pitch && title.pitch.trim() && (
                         <div className="absolute top-3 right-3">
-                          <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-1 rounded-full shadow-lg">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full shadow-lg text-white" style={{backgroundColor: '#FF6B6B'}}>
                             Pitch Available
                           </span>
                         </div>

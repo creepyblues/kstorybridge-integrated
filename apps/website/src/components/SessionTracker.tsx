@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { notifySessionStart } from '@/utils/sessionTracking';
+import { trackPageVisit, initializeSessionBehavior } from '@/utils/sessionBehaviorTracking';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function SessionTracker() {
@@ -20,6 +21,9 @@ export default function SessionTracker() {
       }
     };
 
+    // Initialize session behavior tracking
+    initializeSessionBehavior();
+    
     // Send notification on initial load
     handleSessionNotification();
 
@@ -36,6 +40,12 @@ export default function SessionTracker() {
       subscription.unsubscribe();
     };
   }, []); // Only run on mount
+
+  // Track page changes
+  useEffect(() => {
+    // Track page visit whenever location changes
+    trackPageVisit();
+  }, [location]);
 
   // This component doesn't render anything
   return null;

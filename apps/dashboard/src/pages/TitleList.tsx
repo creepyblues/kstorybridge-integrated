@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
+import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown, LayoutGrid, List as ListIcon } from "lucide-react";
 import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
 import FeaturedTitlesCarousel from "@/components/FeaturedTitlesCarousel";
@@ -15,7 +15,7 @@ import { enhancedTitleSearchService, type SearchResult } from "@/services/enhanc
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
 
-function TitlesContent() {
+function TitleListContent() {
   const { toast } = useToast();
   const { user } = useAuth();
   const location = useLocation();
@@ -46,6 +46,7 @@ function TitlesContent() {
   const [vectorSearchAvailable, setVectorSearchAvailable] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card'); // Default to card view
 
   // Determine if this is creator view based on route
   const isCreatorView = location.pathname.startsWith('/creators');
@@ -371,9 +372,9 @@ function TitlesContent() {
         <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">TITLES</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">TITLE LIST</h1>
               <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
-                {isCreatorView ? "Manage your Korean content titles." : "Discover and browse Korean content titles."}
+                {isCreatorView ? "Manage your Korean content titles." : "Browse all Korean content titles in list view."}
               </p>
             </div>
             <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">
@@ -396,19 +397,49 @@ function TitlesContent() {
         {/* All Titles Table */}
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-midnight-ink">
-              {isCreatorView ? "MY TITLES" : "ALL TITLES"}
-            </h2>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-midnight-ink">
+                {isCreatorView ? "MY TITLES" : "ALL TITLES"}
+              </h2>
               <Button
                 onClick={handleRefresh}
                 disabled={loading}
                 variant="outline"
-                className="flex items-center gap-2 text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5"
+                size="sm"
+                className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 aspect-square p-2"
+                title="Refresh"
               >
-                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('card')}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-all ${
+                    viewMode === 'card'
+                      ? 'bg-white text-hanok-teal shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  title="Card View"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="text-sm font-medium">Card</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-all ${
+                    viewMode === 'list'
+                      ? 'bg-white text-hanok-teal shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  title="List View"
+                >
+                  <ListIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">List</span>
+                </button>
+              </div>
               {isCreatorView && (
                 <Link to="/creators/titles/add">
                   <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-medium">
@@ -570,35 +601,130 @@ function TitlesContent() {
             )}
           </div>
           
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            {/* Desktop Table Header */}
-            <div className="hidden lg:block bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b">
-              <div className="grid grid-cols-11 gap-4 items-center font-semibold text-gray-700 text-xs sm:text-sm">
-                <div className="col-span-1">Image</div>
-                <div className="col-span-3">
-                  <SortableHeader field="title">Title</SortableHeader>
+          {/* Render based on view mode */}
+          {viewMode === 'card' ? (
+            // Card View
+            <div>
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <RefreshCw className="w-6 h-6 animate-spin text-hanok-teal" />
+                  <span className="ml-2 text-midnight-ink-600">Loading...</span>
                 </div>
-                <div className="col-span-2">
-                  <SortableHeader field="genre">Genre</SortableHeader>
+              ) : filteredTitles.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                  {(() => {
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    const currentTitles = filteredTitles.slice(startIndex, endIndex);
+                    
+                    return currentTitles.map((title) => (
+                      <Card key={title.title_id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                        <Link to={`/titles/${title.title_id}`}>
+                          <CardContent className="p-0">
+                            <div className="relative h-48 bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal/10 overflow-hidden">
+                              {title.title_image ? (
+                                <img
+                                  src={title.title_image}
+                                  alt={title.title_name_en || title.title_name_kr}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-midnight-ink-400">
+                                  <div className="text-center">
+                                    <div className="text-2xl mb-2">📚</div>
+                                    <div className="text-xs">No Image</div>
+                                  </div>
+                                </div>
+                              )}
+                              {title.pitch && title.pitch.trim() && (
+                                <div className="absolute top-3 right-3">
+                                  <span className="text-xs font-medium px-2 py-1 rounded-full shadow-lg text-white" style={{backgroundColor: '#FF6B6B'}}>
+                                    Pitch Available
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="p-4">
+                              <h3 className="font-semibold text-lg text-midnight-ink mb-2 line-clamp-2 group-hover:text-hanok-teal transition-colors">
+                                {title.title_name_en || title.title_name_kr}
+                              </h3>
+                              
+                              {title.title_name_en && title.title_name_kr && (
+                                <p className="text-sm text-midnight-ink-600 mb-2 line-clamp-1">
+                                  {title.title_name_kr}
+                                </p>
+                              )}
+                              
+                              <div className="flex flex-wrap gap-1 mb-3">
+                                {title.genre && (
+                                  <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded text-xs">
+                                    {formatGenre(title.genre)}
+                                  </span>
+                                )}
+                                {title.content_format && (
+                                  <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                                    {formatContentFormat(title.content_format)}
+                                  </span>
+                                )}
+                                {title.tone && (
+                                  <span className="inline-block bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">
+                                    {title.tone}
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {title.synopsis && (
+                                <p className="text-sm text-midnight-ink-600 line-clamp-3 leading-relaxed">
+                                  {title.synopsis}
+                                </p>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Link>
+                      </Card>
+                    ));
+                  })()}
                 </div>
-                <div className="col-span-2">
-                  <SortableHeader field="tone">Tone</SortableHeader>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">🔍</div>
+                  <h3 className="text-xl font-semibold text-midnight-ink mb-2">No titles found</h3>
+                  <p className="text-midnight-ink-600">No titles found matching your search.</p>
                 </div>
-                <div className="col-span-2">
-                  <SortableHeader field="keywords">Keywords</SortableHeader>
-                </div>
-                <div className="col-span-1">
-                  <SortableHeader field="comps">Comps</SortableHeader>
+              )}
+            </div>
+          ) : (
+            // List View
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              {/* Desktop Table Header */}
+              <div className="hidden lg:block bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b">
+                <div className="grid grid-cols-11 gap-4 items-center font-semibold text-gray-700 text-xs sm:text-sm">
+                  <div className="col-span-1">Image</div>
+                  <div className="col-span-3">
+                    <SortableHeader field="title">Title</SortableHeader>
+                  </div>
+                  <div className="col-span-2">
+                    <SortableHeader field="genre">Genre</SortableHeader>
+                  </div>
+                  <div className="col-span-2">
+                    <SortableHeader field="tone">Tone</SortableHeader>
+                  </div>
+                  <div className="col-span-2">
+                    <SortableHeader field="keywords">Keywords</SortableHeader>
+                  </div>
+                  <div className="col-span-1">
+                    <SortableHeader field="comps">Comps</SortableHeader>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Mobile Header */}
-            <div className="lg:hidden bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 border-b">
-              <div className="text-xs sm:text-sm font-semibold text-gray-700">
-                All Titles ({filteredTitles.length})
+              
+              {/* Mobile Header */}
+              <div className="lg:hidden bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 border-b">
+                <div className="text-xs sm:text-sm font-semibold text-gray-700">
+                  All Titles ({filteredTitles.length})
+                </div>
               </div>
-            </div>
             
             <div className="divide-y">
               {loading ? (
@@ -856,17 +982,138 @@ function TitlesContent() {
                 </div>
               </div>
             )}
-          </div>
+              
+              {/* Pagination for list view */}
+              {filteredTitles.length > itemsPerPage && (
+                <div className="bg-gray-50 px-6 py-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredTitles.length)} to {Math.min(currentPage * itemsPerPage, filteredTitles.length)} of {filteredTitles.length} titles
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
+                      >
+                        Previous
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, Math.ceil(filteredTitles.length / itemsPerPage)) }, (_, i) => {
+                          const totalPages = Math.ceil(filteredTitles.length / itemsPerPage);
+                          let pageNumber;
+                          
+                          if (totalPages <= 5) {
+                            pageNumber = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNumber = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNumber = totalPages - 4 + i;
+                          } else {
+                            pageNumber = currentPage - 2 + i;
+                          }
+                          
+                          return (
+                            <Button
+                              key={pageNumber}
+                              variant={currentPage === pageNumber ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(pageNumber)}
+                              className={currentPage === pageNumber 
+                                ? "bg-hanok-teal text-white hover:bg-hanok-teal/90" 
+                                : "text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
+                              }
+                            >
+                              {pageNumber}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredTitles.length / itemsPerPage)))}
+                        disabled={currentPage === Math.ceil(filteredTitles.length / itemsPerPage)}
+                        className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Pagination for card view */}
+          {viewMode === 'card' && filteredTitles.length > itemsPerPage && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              <Button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                variant="outline"
+                size="sm"
+                className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
+              >
+                Previous
+              </Button>
+              
+              {Array.from({ length: Math.min(5, Math.ceil(filteredTitles.length / itemsPerPage)) }, (_, i) => {
+                const totalPages = Math.ceil(filteredTitles.length / itemsPerPage);
+                let pageNumber;
+                
+                if (totalPages <= 5) {
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumber = totalPages - 4 + i;
+                } else {
+                  pageNumber = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNumber}
+                    variant={currentPage === pageNumber ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={currentPage === pageNumber 
+                      ? "bg-hanok-teal text-white hover:bg-hanok-teal/90" 
+                      : "text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
+                    }
+                  >
+                    {pageNumber}
+                  </Button>
+                );
+              })}
+              
+              <Button
+                onClick={() => setCurrentPage(Math.min(Math.ceil(filteredTitles.length / itemsPerPage), currentPage + 1))}
+                disabled={currentPage === Math.ceil(filteredTitles.length / itemsPerPage)}
+                variant="outline"
+                size="sm"
+                className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default function Titles() {
+export default function TitleList() {
   return (
     <TierProvider>
-      <TitlesContent />
+      <TitleListContent />
     </TierProvider>
   );
 }

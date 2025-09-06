@@ -125,10 +125,60 @@ serve(async (req) => {
 function formatSlackMessage(data: SlackNotificationData): string {
   const { event, userType, fullName, email, company, additionalInfo } = data
   
-  // Special formatting for session events
+  // Special formatting for session end events
+  if (event === 'User Session Ended') {
+    const isLoggedIn = additionalInfo?.isLoggedIn
+    const totalDuration = additionalInfo?.totalDuration || 'Unknown'
+    const pageCount = additionalInfo?.pageCount || 0
+    const reason = additionalInfo?.reason || 'unknown'
+    const deviceType = additionalInfo?.deviceType || 'Unknown'
+    const browser = additionalInfo?.browser || 'Unknown'
+    const behavior = additionalInfo?.behavior as Array<{order: number, url: string, title: string, duration: string}> || []
+    
+    let reasonEmoji = '🚪'
+    if (reason === 'inactivity') reasonEmoji = '😴'
+    else if (reason === 'navigation') reasonEmoji = '🔄'
+    
+    let message = `${reasonEmoji} *Session Ended (${reason})*\n`
+    
+    if (isLoggedIn) {
+      message += `📧 *User:* ${email}\n`
+    } else {
+      message += `👻 *User:* Anonymous\n`
+    }
+    
+    message += `⏱️ *Total Duration:* ${totalDuration}\n`
+    message += `📄 *Pages Visited:* ${pageCount}\n`
+    message += `📱 *Device:* ${deviceType} | ${browser}\n`
+    
+    if (additionalInfo?.referrer && additionalInfo.referrer !== 'Direct') {
+      message += `📍 *Referrer:* ${additionalInfo.referrer}\n`
+    }
+    
+    if (behavior.length > 0) {
+      message += `\n🔍 *User Journey:*\n`
+      behavior.forEach(page => {
+        const cleanUrl = page.url.replace(/^https?:\/\//, '').replace(/\/$/, '')
+        message += `${page.order}) ${cleanUrl} - ${page.duration}\n`
+      })
+    }
+    
+    message += `\n⏰ *Ended at (PT):* ${new Date().toLocaleString('en-US', { 
+      timeZone: 'America/Los_Angeles',
+      dateStyle: 'short',
+      timeStyle: 'short'
+    })}`
+    
+    return message
+  }
+  
+  // Special formatting for session start events
   if (event === 'User Session Started') {
     const isLoggedIn = additionalInfo?.isLoggedIn
     const url = additionalInfo?.url || 'Unknown URL'
+    const deviceType = additionalInfo?.deviceType || 'Unknown'
+    const browser = additionalInfo?.browser || 'Unknown'
+    const screenResolution = additionalInfo?.screenResolution || 'Unknown'
     
     if (isLoggedIn) {
       // Logged-in user format
@@ -139,6 +189,8 @@ function formatSlackMessage(data: SlackNotificationData): string {
       if (additionalInfo?.referrer && additionalInfo.referrer !== 'Direct') {
         message += `📍 *Referrer:* ${additionalInfo.referrer}\n`
       }
+      
+      message += `📱 *Device:* ${deviceType} | ${browser} | ${screenResolution}\n`
       
       message += `\n⏰ *Time (PT):* ${new Date().toLocaleString('en-US', { 
         timeZone: 'America/Los_Angeles',
@@ -155,6 +207,8 @@ function formatSlackMessage(data: SlackNotificationData): string {
       if (additionalInfo?.referrer && additionalInfo.referrer !== 'Direct') {
         message += `📍 *Referrer:* ${additionalInfo.referrer}\n`
       }
+      
+      message += `📱 *Device:* ${deviceType} | ${browser} | ${screenResolution}\n`
       
       message += `\n⏰ *Timestamp (PT):* ${new Date().toLocaleString('en-US', { 
         timeZone: 'America/Los_Angeles',

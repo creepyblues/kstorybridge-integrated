@@ -300,76 +300,83 @@ export default function Favorites() {
           <div className="border-t border-gray-200 my-6 sm:my-8 lg:my-12"></div>
 
           {/* Favorites Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {filteredFavorites.map((favorite) => {
             const title = favorite.titles;
             return (
-              <Card key={favorite.id} className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group relative h-full flex flex-col">
+              <Card key={favorite.id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 bg-white/80 backdrop-blur-sm overflow-hidden relative">
                 {/* Unfavorite Button */}
                 <Button
                   id="favorites-remove-btn"
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveFromFavorites(title.title_id)}
-                  className="absolute top-1 right-1 sm:top-2 sm:right-2 z-10 text-red-500 hover:text-red-600 hover:bg-red-50/80 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-white/80 rounded-full p-1 sm:p-2"
+                  className="absolute top-3 right-3 z-20 text-red-500 hover:text-red-600 hover:bg-red-50/80 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-white/80 rounded-full p-2"
                 >
-                  <Heart className="h-3 w-3 fill-current" />
+                  <Heart className="h-4 w-4 fill-current" />
                 </Button>
 
-                <Link to={`/titles/${title.title_id}`} className="block">
-                  <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
-                    {title.title_image ? (
-                      <img 
-                        src={title.title_image} 
-                        alt={title.title_name_en || title.title_name_kr}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <>
-                        <div className="w-12 h-12 bg-hanok-teal rounded-full flex items-center justify-center">
-                          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                            <div className="w-4 h-4 bg-hanok-teal rounded opacity-60"></div>
+                <Link to={`/titles/${title.title_id}`}>
+                  <CardContent className="p-0">
+                    <div className="relative h-48 bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal/10 overflow-hidden">
+                      {title.title_image ? (
+                        <img
+                          src={title.title_image}
+                          alt={title.title_name_en || title.title_name_kr}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-midnight-ink-400">
+                          <div className="text-center">
+                            <div className="text-2xl mb-2">📚</div>
+                            <div className="text-xs">No Image</div>
                           </div>
                         </div>
-                        <div className="absolute top-2 right-2 w-3 h-3 bg-hanok-teal rounded-full"></div>
-                      </>
-                    )}
-                  </div>
-                  <CardContent className="p-2 sm:p-3 flex flex-col flex-grow">
-                    <div className="flex-grow">
-                      <h3 className="text-xs sm:text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
+                      )}
+                      {title.pitch && title.pitch.trim() && (
+                        <div className="absolute top-3 left-3">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full shadow-lg text-white" style={{backgroundColor: '#FF6B6B'}}>
+                            Pitch Available
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg text-midnight-ink mb-2 line-clamp-2 group-hover:text-hanok-teal transition-colors">
                         {title.title_name_en || title.title_name_kr}
                       </h3>
+                      
                       {title.title_name_en && title.title_name_kr && (
-                        <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
+                        <p className="text-sm text-midnight-ink-600 mb-2 line-clamp-1">
+                          {title.title_name_kr}
+                        </p>
                       )}
-                      <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
-                        {title.tagline || title.pitch || 'Discover this amazing Korean story'}
-                      </p>
-                    </div>
-                    {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
-                      <div className="mt-auto">
-                        <div className="flex flex-wrap gap-1">
-                          {Array.isArray(title.genre) ? (
-                            title.genre.slice(0, 1).map((g, idx) => (
-                              <div key={idx} className="inline-block bg-hanok-teal/10 text-hanok-teal px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium">
-                                {formatGenre(g)}
-                              </div>
-                            ))
-                          ) : (
-                            <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium">
-                              {formatGenre(title.genre)}
-                            </div>
-                          )}
-                          {Array.isArray(title.genre) && title.genre.length > 1 && (
-                            <span className="text-xs text-gray-500">+{title.genre.length - 1}</span>
-                          )}
-                        </div>
+                      
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {title.genre && (
+                          <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded text-xs">
+                            {formatGenre(title.genre)}
+                          </span>
+                        )}
+                        {title.content_format && (
+                          <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                            {formatContentFormat(title.content_format)}
+                          </span>
+                        )}
+                        {title.tone && (
+                          <span className="inline-block bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">
+                            {title.tone}
+                          </span>
+                        )}
                       </div>
-                    )}
+                      
+                      {title.synopsis && (
+                        <p className="text-sm text-midnight-ink-600 line-clamp-3 leading-relaxed">
+                          {title.synopsis}
+                        </p>
+                      )}
+                    </div>
                   </CardContent>
                 </Link>
               </Card>

@@ -10,7 +10,8 @@ import {
   BarChart3, 
   Search, 
   Zap,
-  ExternalLink
+  ExternalLink,
+  List
 } from 'lucide-react';
 
 export default function Experiment() {
@@ -38,6 +39,15 @@ export default function Experiment() {
   }
 
   const experimentalTools = [
+    {
+      id: 'title-list',
+      title: 'Original Titles View',
+      description: 'Legacy titles page with table-only layout (for comparison)',
+      icon: <List className="w-6 h-6" />,
+      path: '/buyers/title-list',
+      color: 'from-indigo-500 to-blue-500',
+      status: 'Legacy'
+    },
     {
       id: 'openai-chatbot',
       title: 'OpenAI Chatbot',
@@ -171,6 +181,7 @@ export default function Experiment() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-1 text-xs rounded-full ${
+                          tool.status === 'New' ? 'bg-cyan-900/50 text-cyan-400 border border-cyan-800' :
                           tool.status === 'Active' ? 'bg-green-900/50 text-green-400 border border-green-800' :
                           tool.status === 'Legacy' ? 'bg-yellow-900/50 text-yellow-400 border border-yellow-800' :
                           tool.status === 'Analytics' ? 'bg-orange-900/50 text-orange-400 border border-orange-800' :

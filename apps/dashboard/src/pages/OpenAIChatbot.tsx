@@ -330,7 +330,7 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
               {title.title_name_en || title.title_name_kr}
             </h4>
             {title.pitch && title.pitch.trim() && (
-              <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 text-white" style={{backgroundColor: '#FF6B6B'}}>
                 Pitch
               </span>
             )}
@@ -812,7 +812,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                   {title.title_name_en || title.title_name_kr}
                 </h4>
                 {title.pitch && title.pitch.trim() && (
-                  <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0">
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 text-white" style={{backgroundColor: '#FF6B6B'}}>
                     Pitch
                   </span>
                 )}

@@ -8,6 +8,43 @@ interface SessionData {
   timestamp: number;
 }
 
+function getDeviceType(): string {
+  const userAgent = navigator.userAgent.toLowerCase();
+  const screenWidth = window.screen.width;
+  
+  // Check for mobile devices
+  if (/mobile|android|iphone|ipod/.test(userAgent)) {
+    return 'Mobile';
+  }
+  
+  // Check for tablets
+  if (/ipad|tablet/.test(userAgent) || (screenWidth >= 768 && screenWidth <= 1024 && /touch/.test(userAgent))) {
+    return 'Tablet';
+  }
+  
+  // Default to desktop
+  return 'Desktop';
+}
+
+function getBrowserInfo(): string {
+  const userAgent = navigator.userAgent;
+  
+  // Check for common browsers
+  if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1) {
+    return 'Chrome';
+  } else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
+    return 'Safari';
+  } else if (userAgent.indexOf('Firefox') > -1) {
+    return 'Firefox';
+  } else if (userAgent.indexOf('Edg') > -1) {
+    return 'Edge';
+  } else if (userAgent.indexOf('Opera') > -1 || userAgent.indexOf('OPR') > -1) {
+    return 'Opera';
+  }
+  
+  return 'Other';
+}
+
 export async function notifySessionStart() {
   try {
     // Check if we've already sent a notification for this session
@@ -38,6 +75,9 @@ export async function notifySessionStart() {
       additionalInfo: {
         url: currentUrl,
         referrer: document.referrer || 'Direct',
+        deviceType: getDeviceType(),
+        browser: getBrowserInfo(),
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
         isLoggedIn: !!user
       }
     };

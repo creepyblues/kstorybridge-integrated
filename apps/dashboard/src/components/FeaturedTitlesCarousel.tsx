@@ -13,21 +13,19 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
   const [allFeaturedTitles, setAllFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [titlesPerPage, setTitlesPerPage] = useState(6);
+  const [titlesPerPage, setTitlesPerPage] = useState(4);
   
-  // Calculate titles per page based on screen width - matching Tailwind breakpoints
+  // Fixed to show exactly 4 titles for beautiful balance
   useEffect(() => {
     const calculateTitlesPerPage = () => {
       const width = window.innerWidth;
-      // Match the actual grid CSS: grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6
+      // Always show 4 titles, but adjust grid layout responsively
       if (width < 640) {
-        setTitlesPerPage(2); // default: 2 cols
+        setTitlesPerPage(4); // 2x2 grid on mobile
       } else if (width < 1024) {
-        setTitlesPerPage(3); // sm: 3 cols (640px+)
-      } else if (width < 1280) {
-        setTitlesPerPage(4); // lg: 4 cols (1024px+)
+        setTitlesPerPage(4); // 4x1 or 2x2 grid on tablet
       } else {
-        setTitlesPerPage(6); // xl: 6 cols (1280px+)
+        setTitlesPerPage(4); // 4x1 grid on desktop
       }
     };
 
@@ -132,28 +130,22 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
         )}
       </div>
 
-      {/* Titles Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
+      {/* Titles Grid - Optimized for 4 cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto">
         {currentTitles.map((featured) => {
           const title = featured.titles;
           return (
             <Link key={featured.id} to={`/titles/${title.title_id}`} className="block">
-              <Card className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col">
-                <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
+              <Card className="bg-white rounded-2xl border-0 shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 group h-full flex flex-col">
+                <div className="aspect-[4/5] bg-gradient-to-br from-porcelain-blue-100 via-hanok-teal-50 to-hanok-teal/20 flex items-center justify-center relative overflow-hidden">
                   {title.pitch && (
                     <div className="absolute top-2 right-2 z-10">
-                      <span className="bg-hanok-teal text-white text-xs font-medium px-2 py-1 rounded-full shadow-md">
+                      <span className="text-xs font-medium px-2 py-1 rounded-full shadow-md text-white" style={{backgroundColor: '#FF6B6B'}}>
                         Pitch
                       </span>
                     </div>
                   )}
                   
-                  {/* Featured Badge */}
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="bg-sunrise-coral text-white text-xs font-medium px-2 py-1 rounded-full shadow-md">
-                      Featured
-                    </span>
-                  </div>
                   
                   {title.title_image ? (
                     <img 
@@ -178,34 +170,34 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
                     </>
                   )}
                 </div>
-                <CardContent className="p-3 flex flex-col flex-grow">
+                <CardContent className="p-4 sm:p-5 flex flex-col flex-grow">
                   <div className="flex-grow">
-                    <h3 className="text-sm font-bold text-midnight-ink mb-1 line-clamp-2">
+                    <h3 className="text-base sm:text-lg font-bold text-midnight-ink mb-2 line-clamp-2 group-hover:text-hanok-teal transition-colors duration-300">
                       {title.title_name_en || title.title_name_kr}
                     </h3>
                     {title.title_name_en && title.title_name_kr && (
-                      <p className="text-xs text-midnight-ink-500 mb-1 line-clamp-1">{title.title_name_kr}</p>
+                      <p className="text-sm text-midnight-ink-500 mb-2 line-clamp-1">{title.title_name_kr}</p>
                     )}
-                    <p className="text-xs text-midnight-ink-600 mb-2 line-clamp-2">
-                      {title.tagline || title.pitch || 'Discover this amazing Korean story'}
+                    <p className="text-sm text-midnight-ink-600 mb-3 line-clamp-2 leading-relaxed">
+                      {title.tagline || title.synopsis || 'Discover this amazing Korean story'}
                     </p>
                   </div>
                   {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
                     <div className="mt-auto">
                       <div className="flex flex-wrap gap-1">
                         {Array.isArray(title.genre) ? (
-                          title.genre.slice(0, 1).map((g, idx) => (
-                            <div key={`${title.title_id}-card-genre-${idx}`} className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                          title.genre.slice(0, 2).map((g, idx) => (
+                            <div key={`${title.title_id}-card-genre-${idx}`} className="inline-block bg-gradient-to-r from-hanok-teal/20 to-hanok-teal/10 text-hanok-teal px-3 py-1.5 rounded-full text-xs font-semibold border border-hanok-teal/20">
                               {formatGenre(g)}
                             </div>
                           ))
                         ) : (
-                          <div className="inline-block bg-hanok-teal/10 text-hanok-teal px-2 py-1 rounded-full text-xs font-medium">
+                          <div className="inline-block bg-gradient-to-r from-hanok-teal/20 to-hanok-teal/10 text-hanok-teal px-3 py-1.5 rounded-full text-xs font-semibold border border-hanok-teal/20">
                             {formatGenre(title.genre)}
                           </div>
                         )}
-                        {Array.isArray(title.genre) && title.genre.length > 1 && (
-                          <span className="text-xs text-gray-500">+{title.genre.length - 1}</span>
+                        {Array.isArray(title.genre) && title.genre.length > 2 && (
+                          <span className="text-xs text-midnight-ink-400 font-medium">+{title.genre.length - 2}</span>
                         )}
                       </div>
                     </div>

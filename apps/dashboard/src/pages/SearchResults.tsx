@@ -527,7 +527,7 @@ function SearchResultsContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {currentTitles.map((title) => (
               <Card key={title.title_id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
-                <Link to={`/titles/${title.title_id}`}>
+                <Link to={`/buyers/titles/${title.title_id}`}>
                   <CardContent className="p-0">
                     <div className="relative h-48 bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal/10 overflow-hidden">
                       {title.title_image ? (

@@ -1,7 +1,7 @@
 
 import { Toaster, TooltipProvider } from "@kstorybridge/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { DataCacheProvider } from "@/contexts/DataCacheContext";
@@ -25,6 +25,7 @@ const Titles = lazy(() => import("./pages/Titles"));
 const TitleList = lazy(() => import("./pages/TitleList"));
 const AddTitle = lazy(() => import("./pages/AddTitle"));
 const TitleDetail = lazy(() => import("./pages/TitleDetail"));
+const TitleDetailNew = lazy(() => import("./pages/TitleDetailNew"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const MyRequests = lazy(() => import("./pages/MyRequests"));
 const Deals = lazy(() => import("./pages/Deals"));
@@ -67,6 +68,17 @@ const PageLoader = () => (
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
   </div>
 );
+
+// Redirect components for legacy routes
+const TitleRedirect = () => {
+  const { titleId } = useParams();
+  return <Navigate to={`/buyers/titles/${titleId}`} replace />;
+};
+
+const TitleNewRedirect = () => {
+  const { titleId } = useParams();
+  return <Navigate to={`/buyers/titles-new/${titleId}`} replace />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -113,6 +125,9 @@ const App = () => (
                 } />
                 <Route path="/buyers/titles/:titleId" element={
                   <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                } />
+                <Route path="/buyers/titles-new/:titleId" element={
+                  <ProtectedLayout><TitleDetailNew /></ProtectedLayout>
                 } />
                 <Route path="/buyers/favorites" element={
                   <ProtectedLayout><Favorites /></ProtectedLayout>
@@ -167,6 +182,9 @@ const App = () => (
                 <Route path="/creators/titles/:titleId" element={
                   <ProtectedLayout><TitleDetail /></ProtectedLayout>
                 } />
+                <Route path="/creators/titles-new/:titleId" element={
+                  <ProtectedLayout><TitleDetailNew /></ProtectedLayout>
+                } />
                 <Route path="/creators/requests" element={
                   <ProtectedLayout><MyRequests /></ProtectedLayout>
                 } />
@@ -196,7 +214,10 @@ const App = () => (
                   <ProtectedLayout><Titles /></ProtectedLayout>
                 } />
                 <Route path="/titles/:titleId" element={
-                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                  <TitleRedirect />
+                } />
+                <Route path="/titles-new/:titleId" element={
+                  <TitleNewRedirect />
                 } />
                 <Route path="/search-results" element={
                   <ProtectedLayout><SearchResults /></ProtectedLayout>

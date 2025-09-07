@@ -139,7 +139,7 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
       }
 
       onSave(savedTitle);
-      navigate(`/titles/${savedTitle.title_id}`);
+      navigate(`/buyers/titles/${savedTitle.title_id}`);
     } catch (error) {
       console.error("Error saving title:", error);
       toast({ title: "Error saving title", variant: "destructive" });

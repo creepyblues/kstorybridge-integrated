@@ -254,7 +254,7 @@ export default function MyRequests() {
                           Pending
                         </div>
                         {request.titles && (
-                          <Link to={`/titles/${request.title_id}`}>
+                          <Link to={`/buyers/titles/${request.title_id}`}>
                             <Button variant="outline" size="sm" className="text-hanok-teal border-hanok-teal hover:bg-hanok-teal hover:text-white">
                               View Title
                             </Button>

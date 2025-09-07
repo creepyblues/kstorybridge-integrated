@@ -22,54 +22,62 @@ export default function AdminTitles() {
   const [lastCacheUpdate, setLastCacheUpdate] = useState<string | null>(null);
 
   useEffect(() => {
-    // Clear cache on page load/reload to ensure fresh data
-    localStorage.removeItem('admin_titles_cache');
-    localStorage.removeItem('admin_titles_cache_time');
-    localStorage.removeItem('admin_featured_cache');
-    localStorage.removeItem('admin_featured_cache_time');
-    
-    loadData(true);
+    // Use cache if available, only force refresh if explicitly requested
+    loadData(false);
   }, []);
 
   const loadData = async (force = false) => {
     try {
       setLoading(true);
       
-      const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds - shorter cache for admin
       const now = Date.now();
       
-      // Check cache for titles
-      let allTitles = [];
+      // Optimize: Load both queries in parallel for better performance
+      const promises = [];
+      
+      // Handle titles cache
+      let titlesPromise;
       const titlesCache = localStorage.getItem('admin_titles_cache');
       const titlesCacheTime = localStorage.getItem('admin_titles_cache_time');
       
       if (!force && titlesCache && titlesCacheTime && 
           (now - parseInt(titlesCacheTime)) < CACHE_DURATION) {
         // Use cached titles
-        allTitles = JSON.parse(titlesCache);
+        titlesPromise = Promise.resolve(JSON.parse(titlesCache));
       } else {
         // Fetch fresh titles and cache them
-        allTitles = await titlesService.getAllTitles();
-        localStorage.setItem('admin_titles_cache', JSON.stringify(allTitles));
-        localStorage.setItem('admin_titles_cache_time', now.toString());
+        titlesPromise = titlesService.getAllTitles().then(data => {
+          localStorage.setItem('admin_titles_cache', JSON.stringify(data));
+          localStorage.setItem('admin_titles_cache_time', now.toString());
+          return data;
+        });
       }
-      setTitles(allTitles);
+      promises.push(titlesPromise);
       
-      // Check cache for featured titles
-      let featured = [];
+      // Handle featured titles cache
+      let featuredPromise;
       const featuredCache = localStorage.getItem('admin_featured_cache');
       const featuredCacheTime = localStorage.getItem('admin_featured_cache_time');
       
       if (!force && featuredCache && featuredCacheTime && 
           (now - parseInt(featuredCacheTime)) < CACHE_DURATION) {
         // Use cached featured titles
-        featured = JSON.parse(featuredCache);
+        featuredPromise = Promise.resolve(JSON.parse(featuredCache));
       } else {
         // Fetch fresh featured titles and cache them
-        featured = await featuredService.getFeaturedTitles();
-        localStorage.setItem('admin_featured_cache', JSON.stringify(featured));
-        localStorage.setItem('admin_featured_cache_time', now.toString());
+        featuredPromise = featuredService.getFeaturedTitles().then(data => {
+          localStorage.setItem('admin_featured_cache', JSON.stringify(data));
+          localStorage.setItem('admin_featured_cache_time', now.toString());
+          return data;
+        });
       }
+      promises.push(featuredPromise);
+      
+      // Execute both queries in parallel
+      const [allTitles, featured] = await Promise.all(promises);
+      
+      setTitles(allTitles);
       setFeaturedTitles(featured);
       
       // Update last cache update time display

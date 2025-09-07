@@ -90,7 +90,7 @@ export const notifyPitchRequest = async (requestData: {
       titleName: requestData.titleName,
       titleId: requestData.titleId,
       requestType: requestData.requestType,
-      dashboardUrl: `https://dashboard.kstorybridge.com/titles/${requestData.titleId}`,
+      dashboardUrl: `https://dashboard.kstorybridge.com/buyers/titles/${requestData.titleId}`,
     }
   });
 };

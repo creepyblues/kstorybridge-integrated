@@ -34,7 +34,7 @@ function TitleListContent() {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(51);
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
@@ -615,7 +615,7 @@ function TitleListContent() {
                     
                     return currentTitles.map((title) => (
                       <Card key={title.title_id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
-                        <Link to={`/titles/${title.title_id}`}>
+                        <Link to={`/buyers/titles/${title.title_id}`}>
                           <CardContent className="p-0">
                             <div className="relative h-48 bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal/10 overflow-hidden">
                               {title.title_image ? (
@@ -734,7 +734,7 @@ function TitleListContent() {
                   const currentTitles = filteredTitles.slice(startIndex, endIndex);
                   
                   return currentTitles.map((title) => (
-                    <Link key={title.title_id} to={`/titles/${title.title_id}`} className="block">
+                    <Link key={title.title_id} to={`/buyers/titles/${title.title_id}`} className="block">
                       {/* Desktop Table Row */}
                       <div className="hidden lg:grid px-4 sm:px-6 py-4 grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
                         {/* Desktop content - keeping existing structure */}
@@ -914,7 +914,7 @@ function TitleListContent() {
               )}
             </div>
             
-            {/* Pagination */}
+            {/* Pagination for list view */}
             {filteredTitles.length > itemsPerPage && (
               <div className="bg-gray-50 px-6 py-4 border-t">
                 <div className="flex items-center justify-between">
@@ -978,71 +978,6 @@ function TitleListContent() {
                 </div>
               </div>
             )}
-              
-              {/* Pagination for list view */}
-              {filteredTitles.length > itemsPerPage && (
-                <div className="bg-gray-50 px-6 py-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                      Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredTitles.length)} to {Math.min(currentPage * itemsPerPage, filteredTitles.length)} of {filteredTitles.length} titles
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
-                      >
-                        Previous
-                      </Button>
-                      
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.min(5, Math.ceil(filteredTitles.length / itemsPerPage)) }, (_, i) => {
-                          const totalPages = Math.ceil(filteredTitles.length / itemsPerPage);
-                          let pageNumber;
-                          
-                          if (totalPages <= 5) {
-                            pageNumber = i + 1;
-                          } else if (currentPage <= 3) {
-                            pageNumber = i + 1;
-                          } else if (currentPage >= totalPages - 2) {
-                            pageNumber = totalPages - 4 + i;
-                          } else {
-                            pageNumber = currentPage - 2 + i;
-                          }
-                          
-                          return (
-                            <Button
-                              key={pageNumber}
-                              variant={currentPage === pageNumber ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setCurrentPage(pageNumber)}
-                              className={currentPage === pageNumber 
-                                ? "bg-hanok-teal text-white hover:bg-hanok-teal/90" 
-                                : "text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
-                              }
-                            >
-                              {pageNumber}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredTitles.length / itemsPerPage)))}
-                        disabled={currentPage === Math.ceil(filteredTitles.length / itemsPerPage)}
-                        className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
           

@@ -203,7 +203,7 @@ What type of Korean IP are you looking for today?`,
 
   const formatTitleCard = (title: any) => (
     <div key={title.title_id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
-         onClick={() => navigate(`/titles/${title.title_id}`)}>
+         onClick={() => navigate(`/buyers/titles/${title.title_id}`)}>
       <div className="flex gap-3">
         {title.title_image ? (
           <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">

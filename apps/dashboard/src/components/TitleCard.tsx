@@ -33,7 +33,7 @@ export function TitleCard({ title, onEdit, onDelete, showActions = false }: Titl
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <Link to={`/titles/${title.title_id}`}>
+            <Link to={`/buyers/titles/${title.title_id}`}>
               <h3 className="text-lg font-semibold text-white mb-1 hover:text-blue-400 transition-colors cursor-pointer">
                 {title.title_name_en || title.title_name_kr}
               </h3>

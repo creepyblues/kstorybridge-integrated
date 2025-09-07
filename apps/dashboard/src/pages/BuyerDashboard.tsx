@@ -249,7 +249,7 @@ export default function BuyerDashboard() {
                 </div>
               ) : filteredTitles.length > 0 ? (
                 filteredTitles.slice(0, 1).map((title) => (
-                  <Link key={title.title_id} to={`/titles/${title.title_id}`} className="block">
+                  <Link key={title.title_id} to={`/buyers/titles/${title.title_id}`} className="block">
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
                       <div className="relative">
                         <div className="h-64 bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center p-6">
@@ -320,7 +320,7 @@ export default function BuyerDashboard() {
                     .sort((a, b) => (b.likes || 0) - (a.likes || 0))
                     .slice(0, 5)
                     .map((title) => (
-                      <Link key={title.title_id} to={`/titles/${title.title_id}`} className="block">
+                      <Link key={title.title_id} to={`/buyers/titles/${title.title_id}`} className="block">
                         <div className="px-6 py-4 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
                           <div className="flex items-center gap-3">
                             {title.title_image && (

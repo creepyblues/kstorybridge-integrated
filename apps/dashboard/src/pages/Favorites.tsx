@@ -316,7 +316,7 @@ export default function Favorites() {
                   <Heart className="h-4 w-4 fill-current" />
                 </Button>
 
-                <Link to={`/titles/${title.title_id}`}>
+                <Link to={`/buyers/titles/${title.title_id}`}>
                   <CardContent className="p-0">
                     <div className="relative h-48 bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal/10 overflow-hidden">
                       {title.title_image ? (

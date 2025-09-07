@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { Button } from '@kstorybridge/ui';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Mic } from 'lucide-react';
 import { featuredService, type FeaturedWithTitle } from '@/services/featuredService';
 
 interface FeaturedTitlesCarouselProps {
@@ -113,7 +113,7 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
               const title = featured.titles;
               return (
                 <Card key={featured.id} className="flex-shrink-0 w-80 sm:w-96 md:w-auto h-[34rem] md:h-96 bg-white rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden">
-                  <Link to={`/titles/${title.title_id}`}>
+                  <Link to={`/buyers/titles/${title.title_id}`}>
                     <CardContent className="p-0 flex flex-col md:flex-row h-full">
                       {/* Left Section - Image and Badges */}
                       <div className="relative w-full h-96 md:w-[30%] md:h-full bg-gray-100 overflow-hidden">
@@ -145,14 +145,14 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
                       {/* Right Section - Title Details */}
                       <div className="flex-1 md:w-[70%] p-3 md:p-6 lg:p-8 flex flex-col justify-between">
                         <div className="flex-1">
-                          {/* Title Section - Fixed Height */}
-                          <div className="h-[4.5rem] md:h-[6rem] mb-2 md:mb-3 flex flex-col justify-start overflow-hidden">
-                            <h2 className="text-base md:text-xl lg:text-2xl font-bold text-midnight-ink mb-1 md:mb-2 line-clamp-2 group-hover:text-hanok-teal transition-colors duration-300 leading-tight">
+                          {/* Title Section - One Line Only */}
+                          <div className="h-[3rem] md:h-[4rem] mb-2 flex flex-col justify-start overflow-visible">
+                            <h2 className="text-base md:text-xl lg:text-2xl font-bold text-midnight-ink mb-1 line-clamp-1 group-hover:text-hanok-teal transition-colors duration-300 leading-normal">
                               {title.title_name_en || title.title_name_kr}
                             </h2>
                             
                             {title.title_name_en && title.title_name_kr && (
-                              <p className="text-sm md:text-base text-midnight-ink-500 line-clamp-1 font-medium leading-tight">
+                              <p className="text-sm md:text-base text-midnight-ink-500 line-clamp-1 font-medium leading-normal">
                                 {title.title_name_kr}
                               </p>
                             )}
@@ -161,11 +161,17 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
                           {/* Horizontal divider */}
                           <div className="w-full h-px bg-gray-300 mb-3"></div>
 
-                          {/* Note Section - Fixed Height */}
-                          <div className="h-[3rem] mb-3 flex items-start overflow-hidden">
+                          {/* Note Section - Never Truncate */}
+                          <div className="min-h-[4.5rem] mb-3 flex items-start">
                             {featured.note ? (
-                              <div className="w-full p-2 md:p-3 bg-red-50 border-l-4 border-r-4 rounded-lg overflow-hidden" style={{borderColor: '#FF6B6B'}}>
-                                <p className="text-xs md:text-sm italic leading-tight line-clamp-2 overflow-hidden" style={{color: '#FF6B6B'}}>
+                              <div className="w-full p-2 md:p-3 bg-red-50 border-l-4 border-r-4 rounded-lg" style={{borderColor: '#FF6B6B'}}>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Mic className="w-3 h-3 text-black" />
+                                  <span className="text-sm font-bold text-black">
+                                    Editor's note
+                                  </span>
+                                </div>
+                                <p className="text-xs md:text-sm italic leading-tight" style={{color: '#FF6B6B'}}>
                                   "{featured.note}"
                                 </p>
                               </div>
@@ -174,10 +180,10 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
                             )}
                           </div>
 
-                          {/* Synopsis Section - More Lines */}
+                          {/* Synopsis Section - Flexible, Can Be Truncated */}
                           <div className="flex-1 flex items-start overflow-hidden mb-3">
                             {title.synopsis ? (
-                              <p className="text-xs md:text-sm text-midnight-ink-600 line-clamp-4 leading-relaxed font-light overflow-hidden">
+                              <p className="text-xs md:text-sm text-midnight-ink-600 line-clamp-4 leading-tight font-light overflow-hidden">
                                 {title.synopsis}
                               </p>
                             ) : (
@@ -202,9 +208,6 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
                                   {formatGenre(title.genre)}
                                 </div>
                               )}
-                              {Array.isArray(title.genre) && title.genre.length > 2 && (
-                                <span className="text-xs text-midnight-ink-400 font-medium">+{title.genre.length - 2}</span>
-                              )}
                             </>
                           )}
 
@@ -223,9 +226,6 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
                                   {comp}
                                 </div>
                               ))}
-                              {title.comps.length > 2 && (
-                                <span className="text-xs text-midnight-ink-400 font-medium">+{title.comps.length - 2}</span>
-                              )}
                             </>
                           )}
                         </div>

@@ -198,7 +198,7 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
             return (
               <button
                 key={partIdx}
-                onClick={() => navigate(`/titles/${titleId}`)}
+                onClick={() => navigate(`/buyers/titles/${titleId}`)}
                 className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
                 title={`View "${titleName}" details`}
               >
@@ -213,7 +213,7 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
               return (
                 <button
                   key={partIdx}
-                  onClick={() => navigate(`/titles/${foundTitleId}`)}
+                  onClick={() => navigate(`/buyers/titles/${foundTitleId}`)}
                   className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
                   title={`View "${quotedText}" details`}
                 >
@@ -257,7 +257,7 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
             return (
               <button
                 key={partIdx}
-                onClick={() => navigate(`/titles/${titleId}`)}
+                onClick={() => navigate(`/buyers/titles/${titleId}`)}
                 className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
                 title={`View "${titleName}" details`}
               >
@@ -272,7 +272,7 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
               return (
                 <button
                   key={partIdx}
-                  onClick={() => navigate(`/titles/${foundTitleId}`)}
+                  onClick={() => navigate(`/buyers/titles/${foundTitleId}`)}
                   className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
                   title={`View "${boldText}" details`}
                 >
@@ -785,7 +785,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
         });
       }
       
-      navigate(`/titles/${title.title_id}`);
+      navigate(`/buyers/titles/${title.title_id}`);
     };
 
     return (

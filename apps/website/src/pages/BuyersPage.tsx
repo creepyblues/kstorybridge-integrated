@@ -40,11 +40,6 @@ const BuyersPage = () => {
     setIsSubmitting(false);
   };
 
-  const handleTitleClick = (titleId: string) => {
-    navigate(`/title/${titleId}`);
-  };
-
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
       <UniversalHeader />
@@ -216,7 +211,6 @@ const BuyersPage = () => {
             
             <div className="mb-16">
               <FeaturedTitlesCarousel 
-                onTitleClick={handleTitleClick}
                 className=""
               />
             </div>

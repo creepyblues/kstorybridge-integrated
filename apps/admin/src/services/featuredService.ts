@@ -72,28 +72,30 @@ export const featuredService = {
     return data || [];
   },
 
-  // Get featured titles (for homepage-style display)
+  // Get featured titles (optimized for admin display)
   async getFeaturedTitles(): Promise<FeaturedWithTitle[]> {
     const { data, error } = await supabase
       .from('featured')
       .select(`
-        *,
+        id,
+        title_id,
+        note,
+        created_at,
+        updated_at,
         titles (
           title_id,
           title_name_en,
           title_name_kr,
           title_image,
-          tagline,
-          genre,
-          content_format,
-          story_author,
-          pitch
+          genre
         )
       `)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(10); // Limit featured titles for better performance
 
     if (error) {
-      throw new Error(`Failed to fetch featured titles: ${error.message}`);
+      console.warn('Failed to fetch featured titles:', error.message);
+      return []; // Return empty array instead of throwing
     }
 
     return data || [];

@@ -612,7 +612,7 @@ function TitlesContent() {
                   const currentTitles = filteredTitles.slice(startIndex, endIndex);
                   
                   return currentTitles.map((title) => (
-                    <Link key={title.title_id} to={`/titles/${title.title_id}`} className="block">
+                    <Link key={title.title_id} to={`/buyers/titles/${title.title_id}`} className="block">
                       {/* Desktop Table Row */}
                       <div className="hidden lg:grid px-4 sm:px-6 py-4 grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
                         {/* Desktop content - keeping existing structure */}

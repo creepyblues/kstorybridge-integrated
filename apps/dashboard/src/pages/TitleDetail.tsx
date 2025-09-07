@@ -14,6 +14,7 @@ import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
 import { useTierAccess } from "@/hooks/useTierAccess";
+import TestNewDesignLink from "@/components/TestNewDesignLink";
 
 function TitleDetailContent() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -827,6 +828,7 @@ function TitleDetailContent() {
         </div>
       )}
       
+      <TestNewDesignLink />
     </div>
   );
 }

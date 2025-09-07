@@ -35,14 +35,21 @@ export default function AdminLogin() {
       
       // Provide specific error messages based on error code
       if (error.message?.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please check your credentials.');
+        setError(`Invalid email or password. Please check your credentials. If you're sure the credentials are correct, the user might need email confirmation in Supabase Dashboard.`);
       } else if (error.message?.includes('Email not confirmed')) {
-        setError('Email not confirmed. Please check your email for confirmation link.');
+        setError('Email not confirmed. For admin access, please confirm the email via Supabase Dashboard > Authentication > Users.');
       } else if (error.message?.includes('Too many requests')) {
         setError('Too many login attempts. Please wait a few minutes and try again.');
       } else {
-        setError(`Login failed: ${error.message || 'Unknown error occurred'}`);
+        setError(`Login failed: ${error.message || 'Unknown error occurred'}. Full error details logged to console.`);
       }
+      
+      // Log full error details for debugging
+      console.error('Full login error details:', {
+        message: error.message,
+        code: error.status || error.code,
+        details: error
+      });
     } else {
       navigate('/titles');
     }

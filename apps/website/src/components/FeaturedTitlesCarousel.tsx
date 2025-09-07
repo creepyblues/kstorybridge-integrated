@@ -5,11 +5,10 @@ import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { featuredService, type FeaturedWithTitle } from '../services/featuredService';
 
 interface FeaturedTitlesCarouselProps {
-  onTitleClick?: (titleId: string) => void;
   className?: string;
 }
 
-const FeaturedTitlesCarousel = ({ onTitleClick, className = "" }: FeaturedTitlesCarouselProps) => {
+const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps) => {
   const [allFeaturedTitles, setAllFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -78,11 +77,7 @@ const FeaturedTitlesCarousel = ({ onTitleClick, className = "" }: FeaturedTitles
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const handleTitleClick = (titleId: string) => {
-    if (onTitleClick) {
-      onTitleClick(titleId);
-    }
-  };
+  // Links removed - cards are now display-only
 
   if (loading) {
     return (
@@ -145,8 +140,7 @@ const FeaturedTitlesCarousel = ({ onTitleClick, className = "" }: FeaturedTitles
           return (
             <Card 
               key={featured.id} 
-              className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col cursor-pointer"
-              onClick={() => handleTitleClick(title.title_id)}
+              className="bg-white rounded-xl border-0 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col"
             >
               <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">
                 {title.title_image ? (

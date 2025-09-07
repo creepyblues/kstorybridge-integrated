@@ -12,11 +12,10 @@ import {
 } from '@/design-system';
 
 interface FeaturedTitlesCarouselNewProps {
-  onTitleClick?: (titleId: string) => void;
   className?: string;
 }
 
-const FeaturedTitlesCarouselNew = ({ onTitleClick, className = "" }: FeaturedTitlesCarouselNewProps) => {
+const FeaturedTitlesCarouselNew = ({ className = "" }: FeaturedTitlesCarouselNewProps) => {
   const [allFeaturedTitles, setAllFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -85,11 +84,7 @@ const FeaturedTitlesCarouselNew = ({ onTitleClick, className = "" }: FeaturedTit
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const handleTitleClick = (titleId: string) => {
-    if (onTitleClick) {
-      onTitleClick(titleId);
-    }
-  };
+  // Links removed - cards are now display-only
 
   if (loading) {
     return (
@@ -149,8 +144,7 @@ const FeaturedTitlesCarouselNew = ({ onTitleClick, className = "" }: FeaturedTit
             <Card 
               key={featured.id} 
               variant="elevated"
-              className="group cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden"
-              onClick={() => handleTitleClick(title.title_id)}
+              className="group hover:shadow-xl transition-all duration-300 overflow-hidden"
             >
               {/* Title Image */}
               <div className="aspect-[3/4] bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal-100 flex items-center justify-center relative overflow-hidden">

@@ -268,7 +268,7 @@ export default function BuyerDashboardNew() {
         ) : filteredTitles.length > 0 ? (
           <DashboardGrid cols={4} gap="lg">
             {filteredTitles.slice(0, 12).map((title) => (
-              <Link key={title.title_id} to={`/titles/${title.title_id}`}>
+              <Link key={title.title_id} to={`/buyers/titles/${title.title_id}`}>
                 <DashboardCard hover className="h-full">
                   {/* Title Image */}
                   <div className="aspect-[3/4] bg-gradient-to-br from-primary-50 to-secondary-50 rounded-lg mb-4 overflow-hidden">

@@ -130,12 +130,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
-      }, 10000); // Reduced timeout to 10 seconds for faster feedback
+      }, 5000); // Reduced timeout to 5 seconds for faster feedback
 
       try {
         const { data, error } = await supabase
           .from('admin')
-          .select('*')
+          .select('id, email, full_name, active, created_at') // Only select existing fields
           .eq('email', email)
           .eq('active', true)
           .maybeSingle()

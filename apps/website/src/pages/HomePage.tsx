@@ -64,11 +64,6 @@ const HomePage = () => {
     checkForInvitationLink();
   }, [navigate]);
 
-  const handleTitleClick = (titleId: string) => {
-    navigate(`/title/${titleId}`);
-  };
-
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
       
@@ -130,7 +125,6 @@ const HomePage = () => {
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-8 sm:mb-12 text-center lg:text-left">FEATURED TITLES</h2>
           
           <FeaturedTitlesCarousel 
-            onTitleClick={handleTitleClick}
             className=""
           />
         </div>

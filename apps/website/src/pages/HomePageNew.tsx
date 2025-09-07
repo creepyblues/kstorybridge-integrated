@@ -39,10 +39,6 @@ const HomePageNew = () => {
   const isLoading = false;
   const isRedirecting = false;
 
-  const handleTitleClick = (titleId: string) => {
-    navigate(`/title/${titleId}`);
-  };
-
   return (
     <LandingLayout 
       title="KStoryBridge - Where Korean Stories Meet Global Screens"
@@ -144,7 +140,6 @@ const HomePageNew = () => {
             </div>
             
             <FeaturedTitlesCarouselNew 
-              onTitleClick={handleTitleClick}
               className=""
             />
           </Stack>

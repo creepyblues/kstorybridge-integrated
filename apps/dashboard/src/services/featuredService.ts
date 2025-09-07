@@ -88,7 +88,10 @@ export const featuredService = {
             genre,
             content_format,
             story_author,
-            pitch
+            pitch,
+            tone,
+            comps,
+            synopsis
           )
         `)
         .order('created_at', { ascending: false });

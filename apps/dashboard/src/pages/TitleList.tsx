@@ -413,32 +413,34 @@ function TitleListContent() {
               </Button>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-              {/* View Mode Toggle */}
-              <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('card')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-all ${
-                    viewMode === 'card'
-                      ? 'bg-white text-hanok-teal shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                  title="Card View"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                  <span className="text-sm font-medium">Card</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-all ${
-                    viewMode === 'list'
-                      ? 'bg-white text-hanok-teal shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                  title="List View"
-                >
-                  <ListIcon className="w-4 h-4" />
-                  <span className="text-sm font-medium">List</span>
-                </button>
+              {/* View Mode Toggle - Mobile: Right side, Desktop: Left side */}
+              <div className="flex items-center justify-end sm:justify-start">
+                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('card')}
+                    className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-md transition-all ${
+                      viewMode === 'card'
+                        ? 'bg-white text-hanok-teal shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                    title="Card View"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    <span className="text-sm font-medium hidden sm:inline">Card</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-md transition-all ${
+                      viewMode === 'list'
+                        ? 'bg-white text-hanok-teal shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                    title="List View"
+                  >
+                    <ListIcon className="w-4 h-4" />
+                    <span className="text-sm font-medium hidden sm:inline">List</span>
+                  </button>
+                </div>
               </div>
               {isCreatorView && (
                 <Link to="/creators/titles/add">
@@ -464,7 +466,7 @@ function TitleListContent() {
                 onFocus={() => setShowSuggestions(searchSuggestions.length > 0)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)} // Delay to allow clicking suggestions
                 disabled={searchLoading}
-                className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-porcelain-blue-50 border border-gray-300 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal focus:border-hanok-teal text-midnight-ink disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
                 {searchTerm && (
@@ -483,7 +485,7 @@ function TitleListContent() {
                   type="submit"
                   size="sm"
                   disabled={searchLoading}
-                  className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="bg-hanok-teal hover:bg-hanok-teal-600 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {/* Shine effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
@@ -495,8 +497,8 @@ function TitleListContent() {
                     <Search className="h-3 w-3 mr-1 pointer-events-none" />
                   )}
                   
-                  {/* Text */}
-                  <span className="relative z-10 pointer-events-none">
+                  {/* Text - Hide on mobile */}
+                  <span className="relative z-10 pointer-events-none hidden sm:inline">
                     {searchLoading ? 'Searching...' : 'Search'}
                   </span>
                   
@@ -526,15 +528,9 @@ function TitleListContent() {
             )}
 
             {/* Search Status Indicator */}
-            {(searchTerm || vectorSearchAvailable) && (
+            {searchTerm && (
               <div className="flex items-center justify-between mt-2 px-2">
                 <div className="flex items-center gap-2 text-xs text-midnight-ink-500">
-                  {vectorSearchAvailable && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-hanok-teal/10 text-hanok-teal rounded-full">
-                      <div className="w-2 h-2 bg-hanok-teal rounded-full animate-pulse"></div>
-                      AI Search Active
-                    </span>
-                  )}
                   {searchTerm && searchResults.length > 0 && (
                     <span className="text-midnight-ink-600">
                       {searchResults.length} results • {searchType === 'vector' ? 'Semantic' : searchType === 'hybrid' ? 'AI + Text' : 'Text'} search

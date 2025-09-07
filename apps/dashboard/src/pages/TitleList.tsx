@@ -554,13 +554,13 @@ function TitleListContent() {
                 {/* Pitch deck filter */}
                 <button 
                   onClick={() => setShowOnlyWithPitch(!showOnlyWithPitch)}
-                  className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors duration-200 ${
+                  className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border-2 transition-colors duration-200 ${
                     showOnlyWithPitch 
                       ? 'bg-hanok-teal text-white border-hanok-teal' 
-                      : 'bg-hanok-teal/10 text-hanok-teal border-hanok-teal/20 hover:bg-hanok-teal hover:text-white'
+                      : 'bg-hanok-teal/10 text-hanok-teal border-hanok-teal/40 hover:bg-hanok-teal hover:text-white'
                   }`}
                 >
-                  titles with pitch deck
+                  pitch deck available only
                 </button>
                 
                 {/* Genre filters */}

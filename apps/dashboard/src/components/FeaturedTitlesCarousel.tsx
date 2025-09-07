@@ -143,49 +143,51 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
                       </div>
 
                       {/* Right Section - Title Details */}
-                      <div className="flex-1 md:w-[70%] p-3 md:p-6 lg:p-8 flex flex-col">
-                        {/* Title Section - Fixed Height */}
-                        <div className="h-[4rem] mb-2 flex flex-col justify-start overflow-hidden">
-                          <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-midnight-ink mb-1 md:mb-2 line-clamp-2 group-hover:text-hanok-teal transition-colors duration-300 leading-tight">
-                            {title.title_name_en || title.title_name_kr}
-                          </h2>
-                          
-                          {title.title_name_en && title.title_name_kr && (
-                            <p className="text-sm md:text-lg text-midnight-ink-500 line-clamp-1 font-medium leading-tight">
-                              {title.title_name_kr}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Horizontal divider */}
-                        <div className="w-full h-px bg-gray-300 mb-3"></div>
-
-                        {/* Note Section - Fixed Height */}
-                        <div className="h-[3rem] mb-3 flex items-start overflow-hidden">
-                          {featured.note ? (
-                            <div className="w-full p-2 bg-red-50 border-l-4 border-r-4 rounded-lg overflow-hidden" style={{borderColor: '#FF6B6B'}}>
-                              <p className="text-xs italic leading-tight line-clamp-2 overflow-hidden" style={{color: '#FF6B6B'}}>
-                                "{featured.note}"
+                      <div className="flex-1 md:w-[70%] p-3 md:p-6 lg:p-8 flex flex-col justify-between">
+                        <div className="flex-1">
+                          {/* Title Section - Fixed Height */}
+                          <div className="h-[4.5rem] md:h-[6rem] mb-2 md:mb-3 flex flex-col justify-start overflow-hidden">
+                            <h2 className="text-base md:text-xl lg:text-2xl font-bold text-midnight-ink mb-1 md:mb-2 line-clamp-2 group-hover:text-hanok-teal transition-colors duration-300 leading-tight">
+                              {title.title_name_en || title.title_name_kr}
+                            </h2>
+                            
+                            {title.title_name_en && title.title_name_kr && (
+                              <p className="text-sm md:text-base text-midnight-ink-500 line-clamp-1 font-medium leading-tight">
+                                {title.title_name_kr}
                               </p>
-                            </div>
-                          ) : (
-                            <div className="w-full"></div>
-                          )}
+                            )}
+                          </div>
+
+                          {/* Horizontal divider */}
+                          <div className="w-full h-px bg-gray-300 mb-3"></div>
+
+                          {/* Note Section - Fixed Height */}
+                          <div className="h-[3rem] mb-3 flex items-start overflow-hidden">
+                            {featured.note ? (
+                              <div className="w-full p-2 md:p-3 bg-red-50 border-l-4 border-r-4 rounded-lg overflow-hidden" style={{borderColor: '#FF6B6B'}}>
+                                <p className="text-xs md:text-sm italic leading-tight line-clamp-2 overflow-hidden" style={{color: '#FF6B6B'}}>
+                                  "{featured.note}"
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="w-full"></div>
+                            )}
+                          </div>
+
+                          {/* Synopsis Section - More Lines */}
+                          <div className="flex-1 flex items-start overflow-hidden mb-3">
+                            {title.synopsis ? (
+                              <p className="text-xs md:text-sm text-midnight-ink-600 line-clamp-4 leading-relaxed font-light overflow-hidden">
+                                {title.synopsis}
+                              </p>
+                            ) : (
+                              <div></div>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Synopsis Section - Fixed Height */}
-                        <div className="h-[2.5rem] mb-3 flex items-start overflow-hidden">
-                          {title.synopsis ? (
-                            <p className="text-xs text-midnight-ink-600 line-clamp-2 leading-tight font-light overflow-hidden">
-                              {title.synopsis}
-                            </p>
-                          ) : (
-                            <div></div>
-                          )}
-                        </div>
-
-                        {/* Tags Section - Fixed Height */}
-                        <div className="h-[4rem] flex flex-wrap items-start gap-1 overflow-hidden">
+                        {/* Tags Section - Always at Bottom */}
+                        <div className="h-[4rem] flex flex-wrap items-end gap-1 overflow-hidden mt-auto">
                           {/* Genre badges */}
                           {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
                             <>

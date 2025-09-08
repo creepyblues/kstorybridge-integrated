@@ -38,7 +38,7 @@ function TitleListContent() {
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
-  const [activeGenreFilter, setActiveGenreFilter] = useState<string | null>(null);
+  // activeGenreFilter removed since genre filters are no longer used
   
   // Enhanced search state
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -119,6 +119,8 @@ function TitleListContent() {
     setSearchTerm(query);
     setShowSuggestions(false);
     
+    // Genre filters removed - no filter clearing needed
+    
     if (!query) {
       setSearchResults([]);
       setCurrentPage(1);
@@ -133,14 +135,13 @@ function TitleListContent() {
         query,
         titles,
         {
-          showOnlyWithPitch,
-          activeGenreFilter
+          showOnlyWithPitch
         },
         {
           useVectorSearch: vectorSearchAvailable,
           userId: user?.id,
           hybridMode: true,
-          maxResults: 100 // Get more results for better ranking
+          maxResults: 28 // Reduced for higher quality, more relevant results
         }
       );
 
@@ -272,8 +273,8 @@ function TitleListContent() {
   };
 
   const filteredTitles = (() => {
-    // If we have search results from enhanced search, use those
-    if (searchTerm && searchResults.length > 0) {
+    // If we have search results from enhanced search (either from search term or active filter), use those
+    if (searchResults.length > 0) {
       return searchResults.map(result => result.title);
     }
     
@@ -283,18 +284,6 @@ function TitleListContent() {
     // Apply pitch filter first
     if (showOnlyWithPitch) {
       result = result.filter(title => title.pitch && title.pitch.trim() !== '');
-    }
-    
-    // Apply genre filter - use the same search logic as regular search
-    if (activeGenreFilter) {
-      const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
-        result,
-        activeGenreFilter,
-        getTitleSearchFields()
-      );
-      
-      // Combine all matches
-      result = [...exactMatches, ...phraseMatches, ...expandedMatches];
     }
     
     // Apply search filter (fallback for non-enhanced search)
@@ -315,7 +304,7 @@ function TitleListContent() {
   // Reset pagination when search term, sorting, or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortField, sortDirection, showOnlyWithPitch, activeGenreFilter]);
+  }, [searchTerm, sortField, sortDirection, showOnlyWithPitch]);
 
   const formatGenre = (genre: string | string[]) => {
     if (Array.isArray(genre)) {
@@ -328,21 +317,9 @@ function TitleListContent() {
     return format.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const genreFilters = [
-    "Romantasy", "Contemporary Romance", "rom-com", "romantic thriller", "LGBTQ+ Romance",
-    "spy thriller", "crime thriller", "comedy", "slice of life", "character drama",
-    "true story", "action", "high fantasy", "supernatural drama", "horror",
-    "grounded sci-fi", "sci-fi"
-  ];
+  // Genre filters removed - keeping only pitch deck filter
 
-  const handleGenreFilter = (genre: string) => {
-    // Toggle: if same genre is clicked, clear it; otherwise set the new genre
-    if (activeGenreFilter === genre) {
-      setActiveGenreFilter(null);
-    } else {
-      setActiveGenreFilter(genre);
-    }
-  };
+  // Genre filter handler removed since genre filters are no longer used
 
   const SortableHeader = ({ field, children, className = "" }: { 
     field: string; 
@@ -533,7 +510,7 @@ function TitleListContent() {
           {/* Filters Section */}
           <div className="mb-6 sm:mb-8">
             <div className="flex items-start gap-3 flex-wrap">
-              <span className="text-sm font-bold text-hanok-teal mt-1">POPULAR FILTERS:</span>
+              <span className="text-sm font-bold text-hanok-teal mt-1">FILTER:</span>
               <div className="flex flex-wrap gap-2">
                 {/* Pitch deck filter */}
                 <button 
@@ -546,36 +523,18 @@ function TitleListContent() {
                 >
                   pitch deck available only
                 </button>
-                
-                {/* Genre filters */}
-                {genreFilters.map((genre) => (
-                  <button 
-                    key={genre}
-                    onClick={() => handleGenreFilter(genre)}
-                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors duration-200 ${
-                      activeGenreFilter === genre
-                        ? 'bg-purple-600 text-white border-purple-600' 
-                        : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-600 hover:text-white hover:border-purple-600'
-                    }`}
-                  >
-                    {genre}
-                  </button>
-                ))}
               </div>
             </div>
             
             {/* Active filters summary */}
-            {(showOnlyWithPitch || activeGenreFilter) && (
+            {showOnlyWithPitch && (
               <div className="mt-3 text-xs text-midnight-ink-500">
-                Active filters: {showOnlyWithPitch && "Pitch deck"}{showOnlyWithPitch && activeGenreFilter && ", "}{activeGenreFilter}
+                Active filters: Pitch deck
                 <button 
-                  onClick={() => {
-                    setShowOnlyWithPitch(false);
-                    setActiveGenreFilter(null);
-                  }}
+                  onClick={() => setShowOnlyWithPitch(false)}
                   className="ml-2 text-hanok-teal hover:text-hanok-teal-600 underline"
                 >
-                  Clear all
+                  Clear
                 </button>
               </div>
             )}

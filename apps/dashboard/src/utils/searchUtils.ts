@@ -6,10 +6,14 @@ const KEYWORD_MAPPINGS: Record<string, string[]> = {
   "romantasy": ["romance", "fantasy"],
   "romcom": ["romance", "comedy"], 
   "romfan": ["romance", "fantasy"],
+  "contemporary romance": ["romance", "modern", "current", "present day", "realistic", "urban", "city", "office", "workplace", "college", "university", "adult", "mature"],
+  "contemporary": ["modern", "current", "present day", "realistic", "urban", "today", "now"],
+  "modern romance": ["romance", "contemporary", "current", "present day", "realistic", "urban", "city", "workplace"],
   "scifi": ["sci_fi", "science_fiction"],
   "sciencefiction": ["sci_fi", "science", "fiction"],
-  "sliceoflife": ["slice_of_life", "daily", "life"],
-  "sol": ["slice_of_life"],
+  "sliceoflife": ["slice_of_life", "daily", "everyday", "ordinary", "mundane", "peaceful"],
+  "sol": ["slice_of_life", "everyday", "daily"],
+  "slice of life": ["slice_of_life", "everyday", "daily", "ordinary", "mundane", "peaceful"],
   "bl": ["boys_love", "yaoi", "romance"],
   "gl": ["girls_love", "yuri", "romance"],
   "yaoi": ["boys_love", "bl", "romance"],
@@ -26,6 +30,8 @@ const KEYWORD_MAPPINGS: Record<string, string[]> = {
   "wholesome": ["slice_of_life", "comedy", "heartwarming"],
   "fluffy": ["romance", "comedy", "wholesome"],
   "angsty": ["drama", "tragedy", "emotional"],
+  "dramedy": ["drama", "comedy", "lighthearted", "comedic", "humorous", "uplifting", "feel_good", "heartwarming", "witty", "satirical", "funny"],
+  "drama-comedy": ["drama", "comedy", "lighthearted", "comedic", "humorous", "uplifting", "feel_good", "heartwarming", "witty", "satirical", "funny"],
   "enemies2lovers": ["romance", "drama"],
   "enemiestolovers": ["romance", "drama"],
   "slowburn": ["romance", "drama"],
@@ -156,6 +162,24 @@ const PRODUCER_PHRASES: Record<string, string[]> = {
   "social media buzz": ["viral", "trending", "shareable", "memeable"],
 };
 
+// Exclusion keywords - content that should NOT be included for certain search terms
+const EXCLUSION_KEYWORDS: Record<string, string[]> = {
+  "slice of life": ["thriller", "horror", "suspense", "suspenseful", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing", "mature", "explicit", "sexual", "adult", "serious drama", "heavy", "intense", "thrilling", "exciting", "assault", "coma", "counterterrorism", "mafia", "zombie", "deadly", "desperate", "bizarre", "phenomenon", "cold-blooded", "spicy", "erotic", "grounded"],
+  "sliceoflife": ["thriller", "horror", "suspense", "suspenseful", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing", "mature", "explicit", "sexual", "adult", "serious drama", "heavy", "intense", "thrilling", "exciting", "assault", "coma", "counterterrorism", "mafia", "zombie", "deadly", "desperate", "bizarre", "phenomenon", "cold-blooded", "spicy", "erotic", "grounded"],
+  "sol": ["thriller", "horror", "suspense", "suspenseful", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing", "mature", "explicit", "sexual", "adult", "serious drama", "heavy", "intense", "thrilling", "exciting", "assault", "coma", "counterterrorism", "mafia", "zombie", "deadly", "desperate", "bizarre", "phenomenon", "cold-blooded", "spicy", "erotic", "grounded"],
+  "contemporary romance": ["duke", "duchess", "prince", "princess", "king", "queen", "royal", "nobility", "noble", "noblewoman", "nobleman", "lord", "lady", "earl", "count", "countess", "baron", "baroness", "marquess", "marquis", "viscount", "viscountess", "medieval", "historical", "period", "kingdom", "empire", "castle", "palace", "manor", "estate", "regency", "victorian", "elizabethan", "tudor", "renaissance", "ancient", "fairytale", "fairy tale", "fantasy", "magical", "enchanted", "mythical", "legend", "folklore", "once upon", "happily ever after", "crown", "throne", "court", "courtier", "ballroom", "ball", "masquerade", "carriage", "servant", "maid", "butler", "governess", "corset", "gown", "bodice", "breeches", "riding habit"],
+  "contemporary": ["duke", "duchess", "prince", "princess", "king", "queen", "royal", "nobility", "noble", "noblewoman", "nobleman", "lord", "lady", "earl", "count", "countess", "baron", "baroness", "marquess", "marquis", "viscount", "viscountess", "medieval", "historical", "period", "kingdom", "empire", "castle", "palace", "manor", "estate", "regency", "victorian", "elizabethan", "tudor", "renaissance", "ancient", "fairytale", "fairy tale", "fantasy", "magical", "enchanted", "mythical", "legend", "folklore", "once upon", "happily ever after", "crown", "throne", "court", "courtier", "ballroom", "ball", "masquerade", "carriage", "devil", "sacrifice", "oak tree", "wolf", "beast", "demon", "sorcerer", "witch", "wizard", "spell", "curse", "cursed", "forbidden", "supernatural", "otherworldly", "realm", "immortal", "divine", "sacred", "ritual", "dragons", "knights", "sword", "armor", "quest", "epic"],
+  "modern romance": ["duke", "duchess", "prince", "princess", "king", "queen", "royal", "nobility", "noble", "noblewoman", "nobleman", "lord", "lady", "earl", "count", "countess", "baron", "baroness", "marquess", "marquis", "viscount", "viscountess", "medieval", "historical", "period", "kingdom", "empire", "castle", "palace", "manor", "estate", "regency", "victorian", "elizabethan", "tudor", "renaissance", "ancient", "fairytale", "fairy tale", "fantasy", "magical", "enchanted", "mythical", "legend", "folklore", "devil", "sacrifice", "oak tree", "wolf", "beast", "demon", "sorcerer", "witch", "wizard", "spell", "curse", "cursed", "forbidden", "prophecy", "destiny", "fated", "supernatural", "otherworldly", "realm", "dimension", "immortal", "eternal", "divine", "sacred", "ritual", "summoned", "banished", "dark magic", "light magic", "elemental", "dragons", "knights", "sword", "armor", "shield", "quest", "adventure", "epic"],
+  "wholesome": ["thriller", "horror", "suspense", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing", "mature", "explicit", "sexual", "adult"],
+  "heartwarming": ["thriller", "horror", "suspense", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing"],
+  "feel good": ["thriller", "horror", "suspense", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing"],
+  "lighthearted": ["thriller", "horror", "suspense", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing"],
+  "peaceful": ["thriller", "horror", "suspense", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing"],
+  "cozy": ["thriller", "horror", "suspense", "murder", "death", "killing", "violence", "dark", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing"],
+  "dramedy": ["thriller", "horror", "suspense", "murder", "death", "killing", "violence", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing", "heavy", "intense", "serious drama", "tragic", "tragedy", "heartbreaking", "devastating", "depressing", "melancholy", "bleak", "grim", "somber", "morbid", "anguish", "suffering", "pain", "grief", "loss", "despair", "hopeless", "dark secrets", "scandal", "conspiracy", "espionage", "counterterrorism", "mafia", "organized crime", "assassination", "terrorist", "deadly", "fatal", "suicide", "self-harm", "mental illness", "addiction", "overdose", "relapse", "breakdown", "crisis", "emergency", "disaster", "catastrophe", "war", "battle", "conflict", "enemy", "spy", "agent", "undercover", "mission", "operation", "target", "elimination", "termination", "execution"],
+  "drama-comedy": ["thriller", "horror", "suspense", "murder", "death", "killing", "violence", "psychological", "mystery", "crime", "blood", "revenge", "betrayal", "manipulation", "toxic", "abuse", "trauma", "disturbing", "heavy", "intense", "serious drama", "tragic", "tragedy", "heartbreaking", "devastating", "depressing", "melancholy", "bleak", "grim", "somber", "morbid", "anguish", "suffering", "pain", "grief", "loss", "despair", "hopeless", "dark secrets", "scandal", "conspiracy", "espionage", "counterterrorism", "mafia", "organized crime", "assassination", "terrorist", "deadly", "fatal", "suicide", "self-harm", "mental illness", "addiction", "overdose", "relapse", "breakdown", "crisis", "emergency", "disaster", "catastrophe", "war", "battle", "conflict", "enemy", "spy", "agent", "undercover", "mission", "operation", "target", "elimination", "termination", "execution"],
+};
+
 /**
  * Calculate simple string similarity (Jaccard similarity for character bigrams)
  */
@@ -231,7 +255,7 @@ export function expandSearchTerms(searchTerm: string): {
     });
   }
   
-  // Fuzzy matching against known keywords (similarity > 0.7)
+  // Fuzzy matching against known keywords (similarity > 0.82) - Increased for better precision
   const allKnownTerms = [
     ...Object.keys(KEYWORD_MAPPINGS),
     ...Object.values(KEYWORD_MAPPINGS).flat(),
@@ -241,7 +265,7 @@ export function expandSearchTerms(searchTerm: string): {
   
   for (const knownTerm of allKnownTerms) {
     const similarity = calculateSimilarity(normalizedTerm, knownTerm);
-    if (similarity > 0.7 && similarity < 1) {
+    if (similarity > 0.82 && similarity < 1) {
       fuzzyTerms.add(knownTerm);
       // Add mappings for fuzzy matches too
       if (KEYWORD_MAPPINGS[knownTerm]) {
@@ -359,6 +383,37 @@ export function enhancedSearch<T extends Record<string, unknown>>(
           }
         }
       }
+    }
+    
+    // Check for exclusion keywords - if any exclusion keywords are found, skip this item
+    const shouldExclude = keywords.some(keyword => {
+      const exclusionList = EXCLUSION_KEYWORDS[keyword.toLowerCase()];
+      if (!exclusionList) return false;
+      
+      // Check all searchable text from all fields for exclusion keywords
+      const allText = searchFields
+        .map(field => {
+          const fieldValue = item[field];
+          if (!fieldValue) return '';
+          if (Array.isArray(fieldValue)) return fieldValue.join(' ').toLowerCase();
+          return String(fieldValue).toLowerCase();
+        })
+        .join(' ');
+      
+      const hasExcludedTerm = exclusionList.some(excludeTerm => allText.includes(excludeTerm.toLowerCase()));
+      
+      // Debug logging for problematic titles
+      if (hasExcludedTerm) {
+        const titleName = (item as any).title_name_en || (item as any).title_name_kr || 'Unknown';
+        const matchedTerms = exclusionList.filter(excludeTerm => allText.includes(excludeTerm.toLowerCase()));
+        console.log(`🚫 EXCLUDING "${titleName}" from "${keyword}" search - matched terms:`, matchedTerms);
+      }
+      
+      return hasExcludedTerm;
+    });
+    
+    if (shouldExclude) {
+      continue; // Skip this item entirely
     }
     
     // Prioritize matches based on type and score

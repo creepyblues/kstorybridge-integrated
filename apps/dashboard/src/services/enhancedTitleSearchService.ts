@@ -26,8 +26,8 @@ export interface SearchResponse {
 }
 
 class EnhancedTitleSearchService {
-  private readonly DEFAULT_VECTOR_THRESHOLD = 0.65;
-  private readonly DEFAULT_MAX_RESULTS = 50;
+  private readonly DEFAULT_VECTOR_THRESHOLD = 0.76; // Increased from 0.65 for better relevance
+  private readonly DEFAULT_MAX_RESULTS = 28; // Reduced from 50 to focus on quality
   private readonly HYBRID_BOOST_FACTOR = 1.2; // Boost factor for titles that match both vector and traditional search
 
   /**
@@ -113,19 +113,24 @@ class EnhancedTitleSearchService {
       getTitleSearchFields()
     );
 
-    // Convert traditional results to SearchResult format
+    // Convert traditional results to SearchResult format with quality thresholds
     const convertToSearchResults = (matches: Title[], matchType: 'exact' | 'phrase' | 'expanded'): SearchResult[] => {
       const scoreMap = {
         'exact': 100,
         'phrase': 80,
         'expanded': 60
       };
+      
+      // Minimum score thresholds for quality control
+      const minScoreThreshold = 70; // Only show results with score >= 70
 
-      return matches.map(title => ({
-        title,
-        score: scoreMap[matchType],
-        matchType
-      }));
+      return matches
+        .map(title => ({
+          title,
+          score: scoreMap[matchType],
+          matchType
+        }))
+        .filter(result => result.score >= minScoreThreshold); // Filter out low-quality matches
     };
 
     traditionalResults = [
@@ -226,31 +231,19 @@ class EnhancedTitleSearchService {
     titles: Title[],
     filters: {
       showOnlyWithPitch?: boolean;
-      activeGenreFilter?: string | null;
     },
     options: SearchOptions = {}
   ): Promise<SearchResponse> {
-    // Apply filters first
+    // Apply only pitch filter - remove genre filter double-processing
     let filteredTitles = titles;
     
     if (filters.showOnlyWithPitch) {
       filteredTitles = filteredTitles.filter(title => title.pitch && title.pitch.trim() !== '');
     }
     
-    if (filters.activeGenreFilter) {
-      // Apply genre filter using traditional search to maintain existing behavior
-      const genreSearchResults = enhancedSearch(
-        filteredTitles,
-        filters.activeGenreFilter,
-        getTitleSearchFields()
-      );
-      filteredTitles = [
-        ...genreSearchResults.exactMatches,
-        ...genreSearchResults.phraseMatches,
-        ...genreSearchResults.expandedMatches
-      ];
-    }
-
+    // No longer pre-filter by genre - let the main search handle the query directly
+    // This ensures search and filter use identical logic
+    
     // Perform search on filtered titles
     return this.searchTitles(query, filteredTitles, options);
   }

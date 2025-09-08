@@ -395,16 +395,16 @@ class VectorSearchService {
         .insert({
           user_id: context.user_id,
           session_id: sessionId,
-          original_query: analytics.query,
+          query: analytics.query,
           search_type: analytics.search_type,
           result_count: analytics.result_count,
-          search_duration_ms: analytics.search_duration_ms,
-          top_similarity_scores: analytics.similarity_scores?.slice(0, 5) || [],
-          embedding_model: 'text-embedding-ada-002'
+          search_duration_ms: analytics.search_duration_ms
         });
 
       if (error) {
         console.error('Error recording search analytics:', error);
+      } else {
+        console.log('✅ Vector search analytics recorded:', analytics.query);
       }
     } catch (error) {
       console.error('Exception recording search analytics:', error);

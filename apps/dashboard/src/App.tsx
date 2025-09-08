@@ -49,6 +49,7 @@ const VectorSearchManager = lazy(() => import("./pages/VectorSearchManager"));
 const OpenAITest = lazy(() => import("./pages/OpenAITest"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
 const ChatbotFeedbackAnalysis = lazy(() => import("./pages/ChatbotFeedbackAnalysis"));
+const SearchAnalytics = lazy(() => import("./pages/SearchAnalytics"));
 const Experiment = lazy(() => import("./pages/Experiment"));
 
 // Authentication pages
@@ -281,6 +282,11 @@ const App = () => (
                 {/* Chatbot Feedback Analysis - admin only */}
                 <Route path="/chatbot-feedback" element={
                   <ProtectedLayout><ChatbotFeedbackAnalysis /></ProtectedLayout>
+                } />
+                
+                {/* Search Analytics Dashboard */}
+                <Route path="/search-analytics" element={
+                  <ProtectedLayout><SearchAnalytics /></ProtectedLayout>
                 } />
                 
                 {/* Experiment page - admin only */}

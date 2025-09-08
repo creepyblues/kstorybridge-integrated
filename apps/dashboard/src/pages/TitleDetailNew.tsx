@@ -31,7 +31,6 @@ function TitleDetailNewContent() {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState<boolean>(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   const [currentPdfUrl, setCurrentPdfUrl] = useState<string>("");
-  const [synopsisExpanded, setSynopsisExpanded] = useState<boolean>(false);
   
   // Sample PDF URL from Supabase storage (properly encoded)
   const SAMPLE_PDF_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/Werewolves%20Going%20Crazy%20Over%20Me-Sample.pdf";
@@ -136,9 +135,6 @@ function TitleDetailNewContent() {
     );
   }
 
-  const truncatedSynopsis = title.synopsis && title.synopsis.length > 200 
-    ? title.synopsis.substring(0, 200) + "..." 
-    : title.synopsis;
 
   return (
     <div className="space-y-6">
@@ -372,21 +368,9 @@ function TitleDetailNewContent() {
             <CardContent>
               <div className="space-y-4">
                 {title.synopsis ? (
-                  <div>
-                    <p className="text-slate-700 leading-relaxed">
-                      {synopsisExpanded ? title.synopsis : truncatedSynopsis}
-                    </p>
-                    {title.synopsis.length > 200 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSynopsisExpanded(!synopsisExpanded)}
-                        className="mt-2 text-hanok-teal hover:text-hanok-teal/80 p-0 h-auto font-normal"
-                      >
-                        {synopsisExpanded ? "Show Less" : "Read More"}
-                      </Button>
-                    )}
-                  </div>
+                  <p className="text-slate-700 leading-relaxed">
+                    {title.synopsis}
+                  </p>
                 ) : (
                   <p className="text-slate-500 italic">No synopsis available for this title.</p>
                 )}

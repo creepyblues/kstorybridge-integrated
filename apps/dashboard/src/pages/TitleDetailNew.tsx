@@ -140,11 +140,28 @@ function TitleDetailNewContent() {
     <div className="space-y-6">
       {/* Hero Section - Full Width */}
       <div>
-        <div className="max-w-6xl mx-auto py-8 px-4">
+        <div className="max-w-6xl mx-auto py-6 sm:py-8 px-3 sm:px-4">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1 min-w-0">
-              <div className="flex items-start gap-6 mb-4">
-                {/* Cover Image - Larger and more prominent */}
+              {/* Mobile: Full width image first */}
+              <div className="sm:hidden mb-4">
+                <div className="w-full h-48 bg-gray-100 rounded-xl overflow-hidden shadow-xl ring-1 ring-slate-200">
+                  {title.title_image ? (
+                    <img 
+                      src={title.title_image} 
+                      alt={title.title_name_en || title.title_name_kr}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-hanok-teal/10 to-hanok-teal/20 flex items-center justify-center">
+                      <BookOpen className="w-10 h-10 text-hanok-teal" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Desktop: Side-by-side layout */}
+              <div className="hidden sm:flex sm:items-start gap-4 sm:gap-6 mb-4">
                 <div className="w-32 h-44 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-xl ring-1 ring-slate-200">
                   {title.title_image ? (
                     <img 
@@ -159,18 +176,18 @@ function TitleDetailNewContent() {
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-3 leading-tight">
+                <div className="flex-1 min-w-0 text-center sm:text-left">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 mb-2 sm:mb-3 leading-tight">
                     {title.title_name_en || title.title_name_kr}
                   </h1>
                   {title.title_name_kr && title.title_name_en && (
-                    <p className="text-xl text-slate-600 font-medium mb-4">
+                    <p className="text-lg sm:text-xl text-slate-600 font-medium mb-3 sm:mb-4">
                       {title.title_name_kr}
                     </p>
                   )}
                   
-                  {/* Author info - enhanced for hero */}
-                  <div className="flex flex-wrap gap-6 text-base text-slate-600">
+                  {/* Author info - Story and Art on same line */}
+                  <div className="flex flex-row flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-slate-600 justify-center sm:justify-start">
                     {title.story_author && (
                       <span className="flex items-center gap-2">
                         <span className="font-semibold text-hanok-teal">Story:</span> 
@@ -185,8 +202,53 @@ function TitleDetailNewContent() {
                     )}
                   </div>
 
-                  {/* Quick stats in hero */}
-                  <div className="flex items-center gap-6 mt-4 text-sm text-slate-500">
+                  {/* Quick stats - views/chapters/status in one line */}
+                  <div className="flex flex-row items-center gap-3 sm:gap-6 mt-3 sm:mt-4 text-xs sm:text-sm text-slate-500 justify-center sm:justify-start flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="font-medium">{formatViews(title.views || 0)} views</span>
+                    </div>
+                    {title.chapters && (
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="font-medium">{title.chapters.toLocaleString()} chapters</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="font-medium">{title.completed ? 'Completed' : 'Ongoing'}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex-1 min-w-0 text-left">
+                  <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 mb-2 sm:mb-3 leading-tight">
+                    {title.title_name_en || title.title_name_kr}
+                  </h1>
+                  {title.title_name_kr && title.title_name_en && (
+                    <p className="text-xl text-slate-600 font-medium mb-3 sm:mb-4">
+                      {title.title_name_kr}
+                    </p>
+                  )}
+                  
+                  {/* Author info - Story and Art on same line */}
+                  <div className="flex flex-row flex-wrap gap-6 text-base text-slate-600 justify-start">
+                    {title.story_author && (
+                      <span className="flex items-center gap-2">
+                        <span className="font-semibold text-hanok-teal">Story:</span> 
+                        <span className="font-medium">{title.story_author}</span>
+                      </span>
+                    )}
+                    {title.art_author && (
+                      <span className="flex items-center gap-2">
+                        <span className="font-semibold text-hanok-teal">Art:</span> 
+                        <span className="font-medium">{title.art_author}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Quick stats - views/chapters/status in one line */}
+                  <div className="flex flex-row items-center gap-6 mt-4 text-sm text-slate-500 justify-start flex-wrap">
                     <div className="flex items-center gap-2">
                       <Eye className="h-4 w-4" />
                       <span className="font-medium">{formatViews(title.views || 0)} views</span>
@@ -204,21 +266,67 @@ function TitleDetailNewContent() {
                   </div>
                 </div>
               </div>
+              
+              {/* Mobile: Content section */}
+              <div className="sm:hidden">
+                <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight text-center">
+                  {title.title_name_en || title.title_name_kr}
+                </h1>
+                {title.title_name_kr && title.title_name_en && (
+                  <p className="text-lg text-slate-600 font-medium mb-3 text-center">
+                    {title.title_name_kr}
+                  </p>
+                )}
+                
+                {/* Author info - Story and Art on same line */}
+                <div className="flex flex-row flex-wrap gap-4 text-sm text-slate-600 justify-center">
+                  {title.story_author && (
+                    <span className="flex items-center gap-2">
+                      <span className="font-semibold text-hanok-teal">Story:</span> 
+                      <span className="font-medium">{title.story_author}</span>
+                    </span>
+                  )}
+                  {title.art_author && (
+                    <span className="flex items-center gap-2">
+                      <span className="font-semibold text-hanok-teal">Art:</span> 
+                      <span className="font-medium">{title.art_author}</span>
+                    </span>
+                  )}
+                </div>
+
+                {/* Quick stats - views/chapters/status in one line */}
+                <div className="flex flex-row items-center gap-3 mt-3 text-xs text-slate-500 justify-center flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-3 w-3" />
+                    <span className="font-medium">{formatViews(title.views || 0)} views</span>
+                  </div>
+                  {title.chapters && (
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-3 w-3" />
+                      <span className="font-medium">{title.chapters.toLocaleString()} chapters</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-3 w-3" />
+                    <span className="font-medium">{title.completed ? 'Completed' : 'Ongoing'}</span>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            {/* Action Buttons - Enhanced for hero */}
-            <div className="flex gap-3">
+            {/* Action Buttons - Evenly distributed and balanced */}
+            <div className="flex flex-row gap-2 sm:gap-3 w-full lg:w-auto justify-center lg:justify-end">
                 {isAuthenticated && (
                   <Button
                     onClick={handleFavoriteToggle}
                     disabled={favoriteLoading}
                     variant="outline"
-                    className={`px-5 py-3 shadow-md hover:shadow-lg transition-all duration-200 ${isFavorited 
+                    className={`flex-1 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200 ${isFavorited 
                       ? "border-hanok-teal text-hanok-teal bg-hanok-teal/5 hover:bg-hanok-teal/10" 
                       : "border-purple-500 text-slate-600 hover:border-purple-600 hover:text-purple-600 hover:bg-purple-50"
                     }`}
                   >
-                    <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current" : ""}`} />
+                    <Heart className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${isFavorited ? "fill-current" : ""}`} />
                     {isFavorited ? "Saved" : "Save"}
                   </Button>
                 )}
@@ -227,10 +335,10 @@ function TitleDetailNewContent() {
                   <Button
                     asChild
                     variant="outline"
-                    className="border-purple-500 text-slate-600 hover:bg-purple-50 hover:border-purple-600 px-5 py-3 shadow-md hover:shadow-lg transition-all duration-200"
+                    className="flex-1 border-purple-500 text-slate-600 hover:bg-purple-50 hover:border-purple-600 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200"
                   >
                     <a href={title.title_url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       View Original
                     </a>
                   </Button>
@@ -241,11 +349,11 @@ function TitleDetailNewContent() {
       </div>
 
       {/* Content Area */}
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4">
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Left Column - Business Critical Info (2/5) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           
           {/* Key Business Info Panel */}
           <Card className="bg-white border-gray-200 shadow-sm">
@@ -258,12 +366,14 @@ function TitleDetailNewContent() {
               <div className="space-y-4">
               
                 {/* Rights Owner */}
-                <div className="flex items-center justify-between">
-                  <h5 className="font-medium text-slate-700">Rights Owner</h5>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Rights Owner</h5>
+                    <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                       {title.rights_owner || title.rights || "Not specified"}
                     </span>
+                  </div>
+                  <div className="flex justify-end mt-2">
                     <Button
                       onClick={() => {
                         setPremiumFeatureName("Contact Creator");
@@ -282,7 +392,7 @@ function TitleDetailNewContent() {
                 <div className="flex items-center justify-between">
                   <h5 className="font-medium text-slate-700">Perfect For</h5>
                   <OptimizedTierGatedContent requiredTier="basic">
-                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
+                    <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                       {title.perfect_for || "Not specified"}
                     </span>
                   </OptimizedTierGatedContent>
@@ -292,7 +402,7 @@ function TitleDetailNewContent() {
                 <div className="flex items-center justify-between">
                   <h5 className="font-medium text-slate-700">Audience</h5>
                   <OptimizedTierGatedContent requiredTier="basic">
-                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
+                    <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                       {title.audience || "Not specified"}
                     </span>
                   </OptimizedTierGatedContent>
@@ -303,9 +413,9 @@ function TitleDetailNewContent() {
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium text-slate-700">Comps</h5>
                     <OptimizedTierGatedContent requiredTier="basic">
-                      <span className="font-bold text-[#4C9C9B] uppercase text-sm line-clamp-2">
+                      <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                         {title.comps.slice(0, 2).map(comp => 
-                          comp.length > 20 ? comp.substring(0, 20) + '...' : comp
+                          comp.length > 12 ? comp.substring(0, 12) + '...' : comp
                         ).join(', ')}
                         {title.comps.length > 2 && ` +${title.comps.length - 2}`}
                       </span>
@@ -327,7 +437,7 @@ function TitleDetailNewContent() {
                 <div className="flex items-center justify-between">
                   <h5 className="font-medium text-slate-700">Format</h5>
                   {title.content_format && (
-                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
+                    <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                       {formatContentFormat(title.content_format)}
                     </span>
                   )}
@@ -335,7 +445,7 @@ function TitleDetailNewContent() {
                 
                 <div className="flex items-center justify-between">
                   <h5 className="font-medium text-slate-700">Series Status</h5>
-                  <span className="font-bold text-[#4C9C9B] uppercase text-sm">
+                  <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                     {title.completed ? 'Completed' : 'Ongoing'}
                   </span>
                 </div>
@@ -343,9 +453,9 @@ function TitleDetailNewContent() {
                 {title.genre && (
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium text-slate-700">Genre</h5>
-                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
+                    <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                       {Array.isArray(title.genre) 
-                        ? title.genre.slice(0, 3).map(g => g.replace('_', ' ')).join(', ')
+                        ? title.genre.slice(0, 2).map(g => g.replace('_', ' ')).join(', ')
                         : title.genre.replace('_', ' ')
                       }
                     </span>
@@ -387,8 +497,8 @@ function TitleDetailNewContent() {
                 {/* Pitch Deck */}
                 <div className="pt-4">
                   <h5 className="font-bold text-slate-700 mb-3">Pitch Deck</h5>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600">View the Pitch Deck</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                    <span className="text-slate-600 text-sm sm:text-base text-center sm:text-left">View the Pitch Deck</span>
                     <Button
                       onClick={() => {
                         if (canAccessPremiumContent) {
@@ -398,7 +508,7 @@ function TitleDetailNewContent() {
                           setShowUpgradeModal(true);
                         }
                       }}
-                      className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm hover:from-purple-600 hover:to-purple-700 transition-all duration-200"
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-medium px-4 py-1.5 sm:px-3 sm:py-1 rounded-full shadow-sm hover:from-purple-600 hover:to-purple-700 transition-all duration-200 w-full sm:w-auto"
                     >
                       View
                     </Button>

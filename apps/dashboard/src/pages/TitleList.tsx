@@ -367,71 +367,79 @@ function TitleListContent() {
     <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">TITLES</h1>
-              <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
-                {isCreatorView ? "Manage your Korean content titles." : "Browse all Korean content titles in list view."}
-              </p>
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight">TITLES</h1>
+                <Button
+                  onClick={handleRefresh}
+                  disabled={loading}
+                  variant="outline"
+                  size="sm"
+                  className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 p-1.5 sm:p-2"
+                  title="Refresh"
+                >
+                  <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+              
+              {/* View Mode Toggle - Same line as TITLES, far right */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('card')}
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all ${
+                    viewMode === 'card'
+                      ? 'bg-white text-hanok-teal shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  title="Card View"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="text-sm font-medium hidden sm:inline ml-1">Card</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all ${
+                    viewMode === 'list'
+                      ? 'bg-white text-hanok-teal shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  title="List View"
+                >
+                  <ListIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium hidden sm:inline ml-1">List</span>
+                </button>
+              </div>
             </div>
-            <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">
-              {filteredTitles.length} titles
-            </div>
+            <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
+              {isCreatorView ? "Manage your Korean content titles." : "Browse all Korean content titles in list view."}
+            </p>
           </div>
 
 
         {/* All Titles Table */}
         <div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-end mb-6 sm:mb-8 gap-4 sm:gap-0">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-              {/* View Mode Toggle - Mobile: Right side, Desktop: Left side */}
-              <div className="flex items-center justify-end sm:justify-start">
-                <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewMode('card')}
-                    className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-md transition-all ${
-                      viewMode === 'card'
-                        ? 'bg-white text-hanok-teal shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    title="Card View"
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                    <span className="text-sm font-medium hidden sm:inline">Card</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-md transition-all ${
-                      viewMode === 'list'
-                        ? 'bg-white text-hanok-teal shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                    title="List View"
-                  >
-                    <ListIcon className="w-4 h-4" />
-                    <span className="text-sm font-medium hidden sm:inline">List</span>
-                  </button>
-                </div>
-              </div>
-              <Button
-                onClick={handleRefresh}
-                disabled={loading}
-                variant="outline"
-                size="sm"
-                className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 aspect-square p-2"
-                title="Refresh"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-              {isCreatorView && (
-                <Link to="/creators/titles/add">
-                  <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-medium">
-                    + Add a new title
-                  </Button>
-                </Link>
-              )}
+          {/* Desktop Add Button */}
+          {isCreatorView && (
+            <div className="hidden sm:flex justify-end mb-6 sm:mb-8">
+              <Link to="/creators/titles/add">
+                <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-6 py-3 text-base rounded-lg font-medium">
+                  + Add a new title
+                </Button>
+              </Link>
             </div>
-          </div>
+          )}
+          
+          {/* Mobile Add Button - if creator view */}
+          {isCreatorView && (
+            <div className="sm:hidden mb-4">
+              <Link to="/creators/titles/add">
+                <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 py-2 text-sm rounded-lg font-medium w-full">
+                  + Add a new title
+                </Button>
+              </Link>
+            </div>
+          )}
           
           {/* Search Bar */}
           <div className="relative mb-6 sm:mb-8">
@@ -525,6 +533,7 @@ function TitleListContent() {
                 )}
               </div>
             )}
+            
           </div>
           
           {/* Filters Section */}

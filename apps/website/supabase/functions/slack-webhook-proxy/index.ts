@@ -5,6 +5,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Email addresses and domains to exclude from Slack notifications
+const EXCLUDED_EMAILS = [
+  'kevin@sandstoneartists.com',
+  'sungho@dadble.com',
+  'creepyblues@gmail.com'
+]
+
+const EXCLUDED_DOMAINS = [
+  'dadble.com',
+  'kstorybridge.com'
+]
+
+/**
+ * Check if an email should be excluded from Slack notifications
+ */
+function shouldExcludeEmail(email: string): boolean {
+  if (!email) return false;
+  
+  const emailLower = email.toLowerCase();
+  
+  // Check exact email matches
+  if (EXCLUDED_EMAILS.some(excluded => excluded.toLowerCase() === emailLower)) {
+    console.log(`🚫 Skipping Slack notification for excluded email: ${email}`);
+    return true;
+  }
+  
+  // Check domain matches  
+  const domain = emailLower.split('@')[1];
+  if (domain && EXCLUDED_DOMAINS.includes(domain)) {
+    console.log(`🚫 Skipping Slack notification for excluded domain: ${domain}`);
+    return true;
+  }
+  
+  return false;
+}
+
 interface SlackNotificationData {
   event: string
   userType: 'buyer' | 'creator'
@@ -54,6 +90,22 @@ serve(async (req) => {
         JSON.stringify({ error: 'Missing required fields: event, userType, fullName, email' }),
         { 
           status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Check if email should be excluded from notifications
+    if (shouldExcludeEmail(email)) {
+      console.log(`🚫 Notification filtered out for email: ${email}`)
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'Notification filtered - excluded email',
+          filtered: true
+        }),
+        { 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )

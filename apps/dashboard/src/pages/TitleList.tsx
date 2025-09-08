@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown, LayoutGrid, List as ListIcon } from "lucide-react";
@@ -33,6 +33,7 @@ function TitleListContent() {
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const currentSearchId = useRef<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(51);
   const [sortField, setSortField] = useState<string | null>('title');
@@ -127,6 +128,16 @@ function TitleListContent() {
       return;
     }
 
+    // Prevent multiple concurrent searches
+    if (searchLoading) {
+      console.log('🔍 Search already in progress, skipping duplicate request');
+      return;
+    }
+
+    // Generate unique search ID to handle race conditions
+    const searchId = `search-${Date.now()}-${Math.random()}`;
+    currentSearchId.current = searchId;
+    
     setSearchLoading(true);
     
     try {
@@ -144,6 +155,12 @@ function TitleListContent() {
           maxResults: 28 // Reduced for higher quality, more relevant results
         }
       );
+
+      // Only update results if this search is still the current one
+      if (currentSearchId.current !== searchId) {
+        console.log('🔍 Search result discarded - newer search in progress');
+        return;
+      }
 
       setSearchResults(searchResponse.results);
       setSearchType(searchResponse.searchType);
@@ -165,8 +182,10 @@ function TitleListContent() {
       });
       
       // Fallback to traditional search
-      setSearchResults([]);
-      setSearchType('traditional');
+      if (currentSearchId.current === searchId) {
+        setSearchResults([]);
+        setSearchType('traditional');
+      }
     } finally {
       setSearchLoading(false);
       setCurrentPage(1);
@@ -179,6 +198,7 @@ function TitleListContent() {
     setSearchResults([]);
     setSearchType('traditional');
     setCurrentPage(1);
+    currentSearchId.current = null; // Clear search ID
   };
 
   const handleSearchInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

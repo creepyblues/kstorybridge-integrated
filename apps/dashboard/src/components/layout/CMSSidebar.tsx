@@ -13,12 +13,14 @@ interface MenuItem {
 const getDiscoverItems = (accountType: string): MenuItem[] => {
   if (accountType === "ip_owner") {
     return [
+      { title: "Home", href: "/creators/home" },
       { title: "Titles", href: "/creators/titles" },
       { title: "K-content News", href: "/creators/news" },
       // { title: "My Requests", href: "/creators/requests" },
     ];
   } else {
     return [
+      { title: "Home", href: "/buyers/home" },
       { title: "Titles", href: "/buyers/titles" },
       { title: "Favorites", href: "/buyers/favorites" },
       { title: "K-content News", href: "/buyers/news" },

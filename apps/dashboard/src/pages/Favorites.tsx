@@ -254,50 +254,6 @@ export default function Favorites() {
             </div>
           </div>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-6 sm:mb-8">
-            <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-4 h-4 sm:w-5 sm:h-5" />
-            <input
-              type="text"
-              placeholder="Search your favorites..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
-            />
-            <div className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 flex gap-1 sm:gap-2">
-              {searchTerm && (
-                <Button
-                  type="button"
-                  onClick={handleClearSearch}
-                  variant="ghost"
-                  size="sm"
-                  className="text-midnight-ink-400 hover:text-midnight-ink-600 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
-                >
-                  Clear
-                </Button>
-              )}
-              <Button
-                type="submit"
-                size="sm"
-                className="bg-gradient-to-r from-hanok-teal via-hanok-teal to-blue-600 hover:from-hanok-teal/90 hover:via-hanok-teal/90 hover:to-blue-700 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
-              >
-                {/* Shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                
-                {/* Search icon */}
-                <Search className="h-3 w-3 mr-0.5 sm:mr-1 pointer-events-none" />
-                
-                {/* Text */}
-                <span className="relative z-10 pointer-events-none hidden sm:inline">Search</span>
-                
-                {/* Glow effect */}
-                <div className="absolute inset-0 rounded-xl bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
-              </Button>
-            </div>
-          </form>
-
-          {/* Divider */}
-          <div className="border-t border-gray-200 my-6 sm:my-8 lg:my-12"></div>
 
           {/* Favorites Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

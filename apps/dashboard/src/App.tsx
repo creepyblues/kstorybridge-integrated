@@ -21,6 +21,7 @@ import { RootRedirect } from "./components/RootRedirect";
 // Lazy load page components for code splitting
 const Content = lazy(() => import("./pages/Content"));
 const Browse = lazy(() => import("./pages/Browse"));
+const Home = lazy(() => import("./pages/Home"));
 const Titles = lazy(() => import("./pages/Titles"));
 const TitleList = lazy(() => import("./pages/TitleList"));
 const AddTitle = lazy(() => import("./pages/AddTitle"));
@@ -114,6 +115,9 @@ const App = () => (
                 <Route path="/buyers" element={
                   <ProtectedLayout><RootRedirect /></ProtectedLayout>
                 } />
+                <Route path="/buyers/home" element={
+                  <ProtectedLayout><Home /></ProtectedLayout>
+                } />
                 <Route path="/buyers/dashboard-new" element={
                   <ProtectedLayout><BuyerDashboardNew /></ProtectedLayout>
                 } />
@@ -124,10 +128,10 @@ const App = () => (
                   <ProtectedLayout><Titles /></ProtectedLayout>
                 } />
                 <Route path="/buyers/titles/:titleId" element={
-                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                  <ProtectedLayout><TitleDetailNew /></ProtectedLayout>
                 } />
                 <Route path="/buyers/titles-new/:titleId" element={
-                  <ProtectedLayout><TitleDetailNew /></ProtectedLayout>
+                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
                 } />
                 <Route path="/buyers/favorites" element={
                   <ProtectedLayout><Favorites /></ProtectedLayout>
@@ -173,6 +177,9 @@ const App = () => (
                 <Route path="/creators" element={
                   <ProtectedLayout><RootRedirect /></ProtectedLayout>
                 } />
+                <Route path="/creators/home" element={
+                  <ProtectedLayout><Home /></ProtectedLayout>
+                } />
                 <Route path="/creators/titles" element={
                   <ProtectedLayout><Titles /></ProtectedLayout>
                 } />
@@ -180,10 +187,10 @@ const App = () => (
                   <ProtectedLayout><AddTitle /></ProtectedLayout>
                 } />
                 <Route path="/creators/titles/:titleId" element={
-                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                  <ProtectedLayout><TitleDetailNew /></ProtectedLayout>
                 } />
                 <Route path="/creators/titles-new/:titleId" element={
-                  <ProtectedLayout><TitleDetailNew /></ProtectedLayout>
+                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
                 } />
                 <Route path="/creators/requests" element={
                   <ProtectedLayout><MyRequests /></ProtectedLayout>

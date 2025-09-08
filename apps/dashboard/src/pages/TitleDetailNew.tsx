@@ -14,7 +14,6 @@ import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
 import { useTierAccess } from "@/hooks/useTierAccess";
-import TestNewDesignLink from "@/components/TestNewDesignLink";
 
 function TitleDetailNewContent() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -144,13 +143,13 @@ function TitleDetailNewContent() {
   return (
     <div className="space-y-6">
       {/* Hero Section - Full Width */}
-      <div className="bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-200 shadow-sm">
+      <div>
         <div className="max-w-6xl mx-auto py-8 px-4">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1 min-w-0">
               <div className="flex items-start gap-6 mb-4">
-                {/* Cover Image - Larger for full-width hero */}
-                <div className="w-24 h-32 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-lg">
+                {/* Cover Image - Larger and more prominent */}
+                <div className="w-32 h-44 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-xl ring-1 ring-slate-200">
                   {title.title_image ? (
                     <img 
                       src={title.title_image} 
@@ -159,7 +158,7 @@ function TitleDetailNewContent() {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-hanok-teal/10 to-hanok-teal/20 flex items-center justify-center">
-                      <BookOpen className="w-8 h-8 text-hanok-teal" />
+                      <BookOpen className="w-10 h-10 text-hanok-teal" />
                     </div>
                   )}
                 </div>
@@ -178,14 +177,12 @@ function TitleDetailNewContent() {
                   <div className="flex flex-wrap gap-6 text-base text-slate-600">
                     {title.story_author && (
                       <span className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-hanok-teal rounded-full"></span>
                         <span className="font-semibold text-hanok-teal">Story:</span> 
                         <span className="font-medium">{title.story_author}</span>
                       </span>
                     )}
                     {title.art_author && (
                       <span className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-hanok-teal rounded-full"></span>
                         <span className="font-semibold text-hanok-teal">Art:</span> 
                         <span className="font-medium">{title.art_author}</span>
                       </span>
@@ -214,19 +211,7 @@ function TitleDetailNewContent() {
             </div>
             
             {/* Action Buttons - Enhanced for hero */}
-            <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
-              <Button
-                onClick={() => {
-                  setPremiumFeatureName("Contact Creator");
-                  setPremiumPopupOpen(true);
-                }}
-                className="bg-hanok-teal hover:bg-hanok-teal/90 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-              >
-                <Building2 className="h-5 w-5 mr-2" />
-                Contact Creator
-              </Button>
-              
-              <div className="flex gap-3">
+            <div className="flex gap-3">
                 {isAuthenticated && (
                   <Button
                     onClick={handleFavoriteToggle}
@@ -234,7 +219,7 @@ function TitleDetailNewContent() {
                     variant="outline"
                     className={`px-5 py-3 shadow-md hover:shadow-lg transition-all duration-200 ${isFavorited 
                       ? "border-hanok-teal text-hanok-teal bg-hanok-teal/5 hover:bg-hanok-teal/10" 
-                      : "border-slate-300 text-slate-600 hover:border-hanok-teal hover:text-hanok-teal hover:bg-hanok-teal/5"
+                      : "border-purple-500 text-slate-600 hover:border-purple-600 hover:text-purple-600 hover:bg-purple-50"
                     }`}
                   >
                     <Heart className={`h-4 w-4 mr-2 ${isFavorited ? "fill-current" : ""}`} />
@@ -246,7 +231,7 @@ function TitleDetailNewContent() {
                   <Button
                     asChild
                     variant="outline"
-                    className="border-slate-300 text-slate-600 hover:bg-slate-50 hover:border-slate-400 px-5 py-3 shadow-md hover:shadow-lg transition-all duration-200"
+                    className="border-purple-500 text-slate-600 hover:bg-purple-50 hover:border-purple-600 px-5 py-3 shadow-md hover:shadow-lg transition-all duration-200"
                   >
                     <a href={title.title_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-2" />
@@ -254,7 +239,6 @@ function TitleDetailNewContent() {
                     </a>
                   </Button>
                 )}
-              </div>
             </div>
           </div>
         </div>
@@ -270,206 +254,111 @@ function TitleDetailNewContent() {
           {/* Key Business Info Panel */}
           <Card className="bg-white border-gray-200 shadow-sm">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-hanok-teal" />
+              <CardTitle className="text-xl font-semibold text-slate-900">
                 Business Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
+              <div className="space-y-4">
               
-              {/* Rights Owner - Most Important */}
-              <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-lg border border-emerald-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-emerald-900 flex items-center gap-2">
-                    <Crown className="h-4 w-4" />
-                    Rights Owner
-                  </h3>
-                  <Badge className="bg-purple-100 text-purple-800 text-xs">PRO PLAN</Badge>
+                {/* Rights Owner */}
+                <div className="flex items-center justify-between">
+                  <h5 className="font-medium text-slate-700">Rights Owner</h5>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
+                      {title.rights_owner || title.rights || "Not specified"}
+                    </span>
+                    <Button
+                      onClick={() => {
+                        setPremiumFeatureName("Contact Creator");
+                        setPremiumPopupOpen(true);
+                      }}
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm hover:from-purple-600 hover:to-purple-700 transition-all duration-200"
+                    >
+                      Contact
+                    </Button>
+                  </div>
                 </div>
-                <OptimizedTierGatedContent requiredTier="pro">
-                  <p className="text-emerald-800 font-medium">
-                    {title.rights_owner || title.rights || "Not specified"}
-                  </p>
-                </OptimizedTierGatedContent>
-              </div>
 
-              {/* Quick Stats Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <Eye className="h-4 w-4 text-slate-600" />
-                    <span className="text-xs font-medium text-slate-600">VIEWS</span>
-                  </div>
-                  <div className="text-lg font-bold text-slate-900">{formatViews(title.views || 0)}</div>
-                </div>
-                
-                <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <BookOpen className="h-4 w-4 text-slate-600" />
-                    <span className="text-xs font-medium text-slate-600">CHAPTERS</span>
-                  </div>
-                  <div className="text-lg font-bold text-slate-900">
-                    {title.chapters ? `${title.chapters.toLocaleString()}${!title.completed ? '+' : ''}` : 'N/A'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Target Market Info */}
-              <div className="space-y-3">
+                {/* Target Market Info */}
+              <div className="space-y-4">
                 {/* Perfect For */}
-                <div>
-                  <h4 className="font-medium text-slate-700 mb-2 flex items-center gap-2">
-                    <Target className="h-4 w-4 text-hanok-teal" />
-                    Perfect For
-                  </h4>
+                <div className="flex items-center justify-between">
+                  <h5 className="font-medium text-slate-700">Perfect For</h5>
                   <OptimizedTierGatedContent requiredTier="basic">
-                    <Badge variant="outline" className="border-hanok-teal text-hanok-teal bg-hanok-teal/5">
+                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
                       {title.perfect_for || "Not specified"}
-                    </Badge>
+                    </span>
                   </OptimizedTierGatedContent>
                 </div>
 
                 {/* Audience */}
-                <div>
-                  <h4 className="font-medium text-slate-700 mb-2 flex items-center gap-2">
-                    <Users className="h-4 w-4 text-hanok-teal" />
-                    Target Audience
-                  </h4>
+                <div className="flex items-center justify-between">
+                  <h5 className="font-medium text-slate-700">Audience</h5>
                   <OptimizedTierGatedContent requiredTier="basic">
-                    <Badge variant="outline" className="border-amber-500 text-amber-700 bg-amber-50">
+                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
                       {title.audience || "Not specified"}
-                    </Badge>
+                    </span>
                   </OptimizedTierGatedContent>
                 </div>
 
                 {/* Comps */}
                 {title.comps && title.comps.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-slate-700 mb-2 flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-hanok-teal" />
-                      Similar Titles
-                    </h4>
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Comps</h5>
                     <OptimizedTierGatedContent requiredTier="basic">
-                      <div className="flex flex-wrap gap-1">
-                        {title.comps.slice(0, 3).map((comp, index) => (
-                          <Badge key={index} variant="outline" className="border-slate-300 text-slate-700 text-xs">
-                            {comp}
-                          </Badge>
-                        ))}
-                        {title.comps.length > 3 && (
-                          <Badge variant="outline" className="border-slate-300 text-slate-500 text-xs">
-                            +{title.comps.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
+                      <span className="font-bold text-[#4C9C9B] uppercase text-sm line-clamp-2">
+                        {title.comps.slice(0, 2).map(comp => 
+                          comp.length > 20 ? comp.substring(0, 20) + '...' : comp
+                        ).join(', ')}
+                        {title.comps.length > 2 && ` +${title.comps.length - 2}`}
+                      </span>
                     </OptimizedTierGatedContent>
                   </div>
                 )}
+              </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Format & Genre */}
           <Card className="bg-white border-gray-200 shadow-sm">
-            <CardContent className="p-4">
-              <div className="space-y-3">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-semibold text-slate-900">Content Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-600">Format</span>
+                  <h5 className="font-medium text-slate-700">Format</h5>
                   {title.content_format && (
-                    <Badge className="bg-slate-100 text-slate-700">
+                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
                       {formatContentFormat(title.content_format)}
-                    </Badge>
+                    </span>
                   )}
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-600">Status</span>
-                  <Badge className={`${title.completed ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                  <h5 className="font-medium text-slate-700">Series Status</h5>
+                  <span className="font-bold text-[#4C9C9B] uppercase text-sm">
                     {title.completed ? 'Completed' : 'Ongoing'}
-                  </Badge>
+                  </span>
                 </div>
 
                 {title.genre && (
-                  <div>
-                    <span className="text-sm font-medium text-slate-600 mb-2 block">Genre</span>
-                    <div className="flex flex-wrap gap-1">
-                      {Array.isArray(title.genre) ? (
-                        title.genre.slice(0, 3).map((g, idx) => (
-                          <Badge key={idx} variant="outline" className="border-purple-300 text-purple-700 bg-purple-50 text-xs">
-                            {g.replace('_', ' ')}
-                          </Badge>
-                        ))
-                      ) : (
-                        <Badge variant="outline" className="border-purple-300 text-purple-700 bg-purple-50 text-xs">
-                          {title.genre.replace('_', ' ')}
-                        </Badge>
-                      )}
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Genre</h5>
+                    <span className="font-bold text-[#4C9C9B] uppercase text-sm">
+                      {Array.isArray(title.genre) 
+                        ? title.genre.slice(0, 3).map(g => g.replace('_', ' ')).join(', ')
+                        : title.genre.replace('_', ' ')
+                      }
+                    </span>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Premium Content Access */}
-          {(title.pitch || !title.pitch) && (
-            <Card className="bg-gradient-to-r from-purple-50 to-purple-100/50 border-purple-200 shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Crown className="h-5 w-5 text-purple-600" />
-                    <span className="font-semibold text-purple-900">Premium Content</span>
-                  </div>
-                </div>
-                
-                {title.pitch ? (
-                  <div className="space-y-3">
-                    <p className="text-sm text-purple-700">Detailed pitch deck available</p>
-                    <Button 
-                      onClick={() => {
-                        if (canAccessPremiumContent) {
-                          setCurrentPdfUrl(title.pitch || "");
-                          setTimeout(() => setIsPdfModalOpen(true), 10);
-                        } else {
-                          setShowUpgradeModal(true);
-                        }
-                      }}
-                      className={`w-full ${canAccessPremiumContent 
-                        ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-                        : 'bg-white hover:bg-gray-50 text-purple-600 border-2 border-purple-200'
-                      }`}
-                    >
-                      {canAccessPremiumContent ? (
-                        <>
-                          <FileText className="h-4 w-4 mr-2" />
-                          View Pitch Deck
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="h-4 w-4 mr-2" />
-                          Upgrade to View
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <p className="text-sm text-purple-700">Request detailed pitch document</p>
-                    <Button 
-                      onClick={() => {
-                        setPremiumFeatureName("Request a pitch deck");
-                        setPremiumPopupOpen(true);
-                      }}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Request Pitch
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Right Column - Content Overview (3/5) */}
@@ -511,14 +400,35 @@ function TitleDetailNewContent() {
                   </div>
                 )}
 
+                {/* Pitch Deck */}
+                <div className="pt-4">
+                  <h5 className="font-bold text-slate-700 mb-3">Pitch Deck</h5>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">View the Pitch Deck</span>
+                    <Button
+                      onClick={() => {
+                        if (canAccessPremiumContent) {
+                          setCurrentPdfUrl(title.pitch || "");
+                          setTimeout(() => setIsPdfModalOpen(true), 10);
+                        } else {
+                          setShowUpgradeModal(true);
+                        }
+                      }}
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm hover:from-purple-600 hover:to-purple-700 transition-all duration-200"
+                    >
+                      View
+                    </Button>
+                  </div>
+                </div>
+
                 {/* Keywords */}
                 {(title.keywords || title.tags) && (title.keywords || title.tags).length > 0 && (
-                  <div className="pt-4 border-t border-slate-200">
-                    <h5 className="font-medium text-slate-700 mb-3">Keywords</h5>
+                  <div className="pt-4">
+                    <h5 className="font-bold text-slate-700 mb-3">Keywords</h5>
                     <div className="flex flex-wrap gap-2">
-                      {(title.keywords || title.tags).slice(0, 8).map((tag, idx) => (
-                        <Badge key={idx} variant="outline" className="border-slate-300 text-slate-600 text-xs">
-                          {tag}
+                      {(title.keywords || title.tags).map((tag, idx) => (
+                        <Badge key={idx} className="bg-slate-50 text-slate-600 border border-slate-200 font-medium px-2.5 py-1 rounded-md text-xs hover:bg-slate-100 transition-colors">
+                          {tag.toUpperCase()}
                         </Badge>
                       ))}
                     </div>
@@ -663,7 +573,6 @@ function TitleDetailNewContent() {
         }
       />
 
-      <TestNewDesignLink />
       
       </div>
     </div>

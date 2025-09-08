@@ -9,11 +9,13 @@ import { cn } from "@/lib/utils";
 const getDiscoverItems = (accountType: string) => {
   if (accountType === "ip_owner") {
     return [
+      { title: "Home", href: "/creators/home" },
       { title: "Titles", href: "/creators/titles" },
       { title: "News", href: "/creators/news" },
     ];
   } else {
     return [
+      { title: "Home", href: "/buyers/home" },
       { title: "Titles", href: "/buyers/titles" },
       { title: "Favorites", href: "/buyers/favorites" },
       { title: "News", href: "/buyers/news" },
@@ -129,11 +131,16 @@ export function CMSHeader() {
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             
-            <img
-              src="/kstorybridge-logo.png"
-              alt="KStoryBridge"
-              className="h-8 sm:h-10 lg:h-12 w-auto object-contain"
-            />
+            <Link 
+              to={accountType === "ip_owner" ? "/creators/home" : "/buyers/home"}
+              className="flex items-center"
+            >
+              <img
+                src="/kstorybridge-logo.png"
+                alt="KStoryBridge"
+                className="h-8 sm:h-10 lg:h-12 w-auto object-contain hover:opacity-80 transition-opacity cursor-pointer"
+              />
+            </Link>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">

@@ -12,11 +12,11 @@ export function RootRedirect() {
       const accountType = user.user_metadata?.account_type || "buyer";
       
       if (accountType === "ip_owner") {
-        // Redirect IP owners/creators to Creators Titles page
-        navigate("/creators/titles", { replace: true });
+        // Redirect IP owners/creators to Creators Home page
+        navigate("/creators/home", { replace: true });
       } else {
-        // Redirect buyers to Buyers Titles page
-        navigate("/buyers/titles", { replace: true });
+        // Redirect buyers to Buyers Home page
+        navigate("/buyers/home", { replace: true });
       }
     }
   }, [user, navigate]);

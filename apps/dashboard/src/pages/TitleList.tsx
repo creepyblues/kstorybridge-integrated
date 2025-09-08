@@ -372,7 +372,7 @@ function TitleListContent() {
         <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">TITLE LIST</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">TITLES</h1>
               <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
                 {isCreatorView ? "Manage your Korean content titles." : "Browse all Korean content titles in list view."}
               </p>
@@ -382,36 +382,10 @@ function TitleListContent() {
             </div>
           </div>
 
-        {/* Featured Titles Section - Only show for buyers */}
-        {!isCreatorView && (
-          <div className="mb-8 sm:mb-12">
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Featured Titles</h2>
-            
-            <FeaturedTitlesCarousel className="" />
-          </div>
-        )}
-
-        {/* Divider - Only show for buyers */}
-        {!isCreatorView && <div className="border-t border-gray-200 my-8 sm:my-12"></div>}
 
         {/* All Titles Table */}
         <div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-midnight-ink">
-                {isCreatorView ? "MY TITLES" : "ALL TITLES"}
-              </h2>
-              <Button
-                onClick={handleRefresh}
-                disabled={loading}
-                variant="outline"
-                size="sm"
-                className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 aspect-square p-2"
-                title="Refresh"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-end mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               {/* View Mode Toggle - Mobile: Right side, Desktop: Left side */}
               <div className="flex items-center justify-end sm:justify-start">
@@ -442,6 +416,16 @@ function TitleListContent() {
                   </button>
                 </div>
               </div>
+              <Button
+                onClick={handleRefresh}
+                disabled={loading}
+                variant="outline"
+                size="sm"
+                className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 aspect-square p-2"
+                title="Refresh"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
               {isCreatorView && (
                 <Link to="/creators/titles/add">
                   <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg font-medium">

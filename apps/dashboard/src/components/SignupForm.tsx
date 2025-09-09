@@ -179,9 +179,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       // Force localhost for development
       const isDev = window.location.hostname === 'localhost';
       const baseUrl = isDev 
-        ? `http://localhost:8081` 
+        ? `http://localhost:${window.location.port}` 
         : `${window.location.origin}`;
-      const redirectUrl = `${baseUrl}/auth/callback`;
+      // Include account type in redirect URL so we know where to redirect after OAuth
+      const redirectUrl = `${baseUrl}/auth/callback?account_type=${accountType}`;
       
       console.log('🔄 OAuth signup redirect URL:', redirectUrl);
       
@@ -355,7 +356,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             email: buyerFormData.email,
             password: buyerFormData.password,
             options: {
-              emailRedirectTo: `${window.location.origin}/signin?verified=true`,
+              emailRedirectTo: `${window.location.hostname === 'localhost' ? window.location.origin : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
               data: {
                 full_name: buyerFormData.fullName,
                 account_type: 'buyer',
@@ -444,36 +445,26 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           
           console.log('✅ OAuth buyer profile saved successfully');
           
-          // Send Slack notification for successful signup
-          try {
-            await notifyBuyerSignup({
-              fullName: buyerFormData.fullName,
-              email: buyerFormData.email,
-              company: buyerFormData.buyerCompany,
-              role: buyerFormData.buyerRole,
-              linkedinUrl: buyerFormData.linkedinUrl,
-              authType: 'google',
-              success: true,
-              tier: 'basic' // Default tier for new buyers
-            });
-            console.log('✅ Slack notification sent for buyer signup');
-          } catch (slackError) {
-            console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
-          }
+          // Send Slack notification for successful signup (non-blocking)
+          setTimeout(async () => {
+            try {
+              await notifyBuyerSignup({
+                fullName: buyerFormData.fullName,
+                email: buyerFormData.email,
+                company: buyerFormData.buyerCompany,
+                role: buyerFormData.buyerRole,
+                linkedinUrl: buyerFormData.linkedinUrl,
+                authType: 'google',
+                success: true,
+                tier: 'basic' // Default tier for new buyers
+              });
+              console.log('✅ Slack notification sent for buyer signup');
+            } catch (slackError) {
+              console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
+            }
+          }, 100);
 
-          // Send welcome email
-          try {
-            await sendWelcomeEmail({
-              userName: buyerFormData.fullName,
-              userEmail: buyerFormData.email,
-              accountType: 'buyer',
-              dashboardUrl: window.location.origin + '/buyers/titles',
-              loginUrl: window.location.origin + '/signin'
-            });
-            console.log('✅ Welcome email sent for buyer signup');
-          } catch (emailError) {
-            console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
-          }
+          // Welcome email will be sent after email verification via auth state change
           
           toast({
             title: "Profile Completed!",
@@ -483,36 +474,26 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         } else {
           console.log('📝 Profile should be created by database trigger from metadata');
           
-          // Send Slack notification for successful signup
-          try {
-            await notifyBuyerSignup({
-              fullName: buyerFormData.fullName,
-              email: buyerFormData.email,
-              company: buyerFormData.buyerCompany,
-              role: buyerFormData.buyerRole,
-              linkedinUrl: buyerFormData.linkedinUrl,
-              authType: 'email',
-              success: true,
-              tier: 'basic' // Default tier for new buyers
-            });
-            console.log('✅ Slack notification sent for buyer signup');
-          } catch (slackError) {
-            console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
-          }
+          // Send Slack notification for successful signup (non-blocking)
+          setTimeout(async () => {
+            try {
+              await notifyBuyerSignup({
+                fullName: buyerFormData.fullName,
+                email: buyerFormData.email,
+                company: buyerFormData.buyerCompany,
+                role: buyerFormData.buyerRole,
+                linkedinUrl: buyerFormData.linkedinUrl,
+                authType: 'email',
+                success: true,
+                tier: 'basic' // Default tier for new buyers
+              });
+              console.log('✅ Slack notification sent for buyer signup');
+            } catch (slackError) {
+              console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
+            }
+          }, 100);
 
-          // Send welcome email (after email verification)
-          try {
-            await sendWelcomeEmail({
-              userName: buyerFormData.fullName,
-              userEmail: buyerFormData.email,
-              accountType: 'buyer',
-              dashboardUrl: window.location.origin + '/buyers/titles',
-              loginUrl: window.location.origin + '/signin'
-            });
-            console.log('✅ Welcome email sent for buyer signup');
-          } catch (emailError) {
-            console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
-          }
+          // Welcome email will be sent after email verification via auth state change
           
           toast({
             title: "Account Created Successfully!",
@@ -581,7 +562,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           email: creatorFormData.email,
           password: creatorFormData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/signin?verified=true`,
+            emailRedirectTo: `${window.location.hostname === 'localhost' ? window.location.origin : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
             data: {
               full_name: creatorFormData.fullName,
               account_type: 'ip_owner',
@@ -619,71 +600,84 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       }
 
       if (data.user) {
-        // Create creator profile in user_ipowners table
-        console.log('👤 Creating creator profile for user:', data.user.email);
-        const profileData = {
-          id: data.user.id,
-          email: creatorFormData.email,
-          full_name: creatorFormData.fullName,
-          pen_name: creatorFormData.penNameOrStudio,
-          ip_owner_role: creatorFormData.ipOwnerRole || null,
-          ip_owner_company: creatorFormData.ipOwnerCompany || null,
-          website_url: creatorFormData.websiteUrl || null,
-          invitation_status: 'invited' // Default status for creators
-        };
+        console.log('👤 Creator signup successful for user:', data.user.email);
+        console.log('🔒 Auth state:', { uid: data.user.id, email: data.user.email });
         
-        console.log('📝 Creator profile data to insert:', profileData);
-
-        const { error: profileError } = await supabase
-          .from('user_ipowners')
-          .upsert(profileData, { 
-            onConflict: 'id',
-            ignoreDuplicates: false 
-          });
-
-        if (profileError) {
-          console.error('❌ Creator profile creation error:', profileError);
-          toast({
-            title: "Profile Creation Failed",
-            description: `Profile creation failed: ${profileError.message}. Please try again.`,
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        console.log('✅ Creator profile created successfully');
-
-        // Send Slack notification for successful signup
-        try {
-          await notifyCreatorSignup({
-            fullName: creatorFormData.fullName,
+        if (isOAuthUser) {
+          // For OAuth creators, we need to manually create the profile since they bypass the signup trigger
+          console.log('📝 Creating OAuth creator profile...');
+          
+          const profileData = {
+            id: data.user.id,
             email: creatorFormData.email,
-            penName: creatorFormData.penNameOrStudio,
-            company: creatorFormData.ipOwnerCompany,
-            role: creatorFormData.ipOwnerRole,
-            websiteUrl: creatorFormData.websiteUrl,
-            authType: isOAuthUser ? 'google' : 'email',
-            success: true,
-            invitationStatus: 'invited'
+            full_name: creatorFormData.fullName,
+            pen_name: creatorFormData.penNameOrStudio,
+            ip_owner_role: creatorFormData.ipOwnerRole || null,
+            ip_owner_company: creatorFormData.ipOwnerCompany || null,
+            website_url: creatorFormData.websiteUrl || null,
+            invitation_status: 'invited'
+          };
+          
+          console.log('📝 OAuth creator profile data to insert:', profileData);
+
+          const { error: profileError } = await supabase
+            .from('user_ipowners')
+            .insert(profileData);
+
+          if (profileError) {
+            console.error('❌ OAuth creator profile creation error:', profileError);
+            toast({
+              title: "Profile Creation Failed",
+              description: `Profile creation failed: ${profileError.message}. Please try again.`,
+              variant: "destructive"
+            });
+            return;
+          }
+          
+          console.log('✅ OAuth creator profile created successfully');
+          
+          // Update user metadata to include account_type for consistency
+          const { error: metadataError } = await supabase.auth.updateUser({
+            data: {
+              account_type: 'ip_owner',
+              full_name: creatorFormData.fullName,
+              pen_name: creatorFormData.penNameOrStudio,
+              ip_owner_role: creatorFormData.ipOwnerRole,
+              ip_owner_company: creatorFormData.ipOwnerCompany,
+              website_url: creatorFormData.websiteUrl || null
+            }
           });
-          console.log('✅ Slack notification sent for creator signup');
-        } catch (slackError) {
-          console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
+          
+          if (metadataError) {
+            console.warn('⚠️ Failed to update user metadata (non-critical):', metadataError);
+          } else {
+            console.log('✅ User metadata updated for OAuth creator');
+          }
+        } else {
+          // For email signups, the database trigger should have automatically created the profile
+          console.log('✅ Profile creation handled by database trigger');
         }
 
-        // Send welcome email
-        try {
-          await sendWelcomeEmail({
-            userName: creatorFormData.fullName,
-            userEmail: creatorFormData.email,
-            accountType: 'creator',
-            dashboardUrl: window.location.origin + '/creators/titles',
-            loginUrl: window.location.origin + '/signin'
-          });
-          console.log('✅ Welcome email sent for creator signup');
-        } catch (emailError) {
-          console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
-        }
+        // Send notifications asynchronously (non-blocking)
+        setTimeout(async () => {
+          try {
+            await notifyCreatorSignup({
+              fullName: creatorFormData.fullName,
+              email: creatorFormData.email,
+              penName: creatorFormData.penNameOrStudio,
+              company: creatorFormData.ipOwnerCompany,
+              role: creatorFormData.ipOwnerRole,
+              websiteUrl: creatorFormData.websiteUrl,
+              authType: isOAuthUser ? 'google' : 'email',
+              success: true,
+            });
+            console.log('✅ Slack notification sent for creator signup');
+          } catch (slackError) {
+            console.error('⚠️ Failed to send Slack notification (non-blocking):', slackError);
+          }
+        }, 100);
+
+        // Welcome email will be sent after email verification via auth state change
 
         // Success handling
         if (isOAuthUser) {
@@ -691,7 +685,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             title: "Profile Completed!",
             description: "Your creator profile has been created successfully."
           });
-          navigate('/creators/titles');
+          navigate('/creators/home/');
         } else {
           toast({
             title: "Account Created Successfully!",
@@ -968,14 +962,18 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   <Label htmlFor="ipOwnerRole" className="text-sm font-medium text-midnight-ink">
                     Role
                   </Label>
-                  <Input
-                    id="ipOwnerRole"
-                    type="text"
+                  <Select
                     value={creatorFormData.ipOwnerRole}
-                    onChange={(e) => updateCreatorFormData('ipOwnerRole', e.target.value)}
-                    className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
-                    placeholder="e.g., Author, Artist, Director (optional)"
-                  />
+                    onValueChange={(value) => updateCreatorFormData('ipOwnerRole', value)}
+                  >
+                    <SelectTrigger className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg">
+                      <SelectValue placeholder="Select your role (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="author">Author</SelectItem>
+                      <SelectItem value="agent">Agent</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

@@ -14,7 +14,7 @@ const getDiscoverItems = (accountType: string): MenuItem[] => {
   if (accountType === "ip_owner") {
     return [
       { title: "Home", href: "/creators/home" },
-      { title: "Titles", href: "/creators/titles" },
+      { title: "My Titles", href: "/creators/titles" },
       { title: "K-content News", href: "/creators/news" },
       // { title: "My Requests", href: "/creators/requests" },
     ];
@@ -34,8 +34,8 @@ const getSettingsItems = (accountType: string, userEmail?: string): MenuItem[] =
   
   const baseItems = accountType === "ip_owner" 
     ? [
-        // { title: "Send msg", href: "/creators/send-message" }, // Hidden for now - needs database setup
         { title: "Profile", href: "/creators/profile" },
+        // { title: "Send msg", href: "/creators/send-message" }, // Hidden for now - needs database setup
       ]
     : [
         // { title: "Send msg", href: "/buyers/send-message" }, // Hidden for now - needs database setup

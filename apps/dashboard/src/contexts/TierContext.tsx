@@ -1,12 +1,11 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useTierAccess } from '@/hooks/useTierAccess';
 
-type UserTier = 'invited' | 'basic' | 'pro' | 'suite';
+type UserTier = 'basic' | 'pro' | 'suite';
 
 interface TierContextType {
   tier: UserTier | null;
   loading: boolean;
-  isInvited: boolean;
   isBasic: boolean;
   isPro: boolean;
   isSuite: boolean;

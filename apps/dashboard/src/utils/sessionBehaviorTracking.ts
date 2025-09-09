@@ -169,10 +169,21 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
     // Get current user if logged in
     const { data: { user } } = await supabase.auth.getUser();
     
+    // Determine user type based on account_type
+    let userType: 'buyer' | 'creator' | 'anonymous' = 'anonymous';
+    if (user) {
+      const accountType = user.user_metadata?.account_type;
+      if (accountType === 'ip_owner') {
+        userType = 'creator';
+      } else {
+        userType = 'buyer'; // Default to buyer for authenticated users
+      }
+    }
+    
     // Prepare notification data
     const notificationData = {
       event: 'User Session Ended',
-      userType: user ? 'authenticated' : 'anonymous',
+      userType,
       fullName: user ? (user.user_metadata?.full_name || 'User') : 'Anonymous User',
       email: user ? user.email : sessionData.userEmail || 'not-logged-in@anonymous.user',
       additionalInfo: {

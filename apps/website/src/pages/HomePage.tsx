@@ -26,43 +26,6 @@ const HomePage = () => {
     };
   }, []);
 
-  // Check for invitation links that might land on homepage
-  useEffect(() => {
-    const checkForInvitationLink = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      
-      // Check both URL and hash parameters for invitation indicators
-      const type = urlParams.get('type') || hashParams.get('type');
-      const inviteToken = urlParams.get('invite_token') || hashParams.get('invite_token');
-      const invitationToken = urlParams.get('invitation_token') || hashParams.get('invitation_token');
-      const accessToken = urlParams.get('access_token') || hashParams.get('access_token');
-      const refreshToken = urlParams.get('refresh_token') || hashParams.get('refresh_token');
-      
-      console.log('🔍 HOMEPAGE: Checking for invitation parameters');
-      console.log('🔍 HOMEPAGE: Full URL:', window.location.href);
-      console.log('🔍 HOMEPAGE: Search params:', window.location.search);
-      console.log('🔍 HOMEPAGE: Hash:', window.location.hash);
-      console.log('🔍 HOMEPAGE: Type:', type);
-      console.log('🔍 HOMEPAGE: Invite token:', inviteToken ? 'present' : 'not present');
-      console.log('🔍 HOMEPAGE: Invitation token:', invitationToken ? 'present' : 'not present');
-      console.log('🔍 HOMEPAGE: Access token:', accessToken ? 'present' : 'not present');
-      console.log('🔍 HOMEPAGE: Refresh token:', refreshToken ? 'present' : 'not present');
-      
-      // If we have auth tokens (which suggest this is from an invitation link)
-      // or explicit invitation parameters, redirect to invitation acceptance
-      if (type === 'invite' || type === 'invitation' || 
-          inviteToken || invitationToken ||
-          (accessToken && refreshToken)) {
-        console.log('🎯 HOMEPAGE: Invitation/auth parameters detected, redirecting to invitation setup');
-        navigate('/invitation/accept');
-        return;
-      }
-    };
-
-    // Run the check immediately
-    checkForInvitationLink();
-  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">

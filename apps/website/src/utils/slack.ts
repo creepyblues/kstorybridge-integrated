@@ -163,7 +163,6 @@ export const notifyCreatorSignup = async (userData: {
   authType?: 'email' | 'google' | 'oauth';
   success?: boolean;
   errorMessage?: string;
-  invitationStatus?: string;
 }) => {
   // Get current timestamp and timezone
   const now = new Date();
@@ -187,7 +186,6 @@ export const notifyCreatorSignup = async (userData: {
       websiteUrl: userData.websiteUrl,
       success: userData.success !== false,
       errorMessage: userData.errorMessage,
-      invitationStatus: userData.invitationStatus,
       signupStep: userData.success !== false ? 'completed' : 'failed'
     }
   });
@@ -203,7 +201,6 @@ export const notifyUserSignin = async (userData: {
   errorMessage?: string;
   redirectedTo?: string;
   tier?: string;
-  invitationStatus?: string;
   sessionId?: string;
 }) => {
   // Get current timestamp and timezone
@@ -228,7 +225,6 @@ export const notifyUserSignin = async (userData: {
       errorMessage: userData.errorMessage,
       redirectedTo: userData.redirectedTo,
       tier: userData.tier,
-      invitationStatus: userData.invitationStatus,
       sessionId: userData.sessionId?.substring(0, 8) + '...', // Only show first 8 chars for privacy
       signinAttempt: userData.success !== false ? 'successful' : 'failed',
       userAgent: navigator.userAgent?.substring(0, 100) // Truncated user agent
@@ -259,7 +255,6 @@ export const notifyCreatorSignin = async (userData: {
   authType?: 'email' | 'google' | 'oauth';
   success?: boolean;
   errorMessage?: string;
-  invitationStatus?: string;
   redirectedTo?: string;
   penName?: string;
 }) => {

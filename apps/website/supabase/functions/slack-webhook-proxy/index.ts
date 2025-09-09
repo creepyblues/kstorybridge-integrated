@@ -43,7 +43,7 @@ function shouldExcludeEmail(email: string): boolean {
 
 interface SlackNotificationData {
   event: string
-  userType: 'buyer' | 'creator'
+  userType: 'buyer' | 'creator' | 'anonymous' | 'authenticated'
   fullName: string
   email: string
   company?: string
@@ -289,7 +289,16 @@ function formatSlackMessage(data: SlackNotificationData): string {
     Object.entries(additionalInfo).forEach(([key, value]) => {
       if (value && key !== 'isLoggedIn' && key !== 'url' && key !== 'referrer') {
         const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
-        message += `• *${formattedKey}:* ${value}\n`
+        
+        // Handle behavior field specially to avoid [object Object]
+        if (key === 'behavior' && Array.isArray(value)) {
+          message += `• *${formattedKey}:* ${value.length} page visits\n`
+        } else if (typeof value === 'object') {
+          // Convert objects to JSON string for display
+          message += `• *${formattedKey}:* ${JSON.stringify(value)}\n`
+        } else {
+          message += `• *${formattedKey}:* ${value}\n`
+        }
       }
     })
   }

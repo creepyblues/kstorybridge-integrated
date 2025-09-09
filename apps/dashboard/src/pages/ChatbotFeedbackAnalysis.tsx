@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button } from "@kstorybridge/
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { chatHistoryService } from '@/services/chatHistoryService';
+import { getProfilePath } from '@/utils/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { Download, ArrowLeft, RefreshCw, Filter, Search, Star, MessageSquare, TrendingUp, AlertTriangle } from 'lucide-react';
 
@@ -26,7 +27,8 @@ const ChatbotFeedbackAnalysis: React.FC<FeedbackAnalysisProps> = () => {
 
   useEffect(() => {
     if (!isAuthorized) {
-      navigate("/profile");
+      const accountType = user?.user_metadata?.account_type || 'buyer';
+      navigate(getProfilePath(accountType));
       return;
     }
     
@@ -159,7 +161,10 @@ const ChatbotFeedbackAnalysis: React.FC<FeedbackAnalysisProps> = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
-                onClick={() => navigate("/profile")}
+                onClick={() => {
+                  const accountType = user?.user_metadata?.account_type || 'buyer';
+                  navigate(getProfilePath(accountType));
+                }}
                 variant="outline"
                 size="sm"
               >

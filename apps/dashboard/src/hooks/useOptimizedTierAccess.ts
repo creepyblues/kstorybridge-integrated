@@ -1,6 +1,6 @@
 import { useTier } from '@/contexts/TierContext';
 
-type UserTier = 'invited' | 'basic' | 'pro' | 'suite';
+type UserTier = 'basic' | 'pro' | 'suite';
 
 /**
  * useOptimizedTierAccess - Optimized hook for tier access
@@ -29,7 +29,6 @@ export const checkMinimumTier = (userTier: UserTier | null, requiredTier: UserTi
   if (!userTier) return false;
   
   const tierHierarchy: Record<UserTier, number> = {
-    invited: 0,
     basic: 1,
     pro: 2,
     suite: 3

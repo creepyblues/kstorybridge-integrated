@@ -45,6 +45,10 @@ const App = () => (
           <Route path="/news" element={<NewsPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
           <Route path="/sample/werewolves-going-crazy-over-me" element={<SampleTitleDetailPage />} />
+          
+          {/* Redirect handler for email verification links that default to invitation/accept */}
+          <Route path="/invitation/accept" element={<Navigate to={`${import.meta.env.VITE_DASHBOARD_URL || 'https://dashboard.kstorybridge.com'}/signin?verified=true`} replace />} />
+          
           <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

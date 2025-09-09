@@ -16,6 +16,8 @@ if (import.meta.env.DEV) {
 // Keep small, essential components as regular imports
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
+import { BuyerProtectedLayout } from "@/components/BuyerProtectedLayout";
+import { CreatorProtectedLayout } from "@/components/CreatorProtectedLayout";
 import { RootRedirect } from "./components/RootRedirect";
 
 // Lazy load page components for code splitting
@@ -59,8 +61,6 @@ const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
 const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
-const InvitedPage = lazy(() => import("./pages/InvitedPage"));
-const CreatorInvitedPage = lazy(() => import("./pages/CreatorInvitedPage"));
 
 const queryClient = new QueryClient();
 
@@ -100,8 +100,6 @@ const App = () => (
                 <Route path="/signup/creator" element={<CreatorSignupPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                <Route path="/invited" element={<InvitedPage />} />
-                <Route path="/creator/invited" element={<CreatorInvitedPage />} />
                 
                 {/* Legacy auth route - redirect to signin */}
                 <Route path="/auth" element={<SigninPage />} />
@@ -114,102 +112,123 @@ const App = () => (
                 
                 {/* Buyer routes */}
                 <Route path="/buyers" element={
-                  <ProtectedLayout><RootRedirect /></ProtectedLayout>
+                  <BuyerProtectedLayout><RootRedirect /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/home" element={
-                  <ProtectedLayout><Home /></ProtectedLayout>
+                  <BuyerProtectedLayout><Home /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/dashboard-new" element={
-                  <ProtectedLayout><BuyerDashboardNew /></ProtectedLayout>
+                  <BuyerProtectedLayout><BuyerDashboardNew /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/titles" element={
-                  <ProtectedLayout><TitleList /></ProtectedLayout>
+                  <BuyerProtectedLayout><TitleList /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/title-list" element={
-                  <ProtectedLayout><Titles /></ProtectedLayout>
+                  <BuyerProtectedLayout><Titles /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/titles/:titleId" element={
-                  <ProtectedLayout><TitleDetailNew /></ProtectedLayout>
+                  <BuyerProtectedLayout><TitleDetailNew /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/titles-new/:titleId" element={
-                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                  <BuyerProtectedLayout><TitleDetail /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/favorites" element={
-                  <ProtectedLayout><Favorites /></ProtectedLayout>
+                  <BuyerProtectedLayout><Favorites /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/requests" element={
-                  <ProtectedLayout><MyRequests /></ProtectedLayout>
+                  <BuyerProtectedLayout><MyRequests /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/deals" element={
-                  <ProtectedLayout><Deals /></ProtectedLayout>
+                  <BuyerProtectedLayout><Deals /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/browse" element={
-                  <ProtectedLayout><Browse /></ProtectedLayout>
+                  <BuyerProtectedLayout><Browse /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/media" element={
-                  <ProtectedLayout><Media /></ProtectedLayout>
+                  <BuyerProtectedLayout><Media /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/users" element={
-                  <ProtectedLayout><Users /></ProtectedLayout>
+                  <BuyerProtectedLayout><Users /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/settings" element={
-                  <ProtectedLayout><Settings /></ProtectedLayout>
+                  <BuyerProtectedLayout><Settings /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/profile" element={
-                  <ProtectedLayout><Profile /></ProtectedLayout>
+                  <BuyerProtectedLayout><Profile /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/pricing" element={
-                  <ProtectedLayout><BuyersPricing /></ProtectedLayout>
+                  <BuyerProtectedLayout><BuyersPricing /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/news" element={
-                  <ProtectedLayout><News /></ProtectedLayout>
+                  <BuyerProtectedLayout><News /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/send-message" element={
-                  <ProtectedLayout><SendMessage /></ProtectedLayout>
+                  <BuyerProtectedLayout><SendMessage /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/openai-chatbot" element={
-                  <ProtectedLayout><OpenAIChatbot /></ProtectedLayout>
+                  <BuyerProtectedLayout><OpenAIChatbot /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/ai-chatbot" element={
-                  <ProtectedLayout><AIChatbot /></ProtectedLayout>
+                  <BuyerProtectedLayout><AIChatbot /></BuyerProtectedLayout>
                 } />
                 
                 {/* Creator routes */}
                 <Route path="/creators" element={
-                  <ProtectedLayout><RootRedirect /></ProtectedLayout>
+                  <CreatorProtectedLayout><RootRedirect /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/home" element={
-                  <ProtectedLayout><Home /></ProtectedLayout>
+                  <CreatorProtectedLayout><Home /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles" element={
-                  <ProtectedLayout><Titles /></ProtectedLayout>
+                  <CreatorProtectedLayout><Titles /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles/add" element={
-                  <ProtectedLayout><AddTitle /></ProtectedLayout>
+                  <CreatorProtectedLayout><AddTitle /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles/:titleId" element={
-                  <ProtectedLayout><TitleDetailNew /></ProtectedLayout>
+                  <CreatorProtectedLayout><TitleDetailNew /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles-new/:titleId" element={
-                  <ProtectedLayout><TitleDetail /></ProtectedLayout>
+                  <CreatorProtectedLayout><TitleDetail /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/requests" element={
-                  <ProtectedLayout><MyRequests /></ProtectedLayout>
+                  <CreatorProtectedLayout><MyRequests /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/profile" element={
-                  <ProtectedLayout><Profile /></ProtectedLayout>
+                  <CreatorProtectedLayout><Profile /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/news" element={
-                  <ProtectedLayout><News /></ProtectedLayout>
+                  <CreatorProtectedLayout><News /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/send-message" element={
-                  <ProtectedLayout><SendMessage /></ProtectedLayout>
+                  <CreatorProtectedLayout><SendMessage /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/openai-chatbot" element={
-                  <ProtectedLayout><OpenAIChatbot /></ProtectedLayout>
+                  <CreatorProtectedLayout><OpenAIChatbot /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/ai-chatbot" element={
-                  <ProtectedLayout><AIChatbot /></ProtectedLayout>
+                  <CreatorProtectedLayout><AIChatbot /></CreatorProtectedLayout>
+                } />
+                <Route path="/creators/favorites" element={
+                  <CreatorProtectedLayout><Favorites /></CreatorProtectedLayout>
+                } />
+                <Route path="/creators/deals" element={
+                  <CreatorProtectedLayout><Deals /></CreatorProtectedLayout>
+                } />
+                <Route path="/creators/browse" element={
+                  <CreatorProtectedLayout><Browse /></CreatorProtectedLayout>
+                } />
+                <Route path="/creators/media" element={
+                  <CreatorProtectedLayout><Media /></CreatorProtectedLayout>
+                } />
+                <Route path="/creators/users" element={
+                  <CreatorProtectedLayout><Users /></CreatorProtectedLayout>
+                } />
+                <Route path="/creators/settings" element={
+                  <CreatorProtectedLayout><Settings /></CreatorProtectedLayout>
+                } />
+                <Route path="/creators/pricing" element={
+                  <CreatorProtectedLayout><BuyersPricing /></CreatorProtectedLayout>
                 } />
                 
                 {/* Legacy IP Owner/Creator routes */}

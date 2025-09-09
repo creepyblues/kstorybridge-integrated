@@ -7,7 +7,6 @@ const BuyersPricing = () => {
 
   // Map tiers to their corresponding plan names
   const tierToPlan: Record<string, string> = {
-    invited: 'free',
     basic: 'free', // Free = 'basic' in tier field  
     pro: 'pro',
     suite: 'suite'
@@ -17,7 +16,6 @@ const BuyersPricing = () => {
 
   // Tier hierarchy for comparison
   const tierHierarchy: Record<string, number> = {
-    invited: 0,
     basic: 1,
     pro: 2,
     suite: 3

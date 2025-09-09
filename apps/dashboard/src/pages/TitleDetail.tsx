@@ -429,7 +429,7 @@ function TitleDetailContent() {
                               )}
                             </Button>
                             
-                            {/* Pro Plan Badge for basic/invited users */}
+                            {/* Pro Plan Badge for basic users */}
                             {!canAccessPremiumContent && (
                               <Badge className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 px-2 py-1 text-xs font-bold">
                                 PRO PLAN

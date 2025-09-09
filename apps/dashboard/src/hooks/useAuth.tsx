@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { sendWelcomeEmail } from "@/services/emailService";
 
 interface AuthContextType {
   user: User | null;
@@ -16,7 +17,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const handleWelcomeEmailForNewUser = async (user: User) => {
+    try {
+      // Check if we've already sent a welcome email (using localStorage to track)
+      const welcomeEmailKey = `welcome_email_sent_${user.id}`;
+      if (localStorage.getItem(welcomeEmailKey)) {
+        return; // Already sent welcome email
+      }
 
+      const accountType = user.user_metadata?.account_type || 'buyer';
+
+      if (accountType === 'ip_owner') {
+        // Handle creator welcome email
+        const { data: ipOwnerProfile } = await supabase
+          .from('user_ipowners')
+          .select('email, full_name, pen_name')
+          .eq('email', user.email?.toLowerCase())
+          .maybeSingle();
+
+        if (!ipOwnerProfile) {
+          return; // No creator profile found
+        }
+
+        // Send welcome email for creator
+        await sendWelcomeEmail({
+          userName: ipOwnerProfile.full_name,
+          userEmail: user.email!,
+          accountType: 'creator',
+          dashboardUrl: window.location.origin + '/creators/home/',
+          loginUrl: window.location.origin + '/signin'
+        });
+
+        console.log('✅ Welcome email sent for verified creator:', user.email);
+
+      } else {
+        // Handle buyer welcome email
+        const { data: buyerProfile } = await supabase
+          .from('user_buyers')
+          .select('email, full_name, tier')
+          .eq('email', user.email?.toLowerCase())
+          .maybeSingle();
+
+        if (!buyerProfile) {
+          return; // No buyer profile found
+        }
+
+        // Send welcome email for buyer
+        await sendWelcomeEmail({
+          userName: buyerProfile.full_name,
+          userEmail: user.email!,
+          accountType: 'buyer',
+          dashboardUrl: window.location.origin + '/buyers/titles',
+          loginUrl: window.location.origin + '/signin'
+        });
+
+        console.log('✅ Welcome email sent for verified buyer:', user.email);
+      }
+
+      // Mark as sent to avoid duplicate emails
+      localStorage.setItem(welcomeEmailKey, 'true');
+
+    } catch (error) {
+      console.error('⚠️ Failed to send welcome email for verified user:', error);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -131,12 +195,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (!mounted) return;
         
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Send welcome email for new verified creators
+        if (event === 'SIGNED_IN' && session?.user) {
+          await handleWelcomeEmailForNewUser(session.user);
+        }
       }
     );
 

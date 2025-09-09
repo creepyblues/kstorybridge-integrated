@@ -80,7 +80,7 @@ const SigninPage = () => {
       // Force localhost for development
       const isDev = window.location.hostname === 'localhost';
       const redirectUrl = isDev 
-        ? `http://localhost:8081/auth/callback`
+        ? `http://localhost:${window.location.port}/auth/callback`
         : `${window.location.origin}/auth/callback`;
       
       console.log('🔄 OAuth signin redirect URL:', redirectUrl);
@@ -159,7 +159,7 @@ const SigninPage = () => {
     }
   };
 
-  const checkInvitationStatusAndRedirect = async (user: any) => {
+  const checkUserProfileAndRedirect = async (user: any) => {
     try {
       const accountType = user.user_metadata?.account_type;
       
@@ -180,14 +180,8 @@ const SigninPage = () => {
         
         if (buyerCheck) {
           console.log('🔍 SIGNIN: User found in buyers table, treating as buyer');
-          // User exists in buyers table, treat as buyer
-          if (buyerCheck.tier && buyerCheck.tier !== 'invited') {
-            console.log('✅ SIGNIN: Buyer accepted (tier: ' + buyerCheck.tier + '), redirecting to dashboard');
-            navigate('/buyers/titles');
-          } else {
-            console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + (buyerCheck.tier || 'null') + '), redirecting to invited page');
-            navigate('/invited');
-          }
+          console.log('✅ SIGNIN: Buyer profile found, redirecting to dashboard');
+          navigate('/buyers/titles');
           return;
         }
       }
@@ -236,8 +230,12 @@ const SigninPage = () => {
           
           if (createError) {
             console.error('Error creating buyer profile:', createError);
-            // If can't create profile, redirect to invited page
-            navigate('/invited');
+            // If can't create profile, redirect to signin
+            toast({
+              title: "Profile Creation Error",
+              description: "Unable to create your profile. Please try again.",
+              variant: "destructive"
+            });
             return;
           }
           
@@ -246,42 +244,49 @@ const SigninPage = () => {
           return;
         }
         
-        // Check tier - 'basic', 'pro', 'suite' should all go to dashboard
-        // Only 'invited' tier should go to invited page
-        if (profile.tier && profile.tier !== 'invited') {
-          console.log('✅ SIGNIN: Buyer accepted (tier: ' + profile.tier + '), redirecting directly to dashboard');
-          navigate('/buyers/titles');
-        } else {
-          console.log('⚠️ SIGNIN: Buyer not accepted (tier: ' + (profile.tier || 'null') + '), redirecting to invited page');
-          navigate('/invited');
-        }
+        // All buyers with profiles can access dashboard
+        console.log('✅ SIGNIN: Buyer profile found (tier: ' + (profile.tier || 'basic') + '), redirecting to dashboard');
+        navigate('/buyers/titles');
       } else if (accountType === 'ip_owner') {
         const { data: profile, error } = await supabase
           .from('user_ipowners')
-          .select('invitation_status')
+          .select('id, email')
           .eq('id', user.id)
           .maybeSingle();
         
         if (error) {
           console.error('Error fetching IP owner profile:', error);
-          // Default to creator invited page on error
-          navigate('/creator/invited');
+          toast({
+            title: "Profile Error",
+            description: "Unable to load your creator profile. Please try again.",
+            variant: "destructive"
+          });
           return;
         }
         
-        if (profile?.invitation_status === 'accepted') {
-          console.log('✅ SIGNIN: Creator accepted, redirecting directly to dashboard');
-          navigate('/creators/titles');
+        if (profile) {
+          console.log('✅ SIGNIN: Creator profile found, redirecting to dashboard');
+          navigate('/creators/home/');
         } else {
-          navigate('/creator/invited');
+          console.log('⚠️ SIGNIN: No creator profile found');
+          toast({
+            title: "Profile Not Found",
+            description: "Creator profile not found. Please complete your signup.",
+            variant: "destructive"
+          });
         }
       } else {
-        // If no account type, default to invited dashboard
-        navigate('/invited');
+        // If no account type, default to buyer dashboard
+        console.log('🔄 SIGNIN: No account type specified, defaulting to buyer');
+        navigate('/buyers/titles');
       }
     } catch (error) {
-      console.error('Error checking invitation status:', error);
-      navigate('/invited');
+      console.error('Error during signin process:', error);
+      toast({
+        title: "Sign In Error",
+        description: "An error occurred during sign in. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -358,8 +363,8 @@ const SigninPage = () => {
         // Send signin notification (non-blocking)
         await sendSigninNotification(data.user, 'email');
         
-        // Check invitation status and redirect accordingly
-        await checkInvitationStatusAndRedirect(data.user);
+        // Check user profile and redirect accordingly
+        await checkUserProfileAndRedirect(data.user);
       }
     } catch (error) {
       console.error('Unexpected error during signin:', error);

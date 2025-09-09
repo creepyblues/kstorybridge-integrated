@@ -19,7 +19,7 @@ export function getWebsiteUrl(): string {
   // Check if we're in development mode
   if (import.meta.env.DEV) {
     console.log('🌐 DASHBOARD URL CONFIG: Using dev website URL');
-    return "http://localhost:5173"; // Default Vite port for website
+    return "http://localhost:5174"; // Current website dev port
   }
   
   // Check current hostname to determine if we're on a Vercel deployment
@@ -59,7 +59,7 @@ export function getDashboardUrl(): string {
   
   // Check if we're in development mode
   if (import.meta.env.DEV) {
-    return "http://localhost:8081"; // Dashboard dev port
+    return "http://localhost:8083"; // Current dashboard dev port
   }
   
   // Check if we're on Vercel

@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { contentProcessingService } from '@/services/contentProcessingService';
 import { vectorSearchService } from '@/services/vectorSearchService';
+import { getProfilePath } from '@/utils/navigation';
 
 export default function VectorSearchManager() {
   const { user } = useAuth();
@@ -38,7 +39,8 @@ export default function VectorSearchManager() {
         description: "You don't have permission to access the Vector Search Manager.",
         variant: "destructive",
       });
-      navigate("/profile");
+      const accountType = user?.user_metadata?.account_type || 'buyer';
+      navigate(getProfilePath(accountType));
       return;
     }
 
@@ -160,7 +162,10 @@ export default function VectorSearchManager() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-6 sm:mb-8">
           <Button
-            onClick={() => navigate("/profile")}
+            onClick={() => {
+              const accountType = user?.user_metadata?.account_type || 'buyer';
+              navigate(getProfilePath(accountType));
+            }}
             variant="outline"
             size="sm"
             className="flex items-center gap-2"

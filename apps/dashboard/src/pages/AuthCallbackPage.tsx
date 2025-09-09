@@ -18,27 +18,26 @@ const AuthCallbackPage = () => {
       });
 
       if (buyerProfile) {
-        // Check buyer tier
-        if (buyerProfile.tier && buyerProfile.tier !== 'invited') {
-          console.log('✅ AUTH CALLBACK: Buyer accepted (tier: ' + buyerProfile.tier + '), redirecting to dashboard');
-          navigate('/buyers/titles');
-        } else {
-          console.log('⚠️ AUTH CALLBACK: Buyer not accepted (tier: ' + (buyerProfile.tier || 'null') + '), redirecting to invited page');
-          navigate('/invited');
-        }
+        // All buyers with profiles can access dashboard
+        console.log('✅ AUTH CALLBACK: Buyer profile found, redirecting to dashboard');
+        navigate('/buyers/titles');
       } else if (ipOwnerProfile) {
-        // Check creator status
-        if (ipOwnerProfile.invitation_status === 'accepted') {
-          console.log('✅ AUTH CALLBACK: Creator accepted, redirecting to dashboard');
-          navigate('/creators/titles');
-        } else {
-          console.log('⚠️ AUTH CALLBACK: Creator not accepted, redirecting to invited page');
-          navigate('/creator/invited');
-        }
+        // All creators with profiles can access dashboard
+        console.log('✅ AUTH CALLBACK: Creator profile found, redirecting to dashboard');
+        navigate('/creators/home/');
       } else {
         // No profile found, need to complete signup
         console.log('📝 AUTH CALLBACK: No profile found, completing signup');
-        const accountType = user.user_metadata?.account_type || 'buyer';
+        
+        // Check URL params for account type first (passed from OAuth signup)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlAccountType = urlParams.get('account_type');
+        
+        // Fallback to user metadata or default to 'buyer'
+        const accountType = urlAccountType || user.user_metadata?.account_type || 'buyer';
+        
+        console.log('📝 AUTH CALLBACK: Detected account type:', accountType, 'from URL:', urlAccountType);
+        
         const signupUrl = accountType === 'buyer' ? '/signup/buyer' : '/signup/creator';
         navigate(`${signupUrl}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
       }
@@ -100,7 +99,7 @@ const AuthCallbackPage = () => {
             .maybeSingle(),
           supabase
             .from('user_ipowners')
-            .select('invitation_status, email, id, full_name, pen_name')
+            .select('email, id, full_name, pen_name')
             .eq('email', user.email?.toLowerCase())
             .maybeSingle()
         ]);
@@ -112,7 +111,6 @@ const AuthCallbackPage = () => {
           buyerProfile: !!buyerProfile,
           ipOwnerProfile: !!ipOwnerProfile,
           buyerTier: buyerProfile?.tier,
-          creatorStatus: ipOwnerProfile?.invitation_status
         });
 
         // Send signin notification (non-blocking)

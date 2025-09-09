@@ -10,7 +10,7 @@ const getDiscoverItems = (accountType: string) => {
   if (accountType === "ip_owner") {
     return [
       { title: "Home", href: "/creators/home" },
-      { title: "Titles", href: "/creators/titles" },
+      { title: "My Titles", href: "/creators/titles" },
       { title: "News", href: "/creators/news" },
     ];
   } else {
@@ -72,12 +72,12 @@ export function CMSHeader() {
     email: 'demo@kstorybridge.com',
     user_metadata: {
       full_name: 'Demo User',
-      account_type: user?.user_metadata?.account_type || 'buyer' // Use real account type if available
+      account_type: 'buyer' // Fixed mock account type
     }
   };
 
   // 🧪 MOCK TESTING: Change this value when using mock data
-  // Options: 'invited', 'basic', 'pro', 'suite'
+  // Options: 'basic', 'pro', 'suite'
   // NOTE: Should match the mockTier in useTierAccess.ts
   const mockTier = 'basic';
 
@@ -86,9 +86,10 @@ export function CMSHeader() {
   const displayTier = (isLocalhost && !useRealDataOnLocalhost) ? mockTier : tier;
   const displayTierLoading = (isLocalhost && !useRealDataOnLocalhost) ? false : tierLoading;
 
-  // Get account type for display
-  const accountType = displayUser?.user_metadata?.account_type || "buyer";
+  // Get account type for display - always use real user data for account type detection
+  const accountType = user?.user_metadata?.account_type || "buyer";
   const displayTitle = accountType === "ip_owner" ? "Creator Dashboard" : "Buyer Dashboard";
+  const userTypeLabel = accountType === "ip_owner" ? "Creator" : "Buyer";
   const userEmail = displayUser?.email;
   
   // Get menu items
@@ -102,8 +103,6 @@ export function CMSHeader() {
     }
 
     switch (tier) {
-      case 'invited':
-        return { label: 'Invited', className: 'bg-gray-100 text-gray-700' };
       case 'basic':
         return { label: 'Basic', className: 'bg-blue-100 text-blue-800' };
       case 'pro':
@@ -154,10 +153,15 @@ export function CMSHeader() {
                 <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                   <User className="w-3 h-3 sm:w-4 sm:h-4 text-midnight-ink-400" />
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {/* User name - truncate on mobile */}
-                    <span className="text-midnight-ink font-medium max-w-[100px] sm:max-w-none truncate">
-                      {displayUser.user_metadata?.full_name || displayUser.email}
-                    </span>
+                    {/* User info - name and type */}
+                    <div className="flex flex-col">
+                      <span className="text-midnight-ink font-medium max-w-[100px] sm:max-w-none truncate">
+                        {displayUser.user_metadata?.full_name || displayUser.email}
+                      </span>
+                      <span className="text-xs text-midnight-ink-400 font-normal">
+                        {userTypeLabel}
+                      </span>
+                    </div>
                     {accountType === "buyer" && (
                       <div className={`inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium w-fit ${tierDisplay.className}`}>
                         {tierDisplay.label}

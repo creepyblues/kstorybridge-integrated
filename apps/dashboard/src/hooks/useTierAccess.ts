@@ -2,12 +2,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 
-type UserTier = 'invited' | 'basic' | 'pro' | 'suite';
+type UserTier = 'basic' | 'pro' | 'suite';
 
 interface TierAccess {
   tier: UserTier | null;
   loading: boolean;
-  isInvited: boolean;
   isBasic: boolean;
   isPro: boolean;
   isSuite: boolean;
@@ -17,7 +16,6 @@ interface TierAccess {
 }
 
 const tierHierarchy: Record<UserTier, number> = {
-  invited: 0,
   basic: 1,
   pro: 2,
   suite: 3
@@ -36,7 +34,7 @@ export const useTierAccess = (): TierAccess => {
   const useRealDataOnLocalhost = true; // Now using real data for localhost testing
 
   // 🧪 MOCK TESTING: Change this value when using mock data
-  // Options: 'invited', 'basic', 'pro', 'suite'
+  // Options: 'basic', 'pro', 'suite'
   // NOTE: Should match the mockTier in CMSHeader.tsx for consistency
   const mockTier: UserTier = 'basic';
 
@@ -62,14 +60,23 @@ export const useTierAccess = (): TierAccess => {
         return;
       }
 
+      // Check if user is a creator (ip_owner) - creators don't have tiers
+      const accountType = user?.user_metadata?.account_type;
+      if (accountType === 'ip_owner') {
+        console.log('🎨 useTierAccess: User is a creator (ip_owner), skipping tier query');
+        setTier(null); // Creators don't have tiers
+        setLoading(false);
+        return;
+      }
+
       try {
         if (isLocalhost && useRealDataOnLocalhost) {
           console.log('🔍 useTierAccess: Using real Supabase data on localhost for:', testEmail);
         } else {
-          console.log('🔍 useTierAccess: Fetching tier for user:', { id: user?.id, email: user?.email });
+          console.log('🔍 useTierAccess: Fetching tier for buyer user:', { id: user?.id, email: user?.email });
         }
 
-        // Query by email since user_id column doesn't exist yet
+        // Query by email since user_id column doesn't exist yet - only for buyers
         const { data, error } = await supabase
           .from('user_buyers')
           .select('tier, email')
@@ -107,7 +114,6 @@ export const useTierAccess = (): TierAccess => {
   return {
     tier,
     loading,
-    isInvited: tier === 'invited',
     isBasic: tier === 'basic',
     isPro: tier === 'pro',
     isSuite: tier === 'suite',

@@ -251,7 +251,7 @@ const SigninPage = () => {
         const { data: profile, error } = await supabase
           .from('user_ipowners')
           .select('id, email')
-          .eq('id', user.id)
+          .eq('email', user.email?.toLowerCase())
           .maybeSingle();
         
         if (error) {

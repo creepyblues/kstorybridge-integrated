@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
 import { sendWelcomeEmail } from '@/services/emailService';
+import { sendWelcomeEmail } from '@/services/emailService';
 
 type AccountType = 'buyer' | 'creator';
 
@@ -464,7 +465,27 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             }
           }, 100);
 
-          // Welcome email will be sent after email verification via auth state change
+          // Send welcome email immediately for OAuth users (they're already verified)
+          try {
+            // Check if we've already sent a welcome email (using localStorage to track)
+            const welcomeEmailKey = `welcome_email_sent_${oAuthUserId}`;
+            if (!localStorage.getItem(welcomeEmailKey)) {
+              await sendWelcomeEmail({
+                userName: buyerFormData.fullName,
+                userEmail: buyerFormData.email,
+                accountType: 'buyer',
+                dashboardUrl: window.location.origin + '/buyers/titles',
+                loginUrl: window.location.origin + '/signin'
+              });
+              console.log('✅ Welcome email sent for OAuth buyer:', buyerFormData.email);
+              // Mark as sent to avoid duplicate emails
+              localStorage.setItem(welcomeEmailKey, 'true');
+            } else {
+              console.log('ℹ️ Welcome email already sent for this user');
+            }
+          } catch (emailError) {
+            console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
+          }
           
           toast({
             title: "Profile Completed!",
@@ -677,10 +698,30 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           }
         }, 100);
 
-        // Welcome email will be sent after email verification via auth state change
-
         // Success handling
         if (isOAuthUser) {
+          // Send welcome email immediately for OAuth users (they're already verified)
+          try {
+            // Check if we've already sent a welcome email (using localStorage to track)
+            const welcomeEmailKey = `welcome_email_sent_${oAuthUserId}`;
+            if (!localStorage.getItem(welcomeEmailKey)) {
+              await sendWelcomeEmail({
+                userName: creatorFormData.fullName,
+                userEmail: creatorFormData.email,
+                accountType: 'creator',
+                dashboardUrl: window.location.origin + '/creators/home/',
+                loginUrl: window.location.origin + '/signin'
+              });
+              console.log('✅ Welcome email sent for OAuth creator:', creatorFormData.email);
+              // Mark as sent to avoid duplicate emails
+              localStorage.setItem(welcomeEmailKey, 'true');
+            } else {
+              console.log('ℹ️ Welcome email already sent for this user');
+            }
+          } catch (emailError) {
+            console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
+          }
+          
           toast({
             title: "Profile Completed!",
             description: "Your creator profile has been created successfully."

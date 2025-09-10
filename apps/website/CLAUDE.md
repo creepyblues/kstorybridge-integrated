@@ -113,6 +113,8 @@ const metadata = {
 
 **Critical Requirement**: Always use `pen_name` for IP owner profiles.
 
+**Note**: Creator profiles are stored in the `user_creators` table (renamed from `user_ipowners` on 2025-09-10).
+
 **✅ Correct Implementation:**
 ```typescript
 // SignupForm metadata
@@ -121,7 +123,7 @@ const metadata = {
 }
 
 // Database insertion (triggers)
-INSERT INTO user_ipowners (pen_name, ...) 
+INSERT INTO user_creators (pen_name, ...) 
 VALUES (NEW.raw_user_meta_data->>'pen_name', ...)
 ```
 

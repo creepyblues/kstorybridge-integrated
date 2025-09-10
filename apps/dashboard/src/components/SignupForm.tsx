@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
 import { sendWelcomeEmail } from '@/services/emailService';
-import { sendWelcomeEmail } from '@/services/emailService';
+import { createBuyerProfileAtomic, createCreatorProfileAtomic } from '@/utils/atomicProfileCreator';
 
 type AccountType = 'buyer' | 'creator';
 
@@ -411,40 +411,39 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         
         // For OAuth users, we need to update/create the profile in user_buyers table
         if (isOAuthUser) {
-          console.log('📝 Creating/updating buyer profile for OAuth user...');
+          console.log('📝 Creating/updating buyer profile for OAuth user with atomic utility...');
           
-          const profileData = {
+          const profileResult = await createBuyerProfileAtomic({
             id: data.user.id,
             email: buyerFormData.email,
             full_name: buyerFormData.fullName,
             buyer_company: buyerFormData.buyerCompany,
             buyer_role: buyerFormData.buyerRole,
             linkedin_url: buyerFormData.linkedinUrl || null,
-            tier: 'basic' // Default tier for new signups
-          };
+            tier: 'basic'
+          }, {
+            maxRetries: 3,
+            allowUpdate: true,
+            waitForTrigger: false // OAuth users don't use triggers
+          });
           
-          console.log('💾 Profile data to upsert:', profileData);
-          
-          const { data: insertResult, error: profileError } = await supabase
-            .from('user_buyers')
-            .upsert(profileData, {
-              onConflict: 'id'
-            });
-          
-          console.log('💾 Database upsert result:', { insertResult, profileError });
-          
-          if (profileError) {
-            console.error('❌ Profile update error:', profileError);
-            console.error('❌ Full error details:', JSON.stringify(profileError, null, 2));
+          if (!profileResult.success) {
+            console.error('❌ Atomic profile creation error:', profileResult.error);
             toast({
               title: "Profile Update Failed",
-              description: `Failed to save profile data: ${profileError.message}`,
+              description: `Failed to save profile data: ${profileResult.error}`,
               variant: "destructive"
             });
             return;
           }
           
-          console.log('✅ OAuth buyer profile saved successfully');
+          if (profileResult.existed) {
+            console.log('✅ OAuth buyer profile already existed');
+          } else if (profileResult.created) {
+            console.log('✅ OAuth buyer profile created successfully');
+          } else if (profileResult.updated) {
+            console.log('✅ OAuth buyer profile updated successfully');
+          }
           
           // Send Slack notification for successful signup (non-blocking)
           setTimeout(async () => {
@@ -625,10 +624,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         console.log('🔒 Auth state:', { uid: data.user.id, email: data.user.email });
         
         if (isOAuthUser) {
-          // For OAuth creators, we need to manually create the profile since they bypass the signup trigger
-          console.log('📝 Creating OAuth creator profile...');
+          // For OAuth creators, we need to manually create the profile using atomic utility
+          console.log('📝 Creating OAuth creator profile with atomic utility...');
           
-          const profileData = {
+          const profileResult = await createCreatorProfileAtomic({
             id: data.user.id,
             email: creatorFormData.email,
             full_name: creatorFormData.fullName,
@@ -637,25 +636,29 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             ip_owner_company: creatorFormData.ipOwnerCompany || null,
             website_url: creatorFormData.websiteUrl || null,
             invitation_status: 'invited'
-          };
-          
-          console.log('📝 OAuth creator profile data to insert:', profileData);
+          }, {
+            maxRetries: 3,
+            allowUpdate: true,
+            waitForTrigger: false // OAuth users don't use triggers
+          });
 
-          const { error: profileError } = await supabase
-            .from('user_ipowners')
-            .insert(profileData);
-
-          if (profileError) {
-            console.error('❌ OAuth creator profile creation error:', profileError);
+          if (!profileResult.success) {
+            console.error('❌ Atomic creator profile creation error:', profileResult.error);
             toast({
               title: "Profile Creation Failed",
-              description: `Profile creation failed: ${profileError.message}. Please try again.`,
+              description: `Profile creation failed: ${profileResult.error}. Please try again.`,
               variant: "destructive"
             });
             return;
           }
           
-          console.log('✅ OAuth creator profile created successfully');
+          if (profileResult.existed) {
+            console.log('✅ OAuth creator profile already existed');
+          } else if (profileResult.created) {
+            console.log('✅ OAuth creator profile created successfully');
+          } else if (profileResult.updated) {
+            console.log('✅ OAuth creator profile updated successfully');
+          }
           
           // Update user metadata to include account_type for consistency
           const { error: metadataError } = await supabase.auth.updateUser({

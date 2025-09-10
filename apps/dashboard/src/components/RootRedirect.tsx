@@ -44,15 +44,15 @@ export function RootRedirect() {
           return;
         }
 
-        // Check IP owner table
-        const { data: ipOwnerProfile } = await supabase
-          .from('user_ipowners')
+        // Check creator table
+        const { data: creatorProfile } = await supabase
+          .from('user_creators')
           .select('id')
           .eq('email', user.email)
           .single();
 
-        if (ipOwnerProfile) {
-          console.log('✅ RootRedirect: Found IP owner profile, redirecting to /creators/home');
+        if (creatorProfile) {
+          console.log('✅ RootRedirect: Found creator profile, redirecting to /creators/home');
           setAccountType('ip_owner');
           navigate('/creators/home', { replace: true });
           return;

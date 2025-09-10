@@ -35,12 +35,12 @@ SELECT EXISTS (
    AND table_name = 'user_buyers'
 ) as user_buyers_exists;
 
--- 7. Check user_ipowners table (if exists)  
+-- 7. Check user_creators table (if exists)  
 SELECT EXISTS (
    SELECT FROM information_schema.tables 
    WHERE table_schema = 'public'
-   AND table_name = 'user_ipowners'
-) as user_ipowners_exists;
+   AND table_name = 'user_creators'
+) as user_creators_exists;
 
 -- 8. Count data in source tables (if they exist)
 DO $$
@@ -49,8 +49,8 @@ BEGIN
     RAISE NOTICE 'user_buyers count: %', (SELECT COUNT(*) FROM public.user_buyers);
   END IF;
   
-  IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_ipowners') THEN
-    RAISE NOTICE 'user_ipowners count: %', (SELECT COUNT(*) FROM public.user_ipowners);
+  IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_creators') THEN
+    RAISE NOTICE 'user_creators count: %', (SELECT COUNT(*) FROM public.user_creators);
   END IF;
 END $$;
 

@@ -186,7 +186,7 @@ export type Database = {
           },
         ]
       }
-      user_ipowners: {
+      user_creators: {
         Row: {
           created_at: string
           email: string

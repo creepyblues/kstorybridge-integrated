@@ -86,7 +86,7 @@ export function CMSHeader() {
   const displayTier = (isLocalhost && !useRealDataOnLocalhost) ? mockTier : tier;
   const displayTierLoading = (isLocalhost && !useRealDataOnLocalhost) ? false : tierLoading;
 
-  // Get account type for display - always use real user data for account type detection
+  // Get account type for display - use lightweight metadata-only detection for performance
   const accountType = user?.user_metadata?.account_type || "buyer";
   const displayTitle = accountType === "ip_owner" ? "Creator Dashboard" : "Buyer Dashboard";
   const userTypeLabel = accountType === "ip_owner" ? "Creator" : "Buyer";

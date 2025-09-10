@@ -30,7 +30,7 @@ SELECT
     u.raw_user_meta_data->>'pen_name' as pen_name,
     ip.id as ipowner_id
 FROM auth.users u
-LEFT JOIN public.user_ipowners ip ON ip.email = u.email
+LEFT JOIN public.user_creators ip ON ip.email = u.email
 WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
 AND u.created_at > NOW() - INTERVAL '24 hours'
 ORDER BY u.created_at DESC;
@@ -78,7 +78,7 @@ BEGIN
     RAISE LOG 'Successfully created buyer profile for user: %', NEW.id;
     
   ELSIF NEW.raw_user_meta_data->>'account_type' = 'ip_owner' THEN
-    INSERT INTO public.user_ipowners (
+    INSERT INTO public.user_creators (
       id, 
       email, 
       full_name, 
@@ -134,7 +134,7 @@ BEGIN
   -- Find a recent ip_owner user without a profile
   SELECT u.* INTO test_user
   FROM auth.users u
-  LEFT JOIN public.user_ipowners ip ON ip.email = u.email
+  LEFT JOIN public.user_creators ip ON ip.email = u.email
   WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
   AND ip.id IS NULL
   AND u.created_at > NOW() - INTERVAL '24 hours'
@@ -144,7 +144,7 @@ BEGIN
     RAISE NOTICE 'Found user without profile: %, email: %', test_user.id, test_user.email;
     
     -- Manually create the profile
-    INSERT INTO public.user_ipowners (
+    INSERT INTO public.user_creators (
       id, 
       email, 
       full_name, 
@@ -185,7 +185,7 @@ SELECT
     ip.pen_name,
     ip.created_at as profile_created
 FROM auth.users u
-LEFT JOIN public.user_ipowners ip ON ip.email = u.email
+LEFT JOIN public.user_creators ip ON ip.email = u.email
 WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
 ORDER BY u.created_at DESC
 LIMIT 10;

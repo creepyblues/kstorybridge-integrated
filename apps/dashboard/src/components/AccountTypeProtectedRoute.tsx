@@ -1,92 +1,33 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAccountType, getAccountTypeDisplayInfo, type AccountType } from "@/utils/accountTypeDetection";
 
 interface AccountTypeProtectedRouteProps {
   children: ReactNode;
-  allowedAccountTypes: ('buyer' | 'ip_owner')[];
+  allowedAccountTypes: AccountType[];
 }
-
-type AccountType = 'buyer' | 'ip_owner' | null;
 
 export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: AccountTypeProtectedRouteProps) {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [accountType, setAccountType] = useState<AccountType>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // Use centralized account type detection
+  const { 
+    accountType, 
+    loading: accountTypeLoading, 
+    source, 
+    confidence,
+    profileExists 
+  } = useAccountType({ 
+    includeDatabaseLookup: true, 
+    debug: true 
+  });
 
   useEffect(() => {
-    const determineAccountType = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      console.log('🔍 Determining account type for user:', user.email);
-
-      try {
-        // First check user metadata
-        const metadataAccountType = user.user_metadata?.account_type;
-        console.log('📝 User metadata account_type:', metadataAccountType);
-
-        if (metadataAccountType === 'buyer' || metadataAccountType === 'ip_owner') {
-          setAccountType(metadataAccountType);
-          setLoading(false);
-          return;
-        }
-
-        // If no metadata, check database tables
-        console.log('🔍 Checking database for account type...');
-        
-        // Check buyer table
-        const { data: buyerProfile } = await supabase
-          .from('user_buyers')
-          .select('id')
-          .eq('email', user.email)
-          .single();
-
-        if (buyerProfile) {
-          console.log('✅ Found buyer profile');
-          setAccountType('buyer');
-          setLoading(false);
-          return;
-        }
-
-        // Check IP owner table
-        const { data: ipOwnerProfile } = await supabase
-          .from('user_ipowners')
-          .select('id')
-          .eq('email', user.email)
-          .single();
-
-        if (ipOwnerProfile) {
-          console.log('✅ Found IP owner profile');
-          setAccountType('ip_owner');
-          setLoading(false);
-          return;
-        }
-
-        // No profile found - default to buyer for backward compatibility
-        console.log('⚠️ No profile found, defaulting to buyer');
-        setAccountType('buyer');
-        setLoading(false);
-
-      } catch (error) {
-        console.error('❌ Error determining account type:', error);
-        // Default to buyer on error for backward compatibility
-        setAccountType('buyer');
-        setLoading(false);
-      }
-    };
-
-    determineAccountType();
-  }, [user]);
-
-  useEffect(() => {
-    if (!authLoading && !loading && user && accountType) {
+    if (!authLoading && !accountTypeLoading && user && accountType) {
       const isAllowed = allowedAccountTypes.includes(accountType);
       
       console.log('🛡️ Account type protection check:', {
@@ -94,20 +35,23 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
         accountType,
         allowedAccountTypes,
         isAllowed,
-        currentPath: location.pathname
+        currentPath: location.pathname,
+        source,
+        confidence,
+        profileExists
       });
 
       if (!isAllowed) {
-        // Redirect to appropriate dashboard based on account type
-        const redirectPath = accountType === 'buyer' ? '/buyers/home' : '/creators/home';
-        console.log('🚫 Access denied, redirecting to:', redirectPath);
-        navigate(redirectPath, { replace: true });
+        // Use centralized display info for consistent routing
+        const displayInfo = getAccountTypeDisplayInfo(accountType);
+        console.log('🚫 Access denied, redirecting to:', displayInfo.homePath);
+        navigate(displayInfo.homePath, { replace: true });
       }
     }
-  }, [authLoading, loading, user, accountType, allowedAccountTypes, navigate, location.pathname]);
+  }, [authLoading, accountTypeLoading, user, accountType, allowedAccountTypes, navigate, location.pathname, source, confidence, profileExists]);
 
   // Show loading while auth or account type is loading
-  if (authLoading || loading) {
+  if (authLoading || accountTypeLoading) {
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-white" />

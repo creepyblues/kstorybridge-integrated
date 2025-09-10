@@ -42,10 +42,10 @@ CREATE TABLE public.user_buyers (
 );
 ```
 
-#### `public.user_ipowners`
-IP owner/creator user profiles and account information.
+#### `public.user_creators`
+Creator/IP owner user profiles and account information. (Renamed from `user_ipowners` on 2025-09-10)
 ```sql
-CREATE TABLE public.user_ipowners (
+CREATE TABLE public.user_creators (
   id uuid NOT NULL,
   email text NOT NULL UNIQUE,
   full_name text NOT NULL,
@@ -56,8 +56,8 @@ CREATE TABLE public.user_ipowners (
   invitation_status text DEFAULT 'invited'::text CHECK (invitation_status = ANY (ARRAY['invited'::text, 'accepted'::text])),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT user_ipowners_pkey PRIMARY KEY (id),
-  CONSTRAINT user_ipowners_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+  CONSTRAINT user_creators_pkey PRIMARY KEY (id),
+  CONSTRAINT user_creators_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
 ```
 
@@ -327,7 +327,7 @@ CREATE TABLE public.request (
 
 ### User Types
 - **Buyers**: Stored in `user_buyers` with tier-based access control
-- **IP Owners/Creators**: Stored in `user_ipowners` with pen name and company info
+- **IP Owners/Creators**: Stored in `user_creators` with pen name and company info
 - **Admins**: Stored in `admin` with special privileges
 
 ### Content Flow

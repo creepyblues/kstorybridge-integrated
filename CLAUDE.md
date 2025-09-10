@@ -139,7 +139,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 **User Table Structure:**
 - `user_buyers` - Buyer accounts with `tier` field (basic|invited|pro|suite, default: 'basic')
-- `user_ipowners` - Creator/IP owner accounts
+- `user_creators` - Creator/IP owner accounts (renamed from `user_ipowners` 2025-09-10)
 - `profiles` - Legacy profile data (being phased out)
 - Query by `email` field, not `user_id`
 

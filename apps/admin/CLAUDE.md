@@ -210,7 +210,7 @@ The `titles` table contains all fields for title management. **Always show ALL f
 
 **User Tables (Shared with Dashboard/Website):**
 - `user_buyers` - Buyer user accounts with `tier` field (default: 'basic')
-- `user_ipowners` - Creator/IP owner accounts
+- `user_creators` - Creator/IP owner accounts (renamed from `user_ipowners` 2025-09-10)
 - `profiles` - Legacy user profile data
 
 ### Common Development Patterns

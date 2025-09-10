@@ -3,46 +3,53 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { notifyUserSignin } from '@/utils/slack';
+import { determineAccountType, getAccountTypeDisplayInfo, checkProfileExists } from '@/utils/accountTypeDetection';
 
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const checkTierAndRedirect = async (user: any, buyerProfile: any, ipOwnerProfile: any) => {
+  const handleUserRedirect = async (user: any) => {
     try {
-      console.log('🔍 AUTH CALLBACK: Checking tier for user:', { 
+      console.log('🔍 AUTH CALLBACK: Processing redirect for user:', { 
         userId: user.id, 
-        email: user.email,
-        buyerProfile: !!buyerProfile,
-        ipOwnerProfile: !!ipOwnerProfile
+        email: user.email
       });
 
-      if (buyerProfile) {
-        // All buyers with profiles can access dashboard
-        console.log('✅ AUTH CALLBACK: Buyer profile found, redirecting to dashboard');
-        navigate('/buyers/titles');
-      } else if (ipOwnerProfile) {
-        // All creators with profiles can access dashboard
-        console.log('✅ AUTH CALLBACK: Creator profile found, redirecting to dashboard');
-        navigate('/creators/home/');
+      // Use centralized account type detection with URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const accountTypeResult = await determineAccountType(user, {
+        urlParams,
+        includeDatabaseLookup: true,
+        debug: true
+      });
+
+      const { accountType, profileExists, source, confidence } = accountTypeResult;
+      
+      console.log('🔍 AUTH CALLBACK: Account type detection result:', {
+        accountType,
+        profileExists,
+        source,
+        confidence
+      });
+
+      if (profileExists && accountType) {
+        // User has a profile, redirect to appropriate dashboard
+        const displayInfo = getAccountTypeDisplayInfo(accountType);
+        console.log('✅ AUTH CALLBACK: Profile found, redirecting to dashboard:', displayInfo.dashboardPath);
+        navigate(displayInfo.dashboardPath);
       } else {
         // No profile found, need to complete signup
         console.log('📝 AUTH CALLBACK: No profile found, completing signup');
         
-        // Check URL params for account type first (passed from OAuth signup)
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlAccountType = urlParams.get('account_type');
+        const finalAccountType = accountType || 'buyer';
+        const displayInfo = getAccountTypeDisplayInfo(finalAccountType);
         
-        // Fallback to user metadata or default to 'buyer'
-        const accountType = urlAccountType || user.user_metadata?.account_type || 'buyer';
-        
-        console.log('📝 AUTH CALLBACK: Detected account type:', accountType, 'from URL:', urlAccountType);
-        
-        const signupUrl = accountType === 'buyer' ? '/signup/buyer' : '/signup/creator';
-        navigate(`${signupUrl}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
+        console.log('📝 AUTH CALLBACK: Redirecting to signup:', displayInfo.signupPath);
+        navigate(`${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
       }
     } catch (error) {
-      console.error('Error in checkTierAndRedirect:', error);
+      console.error('Error in handleUserRedirect:', error);
       navigate('/signin');
     }
   };
@@ -90,42 +97,19 @@ const AuthCallbackPage = () => {
         const user = session.user;
         console.log('✅ AUTH CALLBACK: Session found for user:', user.email);
 
-        // Check if user has existing profiles
-        const [buyerResult, ipOwnerResult] = await Promise.all([
-          supabase
-            .from('user_buyers')
-            .select('tier, email, id, full_name, buyer_company')
-            .eq('email', user.email?.toLowerCase())
-            .maybeSingle(),
-          supabase
-            .from('user_ipowners')
-            .select('email, id, full_name, pen_name')
-            .eq('email', user.email?.toLowerCase())
-            .maybeSingle()
-        ]);
-
-        const buyerProfile = buyerResult.data;
-        const ipOwnerProfile = ipOwnerResult.data;
-
-        console.log('🔍 AUTH CALLBACK: Profile check results:', {
-          buyerProfile: !!buyerProfile,
-          ipOwnerProfile: !!ipOwnerProfile,
-          buyerTier: buyerProfile?.tier,
-        });
-
-        // Send signin notification (non-blocking)
+        // Send signin notification (non-blocking) - get basic info for notification
         try {
-          const fullName = user.user_metadata?.full_name || buyerProfile?.full_name || ipOwnerProfile?.full_name || user.email?.split('@')[0] || 'User';
-          let userType: 'buyer' | 'creator' = 'buyer';
-          let company = user.user_metadata?.company;
-          
-          if (ipOwnerProfile) {
-            userType = 'creator';
-            company = ipOwnerProfile.pen_name || company;
-          } else if (buyerProfile) {
-            userType = 'buyer';
-            company = buyerProfile.buyer_company || company;
-          }
+          // Get account type quickly for notification
+          const urlParams = new URLSearchParams(window.location.search);
+          const quickAccountType = await determineAccountType(user, {
+            urlParams,
+            includeDatabaseLookup: false, // Skip database lookup for performance
+            debug: false
+          });
+
+          const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+          const userType = quickAccountType.accountType === 'ip_owner' ? 'creator' : 'buyer';
+          const company = user.user_metadata?.company || user.user_metadata?.pen_name || user.user_metadata?.buyer_company;
           
           notifyUserSignin({
             fullName,
@@ -140,7 +124,14 @@ const AuthCallbackPage = () => {
           console.error('Error preparing OAuth signin notification:', error);
         }
 
-        await checkTierAndRedirect(user, buyerProfile, ipOwnerProfile);
+        // Handle user redirect using centralized logic
+        try {
+          await handleUserRedirect(user);
+        } catch (redirectError) {
+          console.error('❌ AUTH CALLBACK: Error during redirect:', redirectError);
+          // Fallback to signin page
+          navigate('/signin');
+        }
       } catch (error) {
         console.error('❌ AUTH CALLBACK: Unexpected error:', error);
         toast({

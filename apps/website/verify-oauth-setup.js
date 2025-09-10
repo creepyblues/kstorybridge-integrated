@@ -36,7 +36,7 @@ async function verifySetup() {
   // Check tables exist
   console.log('\n📊 Checking database tables...');
   
-  const tables = ['user_buyers', 'user_ipowners'];
+  const tables = ['user_buyers', 'user_creators'];
   for (const table of tables) {
     try {
       const { error } = await supabase

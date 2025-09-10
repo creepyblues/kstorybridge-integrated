@@ -45,10 +45,10 @@ CREATE TABLE public.user_buyers (
 - `pro` (2) - Premium content access
 - `suite` (3) - Full feature access
 
-### user_ipowners
-Content creator/IP owner accounts
+### user_creators
+Content creator/IP owner accounts (renamed from user_ipowners)
 ```sql
-CREATE TABLE public.user_ipowners (
+CREATE TABLE public.user_creators (
   id uuid NOT NULL,
   email text NOT NULL UNIQUE,
   full_name text NOT NULL,
@@ -59,12 +59,13 @@ CREATE TABLE public.user_ipowners (
   invitation_status text DEFAULT 'invited'::text CHECK (invitation_status = ANY (ARRAY['invited'::text, 'accepted'::text])),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT user_ipowners_pkey PRIMARY KEY (id),
-  CONSTRAINT user_ipowners_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+  CONSTRAINT user_creators_pkey PRIMARY KEY (id),
+  CONSTRAINT user_creators_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
 ```
 
-**Important**: Always use `pen_name` field for IP owner profiles.
+**Important**: Always use `pen_name` field for creator profiles.
+**Note**: This table was renamed from `user_ipowners` to `user_creators` in 2025-09-10.
 
 ### user_favorites
 User-favorited titles relationship
@@ -341,8 +342,16 @@ CREATE TABLE public.request (
 
 ## Key Development Notes
 
+### Recent Schema Changes (2025-09-10)
+- **Table Rename**: `user_ipowners` → `user_creators`
+  - All application code updated to use new table name
+  - Database migration completed successfully  
+  - Historical migration files maintain original references
+  - Field names and structure remain unchanged
+
 ### Query Patterns
 - ✅ Always use `email` field for user lookups: `.eq('email', user.email)`
+- ✅ Reference creator table as `user_creators` (not `user_ipowners`)
 - ❌ Never use `user_id` - this field doesn't exist in user tables
 - Handle null/undefined values appropriately
 - Always include error handling with try/catch blocks
@@ -351,7 +360,7 @@ CREATE TABLE public.request (
 The schema references several USER-DEFINED types that are specific to this implementation:
 - `user_tier`: Basic tier system (basic, invited, pro, suite)
 - `buyer_role`: Buyer role classifications
-- `ip_owner_role`: IP owner role classifications  
+- `ip_owner_role`: Creator role classifications (historical name maintained for compatibility)
 - `content_format`: Content format categories
 
 ### Vector Embeddings

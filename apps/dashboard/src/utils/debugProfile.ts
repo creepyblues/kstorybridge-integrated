@@ -75,7 +75,7 @@ export const debugProfile = async () => {
     console.error("❌ Profile fetch exception:", error);
   }
 
-  // 4. Check user_buyers and user_ipowners tables
+  // 4. Check user_buyers and user_creators tables
   try {
     const { data: buyerData, error: buyerError } = await supabase
       .from("user_buyers")
@@ -88,15 +88,15 @@ export const debugProfile = async () => {
       console.log("📊 user_buyers data:", buyerData);
     }
 
-    const { data: ipOwnerData, error: ipOwnerError } = await supabase
-      .from("user_ipowners")
+    const { data: creatorData, error: creatorError } = await supabase
+      .from("user_creators")
       .select("*")
       .eq("email", user.email);
       
-    if (ipOwnerError) {
-      console.log("ℹ️ user_ipowners query failed (might not exist):", ipOwnerError.message);
+    if (creatorError) {
+      console.log("ℹ️ user_creators query failed (might not exist):", creatorError.message);
     } else {
-      console.log("📊 user_ipowners data:", ipOwnerData);
+      console.log("📊 user_creators data:", creatorData);
     }
   } catch (error) {
     console.error("❌ User tables check failed:", error);

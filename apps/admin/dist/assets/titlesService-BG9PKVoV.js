@@ -1,4 +1,4 @@
-import{s as i}from"./index-Dkufa2l0.js";const c={async getAllTitles(){const{data:t,error:e}=await i.from("titles").select(`
+import{s as i}from"./index-DFcxXomF.js";const l={async getAllTitles(){const{data:t,error:e}=await i.from("titles").select(`
         title_id,
         title_name_en,
         title_name_kr,
@@ -6,7 +6,7 @@ import{s as i}from"./index-Dkufa2l0.js";const c={async getAllTitles(){const{data
         genre,
         content_format,
         tone,
-        tags,
+        keywords,
         comps,
         pitch,
         created_at,
@@ -19,7 +19,7 @@ import{s as i}from"./index-Dkufa2l0.js";const c={async getAllTitles(){const{data
         genre,
         content_format,
         tone,
-        tags,
+        keywords,
         comps,
         pitch,
         created_at,
@@ -31,4 +31,4 @@ import{s as i}from"./index-Dkufa2l0.js";const c={async getAllTitles(){const{data
         genre,
         pitch,
         updated_at
-      `).order("updated_at",{ascending:!1});if(e)throw e;return t},async searchTitles(t,e){let a=i.from("titles").select("*");t&&(a=a.or(`title_name_kr.ilike.%${t}%,title_name_en.ilike.%${t}%,author.ilike.%${t}%,story_author.ilike.%${t}%,art_author.ilike.%${t}%,writer.ilike.%${t}%,illustrator.ilike.%${t}%,tagline.ilike.%${t}%,synopsis.ilike.%${t}%,perfect_for.ilike.%${t}%,tone.ilike.%${t}%,audience.ilike.%${t}%,note.ilike.%${t}%,rights.ilike.%${t}%,rights_owner.ilike.%${t}%,tags.cs.{${t}},comps.cs.{${t}}`)),e!=null&&e.genre&&(a=a.eq("genre",e.genre)),e!=null&&e.content_format&&(a=a.eq("content_format",e.content_format));const{data:r,error:n}=await a.order("created_at",{ascending:!1});if(n)throw n;return r}};export{c as t};
+      `).order("updated_at",{ascending:!1});if(e)throw e;return t},async searchTitles(t,e){let a=i.from("titles").select("*");t&&(a=a.or(`title_name_kr.ilike.%${t}%,title_name_en.ilike.%${t}%,original_author.ilike.%${t}%,story_author.ilike.%${t}%,art_author.ilike.%${t}%,tagline.ilike.%${t}%,synopsis.ilike.%${t}%,perfect_for.ilike.%${t}%,tone.ilike.%${t}%,audience.ilike.%${t}%,note.ilike.%${t}%,rights.ilike.%${t}%,keywords.cs.{${t}},comps.cs.{${t}}`)),e!=null&&e.genre&&(a=a.eq("genre",e.genre)),e!=null&&e.content_format&&(a=a.eq("content_format",e.content_format));const{data:r,error:n}=await a.order("created_at",{ascending:!1});if(n)throw n;return r}};export{l as t};

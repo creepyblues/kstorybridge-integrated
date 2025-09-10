@@ -41,7 +41,7 @@ async function runAllTests() {
     await tester.recordTest('Database Schema Validation', async () => {
       // Check if tables exist by trying to query them
       const { error: buyerError } = await supabase.from('user_buyers').select('id').limit(1);
-      const { error: creatorError } = await supabase.from('user_ipowners').select('id').limit(1);
+      const { error: creatorError } = await supabase.from('user_creators').select('id').limit(1);
       
       return {
         buyerTableExists: !buyerError,
@@ -98,7 +98,7 @@ async function runAllTests() {
       };
 
       const { data, error } = await supabase
-        .from('user_ipowners')
+        .from('user_creators')
         .insert(testData)
         .select()
         .single();

@@ -7,6 +7,8 @@ import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { notifyUserSignin } from '@/utils/slack';
+import { determineAccountType, getAccountTypeDisplayInfo } from '@/utils/accountTypeDetection';
+import { createBuyerProfileAtomic } from '@/utils/atomicProfileCreator';
 
 const SigninPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -161,76 +163,53 @@ const SigninPage = () => {
 
   const checkUserProfileAndRedirect = async (user: any) => {
     try {
-      const accountType = user.user_metadata?.account_type;
-      
-      console.log('🔍 SIGNIN: Checking user:', {
+      console.log('🔍 SIGNIN: Processing user redirect:', {
         userId: user.id,
-        email: user.email,
-        accountType: accountType,
-        metadata: user.user_metadata
+        email: user.email
       });
+
+      // Use centralized account type detection
+      const accountTypeResult = await determineAccountType(user, {
+        includeDatabaseLookup: true,
+        debug: true
+      });
+
+      const { accountType, profileExists, source, confidence } = accountTypeResult;
       
-      // If no account type is set, check if user exists in buyer table
-      if (!accountType) {
-        const { data: buyerCheck } = await supabase
-          .from('user_buyers')
-          .select('tier')
-          .eq('email', user.email?.toLowerCase())
-          .maybeSingle();
-        
-        if (buyerCheck) {
-          console.log('🔍 SIGNIN: User found in buyers table, treating as buyer');
-          console.log('✅ SIGNIN: Buyer profile found, redirecting to dashboard');
-          navigate('/buyers/titles');
-          return;
-        }
-      }
-      
-      if (accountType === 'buyer' || !accountType) {
-        // Try fetching by email first (most reliable), then by id
-        const { data: profileByEmail } = await supabase
-          .from('user_buyers')
-          .select('tier, email, id')
-          .eq('email', user.email?.toLowerCase())
-          .maybeSingle();
-        
-        let profile = profileByEmail;
-        
-        // If not found by email, try by ID
-        if (!profile) {
-          const { data: profileById } = await supabase
-            .from('user_buyers')
-            .select('tier, email, id')
-            .eq('id', user.id)
-            .maybeSingle();
+      console.log('🔍 SIGNIN: Account type detection result:', {
+        accountType,
+        profileExists,
+        source,
+        confidence
+      });
+
+      if (profileExists && accountType) {
+        // User has a profile, redirect to appropriate dashboard
+        const displayInfo = getAccountTypeDisplayInfo(accountType);
+        console.log('✅ SIGNIN: Profile found, redirecting to:', displayInfo.dashboardPath);
+        navigate(displayInfo.dashboardPath);
+      } else {
+        // Handle missing profile based on account type
+        if (accountType === 'buyer' || !accountType) {
+          // For buyers, create a profile using atomic creation utility
+          console.log('📝 SIGNIN: Creating buyer profile with atomic utility');
           
-          profile = profileById;
-        }
-        
-        console.log('🔍 SIGNIN: Buyer profile lookup:', {
-          userId: user.id,
-          userEmail: user.email,
-          profile: profile,
-          profileTier: profile?.tier
-        });
-        
-        // If no profile exists, create one with basic tier (new default)
-        if (!profile) {
-          console.log('📝 SIGNIN: No buyer profile found, creating one with basic tier');
-          const { data: newProfile, error: createError } = await supabase
-            .from('user_buyers')
-            .insert({
-              id: user.id,
-              email: user.email,
-              tier: 'basic', // Default tier for new signups
-              created_at: new Date().toISOString()
-            })
-            .select()
-            .single();
+          const profileResult = await createBuyerProfileAtomic({
+            id: user.id,
+            email: user.email!,
+            full_name: user.user_metadata?.full_name || '',
+            buyer_company: user.user_metadata?.buyer_company || '',
+            buyer_role: user.user_metadata?.buyer_role || '',
+            linkedin_url: user.user_metadata?.linkedin_url || null,
+            tier: 'basic'
+          }, {
+            maxRetries: 3,
+            allowUpdate: true,
+            waitForTrigger: true
+          });
           
-          if (createError) {
-            console.error('Error creating buyer profile:', createError);
-            // If can't create profile, redirect to signin
+          if (!profileResult.success) {
+            console.error('Error creating buyer profile:', profileResult.error);
             toast({
               title: "Profile Creation Error",
               description: "Unable to create your profile. Please try again.",
@@ -239,51 +218,22 @@ const SigninPage = () => {
             return;
           }
           
-          console.log('✅ SIGNIN: Created buyer profile with basic tier, redirecting to dashboard');
+          if (profileResult.existed) {
+            console.log('✅ SIGNIN: Buyer profile already existed');
+          } else if (profileResult.created) {
+            console.log('✅ SIGNIN: Created new buyer profile');
+          }
+          
           navigate('/buyers/titles');
-          return;
-        }
-        
-        // All buyers with profiles can access dashboard
-        console.log('✅ SIGNIN: Buyer profile found (tier: ' + (profile.tier || 'basic') + '), redirecting to dashboard');
-        navigate('/buyers/titles');
-      } else if (accountType === 'ip_owner') {
-        console.log('🔍 SIGNIN: Looking for creator profile with email:', user.email);
-        const { data: profile, error } = await supabase
-          .from('user_ipowners')
-          .select('id, email, full_name, pen_name')
-          .eq('email', user.email?.toLowerCase())
-          .maybeSingle();
-        
-        console.log('🔍 SIGNIN: Creator profile query result:', { profile, error });
-        
-        if (error) {
-          console.error('❌ SIGNIN: Error fetching IP owner profile:', error);
-          toast({
-            title: "Profile Error",
-            description: "Unable to load your creator profile. Please try again.",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        if (profile) {
-          console.log('✅ SIGNIN: Creator profile found, redirecting to dashboard');
-          console.log('✅ SIGNIN: Profile details:', profile);
-          navigate('/creators/home/');
-        } else {
-          console.log('⚠️ SIGNIN: No creator profile found for email:', user.email);
-          console.log('⚠️ SIGNIN: User metadata:', user.user_metadata);
+        } else if (accountType === 'ip_owner') {
+          // For creators, profile should exist - show error if missing
+          console.log('⚠️ SIGNIN: Creator profile missing');
           toast({
             title: "Profile Not Found",
             description: "Creator profile not found. Please complete your signup.",
             variant: "destructive"
           });
         }
-      } else {
-        // If no account type, default to buyer dashboard
-        console.log('🔄 SIGNIN: No account type specified, defaulting to buyer');
-        navigate('/buyers/titles');
       }
     } catch (error) {
       console.error('Error during signin process:', error);
@@ -365,11 +315,22 @@ const SigninPage = () => {
           description: "You have been signed in successfully."
         });
         
-        // Send signin notification (non-blocking)
-        await sendSigninNotification(data.user, 'email');
+        try {
+          // Send signin notification (non-blocking)
+          await sendSigninNotification(data.user, 'email');
+        } catch (notificationError) {
+          console.error('Failed to send signin notification:', notificationError);
+          // Don't block signin for notification failures
+        }
         
-        // Check user profile and redirect accordingly
-        await checkUserProfileAndRedirect(data.user);
+        try {
+          // Check user profile and redirect accordingly
+          await checkUserProfileAndRedirect(data.user);
+        } catch (redirectError) {
+          console.error('Failed to check profile and redirect:', redirectError);
+          // If profile check fails, still try to navigate somewhere
+          navigate('/');
+        }
       }
     } catch (error) {
       console.error('Unexpected error during signin:', error);

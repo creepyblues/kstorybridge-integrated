@@ -49,7 +49,7 @@ export async function testSupabaseConnection() {
     
     // Test 4: Check database tables accessibility
     console.log('4. Testing table access...');
-    const tables = ['titles', 'user_buyers', 'user_ipowners'];
+    const tables = ['titles', 'user_buyers', 'user_creators'];
     const tableResults = [];
     
     for (const table of tables) {

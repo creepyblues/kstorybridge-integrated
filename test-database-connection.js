@@ -113,7 +113,7 @@ async function testConnection() {
       
       // First, get a valid user ID from the database
       const { data: existingUser } = await serviceSupabase
-        .from('user_ipowners')
+        .from('user_creators')
         .select('id')
         .limit(1)
         .single();

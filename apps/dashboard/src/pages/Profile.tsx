@@ -137,7 +137,7 @@ export default function Profile() {
         } else {
           // ip_owner
           const { data, error } = await supabase
-            .from("user_ipowners")
+            .from("user_creators")
             .select("*")
             .eq("email", user.email)
             .single();
@@ -259,7 +259,7 @@ export default function Profile() {
       console.log("Creating IP owner profile with data:", newProfile);
       
       const { data, error } = await supabase
-        .from("user_ipowners")
+        .from("user_creators")
         .insert(newProfile)
         .select()
         .single();
@@ -343,7 +343,7 @@ export default function Profile() {
         };
 
         const { data, error } = await supabase
-          .from("user_ipowners")
+          .from("user_creators")
           .update(updateData)
           .eq("email", user.email)
           .select()

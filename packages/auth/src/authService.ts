@@ -56,7 +56,7 @@ export class AuthService {
 
       if (accountType === 'ip_owner') {
         const { data: profile, error } = await this.supabase
-          .from('user_ipowners')
+          .from('user_creators')
           .select('invitation_status, ip_owner_role')
           .eq('id', user.id)
           .maybeSingle();

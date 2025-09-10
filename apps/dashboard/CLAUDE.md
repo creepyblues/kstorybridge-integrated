@@ -108,7 +108,7 @@ export default function MyPage() {
 - **Tier Hierarchy**: basic (default), invited, pro, suite
 - **New Signups**: Default to 'basic' tier (changed from 'invited' in 2025-08-21 update)
 
-**IP Owner Profiles (`user_ipowners` table):**
+**IP Owner Profiles (`user_creators` table):**
 - ✅ **CORRECT**: Use `pen_name` field for pen name/studio information
 - ❌ **INCORRECT**: Do NOT use legacy field names
 - **Metadata Mapping**: Store and read as `pen_name` in metadata
@@ -123,7 +123,7 @@ const profile = {
 
 // ✅ Correct Database Query
 .select('pen_name, ip_owner_role, ip_owner_company')
-.from('user_ipowners')
+.from('user_creators')
 ```
 
 **Standard Implementation:**

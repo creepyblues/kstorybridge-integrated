@@ -67,8 +67,8 @@ class AuthTester {
       // Fallback to direct table queries if RPC doesn't exist
       if (query.includes('user_buyers')) {
         return await supabase.from('user_buyers').select('*');
-      } else if (query.includes('user_ipowners')) {
-        return await supabase.from('user_ipowners').select('*');
+      } else if (query.includes('user_creators')) {
+        return await supabase.from('user_creators').select('*');
       }
       throw new Error('Query execution failed');
     });
@@ -90,7 +90,7 @@ class AuthTester {
 
   async checkUserIPOwner(email) {
     const { data, error } = await supabase
-      .from('user_ipowners')
+      .from('user_creators')
       .select('*')
       .eq('email', email)
       .maybeSingle();
@@ -125,9 +125,9 @@ class AuthTester {
         this.log(`Buyer cleanup error: ${buyerError.message}`, 'warning');
       }
 
-      // Clean up user_ipowners  
+      // Clean up user_creators  
       const { error: ipOwnerError } = await supabase
-        .from('user_ipowners')
+        .from('user_creators')
         .delete()
         .eq('email', email);
       
@@ -149,7 +149,7 @@ class AuthTester {
     for (const pattern of testPatterns) {
       try {
         await supabase.from('user_buyers').delete().like('email', pattern);
-        await supabase.from('user_ipowners').delete().like('email', pattern);
+        await supabase.from('user_creators').delete().like('email', pattern);
       } catch (error) {
         this.log(`Cleanup pattern ${pattern} failed: ${error.message}`, 'warning');
       }
@@ -162,7 +162,7 @@ class AuthTester {
     
     try {
       const { data: buyers } = await supabase.from('user_buyers').select('email, tier, created_at');
-      const { data: ipOwners } = await supabase.from('user_ipowners').select('email, invitation_status, created_at');
+      const { data: ipOwners } = await supabase.from('user_creators').select('email, invitation_status, created_at');
       
       this.log(`Found ${buyers?.length || 0} buyers in database`);
       this.log(`Found ${ipOwners?.length || 0} IP owners in database`);

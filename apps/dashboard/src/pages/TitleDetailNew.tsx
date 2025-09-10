@@ -220,51 +220,6 @@ function TitleDetailNewContent() {
                     </div>
                   </div>
                 </div>
-                
-                <div className="flex-1 min-w-0 text-left">
-                  <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 mb-2 sm:mb-3 leading-tight">
-                    {title.title_name_en || title.title_name_kr}
-                  </h1>
-                  {title.title_name_kr && title.title_name_en && (
-                    <p className="text-xl text-slate-600 font-medium mb-3 sm:mb-4">
-                      {title.title_name_kr}
-                    </p>
-                  )}
-                  
-                  {/* Author info - Story and Art on same line */}
-                  <div className="flex flex-row flex-wrap gap-6 text-base text-slate-600 justify-start">
-                    {title.story_author && (
-                      <span className="flex items-center gap-2">
-                        <span className="font-semibold text-hanok-teal">Story:</span> 
-                        <span className="font-medium">{title.story_author}</span>
-                      </span>
-                    )}
-                    {title.art_author && (
-                      <span className="flex items-center gap-2">
-                        <span className="font-semibold text-hanok-teal">Art:</span> 
-                        <span className="font-medium">{title.art_author}</span>
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Quick stats - views/chapters/status in one line */}
-                  <div className="flex flex-row items-center gap-6 mt-4 text-sm text-slate-500 justify-start flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      <span className="font-medium">{formatViews(title.views || 0)} views</span>
-                    </div>
-                    {title.chapters && (
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        <span className="font-medium">{title.chapters.toLocaleString()} chapters</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span className="font-medium">{title.completed ? 'Completed' : 'Ongoing'}</span>
-                    </div>
-                  </div>
-                </div>
               </div>
               
               {/* Mobile: Content section */}

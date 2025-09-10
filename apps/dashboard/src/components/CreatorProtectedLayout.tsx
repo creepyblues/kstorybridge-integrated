@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { AccountTypeProtectedRoute } from "./AccountTypeProtectedRoute";
 import { CMSLayout } from "./layout/CMSLayout";
 import SessionTracker from "./SessionTracker";
+import { DebugAccountType } from "./DebugAccountType";
 
 interface CreatorProtectedLayoutProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ export function CreatorProtectedLayout({ children }: CreatorProtectedLayoutProps
     <ProtectedRoute>
       <AccountTypeProtectedRoute allowedAccountTypes={['ip_owner']}>
         <SessionTracker />
+        <DebugAccountType />
         <CMSLayout>{children}</CMSLayout>
       </AccountTypeProtectedRoute>
     </ProtectedRoute>

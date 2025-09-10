@@ -248,14 +248,17 @@ const SigninPage = () => {
         console.log('✅ SIGNIN: Buyer profile found (tier: ' + (profile.tier || 'basic') + '), redirecting to dashboard');
         navigate('/buyers/titles');
       } else if (accountType === 'ip_owner') {
+        console.log('🔍 SIGNIN: Looking for creator profile with email:', user.email);
         const { data: profile, error } = await supabase
           .from('user_ipowners')
-          .select('id, email')
+          .select('id, email, full_name, pen_name')
           .eq('email', user.email?.toLowerCase())
           .maybeSingle();
         
+        console.log('🔍 SIGNIN: Creator profile query result:', { profile, error });
+        
         if (error) {
-          console.error('Error fetching IP owner profile:', error);
+          console.error('❌ SIGNIN: Error fetching IP owner profile:', error);
           toast({
             title: "Profile Error",
             description: "Unable to load your creator profile. Please try again.",
@@ -266,9 +269,11 @@ const SigninPage = () => {
         
         if (profile) {
           console.log('✅ SIGNIN: Creator profile found, redirecting to dashboard');
+          console.log('✅ SIGNIN: Profile details:', profile);
           navigate('/creators/home/');
         } else {
-          console.log('⚠️ SIGNIN: No creator profile found');
+          console.log('⚠️ SIGNIN: No creator profile found for email:', user.email);
+          console.log('⚠️ SIGNIN: User metadata:', user.user_metadata);
           toast({
             title: "Profile Not Found",
             description: "Creator profile not found. Please complete your signup.",

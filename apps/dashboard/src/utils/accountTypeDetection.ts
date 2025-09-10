@@ -88,13 +88,49 @@ export async function determineAccountType(
     log('Checking metadata', { metadataAccountType });
     
     if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
-      log('✅ Found valid account type in metadata');
-      return {
-        accountType: metadataAccountType,
-        source: 'metadata',
-        confidence: 'high',
-        profileExists: true // Assume profile exists if metadata is set
-      };
+      log('✅ Found valid account type in metadata, checking if profile exists');
+      
+      // For OAuth flows, metadata is set before profile creation
+      // We need to actually check if the profile exists in the database
+      if (includeDatabaseLookup && user.email) {
+        const tableName = metadataAccountType === 'buyer' ? 'user_buyers' : 'user_creators';
+        log('🔍 Verifying profile existence in database', { tableName, email: user.email });
+        
+        try {
+          const { data, error } = await supabase
+            .from(tableName)
+            .select('id')
+            .eq('email', user.email.toLowerCase())
+            .maybeSingle();
+          
+          const actualProfileExists = !!(data && !error);
+          log(`📋 Profile verification result: ${actualProfileExists ? 'EXISTS' : 'NOT FOUND'}`);
+          
+          return {
+            accountType: metadataAccountType,
+            source: 'metadata',
+            confidence: 'high',
+            profileExists: actualProfileExists
+          };
+        } catch (error) {
+          log('❌ Error verifying profile existence, assuming false', error);
+          return {
+            accountType: metadataAccountType,
+            source: 'metadata',
+            confidence: 'high',
+            profileExists: false // Safe default for OAuth flows
+          };
+        }
+      } else {
+        // If database lookup is disabled, assume profile exists (backward compatibility)
+        log('⚠️ Database lookup disabled, assuming profile exists');
+        return {
+          accountType: metadataAccountType,
+          source: 'metadata',
+          confidence: 'high',
+          profileExists: true
+        };
+      }
     }
 
     // 2. Check URL parameters (for OAuth flows)

@@ -24,10 +24,21 @@ This is a React-based dashboard application for KStoryBridge, built with Vite, T
 
 ### Key Architecture Patterns
 
-**Authentication Flow**: 
+**Authentication Flow (CRITICAL)**: 
+- **This app contains ALL authentication pages** (signin, signup, OAuth callback)
+- **Website app redirects here for authentication**
 - Uses Supabase auth with custom AuthProvider context (`src/hooks/useAuth.tsx`)
 - ProtectedRoute component wraps authenticated pages
 - Account type stored in user metadata determines dashboard type
+- OAuth redirects to `/auth/callback` in THIS app
+
+**Authentication Pages**:
+- `/signin` - Sign in page
+- `/signup` - Generic signup redirect
+- `/signup/buyer` - Buyer signup flow
+- `/signup/creator` - Creator signup flow
+- `/auth/callback` - OAuth callback handler
+- `/forgot-password` - Password reset
 
 **Dashboard Architecture**:
 - Main Dashboard component (`src/pages/Dashboard.tsx`) routes to BuyerDashboard or CreatorDashboard based on user account type
@@ -99,7 +110,58 @@ export default function MyPage() {
 
 **Full Documentation**: See `TIER_OPTIMIZATION.md`
 
+## Local Testing Environment
+
+### Localhost OAuth Testing Setup
+For local OAuth testing without production redirects, see `LOCALHOST_TESTING_SETUP.md`.
+
+**Environment Variables**:
+- `VITE_SUPABASE_URL` - Local Supabase URL (http://localhost:54321)
+- `VITE_SUPABASE_ANON_KEY` - Local Supabase anon key  
+- `VITE_LOCAL_TESTING=true` - Enable local testing mode
+- `VITE_OAUTH_TESTING=true` - Enable OAuth debugging
+- `VITE_AUTH_DEBUG=true` - Enable authentication debug logs
+
+**Local Supabase Setup**:
+```bash
+# Start local Supabase stack
+cd supabase
+npx supabase start
+
+# Access Studio at: http://localhost:54324
+```
+
+**OAuth Provider Configuration** (Local):
+- Site URL: `http://localhost:8081`
+- Redirect URLs: `http://localhost:8081/auth/callback`
+
 ## Database Schema Guidelines
+
+### Account Type Standardization (UPDATED 2024-09-10)
+
+**IMPORTANT CHANGE**: Account types standardized to `'buyer'` and `'creator'` only.
+
+**Account Type System**:
+- ✅ **Buyer**: `account_type: 'buyer'` → Routes to `/buyers/home`
+- ✅ **Creator**: `account_type: 'creator'` → Routes to `/creators/home`  
+- ❌ **Legacy**: `'ip_owner'` → Automatically converts to `'creator'`
+
+**Database Tables**:
+- `user_buyers` - Buyer account profiles
+- `user_creators` - Creator account profiles (formerly `user_ipowners`)
+
+**TypeScript Types**:
+```typescript
+export type AccountType = 'buyer' | 'creator';
+
+// Database enum updated to:
+account_type: "creator" | "buyer"
+```
+
+**Edge Function Implementation**:
+- `create-creator-profile` - Handles OAuth creator profile creation
+- Bypasses disabled database triggers using service role
+- Automatic profile creation during OAuth callback
 
 ### User Profile Fields
 

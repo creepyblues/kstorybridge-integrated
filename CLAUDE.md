@@ -63,11 +63,22 @@ All three applications share similar technology stacks:
 
 ## Key Architectural Patterns
 
-### Authentication & User Flow
-1. Users sign up on **Website** (`kstorybridge.com`)
-2. Different signup flows for Buyers vs IP Owners/Creators
-3. After authentication, users access **Dashboard** (`dashboard.kstorybridge.com`)
-4. Dashboard shows different interfaces based on `account_type` in user profile
+### Authentication & User Flow (UPDATED 2024-09-10)
+
+**IMPORTANT**: Authentication pages are in the Dashboard app, NOT the Website app.
+
+1. Users visit **Website** (`kstorybridge.com`) for marketing content
+2. Website **redirects to Dashboard** (`dashboard.kstorybridge.com`) for authentication:
+   - `/signup/buyer` - Buyer signup flow
+   - `/signup/creator` - Creator signup flow (formerly IP Owner)
+   - `/signin` - Sign in page
+   - `/auth/callback` - OAuth callback handler
+3. After authentication, users stay in **Dashboard** (`dashboard.kstorybridge.com`)
+4. Dashboard shows different interfaces based on `account_type`:
+   - **Buyers**: Route to `/buyers/home`
+   - **Creators**: Route to `/creators/home`
+
+**Note**: Account types standardized to 'buyer' and 'creator' only (no more 'ip_owner')
 
 ### Shared Components
 Both applications use shadcn/ui component library with identical components in `src/components/ui/`. These are auto-generated and should not be manually edited.

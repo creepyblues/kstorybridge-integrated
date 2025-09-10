@@ -304,7 +304,7 @@ CREATE POLICY "Authenticated users can insert creator profile"
 // 1. Check user metadata first
 const accountType = user.user_metadata?.account_type;
 
-if (accountType === 'buyer' || accountType === 'ip_owner') {
+if (accountType === 'buyer' || accountType === 'creator') {
   return accountType;
 }
 
@@ -323,7 +323,7 @@ const creatorProfile = await supabase
   .eq('email', user.email)
   .single();
 
-if (creatorProfile) return 'ip_owner';
+if (creatorProfile) return 'creator';
 
 // 3. Default to buyer for backward compatibility
 return 'buyer';
@@ -560,7 +560,7 @@ const determineAccountType = async (user) => {
     .select('id')  
     .eq('email', user.email)
     .single();
-  if (creatorProfile) return 'ip_owner';
+  if (creatorProfile) return 'creator';
   
   // 4. Default fallback
   return 'buyer';

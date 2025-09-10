@@ -173,7 +173,7 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
     let userType: 'buyer' | 'creator' | 'anonymous' = 'anonymous';
     if (user) {
       const accountType = user.user_metadata?.account_type;
-      if (accountType === 'ip_owner') {
+      if (accountType === 'creator') {
         userType = 'creator';
       } else {
         userType = 'buyer'; // Default to buyer for authenticated users

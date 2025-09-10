@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -14,6 +14,12 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Memoize the options object to prevent unnecessary re-renders
+  const accountTypeOptions = useMemo(() => ({
+    includeDatabaseLookup: true,
+    debug: true
+  }), []);
+  
   // Use centralized account type detection
   const { 
     accountType, 
@@ -21,10 +27,7 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
     source, 
     confidence,
     profileExists 
-  } = useAccountType({ 
-    includeDatabaseLookup: true, 
-    debug: true 
-  });
+  } = useAccountType(accountTypeOptions);
 
   useEffect(() => {
     if (!authLoading && !accountTypeLoading && user && accountType) {
@@ -48,7 +51,7 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
         navigate(displayInfo.homePath, { replace: true });
       }
     }
-  }, [authLoading, accountTypeLoading, user, accountType, allowedAccountTypes, navigate, location.pathname, source, confidence, profileExists]);
+  }, [authLoading, accountTypeLoading, user, accountType, allowedAccountTypes, navigate, location.pathname]);
 
   // Show loading while auth or account type is loading
   if (authLoading || accountTypeLoading) {

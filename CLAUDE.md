@@ -274,3 +274,4 @@ The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide 
 - always reference DATABASE_SCHEMA.md for database related coding.
 - always consider both desktop and mobile
 - do not auto commit to github
+- when making structural changes such as db schema change, auth flow, account types, policy change, etc, make sure to reflect this changes in the CLAUDE.md for future consistency.

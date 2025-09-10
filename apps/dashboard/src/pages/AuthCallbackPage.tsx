@@ -9,7 +9,7 @@ const AuthCallbackPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleUserRedirect = async (user: any) => {
+  const handleUserRedirect = async (user: any, urlParams: URLSearchParams) => {
     try {
       console.log('🔍 AUTH CALLBACK: Processing redirect for user:', { 
         userId: user.id, 
@@ -17,7 +17,6 @@ const AuthCallbackPage = () => {
       });
 
       // Use centralized account type detection with URL params
-      const urlParams = new URLSearchParams(window.location.search);
       const accountTypeResult = await determineAccountType(user, {
         urlParams,
         includeDatabaseLookup: true,
@@ -39,14 +38,22 @@ const AuthCallbackPage = () => {
         console.log('✅ AUTH CALLBACK: Profile found, redirecting to dashboard:', displayInfo.dashboardPath);
         navigate(displayInfo.dashboardPath);
       } else {
-        // No profile found, need to complete signup
-        console.log('📝 AUTH CALLBACK: No profile found, completing signup');
+        // No profile found, handle based on account type
+        console.log('📝 AUTH CALLBACK: No profile found, checking account type');
         
         const finalAccountType = accountType || 'buyer';
-        const displayInfo = getAccountTypeDisplayInfo(finalAccountType);
         
-        console.log('📝 AUTH CALLBACK: Redirecting to signup:', displayInfo.signupPath);
-        navigate(`${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
+        if (finalAccountType === 'creator') {
+          // For creators, always redirect to signup completion to collect full profile data
+          console.log('🎨 AUTH CALLBACK: Redirecting creator to signup completion for full profile data');
+          const displayInfo = getAccountTypeDisplayInfo(finalAccountType);
+          navigate(`${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
+        } else {
+          // For buyers, redirect to signup completion
+          const displayInfo = getAccountTypeDisplayInfo(finalAccountType);
+          console.log('📝 AUTH CALLBACK: Redirecting to signup:', displayInfo.signupPath);
+          navigate(`${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
+        }
       }
     } catch (error) {
       console.error('Error in handleUserRedirect:', error);
@@ -97,10 +104,47 @@ const AuthCallbackPage = () => {
         const user = session.user;
         console.log('✅ AUTH CALLBACK: Session found for user:', user.email);
 
+        // Check if we need to update user metadata with account_type from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlAccountType = urlParams.get('account_type');
+        
+        if (urlAccountType && (urlAccountType === 'buyer' || urlAccountType === 'creator')) {
+          const currentAccountType = user.user_metadata?.account_type;
+          
+          if (!currentAccountType || currentAccountType !== urlAccountType) {
+            console.log('🔄 AUTH CALLBACK: Setting account_type in metadata:', { 
+              current: currentAccountType, 
+              new: urlAccountType 
+            });
+            
+            try {
+              // Update user metadata with the account type from URL
+              const { error: updateError } = await supabase.auth.updateUser({
+                data: {
+                  ...user.user_metadata,
+                  account_type: urlAccountType
+                }
+              });
+              
+              if (updateError) {
+                console.error('❌ AUTH CALLBACK: Error updating user metadata:', updateError);
+              } else {
+                console.log('✅ AUTH CALLBACK: Successfully updated user metadata with account_type');
+                // Update the local user object so the redirect logic uses the correct type
+                user.user_metadata = {
+                  ...user.user_metadata,
+                  account_type: urlAccountType
+                };
+              }
+            } catch (metadataError) {
+              console.error('❌ AUTH CALLBACK: Error updating metadata:', metadataError);
+            }
+          }
+        }
+
         // Send signin notification (non-blocking) - get basic info for notification
         try {
-          // Get account type quickly for notification
-          const urlParams = new URLSearchParams(window.location.search);
+          // Get account type quickly for notification (reuse urlParams from above)
           const quickAccountType = await determineAccountType(user, {
             urlParams,
             includeDatabaseLookup: false, // Skip database lookup for performance
@@ -108,7 +152,7 @@ const AuthCallbackPage = () => {
           });
 
           const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-          const userType = quickAccountType.accountType === 'ip_owner' ? 'creator' : 'buyer';
+          const userType = quickAccountType.accountType === 'creator' ? 'creator' : 'buyer';
           const company = user.user_metadata?.company || user.user_metadata?.pen_name || user.user_metadata?.buyer_company;
           
           notifyUserSignin({
@@ -126,7 +170,7 @@ const AuthCallbackPage = () => {
 
         // Handle user redirect using centralized logic
         try {
-          await handleUserRedirect(user);
+          await handleUserRedirect(user, urlParams);
         } catch (redirectError) {
           console.error('❌ AUTH CALLBACK: Error during redirect:', redirectError);
           // Fallback to signin page

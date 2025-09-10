@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const accountType = user.user_metadata?.account_type || 'buyer';
 
-      if (accountType === 'ip_owner') {
+      if (accountType === 'creator') {
         // Handle creator welcome email
         const { data: creatorProfile } = await supabase
           .from('user_creators')

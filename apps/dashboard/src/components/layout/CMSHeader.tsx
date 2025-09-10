@@ -7,7 +7,7 @@ import { User, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const getDiscoverItems = (accountType: string) => {
-  if (accountType === "ip_owner") {
+  if (accountType === "creator") {
     return [
       { title: "Home", href: "/creators/home" },
       { title: "My Titles", href: "/creators/titles" },
@@ -26,7 +26,7 @@ const getDiscoverItems = (accountType: string) => {
 const getSettingsItems = (accountType: string, userEmail?: string) => {
   const isAuthorizedForChatbot = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
   
-  const baseItems = accountType === "ip_owner" 
+  const baseItems = accountType === "creator" 
     ? [
         { title: "Profile", href: "/creators/profile" },
       ]
@@ -37,7 +37,7 @@ const getSettingsItems = (accountType: string, userEmail?: string) => {
   // Add chatbot items for authorized users right after Profile
   if (isAuthorizedForChatbot) {
     const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
-    const chatbotItems = accountType === "ip_owner" 
+    const chatbotItems = accountType === "creator" 
       ? [
           { title: "OpenAI Chatbot", href: "/creators/openai-chatbot", badge: "experiment" },
           { title: "AI Chatbot", href: "/creators/ai-chatbot", badge: "experiment" },
@@ -88,8 +88,8 @@ export function CMSHeader() {
 
   // Get account type for display - use lightweight metadata-only detection for performance
   const accountType = user?.user_metadata?.account_type || "buyer";
-  const displayTitle = accountType === "ip_owner" ? "Creator Dashboard" : "Buyer Dashboard";
-  const userTypeLabel = accountType === "ip_owner" ? "Creator" : "Buyer";
+  const displayTitle = accountType === "creator" ? "Creator Dashboard" : "Buyer Dashboard";
+  const userTypeLabel = accountType === "creator" ? "Creator" : "Buyer";
   const userEmail = displayUser?.email;
   
   // Get menu items
@@ -131,7 +131,7 @@ export function CMSHeader() {
             </button>
             
             <Link 
-              to={accountType === "ip_owner" ? "/creators/home" : "/buyers/home"}
+              to={accountType === "creator" ? "/creators/home" : "/buyers/home"}
               className="flex items-center"
             >
               <img

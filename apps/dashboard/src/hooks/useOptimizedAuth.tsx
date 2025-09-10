@@ -18,7 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 export type UserTier = 'basic' | 'invited' | 'pro' | 'suite';
-export type AccountType = 'buyer' | 'ip_owner' | null;
+export type AccountType = 'buyer' | 'creator' | null;
 
 export interface OptimizedUserProfile {
   // User data
@@ -121,7 +121,7 @@ async function fetchOptimizedProfile(user: User): Promise<Partial<OptimizedUserP
   let accountTypeConfidence: 'high' | 'medium' | 'low' = 'low';
   
   // If we have reliable metadata, use it
-  if (metadataAccountType === 'buyer' || metadataAccountType === 'ip_owner') {
+  if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
     accountType = metadataAccountType;
     accountTypeSource = 'metadata';
     accountTypeConfidence = 'high';
@@ -172,7 +172,7 @@ async function fetchOptimizedProfile(user: User): Promise<Partial<OptimizedUserP
       creatorProfile = creatorResult.data;
       profileExists = true;
       if (!accountType) {
-        accountType = 'ip_owner';
+        accountType = 'creator';
         accountTypeSource = 'database'; 
         accountTypeConfidence = 'high';
       }
@@ -190,7 +190,7 @@ async function fetchOptimizedProfile(user: User): Promise<Partial<OptimizedUserP
       buyerProfile = buyerResult.data;
       profileExists = true;
     }
-  } else if (accountType === 'ip_owner') {
+  } else if (accountType === 'creator') {
     // We know it's a creator from metadata, only query creator table
     console.log('🎯 OptimizedAuth: Targeted creator query');
     const creatorResult = await supabase

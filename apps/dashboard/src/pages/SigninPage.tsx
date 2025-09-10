@@ -128,7 +128,7 @@ const SigninPage = () => {
       let company = user.user_metadata?.company;
 
       // Check if user is a creator
-      if (accountType === 'ip_owner') {
+      if (accountType === 'creator') {
         userType = 'creator';
         company = user.user_metadata?.pen_name || company; // Use pen name as company for creators
       } else if (accountType === 'buyer' || !accountType) {
@@ -180,7 +180,16 @@ const SigninPage = () => {
         accountType,
         profileExists,
         source,
-        confidence
+        confidence,
+        fullResult: accountTypeResult
+      });
+      
+      // DEBUG: Show detailed info about the condition check
+      console.log('🔍 SIGNIN: Redirect condition check:', {
+        profileExists,
+        accountType,
+        bothTruthy: profileExists && accountType,
+        willRedirect: profileExists && accountType
       });
 
       if (profileExists && accountType) {
@@ -225,7 +234,7 @@ const SigninPage = () => {
           }
           
           navigate('/buyers/titles');
-        } else if (accountType === 'ip_owner') {
+        } else if (accountType === 'creator') {
           // For creators, profile should exist - show error if missing
           console.log('⚠️ SIGNIN: Creator profile missing');
           toast({
@@ -233,6 +242,19 @@ const SigninPage = () => {
             description: "Creator profile not found. Please complete your signup.",
             variant: "destructive"
           });
+        } else {
+          // Fallback: if we have any account type, redirect to default location
+          console.log('⚠️ SIGNIN: Unexpected condition - falling back to default redirect');
+          console.log('⚠️ SIGNIN: accountType:', accountType, 'profileExists:', profileExists);
+          
+          if (accountType) {
+            const displayInfo = getAccountTypeDisplayInfo(accountType);
+            console.log('🔄 SIGNIN: Fallback redirect to:', displayInfo.homePath);
+            navigate(displayInfo.homePath);
+          } else {
+            console.log('🔄 SIGNIN: No account type detected, redirecting to root');
+            navigate('/');
+          }
         }
       }
     } catch (error) {

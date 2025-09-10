@@ -22,11 +22,11 @@ LEFT JOIN public.user_ipowners ip ON ip.email = u.email
 WHERE u.email = 'hyobinsungho@gmail.com'
 ORDER BY u.created_at DESC;
 
--- Update the user's account_type to ip_owner if they should be a creator
+-- Update the user's account_type to creator if they should be a creator
 -- (Only run this if the user should be a creator but has wrong account_type)
 /*
 UPDATE auth.users 
-SET raw_user_meta_data = raw_user_meta_data || '{"account_type": "ip_owner"}'::jsonb
+SET raw_user_meta_data = raw_user_meta_data || '{"account_type": "creator"}'::jsonb
 WHERE email = 'hyobinsungho@gmail.com'
-AND raw_user_meta_data->>'account_type' != 'ip_owner';
+AND raw_user_meta_data->>'account_type' != 'creator';
 */

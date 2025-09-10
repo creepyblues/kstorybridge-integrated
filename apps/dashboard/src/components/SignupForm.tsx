@@ -585,7 +585,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             emailRedirectTo: `${window.location.hostname === 'localhost' ? window.location.origin : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
             data: {
               full_name: creatorFormData.fullName,
-              account_type: 'ip_owner',
+              account_type: 'creator',
               pen_name: creatorFormData.penNameOrStudio,
               ip_owner_role: creatorFormData.ipOwnerRole,
               ip_owner_company: creatorFormData.ipOwnerCompany,
@@ -663,7 +663,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           // Update user metadata to include account_type for consistency
           const { error: metadataError } = await supabase.auth.updateUser({
             data: {
-              account_type: 'ip_owner',
+              account_type: 'creator',
               full_name: creatorFormData.fullName,
               pen_name: creatorFormData.penNameOrStudio,
               ip_owner_role: creatorFormData.ipOwnerRole,

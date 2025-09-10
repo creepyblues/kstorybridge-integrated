@@ -87,7 +87,7 @@ export async function determineAccountType(
     const metadataAccountType = user.user_metadata?.account_type;
     log('Checking metadata', { metadataAccountType });
     
-    if (metadataAccountType === 'buyer' || metadataAccountType === 'ip_owner') {
+    if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
       log('✅ Found valid account type in metadata');
       return {
         accountType: metadataAccountType,
@@ -102,7 +102,7 @@ export async function determineAccountType(
       const urlAccountType = urlParams.get('account_type');
       log('Checking URL parameters', { urlAccountType });
       
-      if (urlAccountType === 'buyer' || urlAccountType === 'ip_owner') {
+      if (urlAccountType === 'buyer' || urlAccountType === 'creator') {
         log('✅ Found valid account type in URL parameters');
         return {
           accountType: urlAccountType,
@@ -195,14 +195,14 @@ export function getAccountTypeFromMetadata(
   
   // Check metadata first
   const metadataType = user.user_metadata?.account_type;
-  if (metadataType === 'buyer' || metadataType === 'ip_owner') {
+  if (metadataType === 'buyer' || metadataType === 'creator') {
     return metadataType;
   }
   
   // Check URL params
   if (urlParams) {
     const urlType = urlParams.get('account_type');
-    if (urlType === 'buyer' || urlType === 'ip_owner') {
+    if (urlType === 'buyer' || urlType === 'creator') {
       return urlType;
     }
   }
@@ -255,7 +255,7 @@ export function getAccountTypeDisplayInfo(accountType: ExtendedAccountType) {
         signupPath: '/signup/buyer',
         homePath: '/buyers/home'
       };
-    case 'ip_owner':
+    case 'creator':
       return {
         label: 'Creator',
         dashboardPath: '/creators/home/',

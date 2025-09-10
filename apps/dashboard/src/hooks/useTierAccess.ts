@@ -60,10 +60,10 @@ export const useTierAccess = (): TierAccess => {
         return;
       }
 
-      // Check if user is a creator (ip_owner) - creators don't have tiers
+      // Check if user is a creator - creators don't have tiers
       const accountType = user?.user_metadata?.account_type;
-      if (accountType === 'ip_owner') {
-        console.log('🎨 useTierAccess: User is a creator (ip_owner), skipping tier query');
+      if (accountType === 'creator') {
+        console.log('🎨 useTierAccess: User is a creator, skipping tier query');
         setTier(null); // Creators don't have tiers
         setLoading(false);
         return;

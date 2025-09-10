@@ -4,6 +4,17 @@
 
 ## Authentication & Admin
 
+### Authentication & User Account Types
+
+The application uses two primary account types stored in user metadata:
+- `'buyer'` - Content buyers/media companies  
+- `'creator'` - Content creators/IP owners
+
+These account types determine:
+- Which dashboard interface users see
+- Database table for profile storage (`user_buyers` vs `user_creators`)
+- Available features and permissions
+
 ### admin
 Administrative users table linked to auth.users
 ```sql

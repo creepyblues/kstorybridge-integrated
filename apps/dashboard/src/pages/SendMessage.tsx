@@ -71,7 +71,7 @@ const SendMessage = () => {
           userFullName: fullName,
           userEmail: user.email || "",
           userId: user.id,
-          userType: accountType === "ip_owner" ? "creator" : "buyer",
+          userType: accountType === "creator" ? "creator" : "buyer",
           company: company || undefined,
           message: message.trim()
         });
@@ -92,7 +92,7 @@ const SendMessage = () => {
             userEmail: user.email || "",
             userId: user.id,
             message: message.trim(),
-            userType: accountType === "ip_owner" ? "creator" : "buyer",
+            userType: accountType === "creator" ? "creator" : "buyer",
             company: company || undefined,
           });
           console.log('✅ Slack notification sent successfully');

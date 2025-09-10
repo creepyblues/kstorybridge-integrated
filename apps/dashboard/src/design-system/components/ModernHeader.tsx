@@ -19,7 +19,7 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
   const { user } = useAuth();
 
   const accountType = user?.user_metadata?.account_type || 'buyer';
-  const displayTitle = accountType === 'ip_owner' ? 'Creator Dashboard' : 'Buyer Dashboard';
+  const displayTitle = accountType === 'creator' ? 'Creator Dashboard' : 'Buyer Dashboard';
 
   return (
     <header className={cn(
@@ -107,7 +107,7 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
                 {user?.user_metadata?.full_name || 'User'}
               </p>
               <p className="text-xs text-gray-500 capitalize">
-                {accountType === 'ip_owner' ? 'Creator' : 'Buyer'}
+                {accountType === 'creator' ? 'Creator' : 'Buyer'}
               </p>
             </div>
             

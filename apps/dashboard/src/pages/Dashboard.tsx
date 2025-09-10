@@ -9,7 +9,7 @@ export default function Dashboard() {
   // Default to buyer account type if no user or account_type
   const accountType = user?.user_metadata?.account_type || "buyer";
   
-  if (accountType === "ip_owner") {
+  if (accountType === "creator") {
     return <CreatorDashboard />;
   }
   

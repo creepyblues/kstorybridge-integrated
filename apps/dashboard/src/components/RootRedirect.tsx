@@ -19,9 +19,9 @@ export function RootRedirect() {
         const metadataAccountType = user.user_metadata?.account_type;
         console.log('📝 RootRedirect: User metadata account_type:', metadataAccountType);
 
-        if (metadataAccountType === 'buyer' || metadataAccountType === 'ip_owner') {
+        if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
           setAccountType(metadataAccountType);
-          const redirectPath = metadataAccountType === 'ip_owner' ? '/creators/home' : '/buyers/home';
+          const redirectPath = metadataAccountType === 'creator' ? '/creators/home' : '/buyers/home';
           console.log('🏠 RootRedirect: Redirecting to:', redirectPath);
           navigate(redirectPath, { replace: true });
           return;
@@ -53,7 +53,7 @@ export function RootRedirect() {
 
         if (creatorProfile) {
           console.log('✅ RootRedirect: Found creator profile, redirecting to /creators/home');
-          setAccountType('ip_owner');
+          setAccountType('creator');
           navigate('/creators/home', { replace: true });
           return;
         }

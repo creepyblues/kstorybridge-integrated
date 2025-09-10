@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
 
@@ -40,7 +40,7 @@ type UnifiedProfile = {
   id: string;
   email: string;
   full_name: string;
-  account_type: 'buyer' | 'ip_owner';
+  account_type: 'buyer' | 'creator';
   
   // Buyer fields
   buyer_company?: string | null;
@@ -87,104 +87,103 @@ export default function Profile() {
   const [formData, setFormData] = useState<Partial<UnifiedProfile>>({});
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
+    if (!user) {
+      console.log("No user found, skipping profile fetch");
+      setLoading(false);
+      return;
+    }
 
-      if (!user) {
-        console.log("No user found, skipping profile fetch");
-        setLoading(false);
-        return;
-      }
+    console.log("Fetching profile for user:", user.id, user.email);
+    console.log("User metadata:", user.user_metadata);
 
-      console.log("Fetching profile for user:", user.id, user.email);
-      console.log("User metadata:", user.user_metadata);
+    try {
+      const accountType = user.user_metadata?.account_type || 'buyer';
+      console.log("Account type:", accountType);
 
-      try {
-        const accountType = user.user_metadata?.account_type || 'buyer';
-        console.log("Account type:", accountType);
+      if (accountType === 'buyer') {
+        const { data, error } = await supabase
+          .from("user_buyers")
+          .select("*")
+          .eq("email", user.email)
+          .single();
 
-        if (accountType === 'buyer') {
-          const { data, error } = await supabase
-            .from("user_buyers")
-            .select("*")
-            .eq("email", user.email)
-            .single();
+        console.log("Buyer profile query result:", { data, error });
 
-          console.log("Buyer profile query result:", { data, error });
-
-          if (error) {
-            if (error.code === 'PGRST116') {
-              console.log("No buyer profile found, attempting to create one");
-              await createBuyerProfile();
-            } else {
-              console.error("Error fetching buyer profile:", error);
-              toast({
-                title: "Error",
-                description: `Failed to load profile data: ${error.message}`,
-                variant: "destructive",
-              });
-            }
+        if (error) {
+          if (error.code === 'PGRST116') {
+            console.log("No buyer profile found, attempting to create one");
+            await createBuyerProfile();
           } else {
-            const unifiedProfile: UnifiedProfile = {
-              ...data,
-              account_type: 'buyer',
-              pen_name: null, // buyers don't have pen names
-            };
-            console.log("Buyer profile loaded successfully:", unifiedProfile);
-            setProfile(unifiedProfile);
-            setFormData(unifiedProfile);
+            console.error("Error fetching buyer profile:", error);
+            toast({
+              title: "Error",
+              description: `Failed to load profile data: ${error.message}`,
+              variant: "destructive",
+            });
           }
         } else {
-          // ip_owner
-          const { data, error } = await supabase
-            .from("user_creators")
-            .select("*")
-            .eq("email", user.email)
-            .single();
-
-          console.log("IP Owner profile query result:", { data, error });
-
-          if (error) {
-            if (error.code === 'PGRST116') {
-              console.log("No IP owner profile found, attempting to create one");
-              await createIPOwnerProfile();
-            } else {
-              console.error("Error fetching IP owner profile:", error);
-              toast({
-                title: "Error",
-                description: `Failed to load profile data: ${error.message}`,
-                variant: "destructive",
-              });
-            }
-          } else {
-            const unifiedProfile: UnifiedProfile = {
-              ...data,
-              account_type: 'ip_owner',
-              pen_name: data.pen_name, // use correct column name
-              buyer_company: null,
-              buyer_role: null,
-              linkedin_url: null,
-              plan: null, // IP owners don't have plans
-            };
-            console.log("IP Owner profile loaded successfully:", unifiedProfile);
-            setProfile(unifiedProfile);
-            setFormData(unifiedProfile);
-          }
+          const unifiedProfile: UnifiedProfile = {
+            ...data,
+            account_type: 'buyer',
+            pen_name: null, // buyers don't have pen names
+          };
+          console.log("Buyer profile loaded successfully:", unifiedProfile);
+          setProfile(unifiedProfile);
+          setFormData(unifiedProfile);
         }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load profile data",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+      } else {
+        // creator
+        const { data, error } = await supabase
+          .from("user_creators")
+          .select("*")
+          .eq("email", user.email)
+          .single();
 
-    fetchProfile();
+        console.log("IP Owner profile query result:", { data, error });
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            console.log("No IP owner profile found, attempting to create one");
+            await createIPOwnerProfile();
+          } else {
+            console.error("Error fetching IP owner profile:", error);
+            toast({
+              title: "Error",
+              description: `Failed to load profile data: ${error.message}`,
+              variant: "destructive",
+            });
+          }
+        } else {
+          const unifiedProfile: UnifiedProfile = {
+            ...data,
+            account_type: 'creator',
+            pen_name: data.pen_name, // use correct column name
+            buyer_company: null,
+            buyer_role: null,
+            linkedin_url: null,
+            plan: null, // IP owners don't have plans
+          };
+          console.log("IP Owner profile loaded successfully:", unifiedProfile);
+          setProfile(unifiedProfile);
+          setFormData(unifiedProfile);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load profile data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [user, toast]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const createBuyerProfile = async () => {
     if (!user) return;
@@ -274,7 +273,7 @@ export default function Profile() {
       } else {
         const unifiedProfile: UnifiedProfile = {
           ...data,
-          account_type: 'ip_owner',
+          account_type: 'creator',
           pen_name: data.pen_name,
           buyer_company: null,
           buyer_role: null,
@@ -355,7 +354,7 @@ export default function Profile() {
 
         const unifiedProfile: UnifiedProfile = {
           ...data,
-          account_type: 'ip_owner',
+          account_type: 'creator',
           pen_name: data.pen_name,
           buyer_company: null,
           buyer_role: null,
@@ -400,7 +399,7 @@ export default function Profile() {
     switch (accountType) {
       case "buyer":
         return "Content Buyer";
-      case "ip_owner":
+      case "creator":
         return "IP Owner/Creator";
       default:
         return accountType;
@@ -534,7 +533,7 @@ export default function Profile() {
                 </div>
 
                 {/* Pen Name for IP Owners */}
-                {profile.account_type === 'ip_owner' && (
+                {profile.account_type === 'creator' && (
                   <div>
                     <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Pen Name / Studio Name</h5>
                     {isEditing ? (

@@ -20,11 +20,11 @@ const getNavigationItems = (accountType: string) => {
   const commonItems = [
     {
       name: 'Dashboard',
-      href: accountType === 'ip_owner' ? '/creators/dashboard' : '/buyers/dashboard',
+      href: accountType === 'creator' ? '/creators/dashboard' : '/buyers/dashboard',
     },
   ];
 
-  const roleSpecificItems = accountType === 'ip_owner' 
+  const roleSpecificItems = accountType === 'creator' 
     ? [
         { name: 'My Titles', href: '/creators/titles' },
         { name: 'Analytics', href: '/creators/analytics' },
@@ -36,7 +36,7 @@ const getNavigationItems = (accountType: string) => {
       ];
 
   const settingsItems = [
-    { name: 'Profile', href: accountType === 'ip_owner' ? '/creators/profile' : '/buyers/profile' },
+    { name: 'Profile', href: accountType === 'creator' ? '/creators/profile' : '/buyers/profile' },
     { name: 'Settings', href: '/settings' },
     { name: 'Help', href: '/help' },
   ];
@@ -126,7 +126,7 @@ export const ModernSidebar: React.FC<ModernSidebarProps> = ({ className }) => {
               {displayName}
             </p>
             <p className="text-xs text-gray-500 capitalize">
-              {accountType === 'ip_owner' ? 'Creator' : 'Buyer'}
+              {accountType === 'creator' ? 'Creator' : 'Buyer'}
             </p>
           </div>
         </>

@@ -11,7 +11,7 @@ interface MenuItem {
 }
 
 const getDiscoverItems = (accountType: string): MenuItem[] => {
-  if (accountType === "ip_owner") {
+  if (accountType === "creator") {
     return [
       { title: "Home", href: "/creators/home" },
       { title: "My Titles", href: "/creators/titles" },
@@ -32,7 +32,7 @@ const getDiscoverItems = (accountType: string): MenuItem[] => {
 const getSettingsItems = (accountType: string, userEmail?: string): MenuItem[] => {
   const isAdmin = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
   
-  const baseItems = accountType === "ip_owner" 
+  const baseItems = accountType === "creator" 
     ? [
         { title: "Profile", href: "/creators/profile" },
         // { title: "Send msg", href: "/creators/send-message" }, // Hidden for now - needs database setup

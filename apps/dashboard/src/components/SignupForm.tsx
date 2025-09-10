@@ -660,7 +660,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             console.log('✅ OAuth creator profile updated successfully');
           }
           
-          // Update user metadata to include account_type for consistency
+          // Update user metadata to include account_type for consistency and clear OAuth pending flag
           const { error: metadataError } = await supabase.auth.updateUser({
             data: {
               account_type: 'creator',
@@ -668,7 +668,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               pen_name: creatorFormData.penNameOrStudio,
               ip_owner_role: creatorFormData.ipOwnerRole,
               ip_owner_company: creatorFormData.ipOwnerCompany,
-              website_url: creatorFormData.websiteUrl || null
+              website_url: creatorFormData.websiteUrl || null,
+              oauth_completion_pending: null // Clear the pending flag after successful completion
             }
           });
           

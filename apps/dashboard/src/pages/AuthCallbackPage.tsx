@@ -168,7 +168,7 @@ const AuthCallbackPage = () => {
           });
           
           if (!currentAccountType || currentAccountType !== urlAccountType) {
-            console.log('🔄 AUTH CALLBACK: Setting account_type in metadata:', { 
+            console.log('🔄 AUTH CALLBACK: Setting account_type in metadata with OAuth pending flag:', { 
               current: currentAccountType, 
               new: urlAccountType 
             });
@@ -176,10 +176,12 @@ const AuthCallbackPage = () => {
             try {
               console.log('📡 AUTH CALLBACK: Calling supabase.auth.updateUser...');
               // Update user metadata with the account type from URL
+              // Use oauth_completion_pending flag to prevent database trigger interference
               const { error: updateError } = await supabase.auth.updateUser({
                 data: {
                   ...user.user_metadata,
-                  account_type: urlAccountType
+                  account_type: urlAccountType,
+                  oauth_completion_pending: 'true' // Prevent trigger from creating profile
                 }
               });
               
@@ -190,11 +192,12 @@ const AuthCallbackPage = () => {
                   status: updateError.status
                 });
               } else {
-                console.log('✅ AUTH CALLBACK: Successfully updated user metadata with account_type');
+                console.log('✅ AUTH CALLBACK: Successfully updated user metadata with account_type and pending flag');
                 // Update the local user object so the redirect logic uses the correct type
                 user.user_metadata = {
                   ...user.user_metadata,
-                  account_type: urlAccountType
+                  account_type: urlAccountType,
+                  oauth_completion_pending: 'true'
                 };
                 console.log('🗂️ AUTH CALLBACK: Updated local user metadata:', user.user_metadata);
               }

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo } from "react";
+import { ReactNode, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -14,20 +14,17 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Memoize the options object to prevent unnecessary re-renders
-  const accountTypeOptions = useMemo(() => ({
-    includeDatabaseLookup: true,
-    debug: true
-  }), []);
-  
-  // Use centralized account type detection
+  // Use centralized account type detection with static options
   const { 
     accountType, 
     loading: accountTypeLoading, 
     source, 
     confidence,
     profileExists 
-  } = useAccountType(accountTypeOptions);
+  } = useAccountType({
+    includeDatabaseLookup: true,
+    debug: true
+  });
 
   useEffect(() => {
     // Only perform protection check when auth and account type detection are complete

@@ -376,9 +376,11 @@ function TitlesContent() {
                 {isCreatorView ? "Manage your Korean content titles." : "Discover and browse Korean content titles."}
               </p>
             </div>
-            <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">
-              {filteredTitles.length} titles
-            </div>
+            {!isCreatorView && (
+              <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">
+                {filteredTitles.length} titles
+              </div>
+            )}
           </div>
 
         {/* Featured Titles Section - Only show for buyers */}
@@ -396,9 +398,11 @@ function TitlesContent() {
         {/* All Titles Table */}
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-midnight-ink">
-              {isCreatorView ? "MY TITLES" : "ALL TITLES"}
-            </h2>
+            {!isCreatorView && (
+              <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-midnight-ink">
+                ALL TITLES
+              </h2>
+            )}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               <Button
                 onClick={handleRefresh}
@@ -419,7 +423,8 @@ function TitlesContent() {
             </div>
           </div>
           
-          {/* Search Bar */}
+          {/* Search Bar - Only show for buyers */}
+          {!isCreatorView && (
           <div className="relative mb-6 sm:mb-8">
             <form onSubmit={handleSearchSubmit} className="relative">
               <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors ${
@@ -518,8 +523,10 @@ function TitlesContent() {
               </div>
             )}
           </div>
+          )}
           
-          {/* Filters Section */}
+          {/* Filters Section - Only show for buyers */}
+          {!isCreatorView && (
           <div className="mb-6 sm:mb-8">
             <div className="flex items-start gap-3 flex-wrap">
               <span className="text-sm font-bold text-hanok-teal mt-1">POPULAR FILTERS:</span>
@@ -569,6 +576,7 @@ function TitlesContent() {
               </div>
             )}
           </div>
+          )}
           
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             {/* Desktop Table Header */}

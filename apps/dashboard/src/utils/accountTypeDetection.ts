@@ -104,7 +104,7 @@ export async function determineAccountType(
             .maybeSingle();
           
           const actualProfileExists = !!(data && !error);
-          log(`📋 Profile verification result: ${actualProfileExists ? 'EXISTS' : 'NOT FOUND'}`);
+          log(`📋 Profile verification result: ${actualProfileExists ? 'EXISTS' : 'NOT FOUND'}`, { error: error?.message });
           
           return {
             accountType: metadataAccountType,
@@ -218,6 +218,22 @@ export async function determineAccountType(
         hasBuyerData: !!buyerResult.data,
         hasCreatorData: !!creatorResult.data
       });
+      
+      // If no profile found but we have potential RLS issues, check if this is a known OAuth case
+      if (creatorResult.error?.message?.includes('row-level security') || 
+          buyerResult.error?.message?.includes('row-level security')) {
+        log('⚠️ RLS might be blocking profile lookup, using metadata fallback');
+        
+        // For OAuth users stuck in loading, allow the metadata to determine the account type
+        // This prevents infinite loading while profile creation is resolved
+        const fallbackAccountType = defaultAccountType;
+        return {
+          accountType: fallbackAccountType,
+          source: 'default',
+          confidence: 'medium',
+          profileExists: false
+        };
+      }
     }
 
     // 4. Default fallback
@@ -351,21 +367,50 @@ export function useAccountType(options: AccountTypeOptions = {}) {
   const [result, setResult] = useState<AccountTypeResult | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Destructure options to avoid dependency on entire object
+  const {
+    defaultAccountType = 'buyer',
+    includeDatabaseLookup = true,
+    debug = false
+  } = options;
+
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const detectAccountType = async () => {
       setLoading(true);
-      try {
-        const detection = await determineAccountType(user, options);
+      
+      // Set a timeout to prevent infinite loading
+      timeoutId = setTimeout(() => {
         if (isMounted) {
+          console.warn('⏰ Account type detection timed out, falling back to default');
+          setResult({
+            accountType: defaultAccountType,
+            source: 'error',
+            confidence: 'low',
+            profileExists: false
+          });
+          setLoading(false);
+        }
+      }, 10000); // 10 second timeout
+
+      try {
+        const detection = await determineAccountType(user, {
+          defaultAccountType,
+          includeDatabaseLookup,
+          debug
+        });
+        if (isMounted) {
+          clearTimeout(timeoutId);
           setResult(detection);
         }
       } catch (error) {
         console.error('Error in useAccountType:', error);
         if (isMounted) {
+          clearTimeout(timeoutId);
           setResult({
-            accountType: options.defaultAccountType || 'buyer',
+            accountType: defaultAccountType,
             source: 'error',
             confidence: 'low',
             profileExists: false
@@ -382,8 +427,9 @@ export function useAccountType(options: AccountTypeOptions = {}) {
 
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
     };
-  }, [user, options.defaultAccountType, options.includeDatabaseLookup]);
+  }, [user, defaultAccountType, includeDatabaseLookup, debug]);
 
   return {
     accountType: result?.accountType || null,

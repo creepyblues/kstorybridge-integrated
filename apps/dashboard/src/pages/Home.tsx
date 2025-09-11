@@ -376,9 +376,11 @@ function HomeContent() {
                 {isCreatorView ? "Welcome to your dashboard. Manage your Korean content titles." : "Welcome to your dashboard. Discover and browse Korean content titles."}
               </p>
             </div>
-            <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">
-              {filteredTitles.length} titles
-            </div>
+            {!isCreatorView && (
+              <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">
+                {filteredTitles.length} titles
+              </div>
+            )}
           </div>
 
         {/* Featured Titles Section - Only show for buyers */}

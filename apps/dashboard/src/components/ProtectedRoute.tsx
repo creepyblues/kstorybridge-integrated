@@ -29,8 +29,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       env: import.meta.env.MODE
     });
     
-    // Don't redirect if auth is still loading OR if we have auth tokens in URL (auth flow in progress)
-    if (!loading && !user && !hasAuthTokens) {
+    // Check for recent OAuth completion (session might not be loaded yet)
+    const recentOAuthCompletion = sessionStorage.getItem('oauth_completion_pending') === 'true';
+    
+    // Don't redirect if auth is still loading OR if we have auth tokens in URL OR recent OAuth
+    if (!loading && !user && !hasAuthTokens && !recentOAuthCompletion) {
       console.log('🚨 PROTECTED ROUTE: Redirecting to dashboard signin - no user authenticated and no auth flow in progress');
       console.log('🚨 PROTECTED ROUTE: Current URL:', window.location.href);
       

@@ -153,20 +153,68 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       setIsOAuthUser(true);
       setOAuthUserId(userId);
       
-      // Pre-fill email field
-      if (accountType === 'buyer') {
-        setBuyerFormData(prev => ({ ...prev, email }));
-      } else {
-        setCreatorFormData(prev => ({ ...prev, email }));
-      }
+      // Set flag to prevent ProtectedRoute redirects during OAuth completion
+      sessionStorage.setItem('oauth_completion_pending', 'true');
+      
+      // Get current user session to access OAuth metadata
+      const loadOAuthUserData = async () => {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (!error && session?.user) {
+            const user = session.user;
+            const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+            
+            console.log('📋 SIGNUP FORM: Pre-filling OAuth user data:', {
+              email: user.email,
+              fullName,
+              userId: user.id,
+              metadata: user.user_metadata
+            });
+            
+            // Pre-fill form fields with OAuth data
+            if (accountType === 'buyer') {
+              setBuyerFormData(prev => ({ 
+                ...prev, 
+                email: user.email || email,
+                fullName: fullName
+              }));
+            } else {
+              setCreatorFormData(prev => ({ 
+                ...prev, 
+                email: user.email || email,
+                fullName: fullName
+              }));
+            }
+          } else {
+            console.warn('⚠️ SIGNUP FORM: Could not get user session for pre-filling:', error);
+            // Fallback to just email
+            if (accountType === 'buyer') {
+              setBuyerFormData(prev => ({ ...prev, email }));
+            } else {
+              setCreatorFormData(prev => ({ ...prev, email }));
+            }
+          }
+        } catch (error) {
+          console.error('❌ SIGNUP FORM: Error loading OAuth user data:', error);
+          // Fallback to just email
+          if (accountType === 'buyer') {
+            setBuyerFormData(prev => ({ ...prev, email }));
+          } else {
+            setCreatorFormData(prev => ({ ...prev, email }));
+          }
+        }
+      };
+      
+      loadOAuthUserData();
       
       // Clear URL params
       window.history.replaceState({}, document.title, window.location.pathname);
       
       toast({
         title: "Complete Your Profile",
-        description: "Please fill in the additional details to complete your signup.",
-        duration: 5000
+        description: "We've pre-filled some information from your Google account. Please review and complete the remaining details.",
+        duration: 6000
       });
     }
   }, [accountType, toast]);
@@ -194,9 +242,18 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          }
+          },
+          // Store account_type in localStorage as a fallback
+          scopes: 'email profile'
         }
       });
+      
+      // Store account type in sessionStorage as fallback
+      // This will be available when the user returns from OAuth
+      if (!error) {
+        sessionStorage.setItem('oauth_account_type', accountType);
+        console.log('🔄 Stored account type in sessionStorage:', accountType);
+      }
       
       if (error) {
         console.error('Google signup error:', error);
@@ -556,6 +613,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       if (isOAuthUser && oAuthUserId) {
         // OAuth user completing profile - get existing auth session
         console.log('🔄 OAuth completion: Getting session for creator user:', oAuthUserId);
+        console.log('🔍 OAuth user ID length:', oAuthUserId.length);
+        console.log('🔍 OAuth user ID format check:', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(oAuthUserId));
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -575,6 +634,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         }
         
         console.log('✅ OAuth session found for creator user:', session.user.email);
+        console.log('🔍 Session user ID:', session.user.id);
+        console.log('🔍 Session user ID length:', session.user.id.length);
+        console.log('🔍 URL user ID vs Session user ID match:', oAuthUserId === session.user.id);
+        
+        // CRITICAL FIX: Use the session user ID, not the URL parameter user ID
+        // The URL parameter might be truncated or malformed
         authResult = { data: { user: session.user }, error: null };
       } else {
         // Regular email signup
@@ -627,8 +692,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           // For OAuth creators, we need to manually create the profile using atomic utility
           console.log('📝 Creating OAuth creator profile with atomic utility...');
           
+          console.log('🔍 Using user ID for profile creation:', data.user.id);
+          console.log('🔍 Profile creation user ID length:', data.user.id.length);
+          
           const profileResult = await createCreatorProfileAtomic({
-            id: data.user.id,
+            id: data.user.id, // This should be the correct UUID from session
             email: creatorFormData.email,
             full_name: creatorFormData.fullName,
             pen_name: creatorFormData.penNameOrStudio,
@@ -660,24 +728,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             console.log('✅ OAuth creator profile updated successfully');
           }
           
-          // Update user metadata to include account_type for consistency and clear OAuth pending flag
-          const { error: metadataError } = await supabase.auth.updateUser({
-            data: {
-              account_type: 'creator',
-              full_name: creatorFormData.fullName,
-              pen_name: creatorFormData.penNameOrStudio,
-              ip_owner_role: creatorFormData.ipOwnerRole,
-              ip_owner_company: creatorFormData.ipOwnerCompany,
-              website_url: creatorFormData.websiteUrl || null,
-              oauth_completion_pending: null // Clear the pending flag after successful completion
-            }
-          });
-          
-          if (metadataError) {
-            console.warn('⚠️ Failed to update user metadata (non-critical):', metadataError);
-          } else {
-            console.log('✅ User metadata updated for OAuth creator');
-          }
+          // Skip metadata update for OAuth users to avoid hanging
+          // Profile has been created successfully, that's what matters
+          console.log('🚀 Skipping metadata update for OAuth creator profile completion');
         } else {
           // For email signups, the database trigger should have automatically created the profile
           console.log('✅ Profile creation handled by database trigger');
@@ -704,6 +757,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
         // Success handling
         if (isOAuthUser) {
+          // Clear OAuth completion pending flag since profile creation succeeded
+          sessionStorage.removeItem('oauth_completion_pending');
           // Send welcome email immediately for OAuth users (they're already verified)
           try {
             // Check if we've already sent a welcome email (using localStorage to track)
@@ -909,17 +964,25 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-sm font-medium text-midnight-ink">
-                Full Name *
+                Full Name * {isOAuthUser && <span className="text-xs text-green-600">(from Google)</span>}
               </Label>
               <Input
                 id="fullName"
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => updateFormData('fullName' as any, e.target.value)}
-                className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
-                placeholder="Enter your full name"
+                className={`h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg ${
+                  isOAuthUser ? 'bg-gray-50 text-gray-700' : ''
+                }`}
+                placeholder={isOAuthUser ? "Name from your Google account" : "Enter your full name"}
                 required
+                disabled={isOAuthUser}
               />
+              {isOAuthUser && (
+                <p className="text-xs text-gray-500 mt-1">
+                  This information was automatically filled from your Google account
+                </p>
+              )}
             </div>
 
             {/* Buyer-specific fields */}

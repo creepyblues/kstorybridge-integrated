@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Access Control Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .creator-section { border-color: #10b981; background-color: #f0fdf4; }
+        .buyer-section { border-color: #3b82f6; background-color: #eff6ff; }
+        .danger-section { border-color: #ef4444; background-color: #fef2f2; }
+        button { padding: 8px 12px; margin: 3px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        .danger-btn { background: #dc3545; }
+        .danger-btn:hover { background: #c82333; }
+        .success-btn { background: #28a745; }
+        .success-btn:hover { background: #218838; }
+        #logs { background: #f8f9fa; padding: 10px; margin-top: 10px; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+        .log-entry { margin: 2px 0; }
+        .log-info { color: #0066cc; }
+        .log-success { color: #28a745; }
+        .log-error { color: #dc3545; }
+        .log-warning { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Access Control Testing Dashboard</h1>
+    <p>This page tests the access control between creator and buyer routes to ensure proper separation.</p>
+    
+    <div class="test-section creator-section">
+        <h2>✨ Creator Routes (Should work for creators only)</h2>
+        <p><strong>Expected:</strong> Creators can access these, buyers should be redirected</p>
+        <button class="success-btn" onclick="testRoute('/creators/home')">Creator Home</button>
+        <button class="success-btn" onclick="testRoute('/creators/titles')">Creator Titles</button>
+        <button class="success-btn" onclick="testRoute('/creators/titles/add')">Add Title</button>
+        <button class="success-btn" onclick="testRoute('/creators/news')">Creator News</button>
+        <button class="success-btn" onclick="testRoute('/creators/profile')">Creator Profile</button>
+        <button class="success-btn" onclick="testRoute('/creators/requests')">Creator Requests</button>
+    </div>
+    
+    <div class="test-section buyer-section">
+        <h2>🛒 Buyer Routes (Should work for buyers only)</h2>
+        <p><strong>Expected:</strong> Buyers can access these, creators should be redirected</p>
+        <button class="success-btn" onclick="testRoute('/buyers/home')">Buyer Home</button>
+        <button class="success-btn" onclick="testRoute('/buyers/titles')">Buyer Titles</button>
+        <button class="success-btn" onclick="testRoute('/buyers/favorites')">Buyer Favorites</button>
+        <button class="success-btn" onclick="testRoute('/buyers/news')">Buyer News</button>
+        <button class="success-btn" onclick="testRoute('/buyers/profile')">Buyer Profile</button>
+        <button class="success-btn" onclick="testRoute('/buyers/requests')">Buyer Requests</button>
+        <button class="success-btn" onclick="testRoute('/buyers/deals')">Buyer Deals</button>
+        <button class="success-btn" onclick="testRoute('/buyers/browse')">Browse Content</button>
+    </div>
+    
+    <div class="test-section danger-section">
+        <h2>🚫 REMOVED Creator Routes (Should NOT exist)</h2>
+        <p><strong>Expected:</strong> These routes should return 404 or redirect (removed from creators)</p>
+        <button class="danger-btn" onclick="testRoute('/creators/favorites')">❌ Creator Favorites</button>
+        <button class="danger-btn" onclick="testRoute('/creators/deals')">❌ Creator Deals</button>
+        <button class="danger-btn" onclick="testRoute('/creators/browse')">❌ Creator Browse</button>
+        <button class="danger-btn" onclick="testRoute('/creators/media')">❌ Creator Media</button>
+        <button class="danger-btn" onclick="testRoute('/creators/users')">❌ Creator Users</button>
+        <button class="danger-btn" onclick="testRoute('/creators/settings')">❌ Creator Settings</button>
+        <button class="danger-btn" onclick="testRoute('/creators/pricing')">❌ Creator Pricing</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Test Controls</h2>
+        <button onclick="testCurrentAuth()">Check Current Authentication</button>
+        <button onclick="clearLogs()" style="background: #6c757d;">Clear Logs</button>
+        <button onclick="runFullTest()" style="background: #17a2b8;">Run Full Access Control Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📝 Test Results</h2>
+        <div id="logs"></div>
+    </div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logClass = type === 'error' ? 'log-error' : 
+                             type === 'success' ? 'log-success' : 
+                             type === 'warning' ? 'log-warning' : 'log-info';
+            
+            const logEntry = `<div class="log-entry ${logClass}">[${timestamp}] ${message}</div>`;
+            logs.innerHTML += logEntry;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        function testRoute(route) {
+            log(`🔍 Testing route: ${route}`, 'info');
+            log(`Current URL: ${window.location.href}`, 'info');
+            
+            // Store test info for when we come back
+            sessionStorage.setItem('test_route', route);
+            sessionStorage.setItem('test_origin', window.location.href);
+            
+            // Navigate to route
+            window.location.href = route;
+        }
+        
+        function testCurrentAuth() {
+            log('🔐 Checking current authentication status...', 'info');
+            log(`Current path: ${window.location.pathname}`, 'info');
+            log(`Current hash: ${window.location.hash}`, 'info');
+            log(`Referrer: ${document.referrer || 'none'}`, 'info');
+            
+            // Try to get user info from local storage or session storage
+            const keys = Object.keys(localStorage);
+            const authKeys = keys.filter(key => key.includes('auth') || key.includes('user') || key.includes('supabase'));
+            
+            if (authKeys.length > 0) {
+                log(`Found ${authKeys.length} auth-related localStorage keys`, 'info');
+                authKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    if (value && value.length < 200) { // Don't log huge tokens
+                        log(`${key}: ${value.substring(0, 100)}...`, 'info');
+                    } else {
+                        log(`${key}: [large value - ${value?.length} chars]`, 'info');
+                    }
+                });
+            } else {
+                log('No auth keys found in localStorage', 'warning');
+            }
+        }
+        
+        function runFullTest() {
+            log('🚀 Starting full access control test...', 'info');
+            log('This will test routes sequentially. Please wait...', 'info');
+            
+            const testRoutes = [
+                // Creator routes that should exist
+                { route: '/creators/home', expected: 'creator-only', type: 'creator' },
+                { route: '/creators/titles', expected: 'creator-only', type: 'creator' },
+                
+                // Buyer routes that should exist  
+                { route: '/buyers/home', expected: 'buyer-only', type: 'buyer' },
+                { route: '/buyers/favorites', expected: 'buyer-only', type: 'buyer' },
+                
+                // Creator routes that should NOT exist
+                { route: '/creators/favorites', expected: '404-or-redirect', type: 'removed' },
+                { route: '/creators/deals', expected: '404-or-redirect', type: 'removed' },
+            ];
+            
+            log(`Will test ${testRoutes.length} routes`, 'info');
+            log('Click individual route buttons above to test specific routes', 'info');
+        }
+        
+        // Check if we're returning from a test
+        window.addEventListener('load', function() {
+            const testedRoute = sessionStorage.getItem('test_route');
+            const testOrigin = sessionStorage.getItem('test_origin');
+            
+            if (testedRoute && window.location.pathname !== '/test-access-control.html') {
+                log(`📍 Landed on: ${window.location.pathname} after testing ${testedRoute}`, 'info');
+                
+                if (window.location.pathname === testedRoute) {
+                    log(`✅ SUCCESS: Successfully accessed ${testedRoute}`, 'success');
+                } else {
+                    log(`🔄 REDIRECT: ${testedRoute} redirected to ${window.location.pathname}`, 'warning');
+                }
+                
+                // Clear test data
+                sessionStorage.removeItem('test_route');
+                sessionStorage.removeItem('test_origin');
+            }
+            
+            // Initial setup
+            log('🏠 Access Control Test page loaded', 'info');
+            log('ℹ️ Instructions:', 'info');
+            log('  • Green buttons = Routes that should work for the respective account type', 'info');
+            log('  • Red buttons = Routes that should NOT exist (removed from creators)', 'info');
+            log('  • Test will show if routes work, redirect, or return 404', 'info');
+        });
+    </script>
+</body>
+</html>

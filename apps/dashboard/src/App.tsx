@@ -19,6 +19,7 @@ import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { BuyerProtectedLayout } from "@/components/BuyerProtectedLayout";
 import { CreatorProtectedLayout } from "@/components/CreatorProtectedLayout";
 import { RootRedirect } from "./components/RootRedirect";
+import { DashboardEntrypoint } from "./components/DashboardEntrypoint";
 
 // Lazy load page components for code splitting
 const Content = lazy(() => import("./pages/Content"));
@@ -106,9 +107,7 @@ const App = () => (
                 
                 {/* Test route - no authentication required */}
                 <Route path="/test-send-message" element={<SendMessageTest />} />
-                <Route path="/" element={
-                  <ProtectedLayout><RootRedirect /></ProtectedLayout>
-                } />
+                <Route path="/" element={<DashboardEntrypoint />} />
                 
                 {/* Buyer routes */}
                 <Route path="/buyers" element={
@@ -209,27 +208,8 @@ const App = () => (
                 <Route path="/creators/ai-chatbot" element={
                   <CreatorProtectedLayout><AIChatbot /></CreatorProtectedLayout>
                 } />
-                <Route path="/creators/favorites" element={
-                  <CreatorProtectedLayout><Favorites /></CreatorProtectedLayout>
-                } />
-                <Route path="/creators/deals" element={
-                  <CreatorProtectedLayout><Deals /></CreatorProtectedLayout>
-                } />
-                <Route path="/creators/browse" element={
-                  <CreatorProtectedLayout><Browse /></CreatorProtectedLayout>
-                } />
-                <Route path="/creators/media" element={
-                  <CreatorProtectedLayout><Media /></CreatorProtectedLayout>
-                } />
-                <Route path="/creators/users" element={
-                  <CreatorProtectedLayout><Users /></CreatorProtectedLayout>
-                } />
-                <Route path="/creators/settings" element={
-                  <CreatorProtectedLayout><Settings /></CreatorProtectedLayout>
-                } />
-                <Route path="/creators/pricing" element={
-                  <CreatorProtectedLayout><BuyersPricing /></CreatorProtectedLayout>
-                } />
+                {/* Creator-specific routes only - removed inappropriate routes:
+                     favorites, deals, browse, media, users, settings, pricing */}
                 
                 {/* Legacy IP Owner/Creator routes */}
                 <Route path="/content" element={

@@ -1,7 +1,9 @@
 
 import { Link, useLocation } from "react-router-dom";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useAccountType } from "@/utils/accountTypeDetection";
 
 interface MenuItem {
   title: string;
@@ -59,12 +61,32 @@ const getSettingsItems = (accountType: string, userEmail?: string): MenuItem[] =
 export function CMSSidebar() {
   const { user } = useAuth();
   const location = useLocation();
+  
+  // Memoize the options object to prevent unnecessary re-renders
+  const accountTypeOptions = useMemo(() => ({
+    includeDatabaseLookup: true,
+    debug: false
+  }), []);
+  
+  // Use centralized account type detection with database lookup for accuracy
+  const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);
 
-  // Get account type from user metadata, default to buyer
-  const accountType = user?.user_metadata?.account_type || "buyer";
+  // Use detected account type, fallback to buyer for backward compatibility
+  const accountType = detectedAccountType || "buyer";
   const userEmail = user?.email;
   const discoverItems = getDiscoverItems(accountType);
   const settingsItems = getSettingsItems(accountType, userEmail);
+
+  // Show loading state while detecting account type
+  if (accountTypeLoading) {
+    return (
+      <div className="hidden lg:block fixed left-0 top-[73px] w-64 bg-white border-r border-porcelain-blue-200 h-[calc(100vh-73px)] flex flex-col z-30">
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-hanok-teal"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     /* Desktop Sidebar - hidden on mobile */

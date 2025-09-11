@@ -14,7 +14,7 @@
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-export type AccountType = 'buyer' | 'ip_owner';
+export type AccountType = 'buyer' | 'creator';
 export type ExtendedAccountType = AccountType | null;
 
 export interface AccountTypeResult {
@@ -148,6 +148,28 @@ export async function determineAccountType(
         };
       }
     }
+    
+    // 2b. Check sessionStorage as fallback for OAuth flows
+    // This handles cases where OAuth provider doesn't preserve URL params
+    if (typeof window !== 'undefined') {
+      const storedAccountType = sessionStorage.getItem('oauth_account_type');
+      if (storedAccountType) {
+        log('Checking sessionStorage fallback', { storedAccountType });
+        
+        if (storedAccountType === 'buyer' || storedAccountType === 'creator') {
+          log('✅ Found valid account type in sessionStorage');
+          // Clean up after reading
+          sessionStorage.removeItem('oauth_account_type');
+          
+          return {
+            accountType: storedAccountType,
+            source: 'url_params', // Report as url_params for consistency
+            confidence: 'medium',
+            profileExists: false
+          };
+        }
+      }
+    }
 
     // 3. Database lookup (if enabled)
     if (includeDatabaseLookup && user.email) {
@@ -182,7 +204,7 @@ export async function determineAccountType(
       if (creatorResult.data && !creatorResult.error) {
         log('✅ Found creator profile in database');
         return {
-          accountType: 'ip_owner',
+          accountType: 'creator',
           source: 'database_creator',
           confidence: 'high',
           profileExists: true
@@ -240,6 +262,16 @@ export function getAccountTypeFromMetadata(
     const urlType = urlParams.get('account_type');
     if (urlType === 'buyer' || urlType === 'creator') {
       return urlType;
+    }
+  }
+  
+  // Check sessionStorage as fallback
+  if (typeof window !== 'undefined') {
+    const storedType = sessionStorage.getItem('oauth_account_type');
+    if (storedType === 'buyer' || storedType === 'creator') {
+      // Clean up after reading
+      sessionStorage.removeItem('oauth_account_type');
+      return storedType;
     }
   }
   

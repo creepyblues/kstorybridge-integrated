@@ -18,16 +18,19 @@ const AuthCallbackPage = () => {
       
       console.log('🔍 AUTH CALLBACK: Starting account type detection with params:', {
         hasUrlParams: !!urlParams,
-        urlParamsSize: urlParams ? urlParams.toString().length : 0
+        urlParamsSize: urlParams ? urlParams.toString().length : 0,
+        urlParamsString: urlParams.toString()
       });
 
       // Use centralized account type detection with URL params
       console.log('📡 AUTH CALLBACK: Calling determineAccountType...');
+      console.log('📡 AUTH CALLBACK: User metadata before detection:', user.user_metadata);
       const accountTypeResult = await determineAccountType(user, {
         urlParams,
         includeDatabaseLookup: true,
         debug: true
       });
+      console.log('📡 AUTH CALLBACK: determineAccountType completed');
 
       const { accountType, profileExists, source, confidence } = accountTypeResult;
       
@@ -87,9 +90,25 @@ const AuthCallbackPage = () => {
         console.log('🔍 Hostname:', window.location.hostname);
         console.log('🔍 Origin:', window.location.origin);
         
-        // Get session from URL hash
+        // Get session from URL hash - handle OAuth callback properly
         console.log('📡 Getting session from Supabase...');
-        const { data, error } = await supabase.auth.getSession();
+        
+        // First try to get current session (for direct navigation)
+        let { data, error } = await supabase.auth.getSession();
+        
+        // If no session found, try to handle OAuth callback from URL
+        if (!data.session || error) {
+          console.log('🔄 No active session, attempting OAuth session exchange...');
+          
+          // Exchange the URL hash for a session
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError) {
+            console.error('❌ AUTH CALLBACK: Error exchanging OAuth session:', sessionError);
+          } else {
+            data = sessionData;
+            error = sessionError;
+          }
+        }
         
         if (error) {
           console.error('❌ AUTH CALLBACK: Error getting session:', error);
@@ -150,11 +169,23 @@ const AuthCallbackPage = () => {
 
         // Check if we need to update user metadata with account_type from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const urlAccountType = urlParams.get('account_type');
+        let urlAccountType = urlParams.get('account_type');
+        
+        // Fallback to sessionStorage if URL param is missing
+        if (!urlAccountType) {
+          const storedAccountType = sessionStorage.getItem('oauth_account_type');
+          if (storedAccountType) {
+            urlAccountType = storedAccountType;
+            console.log('🔍 AUTH CALLBACK: Retrieved account_type from sessionStorage:', storedAccountType);
+            // Clean up sessionStorage
+            sessionStorage.removeItem('oauth_account_type');
+          }
+        }
         
         console.log('🔍 AUTH CALLBACK: URL params analysis:', {
           fullSearch: window.location.search,
           accountTypeParam: urlAccountType,
+          accountTypeSource: urlParams.get('account_type') ? 'url' : 'sessionStorage',
           allParams: Object.fromEntries(urlParams.entries())
         });
         
@@ -167,46 +198,17 @@ const AuthCallbackPage = () => {
             needsUpdate: !currentAccountType || currentAccountType !== urlAccountType
           });
           
-          if (!currentAccountType || currentAccountType !== urlAccountType) {
-            console.log('🔄 AUTH CALLBACK: Setting account_type in metadata with OAuth pending flag:', { 
-              current: currentAccountType, 
-              new: urlAccountType 
-            });
-            
-            try {
-              console.log('📡 AUTH CALLBACK: Calling supabase.auth.updateUser...');
-              // Update user metadata with the account type from URL
-              // Use oauth_completion_pending flag to prevent database trigger interference
-              const { error: updateError } = await supabase.auth.updateUser({
-                data: {
-                  ...user.user_metadata,
-                  account_type: urlAccountType,
-                  oauth_completion_pending: 'true' // Prevent trigger from creating profile
-                }
-              });
-              
-              if (updateError) {
-                console.error('❌ AUTH CALLBACK: Error updating user metadata:', updateError);
-                console.error('❌ AUTH CALLBACK: Update error details:', {
-                  message: updateError.message,
-                  status: updateError.status
-                });
-              } else {
-                console.log('✅ AUTH CALLBACK: Successfully updated user metadata with account_type and pending flag');
-                // Update the local user object so the redirect logic uses the correct type
-                user.user_metadata = {
-                  ...user.user_metadata,
-                  account_type: urlAccountType,
-                  oauth_completion_pending: 'true'
-                };
-                console.log('🗂️ AUTH CALLBACK: Updated local user metadata:', user.user_metadata);
-              }
-            } catch (metadataError) {
-              console.error('❌ AUTH CALLBACK: Exception updating metadata:', metadataError);
-            }
-          } else {
-            console.log('✅ AUTH CALLBACK: Account type already correct, no update needed');
-          }
+          // For OAuth flows, we have the account type from URL/sessionStorage
+          // Skip metadata update to avoid hanging and proceed directly to redirect
+          console.log('🚀 AUTH CALLBACK: Skipping metadata update for OAuth flow, proceeding to redirect');
+          
+          // Update the local user object for the redirect logic
+          user.user_metadata = {
+            ...user.user_metadata,
+            account_type: urlAccountType,
+            oauth_completion_pending: 'true'
+          };
+          console.log('🗂️ AUTH CALLBACK: Updated local user metadata for redirect:', user.user_metadata);
         } else {
           console.log('⚠️ AUTH CALLBACK: No valid account_type in URL params');
         }
@@ -240,7 +242,19 @@ const AuthCallbackPage = () => {
         // Handle user redirect using centralized logic
         try {
           console.log('🚦 AUTH CALLBACK: Starting user redirect logic');
-          await handleUserRedirect(user, urlParams);
+          console.log('🚦 AUTH CALLBACK: Current urlAccountType:', urlAccountType);
+          console.log('🚦 AUTH CALLBACK: Current urlParams:', urlParams.toString());
+          
+          // Create updated URL params with the account type if we found it
+          const updatedUrlParams = new URLSearchParams(urlParams);
+          if (urlAccountType && !updatedUrlParams.has('account_type')) {
+            updatedUrlParams.set('account_type', urlAccountType);
+            console.log('🚦 AUTH CALLBACK: Added account_type to URL params');
+          }
+          console.log('🚦 AUTH CALLBACK: Final updatedUrlParams:', updatedUrlParams.toString());
+          console.log('🚦 AUTH CALLBACK: About to call handleUserRedirect...');
+          await handleUserRedirect(user, updatedUrlParams);
+          console.log('🚦 AUTH CALLBACK: handleUserRedirect completed successfully');
         } catch (redirectError) {
           console.error('❌ AUTH CALLBACK: Error during redirect:', redirectError);
           console.error('❌ AUTH CALLBACK: Redirect error details:', {

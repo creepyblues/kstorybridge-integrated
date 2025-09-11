@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTierAccess } from "@/hooks/useTierAccess";
+import { useAccountType } from "@/utils/accountTypeDetection";
 import { User, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,14 @@ const getSettingsItems = (accountType: string, userEmail?: string) => {
 export function CMSHeader() {
   const { user } = useAuth();
   const { tier, loading: tierLoading } = useTierAccess();
+  
+  // Memoize the options object to prevent unnecessary re-renders
+  const accountTypeOptions = useMemo(() => ({
+    includeDatabaseLookup: true,
+    debug: false
+  }), []);
+  
+  const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -86,8 +95,8 @@ export function CMSHeader() {
   const displayTier = (isLocalhost && !useRealDataOnLocalhost) ? mockTier : tier;
   const displayTierLoading = (isLocalhost && !useRealDataOnLocalhost) ? false : tierLoading;
 
-  // Get account type for display - use lightweight metadata-only detection for performance
-  const accountType = user?.user_metadata?.account_type || "buyer";
+  // Get account type for display - use centralized detection for accuracy
+  const accountType = detectedAccountType || "buyer";
   const displayTitle = accountType === "creator" ? "Creator Dashboard" : "Buyer Dashboard";
   const userTypeLabel = accountType === "creator" ? "Creator" : "Buyer";
   const userEmail = displayUser?.email;

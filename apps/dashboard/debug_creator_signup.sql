@@ -1,52 +1,90 @@
--- Debug script for creator signup 403 error
--- Run this in Supabase SQL Editor to diagnose the issue
+-- Debug query for OAuth creator signup flow
+-- Run this in Supabase SQL Editor to check if creator profiles are being created
 
--- 1. Check if RLS is enabled on user_creators
+-- Check recent auth.users entries (last 24 hours)
+SELECT 
+    id,
+    email,
+    created_at,
+    raw_user_meta_data->>'account_type' as account_type,
+    raw_user_meta_data->>'full_name' as full_name,
+    raw_user_meta_data->>'pen_name' as pen_name,
+    raw_user_meta_data->>'oauth_completion_pending' as oauth_pending,
+    raw_app_metadata->>'provider' as provider
+FROM auth.users
+WHERE created_at > NOW() - INTERVAL '24 hours'
+ORDER BY created_at DESC
+LIMIT 10;
+
+-- Check if corresponding creator profiles exist
+SELECT 
+    uc.id,
+    uc.email,
+    uc.full_name,
+    uc.pen_name,
+    uc.created_at,
+    au.email as auth_email,
+    au.raw_user_meta_data->>'account_type' as auth_account_type
+FROM user_creators uc
+FULL OUTER JOIN auth.users au ON au.email = uc.email
+WHERE uc.created_at > NOW() - INTERVAL '24 hours'
+   OR au.created_at > NOW() - INTERVAL '24 hours'
+ORDER BY COALESCE(uc.created_at, au.created_at) DESC
+LIMIT 10;
+
+-- Check for orphaned auth users (creators without profiles)
+SELECT 
+    au.id,
+    au.email,
+    au.created_at,
+    au.raw_user_meta_data->>'account_type' as account_type,
+    au.raw_user_meta_data->>'pen_name' as pen_name,
+    uc.id as creator_profile_id
+FROM auth.users au
+LEFT JOIN user_creators uc ON au.email = uc.email
+WHERE au.raw_user_meta_data->>'account_type' = 'creator'
+  AND uc.id IS NULL
+  AND au.created_at > NOW() - INTERVAL '7 days'
+ORDER BY au.created_at DESC;
+
+-- Check trigger status (should all be enabled = 1)
+SELECT 
+    trigger_name,
+    event_manipulation,
+    event_object_table,
+    action_statement,
+    action_orientation,
+    action_timing,
+    enabled
+FROM information_schema.triggers 
+WHERE trigger_schema = 'public'
+  AND event_object_table = 'users'
+ORDER BY trigger_name;
+
+-- Check if RLS is enabled on user_creators
 SELECT schemaname, tablename, rowsecurity 
 FROM pg_tables 
 WHERE tablename = 'user_creators';
 
--- 2. List all RLS policies on user_creators table
+-- List all RLS policies on user_creators table
 SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
 FROM pg_policies 
 WHERE tablename = 'user_creators';
 
--- 3. Check table structure for user_creators
-SELECT column_name, data_type, is_nullable, column_default
-FROM information_schema.columns 
-WHERE table_name = 'user_creators'
-ORDER BY ordinal_position;
-
--- 4. Test if the table allows inserts (with a rollback)
-BEGIN;
-
--- Try to insert a test record (will rollback)
-INSERT INTO user_creators (
-    id, 
-    email, 
-    full_name, 
-    pen_name, 
-    invitation_status
-) VALUES (
-    gen_random_uuid()::text,
-    'test@example.com',
-    'Test User',
-    'Test Studio',
-    'invited'
-);
-
-SELECT 'Test insert successful' as result;
-
--- Rollback the test insert
-ROLLBACK;
-
--- 5. Check if there are any triggers that might cause issues
-SELECT trigger_name, event_manipulation, trigger_schema, trigger_name
-FROM information_schema.triggers
-WHERE event_object_table = 'user_creators';
-
--- 6. Show current auth context (if any)
+-- Check sessionStorage workaround - recent sign-ins
 SELECT 
-    auth.uid() as current_user_id,
-    auth.role() as current_role,
-    current_user as pg_user;
+    au.id,
+    au.email,
+    au.last_sign_in_at,
+    au.raw_user_meta_data->>'account_type' as stored_account_type,
+    CASE 
+        WHEN uc.id IS NOT NULL THEN 'creator'
+        WHEN ub.id IS NOT NULL THEN 'buyer'
+        ELSE 'none'
+    END as actual_profile_type
+FROM auth.users au
+LEFT JOIN user_creators uc ON au.email = uc.email
+LEFT JOIN user_buyers ub ON au.email = ub.email
+WHERE au.last_sign_in_at > NOW() - INTERVAL '1 hour'
+ORDER BY au.last_sign_in_at DESC
+LIMIT 10;

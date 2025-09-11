@@ -30,7 +30,9 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
   } = useAccountType(accountTypeOptions);
 
   useEffect(() => {
-    if (!authLoading && !accountTypeLoading && user && accountType) {
+    // Only perform protection check when auth and account type detection are complete
+    // AND we have a definitive account type (not null/undefined)
+    if (!authLoading && !accountTypeLoading && user && accountType !== null && accountType !== undefined) {
       const isAllowed = allowedAccountTypes.includes(accountType);
       
       console.log('🛡️ Account type protection check:', {
@@ -41,7 +43,9 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
         currentPath: location.pathname,
         source,
         confidence,
-        profileExists
+        profileExists,
+        authLoading,
+        accountTypeLoading
       });
 
       if (!isAllowed) {
@@ -50,8 +54,17 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
         console.log('🚫 Access denied, redirecting to:', displayInfo.homePath);
         navigate(displayInfo.homePath, { replace: true });
       }
+    } else {
+      // Debug logging to understand the state
+      console.log('🔄 Account type protection waiting:', {
+        authLoading,
+        accountTypeLoading,
+        hasUser: !!user,
+        accountType,
+        currentPath: location.pathname
+      });
     }
-  }, [authLoading, accountTypeLoading, user, accountType, allowedAccountTypes, navigate, location.pathname]);
+  }, [authLoading, accountTypeLoading, user, accountType, allowedAccountTypes, navigate, location.pathname, source, confidence, profileExists]);
 
   // Show loading while auth or account type is loading
   if (authLoading || accountTypeLoading) {

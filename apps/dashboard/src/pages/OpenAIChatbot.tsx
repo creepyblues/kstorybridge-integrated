@@ -436,31 +436,48 @@ export default function OpenAIChatbot() {
         variant: "destructive",
       });
       navigate("/profile");
+      setIsLoadingHistory(false);
+      return;
+    }
+
+    if (!user) {
+      setIsLoadingHistory(false);
       return;
     }
 
     // Prevent re-initialization if we already have a session and messages
     if (currentSession && messages.length > 0) {
+      setIsLoadingHistory(false);
       // Session already initialized, skipping initialization
       return;
     }
 
     // Initialize chat session and load history
     const initializeSession = async () => {
-      if (!user) return;
+      if (!user) {
+        setIsLoadingHistory(false);
+        return;
+      }
 
       try {
         setIsLoadingHistory(true);
         
+        // Add timeout to prevent hanging forever
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Initialization timeout')), 10000); // 10 second timeout
+        });
+        
         // Check for existing active session or create new one
-        let session = await chatHistoryService.getActiveSession(user.id, 'openai');
+        const sessionPromise = chatHistoryService.getActiveSession(user.id, 'openai');
+        let session = await Promise.race([sessionPromise, timeoutPromise]) as any;
         
         if (!session) {
-          session = await chatHistoryService.createSession({
+          const createSessionPromise = chatHistoryService.createSession({
             user_id: user.id,
             user_email: user.email || '',
             session_type: 'openai'
           });
+          session = await Promise.race([createSessionPromise, timeoutPromise]) as any;
         }
 
         if (session) {
@@ -468,7 +485,8 @@ export default function OpenAIChatbot() {
           // Chat session initialized
           
           // Load conversation history with related data from this session
-          const history = await chatHistoryService.getSessionMessagesWithData(session.id);
+          const historyPromise = chatHistoryService.getSessionMessagesWithData(session.id);
+          const history = await Promise.race([historyPromise, timeoutPromise]) as any;
           
           if (history && history.length > 0) {
             // Messages are already enhanced with titles and suggestedQueries
@@ -532,6 +550,14 @@ What kind of Korean content are you in the mood for today?`,
         }
       } catch (error) {
         console.error('Failed to initialize chat session:', error);
+        
+        // Show toast notification for debugging
+        toast({
+          title: "Chat Initialization",
+          description: `Failed to load chat history: ${error.message}. Starting fresh session.`,
+          variant: "default"
+        });
+        
         // Still show greeting message even if session fails
         setMessages([
           {
@@ -579,7 +605,29 @@ What kind of Korean content are you in the mood for today?`,
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading || !currentSession || !user) return;
+    console.log('🔄 handleSendMessage called:', {
+      hasInput: !!inputMessage.trim(),
+      isLoading,
+      hasSession: !!currentSession,
+      hasUser: !!user,
+      inputMessage: inputMessage.substring(0, 50) + '...'
+    });
+
+    if (!inputMessage.trim() || isLoading || !user) {
+      console.log('❌ handleSendMessage early return:', {
+        noInput: !inputMessage.trim(),
+        isLoading,
+        noUser: !user
+      });
+      return;
+    }
+
+    // Allow chat to work without database session (fallback mode)
+    if (!currentSession) {
+      console.log('⚠️ No session available, working in fallback mode (no history saving)');
+    }
+
+    console.log('✅ handleSendMessage proceeding with message processing');
 
     // Starting message processing
 
@@ -599,16 +647,23 @@ What kind of Korean content are you in the mood for today?`,
       setShowAllMessages(false);
     }
 
-    // Record user message in database
-    const userDbMessage = await chatHistoryService.recordMessage({
-      session_id: currentSession.id,
-      user_id: user.id,
-      message_type: 'user_prompt',
-      content: userMessage.content,
-    });
+    // Record user message in database (if session available)
+    let userDbMessage = null;
+    if (currentSession) {
+      try {
+        userDbMessage = await chatHistoryService.recordMessage({
+          session_id: currentSession.id,
+          user_id: user.id,
+          message_type: 'user_prompt',
+          content: userMessage.content,
+        });
 
-    if (userDbMessage) {
-      userMessage.messageId = userDbMessage.id;
+        if (userDbMessage) {
+          userMessage.messageId = userDbMessage.id;
+        }
+      } catch (error) {
+        console.warn('Failed to record user message:', error);
+      }
     }
 
     const startTime = Date.now();
@@ -619,12 +674,26 @@ What kind of Korean content are you in the mood for today?`,
         `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
       );
 
+      console.log('🤖 Calling OpenAI service:', {
+        query: userMessage.content.substring(0, 100) + '...',
+        historyLength: conversationHistory.length,
+        userId: user?.id?.substring(0, 8) + '...' || 'no-user',
+        sessionId: currentSession?.id?.substring(0, 8) + '...' || 'no-session'
+      });
+
       const response = await openaiService.generateChatResponse(
         userMessage.content, 
         conversationHistory,
         user?.id,
-        currentSession.id // Pass the actual session ID
+        currentSession?.id // Pass session ID if available
       );
+
+      console.log('✅ OpenAI service response received:', {
+        hasMessage: !!response.message,
+        messageLength: response.message?.length || 0,
+        titlesCount: response.recommendedTitles?.length || 0,
+        suggestedQueriesCount: response.suggestedQueries?.length || 0
+      });
       
       const responseTime = Date.now() - startTime;
       // OpenAI chatbot success - response processed
@@ -641,15 +710,22 @@ What kind of Korean content are you in the mood for today?`,
 
       // Created bot message with titles
 
-      // Record AI response in database
-      const botDbMessage = await chatHistoryService.recordMessage({
-        session_id: currentSession.id,
-        user_id: user.id,
-        message_type: 'ai_response',
-        content: response.message,
-        tokens_used: 0, // Could be calculated from OpenAI response if available
-        response_time_ms: responseTime,
-      });
+      // Record AI response in database (if session available)
+      let botDbMessage = null;
+      if (currentSession) {
+        try {
+          botDbMessage = await chatHistoryService.recordMessage({
+            session_id: currentSession.id,
+            user_id: user.id,
+            message_type: 'ai_response',
+            content: response.message,
+            tokens_used: 0, // Could be calculated from OpenAI response if available
+            response_time_ms: responseTime,
+          });
+        } catch (error) {
+          console.warn('Failed to record AI response:', error);
+        }
+      }
 
       if (botDbMessage) {
         botMessage.messageId = botDbMessage.id;
@@ -712,14 +788,20 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
         timestamp: new Date(),
       };
 
-      // Record error response
-      await chatHistoryService.recordMessage({
-        session_id: currentSession.id,
-        user_id: user.id,
-        message_type: 'ai_response',
-        content: `ERROR: ${error.message}`,
-        response_time_ms: responseTime,
-      });
+      // Record error response (if session available)
+      if (currentSession) {
+        try {
+          await chatHistoryService.recordMessage({
+            session_id: currentSession.id,
+            user_id: user.id,
+            message_type: 'ai_response',
+            content: `ERROR: ${error.message}`,
+            response_time_ms: responseTime,
+          });
+        } catch (dbError) {
+          console.warn('Failed to record error message:', dbError);
+        }
+      }
       
       setMessages(prev => [...prev, errorMessage]);
       toast({

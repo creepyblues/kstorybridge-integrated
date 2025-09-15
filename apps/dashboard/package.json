@@ -14,7 +14,11 @@
     "test:coverage": "vitest --coverage",
     "check:featured": "node scripts/check_featured_data.js",
     "check:cache": "node scripts/clear_cache_check.js",
-    "test:tier-performance": "node scripts/test_tier_performance.js"
+    "test:tier-performance": "node scripts/test_tier_performance.js",
+    "test:openai:direct": "cp .env.local .env && npm run dev",
+    "test:openai:local": "cp .env.testing .env && npm run dev",
+    "test:openai:production": "cp .env.staging .env && npm run dev",
+    "test:openai:compare": "npm run dev -- --mode testing"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

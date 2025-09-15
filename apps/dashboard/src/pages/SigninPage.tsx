@@ -5,9 +5,10 @@ import { Input } from '@kstorybridge/ui';
 import { Label } from '@kstorybridge/ui';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, performSupabaseHealthCheck } from '@/integrations/supabase/client';
+import { performSessionHealthCheck, getCurrentSession, recoverCorruptedSession } from '@/utils/sessionManager';
+import { determineAccountType, clearAccountTypeCache, getAccountTypeDisplayInfo } from '@/utils/accountTypeDetection';
 import { notifyUserSignin } from '@/utils/slack';
-import { determineAccountType, getAccountTypeDisplayInfo } from '@/utils/accountTypeDetection';
 import { createBuyerProfileAtomic } from '@/utils/atomicProfileCreator';
 
 const SigninPage = () => {
@@ -233,7 +234,7 @@ const SigninPage = () => {
             console.log('✅ SIGNIN: Created new buyer profile');
           }
           
-          navigate('/buyers/titles');
+          navigate('/buyers/home');
         } else if (accountType === 'creator') {
           // For creators, profile should exist - show error if missing
           console.log('⚠️ SIGNIN: Creator profile missing');
@@ -336,6 +337,9 @@ const SigninPage = () => {
           title: "Success!",
           description: "You have been signed in successfully."
         });
+        
+        // Clear any cached account type data for fresh detection
+        clearAccountTypeCache(data.user.id);
         
         try {
           // Send signin notification (non-blocking)

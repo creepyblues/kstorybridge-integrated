@@ -3,6 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { sendWelcomeEmail } from "@/services/emailService";
 import { initializeSessionFromUrl, getCurrentSession, performSessionHealthCheck } from "@/utils/sessionManager";
+import { pageReloadOptimizer } from "@/utils/pageReloadOptimizer";
 
 interface AuthContextType {
   user: User | null;
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userName: buyerProfile.full_name,
           userEmail: user.email!,
           accountType: 'buyer',
-          dashboardUrl: window.location.origin + '/buyers/titles',
+          dashboardUrl: window.location.origin + '/buyers/home',
           loginUrl: window.location.origin + '/signin'
         });
 
@@ -133,18 +134,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (session?.user) {
             console.log('✅ AUTH: Found valid existing session for user:', session.user.email);
             
-            // Perform health check
-            const healthCheck = await performSessionHealthCheck();
-            console.log('🏥 AUTH: Session health check result:', {
-              healthy: healthCheck.healthy,
-              issues: healthCheck.issues,
-              recommendations: healthCheck.recommendations
-            });
+            // Set session immediately for faster page loads
+            setSession(session);
+            setUser(session.user);
             
-            // Use the session from health check (may be refreshed)
-            const validSession = healthCheck.session || session;
-            setSession(validSession);
-            setUser(validSession.user);
+            // Perform health check based on reload optimization
+            const reloadStrategy = pageReloadOptimizer.getOptimalStrategy();
+            const healthCheckDelay = reloadStrategy.useAsyncOperations ? 2000 : 500; // Longer delay on reload
+            
+            if (reloadStrategy.skipHealthChecks) {
+              pageReloadOptimizer.logOptimization('Auth', 'Skipping immediate health check for page reload');
+              setIsSessionHealthy(true); // Assume healthy on reload
+            } else {
+              // Perform health check asynchronously (don't block UI)
+              setTimeout(async () => {
+                try {
+                  const healthCheck = await performSessionHealthCheck();
+                console.log('🏥 AUTH: Async session health check result:', {
+                  healthy: healthCheck.healthy,
+                  issues: healthCheck.issues,
+                  recommendations: healthCheck.recommendations
+                });
+                
+                setIsSessionHealthy(healthCheck.healthy);
+                
+                // Update session if health check provided a refreshed one
+                if (healthCheck.session && healthCheck.session !== session) {
+                  console.log('🔄 AUTH: Updating session from health check');
+                  setSession(healthCheck.session);
+                  setUser(healthCheck.session.user);
+                }
+                } catch (error) {
+                  console.warn('⚠️ AUTH: Async health check failed:', error);
+                  // Don't fail the auth flow for health check issues
+                }
+              }, healthCheckDelay);
+            }
           } else {
             console.log('ℹ️ AUTH: No existing session found');
             setSession(null);

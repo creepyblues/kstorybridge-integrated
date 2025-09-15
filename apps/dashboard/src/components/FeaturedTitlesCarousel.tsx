@@ -30,12 +30,26 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
     const loadFeaturedTitles = async () => {
       try {
         setLoading(true);
-        const titles = await featuredService.getFeaturedTitles();
+        console.log('🎬 FeaturedTitlesCarousel: Starting to load featured titles...');
+        
+        // Add timeout protection to prevent infinite loading
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Featured titles loading timeout')), 10000);
+        });
+        
+        const titlesPromise = featuredService.getFeaturedTitles();
+        
+        const titles = await Promise.race([titlesPromise, timeoutPromise]);
+        
+        console.log(`✅ FeaturedTitlesCarousel: Successfully loaded ${titles.length} featured titles`);
         setAllFeaturedTitles(titles);
       } catch (error) {
-        console.error('Error loading featured titles:', error);
+        console.error('❌ FeaturedTitlesCarousel: Error loading featured titles:', error);
+        // Set empty array on error to prevent infinite loading
+        setAllFeaturedTitles([]);
       } finally {
         setLoading(false);
+        console.log('🏁 FeaturedTitlesCarousel: Loading complete');
       }
     };
 

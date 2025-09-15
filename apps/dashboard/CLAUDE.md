@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a React-based dashboard application for KStoryBridge, built with Vite, TypeScript, and shadcn/ui components. The application serves different dashboards based on user account types (buyers vs IP owners).
+This is a React-based dashboard application for KStoryBridge, built with Vite, TypeScript, and shadcn/ui components. The application serves different dashboards based on user account types (buyers vs creators).
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite
@@ -148,7 +148,7 @@ npx supabase start
 
 **Database Tables**:
 - `user_buyers` - Buyer account profiles
-- `user_creators` - Creator account profiles (formerly `user_ipowners`)
+- `user_creators` - Creator account profiles
 
 **TypeScript Types**:
 ```typescript
@@ -170,7 +170,7 @@ account_type: "creator" | "buyer"
 - **Tier Hierarchy**: basic (default), invited, pro, suite
 - **New Signups**: Default to 'basic' tier (changed from 'invited' in 2025-08-21 update)
 
-**IP Owner Profiles (`user_creators` table):**
+**Creator Profiles (`user_creators` table):**
 - ✅ **CORRECT**: Use `pen_name` field for pen name/studio information
 - ❌ **INCORRECT**: Do NOT use legacy field names
 - **Metadata Mapping**: Store and read as `pen_name` in metadata
@@ -193,3 +193,37 @@ const profile = {
 - Database operations: Always use `pen_name` column
 - Metadata: Use `pen_name` key consistently
 - Tier system: Default to 'basic' for new user_buyers
+
+## Design Guidelines
+
+### Color Usage Policy
+
+**🚫 NEVER USE YELLOW COLORS**
+- Do not use any yellow background colors (`bg-yellow-*`, `hover:bg-yellow-*`)
+- Do not use yellow borders or text colors
+- Replace yellow (#FBBC05, #FCD34D, etc.) with neutral colors like gray-500 (#6B7280) or brand colors
+- This applies to all UI elements including buttons, icons, backgrounds, borders, and hover states
+
+**✅ Approved Color Palette**:
+- **Primary Brand**: hanok-teal (#0891b2)
+- **Secondary**: midnight-ink (#1e293b), porcelain-blue (#e2e8f0)
+- **Accent**: sunrise-coral (for CTAs and highlights)
+- **Neutrals**: gray-50, gray-100, gray-200, gray-300, gray-500, gray-900
+- **Status Colors**: red for errors, green for success, blue for info
+
+**Button Hover States**:
+- Use `hover:bg-white hover:border-gray-400` instead of `hover:bg-gray-50`
+- Add `transition-colors` for smooth hover effects
+- Maintain accessibility and contrast standards
+
+### Design Principles (STRICT)
+1. **NO raw HTML elements** - Use MUI components only (Surface replaces div)
+2. **200 lines max per file** - Aggressively split components
+3. **DRY everything** - Reusable components and hooks
+4. **Atomic Design** - Atoms → Molecules → Organisms → Templates
+5. **Type-safe** - Full TypeScript, no `any` types
+6. **SSR First** - Use Next.js SSR/ISR for performance
+7. **Component Composition** - Build complex from simple
+8. **Client Components Minimized** - Always prefer SSR, use "use client" sparingly
+9. **NO FALLBACKS OR WORKAROUNDS** - Never use setTimeout, fallback patterns, or workarounds
+10. **NO COMPROMISES** - Fix root causes, not symptoms. No shortcuts or band-aid solutions

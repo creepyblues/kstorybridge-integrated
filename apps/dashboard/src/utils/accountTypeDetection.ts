@@ -1,66 +1,147 @@
 /**
- * Centralized Account Type Detection Utility
+ * Enhanced Account Type Detection Utility
  * 
- * This module provides a standardized way to detect user account types
- * across the entire application, ensuring consistency and reducing errors.
- * 
- * Priority Order:
- * 1. User metadata (most reliable for new users)
- * 2. Database profile lookup (fallback for existing users)
- * 3. URL parameters (for OAuth flows)
- * 4. Default to 'buyer' (backward compatibility)
+ * This module provides a robust, production-ready account type detection system with:
+ * - Circuit breaker pattern for database operations
+ * - Intelligent caching with TTL
+ * - Comprehensive error handling and recovery
+ * - Network-aware retry logic
+ * - Session integrity validation
+ * - Circular dependency prevention
  */
 
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, withRetry, isNetworkError } from '@/integrations/supabase/client';
+import { getCurrentSession, validateSessionIntegrity } from './sessionManager';
+import { pageReloadOptimizer } from './pageReloadOptimizer';
 
 export type AccountType = 'buyer' | 'creator';
 export type ExtendedAccountType = AccountType | null;
 
 export interface AccountTypeResult {
   accountType: ExtendedAccountType;
-  source: 'metadata' | 'database_buyer' | 'database_creator' | 'url_params' | 'default' | 'error';
+  source: 'metadata' | 'database_buyer' | 'database_creator' | 'url_params' | 'default' | 'error' | 'cache';
   confidence: 'high' | 'medium' | 'low';
   profileExists: boolean;
 }
 
 export interface AccountTypeOptions {
-  /**
-   * URL search parameters to check for account_type
-   * Useful for OAuth flows where account type is passed via URL
-   */
   urlParams?: URLSearchParams;
-  
-  /**
-   * Whether to perform database lookup if metadata is not available
-   * Set to false for performance-critical paths where you only need metadata
-   */
   includeDatabaseLookup?: boolean;
-  
-  /**
-   * Default account type if none can be determined
-   * Defaults to 'buyer' for backward compatibility
-   */
   defaultAccountType?: AccountType;
-  
-  /**
-   * Whether to enable debug logging
-   */
   debug?: boolean;
+  bypassCache?: boolean;
 }
 
+// Circuit breaker for database queries
+class DatabaseCircuitBreaker {
+  private failures: number = 0;
+  private lastFailureTime: number = 0;
+  private readonly failureThreshold: number = 2; // More aggressive
+  private readonly recoveryTimeout: number = 15000; // 15 seconds (shorter recovery)
+  private readonly timeoutDuration: number = 5000; // 5 seconds (faster timeout)
+  
+  isOpen(): boolean {
+    if (this.failures >= this.failureThreshold) {
+      const timeSinceLastFailure = Date.now() - this.lastFailureTime;
+      return timeSinceLastFailure < this.recoveryTimeout;
+    }
+    return false;
+  }
+  
+  recordSuccess(): void {
+    this.failures = 0;
+    this.lastFailureTime = 0;
+  }
+  
+  recordFailure(): void {
+    this.failures++;
+    this.lastFailureTime = Date.now();
+    console.warn(`🚫 Circuit Breaker: Database failure ${this.failures}/${this.failureThreshold}`);
+  }
+  
+  async execute<T>(operation: () => Promise<T>, fallbackValue: T): Promise<T> {
+    if (this.isOpen()) {
+      console.warn('🚫 Circuit Breaker: Database queries blocked, using fallback');
+      return fallbackValue;
+    }
+    
+    try {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Database query timeout')), this.timeoutDuration);
+      });
+      
+      const result = await Promise.race([operation(), timeoutPromise]);
+      this.recordSuccess();
+      return result;
+    } catch (error) {
+      this.recordFailure();
+      console.error('🚫 Circuit Breaker: Database operation failed:', error);
+      throw error;
+    }
+  }
+}
+
+// Account type detection cache with TTL
+class AccountTypeCache {
+  private cache = new Map<string, { result: AccountTypeResult; expiry: number }>();
+  private readonly ttl = 900000; // 15 minutes (extended for page reloads)
+  
+  get(userId: string): AccountTypeResult | null {
+    const cached = this.cache.get(userId);
+    if (cached && Date.now() < cached.expiry) {
+      console.log(`💾 Account Type Cache: Hit for user ${userId.substring(0, 8)}...`);
+      return { ...cached.result, source: 'cache' as const };
+    }
+    if (cached) {
+      this.cache.delete(userId);
+    }
+    return null;
+  }
+  
+  set(userId: string, result: AccountTypeResult): void {
+    this.cache.set(userId, {
+      result,
+      expiry: Date.now() + this.ttl
+    });
+    console.log(`💾 Account Type Cache: Stored result for user ${userId.substring(0, 8)}...`);
+  }
+  
+  clear(userId?: string): void {
+    if (userId) {
+      this.cache.delete(userId);
+      console.log(`💾 Account Type Cache: Cleared for user ${userId.substring(0, 8)}...`);
+    } else {
+      this.cache.clear();
+      console.log('💾 Account Type Cache: Cleared all entries');
+    }
+  }
+  
+  size(): number {
+    return this.cache.size;
+  }
+}
+
+// Global instances
+const dbCircuitBreaker = new DatabaseCircuitBreaker();
+const accountTypeCache = new AccountTypeCache();
+
 /**
- * Main function to determine user account type with comprehensive fallback logic
+ * Enhanced account type determination with circuit breaker and caching
  */
 export async function determineAccountType(
   user: User | null,
   options: AccountTypeOptions = {}
 ): Promise<AccountTypeResult> {
+  const startTime = Date.now();
+  
   const {
     urlParams,
     includeDatabaseLookup = true,
     defaultAccountType = 'buyer',
-    debug = false
+    debug = false,
+    bypassCache = false
   } = options;
   
   const log = (message: string, data?: any) => {
@@ -69,9 +150,20 @@ export async function determineAccountType(
     }
   };
 
-  // Handle null user
-  if (!user) {
-    log('No user provided');
+  // Handle dependency injection to break circular dependencies
+  let safeUser = user;
+  if (!safeUser) {
+    try {
+      const session = await getCurrentSession();
+      safeUser = session?.user || null;
+    } catch (error) {
+      log('⚠️ Failed to get current session for user fallback', error);
+    }
+  }
+
+  // Handle null user case early
+  if (!safeUser) {
+    log('No user provided or available');
     return {
       accountType: null,
       source: 'error',
@@ -80,56 +172,116 @@ export async function determineAccountType(
     };
   }
 
-  log('Starting account type detection', { email: user.email });
+  const userId = safeUser.id;
+  log('Starting enhanced account type detection', { 
+    email: safeUser.email,
+    userId: userId.substring(0, 8) + '...',
+    hasUrlParams: !!urlParams,
+    bypassCache
+  });
+
+  // Check cache first (unless bypassed)
+  if (!bypassCache) {
+    const cached = accountTypeCache.get(userId);
+    if (cached) {
+      log('✅ Found cached account type', cached);
+      
+      // Optimize for page reloads to avoid database connection issues
+      if (pageReloadOptimizer.shouldOptimizeForReload('accountType')) {
+        pageReloadOptimizer.logOptimization('AccountType', 'Using cached result to avoid DB queries');
+        return cached;
+      }
+      
+      return cached;
+    }
+  }
+  
+  // Apply page reload optimizations
+  const reloadStrategy = pageReloadOptimizer.getOptimalStrategy();
+  if (reloadStrategy.reduceDatabaseQueries && !options.bypassCache) {
+    log('⚡ Page reload optimization: Reducing database queries');
+    // Return metadata-only result for page reloads to avoid database load
+    if (safeUser.user_metadata?.account_type) {
+      const result = {
+        accountType: safeUser.user_metadata.account_type,
+        source: 'metadata' as const,
+        confidence: 'medium' as const,
+        profileExists: true // Assume exists on reload
+      };
+      accountTypeCache.set(userId, result);
+      return result;
+    }
+  }
 
   try {
     // 1. Check user metadata (highest priority - most reliable)
-    const metadataAccountType = user.user_metadata?.account_type;
+    const metadataAccountType = safeUser.user_metadata?.account_type;
     log('Checking metadata', { metadataAccountType });
     
     if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
-      log('✅ Found valid account type in metadata, checking if profile exists');
+      log('✅ Found valid account type in metadata');
       
       // For OAuth flows, metadata is set before profile creation
-      // We need to actually check if the profile exists in the database
-      if (includeDatabaseLookup && user.email) {
+      if (includeDatabaseLookup && safeUser.email) {
         const tableName = metadataAccountType === 'buyer' ? 'user_buyers' : 'user_creators';
-        log('🔍 Verifying profile existence in database', { tableName, email: user.email });
+        log('🔍 Verifying profile existence in database', { tableName });
         
         try {
-          const { data, error } = await supabase
-            .from(tableName)
-            .select('id')
-            .eq('email', user.email.toLowerCase())
-            .maybeSingle();
+          const profileExists = await dbCircuitBreaker.execute(async () => {
+            const { data, error } = await withRetry(() => 
+              supabase
+                .from(tableName)
+                .select('id')
+                .eq('email', safeUser.email!.toLowerCase())
+                .maybeSingle(),
+              {
+                maxRetries: 2,
+                operationName: `profile-check-${tableName}`,
+                retryCondition: (error) => isNetworkError(error)
+              }
+            );
+            
+            if (error) {
+              log('Database query error', { error: error.message });
+              throw error;
+            }
+            
+            return !!data;
+          }, false);
           
-          const actualProfileExists = !!(data && !error);
-          log(`📋 Profile verification result: ${actualProfileExists ? 'EXISTS' : 'NOT FOUND'}`, { error: error?.message });
+          log(`📋 Profile verification result: ${profileExists ? 'EXISTS' : 'NOT FOUND'}`);
           
-          return {
+          const result = {
             accountType: metadataAccountType,
-            source: 'metadata',
-            confidence: 'high',
-            profileExists: actualProfileExists
+            source: 'metadata' as const,
+            confidence: 'high' as const,
+            profileExists
           };
+          
+          accountTypeCache.set(userId, result);
+          return result;
         } catch (error) {
-          log('❌ Error verifying profile existence, assuming false', error);
-          return {
+          log('❌ Profile verification failed, using metadata without verification', error);
+          const result = {
             accountType: metadataAccountType,
-            source: 'metadata',
-            confidence: 'high',
-            profileExists: false // Safe default for OAuth flows
+            source: 'metadata' as const,
+            confidence: 'medium' as const,
+            profileExists: false
           };
+          
+          accountTypeCache.set(userId, result);
+          return result;
         }
       } else {
-        // If database lookup is disabled, assume profile exists (backward compatibility)
         log('⚠️ Database lookup disabled, assuming profile exists');
-        return {
+        const result = {
           accountType: metadataAccountType,
-          source: 'metadata',
-          confidence: 'high',
+          source: 'metadata' as const,
+          confidence: 'high' as const,
           profileExists: true
         };
+        accountTypeCache.set(userId, result);
+        return result;
       }
     }
 
@@ -140,125 +292,186 @@ export async function determineAccountType(
       
       if (urlAccountType === 'buyer' || urlAccountType === 'creator') {
         log('✅ Found valid account type in URL parameters');
-        return {
+        const result = {
           accountType: urlAccountType,
-          source: 'url_params',
-          confidence: 'medium',
-          profileExists: false // URL params suggest profile completion needed
+          source: 'url_params' as const,
+          confidence: 'medium' as const,
+          profileExists: false
         };
+        accountTypeCache.set(userId, result);
+        return result;
       }
     }
     
     // 2b. Check sessionStorage as fallback for OAuth flows
-    // This handles cases where OAuth provider doesn't preserve URL params
     if (typeof window !== 'undefined') {
       const storedAccountType = sessionStorage.getItem('oauth_account_type');
-      if (storedAccountType) {
-        log('Checking sessionStorage fallback', { storedAccountType });
+      if (storedAccountType === 'buyer' || storedAccountType === 'creator') {
+        log('✅ Found valid account type in sessionStorage');
+        sessionStorage.removeItem('oauth_account_type');
         
-        if (storedAccountType === 'buyer' || storedAccountType === 'creator') {
-          log('✅ Found valid account type in sessionStorage');
-          // Clean up after reading
-          sessionStorage.removeItem('oauth_account_type');
+        const result = {
+          accountType: storedAccountType,
+          source: 'url_params' as const,
+          confidence: 'medium' as const,
+          profileExists: false
+        };
+        accountTypeCache.set(userId, result);
+        return result;
+      }
+    }
+
+    // 3. Enhanced database lookup with circuit breaker
+    if (includeDatabaseLookup && safeUser.email) {
+      log('Performing enhanced database lookup with circuit breaker');
+      
+      try {
+        const dbResults = await dbCircuitBreaker.execute(async () => {
+          const [buyerResult, creatorResult] = await Promise.all([
+            withRetry(() => 
+              supabase
+                .from('user_buyers')
+                .select('id, tier')
+                .eq('email', safeUser.email!.toLowerCase())
+                .maybeSingle(),
+              {
+                maxRetries: 2,
+                operationName: 'buyer-profile-lookup',
+                retryCondition: (error) => isNetworkError(error)
+              }
+            ),
+            withRetry(() => 
+              supabase
+                .from('user_creators')
+                .select('id, pen_name')
+                .eq('email', safeUser.email!.toLowerCase())
+                .maybeSingle(),
+              {
+                maxRetries: 2,
+                operationName: 'creator-profile-lookup',
+                retryCondition: (error) => isNetworkError(error)
+              }
+            )
+          ]);
           
+          return { buyerResult, creatorResult };
+        }, { buyerResult: { data: null, error: null }, creatorResult: { data: null, error: null } });
+        
+        const { buyerResult, creatorResult } = dbResults;
+        log('Enhanced database query completed successfully');
+
+        // Check buyer profile first
+        if (buyerResult.data && !buyerResult.error) {
+          log('✅ Found buyer profile in database');
+          const result = {
+            accountType: 'buyer' as const,
+            source: 'database_buyer' as const,
+            confidence: 'high' as const,
+            profileExists: true
+          };
+          accountTypeCache.set(userId, result);
+          return result;
+        }
+
+        // Check creator profile
+        if (creatorResult.data && !creatorResult.error) {
+          log('✅ Found creator profile in database');
+          const result = {
+            accountType: 'creator' as const,
+            source: 'database_creator' as const,
+            confidence: 'high' as const,
+            profileExists: true
+          };
+          accountTypeCache.set(userId, result);
+          return result;
+        }
+
+        // Log database results for debugging
+        log('Enhanced database lookup results', {
+          buyerError: buyerResult.error?.message,
+          creatorError: creatorResult.error?.message,
+          hasBuyerData: !!buyerResult.data,
+          hasCreatorData: !!creatorResult.data
+        });
+        
+        // Handle specific database errors
+        if (creatorResult.error?.message?.includes('row-level security') || 
+            buyerResult.error?.message?.includes('row-level security')) {
+          log('⚠️ RLS blocking access - potential session corruption');
           return {
-            accountType: storedAccountType,
-            source: 'url_params', // Report as url_params for consistency
-            confidence: 'medium',
+            accountType: null,
+            source: 'error' as const,
+            confidence: 'low' as const,
             profileExists: false
           };
         }
-      }
-    }
-
-    // 3. Database lookup (if enabled)
-    if (includeDatabaseLookup && user.email) {
-      log('Performing database lookup');
-      
-      // Check both tables in parallel for efficiency
-      const [buyerResult, creatorResult] = await Promise.all([
-        supabase
-          .from('user_buyers')
-          .select('id, tier')
-          .eq('email', user.email.toLowerCase())
-          .maybeSingle(),
-        supabase
-          .from('user_creators')
-          .select('id, pen_name')
-          .eq('email', user.email.toLowerCase())
-          .maybeSingle()
-      ]);
-
-      // Check buyer profile first
-      if (buyerResult.data && !buyerResult.error) {
-        log('✅ Found buyer profile in database');
-        return {
-          accountType: 'buyer',
-          source: 'database_buyer',
-          confidence: 'high',
-          profileExists: true
-        };
-      }
-
-      // Check creator profile
-      if (creatorResult.data && !creatorResult.error) {
-        log('✅ Found creator profile in database');
-        return {
-          accountType: 'creator',
-          source: 'database_creator',
-          confidence: 'high',
-          profileExists: true
-        };
-      }
-
-      // Log database query results for debugging
-      log('Database lookup results', {
-        buyerError: buyerResult.error?.message,
-        creatorError: creatorResult.error?.message,
-        hasBuyerData: !!buyerResult.data,
-        hasCreatorData: !!creatorResult.data
-      });
-      
-      // If no profile found but we have potential RLS issues, check if this is a known OAuth case
-      if (creatorResult.error?.message?.includes('row-level security') || 
-          buyerResult.error?.message?.includes('row-level security')) {
-        log('⚠️ RLS might be blocking profile lookup, using metadata fallback');
+      } catch (error) {
+        log('❌ Enhanced database lookup failed', error);
         
-        // For OAuth users stuck in loading, allow the metadata to determine the account type
-        // This prevents infinite loading while profile creation is resolved
-        const fallbackAccountType = defaultAccountType;
-        return {
-          accountType: fallbackAccountType,
-          source: 'default',
-          confidence: 'medium',
-          profileExists: false
-        };
+        // Handle circuit breaker open state
+        if (error instanceof Error && error.message.includes('timeout')) {
+          log('🚫 Database timeout, using metadata fallback');
+          if (metadataAccountType) {
+            const result = {
+              accountType: metadataAccountType,
+              source: 'metadata' as const,
+              confidence: 'medium' as const,
+              profileExists: false
+            };
+            accountTypeCache.set(userId, result);
+            return result;
+          }
+        }
+        
+        log('⚠️ Database lookup failed, continuing with fallbacks');
       }
     }
-
-    // 4. Default fallback
-    log('⚠️ No account type found, using default', { defaultAccountType });
+    
+    // 4. Final fallback - use metadata if available
+    if (metadataAccountType && (metadataAccountType === 'buyer' || metadataAccountType === 'creator')) {
+      log('⚠️ Using metadata as final fallback');
+      const result = {
+        accountType: metadataAccountType,
+        source: 'metadata' as const,
+        confidence: 'low' as const,
+        profileExists: false
+      };
+      accountTypeCache.set(userId, result);
+      return result;
+    }
+    
+    // 5. Absolute final state - no account type determinable
+    log('❌ No account type determinable for user - critical error');
     return {
-      accountType: defaultAccountType,
-      source: 'default',
-      confidence: 'low',
+      accountType: null,
+      source: 'error' as const,
+      confidence: 'low' as const,
       profileExists: false
     };
 
   } catch (error) {
-    log('❌ Error during account type detection', error);
+    const duration = Date.now() - startTime;
+    log('❌ Critical error during account type detection', { 
+      error: error instanceof Error ? error.message : error,
+      duration: `${duration}ms`
+    });
+    
     return {
-      accountType: defaultAccountType,
-      source: 'error',
-      confidence: 'low',
+      accountType: null,
+      source: 'error' as const,
+      confidence: 'low' as const,
       profileExists: false
     };
+  } finally {
+    const duration = Date.now() - startTime;
+    if (duration > 5000) {
+      console.warn(`⚠️ Account Type Detection: Slow operation completed in ${duration}ms`);
+    }
   }
 }
 
 /**
  * Lightweight version that only checks metadata and URL params
- * Useful for performance-critical paths or when database lookup is not needed
  */
 export function getAccountTypeFromMetadata(
   user: User | null,
@@ -285,7 +498,6 @@ export function getAccountTypeFromMetadata(
   if (typeof window !== 'undefined') {
     const storedType = sessionStorage.getItem('oauth_account_type');
     if (storedType === 'buyer' || storedType === 'creator') {
-      // Clean up after reading
       sessionStorage.removeItem('oauth_account_type');
       return storedType;
     }
@@ -304,23 +516,22 @@ export async function checkProfileExists(
   if (!user?.email) return false;
   
   try {
-    if (accountType === 'buyer') {
-      const { data } = await supabase
-        .from('user_buyers')
+    const tableName = accountType === 'buyer' ? 'user_buyers' : 'user_creators';
+    
+    const { data } = await withRetry(() =>
+      supabase
+        .from(tableName)
         .select('id')
-        .eq('email', user.email.toLowerCase())
-        .maybeSingle();
-      
-      return !!data;
-    } else {
-      const { data } = await supabase
-        .from('user_creators')
-        .select('id')
-        .eq('email', user.email.toLowerCase())
-        .maybeSingle();
-      
-      return !!data;
-    }
+        .eq('email', user.email!.toLowerCase())
+        .maybeSingle(),
+      {
+        maxRetries: 2,
+        operationName: `check-profile-${accountType}`,
+        retryCondition: (error) => isNetworkError(error)
+      }
+    );
+    
+    return !!data;
   } catch (error) {
     console.error('Error checking profile existence:', error);
     return false;
@@ -335,21 +546,21 @@ export function getAccountTypeDisplayInfo(accountType: ExtendedAccountType) {
     case 'buyer':
       return {
         label: 'Buyer',
-        dashboardPath: '/buyers/titles',
+        dashboardPath: '/buyers/home',
         signupPath: '/signup/buyer',
         homePath: '/buyers/home'
       };
     case 'creator':
       return {
         label: 'Creator',
-        dashboardPath: '/creators/home/',
+        dashboardPath: '/creators/home',
         signupPath: '/signup/creator',
         homePath: '/creators/home'
       };
     default:
       return {
         label: 'User',
-        dashboardPath: '/buyers/titles',
+        dashboardPath: '/buyers/home',
         signupPath: '/signup/buyer',
         homePath: '/buyers/home'
       };
@@ -357,17 +568,16 @@ export function getAccountTypeDisplayInfo(accountType: ExtendedAccountType) {
 }
 
 /**
- * React hook for account type detection with caching
+ * React hook for account type detection with enhanced error handling
  */
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function useAccountType(options: AccountTypeOptions = {}) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [result, setResult] = useState<AccountTypeResult | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Destructure options to avoid dependency on entire object
   const {
     defaultAccountType = 'buyer',
     includeDatabaseLookup = true,
@@ -382,11 +592,25 @@ export function useAccountType(options: AccountTypeOptions = {}) {
       setLoading(true);
       
       // Set a timeout to prevent infinite loading
-      timeoutId = setTimeout(() => {
+      timeoutId = setTimeout(async () => {
         if (isMounted) {
-          console.warn('⏰ Account type detection timed out, falling back to default');
+          console.warn('⏰ Account type detection timed out');
+          
+          // If we have a user but detection timed out, this indicates system issues
+          if (user) {
+            console.error('❌ Account type detection timeout with logged in user - forcing logout');
+            
+            try {
+              await signOut();
+            } catch (error) {
+              console.error('Error during timeout signout:', error);
+              window.location.reload();
+            }
+            return;
+          }
+          
           setResult({
-            accountType: defaultAccountType,
+            accountType: null,
             source: 'error',
             confidence: 'low',
             profileExists: false
@@ -401,6 +625,7 @@ export function useAccountType(options: AccountTypeOptions = {}) {
           includeDatabaseLookup,
           debug
         });
+        
         if (isMounted) {
           clearTimeout(timeoutId);
           setResult(detection);
@@ -410,7 +635,7 @@ export function useAccountType(options: AccountTypeOptions = {}) {
         if (isMounted) {
           clearTimeout(timeoutId);
           setResult({
-            accountType: defaultAccountType,
+            accountType: null,
             source: 'error',
             confidence: 'low',
             profileExists: false
@@ -429,7 +654,7 @@ export function useAccountType(options: AccountTypeOptions = {}) {
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [user, defaultAccountType, includeDatabaseLookup, debug]);
+  }, [user, defaultAccountType, includeDatabaseLookup, debug, signOut]);
 
   return {
     accountType: result?.accountType || null,
@@ -438,5 +663,25 @@ export function useAccountType(options: AccountTypeOptions = {}) {
     profileExists: result?.profileExists || false,
     loading,
     result
+  };
+}
+
+/**
+ * Clear account type cache for specific user or all users
+ */
+export function clearAccountTypeCache(userId?: string): void {
+  accountTypeCache.clear(userId);
+}
+
+/**
+ * Get account type cache statistics
+ */
+export function getAccountTypeCacheStats(): {
+  size: number;
+  circuitBreakerStatus: 'open' | 'closed';
+} {
+  return {
+    size: accountTypeCache.size(),
+    circuitBreakerStatus: dbCircuitBreaker.isOpen() ? 'open' : 'closed'
   };
 }

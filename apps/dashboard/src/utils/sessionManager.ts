@@ -12,8 +12,16 @@
  * - Graceful error recovery
  */
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, withRetry, isNetworkError, performSupabaseHealthCheck } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
+
+// Session integrity and corruption detection
+const SESSION_INTEGRITY_CHECKS = {
+  minTokenLength: 20,
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  requiredFields: ['access_token', 'user'],
+  suspiciousPatterns: ['undefined', 'null', 'NaN', '{}', '[]']
+};
 
 export interface SessionData {
   access_token: string;
@@ -34,6 +42,84 @@ export interface SessionRecoveryOptions {
   retryDelay?: number;
   fallbackToRefresh?: boolean;
   clearUrlOnFailure?: boolean;
+  performIntegrityCheck?: boolean;
+  attemptRecovery?: boolean;
+}
+
+export interface SessionOperationResult<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  retryCount?: number;
+  recoveryAttempted?: boolean;
+  performanceMetrics?: {
+    duration: number;
+    retries: number;
+  };
+}
+
+/**
+ * Enhanced session integrity validator
+ */
+export function validateSessionIntegrity(session: Session | null): {
+  isValid: boolean;
+  issues: string[];
+  recommendations: string[];
+} {
+  const issues: string[] = [];
+  const recommendations: string[] = [];
+
+  if (!session) {
+    issues.push('No session provided');
+    recommendations.push('User should sign in');
+    return { isValid: false, issues, recommendations };
+  }
+
+  // Check access token
+  if (!session.access_token || session.access_token.length < SESSION_INTEGRITY_CHECKS.minTokenLength) {
+    issues.push('Invalid or missing access token');
+    recommendations.push('Session should be refreshed or user re-authenticated');
+  }
+
+  // Check for suspicious token content
+  const hasSuspiciousContent = SESSION_INTEGRITY_CHECKS.suspiciousPatterns.some(pattern => 
+    session.access_token.includes(pattern)
+  );
+  if (hasSuspiciousContent) {
+    issues.push('Access token contains suspicious patterns');
+    recommendations.push('Clear session storage and re-authenticate');
+  }
+
+  // Check user object
+  if (!session.user) {
+    issues.push('Session missing user data');
+    recommendations.push('Session is corrupted, user should sign in again');
+  } else {
+    if (!session.user.id || !session.user.email) {
+      issues.push('User data incomplete (missing id or email)');
+      recommendations.push('Session corruption detected, re-authentication required');
+    }
+  }
+
+  // Check expiration
+  if (session.expires_at) {
+    const now = Math.floor(Date.now() / 1000);
+    const timeUntilExpiry = session.expires_at - now;
+    
+    if (timeUntilExpiry < 0) {
+      issues.push(`Session expired ${Math.abs(timeUntilExpiry)} seconds ago`);
+      recommendations.push('Refresh session or re-authenticate');
+    } else if (timeUntilExpiry < 300) { // Less than 5 minutes
+      issues.push(`Session expires soon (${timeUntilExpiry} seconds)`);
+      recommendations.push('Proactive session refresh recommended');
+    }
+  }
+
+  return {
+    isValid: issues.length === 0,
+    issues,
+    recommendations
+  };
 }
 
 /**
@@ -110,6 +196,155 @@ export function validateSessionTokens(urlParams: URLSearchParams): SessionValida
     warnings,
     sessionData
   };
+}
+
+/**
+ * Atomic session operations with proper locking
+ */
+const sessionOperationLocks = new Map<string, Promise<any>>();
+
+/**
+ * Performs atomic session cleanup
+ */
+export async function performSessionCleanup(): Promise<{
+  cleaned: boolean;
+  itemsRemoved: number;
+  errors: string[];
+}> {
+  const errors: string[] = [];
+  let itemsRemoved = 0;
+  
+  try {
+    console.log('🧹 Session Manager: Starting comprehensive session cleanup');
+    
+    // Clear localStorage items
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('supabase') || key.includes('auth') || key.includes('sb-'))) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    keysToRemove.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+        itemsRemoved++;
+      } catch (error) {
+        errors.push(`Failed to remove localStorage key ${key}: ${error}`);
+      }
+    });
+    
+    // Clear sessionStorage items
+    const sessionKeysToRemove = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && (key.includes('supabase') || key.includes('auth') || key.includes('oauth'))) {
+        sessionKeysToRemove.push(key);
+      }
+    }
+    
+    sessionKeysToRemove.forEach(key => {
+      try {
+        sessionStorage.removeItem(key);
+        itemsRemoved++;
+      } catch (error) {
+        errors.push(`Failed to remove sessionStorage key ${key}: ${error}`);
+      }
+    });
+    
+    // Clear any auth-related cookies
+    try {
+      document.cookie.split(';').forEach(cookie => {
+        const eqPos = cookie.indexOf('=');
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        if (name.includes('supabase') || name.includes('auth') || name.includes('sb-')) {
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          itemsRemoved++;
+        }
+      });
+    } catch (error) {
+      errors.push(`Failed to clear cookies: ${error}`);
+    }
+    
+    console.log(`✅ Session Manager: Cleanup completed - removed ${itemsRemoved} items`);
+    
+    return {
+      cleaned: true,
+      itemsRemoved,
+      errors
+    };
+  } catch (error) {
+    errors.push(`General cleanup error: ${error}`);
+    return {
+      cleaned: false,
+      itemsRemoved,
+      errors
+    };
+  }
+}
+
+/**
+ * Enhanced session recovery with atomic operations
+ */
+export async function recoverCorruptedSession(): Promise<{
+  recovered: boolean;
+  method: 'refresh' | 'cleanup' | 'none';
+  error?: string;
+}> {
+  try {
+    console.log('🔧 Session Manager: Starting session recovery process');
+    
+    // First, try to get current session and validate it
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      const integrity = validateSessionIntegrity(session);
+      
+      if (integrity.isValid) {
+        console.log('✅ Session Manager: Session is valid, no recovery needed');
+        return { recovered: true, method: 'none' };
+      }
+      
+      console.log('⚠️ Session Manager: Session integrity issues detected:', integrity.issues);
+      
+      // Try refresh first if token exists
+      if (session.refresh_token) {
+        console.log('🔄 Session Manager: Attempting session refresh');
+        const refreshResult = await refreshSessionIfNeeded(session);
+        
+        if (refreshResult.refreshed && refreshResult.session) {
+          const newIntegrity = validateSessionIntegrity(refreshResult.session);
+          if (newIntegrity.isValid) {
+            console.log('✅ Session Manager: Session successfully recovered via refresh');
+            return { recovered: true, method: 'refresh' };
+          }
+        }
+      }
+    }
+    
+    // If refresh failed or no session, perform cleanup
+    console.log('🧹 Session Manager: Attempting recovery via cleanup');
+    const cleanup = await performSessionCleanup();
+    
+    if (cleanup.cleaned) {
+      console.log('✅ Session Manager: Session recovered via cleanup');
+      return { recovered: true, method: 'cleanup' };
+    } else {
+      return {
+        recovered: false,
+        method: 'cleanup',
+        error: `Cleanup failed: ${cleanup.errors.join(', ')}`
+      };
+    }
+  } catch (error) {
+    console.error('❌ Session Manager: Recovery failed:', error);
+    return {
+      recovered: false,
+      method: 'none',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
 }
 
 /**
@@ -328,79 +563,266 @@ export async function initializeSessionFromUrl(): Promise<{
 }
 
 /**
- * Safe session getter with automatic refresh
+ * Enhanced session getter with integrity validation and atomic operations
  */
 export async function getCurrentSession(): Promise<Session | null> {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) return null;
+  const lockKey = 'getCurrentSession';
+  
+  // Prevent concurrent session operations
+  if (sessionOperationLocks.has(lockKey)) {
+    try {
+      return await sessionOperationLocks.get(lockKey);
+    } catch (error) {
+      console.warn('⚠️ Session Manager: Concurrent session operation failed, proceeding with new one');
+      sessionOperationLocks.delete(lockKey);
+    }
+  }
 
-    // Check if session needs refresh
-    const refreshResult = await refreshSessionIfNeeded(session);
-    
-    return refreshResult.session || session;
-  } catch (error) {
-    console.error('❌ Session Manager: Error getting current session:', error);
-    return null;
+  const operation = async (): Promise<Session | null> => {
+    try {
+      console.log('🔍 Session Manager: Getting current session with enhanced validation');
+      
+      // Use enhanced Supabase client with retry logic
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('❌ Session Manager: Error getting session:', error);
+        
+        // If error is due to corrupted session, attempt recovery
+        if (error.message?.includes('invalid') || error.message?.includes('corrupt')) {
+          console.log('🔧 Session Manager: Attempting session recovery due to error');
+          const recovery = await recoverCorruptedSession();
+          if (recovery.recovered) {
+            // Retry getting session after recovery
+            const { data: { session: recoveredSession } } = await supabase.auth.getSession();
+            return recoveredSession;
+          }
+        }
+        return null;
+      }
+      
+      if (!session) {
+        console.log('ℹ️ Session Manager: No active session found');
+        return null;
+      }
+
+      // Validate session integrity
+      const integrity = validateSessionIntegrity(session);
+      
+      if (!integrity.isValid) {
+        console.warn('⚠️ Session Manager: Session integrity issues:', integrity.issues);
+        
+        // Attempt recovery for corrupted session
+        const recovery = await recoverCorruptedSession();
+        if (!recovery.recovered) {
+          console.error('❌ Session Manager: Session recovery failed');
+          return null;
+        }
+        
+        // Get session again after recovery
+        const { data: { session: recoveredSession } } = await supabase.auth.getSession();
+        return recoveredSession;
+      }
+
+      // Check if session needs refresh
+      const refreshResult = await refreshSessionIfNeeded(session);
+      const finalSession = refreshResult.session || session;
+      
+      // Final integrity check
+      const finalIntegrity = validateSessionIntegrity(finalSession);
+      if (!finalIntegrity.isValid) {
+        console.error('❌ Session Manager: Final session integrity check failed');
+        return null;
+      }
+      
+      console.log('✅ Session Manager: Retrieved valid session for user:', finalSession?.user?.email);
+      return finalSession;
+    } catch (error) {
+      console.error('❌ Session Manager: Exception in getCurrentSession:', error);
+      
+      // If it's a network error, attempt recovery
+      if (isNetworkError(error)) {
+        console.log('🔧 Session Manager: Network error detected, attempting recovery');
+        try {
+          const recovery = await recoverCorruptedSession();
+          if (recovery.recovered) {
+            const { data: { session } } = await supabase.auth.getSession();
+            return session;
+          }
+        } catch (recoveryError) {
+          console.error('❌ Session Manager: Recovery attempt failed:', recoveryError);
+        }
+      }
+      
+      return null;
+    }
+  };
+
+  // Store operation in lock map
+  sessionOperationLocks.set(lockKey, operation());
+  
+  try {
+    const result = await sessionOperationLocks.get(lockKey);
+    return result;
+  } finally {
+    sessionOperationLocks.delete(lockKey);
   }
 }
 
 /**
- * Session health check - validates current session status
+ * Comprehensive session health check with detailed diagnostics
  */
 export async function performSessionHealthCheck(): Promise<{
   healthy: boolean;
   session?: Session;
   issues: string[];
   recommendations: string[];
+  diagnostics: {
+    supabaseHealth: any;
+    sessionIntegrity: any;
+    performanceMetrics: {
+      responseTime: number;
+      networkConnectivity: 'ok' | 'slow' | 'failed';
+    };
+  };
 }> {
+  const startTime = Date.now();
   const issues: string[] = [];
   const recommendations: string[] = [];
 
   try {
+    console.log('🏥 Session Manager: Starting comprehensive health check');
+    
+    // Check Supabase connectivity first
+    const supabaseHealth = await performSupabaseHealthCheck();
+    
+    if (!supabaseHealth.healthy) {
+      issues.push(`Supabase connectivity issue: ${supabaseHealth.error}`);
+      recommendations.push('Check network connection and Supabase status');
+    }
+    
+    // Get session with enhanced validation
     const session = await getCurrentSession();
 
     if (!session) {
       issues.push('No active session found');
       recommendations.push('User should sign in again');
-      return { healthy: false, issues, recommendations };
+      
+      const responseTime = Date.now() - startTime;
+      return {
+        healthy: false,
+        issues,
+        recommendations,
+        diagnostics: {
+          supabaseHealth,
+          sessionIntegrity: null,
+          performanceMetrics: {
+            responseTime,
+            networkConnectivity: responseTime < 1000 ? 'ok' : responseTime < 5000 ? 'slow' : 'failed'
+          }
+        }
+      };
     }
 
-    if (!session.user) {
-      issues.push('Session exists but no user data');
-      recommendations.push('Session may be corrupted, should re-authenticate');
-      return { healthy: false, session, issues, recommendations };
+    // Comprehensive session integrity check
+    const sessionIntegrity = validateSessionIntegrity(session);
+    
+    if (!sessionIntegrity.isValid) {
+      issues.push(...sessionIntegrity.issues);
+      recommendations.push(...sessionIntegrity.recommendations);
     }
 
-    // Check expiration
-    if (isSessionExpiredOrExpiring(session, 10)) { // 10-minute buffer
-      issues.push('Session is expired or expiring soon');
-      recommendations.push('Session should be refreshed');
+    // Additional health checks
+    
+    // Check expiration with multiple time windows
+    if (isSessionExpiredOrExpiring(session, 1)) { // 1-minute buffer - critical
+      issues.push('Session expired or expires within 1 minute (CRITICAL)');
+      recommendations.push('Immediate session refresh or re-authentication required');
+    } else if (isSessionExpiredOrExpiring(session, 5)) { // 5-minute buffer - warning
+      issues.push('Session expires within 5 minutes (WARNING)');
+      recommendations.push('Proactive session refresh recommended');
+    } else if (isSessionExpiredOrExpiring(session, 15)) { // 15-minute buffer - info
+      issues.push('Session expires within 15 minutes (INFO)');
+      recommendations.push('Consider refreshing session soon');
     }
 
-    // Check access token validity
-    if (!session.access_token || session.access_token.length < 20) {
-      issues.push('Access token appears invalid or corrupted');
-      recommendations.push('User should sign in again');
-      return { healthy: false, session, issues, recommendations };
+    // Check user data completeness
+    if (session.user) {
+      if (!session.user.id || session.user.id.length < 10) {
+        issues.push('User ID missing or invalid');
+        recommendations.push('Session corruption detected, re-authentication required');
+      }
+      
+      if (!session.user.email || !session.user.email.includes('@')) {
+        issues.push('User email missing or invalid');
+        recommendations.push('Session corruption detected, re-authentication required');
+      }
+      
+      if (session.user.email_confirmed_at === null) {
+        issues.push('User email not verified');
+        recommendations.push('Email verification may be required');
+      }
+    }
+    
+    // Check for account type metadata
+    const accountType = session.user?.user_metadata?.account_type;
+    if (!accountType) {
+      issues.push('Account type metadata missing');
+      recommendations.push('Account type detection may fail, consider re-authentication');
+    } else if (accountType !== 'buyer' && accountType !== 'creator') {
+      issues.push(`Invalid account type: ${accountType}`);
+      recommendations.push('Account type metadata corrupted, consider re-authentication');
     }
 
-    const healthy = issues.length === 0;
+    const responseTime = Date.now() - startTime;
+    const healthy = issues.filter(issue => !issue.includes('INFO')).length === 0;
+    
+    const result = {
+      healthy,
+      session,
+      issues,
+      recommendations,
+      diagnostics: {
+        supabaseHealth,
+        sessionIntegrity,
+        performanceMetrics: {
+          responseTime,
+          networkConnectivity: (responseTime < 1000 ? 'ok' : responseTime < 5000 ? 'slow' : 'failed') as 'ok' | 'slow' | 'failed'
+        }
+      }
+    };
     
     console.log(`🏥 Session Manager: Health check ${healthy ? 'PASSED' : 'FAILED'}`, {
       healthy,
-      userId: session.user.id,
-      email: session.user.email,
-      expiresAt: new Date(session.expires_at * 1000).toISOString(),
-      issues,
-      recommendations
+      userId: session.user?.id,
+      email: session.user?.email,
+      accountType,
+      expiresAt: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'unknown',
+      responseTime: `${responseTime}ms`,
+      issueCount: issues.length,
+      criticalIssues: issues.filter(i => i.includes('CRITICAL')).length
     });
 
-    return { healthy, session, issues, recommendations };
+    return result;
   } catch (error) {
-    issues.push(`Health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    recommendations.push('System error occurred, check logs and retry');
-    return { healthy: false, issues, recommendations };
+    const responseTime = Date.now() - startTime;
+    issues.push(`Health check exception: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    recommendations.push('System error occurred, check logs and attempt session recovery');
+    
+    console.error('❌ Session Manager: Health check failed with exception:', error);
+    
+    return {
+      healthy: false,
+      issues,
+      recommendations,
+      diagnostics: {
+        supabaseHealth: { healthy: false, error: 'Health check failed' },
+        sessionIntegrity: null,
+        performanceMetrics: {
+          responseTime,
+          networkConnectivity: 'failed'
+        }
+      }
+    };
   }
 }

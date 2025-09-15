@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, withRetry, isNetworkError } from "@/integrations/supabase/client";
 import type { Title } from "./titlesService";
 
 export type Featured = {
@@ -16,15 +16,22 @@ export type FeaturedWithTitle = Featured & {
 export const featuredService = {
   // Get most recently added featured title
   async getMostRecentFeatured(): Promise<FeaturedWithTitle | null> {
-    const { data, error } = await supabase
-      .from('featured')
-      .select(`
-        *,
-        titles (*)
-      `)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+    const { data, error } = await withRetry(
+      () => supabase
+        .from('featured')
+        .select(`
+          *,
+          titles (*)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single(),
+      {
+        maxRetries: 2,
+        operationName: 'getMostRecentFeatured',
+        retryCondition: isNetworkError
+      }
+    );
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -39,14 +46,21 @@ export const featuredService = {
 
   // Get featured titles sorted by views (for top rated)
   async getFeaturedByViews(limit: number = 5): Promise<FeaturedWithTitle[]> {
-    const { data, error } = await supabase
-      .from('featured')
-      .select(`
-        *,
-        titles (*)
-      `)
-      .order('titles(views)', { ascending: false })
-      .limit(limit);
+    const { data, error } = await withRetry(
+      () => supabase
+        .from('featured')
+        .select(`
+          *,
+          titles (*)
+        `)
+        .order('titles(views)', { ascending: false })
+        .limit(limit),
+      {
+        maxRetries: 2,
+        operationName: 'getFeaturedByViews',
+        retryCondition: isNetworkError
+      }
+    );
 
     if (error) {
       throw new Error(`Failed to fetch featured titles by views: ${error.message}`);
@@ -57,13 +71,20 @@ export const featuredService = {
 
   // Get all featured titles
   async getAllFeatured(): Promise<FeaturedWithTitle[]> {
-    const { data, error } = await supabase
-      .from('featured')
-      .select(`
-        *,
-        titles (*)
-      `)
-      .order('created_at', { ascending: false });
+    const { data, error } = await withRetry(
+      () => supabase
+        .from('featured')
+        .select(`
+          *,
+          titles (*)
+        `)
+        .order('created_at', { ascending: false }),
+      {
+        maxRetries: 2,
+        operationName: 'getAllFeatured',
+        retryCondition: isNetworkError
+      }
+    );
 
     if (error) {
       throw new Error(`Failed to fetch all featured titles: ${error.message}`);
@@ -75,35 +96,46 @@ export const featuredService = {
   // Get featured titles (for homepage-style display)
   async getFeaturedTitles(): Promise<FeaturedWithTitle[]> {
     try {
-      const { data, error } = await supabase
-        .from('featured')
-        .select(`
-          *,
-          titles (
-            title_id,
-            title_name_en,
-            title_name_kr,
-            title_image,
-            tagline,
-            genre,
-            content_format,
-            story_author,
-            pitch,
-            tone,
-            comps,
-            synopsis
-          )
-        `)
-        .order('created_at', { ascending: false });
+      console.log('🎬 Loading featured titles with enhanced retry logic...');
+      
+      const { data, error } = await withRetry(
+        () => supabase
+          .from('featured')
+          .select(`
+            *,
+            titles (
+              title_id,
+              title_name_en,
+              title_name_kr,
+              title_image,
+              tagline,
+              genre,
+              content_format,
+              story_author,
+              pitch,
+              tone,
+              comps,
+              synopsis
+            )
+          `)
+          .order('created_at', { ascending: false }),
+        {
+          maxRetries: 2,
+          baseDelay: 1000,
+          operationName: 'getFeaturedTitles',
+          retryCondition: isNetworkError
+        }
+      );
 
       if (error) {
-        console.warn('Failed to fetch featured titles:', error.message);
+        console.warn('⚠️ Failed to fetch featured titles after retries:', error.message);
         return []; // Return empty array instead of throwing
       }
 
+      console.log(`✅ Successfully loaded ${data?.length || 0} featured titles`);
       return data || [];
     } catch (error) {
-      console.warn('Featured titles service error:', error);
+      console.error('❌ Featured titles service error:', error);
       return []; // Return empty array on any error
     }
   }

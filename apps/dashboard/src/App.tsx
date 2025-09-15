@@ -54,6 +54,7 @@ const SearchResults = lazy(() => import("./pages/SearchResults"));
 const ChatbotFeedbackAnalysis = lazy(() => import("./pages/ChatbotFeedbackAnalysis"));
 const SearchAnalytics = lazy(() => import("./pages/SearchAnalytics"));
 const Experiment = lazy(() => import("./pages/Experiment"));
+const ChatbotTesting = lazy(() => import("./pages/ChatbotTesting"));
 
 // Authentication pages
 const SigninPage = lazy(() => import("./pages/SigninPage"));
@@ -291,6 +292,11 @@ const App = () => (
                 {/* Experiment page - admin only */}
                 <Route path="/experiment" element={
                   <ProtectedLayout><Experiment /></ProtectedLayout>
+                } />
+                
+                {/* OpenAI Chatbot Testing - environment comparison tool */}
+                <Route path="/openai-chatbot-testing" element={
+                  <ProtectedLayout><ChatbotTesting /></ProtectedLayout>
                 } />
                 
                 <Route path="*" element={

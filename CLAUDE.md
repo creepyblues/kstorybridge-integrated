@@ -282,7 +282,24 @@ try {
 - **Build Verification**: Run build command after significant changes
 
 The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide detailed app-specific guidance and should be consulted for application-specific development tasks.
-- always reference DATABASE_SCHEMA.md for database related coding.
-- always consider both desktop and mobile
-- do not auto commit to github
-- when making structural changes such as db schema change, auth flow, account types, policy change, etc, make sure to reflect this changes in the CLAUDE.md for future consistency.
+- Always reference **DATABASE_SCHEMA.md** for database-related coding
+- Always reference **AUTH_DOCUMENTATION.md** for authentication-related information
+- Always reference **SLACK_BLACKLIST_DOCUMENTATION.md** for Slack notification blacklist management
+- Always consider both desktop and mobile
+- Do not auto commit to github
+- When making structural changes such as db schema change, auth flow, account types, policy change, etc, make sure to reflect these changes in the appropriate documentation files (DATABASE_SCHEMA.md for database, AUTH_DOCUMENTATION.md for auth, or CLAUDE.md for general guidance) for future consistency
+
+## Slack Notification System
+
+### Blacklist Management
+All Slack notifications are filtered through a comprehensive blacklist system to prevent internal team notifications. Current blacklisted accounts:
+- `sungho@dadble.com`
+- `kevin@sandstoneartists.com`
+- `creepyblues@gmail.com`
+
+**CRITICAL**: When implementing ANY Slack notifications, ALWAYS use the centralized utilities:
+```typescript
+import { sendSlackNotification } from './slack';
+```
+
+**Never bypass the blacklist** by making direct API calls. See **SLACK_BLACKLIST_DOCUMENTATION.md** for complete implementation details.

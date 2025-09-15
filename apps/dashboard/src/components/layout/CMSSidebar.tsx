@@ -44,15 +44,23 @@ const getSettingsItems = (accountType: string, userEmail?: string): MenuItem[] =
         { title: "Profile", href: "/buyers/profile" },
       ];
   
-  // Add Experiment page for admin users right after Profile
+  // Add admin pages for admin users right after Profile
   if (isAdmin) {
     const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
-    baseItems.splice(profileIndex + 1, 0, {
-      title: "Experiment",
-      href: "/experiment",
-      badge: "admin",
-      icon: "⚡"
-    });
+    baseItems.splice(profileIndex + 1, 0, 
+      {
+        title: "Experiment",
+        href: "/experiment",
+        badge: "admin",
+        icon: "⚡"
+      },
+      {
+        title: "OpenAI Testing",
+        href: "/openai-chatbot-testing",
+        badge: "admin",
+        icon: "🧪"
+      }
+    );
   }
   
   return baseItems;

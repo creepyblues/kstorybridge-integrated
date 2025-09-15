@@ -289,6 +289,68 @@ export const titlesService = {
     }
   },
 
+  // Get paginated titles for better performance
+  async getTitlesPaginated(page: number = 1, limit: number = 50, sortField?: string, sortDirection?: 'asc' | 'desc') {
+    if (shouldUseMockData()) {
+      console.log('📚 TITLES SERVICE: Using mock data for paginated titles');
+      const start = (page - 1) * limit;
+      const end = start + limit;
+      return {
+        titles: mockTitles.slice(start, end),
+        totalCount: mockTitles.length,
+        page,
+        limit
+      };
+    }
+
+    try {
+      // First get total count
+      const { count: totalCount, error: countError } = await supabase
+        .from("titles")
+        .select("*", { count: 'exact', head: true });
+      
+      if (countError) {
+        console.warn('Failed to get titles count:', countError.message);
+        return { titles: [], totalCount: 0, page, limit };
+      }
+
+      // Calculate offset
+      const offset = (page - 1) * limit;
+      
+      // Build query with sorting
+      let query = supabase
+        .from("titles")
+        .select("*")
+        .range(offset, offset + limit - 1);
+      
+      // Apply sorting
+      if (sortField) {
+        query = query.order(sortField, { ascending: sortDirection === 'asc' });
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.warn('Failed to fetch paginated titles:', error.message);
+        return { titles: [], totalCount: 0, page, limit };
+      }
+      
+      console.log(`📚 Loaded page ${page} of titles (${data?.length || 0} items, total: ${totalCount || 0})`);
+      
+      return {
+        titles: data || [],
+        totalCount: totalCount || 0,
+        page,
+        limit
+      };
+    } catch (error) {
+      console.warn('Paginated titles service error:', error);
+      return { titles: [], totalCount: 0, page, limit };
+    }
+  },
+
   // Get titles by creator (for creators to manage their own)
   async getTitlesByCreator(creatorId: string) {
     // Return mock data for localhost development
@@ -305,6 +367,29 @@ export const titlesService = {
     
     if (error) throw error;
     return data;
+  },
+
+  // Get total count of titles (lightweight query)
+  async getTitlesCount() {
+    if (shouldUseMockData()) {
+      return mockTitles.length;
+    }
+
+    try {
+      const { count, error } = await supabase
+        .from("titles")
+        .select("*", { count: 'exact', head: true });
+      
+      if (error) {
+        console.warn('Failed to get titles count:', error.message);
+        return 0;
+      }
+      
+      return count || 0;
+    } catch (error) {
+      console.warn('Titles count error:', error);
+      return 0;
+    }
   },
 
   // Get titles owned by creator using rights field

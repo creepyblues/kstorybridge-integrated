@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { sendSlackNotification } from './slack';
 
 const SESSION_KEY = 'kstorybridge_session_notified';
 const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
@@ -62,41 +63,33 @@ export async function notifySessionStart() {
 
     // Get current user if logged in
     const { data: { user } } = await supabase.auth.getUser();
-    
+
+    // Determine user type based on account_type
+    let userType: 'buyer' | 'creator' = 'buyer'; // Default to buyer
+    if (user && user.user_metadata?.account_type === 'creator') {
+      userType = 'creator';
+    }
+
     // Get current URL
     const currentUrl = window.location.href;
-    
-    // Prepare notification data
-    const notificationData = {
-      event: 'User Session Started',
-      userType: user ? 'authenticated' : 'anonymous',
-      fullName: user ? (user.user_metadata?.full_name || 'User') : 'Anonymous User',
-      email: user ? user.email : 'not-logged-in@anonymous.user',
-      additionalInfo: {
-        url: currentUrl,
-        referrer: document.referrer || 'Direct',
-        deviceType: getDeviceType(),
-        browser: getBrowserInfo(),
-        screenResolution: `${window.screen.width}x${window.screen.height}`,
-        isLoggedIn: !!user
-      }
-    };
 
-    // Send to Slack via Supabase proxy
-    const SUPABASE_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA";
-    const proxyUrl = `${SUPABASE_URL}/functions/v1/slack-webhook-proxy`;
-    
-    const response = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify(notificationData),
-    });
+    // Send notification using centralized Slack utility (includes blacklist filtering)
+    try {
+      await sendSlackNotification({
+        event: 'User Session Started',
+        userType,
+        fullName: user ? (user.user_metadata?.full_name || 'User') : 'Anonymous User',
+        email: user ? user.email! : 'not-logged-in@anonymous.user',
+        additionalInfo: {
+          url: currentUrl,
+          referrer: document.referrer || 'Direct',
+          deviceType: getDeviceType(),
+          browser: getBrowserInfo(),
+          screenResolution: `${window.screen.width}x${window.screen.height}`,
+          isLoggedIn: !!user
+        }
+      });
 
-    if (response.ok) {
       // Mark session as notified
       const sessionData: SessionData = {
         url: currentUrl,
@@ -104,8 +97,8 @@ export async function notifySessionStart() {
       };
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
       console.log('✅ Session start notification sent to Slack');
-    } else {
-      console.error('Failed to send session notification:', await response.text());
+    } catch (error) {
+      console.error('Failed to send session notification:', error);
     }
   } catch (error) {
     // Don't throw - we don't want notification failures to affect the app

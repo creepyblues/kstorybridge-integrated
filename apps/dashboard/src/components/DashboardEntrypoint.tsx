@@ -1,94 +1,299 @@
+/**
+ * Enhanced Dashboard Entrypoint with Robust Authentication Handling
+ * 
+ * This component serves as the main entry point for authenticated users,
+ * providing robust session validation, account type detection, and proper
+ * error recovery mechanisms to prevent infinite loading states.
+ */
+
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useAccountType } from "@/utils/accountTypeDetection";
+import { useAccountType, getAccountTypeDisplayInfo } from "@/utils/accountTypeDetection";
+import { supabase, performSupabaseHealthCheck } from "@/integrations/supabase/client";
+import { performSessionHealthCheck, recoverCorruptedSession } from "@/utils/sessionManager";
 
 export function DashboardEntrypoint() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [systemHealthy, setSystemHealthy] = useState<boolean | null>(null);
+  const [recoveryAttempted, setRecoveryAttempted] = useState(false);
+  const [timeoutTriggered, setTimeoutTriggered] = useState(false);
 
   // Memoize the options object to prevent unnecessary re-renders
   const accountTypeOptions = useMemo(() => ({
     includeDatabaseLookup: true,
-    debug: true
-  }), []);
+    debug: true,
+    bypassCache: recoveryAttempted // Use fresh data if we've attempted recovery
+  }), [recoveryAttempted]);
   
-  // Only use account type detection if user is authenticated
+  // Enhanced account type detection with better error handling
   const { 
     accountType, 
-    loading: accountTypeLoading 
+    loading: accountTypeLoading,
+    result: accountTypeResult
   } = useAccountType(accountTypeOptions);
 
+  // System health check on mount
   useEffect(() => {
-    // Prevent multiple redirects
-    if (hasRedirected) return;
+    const checkSystemHealth = async () => {
+      try {
+        console.log('🏥 DashboardEntrypoint: Performing system health check');
+        
+        const [supabaseHealth, sessionHealth] = await Promise.all([
+          performSupabaseHealthCheck(),
+          performSessionHealthCheck()
+        ]);
+        
+        const healthy = supabaseHealth.healthy && sessionHealth.healthy;
+        
+        console.log('🏥 DashboardEntrypoint: System health check results:', {
+          supabase: supabaseHealth.healthy,
+          session: sessionHealth.healthy,
+          overall: healthy
+        });
+        
+        if (!healthy) {
+          console.warn('⚠️ DashboardEntrypoint: System health issues detected');
+          
+          // Attempt recovery if session is corrupted
+          if (!sessionHealth.healthy && sessionHealth.session) {
+            console.log('🔧 DashboardEntrypoint: Attempting session recovery');
+            try {
+              const recovery = await recoverCorruptedSession();
+              if (recovery.recovered) {
+                console.log('✅ DashboardEntrypoint: Session recovery successful');
+                setRecoveryAttempted(true);
+              }
+            } catch (recoveryError) {
+              console.error('❌ DashboardEntrypoint: Session recovery failed:', recoveryError);
+            }
+          }
+        }
+        
+        setSystemHealthy(healthy);
+      } catch (error) {
+        console.error('❌ DashboardEntrypoint: System health check failed:', error);
+        setSystemHealthy(false);
+      }
+    };
 
-    console.log('🏠 DashboardEntrypoint: Checking user status', {
-      user: user?.email,
-      authLoading,
-      accountTypeLoading,
-      accountType
-    });
+    checkSystemHealth();
+  }, []);
 
-    // If still loading authentication, wait
-    if (authLoading) {
-      console.log('🔄 DashboardEntrypoint: Waiting for auth to complete...');
-      return;
-    }
+  // Enhanced timeout mechanism with multiple layers
+  useEffect(() => {
+    if (hasRedirected || timeoutTriggered) return;
 
-    // If no user, redirect to signin
-    if (!user) {
-      console.log('🔒 DashboardEntrypoint: No user found, redirecting to signin');
-      setHasRedirected(true);
-      navigate('/signin', { replace: true });
-      return;
-    }
-
-    // If user exists but still loading account type, wait
-    if (accountTypeLoading) {
-      console.log('🔄 DashboardEntrypoint: Waiting for account type detection...');
-      return;
-    }
-
-    // User is authenticated, determine redirect path based on account type
-    let redirectPath: string;
+    const timeouts: NodeJS.Timeout[] = [];
     
-    if (accountType === 'creator') {
-      redirectPath = '/creators/home';
-    } else if (accountType === 'buyer') {
-      redirectPath = '/buyers/home';
-    } else {
-      // Fallback for unknown account types - default to buyer for backward compatibility
-      console.log('⚠️ DashboardEntrypoint: Unknown account type, defaulting to buyer home', {
+    // Layer 1: Warning timeout (3 seconds)
+    timeouts.push(setTimeout(() => {
+      if ((authLoading || accountTypeLoading) && !hasRedirected) {
+        console.warn('⚠️ DashboardEntrypoint: Authentication taking longer than expected');
+      }
+    }, 3000));
+    
+    // Layer 2: Recovery timeout (8 seconds)
+    timeouts.push(setTimeout(async () => {
+      if ((authLoading || accountTypeLoading) && !hasRedirected && !recoveryAttempted) {
+        console.warn('🔧 DashboardEntrypoint: Initiating recovery due to prolonged loading');
+        
+        try {
+          const recovery = await recoverCorruptedSession();
+          if (recovery.recovered) {
+            setRecoveryAttempted(true);
+            return; // Give recovery a chance to work
+          }
+        } catch (error) {
+          console.error('❌ DashboardEntrypoint: Recovery failed:', error);
+        }
+      }
+    }, 8000));
+    
+    // Layer 3: Emergency timeout (15 seconds)
+    timeouts.push(setTimeout(async () => {
+      if ((authLoading || accountTypeLoading) && !hasRedirected) {
+        console.error('🚨 DashboardEntrypoint: Emergency timeout - forcing recovery');
+        setTimeoutTriggered(true);
+        
+        try {
+          // Comprehensive cleanup
+          await recoverCorruptedSession();
+          
+          // Force signout
+          await signOut();
+        } catch (error) {
+          console.error('❌ DashboardEntrypoint: Emergency recovery failed:', error);
+          
+          // Nuclear option - clear everything and reload
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.replace('/signin?emergency_recovery=true');
+        }
+      }
+    }, 15000));
+
+    return () => timeouts.forEach(clearTimeout);
+  }, [authLoading, accountTypeLoading, hasRedirected, recoveryAttempted, timeoutTriggered, signOut]);
+
+  // Main redirection logic
+  useEffect(() => {
+    const handleRedirection = async () => {
+      // Prevent multiple redirects
+      if (hasRedirected || timeoutTriggered) return;
+      
+      // Wait for system health check to complete
+      if (systemHealthy === null) {
+        console.log('⏳ DashboardEntrypoint: Waiting for system health check...');
+        return;
+      }
+
+      console.log('🏠 DashboardEntrypoint: Processing redirection', {
+        user: user?.email,
+        authLoading,
+        accountTypeLoading,
         accountType,
-        userEmail: user.email
+        systemHealthy,
+        recoveryAttempted
       });
-      redirectPath = '/buyers/home';
-    }
-    
-    console.log('✅ DashboardEntrypoint: Redirecting authenticated user to:', redirectPath, {
-      accountType,
-      userEmail: user.email
-    });
-    
-    setHasRedirected(true);
-    navigate(redirectPath, { replace: true });
 
-  }, [user, authLoading, accountTypeLoading, accountType, navigate, hasRedirected]);
+      // If still loading authentication, wait
+      if (authLoading) {
+        console.log('🔄 DashboardEntrypoint: Waiting for auth to complete...');
+        return;
+      }
 
-  // Show loading state
+      // If no user, redirect to signin
+      if (!user) {
+        console.log('🔒 DashboardEntrypoint: No user found, redirecting to signin');
+        setHasRedirected(true);
+        navigate('/signin', { replace: true });
+        return;
+      }
+
+      // If user exists but still loading account type, wait (but not too long)
+      if (accountTypeLoading) {
+        console.log('🔄 DashboardEntrypoint: Waiting for account type detection...');
+        return;
+      }
+
+      // Check account type result
+      if (!accountType || !accountTypeResult) {
+        console.error('❌ DashboardEntrypoint: No valid account type detected');
+        setHasRedirected(true);
+        
+        // If we haven't attempted recovery yet, try it
+        if (!recoveryAttempted) {
+          console.log('🔧 DashboardEntrypoint: Attempting recovery for missing account type');
+          try {
+            const recovery = await recoverCorruptedSession();
+            if (recovery.recovered) {
+              setRecoveryAttempted(true);
+              return; // Let the system retry
+            }
+          } catch (error) {
+            console.error('❌ DashboardEntrypoint: Recovery failed:', error);
+          }
+        }
+        
+        // Force signout after failed recovery
+        try {
+          await signOut();
+        } catch (error) {
+          console.error('❌ DashboardEntrypoint: Signout failed:', error);
+          window.location.replace('/signin?account_type_error=true');
+        }
+        return;
+      }
+
+      // Valid account type found - redirect to appropriate dashboard
+      const displayInfo = getAccountTypeDisplayInfo(accountType);
+      console.log('✅ DashboardEntrypoint: Redirecting to dashboard:', {
+        accountType,
+        path: displayInfo.dashboardPath,
+        profileExists: accountTypeResult.profileExists,
+        confidence: accountTypeResult.confidence
+      });
+      
+      setHasRedirected(true);
+      navigate(displayInfo.dashboardPath, { replace: true });
+    };
+
+    handleRedirection();
+  }, [
+    user, 
+    authLoading, 
+    accountTypeLoading, 
+    accountType, 
+    accountTypeResult,
+    navigate, 
+    hasRedirected, 
+    timeoutTriggered,
+    systemHealthy,
+    recoveryAttempted,
+    signOut
+  ]);
+
+  // Enhanced loading state with better UX
+  const getLoadingMessage = () => {
+    if (timeoutTriggered) return 'Recovering from error...';
+    if (systemHealthy === false) return 'System issues detected, attempting recovery...';
+    if (recoveryAttempted) return 'Recovery completed, reloading...';
+    if (authLoading) return 'Verifying your session...';
+    if (accountTypeLoading) return 'Loading your dashboard...';
+    return 'Preparing your account...';
+  };
+
+  const getLoadingSubtext = () => {
+    if (timeoutTriggered) return 'This may take a few moments';
+    if (systemHealthy === false) return 'We detected some issues and are fixing them';
+    if (recoveryAttempted) return 'Your session has been refreshed';
+    return 'This should only take a moment';
+  };
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-        <p className="text-white text-lg">
-          {authLoading 
-            ? 'Checking authentication...' 
-            : accountTypeLoading 
-            ? 'Loading dashboard...' 
-            : 'Redirecting...'}
+      <div className="text-center max-w-md mx-auto px-6">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hanok-teal mx-auto mb-6"></div>
+        
+        <h2 className="text-xl font-semibold text-white mb-2">
+          {getLoadingMessage()}
+        </h2>
+        
+        <p className="text-slate-300 text-sm mb-6">
+          {getLoadingSubtext()}
         </p>
+        
+        {/* System status indicator */}
+        {systemHealthy === false && (
+          <div className="mt-4 p-3 bg-amber-900/20 border border-amber-700/30 rounded-lg">
+            <p className="text-amber-200 text-xs">
+              🔧 System maintenance in progress
+            </p>
+          </div>
+        )}
+        
+        {timeoutTriggered && (
+          <div className="mt-4 p-3 bg-red-900/20 border border-red-700/30 rounded-lg">
+            <p className="text-red-200 text-xs">
+              ⚠️ Extended loading detected - applying fixes
+            </p>
+          </div>
+        )}
+        
+        {/* Debug info in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-6 p-3 bg-slate-800/50 border border-slate-700 rounded text-xs text-slate-400 text-left">
+            <div>Auth Loading: {authLoading ? 'Yes' : 'No'}</div>
+            <div>Account Type Loading: {accountTypeLoading ? 'Yes' : 'No'}</div>
+            <div>Account Type: {accountType || 'None'}</div>
+            <div>System Healthy: {systemHealthy === null ? 'Checking' : systemHealthy ? 'Yes' : 'No'}</div>
+            <div>Recovery Attempted: {recoveryAttempted ? 'Yes' : 'No'}</div>
+            <div>Has User: {user ? 'Yes' : 'No'}</div>
+          </div>
+        )}
       </div>
     </div>
   );

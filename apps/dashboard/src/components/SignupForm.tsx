@@ -530,7 +530,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                 userName: buyerFormData.fullName,
                 userEmail: buyerFormData.email,
                 accountType: 'buyer',
-                dashboardUrl: window.location.origin + '/buyers/titles',
+                dashboardUrl: window.location.origin + '/buyers/home',
                 loginUrl: window.location.origin + '/signin'
               });
               console.log('✅ Welcome email sent for OAuth buyer:', buyerFormData.email);
@@ -547,7 +547,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             title: "Profile Completed!",
             description: "Your buyer profile has been created successfully."
           });
-          navigate('/buyers/titles');
+          navigate('/buyers/home');
         } else {
           console.log('📝 Profile should be created by database trigger from metadata');
           
@@ -1131,9 +1131,38 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             </Button>
           </form>
 
+          {/* Account Type Switch */}
+          {!isOAuthUser && (
+            <div className="mt-6 text-center">
+              <p className="text-midnight-ink-600">
+                {accountType === 'creator' ? (
+                  <>
+                    Are you a buyer?{' '}
+                    <Link 
+                      to="/signup/buyer" 
+                      className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                    >
+                      Sign up as buyer
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    Are you a creator?{' '}
+                    <Link 
+                      to="/signup/creator" 
+                      className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
+                    >
+                      Sign up as creator
+                    </Link>
+                  </>
+                )}
+              </p>
+            </div>
+          )}
+
           {/* Divider */}
           {!isOAuthUser && (
-            <div className="mt-8 pt-6 border-t border-midnight-ink-100">
+            <div className="mt-6 pt-6 border-t border-midnight-ink-100">
               <p className="text-center text-midnight-ink-600">
                 Already have an account?{' '}
                 <Link 

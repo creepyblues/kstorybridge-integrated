@@ -363,11 +363,39 @@ class OpenAIService {
     this.initializeClient();
   }
 
+  private shouldUseLocalBackend(): boolean {
+    return import.meta.env.VITE_USE_LOCAL_BACKEND === 'true';
+  }
+
+  private getBackendURL(): string {
+    if (this.shouldUseLocalBackend()) {
+      const localUrl = import.meta.env.VITE_LOCAL_BACKEND_URL || 'http://localhost:3001';
+      return localUrl;
+    }
+    return ''; // Use current domain for production
+  }
+
+  private shouldUseBackendAPI(): boolean {
+    return import.meta.env.PROD || 
+           import.meta.env.VITE_FORCE_OPENAI_PRODUCTION === 'true';
+  }
+
   private logEnvironmentSetup() {
     const authBypass = import.meta.env.VITE_DISABLE_AUTH_LOCALHOST;
     const forceProduction = import.meta.env.VITE_FORCE_OPENAI_PRODUCTION;
     const hasLocalApiKey = !!import.meta.env.VITE_OPENAI_API_KEY;
-    const executionPath = import.meta.env.PROD ? 'backend-api' : 'direct-client';
+    const useLocalBackend = import.meta.env.VITE_USE_LOCAL_BACKEND === 'true';
+    const localBackendUrl = import.meta.env.VITE_LOCAL_BACKEND_URL;
+    
+    // Determine execution path based on environment flags
+    let executionPath = 'direct-client';
+    if (import.meta.env.PROD) {
+      executionPath = 'production-api';
+    } else if (forceProduction === 'true' && useLocalBackend) {
+      executionPath = 'local-backend-api';
+    } else if (forceProduction === 'true') {
+      executionPath = 'production-api';
+    }
     
     console.log('🌍 OPENAI SERVICE ENVIRONMENT SETUP:', {
       environment: import.meta.env.PROD ? 'PRODUCTION' : 'DEVELOPMENT',
@@ -377,7 +405,10 @@ class OpenAIService {
       hasLocalApiKey: hasLocalApiKey,
       authBypass: authBypass === 'true',
       forceProduction: forceProduction === 'true',
+      useLocalBackend: useLocalBackend,
+      localBackendUrl: localBackendUrl || 'not-configured',
       willUseBackendAPI: import.meta.env.PROD || forceProduction === 'true',
+      backendUrl: useLocalBackend ? localBackendUrl : 'production',
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent.substring(0, 50) + '...',
       url: window.location.href
@@ -386,7 +417,13 @@ class OpenAIService {
     // Log execution path details
     if (import.meta.env.PROD || forceProduction === 'true') {
       console.log('🔒 SECURE MODE: Using backend API endpoint for OpenAI requests');
-      console.log('📡 API Endpoint: /api/openai-enhanced');
+      if (useLocalBackend) {
+        console.log('📡 API Endpoint: Local Backend Server (' + localBackendUrl + '/api/openai-enhanced)');
+        console.log('🧪 Testing Mode: Mirrors production behavior locally');
+      } else {
+        console.log('📡 API Endpoint: Production (/api/openai-enhanced)');
+        console.log('🔴 Live Mode: Using production API');
+      }
       console.log('🔐 Authentication: Supabase token required');
     } else {
       console.log('⚠️ DEV MODE: Using direct OpenAI client (insecure)');
@@ -607,7 +644,12 @@ Always be enthusiastic and knowledgeable about Korean content!`;
   private async findRelevantTitlesWithVector(query: string, userId?: string, sessionId?: string): Promise<{ titles: Title[], vectorSearchUsed: boolean, searchContext?: any }> {
     try {
       // Try vector search first if available
-      console.log('🔍 Attempting vector search for:', query.substring(0, 50) + '...');
+      console.log('🔍 Attempting vector search for:', query.substring(0, 50) + '...', {
+        hasUserId: !!userId,
+        hasSessionId: !!sessionId,
+        userIdPreview: userId?.substring(0, 8) + '...' || 'null',
+        sessionIdPreview: sessionId?.substring(0, 8) + '...' || 'null'
+      });
       
       const vectorResults = await vectorSearchService.vectorSearch(query, {
         user_id: userId,
@@ -648,11 +690,23 @@ Always be enthusiastic and knowledgeable about Korean content!`;
         };
       }
     } catch (error) {
-      console.warn('⚠️ Vector search failed, falling back to text search:', error);
+      console.warn('⚠️ Vector search failed, falling back to text search:', {
+        error: error.message,
+        stack: error.stack?.split('\n').slice(0, 3),
+        name: error.name,
+        cause: error.cause,
+        hasUserId: !!userId,
+        hasSessionId: !!sessionId
+      });
+      
       // Log more details for debugging
       if (error.message?.includes('column') && error.message?.includes('does not exist')) {
         console.error('🗄️ Database schema issue detected:', error.message);
         console.error('🔧 Consider running database migrations or updating the vector search function');
+      }
+      
+      if (error.message?.includes('Cannot read properties of null')) {
+        console.error('🚨 Null pointer error in vector search - likely related to null user/session ID handling');
       }
     }
 
@@ -695,10 +749,21 @@ Always be enthusiastic and knowledgeable about Korean content!`;
     const requestId = Date.now().toString(36);
     const startTime = Date.now();
     
+    // Determine execution path
+    const useBackend = this.shouldUseBackendAPI();
+    const useLocalBackend = this.shouldUseLocalBackend();
+    
+    let executionPath = 'direct-client';
+    if (useBackend && useLocalBackend) {
+      executionPath = 'local-backend-api';
+    } else if (useBackend) {
+      executionPath = 'production-api';
+    }
+    
     // Log request start with detailed context
     console.log(`🔄 [${requestId}] REQUEST START:`, {
       environment: import.meta.env.PROD ? 'PRODUCTION' : 'DEVELOPMENT',
-      executionPath: import.meta.env.PROD ? 'backend-api' : 'direct-client', 
+      executionPath: executionPath,
       query: userQuery.substring(0, 50) + '...',
       queryLength: userQuery.length,
       historyLength: conversationHistory.length,
@@ -706,12 +771,19 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       sessionId: sessionId?.substring(0, 8) + '...',
       timestamp: new Date().toISOString(),
       hasDirectClient: !!this.client,
+      useBackend: useBackend,
+      useLocalBackend: useLocalBackend,
+      backendUrl: useLocalBackend ? this.getBackendURL() : 'production',
       cacheStats: UnifiedCacheManager.getStats()
     });
 
-    // In production, use the secure backend API
-    if (import.meta.env.PROD) {
-      console.log(`📡 [${requestId}] Routing to backend API`);
+    // Use backend API if configured
+    if (useBackend) {
+      if (useLocalBackend) {
+        console.log(`🧪 [${requestId}] Routing to LOCAL backend API for testing`);
+      } else {
+        console.log(`📡 [${requestId}] Routing to PRODUCTION backend API`);
+      }
       return this.generateChatResponseViaAPI(userQuery, conversationHistory, userId, sessionId, requestId);
     }
 
@@ -922,7 +994,13 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
-      const response = await fetch('/api/openai-enhanced', {
+      // Determine API endpoint
+      const backendUrl = this.getBackendURL();
+      const apiEndpoint = backendUrl ? `${backendUrl}/api/openai-enhanced` : '/api/openai-enhanced';
+      
+      console.log(`🌐 [${currentRequestId}] API Endpoint: ${apiEndpoint}`);
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

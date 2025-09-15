@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { sendSlackNotification } from './slack';
 
 const BEHAVIOR_KEY = 'kstorybridge_session_behavior';
 const SESSION_END_KEY = 'kstorybridge_session_end_notified';
@@ -168,56 +169,48 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
     
     // Get current user if logged in
     const { data: { user } } = await supabase.auth.getUser();
-    
-    // Prepare notification data
-    const notificationData = {
-      event: 'User Session Ended',
-      userType: user ? 'authenticated' : 'anonymous',
-      fullName: user ? (user.user_metadata?.full_name || 'User') : 'Anonymous User',
-      email: user ? user.email : sessionData.userEmail || 'not-logged-in@anonymous.user',
-      additionalInfo: {
-        sessionId: sessionData.sessionId,
-        reason,
-        totalDuration: `${Math.round(totalDuration)}s`,
-        pageCount: sessionData.pages.length,
-        deviceType: sessionData.deviceType,
-        browser: sessionData.browser,
-        referrer: sessionData.referrer,
-        isLoggedIn: sessionData.isLoggedIn,
-        behavior: sessionData.pages.map((page, index) => ({
-          order: index + 1,
-          url: page.url,
-          title: page.title,
-          duration: page.duration ? `${page.duration.toFixed(1)}s` : 'ongoing'
-        }))
-      }
-    };
-    
-    // Send to Slack via Supabase proxy
-    const SUPABASE_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA";
-    const proxyUrl = `${SUPABASE_URL}/functions/v1/slack-webhook-proxy`;
-    
-    const response = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify(notificationData),
-    });
-    
-    if (response.ok) {
+
+    // Determine user type based on account_type
+    let userType: 'buyer' | 'creator' = 'buyer'; // Default to buyer
+    if (user && user.user_metadata?.account_type === 'creator') {
+      userType = 'creator';
+    }
+
+    // Send notification using centralized Slack utility (includes blacklist filtering)
+    try {
+      await sendSlackNotification({
+        event: 'User Session Ended',
+        userType,
+        fullName: user ? (user.user_metadata?.full_name || 'User') : 'Anonymous User',
+        email: user ? user.email! : sessionData.userEmail || 'not-logged-in@anonymous.user',
+        additionalInfo: {
+          sessionId: sessionData.sessionId,
+          reason,
+          totalDuration: `${Math.round(totalDuration)}s`,
+          pageCount: sessionData.pages.length,
+          deviceType: sessionData.deviceType,
+          browser: sessionData.browser,
+          referrer: sessionData.referrer,
+          isLoggedIn: sessionData.isLoggedIn,
+          behavior: sessionData.pages.map((page, index) => ({
+            order: index + 1,
+            url: page.url,
+            title: page.title,
+            duration: page.duration ? `${page.duration.toFixed(1)}s` : 'ongoing'
+          }))
+        }
+      });
+
       // Mark session end as notified
       sessionStorage.setItem(SESSION_END_KEY, sessionData.sessionId);
       console.log('✅ Session end notification sent to Slack');
-      
+
       // Clear session data if ending due to navigation or close
       if (reason !== 'inactivity') {
         sessionStorage.removeItem(BEHAVIOR_KEY);
       }
-    } else {
-      console.error('Failed to send session end notification:', await response.text());
+    } catch (error) {
+      console.error('Failed to send session end notification:', error);
     }
   } catch (error) {
     console.error('Error ending session:', error);

@@ -84,9 +84,36 @@ const loadFromStorage = (): DataCacheState => {
 
 const saveToStorage = (cache: DataCacheState) => {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    // Limit the number of titles stored to prevent localStorage bloat
+    const MAX_TITLES_TO_CACHE = 100;
+    const limitedCache = {
+      ...cache,
+      titles: cache.titles.slice(0, MAX_TITLES_TO_CACHE),
+      creatorTitles: cache.creatorTitles.slice(0, MAX_TITLES_TO_CACHE),
+      // Keep other data as is since they're typically smaller
+      featuredTitles: cache.featuredTitles,
+      favorites: cache.favorites,
+      titleDetails: cache.titleDetails,
+      myRequests: cache.myRequests,
+      lastUpdated: cache.lastUpdated
+    };
+    
+    const serialized = JSON.stringify(limitedCache);
+    // Check size before saving (localStorage typically has 5-10MB limit)
+    const sizeInMB = new Blob([serialized]).size / (1024 * 1024);
+    if (sizeInMB > 2) {
+      console.warn(`Cache size too large (${sizeInMB.toFixed(2)}MB), clearing old cache`);
+      localStorage.removeItem(CACHE_KEY);
+      return;
+    }
+    
+    localStorage.setItem(CACHE_KEY, serialized);
   } catch (error) {
     console.warn('Failed to save cache to localStorage:', error);
+    // Clear cache if storage is full
+    if (error.name === 'QuotaExceededError') {
+      localStorage.removeItem(CACHE_KEY);
+    }
   }
 };
 

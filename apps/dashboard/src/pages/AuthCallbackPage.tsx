@@ -44,31 +44,40 @@ const AuthCallbackPage = () => {
         resultObject: accountTypeResult
       });
 
-      if (profileExists && accountType) {
-        // User has a profile, redirect to appropriate dashboard
-        console.log('✅ AUTH CALLBACK: Profile exists, preparing dashboard redirect');
-        const displayInfo = getAccountTypeDisplayInfo(accountType);
-        console.log('✅ AUTH CALLBACK: Display info:', displayInfo);
-        console.log('✅ AUTH CALLBACK: Redirecting to dashboard:', displayInfo.dashboardPath);
-        navigate(displayInfo.dashboardPath);
-      } else {
-        // No profile found, handle based on account type
-        console.log('📝 AUTH CALLBACK: No profile found, checking account type');
+      // For OAuth flows, prioritize getting users to their dashboard quickly
+      if (accountType === 'creator' || accountType === 'buyer') {
+        console.log(`✅ AUTH CALLBACK: ${accountType} account type confirmed from ${source}`);
 
-        if (accountType === 'creator' || accountType === 'buyer') {
-          // Account type was determined from metadata/URL params, proceed to signup completion
-          console.log(`📝 AUTH CALLBACK: ${accountType} account type confirmed, proceeding to signup completion`);
+        // For OAuth, assume profile exists if we have account type from metadata
+        // Database verification will happen later in the dashboard
+        if (source === 'metadata' || source === 'url_params') {
+          console.log('🚀 AUTH CALLBACK: Fast-tracking OAuth user to dashboard');
           const displayInfo = getAccountTypeDisplayInfo(accountType);
-          const redirectUrl = `${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
-          console.log(`📝 AUTH CALLBACK: ${accountType} redirect URL:`, redirectUrl);
-          navigate(redirectUrl);
-        } else {
-          // No account type found - redirect to account type selection
-          console.log('❓ AUTH CALLBACK: No account type determined, redirecting to account type selection');
-          const redirectUrl = `/account-type-selection?email=${encodeURIComponent(user.email)}`;
-          console.log('❓ AUTH CALLBACK: Account selection redirect URL:', redirectUrl);
-          navigate(redirectUrl);
+          console.log('🚀 AUTH CALLBACK: Redirecting to dashboard:', displayInfo.dashboardPath);
+          navigate(displayInfo.dashboardPath);
+          return;
         }
+
+        // If we have verified profile existence, go to dashboard
+        if (profileExists) {
+          console.log('✅ AUTH CALLBACK: Profile verified, redirecting to dashboard');
+          const displayInfo = getAccountTypeDisplayInfo(accountType);
+          navigate(displayInfo.dashboardPath);
+          return;
+        }
+
+        // Otherwise, complete signup process
+        console.log(`📝 AUTH CALLBACK: Completing ${accountType} signup process`);
+        const displayInfo = getAccountTypeDisplayInfo(accountType);
+        const redirectUrl = `${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
+        console.log(`📝 AUTH CALLBACK: ${accountType} signup redirect:`, redirectUrl);
+        navigate(redirectUrl);
+      } else {
+        // No account type found - redirect to account type selection
+        console.log('❓ AUTH CALLBACK: No account type determined, redirecting to account type selection');
+        const redirectUrl = `/account-type-selection?email=${encodeURIComponent(user.email)}`;
+        console.log('❓ AUTH CALLBACK: Account selection redirect URL:', redirectUrl);
+        navigate(redirectUrl);
       }
     } catch (error) {
       console.error('Error in handleUserRedirect:', error);
@@ -77,7 +86,15 @@ const AuthCallbackPage = () => {
   };
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
     const handleAuthCallback = async () => {
+      // Set up a timeout to prevent infinite hanging
+      timeoutId = setTimeout(() => {
+        console.error('🚨 AUTH CALLBACK: Timeout - redirecting to signin');
+        navigate('/signin?timeout=true');
+      }, 15000); // 15 second timeout
+
       try {
         console.log('🔄 AUTH CALLBACK: Processing OAuth callback');
         console.log('🌐 Current URL:', window.location.href);
@@ -240,7 +257,7 @@ const AuthCallbackPage = () => {
           console.log('🚦 AUTH CALLBACK: Starting user redirect logic');
           console.log('🚦 AUTH CALLBACK: Current urlAccountType:', urlAccountType);
           console.log('🚦 AUTH CALLBACK: Current urlParams:', urlParams.toString());
-          
+
           // Create updated URL params with the account type if we found it
           const updatedUrlParams = new URLSearchParams(urlParams);
           if (urlAccountType && !updatedUrlParams.has('account_type')) {
@@ -251,13 +268,17 @@ const AuthCallbackPage = () => {
           console.log('🚦 AUTH CALLBACK: About to call handleUserRedirect...');
           await handleUserRedirect(user, updatedUrlParams);
           console.log('🚦 AUTH CALLBACK: handleUserRedirect completed successfully');
+
+          // Clear timeout on successful completion
+          clearTimeout(timeoutId);
         } catch (redirectError) {
           console.error('❌ AUTH CALLBACK: Error during redirect:', redirectError);
           console.error('❌ AUTH CALLBACK: Redirect error details:', {
             message: redirectError.message,
             stack: redirectError.stack
           });
-          // Fallback to signin page
+          // Clear timeout and fallback to signin page
+          clearTimeout(timeoutId);
           console.log('🔄 AUTH CALLBACK: Fallback redirect to signin');
           navigate('/signin');
         }
@@ -273,6 +294,8 @@ const AuthCallbackPage = () => {
           search: window.location.search,
           hash: window.location.hash
         });
+        // Clear timeout and show error
+        clearTimeout(timeoutId);
         toast({
           title: "Authentication Error",
           description: "Something went wrong during authentication. Please try again.",
@@ -284,6 +307,13 @@ const AuthCallbackPage = () => {
     };
 
     handleAuthCallback();
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [navigate, toast]);
 
   return (

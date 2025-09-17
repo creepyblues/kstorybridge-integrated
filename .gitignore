@@ -1,1 +1,51 @@
+# Environment variables (sensitive)
 .env.local
+.env
+*.env
+!*.env.example
+!*.env.development
+!*.env.production
+!*.env.staging
+!*.env.testing
+
+# API Keys and Secrets
+**/api-keys/
+**/secrets/
+**/*secret*
+**/*key.json
+**/*-key.json
+*.pem
+*.p12
+*.pfx
+*.jks
+
+# Local development files
+.env.development.local
+.env.production.local
+.env.local.*
+
+# IDE and OS files
+.DS_Store
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Temporary files
+tmp/
+temp/
+.tmp/

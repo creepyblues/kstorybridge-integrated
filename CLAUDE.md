@@ -286,6 +286,7 @@ The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide 
 - Always reference **AUTH_DOCUMENTATION.md** for authentication-related information
 - Always reference **EMAIL_POLICY_DOCUMENTATION.md** for all email sending, welcome emails, and email deduplication
 - Always reference **SLACK_BLACKLIST_DOCUMENTATION.md** for Slack notification blacklist management
+- Always reference **SECURITY_BEST_PRACTICES.md** for credential management and security guidelines
 - Always consider both desktop and mobile
 - Do not auto commit to github
 - When making structural changes such as db schema change, auth flow, account types, policy change, etc, make sure to reflect these changes in the appropriate documentation files (DATABASE_SCHEMA.md for database, AUTH_DOCUMENTATION.md for auth, or CLAUDE.md for general guidance) for future consistency
@@ -337,3 +338,28 @@ import { sendSlackNotification } from './slack';
 ```
 
 **Never bypass the blacklist** by making direct API calls. See **SLACK_BLACKLIST_DOCUMENTATION.md** for complete implementation details.
+
+## Security & Credential Management
+
+### 🚨 CRITICAL SECURITY RULES
+
+**NEVER commit sensitive credentials to git:**
+- ❌ `.env` files with real API keys
+- ❌ OpenAI API keys (`sk-proj-...`)
+- ❌ Supabase service role keys
+- ❌ Any files in `secrets/` or `api-keys/` directories
+
+**Local development pattern:**
+```bash
+# ✅ Copy example files to local versions (gitignored)
+cp .env.example .env
+# ✅ Fill in real credentials in local .env files
+# ❌ NEVER commit the .env files with real values
+```
+
+**Production deployment:**
+- Use Vercel dashboard for environment variables
+- Use Supabase CLI for edge function secrets
+- Rotate credentials immediately if accidentally exposed
+
+See **SECURITY_BEST_PRACTICES.md** for complete security guidelines and incident response procedures.

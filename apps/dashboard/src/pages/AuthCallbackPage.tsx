@@ -22,15 +22,17 @@ const AuthCallbackPage = () => {
         urlParamsString: urlParams.toString()
       });
 
-      // Use centralized account type detection with URL params
-      console.log('📡 AUTH CALLBACK: Calling determineAccountType...');
+      // Use fast account type detection for OAuth flows - prioritize speed over database verification
+      console.log('📡 AUTH CALLBACK: Using fast account type detection for OAuth...');
       console.log('📡 AUTH CALLBACK: User metadata before detection:', user.user_metadata);
+
+      // For OAuth flows, use metadata + URL params only (skip database lookup to avoid hanging)
       const accountTypeResult = await determineAccountType(user, {
         urlParams,
-        includeDatabaseLookup: true,
+        includeDatabaseLookup: false, // Skip database lookup for OAuth to prevent hanging
         debug: true
       });
-      console.log('📡 AUTH CALLBACK: determineAccountType completed');
+      console.log('📡 AUTH CALLBACK: Fast account type detection completed');
 
       const { accountType, profileExists, source, confidence } = accountTypeResult;
       

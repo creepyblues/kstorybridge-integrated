@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTierAccess } from '@/hooks/useTierAccess';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TierGatedContentProps {
   children: React.ReactNode;
@@ -9,14 +10,18 @@ interface TierGatedContentProps {
   fallbackContent?: React.ReactNode;
 }
 
-const TierGatedContent: React.FC<TierGatedContentProps> = ({ 
-  children, 
+const TierGatedContent: React.FC<TierGatedContentProps> = ({
+  children,
   requiredTier = 'pro',
   className = '',
   premiumLabel = 'PRO PLAN',
   fallbackContent
 }) => {
   const { hasMinimumTier, loading } = useTierAccess();
+  const { user } = useAuth();
+
+  // Check if user is a creator - creators bypass tier restrictions
+  const isCreator = user?.user_metadata?.account_type === 'creator';
 
   // Show loading state
   if (loading) {
@@ -25,6 +30,11 @@ const TierGatedContent: React.FC<TierGatedContentProps> = ({
         <div className="animate-pulse bg-gray-200 h-8 rounded"></div>
       </div>
     );
+  }
+
+  // Creators bypass tier restrictions entirely
+  if (isCreator) {
+    return <div className={className}>{children}</div>;
   }
 
   // User has required tier - show content normally

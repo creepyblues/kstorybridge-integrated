@@ -25,6 +25,8 @@ import { DashboardEntrypoint } from "./components/DashboardEntrypoint";
 const Content = lazy(() => import("./pages/Content"));
 const Browse = lazy(() => import("./pages/Browse"));
 const Home = lazy(() => import("./pages/Home"));
+const BuyerHome = lazy(() => import("./pages/BuyerHome"));
+const CreatorHome = lazy(() => import("./pages/CreatorHome"));
 const Titles = lazy(() => import("./pages/Titles"));
 const TitleList = lazy(() => import("./pages/TitleList"));
 const AddTitle = lazy(() => import("./pages/AddTitle"));
@@ -117,7 +119,7 @@ const App = () => (
                   <BuyerProtectedLayout><RootRedirect /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/home" element={
-                  <BuyerProtectedLayout><Home /></BuyerProtectedLayout>
+                  <BuyerProtectedLayout><BuyerHome /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/dashboard-new" element={
                   <BuyerProtectedLayout><BuyerDashboardNew /></BuyerProtectedLayout>
@@ -179,7 +181,7 @@ const App = () => (
                   <CreatorProtectedLayout><RootRedirect /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/home" element={
-                  <CreatorProtectedLayout><Home /></CreatorProtectedLayout>
+                  <CreatorProtectedLayout><CreatorHome /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles" element={
                   <CreatorProtectedLayout><Titles /></CreatorProtectedLayout>

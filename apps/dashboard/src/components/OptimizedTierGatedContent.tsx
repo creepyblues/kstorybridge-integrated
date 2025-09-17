@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTier } from '@/contexts/TierContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface OptimizedTierGatedContentProps {
   children: React.ReactNode;
@@ -11,22 +12,28 @@ interface OptimizedTierGatedContentProps {
 
 /**
  * OptimizedTierGatedContent - Optimized version that uses TierContext
- * 
+ *
  * This component gets tier information from context instead of making
  * individual database queries, improving performance significantly.
- * 
+ *
+ * Note: Creators bypass all tier restrictions automatically.
+ *
  * Usage:
  * 1. Wrap your page/component with <TierProvider>
  * 2. Use <OptimizedTierGatedContent> instead of <TierGatedContent>
  */
-const OptimizedTierGatedContent: React.FC<OptimizedTierGatedContentProps> = ({ 
-  children, 
+const OptimizedTierGatedContent: React.FC<OptimizedTierGatedContentProps> = ({
+  children,
   requiredTier = 'pro',
   className = '',
   premiumLabel = 'PRO PLAN',
   fallbackContent
 }) => {
   const { hasMinimumTier, loading } = useTier();
+  const { user } = useAuth();
+
+  // Check if user is a creator - creators bypass tier restrictions
+  const isCreator = user?.user_metadata?.account_type === 'creator';
 
   // Show loading state
   if (loading) {
@@ -35,6 +42,11 @@ const OptimizedTierGatedContent: React.FC<OptimizedTierGatedContentProps> = ({
         <div className="animate-pulse bg-gray-200 h-8 rounded"></div>
       </div>
     );
+  }
+
+  // Creators bypass tier restrictions entirely
+  if (isCreator) {
+    return <div className={className}>{children}</div>;
   }
 
   // User has required tier - show content normally

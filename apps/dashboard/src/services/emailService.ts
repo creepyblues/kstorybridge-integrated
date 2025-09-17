@@ -37,16 +37,62 @@ interface EmailEventData {
 }
 
 /**
- * Core email sending service using Supabase Edge Function
+ * Core email sending service using Supabase Edge Function with centralized tracking
  */
 export class EmailService {
   private static instance: EmailService;
-  
+
   public static getInstance(): EmailService {
     if (!EmailService.instance) {
       EmailService.instance = new EmailService();
     }
     return EmailService.instance;
+  }
+
+  /**
+   * Check if an email has already been sent to prevent duplicates
+   */
+  private async hasEmailBeenSent(userEmail: string, emailType: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('email_logs')
+        .select('id')
+        .eq('user_email', userEmail.toLowerCase())
+        .eq('email_type', emailType)
+        .eq('status', 'sent')
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = table doesn't exist
+        console.warn('⚠️ Could not check email logs (table may not exist):', error);
+        return false; // Allow sending if we can't check
+      }
+
+      return !!data;
+    } catch (error) {
+      console.warn('⚠️ Could not check email logs:', error);
+      return false; // Allow sending if we can't check
+    }
+  }
+
+  /**
+   * Log email attempt for tracking and deduplication
+   */
+  private async logEmailAttempt(userEmail: string, emailType: string, status: 'sent' | 'failed', messageId?: string, error?: string): Promise<void> {
+    try {
+      await supabase
+        .from('email_logs')
+        .insert({
+          user_email: userEmail.toLowerCase(),
+          email_type: emailType,
+          status,
+          message_id: messageId,
+          error_message: error,
+          sent_at: new Date().toISOString()
+        });
+    } catch (logError) {
+      console.warn('⚠️ Could not log email attempt (table may not exist):', logError);
+      // Don't fail the email send if logging fails
+    }
   }
 
   /**
@@ -74,18 +120,41 @@ export class EmailService {
   }
 
   /**
-   * Send welcome email to new users
+   * Send welcome email to new users with duplicate prevention
    */
   async sendWelcomeEmail(data: WelcomeEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const emailType = 'welcome';
+    const userEmail = data.userEmail.toLowerCase();
+
+    // Check if we've already sent a welcome email to this user
+    const alreadySent = await this.hasEmailBeenSent(userEmail, emailType);
+    if (alreadySent) {
+      console.log(`🔄 Welcome email already sent to ${userEmail}, skipping duplicate`);
+      return { success: true, error: 'Email already sent (duplicate prevented)' };
+    }
+
     const subject = `Welcome to KStoryBridge, ${data.userName}! 🎉`;
-    
-    return this.sendEmail({
+
+    console.log(`📧 Sending welcome email to ${userEmail} (${data.accountType})`);
+
+    const result = await this.sendEmail({
       to: data.userEmail,
       subject,
       template: 'welcome',
       templateData: data,
       from: 'KStoryBridge Team <welcome@kstorybridge.com>'
     });
+
+    // Log the attempt
+    await this.logEmailAttempt(
+      userEmail,
+      emailType,
+      result.success ? 'sent' : 'failed',
+      result.messageId,
+      result.error
+    );
+
+    return result;
   }
 
   /**

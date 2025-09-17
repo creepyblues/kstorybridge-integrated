@@ -52,25 +52,19 @@ const AuthCallbackPage = () => {
       } else {
         // No profile found, handle based on account type
         console.log('📝 AUTH CALLBACK: No profile found, checking account type');
-        
-        const finalAccountType = accountType || 'buyer';
-        console.log('📝 AUTH CALLBACK: Final account type determined:', finalAccountType);
-        
-        if (finalAccountType === 'creator') {
-          // For creators, always redirect to signup completion to collect full profile data
-          console.log('🎨 AUTH CALLBACK: Creator flow - preparing signup completion redirect');
-          const displayInfo = getAccountTypeDisplayInfo(finalAccountType);
-          console.log('🎨 AUTH CALLBACK: Creator display info:', displayInfo);
+
+        if (accountType === 'creator' || accountType === 'buyer') {
+          // Account type was determined from metadata/URL params, proceed to signup completion
+          console.log(`📝 AUTH CALLBACK: ${accountType} account type confirmed, proceeding to signup completion`);
+          const displayInfo = getAccountTypeDisplayInfo(accountType);
           const redirectUrl = `${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
-          console.log('🎨 AUTH CALLBACK: Creator redirect URL:', redirectUrl);
+          console.log(`📝 AUTH CALLBACK: ${accountType} redirect URL:`, redirectUrl);
           navigate(redirectUrl);
         } else {
-          // For buyers, redirect to signup completion
-          console.log('💼 AUTH CALLBACK: Buyer flow - preparing signup completion redirect');
-          const displayInfo = getAccountTypeDisplayInfo(finalAccountType);
-          console.log('💼 AUTH CALLBACK: Buyer display info:', displayInfo);
-          const redirectUrl = `${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
-          console.log('💼 AUTH CALLBACK: Buyer redirect URL:', redirectUrl);
+          // No account type found - redirect to account type selection
+          console.log('❓ AUTH CALLBACK: No account type determined, redirecting to account type selection');
+          const redirectUrl = `/account-type-selection?email=${encodeURIComponent(user.email)}`;
+          console.log('❓ AUTH CALLBACK: Account selection redirect URL:', redirectUrl);
           navigate(redirectUrl);
         }
       }

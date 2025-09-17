@@ -284,10 +284,44 @@ try {
 The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide detailed app-specific guidance and should be consulted for application-specific development tasks.
 - Always reference **DATABASE_SCHEMA.md** for database-related coding
 - Always reference **AUTH_DOCUMENTATION.md** for authentication-related information
+- Always reference **EMAIL_POLICY_DOCUMENTATION.md** for all email sending, welcome emails, and email deduplication
 - Always reference **SLACK_BLACKLIST_DOCUMENTATION.md** for Slack notification blacklist management
 - Always consider both desktop and mobile
 - Do not auto commit to github
 - When making structural changes such as db schema change, auth flow, account types, policy change, etc, make sure to reflect these changes in the appropriate documentation files (DATABASE_SCHEMA.md for database, AUTH_DOCUMENTATION.md for auth, or CLAUDE.md for general guidance) for future consistency
+
+## Email System Policy (CRITICAL)
+
+### Centralized Email Management
+All email sending MUST follow the centralized email policy to prevent duplicate emails and ensure consistent communication.
+
+**CRITICAL RULES**:
+- ✅ **Use EmailService**: Always use `EmailService.getInstance().sendWelcomeEmail()`
+- ✅ **Database Tracking**: All emails logged in `email_logs` table for deduplication
+- ❌ **No Direct Calls**: Never call edge functions directly
+- ❌ **No localStorage**: Never use localStorage for email tracking
+
+**Implementation Pattern**:
+```typescript
+import { sendWelcomeEmail } from '@/services/emailService';
+
+// Automatically prevents duplicates via database tracking
+await sendWelcomeEmail({
+  userName: user.full_name,
+  userEmail: user.email,
+  accountType: 'buyer', // or 'creator'
+  dashboardUrl: window.location.origin + '/buyers/home',
+  loginUrl: window.location.origin + '/signin'
+});
+```
+
+**Fixed Issues (2025-01-14)**:
+- ❌ **Duplicate Triggers**: Welcome emails were sent from both `SignupForm.tsx` and `useAuth.tsx`
+- ❌ **localStorage Tracking**: Unreliable across sessions and tabs
+- ✅ **Database Deduplication**: Centralized tracking prevents all duplicates
+- ✅ **Single Source of Truth**: EmailService handles all email logic
+
+**See EMAIL_POLICY_DOCUMENTATION.md** for complete guidelines, troubleshooting, and email content standards.
 
 ## Slack Notification System
 

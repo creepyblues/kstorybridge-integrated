@@ -164,9 +164,18 @@ sequenceDiagram
     SignupForm->>Google: OAuth redirect
     Google->>AuthCallback: Return with tokens
     AuthCallback->>Database: Check existing profiles
-    AuthCallback->>SignupForm: Complete profile if new
-    SignupForm->>Database: Create profile
-    SignupForm->>Dashboard: Redirect based on type
+    alt Profile exists
+        AuthCallback->>Dashboard: Redirect to appropriate dashboard
+    else No profile, account type known
+        AuthCallback->>SignupForm: Complete profile
+        SignupForm->>Database: Create profile
+        SignupForm->>Dashboard: Redirect based on type
+    else No profile, no account type
+        AuthCallback->>AccountTypeSelection: Choose account type
+        AccountTypeSelection->>SignupForm: Complete profile
+        SignupForm->>Database: Create profile
+        SignupForm->>Dashboard: Redirect based on type
+    end
 ```
 
 ### Universal Signin
@@ -195,6 +204,7 @@ sequenceDiagram
 - `/signup/buyer` - Buyer signup
 - `/signup/creator` - Creator signup
 - `/auth/callback` - OAuth callback handler
+- `/account-type-selection` - Account type selection for OAuth users without existing accounts
 - `/forgot-password` - Password reset
 
 #### Core Hooks & Utilities
@@ -288,6 +298,19 @@ if (accountType === 'buyer' && consumerEmailProviders.includes(emailDomain)) {
 2. Click "Continue with Google"
 3. Complete profile (pen name, role)
 4. Access pending page
+
+### OAuth User Without Existing Account Journey (NEW)
+
+#### First-time OAuth Signin
+1. User attempts to sign in with Google but has no existing KStoryBridge account
+2. OAuth callback detects no account type and no existing profile
+3. User is redirected to `/account-type-selection` page
+4. User sees clear options to choose between Media Buyer or Content Creator
+5. After selection, user is redirected to appropriate signup completion page
+6. Complete profile information (company details for buyers, pen name for creators)
+7. Access appropriate dashboard based on account type
+
+**Note**: This prevents the previous behavior where unknown OAuth users were automatically assigned as buyers.
 
 ### Returning User Journey
 
@@ -417,6 +440,13 @@ WHERE trigger_schema = 'auth';
 
 ### Major Changes
 
+#### 2025-01-17: OAuth Account Type Selection Enhancement
+- **BREAKING CHANGE**: OAuth signin no longer defaults to buyer account type
+- Added `/account-type-selection` page for OAuth users without existing accounts
+- Updated `AuthCallbackPage` to redirect to account type selection when no account type is determined
+- Enhanced user experience by explicitly asking users to choose their account type
+- Prevents automatic buyer account creation for unknown users
+
 #### 2025-09-12: Buyer Login Redirect Change
 - Changed default buyer login redirect from `/buyers/titles` to `/buyers/home`
 - Provides better onboarding experience with dashboard overview
@@ -490,7 +520,8 @@ WHERE trigger_schema = 'auth';
 │   ├── SignupPage.tsx
 │   ├── BuyerSignupPage.tsx
 │   ├── CreatorSignupPage.tsx
-│   └── AuthCallbackPage.tsx
+│   ├── AuthCallbackPage.tsx
+│   └── AccountTypeSelectionPage.tsx
 ├── hooks/
 │   ├── useAuth.tsx
 │   └── useTierAccess.tsx

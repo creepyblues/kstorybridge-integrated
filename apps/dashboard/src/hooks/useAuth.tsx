@@ -24,12 +24,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleWelcomeEmailForNewUser = async (user: User) => {
     try {
-      // Check if we've already sent a welcome email (using localStorage to track)
-      const welcomeEmailKey = `welcome_email_sent_${user.id}`;
-      if (localStorage.getItem(welcomeEmailKey)) {
-        return; // Already sent welcome email
-      }
-
       const accountType = user.user_metadata?.account_type || 'buyer';
 
       if (accountType === 'creator') {
@@ -78,9 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         console.log('✅ Welcome email sent for verified buyer:', user.email);
       }
-
-      // Mark as sent to avoid duplicate emails
-      localStorage.setItem(welcomeEmailKey, 'true');
 
     } catch (error) {
       console.error('⚠️ Failed to send welcome email for verified user:', error);

@@ -63,6 +63,7 @@ const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
 const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
+const AccountTypeSelectionPage = lazy(() => import("./pages/AccountTypeSelectionPage"));
 
 const queryClient = new QueryClient();
 
@@ -102,7 +103,8 @@ const App = () => (
                 <Route path="/signup/creator" element={<CreatorSignupPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                
+                <Route path="/account-type-selection" element={<AccountTypeSelectionPage />} />
+
                 {/* Legacy auth route - redirect to signin */}
                 <Route path="/auth" element={<SigninPage />} />
                 

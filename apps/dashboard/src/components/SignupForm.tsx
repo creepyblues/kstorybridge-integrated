@@ -523,22 +523,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
           // Send welcome email immediately for OAuth users (they're already verified)
           try {
-            // Check if we've already sent a welcome email (using localStorage to track)
-            const welcomeEmailKey = `welcome_email_sent_${oAuthUserId}`;
-            if (!localStorage.getItem(welcomeEmailKey)) {
-              await sendWelcomeEmail({
-                userName: buyerFormData.fullName,
-                userEmail: buyerFormData.email,
-                accountType: 'buyer',
-                dashboardUrl: window.location.origin + '/buyers/home',
-                loginUrl: window.location.origin + '/signin'
-              });
-              console.log('✅ Welcome email sent for OAuth buyer:', buyerFormData.email);
-              // Mark as sent to avoid duplicate emails
-              localStorage.setItem(welcomeEmailKey, 'true');
-            } else {
-              console.log('ℹ️ Welcome email already sent for this user');
-            }
+            await sendWelcomeEmail({
+              userName: buyerFormData.fullName,
+              userEmail: buyerFormData.email,
+              accountType: 'buyer',
+              dashboardUrl: window.location.origin + '/buyers/home',
+              loginUrl: window.location.origin + '/signin'
+            });
+            console.log('✅ Welcome email sent for OAuth buyer:', buyerFormData.email);
           } catch (emailError) {
             console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
           }
@@ -761,22 +753,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           sessionStorage.removeItem('oauth_completion_pending');
           // Send welcome email immediately for OAuth users (they're already verified)
           try {
-            // Check if we've already sent a welcome email (using localStorage to track)
-            const welcomeEmailKey = `welcome_email_sent_${oAuthUserId}`;
-            if (!localStorage.getItem(welcomeEmailKey)) {
-              await sendWelcomeEmail({
-                userName: creatorFormData.fullName,
-                userEmail: creatorFormData.email,
-                accountType: 'creator',
-                dashboardUrl: window.location.origin + '/creators/home/',
-                loginUrl: window.location.origin + '/signin'
-              });
-              console.log('✅ Welcome email sent for OAuth creator:', creatorFormData.email);
-              // Mark as sent to avoid duplicate emails
-              localStorage.setItem(welcomeEmailKey, 'true');
-            } else {
-              console.log('ℹ️ Welcome email already sent for this user');
-            }
+            await sendWelcomeEmail({
+              userName: creatorFormData.fullName,
+              userEmail: creatorFormData.email,
+              accountType: 'creator',
+              dashboardUrl: window.location.origin + '/creators/home/',
+              loginUrl: window.location.origin + '/signin'
+            });
+            console.log('✅ Welcome email sent for OAuth creator:', creatorFormData.email);
           } catch (emailError) {
             console.error('⚠️ Failed to send welcome email (non-blocking):', emailError);
           }

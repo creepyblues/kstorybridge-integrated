@@ -32,10 +32,7 @@ const SigninPageSimple = () => {
           >
             <div className="flex items-center justify-center">
               <span className="text-2xl mr-3">✍️</span>
-              <div className="text-left">
-                <div className="font-semibold">Creator Login</div>
-                <div className="text-sm opacity-90">Authors, Writers, IP Owners</div>
-              </div>
+              <div className="font-semibold">Creator Login</div>
             </div>
           </Button>
 
@@ -46,10 +43,7 @@ const SigninPageSimple = () => {
           >
             <div className="flex items-center justify-center">
               <span className="text-2xl mr-3">🎬</span>
-              <div className="text-left">
-                <div className="font-semibold">Buyer Login</div>
-                <div className="text-sm opacity-90">Producers, Executives, Scouts</div>
-              </div>
+              <div className="font-semibold">Buyer Login</div>
             </div>
           </Button>
         </div>

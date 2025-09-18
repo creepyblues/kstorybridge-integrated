@@ -1149,8 +1149,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             <div className="mt-6 pt-6 border-t border-midnight-ink-100">
               <p className="text-center text-midnight-ink-600">
                 Already have an account?{' '}
-                <Link 
-                  to="/signin" 
+                <Link
+                  to={`/signin/${accountType}`}
                   className="font-medium text-hanok-teal hover:text-hanok-teal-600 transition-colors"
                 >
                   Sign in

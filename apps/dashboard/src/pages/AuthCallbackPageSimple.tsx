@@ -110,8 +110,8 @@ const AuthCallbackPageSimple = () => {
             console.log('✅ SIMPLE CALLBACK: Buyer found, redirecting to buyer dashboard');
             navigate('/buyers/home');
           } else {
-            console.log('❓ SIMPLE CALLBACK: No profile found, redirecting to account selection');
-            navigate('/account-type-selection?signin_fallback=true');
+            console.log('❓ SIMPLE CALLBACK: No profile found, redirecting to signin');
+            navigate('/signin?no_profile=true');
           }
 
         } else if (isSignup && accountType === 'creator') {
@@ -126,8 +126,8 @@ const AuthCallbackPageSimple = () => {
 
         } else {
           // Unknown flow
-          console.log('❓ SIMPLE CALLBACK: Unknown flow, redirecting to account selection');
-          navigate('/account-type-selection?unknown_flow=true');
+          console.log('❓ SIMPLE CALLBACK: Unknown flow, redirecting to signin');
+          navigate('/signin?unknown_flow=true');
         }
 
       } catch (error) {

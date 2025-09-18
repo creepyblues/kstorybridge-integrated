@@ -21,12 +21,16 @@ export function DashboardEntrypoint() {
   const [recoveryAttempted, setRecoveryAttempted] = useState(false);
   const [timeoutTriggered, setTimeoutTriggered] = useState(false);
 
+  // Check if this is an OAuth signin (has code parameter) and disable database lookup to avoid hanging
+  const urlParams = new URLSearchParams(window.location.search);
+  const isOAuthCallback = urlParams.has('code');
+
   // Memoize the options object to prevent unnecessary re-renders
   const accountTypeOptions = useMemo(() => ({
-    includeDatabaseLookup: true,
+    includeDatabaseLookup: !isOAuthCallback, // Disable database lookup for OAuth to prevent hanging
     debug: true,
     bypassCache: recoveryAttempted // Use fresh data if we've attempted recovery
-  }), [recoveryAttempted]);
+  }), [recoveryAttempted, isOAuthCallback]);
   
   // Enhanced account type detection with better error handling
   const { 
@@ -183,7 +187,14 @@ export function DashboardEntrypoint() {
       if (!accountType || !accountTypeResult) {
         console.error('❌ DashboardEntrypoint: No valid account type detected');
         setHasRedirected(true);
-        
+
+        // For OAuth callbacks, redirect to account type selection instead of recovery
+        if (isOAuthCallback) {
+          console.log('🔄 DashboardEntrypoint: OAuth callback without account type, redirecting to selection');
+          navigate('/account-type-selection?oauth_entrypoint=true');
+          return;
+        }
+
         // If we haven't attempted recovery yet, try it
         if (!recoveryAttempted) {
           console.log('🔧 DashboardEntrypoint: Attempting recovery for missing account type');
@@ -197,7 +208,7 @@ export function DashboardEntrypoint() {
             console.error('❌ DashboardEntrypoint: Recovery failed:', error);
           }
         }
-        
+
         // Force signout after failed recovery
         try {
           await signOut();

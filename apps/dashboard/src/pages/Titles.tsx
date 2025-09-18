@@ -872,6 +872,14 @@ function TitlesContent() {
 }
 
 export default function Titles() {
+  const { pathname } = useLocation();
+  const isCreatorView = pathname.startsWith('/creators');
+
+  // Only wrap with TierProvider for buyers (creators don't use tiers)
+  if (isCreatorView) {
+    return <TitlesContent />;
+  }
+
   return (
     <TierProvider>
       <TitlesContent />

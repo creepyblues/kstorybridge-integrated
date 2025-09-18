@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock, Building2, Users, Target, TrendingUp, Calendar, BookOpen } from "lucide-react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
@@ -629,6 +629,14 @@ function TitleDetailNewContent() {
 }
 
 export default function TitleDetailNew() {
+  const { pathname } = useLocation();
+  const isCreatorView = pathname.startsWith('/creators');
+
+  // Only wrap with TierProvider for buyers (creators don't use tiers)
+  if (isCreatorView) {
+    return <TitleDetailNewContent />;
+  }
+
   return (
     <TierProvider>
       <TitleDetailNewContent />

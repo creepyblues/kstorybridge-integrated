@@ -44,37 +44,98 @@ const AuthCallbackPage = () => {
         resultObject: accountTypeResult
       });
 
-      // For OAuth flows, prioritize getting users to their dashboard quickly
+      // Handle different OAuth flows: signin vs signup
       if (accountType === 'creator' || accountType === 'buyer') {
         console.log(`✅ AUTH CALLBACK: ${accountType} account type confirmed from ${source}`);
 
-        // For OAuth, assume profile exists if we have account type from metadata
-        // Database verification will happen later in the dashboard
-        if (source === 'metadata' || source === 'url_params') {
-          console.log('🚀 AUTH CALLBACK: Fast-tracking OAuth user to dashboard');
-          const displayInfo = getAccountTypeDisplayInfo(accountType);
-          console.log('🚀 AUTH CALLBACK: Redirecting to dashboard:', displayInfo.dashboardPath);
-          navigate(displayInfo.dashboardPath);
-          return;
-        }
+        // Check if this is a signin or signup flow
+        const callbackUrlParams = new URLSearchParams(window.location.search);
+        const isSigninFlow = callbackUrlParams.get('signin') === 'true';
+        const isSignupFlow = callbackUrlParams.has('account_type');
 
-        // If we have verified profile existence, go to dashboard
-        if (profileExists) {
-          console.log('✅ AUTH CALLBACK: Profile verified, redirecting to dashboard');
+        if (isSigninFlow) {
+          // SIGNIN: User already exists, go directly to dashboard
+          console.log('🏠 AUTH CALLBACK: SIGNIN flow - existing user, redirecting to dashboard');
           const displayInfo = getAccountTypeDisplayInfo(accountType);
           navigate(displayInfo.dashboardPath);
           return;
+        } else if (isSignupFlow) {
+          // SIGNUP: Complete the signup process if profile doesn't exist
+          if (profileExists) {
+            console.log('✅ AUTH CALLBACK: SIGNUP - Profile exists, redirecting to dashboard');
+            const displayInfo = getAccountTypeDisplayInfo(accountType);
+            navigate(displayInfo.dashboardPath);
+          } else {
+            console.log(`📝 AUTH CALLBACK: SIGNUP - Completing ${accountType} signup process`);
+            const displayInfo = getAccountTypeDisplayInfo(accountType);
+            const redirectUrl = `${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
+            console.log(`📝 AUTH CALLBACK: ${accountType} signup redirect:`, redirectUrl);
+            navigate(redirectUrl);
+          }
+          return;
+        } else {
+          // Generic OAuth - determine based on profile existence
+          if (profileExists) {
+            console.log('✅ AUTH CALLBACK: Profile exists, redirecting to dashboard');
+            const displayInfo = getAccountTypeDisplayInfo(accountType);
+            navigate(displayInfo.dashboardPath);
+          } else {
+            console.log('❓ AUTH CALLBACK: No profile found, redirecting to account type selection');
+            navigate('/account-type-selection?oauth=google');
+          }
+          return;
         }
-
-        // Otherwise, complete signup process
-        console.log(`📝 AUTH CALLBACK: Completing ${accountType} signup process`);
-        const displayInfo = getAccountTypeDisplayInfo(accountType);
-        const redirectUrl = `${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
-        console.log(`📝 AUTH CALLBACK: ${accountType} signup redirect:`, redirectUrl);
-        navigate(redirectUrl);
       } else {
-        // No account type found - redirect to account type selection
-        console.log('❓ AUTH CALLBACK: No account type determined, redirecting to account type selection');
+        // No account type found - Try some fallback logic first
+        console.log('❓ AUTH CALLBACK: No account type determined, trying fallbacks...');
+
+        // Emergency fast-track: If this is a fresh OAuth signin, skip database and go to account selection
+        const isOAuthCallback = window.location.search.includes('code=') && !window.location.search.includes('account_type=');
+        if (isOAuthCallback) {
+          console.log('🚀 AUTH CALLBACK: Fresh OAuth callback detected, fast-tracking to account type selection');
+          setTimeout(() => {
+            navigate(`/account-type-selection?email=${encodeURIComponent(user.email)}&oauth=true`);
+          }, 500); // Small delay to let logs show
+          return;
+        }
+
+        // Fallback 1: Check if user already has a profile in database (quick check with timeout)
+        console.log('🔍 AUTH CALLBACK: Attempting quick database fallback...');
+        try {
+          const timeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Database lookup timeout')), 2000) // Reduced to 2 seconds
+          );
+
+          const [buyerResult, creatorResult] = await Promise.race([
+            Promise.all([
+              supabase.from('user_buyers').select('id').eq('email', user.email).maybeSingle(),
+              supabase.from('user_creators').select('id').eq('email', user.email).maybeSingle()
+            ]),
+            timeout
+          ]);
+
+          console.log('🔍 AUTH CALLBACK: Quick lookup results:', {
+            buyerData: buyerResult?.data,
+            creatorData: creatorResult?.data
+          });
+
+          if (buyerResult?.data) {
+            console.log('✅ AUTH CALLBACK: Found buyer profile, redirecting to buyer dashboard');
+            navigate('/buyers/home');
+            return;
+          }
+
+          if (creatorResult?.data) {
+            console.log('✅ AUTH CALLBACK: Found creator profile, redirecting to creator dashboard');
+            navigate('/creators/home');
+            return;
+          }
+        } catch (error) {
+          console.warn('⚠️ AUTH CALLBACK: Quick database lookup failed:', error);
+        }
+
+        // Fallback 2: Default to account type selection
+        console.log('❓ AUTH CALLBACK: No profile found, redirecting to account type selection');
         const redirectUrl = `/account-type-selection?email=${encodeURIComponent(user.email)}`;
         console.log('❓ AUTH CALLBACK: Account selection redirect URL:', redirectUrl);
         navigate(redirectUrl);
@@ -89,11 +150,20 @@ const AuthCallbackPage = () => {
     let timeoutId: NodeJS.Timeout;
 
     const handleAuthCallback = async () => {
+      console.log('🔄 AUTH CALLBACK: Starting simplified OAuth callback processing');
+
       // Set up a timeout to prevent infinite hanging
       timeoutId = setTimeout(() => {
         console.error('🚨 AUTH CALLBACK: Timeout - redirecting to signin');
         navigate('/signin?timeout=true');
-      }, 15000); // 15 second timeout
+      }, 10000);
+
+      // Simple check for OAuth flow type
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSignin = urlParams.get('signin') === 'true';
+      const accountType = urlParams.get('account_type');
+
+      console.log('🔍 AUTH CALLBACK: Flow detection:', { isSignin, accountType, url: window.location.href });
 
       try {
         console.log('🔄 AUTH CALLBACK: Processing OAuth callback');
@@ -102,6 +172,16 @@ const AuthCallbackPage = () => {
         console.log('🔍 URL Hash:', window.location.hash);
         console.log('🔍 Hostname:', window.location.hostname);
         console.log('🔍 Origin:', window.location.origin);
+
+        // EMERGENCY BYPASS: If we're clearly in an OAuth callback and it's taking too long,
+        // skip the session exchange and go directly to account type selection
+        if (urlParams.has('code') && !urlParams.has('account_type')) {
+          console.log('⚡ AUTH CALLBACK: EMERGENCY BYPASS - OAuth detected, skipping session exchange');
+          setTimeout(() => {
+            console.log('⚡ AUTH CALLBACK: EMERGENCY BYPASS - Redirecting to account type selection');
+            navigate('/account-type-selection?oauth_bypass=true');
+          }, 2000); // Give 2 seconds for normal flow, then bypass
+        }
         
         // Get session from URL hash - handle OAuth callback properly
         console.log('📡 Getting session from Supabase...');
@@ -179,6 +259,12 @@ const AuthCallbackPage = () => {
           providers: user.app_metadata?.providers
         });
         console.log('🗂️ AUTH CALLBACK: User metadata:', user.user_metadata);
+        console.log('🗂️ AUTH CALLBACK: App metadata:', user.app_metadata);
+
+        // Debug: Check current port and URL structure
+        console.log('🌐 AUTH CALLBACK: Current port:', window.location.port);
+        console.log('🌐 AUTH CALLBACK: Full URL:', window.location.href);
+        console.log('🌐 AUTH CALLBACK: URL Search Params:', window.location.search);
 
         // Check if we need to update user metadata with account_type from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -252,35 +338,42 @@ const AuthCallbackPage = () => {
           console.error('Error preparing OAuth signin notification:', error);
         }
 
-        // Handle user redirect using centralized logic
-        try {
-          console.log('🚦 AUTH CALLBACK: Starting user redirect logic');
-          console.log('🚦 AUTH CALLBACK: Current urlAccountType:', urlAccountType);
-          console.log('🚦 AUTH CALLBACK: Current urlParams:', urlParams.toString());
+        // Simple redirect logic based on OAuth flow type
+        clearTimeout(timeoutId);
 
-          // Create updated URL params with the account type if we found it
-          const updatedUrlParams = new URLSearchParams(urlParams);
-          if (urlAccountType && !updatedUrlParams.has('account_type')) {
-            updatedUrlParams.set('account_type', urlAccountType);
-            console.log('🚦 AUTH CALLBACK: Added account_type to URL params');
+        if (isSignin) {
+          // SIGNIN: Determine user's account type and redirect to dashboard
+          console.log('🏠 AUTH CALLBACK: SIGNIN flow - determining account type');
+
+          try {
+            const accountTypeResult = await determineAccountType(user, {
+              includeDatabaseLookup: true,
+              debug: true
+            });
+
+            if (accountTypeResult.accountType) {
+              const displayInfo = getAccountTypeDisplayInfo(accountTypeResult.accountType);
+              console.log(`✅ AUTH CALLBACK: SIGNIN - Redirecting ${accountTypeResult.accountType} to dashboard:`, displayInfo.dashboardPath);
+              navigate(displayInfo.dashboardPath);
+            } else {
+              console.log('❓ AUTH CALLBACK: SIGNIN - Could not determine account type, redirecting to selection');
+              navigate('/account-type-selection?signin_fallback=true');
+            }
+          } catch (error) {
+            console.error('❌ AUTH CALLBACK: SIGNIN - Error determining account type:', error);
+            navigate('/signin?signin_error=true');
           }
-          console.log('🚦 AUTH CALLBACK: Final updatedUrlParams:', updatedUrlParams.toString());
-          console.log('🚦 AUTH CALLBACK: About to call handleUserRedirect...');
-          await handleUserRedirect(user, updatedUrlParams);
-          console.log('🚦 AUTH CALLBACK: handleUserRedirect completed successfully');
 
-          // Clear timeout on successful completion
-          clearTimeout(timeoutId);
-        } catch (redirectError) {
-          console.error('❌ AUTH CALLBACK: Error during redirect:', redirectError);
-          console.error('❌ AUTH CALLBACK: Redirect error details:', {
-            message: redirectError.message,
-            stack: redirectError.stack
-          });
-          // Clear timeout and fallback to signin page
-          clearTimeout(timeoutId);
-          console.log('🔄 AUTH CALLBACK: Fallback redirect to signin');
-          navigate('/signin');
+        } else if (accountType) {
+          // SIGNUP: Use the account type from URL
+          console.log(`📝 AUTH CALLBACK: SIGNUP flow - ${accountType} account type`);
+          const displayInfo = getAccountTypeDisplayInfo(accountType as any);
+          navigate(`${displayInfo.signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
+
+        } else {
+          // Unknown flow - redirect to account type selection
+          console.log('❓ AUTH CALLBACK: Unknown flow - redirecting to account type selection');
+          navigate('/account-type-selection?unknown_flow=true');
         }
       } catch (error) {
         console.error('❌ AUTH CALLBACK: Unexpected error:', error);

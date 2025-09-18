@@ -230,10 +230,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       const baseUrl = isDev 
         ? `http://localhost:${window.location.port}` 
         : `${window.location.origin}`;
-      // Include account type in redirect URL so we know where to redirect after OAuth
+      // Use the working approach with account_type in callback URL
       const redirectUrl = `${baseUrl}/auth/callback?account_type=${accountType}`;
-      
-      console.log('🔄 OAuth signup redirect URL:', redirectUrl);
+
+      console.log('🔄 OAuth signup redirect URL (with account_type):', redirectUrl);
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

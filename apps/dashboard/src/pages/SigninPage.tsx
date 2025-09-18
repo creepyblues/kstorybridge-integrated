@@ -80,14 +80,16 @@ const SigninPage = () => {
     setIsGoogleLoading(true);
     
     try {
-      // Force localhost for development
+      // BYPASS: For signin, redirect directly to a dashboard page that will handle account detection
       const isDev = window.location.hostname === 'localhost';
-      const redirectUrl = isDev 
-        ? `http://localhost:${window.location.port}/auth/callback`
-        : `${window.location.origin}/auth/callback`;
-      
-      console.log('🔄 OAuth signin redirect URL:', redirectUrl);
-      
+
+      // For existing users signing in, use current localhost port
+      const redirectUrl = isDev
+        ? `http://localhost:${window.location.port}/`
+        : `${window.location.origin}/`;
+
+      console.log('🔄 OAuth signin BYPASS redirect URL:', redirectUrl);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -95,7 +97,9 @@ const SigninPage = () => {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          }
+          },
+          // Use implicit flow to avoid code exchange issues
+          skipBrowserRedirect: false
         }
       });
       

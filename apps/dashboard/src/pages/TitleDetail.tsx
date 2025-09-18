@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock } from "lucide-react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
@@ -851,9 +851,21 @@ export default function TitleDetail() {
           }
         }
       `}</style>
-      <TierProvider>
-        <TitleDetailContent />
-      </TierProvider>
+      {(() => {
+        const { pathname } = useLocation();
+        const isCreatorView = pathname.startsWith('/creators');
+
+        // Only wrap with TierProvider for buyers (creators don't use tiers)
+        if (isCreatorView) {
+          return <TitleDetailContent />;
+        }
+
+        return (
+          <TierProvider>
+            <TitleDetailContent />
+          </TierProvider>
+        );
+      })()}
     </>
   );
 }

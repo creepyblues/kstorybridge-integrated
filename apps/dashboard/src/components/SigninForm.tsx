@@ -334,8 +334,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
           <Button
             onClick={handleGoogleSignIn}
             disabled={isGoogleLoading}
-            className="w-full mb-6 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm"
-            size="lg"
+            className="w-full h-14 mb-6 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm text-base"
           >
             {isGoogleLoading ? (
               <div className="flex items-center">
@@ -392,8 +391,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
 
             <Button
               type="submit"
-              className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white"
-              size="lg"
+              className="w-full h-14 bg-hanok-teal hover:bg-hanok-teal/90 text-white text-base"
               disabled={isLoading}
             >
               {isLoading ? 'Signing in...' : 'Sign In'}

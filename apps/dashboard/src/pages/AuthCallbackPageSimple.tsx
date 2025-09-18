@@ -12,11 +12,11 @@ const AuthCallbackPageSimple = () => {
       console.log('🔍 SIMPLE CALLBACK: URL search params:', window.location.search);
 
       try {
-        // Simple timeout fallback
+        // Simple timeout fallback - increased timeout since OAuth is working but slow
         const timeout = setTimeout(() => {
           console.log('⏰ SIMPLE CALLBACK: Timeout - redirecting to signin');
           navigate('/signin?timeout=true');
-        }, 10000);
+        }, 20000); // Increased from 10s to 20s
 
         // Handle OAuth code exchange if needed
         const urlParams = new URLSearchParams(window.location.search);
@@ -90,9 +90,11 @@ const AuthCallbackPageSimple = () => {
           console.log(`🏠 SIMPLE CALLBACK: ${accountType.toUpperCase()} SIGNIN flow`);
 
           // Quick check if profile exists for this account type
+          console.log(`🔍 SIMPLE CALLBACK: Checking ${accountType} profile for ${user.email}`);
           const profileCheck = accountType === 'buyer'
             ? await supabase.from('user_buyers').select('id').eq('email', user.email).maybeSingle()
             : await supabase.from('user_creators').select('id').eq('email', user.email).maybeSingle();
+          console.log(`🔍 SIMPLE CALLBACK: Profile check result:`, profileCheck);
 
           if (profileCheck.data) {
             console.log(`✅ SIMPLE CALLBACK: ${accountType} profile found, redirecting to dashboard`);

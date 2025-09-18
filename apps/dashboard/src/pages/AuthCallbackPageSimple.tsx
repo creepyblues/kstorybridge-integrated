@@ -8,6 +8,8 @@ const AuthCallbackPageSimple = () => {
   useEffect(() => {
     const handleCallback = async () => {
       console.log('🚀 SIMPLE CALLBACK: Starting OAuth callback');
+      console.log('🌐 SIMPLE CALLBACK: Current URL:', window.location.href);
+      console.log('🔍 SIMPLE CALLBACK: URL search params:', window.location.search);
 
       try {
         // Simple timeout fallback

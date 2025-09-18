@@ -58,16 +58,14 @@ export function RootRedirect() {
           return;
         }
 
-        // No profile found - default to buyer for backward compatibility
-        console.log('⚠️ RootRedirect: No profile found, defaulting to buyer');
-        setAccountType('buyer');
-        navigate('/buyers/home', { replace: true });
+        // No profile found - redirect to signin to choose account type
+        console.log('⚠️ RootRedirect: No profile found, redirecting to signin');
+        navigate('/signin?no_profile=true', { replace: true });
 
       } catch (error) {
         console.error('❌ RootRedirect: Error determining account type:', error);
-        // Default to buyer on error for backward compatibility
-        setAccountType('buyer');
-        navigate('/buyers/home', { replace: true });
+        // Redirect to signin on error instead of defaulting to buyer
+        navigate('/signin?error=true', { replace: true });
       }
     };
 

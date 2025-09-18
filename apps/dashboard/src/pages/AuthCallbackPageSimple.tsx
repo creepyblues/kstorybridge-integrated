@@ -95,24 +95,9 @@ const AuthCallbackPageSimple = () => {
           }
 
         } else if (isSignin && !accountType) {
-          // SIGNIN: Generic signin without account type (fallback for old URLs)
-          console.log('🏠 SIMPLE CALLBACK: Generic SIGNIN flow');
-
-          const [buyerCheck, creatorCheck] = await Promise.all([
-            supabase.from('user_buyers').select('id').eq('email', user.email).maybeSingle(),
-            supabase.from('user_creators').select('id').eq('email', user.email).maybeSingle()
-          ]);
-
-          if (creatorCheck.data) {
-            console.log('✅ SIMPLE CALLBACK: Creator found, redirecting to creator dashboard');
-            navigate('/creators/home');
-          } else if (buyerCheck.data) {
-            console.log('✅ SIMPLE CALLBACK: Buyer found, redirecting to buyer dashboard');
-            navigate('/buyers/home');
-          } else {
-            console.log('❓ SIMPLE CALLBACK: No profile found, redirecting to signin');
-            navigate('/signin?no_profile=true');
-          }
+          // SIGNIN: No account type specified - this shouldn't happen with separate signin flows
+          console.log('⚠️ SIMPLE CALLBACK: Signin without account type - redirecting to main signin');
+          navigate('/signin?missing_account_type=true');
 
         } else if (isSignup && accountType === 'creator') {
           // CREATOR SIGNUP

@@ -12,7 +12,7 @@ interface MenuItem {
   icon?: string;
 }
 
-const getDiscoverItems = (accountType: string): MenuItem[] => {
+const getDiscoverItems = (accountType: string | null): MenuItem[] => {
   if (accountType === "creator") {
     return [
       { title: "Home", href: "/creators/home" },
@@ -20,7 +20,7 @@ const getDiscoverItems = (accountType: string): MenuItem[] => {
       { title: "K-content News", href: "/creators/news" },
       // { title: "My Requests", href: "/creators/requests" },
     ];
-  } else {
+  } else if (accountType === "buyer") {
     return [
       { title: "Home", href: "/buyers/home" },
       { title: "Titles", href: "/buyers/titles" },
@@ -28,21 +28,26 @@ const getDiscoverItems = (accountType: string): MenuItem[] => {
       { title: "K-content News", href: "/buyers/news" },
       // { title: "My Requests", href: "/buyers/requests" },
     ];
+  } else {
+    // Account type not determined yet - return empty array
+    return [];
   }
 };
 
-const getSettingsItems = (accountType: string, userEmail?: string): MenuItem[] => {
+const getSettingsItems = (accountType: string | null, userEmail?: string): MenuItem[] => {
   const isAdmin = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
   
-  const baseItems = accountType === "creator" 
+  const baseItems = accountType === "creator"
     ? [
         { title: "Profile", href: "/creators/profile" },
         // { title: "Send msg", href: "/creators/send-message" }, // Hidden for now - needs database setup
       ]
-    : [
+    : accountType === "buyer"
+    ? [
         // { title: "Send msg", href: "/buyers/send-message" }, // Hidden for now - needs database setup
         { title: "Profile", href: "/buyers/profile" },
-      ];
+      ]
+    : []; // No account type determined - return empty array
   
   // Add admin pages for admin users right after Profile
   if (isAdmin) {
@@ -79,8 +84,8 @@ export function CMSSidebar() {
   // Use centralized account type detection with database lookup for accuracy
   const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);
 
-  // Use detected account type, fallback to buyer for backward compatibility
-  const accountType = detectedAccountType || "buyer";
+  // Use detected account type, no fallback since users should have proper account type in authenticated areas
+  const accountType = detectedAccountType;
   const userEmail = user?.email;
   const discoverItems = getDiscoverItems(accountType);
   const settingsItems = getSettingsItems(accountType, userEmail);

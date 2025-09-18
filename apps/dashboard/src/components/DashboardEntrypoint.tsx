@@ -188,10 +188,10 @@ export function DashboardEntrypoint() {
         console.error('❌ DashboardEntrypoint: No valid account type detected');
         setHasRedirected(true);
 
-        // For OAuth callbacks, redirect to account type selection instead of recovery
+        // For OAuth callbacks, redirect to signin instead of account type selection (which was removed)
         if (isOAuthCallback) {
-          console.log('🔄 DashboardEntrypoint: OAuth callback without account type, redirecting to selection');
-          navigate('/account-type-selection?oauth_entrypoint=true');
+          console.log('🔄 DashboardEntrypoint: OAuth callback without account type, redirecting to signin');
+          navigate('/signin?oauth_entrypoint=true');
           return;
         }
 

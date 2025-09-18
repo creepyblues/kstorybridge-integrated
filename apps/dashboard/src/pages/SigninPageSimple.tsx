@@ -31,7 +31,6 @@ const SigninPageSimple = () => {
             className="w-full h-16 text-lg font-medium bg-hanok-teal hover:bg-hanok-teal/90 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             <div className="flex items-center justify-center">
-              <span className="text-2xl mr-3">✍️</span>
               <div className="font-semibold">Creator Login</div>
             </div>
           </Button>
@@ -42,7 +41,6 @@ const SigninPageSimple = () => {
             className="w-full h-16 text-lg font-medium bg-hanok-teal hover:bg-hanok-teal/90 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             <div className="flex items-center justify-center">
-              <span className="text-2xl mr-3">🎬</span>
               <div className="font-semibold">Buyer Login</div>
             </div>
           </Button>

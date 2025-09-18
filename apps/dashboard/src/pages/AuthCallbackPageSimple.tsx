@@ -74,7 +74,14 @@ const AuthCallbackPageSimple = () => {
         const isSignin = flow === 'signin';
         const isSignup = flow === 'signup' || (!flow && accountType); // Legacy support
 
-        console.log('🔍 SIMPLE CALLBACK: Flow detection:', { accountType, flow, isSignin, isSignup });
+        console.log('🔍 SIMPLE CALLBACK: URL Search:', window.location.search);
+        console.log('🔍 SIMPLE CALLBACK: URL Params parsed:', {
+          accountType,
+          flow,
+          isSignin,
+          isSignup,
+          allParams: Object.fromEntries(urlParams.entries())
+        });
 
         if (isSignin && accountType) {
           // SIGNIN: Account-specific signin with known account type
@@ -97,6 +104,7 @@ const AuthCallbackPageSimple = () => {
         } else if (isSignin && !accountType) {
           // SIGNIN: No account type specified - this shouldn't happen with separate signin flows
           console.log('⚠️ SIMPLE CALLBACK: Signin without account type - redirecting to main signin');
+          console.log('⚠️ SIMPLE CALLBACK: This suggests OAuth callback URL lost query parameters');
           navigate('/signin?missing_account_type=true');
 
         } else if (isSignup && accountType === 'creator') {
@@ -110,9 +118,31 @@ const AuthCallbackPageSimple = () => {
           navigate(`/signup/buyer?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
 
         } else {
-          // Unknown flow
-          console.log('❓ SIMPLE CALLBACK: Unknown flow, redirecting to signin');
-          navigate('/signin?unknown_flow=true');
+          // Unknown flow - try to detect account type from existing profile as fallback
+          console.log('❓ SIMPLE CALLBACK: Unknown flow - attempting profile detection fallback');
+
+          try {
+            const [buyerCheck, creatorCheck] = await Promise.all([
+              supabase.from('user_buyers').select('id').eq('email', user.email).maybeSingle(),
+              supabase.from('user_creators').select('id').eq('email', user.email).maybeSingle()
+            ]);
+
+            if (creatorCheck.data) {
+              console.log('✅ SIMPLE CALLBACK: Found existing creator profile, redirecting to creator dashboard');
+              navigate('/creators/home');
+              return;
+            } else if (buyerCheck.data) {
+              console.log('✅ SIMPLE CALLBACK: Found existing buyer profile, redirecting to buyer dashboard');
+              navigate('/buyers/home');
+              return;
+            } else {
+              console.log('❓ SIMPLE CALLBACK: No existing profile found, redirecting to signin for account type selection');
+              navigate('/signin?no_existing_profile=true');
+            }
+          } catch (profileError) {
+            console.error('❌ SIMPLE CALLBACK: Error checking existing profiles:', profileError);
+            navigate('/signin?profile_check_error=true');
+          }
         }
 
       } catch (error) {

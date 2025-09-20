@@ -501,7 +501,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             email: buyerFormData.email,
             password: buyerFormData.password,
             options: {
-              emailRedirectTo: `${window.location.hostname === 'localhost' ? (import.meta.env.VITE_DASHBOARD_URL || window.location.origin) : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
+              emailRedirectTo: `${window.location.hostname === 'localhost' ? (import.meta.env.VITE_DASHBOARD_URL || window.location.origin) : 'https://dashboard.kstorybridge.com'}/signin/buyer?verified=true`,
               data: {
                 full_name: buyerFormData.full_name,
                 account_type: 'buyer',
@@ -657,7 +657,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             title: "Account Created Successfully!",
             description: "Please check your email for verification before signing in."
           });
-          navigate(`/signin?from=signup&email=${encodeURIComponent(buyerFormData.email)}`);
+          navigate(`/signin/buyer?from=signup&email=${encodeURIComponent(buyerFormData.email)}`);
         }
       }
     } catch (error) {
@@ -750,7 +750,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           email: creatorFormData.email,
           password: creatorFormData.password,
           options: {
-            emailRedirectTo: `${window.location.hostname === 'localhost' ? (import.meta.env.VITE_DASHBOARD_URL || window.location.origin) : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
+            emailRedirectTo: `${window.location.hostname === 'localhost' ? (import.meta.env.VITE_DASHBOARD_URL || window.location.origin) : 'https://dashboard.kstorybridge.com'}/signin/creator?verified=true`,
             data: {
               full_name: creatorFormData.full_name,
               account_type: 'creator',
@@ -887,7 +887,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             title: "Account Created Successfully!",
             description: "Please check your email for verification before signing in."
           });
-          navigate(`/signin?from=signup&email=${encodeURIComponent(creatorFormData.email)}`);
+          navigate(`/signin/creator?from=signup&email=${encodeURIComponent(creatorFormData.email)}`);
         }
       }
     } catch (error) {

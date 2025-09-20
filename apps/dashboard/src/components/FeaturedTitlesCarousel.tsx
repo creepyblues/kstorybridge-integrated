@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { Button } from '@kstorybridge/ui';
 import { ChevronLeft, ChevronRight, Mic } from 'lucide-react';
@@ -11,10 +11,20 @@ interface FeaturedTitlesCarouselProps {
 }
 
 const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps) => {
+  const location = useLocation();
   const [allFeaturedTitles, setAllFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Paths where FeaturedTitlesCarousel should NOT load
+  const forbiddenPaths = ['/buyers/profile', '/creators/profile', '/profile', '/buyers/settings', '/creators/settings', '/settings'];
+  const shouldNotLoad = forbiddenPaths.some(path => location.pathname.includes(path));
+
+  if (shouldNotLoad) {
+    console.warn('🚫 [CAROUSEL] Component prevented from loading on forbidden path:', location.pathname);
+    return null;
+  }
   
   // Check if mobile for responsive behavior
   useEffect(() => {
@@ -33,6 +43,7 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
         setLoading(true);
         console.log('🎬 [CAROUSEL VERBOSE] Starting to load featured titles...');
         console.log('🎬 [CAROUSEL VERBOSE] Component mounted, beginning fetch process');
+        console.log('🎬 [CAROUSEL DEBUG] Component mounted from:', new Error().stack);
 
         // Add timeout protection to prevent infinite loading (increased for debugging)
         const timeoutPromise = new Promise<FeaturedWithTitle[]>((resolve) => {

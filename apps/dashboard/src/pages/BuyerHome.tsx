@@ -336,9 +336,6 @@ function BuyerHomeContent() {
               Welcome to your dashboard. Discover and browse Korean content titles.
             </p>
           </div>
-          <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">
-            {filteredTitles.length} titles
-          </div>
         </div>
 
         {/* Featured Titles Section */}

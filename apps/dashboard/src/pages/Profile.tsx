@@ -410,7 +410,6 @@ export default function Profile() {
 
       if (profile.account_type === 'buyer') {
         const updateData = {
-          full_name: formData.full_name,
           buyer_company: formData.buyer_company,
           buyer_role: formData.buyer_role,
           linkedin_url: formData.linkedin_url,
@@ -429,7 +428,6 @@ export default function Profile() {
         setFormData(unifiedProfile);
       } else {
         const updateData = {
-          full_name: formData.full_name,
           pen_name: formData.pen_name,
           ip_owner_role: formData.ip_owner_role,
           ip_owner_company: formData.ip_owner_company,
@@ -638,16 +636,7 @@ export default function Profile() {
                 {/* Full Name */}
                 <div>
                   <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Full Name</h5>
-                  {isEditing ? (
-                    <Input
-                      id="full_name"
-                      value={formData.full_name || ""}
-                      onChange={(e) => handleInputChange("full_name", e.target.value)}
-                      placeholder="Enter your full name"
-                    />
-                  ) : (
-                    <p className="text-gray-600 text-xs sm:text-sm">{profile.full_name || "Not specified"}</p>
-                  )}
+                  <p className="text-gray-600 text-xs sm:text-sm">{profile.full_name || "Not specified"}</p>
                 </div>
 
                 {/* Email */}

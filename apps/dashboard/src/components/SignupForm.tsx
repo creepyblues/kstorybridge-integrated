@@ -423,17 +423,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       
       // Handle OAuth completion vs new signup
       if (isOAuthUser && oAuthUserId) {
-        // OAuth user completing profile - get existing auth session
-        console.log('🔄 OAuth completion: Getting session for user:', oAuthUserId);
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('❌ OAuth session error:', sessionError);
-          throw new Error(`OAuth session error: ${sessionError.message}`);
-        }
-        
-        if (!session?.user) {
-          console.error('❌ OAuth session not found or invalid');
+        // OAuth user completing profile - use existing user from auth context
+        console.log('🔄 OAuth completion: Using auth context for user:', oAuthUserId);
+
+        if (!user) {
+          console.error('❌ OAuth user not found in auth context');
           toast({
             title: "Session Expired",
             description: "Your login session has expired. Please sign in again.",
@@ -442,8 +436,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           navigate('/signin');
           return;
         }
-        
-        console.log('✅ OAuth session found for user:', session.user.email);
+
+        console.log('✅ OAuth user found in auth context:', user.email);
 
         // Normalize Supabase metadata to ensure all buyer fields are set
         try {
@@ -469,7 +463,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           console.error('⚠️ OAuth signup: Failed to update user metadata:', updateError);
         }
 
-        authResult = { data: { user: session.user }, error: null };
+        authResult = { data: { user: user }, error: null };
       } else {
         // Regular email signup
         console.log('🔐 Attempting regular email signup...');
@@ -692,19 +686,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       
       // Handle OAuth completion vs new signup
       if (isOAuthUser && oAuthUserId) {
-        // OAuth user completing profile - get existing auth session
-        console.log('🔄 OAuth completion: Getting session for creator user:', oAuthUserId);
-        console.log('🔍 OAuth user ID length:', oAuthUserId.length);
-        console.log('🔍 OAuth user ID format check:', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(oAuthUserId));
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('❌ OAuth session error:', sessionError);
-          throw new Error(`OAuth session error: ${sessionError.message}`);
-        }
-        
-        if (!session?.user) {
-          console.error('❌ OAuth session not found or invalid');
+        // OAuth user completing profile - use existing user from auth context
+        console.log('🔄 OAuth completion: Using auth context for creator user:', oAuthUserId);
+
+        if (!user) {
+          console.error('❌ OAuth user not found in auth context');
           toast({
             title: "Session Expired",
             description: "Your login session has expired. Please sign in again.",
@@ -713,11 +699,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           navigate('/signin');
           return;
         }
-        
-        console.log('✅ OAuth session found for creator user:', session.user.email);
-        console.log('🔍 Session user ID:', session.user.id);
-        console.log('🔍 Session user ID length:', session.user.id.length);
-        console.log('🔍 URL user ID vs Session user ID match:', oAuthUserId === session.user.id);
+
+        console.log('✅ OAuth user found in auth context:', user.email);
 
         try {
           await supabase.auth.updateUser({
@@ -742,8 +725,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           console.error('⚠️ OAuth signup: Failed to update user metadata:', updateError);
         }
 
-        // Use the session user ID (trust Supabase canonical value)
-        authResult = { data: { user: session.user }, error: null };
+        // Use the user from auth context
+        authResult = { data: { user: user }, error: null };
       } else {
         // Regular email signup
         authResult = await supabase.auth.signUp({

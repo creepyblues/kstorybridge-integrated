@@ -268,12 +268,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       let redirectUrl: string;
       if (isDev && forceRedirectUrl) {
         // Use forced redirect URL for development
-        redirectUrl = `${forceRedirectUrl}?account_type=${accountType}`;
+        redirectUrl = `${forceRedirectUrl}?account_type=${accountType}&flow=signup`;
       } else {
         // Use standard redirect URL construction
         const dashboardUrl = import.meta.env.VITE_DASHBOARD_URL || window.location.origin;
         const baseUrl = isDev ? dashboardUrl : window.location.origin;
-        redirectUrl = `${baseUrl}/auth/callback?account_type=${accountType}`;
+        redirectUrl = `${baseUrl}/auth/callback?account_type=${accountType}&flow=signup`;
       }
 
       console.log('🔄 OAuth signup redirect URL (with account_type):', redirectUrl);

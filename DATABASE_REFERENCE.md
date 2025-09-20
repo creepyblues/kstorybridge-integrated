@@ -83,7 +83,7 @@ CREATE TABLE public.user_ipowners (
 ```sql
 CREATE TABLE public.profiles (
   id UUID PRIMARY KEY,
-  account_type account_type NOT NULL, -- 'buyer' | 'ip_owner'
+  account_type account_type NOT NULL, -- 'buyer' | 'creator'
   email TEXT NOT NULL,
   full_name TEXT NOT NULL,
   -- Buyer specific fields
@@ -242,7 +242,7 @@ CREATE TABLE public.request (
 
 ### 1. `account_type`
 ```sql
-CREATE TYPE account_type AS ENUM ('ip_owner', 'buyer');
+CREATE TYPE account_type AS ENUM ('creator', 'buyer');
 ```
 
 ### 2. `buyer_role`  

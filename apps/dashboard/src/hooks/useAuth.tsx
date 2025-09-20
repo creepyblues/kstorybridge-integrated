@@ -3,6 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { sendWelcomeEmail } from "@/services/emailService";
 import { initializeSessionFromUrl, getCurrentSession, performSessionHealthCheck } from "@/utils/sessionManager";
+import { setDirectApiAccessToken } from "@/services/directApiService";
 import { pageReloadOptimizer } from "@/utils/pageReloadOptimizer";
 
 interface AuthContextType {
@@ -28,11 +29,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (accountType === 'creator') {
         // Handle creator welcome email
-        const { data: creatorProfile } = await supabase
+        const { data: creatorProfile, error: creatorError } = await supabase
           .from('user_creators')
           .select('email, full_name, pen_name')
-          .eq('email', user.email?.toLowerCase())
+          .eq('id', user.id)
           .maybeSingle();
+
+        if (creatorError) {
+          console.warn('⚠️ Skipping creator welcome email – unable to read profile:', creatorError.message);
+          return;
+        }
 
         if (!creatorProfile) {
           return; // No creator profile found
@@ -51,11 +57,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       } else {
         // Handle buyer welcome email
-        const { data: buyerProfile } = await supabase
+        const { data: buyerProfile, error: buyerError } = await supabase
           .from('user_buyers')
           .select('email, full_name, tier')
-          .eq('email', user.email?.toLowerCase())
+          .eq('id', user.id)
           .maybeSingle();
+
+        if (buyerError) {
+          console.warn('⚠️ Skipping buyer welcome email – unable to read profile:', buyerError.message);
+          return;
+        }
 
         if (!buyerProfile) {
           return; // No buyer profile found
@@ -271,22 +282,155 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signOut = async () => {
-    console.log('🚪 DASHBOARD: Starting sign out process');
-    
-    // Sign out from Supabase
-    await supabase.auth.signOut();
-    
-    // Redirect to dashboard signin page with signed_out parameter
-    const signOutUrl = `/signin?signed_out=true`;
-    console.log('🚪 DASHBOARD: Sign out - redirecting to:', signOutUrl);
-    console.log('🚪 DASHBOARD: Sign out - current location:', window.location.href);
-    
-    window.location.href = signOutUrl;
+  useEffect(() => {
+    setDirectApiAccessToken(session?.access_token ?? null);
+  }, [session]);
+
+  const signOut = () => {
+    console.group('🚪 AUTH SIGN OUT');
+
+    const accountType = user?.user_metadata?.account_type;
+    const defaultRedirect = '/signin?signed_out=true';
+    const redirectForAccount = accountType === 'creator'
+      ? '/signin/creator?signed_out=true'
+      : accountType === 'buyer'
+        ? '/signin/buyer?signed_out=true'
+        : defaultRedirect;
+
+    console.log('User context before sign out:', {
+      id: user?.id,
+      email: user?.email,
+      accountType,
+      pathname: typeof window !== 'undefined' ? window.location.pathname : 'N/A',
+      redirectTarget: redirectForAccount,
+    });
+
+    const SIGN_OUT_TIMEOUT_MS = 5000; // Reduced timeout for faster feedback
+    let finalized = false;
+    let resolver: (() => void) | null = null;
+
+    const completion = new Promise<void>((resolve) => {
+      resolver = resolve;
+    });
+
+    const finalize = (reason: 'success' | 'error' | 'exception' | 'timeout', details?: unknown) => {
+      if (finalized) {
+        console.log('Sign out finalize already executed – skipping duplicate call.', { reason, details });
+        return;
+      }
+      finalized = true;
+
+      console.log('🔚 Finalizing sign out', { reason, details, redirectForAccount });
+
+      try {
+        // Clear auth tokens (might be redundant with immediate cleanup, but ensures cleanup)
+        localStorage.removeItem('sb-dlrnrgcoguxlkkcitlpd-auth-token');
+        sessionStorage.removeItem('supabase.auth.token');
+      } catch (storageError) {
+        console.warn('Unable to clear cached auth tokens:', storageError);
+      }
+
+      setUser(null);
+      setSession(null);
+      setIsSessionHealthy(true);
+      setDirectApiAccessToken(null);
+
+      resolver?.();
+
+      if (typeof window !== 'undefined') {
+        const destination = reason === 'success'
+          ? redirectForAccount
+          : '/signin?signed_out=true&error=signout_failed';
+        console.log('Redirecting browser to:', destination);
+        window.location.href = destination;
+      }
+
+      console.groupEnd();
+    };
+
+    const timeoutId = setTimeout(() => {
+      console.warn(`⏰ Supabase signOut timeout after ${SIGN_OUT_TIMEOUT_MS}ms - proceeding with forced cleanup`);
+      finalize('timeout');
+    }, SIGN_OUT_TIMEOUT_MS);
+
+    console.log('🔄 Starting Supabase signOut...');
+    const startTime = Date.now();
+
+    // Start the Supabase signOut call, but don't rely on it completing
+    const signOutPromise = supabase.auth
+      .signOut()
+      .then((result) => {
+        const duration = Date.now() - startTime;
+        console.log(`⏱️ Supabase signOut completed in ${duration}ms`);
+        clearTimeout(timeoutId);
+        if (result?.error) {
+          console.error('❌ Supabase signOut returned error:', result.error);
+          // Even with errors, treat as success since we're cleaning up locally anyway
+          finalize('success');
+        } else {
+          console.log('✅ Supabase signOut resolved without error');
+          finalize('success');
+        }
+      })
+      .catch((error) => {
+        const duration = Date.now() - startTime;
+        console.error(`❌ Supabase signOut threw exception after ${duration}ms:`, error);
+        clearTimeout(timeoutId);
+        // Even with exceptions, treat as success since we're cleaning up locally anyway
+        finalize('success');
+      });
+
+    // For immediate local cleanup without waiting for Supabase
+    // This ensures the user gets logged out quickly regardless of network issues
+    try {
+      // Clear tokens immediately
+      localStorage.removeItem('sb-dlrnrgcoguxlkkcitlpd-auth-token');
+      sessionStorage.removeItem('supabase.auth.token');
+
+      // Clear any other auth-related storage
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('supabase') || key.includes('auth')) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      console.log('🧹 Local auth cleanup completed immediately');
+
+      // Force finalize after a brief delay if Supabase hasn't responded
+      // This ensures users don't wait too long for sign out
+      setTimeout(() => {
+        if (!finalized) {
+          console.log('🚀 Force finalizing sign out after 2 seconds');
+          clearTimeout(timeoutId);
+          finalize('success'); // Treat as success since we cleared everything locally
+        }
+      }, 2000);
+
+    } catch (cleanupError) {
+      console.warn('⚠️ Local cleanup had issues:', cleanupError);
+    }
+
+    return completion;
   };
 
+  const authContextValue = {
+    user,
+    session,
+    loading,
+    signOut: async () => {
+      try {
+        return await signOut();
+      } catch (error) {
+        console.error('Unhandled signOut catch:', error);
+        throw error;
+      }
+    },
+    refreshSession,
+    isSessionHealthy,
+  } satisfies AuthContextType;
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut, refreshSession, isSessionHealthy }}>
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );

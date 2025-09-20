@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { Input, Button, Badge } from '@kstorybridge/ui';
 import { searchAnalyticsService } from '@/services/searchAnalyticsService';
 import { enhancedTitleSearchService } from '@/services/enhancedTitleSearchService';
@@ -56,8 +56,7 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
   }, [recentSearches]);
 
   // Generate suggestions
-  const generateSuggestions = useCallback(
-    debounce(async (query: string) => {
+  const generateSuggestionsInternal = useCallback(async (query: string) => {
       if (!query.trim() || query.length < 2) {
         // Show recent searches when no query
         const recentSuggestions: SearchSuggestion[] = recentSearches.map(search => ({
@@ -110,8 +109,11 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
       } finally {
         setIsLoading(false);
       }
-    }, 300),
-    [userId, recentSearches]
+  }, [userId, recentSearches]);
+
+  const generateSuggestions = useMemo(
+    () => debounce(generateSuggestionsInternal, 300),
+    [generateSuggestionsInternal]
   );
 
   // Handle input change

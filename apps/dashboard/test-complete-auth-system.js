@@ -164,7 +164,7 @@ class AuthSystemTestSuite {
       id: `signin-user-${Date.now()}`,
       email,
       user_metadata: {
-        account_type: Math.random() > 0.5 ? 'buyer' : 'ip_owner',
+        account_type: Math.random() > 0.5 ? 'buyer' : 'creator',
         full_name: 'Test User'
       }
     };
@@ -205,7 +205,7 @@ class AuthSystemTestSuite {
     
     this.totalOperationTime += Date.now() - startTime;
     return {
-      accountType: Math.random() > 0.5 ? 'buyer' : 'ip_owner',
+      accountType: Math.random() > 0.5 ? 'buyer' : 'creator',
       source: 'database',
       confidence: 'high',
       profileExists: true
@@ -268,7 +268,7 @@ class AuthSystemTestSuite {
       },
       {
         name: 'Creator Email Signup - Happy Path',
-        accountType: 'ip_owner',
+        accountType: 'creator',
         userData: {
           email: 'creator@test.com',
           fullName: 'Test Creator',
@@ -331,7 +331,7 @@ class AuthSystemTestSuite {
       },
       {
         name: 'OAuth Creator Signup',
-        accountType: 'ip_owner',
+        accountType: 'creator',
         userData: {
           email: 'oauth.creator@test.com',
           fullName: 'OAuth Creator',
@@ -403,7 +403,7 @@ class AuthSystemTestSuite {
         this.recordTest('signin', `${scenario.name} - High Confidence`, highConfidence);
         
         // Test redirect logic
-        const hasValidRedirect = ['buyer', 'ip_owner'].includes(result.accountTypeResult?.accountType);
+        const hasValidRedirect = ['buyer', 'creator'].includes(result.accountTypeResult?.accountType);
         this.recordTest('signin', `${scenario.name} - Valid Redirect`, hasValidRedirect);
         
       } catch (error) {

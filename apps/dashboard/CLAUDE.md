@@ -144,7 +144,7 @@ npx supabase start
 **Account Type System**:
 - ✅ **Buyer**: `account_type: 'buyer'` → Routes to `/buyers/home`
 - ✅ **Creator**: `account_type: 'creator'` → Routes to `/creators/home`  
-- ❌ **Legacy**: `'ip_owner'` → Automatically converts to `'creator'`
+- ❌ **Legacy**: Historical creator values automatically convert to `'creator'`
 
 **Database Tables**:
 - `user_buyers` - Buyer account profiles

@@ -42,7 +42,7 @@ BEGIN
     
     RAISE LOG 'Successfully created buyer profile for user: %, email: %', NEW.id, NEW.email;
     
-  ELSIF NEW.raw_user_meta_data->>'account_type' = 'ip_owner' THEN
+  ELSIF NEW.raw_user_meta_data->>'account_type' = 'creator' THEN
     -- Create creator profile (FIXED: Now uses user_creators table)
     INSERT INTO public.user_creators (
       id, 

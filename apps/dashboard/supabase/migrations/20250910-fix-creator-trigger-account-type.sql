@@ -1,4 +1,4 @@
--- Fix the creator signup trigger to use 'creator' instead of 'ip_owner'
+-- Fix the creator signup trigger to enforce the normalized 'creator' account type
 -- and ensure it inserts into the correct table (user_creators)
 
 -- First, let's update the trigger function to use the correct table and account type

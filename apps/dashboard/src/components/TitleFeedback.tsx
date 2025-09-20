@@ -5,7 +5,7 @@ import { useToast } from "@kstorybridge/ui";
 import { chatHistoryService } from '@/services/chatHistoryService';
 
 interface TitleFeedbackProps {
-  title: any;
+  title: { title_id: string; title_name_en: string; title_name_kr?: string };
   messageId: string;
   userPrompt: string;
   onFeedbackSubmitted?: () => void;

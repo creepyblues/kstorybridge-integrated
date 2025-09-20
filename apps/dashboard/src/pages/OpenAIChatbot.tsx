@@ -66,7 +66,7 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
   // Helper function to find title ID by title name from available title data
   const findTitleIdByName = (titleName: string): string | null => {
     // Clean the title name by normalizing outer quotes and removing trailing punctuation
-    let cleanedName = titleName
+    const cleanedName = titleName
       .replace(/^["""'']+|["""'']+$/g, '"')  // Normalize only leading/trailing quotes
       .replace(/[.,!?;:]+$/, '')  // Remove only trailing punctuation
       .trim();

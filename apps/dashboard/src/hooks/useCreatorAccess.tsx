@@ -60,17 +60,15 @@ export const useCreatorAccess = (): CreatorAccess => {
         return;
       }
 
-      // For localhost with real data, use test email
-      const queryEmail = isLocalhost && useRealDataOnLocalhost ? testEmail : user?.email;
-
       try {
-        console.log('🔍 useCreatorAccess: Fetching creator profile for:', queryEmail);
+        const queryId = user.id;
+        console.log('🔍 useCreatorAccess: Fetching creator profile for user id:', queryId);
 
         // Query creator profile from user_creators table
         const { data, error } = await supabase
           .from('user_creators')
           .select('*')
-          .eq('email', queryEmail)
+          .eq('id', queryId)
           .single();
 
         if (error) {

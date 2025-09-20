@@ -12,7 +12,7 @@
  * - Reduced database load by 70-80%
  */
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -141,12 +141,12 @@ async function fetchOptimizedProfile(user: User): Promise<Partial<OptimizedUserP
       supabase
         .from('user_buyers')
         .select('id, email, full_name, tier, buyer_company, buyer_role')
-        .eq('email', user.email!.toLowerCase())
+        .eq('id', user.id)
         .maybeSingle(),
       supabase
         .from('user_creators')
         .select('id, email, full_name, pen_name, ip_owner_role, ip_owner_company')
-        .eq('email', user.email!.toLowerCase())
+        .eq('id', user.id)
         .maybeSingle()
     ]);
     
@@ -183,7 +183,7 @@ async function fetchOptimizedProfile(user: User): Promise<Partial<OptimizedUserP
     const buyerResult = await supabase
       .from('user_buyers')
       .select('id, email, full_name, tier, buyer_company, buyer_role')
-      .eq('email', user.email!.toLowerCase())
+      .eq('id', user.id)
       .maybeSingle();
       
     if (buyerResult.data) {
@@ -196,7 +196,7 @@ async function fetchOptimizedProfile(user: User): Promise<Partial<OptimizedUserP
     const creatorResult = await supabase
       .from('user_creators')
       .select('id, email, full_name, pen_name, ip_owner_role, ip_owner_company')
-      .eq('email', user.email!.toLowerCase())
+      .eq('id', user.id)
       .maybeSingle();
       
     if (creatorResult.data) {
@@ -277,7 +277,7 @@ export function OptimizedAuthProvider({ children }: { children: ReactNode }) {
   const mockTier: UserTier = 'basic';
   const testEmail = 'sungho@dadble.com';
   
-  const refreshProfile = async (): Promise<void> => {
+  const refreshProfile = useCallback(async (): Promise<void> => {
     if (!user) return;
     
     console.log('🔄 OptimizedAuth: Refreshing profile');
@@ -351,7 +351,7 @@ export function OptimizedAuthProvider({ children }: { children: ReactNode }) {
         tier: 'basic' // Fallback
       }));
     }
-  };
+  }, [user, isLocalhost, useRealDataOnLocalhost, mockTier, testEmail, profile]);
   
   useEffect(() => {
     if (authLoading) {
@@ -388,7 +388,7 @@ export function OptimizedAuthProvider({ children }: { children: ReactNode }) {
     // Cache miss or invalid, fetch fresh data
     refreshProfile();
     
-  }, [user, authLoading]);
+  }, [user, authLoading, refreshProfile]);
   
   // Add hasMinimumTier to the current profile
   const profileWithMethods: OptimizedUserProfile = {

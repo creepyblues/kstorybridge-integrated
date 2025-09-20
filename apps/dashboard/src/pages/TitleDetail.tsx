@@ -4,7 +4,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock } from "lucide-react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
-import { favoritesService } from "@/services/favoritesService";
+import { directApiService } from "@/services/directApiService";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useDataCache } from "@/contexts/DataCacheContext";
@@ -99,9 +99,9 @@ function TitleDetailContent() {
 
   const checkIfFavorited = async (titleId: string) => {
     if (!user) return;
-    
+
     try {
-      const favorited = await favoritesService.isTitleFavorited(user.id, titleId);
+      const favorited = await directApiService.isTitleFavorited(user.id, titleId);
       setIsFavorited(favorited);
     } catch (error) {
       console.error("Error checking favorite status:", error);
@@ -109,31 +109,45 @@ function TitleDetailContent() {
   };
 
   const handleFavoriteToggle = async () => {
-    if (!user || !titleId) return;
+    if (!user || !titleId) {
+      console.error("❌ No user or titleId available for favorites toggle");
+      return;
+    }
+
+    console.log('❤️ TITLE DETAIL: Toggling favorite:', {
+      userId: user.id,
+      titleId,
+      currentlyFavorited: isFavorited
+    });
 
     try {
       setFavoriteLoading(true);
-      
+
       if (isFavorited) {
-        await favoritesService.removeFromFavorites(user.id, titleId);
+        console.log('🗑️ TITLE DETAIL: Removing from favorites...');
+        await directApiService.removeFromFavorites(user.id, titleId);
         setIsFavorited(false);
         toast({ title: "Removed from favorites" });
-        
+
         // Invalidate favorites cache so Favorites page will refresh
         refreshData('favorites');
+        console.log('✅ TITLE DETAIL: Successfully removed from favorites');
       } else {
-        await favoritesService.addToFavorites(user.id, titleId);
+        console.log('❤️ TITLE DETAIL: Adding to favorites...');
+        await directApiService.addToFavorites(user.id, titleId);
         setIsFavorited(true);
         toast({ title: "Added to favorites" });
-        
+
         // Invalidate favorites cache so Favorites page will refresh
         refreshData('favorites');
+        console.log('✅ TITLE DETAIL: Successfully added to favorites');
       }
     } catch (error) {
-      console.error("Error toggling favorite:", error);
-      toast({ 
-        title: "Error updating favorites", 
-        variant: "destructive" 
+      console.error("❌ TITLE DETAIL: Error toggling favorite:", error);
+      toast({
+        title: "Error updating favorites",
+        description: "Please try again.",
+        variant: "destructive"
       });
     } finally {
       setFavoriteLoading(false);

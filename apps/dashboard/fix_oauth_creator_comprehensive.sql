@@ -79,7 +79,7 @@ CREATE TRIGGER on_auth_user_creator_updated
   )
   EXECUTE FUNCTION public.handle_new_creator();
 
--- 5. Also handle the case where account_type is updated from 'ip_owner' to 'creator'
+-- 5. Also handle the case where account_type metadata is normalized to 'creator'
 CREATE OR REPLACE FUNCTION public.handle_account_type_migration()
 RETURNS TRIGGER 
 LANGUAGE plpgsql 
@@ -87,7 +87,7 @@ SECURITY DEFINER
 AS $$
 BEGIN
   -- If account_type changed from ip_owner to creator, create creator profile
-  IF OLD.raw_user_meta_data->>'account_type' = 'ip_owner' 
+  IF OLD.raw_user_meta_data->>'account_type' = 'creator' 
      AND NEW.raw_user_meta_data->>'account_type' = 'creator' THEN
     
     RAISE LOG 'Migrating user from ip_owner to creator: %', NEW.id;

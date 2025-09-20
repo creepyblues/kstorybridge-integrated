@@ -57,13 +57,13 @@ const getSettingsItems = (accountType: string, userEmail?: string) => {
 export function CMSHeader() {
   const { user } = useAuth();
   const { tier, loading: tierLoading } = useTierAccess();
-  
+
   // Memoize the options object to prevent unnecessary re-renders
   const accountTypeOptions = useMemo(() => ({
     includeDatabaseLookup: true,
     debug: false
   }), []);
-  
+
   const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -98,14 +98,13 @@ export function CMSHeader() {
   // Get account type for display - use centralized detection for accuracy
   const accountType = detectedAccountType || "buyer";
   const displayTitle = accountType === "creator" ? "Creator Dashboard" : "Buyer Dashboard";
-  const userTypeLabel = accountType === "creator" ? "Creator" : "Buyer";
   const userEmail = displayUser?.email;
   
   // Get menu items
   const discoverItems = getDiscoverItems(accountType);
   const settingsItems = getSettingsItems(accountType, userEmail);
 
-  // Get tier display info
+  // Get tier display info for buyers
   const getTierDisplay = (tier: string | null) => {
     if (displayTierLoading) {
       return { label: 'Loading...', className: 'bg-gray-100 text-gray-600' };
@@ -117,7 +116,7 @@ export function CMSHeader() {
       case 'pro':
         return { label: 'Pro', className: 'bg-purple-100 text-purple-800' };
       case 'suite':
-        return { label: 'Suite', className: 'bg-gold-100 text-gold-800 bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-800' };
+        return { label: 'Suite', className: 'bg-gradient-to-r from-hanok-teal-100 to-hanok-teal-200 text-hanok-teal-800' };
       default:
         return { label: 'Unknown', className: 'bg-gray-100 text-gray-600' };
     }
@@ -162,15 +161,13 @@ export function CMSHeader() {
                 <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                   <User className="w-3 h-3 sm:w-4 sm:h-4 text-midnight-ink-400" />
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {/* User info - name and type */}
+                    {/* User info - name only */}
                     <div className="flex flex-col">
                       <span className="text-midnight-ink font-medium max-w-[100px] sm:max-w-none truncate">
                         {displayUser.user_metadata?.full_name || displayUser.email}
                       </span>
-                      <span className="text-xs text-midnight-ink-400 font-normal">
-                        {userTypeLabel}
-                      </span>
                     </div>
+                    {/* Status badge - tier for buyers only */}
                     {accountType === "buyer" && (
                       <div className={`inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium w-fit ${tierDisplay.className}`}>
                         {tierDisplay.label}

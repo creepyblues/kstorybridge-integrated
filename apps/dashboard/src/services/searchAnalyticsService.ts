@@ -220,12 +220,12 @@ class SearchAnalyticsService {
     return [];
   }
 
-  private calculatePerformanceMetrics(searchData: any[]): SearchPerformanceMetrics {
+  private calculatePerformanceMetrics(searchData: SearchAnalytics[]): SearchPerformanceMetrics {
     if (searchData.length === 0) return this.getDefaultMetrics();
 
     const totalSearches = searchData.length;
-    const clickedSearches = searchData.filter(s => s.clicked_title_id).length;
-    const averageResultCount = searchData.reduce((sum, s) => sum + (s.result_count || 0), 0) / totalSearches;
+    const clickedSearches = searchData.filter(s => s.clickedTitleId).length;
+    const averageResultCount = searchData.reduce((sum, s) => sum + (s.resultCount || 0), 0) / totalSearches;
     const averageClickPosition = searchData
       .filter(s => s.click_position)
       .reduce((sum, s) => sum + s.click_position, 0) / clickedSearches || 0;
@@ -284,7 +284,15 @@ class SearchAnalyticsService {
     };
   }
 
-  private analyzeQueryPerformance(searchData: any[]): any[] {
+  private analyzeQueryPerformance(searchData: SearchAnalytics[]): Array<{
+    query: string;
+    searches: SearchAnalytics[];
+    totalResults: number;
+    clicks: number;
+    avgClickPosition: number;
+    satisfactionScore: number;
+    issues: string[];
+  }> {
     // Group by query and analyze performance metrics
     const queryMap = new Map();
     searchData.forEach(item => {
@@ -296,16 +304,24 @@ class SearchAnalyticsService {
         avgSearchTime: 0
       };
       existing.searches.push(item);
-      existing.totalResults += item.result_count || 0;
-      existing.totalSatisfaction += item.user_satisfaction_score || 0;
-      existing.avgSearchTime += item.search_duration_ms || 0;
+      existing.totalResults += item.resultCount || 0;
+      existing.totalSatisfaction += item.userSatisfaction || 0;
+      existing.avgSearchTime += item.searchTime || 0;
       queryMap.set(item.query, existing);
     });
 
     return Array.from(queryMap.values());
   }
 
-  private identifyIssues(analysis: any): string[] {
+  private identifyIssues(analysis: {
+    query: string;
+    searches: SearchAnalytics[];
+    totalResults: number;
+    clicks: number;
+    avgClickPosition: number;
+    satisfactionScore: number;
+    issues: string[];
+  }): string[] {
     const issues = [];
     
     if (analysis.totalResults / analysis.searches.length < 2) issues.push('Low result count');
@@ -315,7 +331,15 @@ class SearchAnalyticsService {
     return issues;
   }
 
-  private generateSolutions(analysis: any): string[] {
+  private generateSolutions(analysis: {
+    query: string;
+    searches: SearchAnalytics[];
+    totalResults: number;
+    clicks: number;
+    avgClickPosition: number;
+    satisfactionScore: number;
+    issues: string[];
+  }): string[] {
     const solutions = [];
     
     if (analysis.totalResults / analysis.searches.length < 2) {
@@ -328,7 +352,7 @@ class SearchAnalyticsService {
     return solutions;
   }
 
-  private extractPreferredTerms(userHistory: any[]): string[] {
+  private extractPreferredTerms(userHistory: SearchAnalytics[]): string[] {
     // Extract common terms from user's high-satisfaction searches
     const termFrequency = new Map<string, number>();
     

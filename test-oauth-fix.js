@@ -51,7 +51,7 @@ async function determineAccountType(user, options = {}) {
     const metadataAccountType = user.user_metadata?.account_type;
     log('Checking metadata', { metadataAccountType });
     
-    if (metadataAccountType === 'buyer' || metadataAccountType === 'ip_owner') {
+    if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
       log('✅ Found valid account type in metadata');
       return {
         accountType: metadataAccountType,
@@ -66,7 +66,7 @@ async function determineAccountType(user, options = {}) {
       const urlAccountType = urlParams.get('account_type');
       log('Checking URL parameters', { urlAccountType });
       
-      if (urlAccountType === 'buyer' || urlAccountType === 'ip_owner') {
+      if (urlAccountType === 'buyer' || urlAccountType === 'creator') {
         log('✅ Found valid account type in URL parameters');
         return {
           accountType: urlAccountType,
@@ -110,7 +110,7 @@ async function determineAccountType(user, options = {}) {
       if (creatorResult.data && !creatorResult.error) {
         log('✅ Found creator profile in database');
         return {
-          accountType: 'ip_owner',
+          accountType: 'creator',
           source: 'database_creator',
           confidence: 'high',
           profileExists: true
@@ -155,7 +155,7 @@ function getAccountTypeDisplayInfo(accountType) {
         signupPath: '/signup/buyer',
         homePath: '/buyers/home'
       };
-    case 'ip_owner':
+    case 'creator':
       return {
         label: 'Creator',
         dashboardPath: '/creators/home/',
@@ -176,15 +176,15 @@ async function testScenarios() {
   console.log('🧪 Testing Different OAuth Scenarios\n');
 
   // Scenario 1: User with no metadata, but account_type in URL (this was the broken case)
-  console.log('--- Scenario 1: No metadata, account_type=ip_owner in URL ---');
+  console.log('--- Scenario 1: No metadata, account_type=creator in URL ---');
   const userWithoutMetadata = {
     id: 'test-user-1',
     email: 'creator@example.com',
     user_metadata: {} // Empty metadata (simulates the broken case)
   };
   
-  // Simulate URL: /auth/callback?account_type=ip_owner
-  const urlParamsCreator = new URLSearchParams('account_type=ip_owner');
+  // Simulate URL: /auth/callback?account_type=creator
+  const urlParamsCreator = new URLSearchParams('account_type=creator');
   
   const result1 = await determineAccountType(userWithoutMetadata, {
     urlParams: urlParamsCreator,
@@ -209,7 +209,7 @@ async function testScenarios() {
   const userWithMetadata = {
     id: 'test-user-2',
     email: 'creator@example.com',
-    user_metadata: { account_type: 'ip_owner' } // Metadata properly set
+    user_metadata: { account_type: 'creator' } // Metadata properly set
   };
   
   const result2 = await determineAccountType(userWithMetadata, {

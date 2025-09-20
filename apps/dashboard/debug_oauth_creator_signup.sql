@@ -15,7 +15,7 @@ SELECT
 FROM auth.users u
 LEFT JOIN public.user_creators ip ON ip.email = u.email
 WHERE u.created_at > NOW() - INTERVAL '2 hours'
-AND (u.raw_user_meta_data->>'account_type' = 'ip_owner' OR ip.id IS NULL)
+AND (u.raw_user_meta_data->>'account_type' = 'creator' OR ip.id IS NULL)
 ORDER BY u.created_at DESC;
 
 -- 2. Check what triggers are currently active
@@ -66,7 +66,7 @@ BEGIN
     SELECT u.* INTO test_user
     FROM auth.users u
     LEFT JOIN public.user_creators ip ON ip.email = u.email
-    WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
+    WHERE u.raw_user_meta_data->>'account_type' = 'creator'
     AND ip.id IS NULL
     AND u.created_at > NOW() - INTERVAL '2 hours'
     LIMIT 1;
@@ -76,7 +76,7 @@ BEGIN
             test_user.id, test_user.email, test_user.raw_user_meta_data::text;
         
         -- Check if the user should have a profile based on metadata
-        IF test_user.raw_user_meta_data->>'account_type' = 'ip_owner' THEN
+        IF test_user.raw_user_meta_data->>'account_type' = 'creator' THEN
             RAISE NOTICE 'User should have creator profile but does not';
             
             -- Try to manually create the profile to test the logic
@@ -127,7 +127,7 @@ END $$;
 SELECT 
     'Testing trigger condition' as test,
     CASE 
-        WHEN u.raw_user_meta_data->>'account_type' = 'ip_owner' THEN 'WOULD TRIGGER'
+        WHEN u.raw_user_meta_data->>'account_type' = 'creator' THEN 'WOULD TRIGGER'
         ELSE 'WOULD NOT TRIGGER'
     END as trigger_result,
     u.email,
@@ -140,9 +140,9 @@ ORDER BY u.created_at DESC;
 SELECT 
     'SUMMARY' as section,
     COUNT(*) as total_recent_users,
-    COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' = 'ip_owner' THEN 1 END) as oauth_creators,
+    COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' = 'creator' THEN 1 END) as oauth_creators,
     COUNT(ip.id) as has_creator_profile,
-    COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' = 'ip_owner' AND ip.id IS NULL THEN 1 END) as missing_profiles
+    COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' = 'creator' AND ip.id IS NULL THEN 1 END) as missing_profiles
 FROM auth.users u
 LEFT JOIN public.user_creators ip ON ip.email = u.email
 WHERE u.created_at > NOW() - INTERVAL '2 hours';

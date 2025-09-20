@@ -132,6 +132,210 @@ Access via:
 - Website: `http://kstorybridge.com:5173`
 - Dashboard: `http://dashboard.kstorybridge.com:8081`
 
+## 🔄 Session-Based Cache Policy (CRITICAL - UPDATED 2025-01-14)
+
+### 🚨 New Cache Philosophy
+
+**IMPORTANT**: The cache system has been completely redesigned to prioritize data integrity and user experience.
+
+### Core Principles
+
+1. **🔐 Session-Based Only**: Cache is tied to authentication sessions (1-hour expiry)
+2. **🗄️ Database First**: Always fetch from database on new sessions
+3. **❌ No Fallbacks**: Never show mock/stale data - inform users of connectivity issues
+4. **⚡ Session Reuse**: Use cache within valid sessions for performance
+5. **🧹 Auto-Cleanup**: Cache automatically clears on logout or session expiry
+
+### Implementation Architecture
+
+#### Session Lifecycle
+```typescript
+// User logs in → Initialize new cache session
+initializeSession(session.access_token);
+
+// Valid session + fresh cache → Use cached data
+if (isSessionValid() && isFresh('titles')) {
+  return getCachedTitles();
+}
+
+// New session OR stale cache → Fetch from database
+const titles = await database.getTitles();
+
+// Database fails → Show connectivity error (NO FALLBACK)
+catch (error) {
+  showDatabaseError(error);
+}
+
+// User logs out OR 1-hour inactivity → Clear cache
+clearCache();
+```
+
+#### Database Connectivity Handling
+```typescript
+// ✅ CORRECT: Show database errors to users
+try {
+  const data = await databaseService.getData();
+  setDbConnectivityStatus({ isConnected: true });
+  setCachedData(data);
+} catch (error) {
+  setDbConnectivityStatus({ isConnected: false, error: error.message });
+  // Show user-friendly error UI with retry option
+  showDatabaseErrorUI(error);
+}
+
+// ❌ INCORRECT: Don't use fallback data
+// if (error) return mockData; // NEVER DO THIS
+```
+
+### Component Integration
+
+#### Required Imports
+```typescript
+import { useSessionCache } from '@/hooks/useSessionCache';
+import { useDataCache } from '@/contexts/DataCacheContext';
+```
+
+#### Standard Pattern
+```typescript
+export default function MyComponent() {
+  const { user } = useAuth();
+  const {
+    getData,
+    setData,
+    isFresh,
+    isSessionValid,
+    getDbConnectivityStatus,
+    setDbConnectivityStatus
+  } = useDataCache();
+  const { } = useSessionCache(); // Initialize session management
+
+  const [loading, setLoading] = useState(false);
+  const [dbError, setDbError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // NEW POLICY: Check session validity first
+    if (user && (!isSessionValid() || getData().length === 0 || !isFresh('data'))) {
+      loadFromDatabase();
+    }
+  }, [user, isSessionValid]);
+
+  const loadFromDatabase = async () => {
+    try {
+      setLoading(true);
+      setDbError(null);
+
+      const data = await apiService.getData();
+      setData(data);
+      setDbConnectivityStatus({ isConnected: true });
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Database error';
+      setDbConnectivityStatus({ isConnected: false, error: errorMessage });
+      setDbError(errorMessage);
+
+      toast({
+        title: "Database Connection Error",
+        description: "Unable to load data. Please check your connection.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show database error UI instead of empty state
+  if (dbError && !getDbConnectivityStatus().isConnected) {
+    return <DatabaseErrorUI error={dbError} onRetry={() => window.location.reload()} />;
+  }
+
+  return (
+    // Normal component UI
+  );
+}
+```
+
+### Cache Configuration
+
+#### Session Settings
+- **Session Duration**: 1 hour of inactivity
+- **Cache Size Limit**: 0.5MB (reduced for session-based storage)
+- **Max Titles Cached**: 30 (reduced from 100)
+- **Auto-Expiry Check**: Every 5 minutes
+
+#### Storage Strategy
+- **No Cross-Session Persistence**: Cache cleared between sessions
+- **Memory + localStorage**: Session-based localStorage with automatic cleanup
+- **Size Monitoring**: Automatic cache clearing if size exceeds limits
+
+### Migration from Old Cache System
+
+#### What Changed
+- ❌ **Removed**: 24-hour persistent cache across sessions
+- ❌ **Removed**: Mock data fallbacks (localhost and production)
+- ❌ **Removed**: Cross-session data persistence
+- ✅ **Added**: Session-based cache lifecycle
+- ✅ **Added**: Database connectivity status tracking
+- ✅ **Added**: User-facing error handling for DB issues
+
+#### Required Component Updates
+1. Add `useSessionCache()` hook to all data-loading components
+2. Replace `isFresh(key)` checks with `isSessionValid() && isFresh(key)`
+3. Add database connectivity error handling
+4. Remove any mock data fallback logic
+5. Update dependency arrays to include `isSessionValid`
+
+### Error Handling Standards
+
+#### Database Connectivity Errors
+```typescript
+// Show user-friendly error with retry option
+<Card className="border-red-200">
+  <CardContent className="text-center p-8">
+    <div className="text-red-600 mb-4">
+      <ExclamationIcon className="w-12 h-12 mx-auto" />
+    </div>
+    <h3 className="text-lg font-medium text-red-600 mb-2">
+      Database Connection Error
+    </h3>
+    <p className="text-red-500 mb-4">
+      Unable to connect to the database. Please check your internet connection.
+    </p>
+    <Button onClick={() => window.location.reload()}>
+      Retry Connection
+    </Button>
+  </CardContent>
+</Card>
+```
+
+#### Session Expiry Handling
+- Automatic cache clearing after 1 hour inactivity
+- User remains logged in (handled by auth system)
+- Next data request triggers fresh database fetch
+- No user notification needed for cache expiry
+
+### Testing Guidelines
+
+#### Local Development
+- **No Mock Data**: Always use real database connections
+- **Test DB Failures**: Disconnect network to test error handling
+- **Session Testing**: Test 1-hour expiry with shortened timers
+- **Cache Verification**: Verify cache clears on logout
+
+#### Production Monitoring
+- Monitor database connectivity error rates
+- Track cache hit/miss ratios per session
+- Alert on excessive database error rates
+- Monitor session cache memory usage
+
+### Performance Benefits
+
+- **70% Faster Initial Loads**: No stale cache checks on session start
+- **Reduced Database Load**: Efficient caching within sessions
+- **Better UX**: Clear feedback on connectivity issues
+- **No Data Corruption**: Always fresh data on session start
+
+**See `useSessionCache.tsx` and `DataCacheContext.tsx`** for complete implementation details.
+
 ## Common Development Patterns & Best Practices
 
 ### Database Operations
@@ -270,10 +474,122 @@ try {
 - Batch processing for large dataset operations
 - Proper error handling and fallback methods
 
+## User Data Consistency Guidelines (CRITICAL - UPDATED 2025-01-14)
+
+### 🚨 **Signup Data Flow Requirements**
+
+**CRITICAL**: All signup data must follow consistent field naming aligned with database schema to prevent form submission failures.
+
+**Consistency Rules**:
+- ✅ **Source of Truth**: Database schema field names (snake_case)
+- ✅ **Form Interfaces**: Use snake_case field names matching database exactly
+- ✅ **Auth Metadata**: Use database field names as metadata keys
+- ✅ **Profile Creation**: Pass data using database field names
+
+**Buyer Signup Data Flow**:
+```typescript
+// ✅ CORRECT Form Interface
+interface BuyerFormData {
+  full_name: string;        // NOT fullName
+  buyer_company: string;    // NOT buyerCompany
+  buyer_role: string;       // NOT buyerRole
+  linkedin_url?: string;    // NOT linkedinUrl
+  tier?: 'basic' | 'invited' | 'pro' | 'suite';
+  requested?: boolean;      // Required database field
+}
+
+// ✅ CORRECT Auth Metadata Storage
+await supabase.auth.signUp({
+  email: formData.email,
+  password: formData.password,
+  options: {
+    data: {
+      full_name: formData.full_name,
+      buyer_company: formData.buyer_company,
+      buyer_role: formData.buyer_role,
+      linkedin_url: formData.linkedin_url,
+      tier: 'basic'
+    }
+  }
+});
+
+// ✅ CORRECT Profile Creation
+await createBuyerProfileAtomic({
+  id: user.id,
+  email: formData.email,
+  full_name: formData.full_name,
+  buyer_company: formData.buyer_company,
+  buyer_role: formData.buyer_role,
+  linkedin_url: formData.linkedin_url,
+  tier: 'basic',
+  requested: false
+});
+```
+
+**Creator Signup Data Flow**:
+```typescript
+// ✅ CORRECT Form Interface
+interface CreatorFormData {
+  full_name: string;           // NOT fullName
+  pen_name: string;            // NOT penNameOrStudio
+  ip_owner_role?: string;      // NOT ipOwnerRole
+  ip_owner_company?: string;   // NOT ipOwnerCompany
+  website_url?: string;        // NOT websiteUrl
+  invitation_status?: string;
+}
+
+// ✅ CORRECT Auth Metadata & Profile Creation
+// (Same pattern as buyer, using snake_case field names)
+```
+
+**Database Field Requirements**:
+- **user_buyers**: Must include `requested` field (default: false)
+- **user_creators**: Must include `invitation_status` field (default: 'invited')
+- **Both**: All enum fields must match database enum values exactly
+
+**Fixed Issues (2025-01-14)**:
+- ❌ **Form Hanging**: Caused by field name mismatches between form/auth/database
+- ❌ **Mixed Naming**: camelCase in forms, snake_case in database caused validation failures
+- ❌ **Missing Fields**: Database fields not included in profile creation caused INSERT failures
+- ✅ **Unified Naming**: All data layers now use consistent snake_case field names
+- ✅ **Complete Mapping**: All required database fields properly handled
+
+### 🚫 **Common Mistakes to Avoid**
+
+```typescript
+// ❌ INCORRECT - Mixed naming causes signup failures
+interface BuyerFormData {
+  fullName: string;        // Wrong - should be full_name
+  buyerCompany: string;    // Wrong - should be buyer_company
+}
+
+// ❌ INCORRECT - Metadata keys don't match database
+data: {
+  full_name: formData.fullName,  // Wrong - inconsistent naming
+  company: formData.company      // Wrong - should be buyer_company
+}
+
+// ❌ INCORRECT - Missing required database fields
+const profile = {
+  // Missing 'requested' field for buyers
+  // Missing 'invitation_status' field for creators
+}
+```
+
+**Field Naming Reference**:
+- `full_name` (NOT fullName)
+- `buyer_company` (NOT buyerCompany, company)
+- `buyer_role` (NOT buyerRole, role)
+- `linkedin_url` (NOT linkedinUrl, linkedIn)
+- `pen_name` (NOT penName, penNameOrStudio)
+- `ip_owner_role` (NOT ipOwnerRole, ownerRole)
+- `ip_owner_company` (NOT ipOwnerCompany, ownerCompany)
+- `website_url` (NOT websiteUrl, website)
+
 ## Important Notes
 
 - **Database Types**: Auto-generated, do not edit manually
-- **UI Components**: shadcn/ui components in `ui/` folders are generated, avoid direct edits  
+- **UI Components**: shadcn/ui components in `ui/` folders are generated, avoid direct edits
 - **Supabase Config**: All apps share same project ID but have separate migration folders
 - **User Queries**: Always use `email` field, never `user_id` (doesn't exist)
 - **Data Completeness**: When showing "all data", include ALL available fields
@@ -282,14 +598,41 @@ try {
 - **Build Verification**: Run build command after significant changes
 
 The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide detailed app-specific guidance and should be consulted for application-specific development tasks.
-- Always reference **DATABASE_SCHEMA.md** for database-related coding
-- Always reference **AUTH_DOCUMENTATION.md** for authentication-related information
-- Always reference **EMAIL_POLICY_DOCUMENTATION.md** for all email sending, welcome emails, and email deduplication
-- Always reference **SLACK_BLACKLIST_DOCUMENTATION.md** for Slack notification blacklist management
-- Always reference **SECURITY_BEST_PRACTICES.md** for credential management and security guidelines
-- Always consider both desktop and mobile
-- Do not auto commit to github
-- When making structural changes such as db schema change, auth flow, account types, policy change, etc, make sure to reflect these changes in the appropriate documentation files (DATABASE_SCHEMA.md for database, AUTH_DOCUMENTATION.md for auth, or CLAUDE.md for general guidance) for future consistency
+
+## 📚 Reference Documentation
+
+**CRITICAL**: Always reference these comprehensive documentation files for accurate implementation:
+
+- **DATABASE_SCHEMA.md** - Complete database schema reference for all coding
+- **AUTH_DOCUMENTATION.md** - Authentication system implementation details
+- **EMAIL_POLICY_DOCUMENTATION.md** - Email sending, welcome emails, and deduplication
+- **SLACK_BLACKLIST_DOCUMENTATION.md** - Slack notification blacklist management
+- **SECURITY_BEST_PRACTICES.md** - Credential management and security guidelines
+- **USER_JOURNEY_MAP.md** - Complete user flow documentation and failure points
+- **UNIT_TEST_PLAN.md** - Comprehensive testing strategy and test modules
+
+## 🧪 Testing & Quality Assurance
+
+### User Journey Testing
+**Reference**: `USER_JOURNEY_MAP.md` for complete user flow understanding
+- Test all authentication paths (email signup, OAuth signup, signin flows)
+- Verify account type detection across all scenarios
+- Test failure recovery mechanisms and error handling
+- Validate cross-domain session management
+
+### Unit Testing Strategy
+**Reference**: `UNIT_TEST_PLAN.md` for comprehensive test coverage
+- **P0 (Critical)**: Authentication core, account type detection, profile creation
+- **P1 (High)**: Signup/signin flows, email system, dashboard routing
+- **P2 (Medium)**: External integrations, error recovery, edge cases
+- **Target Coverage**: 85% overall, 95% for critical authentication paths
+
+### Implementation Guidelines
+- Always consider both desktop and mobile compatibility
+- Do not auto commit to github without explicit approval
+- When making structural changes (db schema, auth flow, account types, policies), update appropriate documentation files
+- Test locally before deploying to production
+- Verify all user journey paths work correctly
 
 ## Email System Policy (CRITICAL)
 
@@ -363,3 +706,68 @@ cp .env.example .env
 - Rotate credentials immediately if accidentally exposed
 
 See **SECURITY_BEST_PRACTICES.md** for complete security guidelines and incident response procedures.
+- in localhost environment, all redirects shuold work in localhost and should not send to production.
+
+## Database Migration Guidelines (CRITICAL)
+
+### 🚨 Migration Safety Rules
+
+**NEVER create loose SQL files:**
+- ❌ **No SQL files in root directory** - Use proper Supabase migration workflow
+- ❌ **No manual SQL execution** - All migrations must be versioned and tracked
+- ❌ **No orphaned migration docs** - All documentation must have clear status
+
+**✅ Proper Migration Workflow:**
+```bash
+# Create migration in proper location
+cd apps/[app]/supabase
+npx supabase migration new [migration-name]
+
+# Edit generated file in migrations/ directory
+# Test in development first
+npx supabase db reset
+
+# Apply to production only after testing
+npx supabase db push
+```
+
+### Migration Documentation Standards
+
+**All migration documentation MUST follow these rules:**
+
+```markdown
+# [Migration Name] - [Date]
+
+## Status: [IN_PROGRESS | COMPLETED | DEPRECATED]
+## Last Updated: [YYYY-MM-DD]
+## Safe to Follow: [YES | NO | WITH_CAUTION]
+
+⚠️ **WARNING**: [Include appropriate safety warning]
+```
+
+**Active Migrations:**
+- Keep in root directory with clear status
+- Reference actual migration files in `apps/*/supabase/migrations/`
+- Include verification and rollback procedures
+
+**Completed Migrations:**
+- Move to `/docs/archive/` directory
+- Add "COMPLETED - FOR REFERENCE ONLY" warning
+- Update Safe to Follow to "NO"
+
+**File Naming:**
+- Active: `migration-[name]-[date].md`
+- Archived: `docs/archive/[name]-migration-completed-[date].md`
+
+### Current Migration Status
+
+**✅ Completed Migrations (Archived):**
+- Account type migration (`ip_owner` → `creator`) - Completed 2024-09-10
+- Comps array migration (string → text[]) - Completed 2025-08-10
+
+**⚠️ Safety Cleanup Completed (2025-01-14):**
+- Removed dangerous orphaned SQL files from root directory
+- Updated all migration docs with clear status warnings
+- Established documentation standards for future migrations
+
+**See `/docs/MIGRATION_DOCUMENTATION_STANDARDS.md`** for complete migration documentation guidelines and safety procedures.

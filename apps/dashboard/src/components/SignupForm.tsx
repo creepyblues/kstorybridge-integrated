@@ -6,6 +6,7 @@ import { Label } from '@kstorybridge/ui';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@kstorybridge/ui';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
 import { sendWelcomeEmail } from '@/services/emailService';
@@ -20,20 +21,22 @@ interface SignupFormProps {
 interface BuyerFormData {
   email: string;
   password: string;
-  fullName: string;
-  buyerCompany: string;
-  buyerRole: string;
-  linkedinUrl: string;
+  full_name: string;
+  buyer_company: string;
+  buyer_role: string;
+  linkedin_url: string;
+  tier?: 'basic' | 'invited' | 'pro' | 'suite';
 }
 
 interface CreatorFormData {
   email: string;
   password: string;
-  fullName: string;
-  penNameOrStudio: string;
-  ipOwnerRole: string;
-  ipOwnerCompany: string;
-  websiteUrl: string;
+  full_name: string;
+  pen_name: string;
+  ip_owner_role: string;
+  ip_owner_company: string;
+  website_url: string;
+  invitation_status?: string;
 }
 
 
@@ -45,28 +48,31 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   const [rejectionAlert, setRejectionAlert] = useState<{email: string; message: string} | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [roleError, setRoleError] = useState<string | null>(null);
-  
+
   const [buyerFormData, setBuyerFormData] = useState<BuyerFormData>({
     email: '',
     password: '',
-    fullName: '',
-    buyerCompany: '',
-    buyerRole: '',
-    linkedinUrl: ''
+    full_name: '',
+    buyer_company: '',
+    buyer_role: '',
+    linkedin_url: '',
+    tier: 'basic'
   });
 
   const [creatorFormData, setCreatorFormData] = useState<CreatorFormData>({
     email: '',
     password: '',
-    fullName: '',
-    penNameOrStudio: '',
-    ipOwnerRole: '',
-    ipOwnerCompany: '',
-    websiteUrl: ''
+    full_name: '',
+    pen_name: '',
+    ip_owner_role: '',
+    ip_owner_company: '',
+    website_url: '',
+    invitation_status: 'invited'
   });
-  
+
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get current user from auth context
 
   // Password validation function
   const validatePassword = (password: string): string | null => {
@@ -90,7 +96,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
     }
     
     // Check for at least one special character
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password)) {
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)) {
       return "Password must contain at least one special character";
     }
     
@@ -142,6 +148,39 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
     }
   }, [toast]);
 
+  // Separate effect for when user data becomes available (OAuth flow)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isComplete = urlParams.get('complete') === 'true';
+
+    // Only run this if we're in OAuth completion mode and have user data
+    if (isComplete && user) {
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+
+      console.log('📋 SIGNUP FORM: User data available, pre-filling OAuth user data:', {
+        email: user.email,
+        fullName,
+        userId: user.id,
+        metadata: user.user_metadata
+      });
+
+      // Pre-fill form fields with OAuth data
+      if (accountType === 'buyer') {
+        setBuyerFormData(prev => ({
+          ...prev,
+          email: user.email || '',
+          full_name: fullName
+        }));
+      } else {
+        setCreatorFormData(prev => ({
+          ...prev,
+          email: user.email || '',
+          full_name: fullName
+        }));
+      }
+    }
+  }, [user, accountType]); // Run when user data becomes available
+
   // Check if this is an OAuth user completing their profile
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -156,38 +195,35 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       // Set flag to prevent ProtectedRoute redirects during OAuth completion
       sessionStorage.setItem('oauth_completion_pending', 'true');
       
-      // Get current user session to access OAuth metadata
-      const loadOAuthUserData = async () => {
+      // Load OAuth user data from auth context (bypass hanging getSession)
+      const loadOAuthUserData = () => {
         try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
-          if (!error && session?.user) {
-            const user = session.user;
+          if (user) {
             const fullName = user.user_metadata?.full_name || user.user_metadata?.name || '';
-            
-            console.log('📋 SIGNUP FORM: Pre-filling OAuth user data:', {
+
+            console.log('📋 SIGNUP FORM: Pre-filling OAuth user data from auth context:', {
               email: user.email,
               fullName,
               userId: user.id,
               metadata: user.user_metadata
             });
-            
+
             // Pre-fill form fields with OAuth data
             if (accountType === 'buyer') {
-              setBuyerFormData(prev => ({ 
-                ...prev, 
+              setBuyerFormData(prev => ({
+                ...prev,
                 email: user.email || email,
-                fullName: fullName
+                full_name: fullName
               }));
             } else {
-              setCreatorFormData(prev => ({ 
-                ...prev, 
+              setCreatorFormData(prev => ({
+                ...prev,
                 email: user.email || email,
-                fullName: fullName
+                full_name: fullName
               }));
             }
           } else {
-            console.warn('⚠️ SIGNUP FORM: Could not get user session for pre-filling:', error);
+            console.warn('⚠️ SIGNUP FORM: No user in auth context, using fallback email');
             // Fallback to just email
             if (accountType === 'buyer') {
               setBuyerFormData(prev => ({ ...prev, email }));
@@ -225,13 +261,20 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
     try {
       console.log('🔄 Starting Google OAuth signup for:', accountType);
       
-      // Force localhost for development
+      // Use environment variable for OAuth redirect URL in development
       const isDev = window.location.hostname === 'localhost';
-      const baseUrl = isDev 
-        ? `http://localhost:${window.location.port}` 
-        : `${window.location.origin}`;
-      // Use the working approach with account_type in callback URL
-      const redirectUrl = `${baseUrl}/auth/callback?account_type=${accountType}`;
+      const forceRedirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL;
+
+      let redirectUrl: string;
+      if (isDev && forceRedirectUrl) {
+        // Use forced redirect URL for development
+        redirectUrl = `${forceRedirectUrl}?account_type=${accountType}`;
+      } else {
+        // Use standard redirect URL construction
+        const dashboardUrl = import.meta.env.VITE_DASHBOARD_URL || window.location.origin;
+        const baseUrl = isDev ? dashboardUrl : window.location.origin;
+        redirectUrl = `${baseUrl}/auth/callback?account_type=${accountType}`;
+      }
 
       console.log('🔄 OAuth signup redirect URL (with account_type):', redirectUrl);
       
@@ -276,31 +319,41 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   };
 
   const validateBuyerForm = (data: BuyerFormData) => {
+    console.log('🔍 VALIDATION: Starting buyer form validation');
+    console.log('🔍 VALIDATION: Input data:', data);
+    console.log('🔍 VALIDATION: isOAuthUser:', isOAuthUser);
+
     // Clear previous errors
     setRoleError(null);
-    
+
     // For OAuth users, password is not required
     if (isOAuthUser) {
-      if (!data.email || !data.fullName || !data.buyerCompany || !data.buyerRole) {
-        console.log('❌ OAuth buyer validation failed. Missing:', {
-          email: !data.email,
-          fullName: !data.fullName,
-          buyerCompany: !data.buyerCompany,
-          buyerRole: !data.buyerRole
-        });
+      console.log('🔍 VALIDATION: OAuth user - checking required fields');
+      const missingFields = {
+        email: !data.email,
+        full_name: !data.full_name,
+        buyer_company: !data.buyer_company,
+        buyer_role: !data.buyer_role
+      };
+
+      console.log('🔍 VALIDATION: Field check results:', missingFields);
+
+      if (!data.email || !data.full_name || !data.buyer_company || !data.buyer_role) {
+        console.log('❌ OAuth buyer validation failed. Missing:', missingFields);
         console.log('❌ Current form data:', data);
-        
+
         // Set specific error for role field
-        if (!data.buyerRole) {
+        if (!data.buyer_role) {
+          console.log('❌ VALIDATION: Missing role, setting role error');
           setRoleError("Please select your role");
         }
-        
+
         return "Please fill in all required fields";
       }
     } else {
-      if (!data.email || !data.password || !data.fullName || !data.buyerCompany || !data.buyerRole) {
+      if (!data.email || !data.password || !data.full_name || !data.buyer_company || !data.buyer_role) {
         // Set specific error for role field
-        if (!data.buyerRole) {
+        if (!data.buyer_role) {
           setRoleError("Please select your role");
         }
         return "Please fill in all required fields";
@@ -319,16 +372,16 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
   const validateCreatorForm = (data: CreatorFormData) => {
     // For OAuth users, password is not required
     if (isOAuthUser) {
-      if (!data.email || !data.fullName || !data.penNameOrStudio) {
+      if (!data.email || !data.full_name || !data.pen_name) {
         console.log('❌ OAuth creator validation failed. Missing:', {
           email: !data.email,
-          fullName: !data.fullName,
-          penNameOrStudio: !data.penNameOrStudio
+          full_name: !data.full_name,
+          pen_name: !data.pen_name
         });
         return "Please fill in all required fields";
       }
     } else {
-      if (!data.email || !data.password || !data.fullName || !data.penNameOrStudio) {
+      if (!data.email || !data.password || !data.full_name || !data.pen_name) {
         return "Please fill in all required fields";
       }
       // Validate password complexity
@@ -343,9 +396,17 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
 
   const handleBuyerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    console.log('🔄 FORM SUBMIT: Starting buyer form submission');
+    console.log('📋 FORM SUBMIT: Current form data:', buyerFormData);
+    console.log('📋 FORM SUBMIT: isOAuthUser:', isOAuthUser);
+    console.log('📋 FORM SUBMIT: oAuthUserId:', oAuthUserId);
+
     const validationError = validateBuyerForm(buyerFormData);
+    console.log('✅ FORM SUBMIT: Validation result:', validationError ? `FAILED: ${validationError}` : 'PASSED');
+
     if (validationError) {
+      console.error('❌ FORM SUBMIT: Validation failed:', validationError);
       toast({
         title: "Validation Error",
         description: validationError,
@@ -354,6 +415,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
       return;
     }
 
+    console.log('🔄 FORM SUBMIT: Setting loading state');
     setIsLoading(true);
 
     try {
@@ -382,6 +444,31 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         }
         
         console.log('✅ OAuth session found for user:', session.user.email);
+
+        // Normalize Supabase metadata to ensure all buyer fields are set
+        try {
+          await supabase.auth.updateUser({
+            data: {
+              account_type: accountType,
+              full_name: buyerFormData.full_name,
+              buyer_company: buyerFormData.buyer_company,
+              buyer_role: buyerFormData.buyer_role,
+              linkedin_url: buyerFormData.linkedin_url || null,
+              tier: buyerFormData.tier || 'basic',
+              updated_via: 'signup_form_buyer_oauth'
+            }
+          });
+          console.log('🔄 OAuth buyer signup: Complete metadata updated', {
+            account_type: accountType,
+            full_name: buyerFormData.full_name,
+            buyer_company: buyerFormData.buyer_company,
+            buyer_role: buyerFormData.buyer_role,
+            tier: buyerFormData.tier || 'basic'
+          });
+        } catch (updateError) {
+          console.error('⚠️ OAuth signup: Failed to update user metadata:', updateError);
+        }
+
         authResult = { data: { user: session.user }, error: null };
       } else {
         // Regular email signup
@@ -401,10 +488,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             email: buyerFormData.email,
             hasPassword: !!buyerFormData.password,
             metadata: {
-              full_name: buyerFormData.fullName,
+              full_name: buyerFormData.full_name,
               account_type: 'buyer',
-              buyer_company: buyerFormData.buyerCompany,
-              buyer_role: buyerFormData.buyerRole
+              buyer_company: buyerFormData.buyer_company,
+              buyer_role: buyerFormData.buyer_role
             }
           });
           
@@ -414,13 +501,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
             email: buyerFormData.email,
             password: buyerFormData.password,
             options: {
-              emailRedirectTo: `${window.location.hostname === 'localhost' ? window.location.origin : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
+              emailRedirectTo: `${window.location.hostname === 'localhost' ? (import.meta.env.VITE_DASHBOARD_URL || window.location.origin) : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
               data: {
-                full_name: buyerFormData.fullName,
+                full_name: buyerFormData.full_name,
                 account_type: 'buyer',
-                buyer_company: buyerFormData.buyerCompany,
-                buyer_role: buyerFormData.buyerRole,
-                linkedin_url: buyerFormData.linkedinUrl || null
+                buyer_company: buyerFormData.buyer_company,
+                buyer_role: buyerFormData.buyer_role,
+                linkedin_url: buyerFormData.linkedin_url || null,
+                tier: buyerFormData.tier || 'basic'
               }
             }
           });
@@ -473,11 +561,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           const profileResult = await createBuyerProfileAtomic({
             id: data.user.id,
             email: buyerFormData.email,
-            full_name: buyerFormData.fullName,
-            buyer_company: buyerFormData.buyerCompany,
-            buyer_role: buyerFormData.buyerRole,
-            linkedin_url: buyerFormData.linkedinUrl || null,
-            tier: 'basic'
+            full_name: buyerFormData.full_name,
+            buyer_company: buyerFormData.buyer_company,
+            buyer_role: buyerFormData.buyer_role,
+            linkedin_url: buyerFormData.linkedin_url || null,
+            tier: buyerFormData.tier || 'basic',
+            requested: false
           }, {
             maxRetries: 3,
             allowUpdate: true,
@@ -506,14 +595,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           setTimeout(async () => {
             try {
               await notifyBuyerSignup({
-                fullName: buyerFormData.fullName,
+                fullName: buyerFormData.full_name,
                 email: buyerFormData.email,
-                company: buyerFormData.buyerCompany,
-                role: buyerFormData.buyerRole,
-                linkedinUrl: buyerFormData.linkedinUrl,
+                company: buyerFormData.buyer_company,
+                role: buyerFormData.buyer_role,
+                linkedinUrl: buyerFormData.linkedin_url,
                 authType: 'google',
                 success: true,
-                tier: 'basic' // Default tier for new buyers
+                tier: buyerFormData.tier || 'basic'
               });
               console.log('✅ Slack notification sent for buyer signup');
             } catch (slackError) {
@@ -524,7 +613,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           // Send welcome email immediately for OAuth users (they're already verified)
           try {
             await sendWelcomeEmail({
-              userName: buyerFormData.fullName,
+              userName: buyerFormData.full_name,
               userEmail: buyerFormData.email,
               accountType: 'buyer',
               dashboardUrl: window.location.origin + '/buyers/home',
@@ -547,14 +636,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           setTimeout(async () => {
             try {
               await notifyBuyerSignup({
-                fullName: buyerFormData.fullName,
+                fullName: buyerFormData.full_name,
                 email: buyerFormData.email,
-                company: buyerFormData.buyerCompany,
-                role: buyerFormData.buyerRole,
-                linkedinUrl: buyerFormData.linkedinUrl,
+                company: buyerFormData.buyer_company,
+                role: buyerFormData.buyer_role,
+                linkedinUrl: buyerFormData.linkedin_url,
                 authType: 'email',
                 success: true,
-                tier: 'basic' // Default tier for new buyers
+                tier: buyerFormData.tier || 'basic'
               });
               console.log('✅ Slack notification sent for buyer signup');
             } catch (slackError) {
@@ -629,9 +718,31 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         console.log('🔍 Session user ID:', session.user.id);
         console.log('🔍 Session user ID length:', session.user.id.length);
         console.log('🔍 URL user ID vs Session user ID match:', oAuthUserId === session.user.id);
-        
-        // CRITICAL FIX: Use the session user ID, not the URL parameter user ID
-        // The URL parameter might be truncated or malformed
+
+        try {
+          await supabase.auth.updateUser({
+            data: {
+              account_type: accountType,
+              full_name: creatorFormData.full_name,
+              pen_name: creatorFormData.pen_name,
+              ip_owner_role: creatorFormData.ip_owner_role || null,
+              ip_owner_company: creatorFormData.ip_owner_company || null,
+              website_url: creatorFormData.website_url || null,
+              invitation_status: creatorFormData.invitation_status || 'invited',
+              updated_via: 'signup_form_creator_oauth'
+            }
+          });
+          console.log('🔄 OAuth creator signup: Complete metadata updated', {
+            account_type: accountType,
+            full_name: creatorFormData.full_name,
+            pen_name: creatorFormData.pen_name,
+            invitation_status: creatorFormData.invitation_status || 'invited'
+          });
+        } catch (updateError) {
+          console.error('⚠️ OAuth signup: Failed to update user metadata:', updateError);
+        }
+
+        // Use the session user ID (trust Supabase canonical value)
         authResult = { data: { user: session.user }, error: null };
       } else {
         // Regular email signup
@@ -639,14 +750,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           email: creatorFormData.email,
           password: creatorFormData.password,
           options: {
-            emailRedirectTo: `${window.location.hostname === 'localhost' ? window.location.origin : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
+            emailRedirectTo: `${window.location.hostname === 'localhost' ? (import.meta.env.VITE_DASHBOARD_URL || window.location.origin) : 'https://dashboard.kstorybridge.com'}/signin?verified=true`,
             data: {
-              full_name: creatorFormData.fullName,
+              full_name: creatorFormData.full_name,
               account_type: 'creator',
-              pen_name: creatorFormData.penNameOrStudio,
-              ip_owner_role: creatorFormData.ipOwnerRole,
-              ip_owner_company: creatorFormData.ipOwnerCompany,
-              website_url: creatorFormData.websiteUrl || null
+              pen_name: creatorFormData.pen_name,
+              ip_owner_role: creatorFormData.ip_owner_role,
+              ip_owner_company: creatorFormData.ip_owner_company,
+              website_url: creatorFormData.website_url || null,
+              invitation_status: creatorFormData.invitation_status || 'invited'
             }
           }
         });
@@ -690,12 +802,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           const profileResult = await createCreatorProfileAtomic({
             id: data.user.id, // This should be the correct UUID from session
             email: creatorFormData.email,
-            full_name: creatorFormData.fullName,
-            pen_name: creatorFormData.penNameOrStudio,
-            ip_owner_role: creatorFormData.ipOwnerRole || null,
-            ip_owner_company: creatorFormData.ipOwnerCompany || null,
-            website_url: creatorFormData.websiteUrl || null,
-            invitation_status: 'invited'
+            full_name: creatorFormData.full_name,
+            pen_name: creatorFormData.pen_name,
+            ip_owner_role: creatorFormData.ip_owner_role || null,
+            ip_owner_company: creatorFormData.ip_owner_company || null,
+            website_url: creatorFormData.website_url || null,
+            invitation_status: creatorFormData.invitation_status || 'invited'
           }, {
             maxRetries: 3,
             allowUpdate: true,
@@ -732,12 +844,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
         setTimeout(async () => {
           try {
             await notifyCreatorSignup({
-              fullName: creatorFormData.fullName,
+              fullName: creatorFormData.full_name,
               email: creatorFormData.email,
-              penName: creatorFormData.penNameOrStudio,
-              company: creatorFormData.ipOwnerCompany,
-              role: creatorFormData.ipOwnerRole,
-              websiteUrl: creatorFormData.websiteUrl,
+              penName: creatorFormData.pen_name,
+              company: creatorFormData.ip_owner_company,
+              role: creatorFormData.ip_owner_role,
+              websiteUrl: creatorFormData.website_url,
               authType: isOAuthUser ? 'google' : 'email',
               success: true,
             });
@@ -754,7 +866,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
           // Send welcome email immediately for OAuth users (they're already verified)
           try {
             await sendWelcomeEmail({
-              userName: creatorFormData.fullName,
+              userName: creatorFormData.full_name,
               userEmail: creatorFormData.email,
               accountType: 'creator',
               dashboardUrl: window.location.origin + '/creators/home/',
@@ -905,7 +1017,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => updateFormData('email' as any, e.target.value)}
+                  onChange={(e) => updateFormData('email', e.target.value)}
                   className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                   placeholder="Enter your email"
                   required
@@ -953,8 +1065,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
               <Input
                 id="fullName"
                 type="text"
-                value={formData.fullName}
-                onChange={(e) => updateFormData('fullName' as any, e.target.value)}
+                value={formData.full_name}
+                onChange={(e) => updateFormData('full_name', e.target.value)}
                 className={`h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg ${
                   isOAuthUser ? 'bg-gray-50 text-gray-700' : ''
                 }`}
@@ -979,8 +1091,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   <Input
                     id="buyerCompany"
                     type="text"
-                    value={buyerFormData.buyerCompany}
-                    onChange={(e) => updateBuyerFormData('buyerCompany', e.target.value)}
+                    value={buyerFormData.buyer_company}
+                    onChange={(e) => updateBuyerFormData('buyer_company', e.target.value)}
                     className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                     placeholder="Enter your company name"
                     required
@@ -992,9 +1104,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                     Role *
                   </Label>
                   <Select
-                    value={buyerFormData.buyerRole}
+                    value={buyerFormData.buyer_role}
                     onValueChange={(value) => {
-                      updateBuyerFormData('buyerRole', value);
+                      updateBuyerFormData('buyer_role', value);
                       setRoleError(null); // Clear error when user selects a role
                     }}
                   >
@@ -1023,8 +1135,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   <Input
                     id="linkedinUrl"
                     type="url"
-                    value={buyerFormData.linkedinUrl}
-                    onChange={(e) => updateBuyerFormData('linkedinUrl', e.target.value)}
+                    value={buyerFormData.linkedin_url}
+                    onChange={(e) => updateBuyerFormData('linkedin_url', e.target.value)}
                     className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                     placeholder="https://linkedin.com/in/yourprofile (optional)"
                   />
@@ -1042,8 +1154,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   <Input
                     id="penNameOrStudio"
                     type="text"
-                    value={creatorFormData.penNameOrStudio}
-                    onChange={(e) => updateCreatorFormData('penNameOrStudio', e.target.value)}
+                    value={creatorFormData.pen_name}
+                    onChange={(e) => updateCreatorFormData('pen_name', e.target.value)}
                     className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                     placeholder="Enter your pen name or studio name"
                     required
@@ -1055,8 +1167,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                     Role
                   </Label>
                   <Select
-                    value={creatorFormData.ipOwnerRole}
-                    onValueChange={(value) => updateCreatorFormData('ipOwnerRole', value)}
+                    value={creatorFormData.ip_owner_role}
+                    onValueChange={(value) => updateCreatorFormData('ip_owner_role', value)}
                   >
                     <SelectTrigger className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg">
                       <SelectValue placeholder="Select your role (optional)" />
@@ -1075,8 +1187,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   <Input
                     id="ipOwnerCompany"
                     type="text"
-                    value={creatorFormData.ipOwnerCompany}
-                    onChange={(e) => updateCreatorFormData('ipOwnerCompany', e.target.value)}
+                    value={creatorFormData.ip_owner_company}
+                    onChange={(e) => updateCreatorFormData('ip_owner_company', e.target.value)}
                     className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                     placeholder="Enter your company or studio (optional)"
                   />
@@ -1089,8 +1201,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ accountType }) => {
                   <Input
                     id="websiteUrl"
                     type="url"
-                    value={creatorFormData.websiteUrl}
-                    onChange={(e) => updateCreatorFormData('websiteUrl', e.target.value)}
+                    value={creatorFormData.website_url}
+                    onChange={(e) => updateCreatorFormData('website_url', e.target.value)}
                     className="h-12 text-base border-midnight-ink-200 focus:border-hanok-teal focus:ring-2 focus:ring-hanok-teal focus:ring-opacity-50 rounded-lg"
                     placeholder="https://yourwebsite.com (optional)"
                   />

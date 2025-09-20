@@ -22,24 +22,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
 
     // Test dynamic imports
-    let importTest = { success: false, error: null };
+    const importTest = { success: false, error: null as string | null };
     try {
       const { default: OpenAI } = await import('openai');
       const { createClient } = await import('@supabase/supabase-js');
       importTest.success = true;
-    } catch (error: any) {
-      importTest.error = error.message;
+    } catch (error: unknown) {
+      importTest.error = error instanceof Error ? error.message : String(error);
     }
 
     // Simple OpenAI client test
-    let openaiTest = { success: false, error: null };
+    const openaiTest = { success: false, error: null as string | null };
     if (process.env.OPENAI_API_KEY) {
       try {
         const { default: OpenAI } = await import('openai');
         const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
         openaiTest.success = true;
-      } catch (error: any) {
-        openaiTest.error = error.message;
+      } catch (error: unknown) {
+        openaiTest.error = error instanceof Error ? error.message : String(error);
       }
     }
 
@@ -61,11 +61,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json(response);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorObj = error instanceof Error ? error : new Error(String(error));
     return res.status(500).json({
       error: 'Health check failed',
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      message: errorObj.message,
+      stack: process.env.NODE_ENV === 'development' ? errorObj.stack : undefined,
       timestamp: new Date().toISOString(),
     });
   }

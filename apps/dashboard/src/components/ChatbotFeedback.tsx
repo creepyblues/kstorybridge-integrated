@@ -8,7 +8,7 @@ interface ChatbotFeedbackProps {
   messageId: string;
   userPrompt: string;
   aiResponse: string;
-  recommendedTitles: any[];
+  recommendedTitles: Array<{ title_id: string; title_name_en: string; title_name_kr?: string }>;
   onFeedbackSubmitted?: () => void;
 }
 
@@ -200,7 +200,7 @@ export const ChatbotFeedback: React.FC<ChatbotFeedbackProps> = ({
                 key={quality}
                 variant={feedback.response_quality === quality ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFeedback(prev => ({ ...prev, response_quality: quality as any }))}
+                onClick={() => setFeedback(prev => ({ ...prev, response_quality: quality as 'excellent' | 'good' | 'fair' | 'poor' }))}
                 className="capitalize"
               >
                 {quality}
@@ -218,7 +218,7 @@ export const ChatbotFeedback: React.FC<ChatbotFeedbackProps> = ({
                 key={relevance}
                 variant={feedback.title_relevance === relevance ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFeedback(prev => ({ ...prev, title_relevance: relevance as any }))}
+                onClick={() => setFeedback(prev => ({ ...prev, title_relevance: relevance as 'excellent' | 'good' | 'fair' | 'poor' }))}
                 className="capitalize"
               >
                 {relevance}

@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { favoritesService } from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
+import { useSessionCache } from "@/hooks/useSessionCache";
+import { directApiService } from "@/services/directApiService";
 
 import type { Title } from "@/services/titlesService";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
@@ -84,24 +86,24 @@ const mockFavorites: FavoriteWithTitle[] = [
 export default function Favorites() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { getFavorites, setFavorites, isFresh } = useDataCache();
+  const { getFavorites, setFavorites, isFresh, isSessionValid, getDbConnectivityStatus, setDbConnectivityStatus } = useDataCache();
+  const { } = useSessionCache(); // Initialize session cache management
   const [searchQuery, setSearchQuery] = useState(""); // What user types
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
   const [loading, setLoading] = useState(false);
+  const [dbError, setDbError] = useState<string | null>(null);
 
-  // Localhost development configuration
-  const isLocalhost = window.location.hostname === 'localhost';
-  const useRealDataOnLocalhost = true; // Now using real Supabase data for localhost testing
-
-  // Get data from cache or use mock data for localhost
-  const favorites = (isLocalhost && !useRealDataOnLocalhost && !user) ? mockFavorites : getFavorites();
+  // Get data from cache - NO FALLBACK TO MOCK DATA
+  const favorites = getFavorites();
+  const dbStatus = getDbConnectivityStatus();
 
   useEffect(() => {
-    // Only load data if cache is empty or stale and user exists
-    if (user && (favorites.length === 0 || !isFresh('favorites'))) {
+    // NEW POLICY: Always fetch from database on new session
+    // Only use cache if session is valid and data is fresh
+    if (user && (!isSessionValid() || favorites.length === 0 || !isFresh('favorites'))) {
       loadFavorites();
     }
-  }, [user, favorites.length]); // Remove isFresh from dependencies
+  }, [user, isSessionValid]); // Depend on session validity
 
   // Filter favorites based on search term
   const filteredFavorites = (() => {
@@ -128,15 +130,48 @@ export default function Favorites() {
   })();
 
   const loadFavorites = async () => {
-    if (!user) return;
-    
+    if (!user) {
+      console.error('❌ FAVORITES PAGE: No user available for loading favorites');
+      return;
+    }
+
+    console.log('📖 FAVORITES PAGE: Starting to load favorites...');
+    console.log('📖 FAVORITES PAGE: User object:', {
+      id: user.id,
+      email: user.email,
+      user_metadata: user.user_metadata
+    });
+
     try {
       setLoading(true);
-      const data = await favoritesService.getUserFavorites(user.id);
+      setDbError(null);
+
+      console.log('📖 FAVORITES PAGE: Calling directApiService.getUserFavorites (bypassing hanging Supabase client)...');
+
+      // Use directApiService to bypass the hanging Supabase JS client
+      const data = await directApiService.getUserFavorites(user.id);
+
+      console.log('📖 FAVORITES PAGE: Received data from service:', data);
+
+      // Update cache and connectivity status
       setFavorites(data);
+      setDbConnectivityStatus({ isConnected: true });
+
+      console.log(`✅ FAVORITES PAGE: Successfully loaded ${data.length} favorites from database`);
     } catch (error) {
-      console.error("Error loading favorites:", error);
-      toast({ title: "Error loading favorites", variant: "destructive" });
+      console.error("❌ FAVORITES PAGE: Error loading favorites:", error);
+
+      // Update connectivity status
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      setDbConnectivityStatus({ isConnected: false, error: errorMessage });
+      setDbError(errorMessage);
+
+      // NEW POLICY: Show database error to user instead of fallback
+      toast({
+        title: "Database Connection Error",
+        description: "Unable to load favorites. Please check your connection and try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -174,25 +209,27 @@ export default function Favorites() {
   };
 
   const handleRemoveFromFavorites = async (titleId: string) => {
-    // Handle localhost mock data
-    if (isLocalhost && !useRealDataOnLocalhost && !user) {
-      // For localhost development, just show a toast
-      toast({ title: "Removed from favorites (localhost mock)" });
-      console.log("Mock remove from favorites:", titleId);
-      return;
-    }
-    
     if (!user) return;
 
     try {
-      await favoritesService.removeFromFavorites(user.id, titleId);
+      console.log('🗑️ Removing from favorites:', { userId: user.id, titleId });
+
+      // Use directApiService to bypass the hanging Supabase JS client
+      await directApiService.removeFromFavorites(user.id, titleId);
+
       // Update cache by filtering out the removed favorite
       const updatedFavorites = favorites.filter(fav => fav.title_id !== titleId);
       setFavorites(updatedFavorites);
       toast({ title: "Removed from favorites" });
+
+      console.log('✅ Successfully removed from favorites');
     } catch (error) {
-      console.error("Error removing from favorites:", error);
-      toast({ title: "Error removing from favorites", variant: "destructive" });
+      console.error("❌ Error removing from favorites:", error);
+      toast({
+        title: "Error removing from favorites",
+        description: "Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -209,8 +246,8 @@ export default function Favorites() {
     ).join(' ');
   };
 
-  // Only show login prompt in production or when real data is requested
-  if (!user && (!isLocalhost || useRealDataOnLocalhost)) {
+  // NEW POLICY: Always require login - no mock data fallback
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 px-3 sm:px-6 lg:px-8">
@@ -232,7 +269,37 @@ export default function Favorites() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 px-3 sm:px-6 lg:px-8">
-          <div className="text-center text-midnight-ink-600 py-6 sm:py-8 text-sm sm:text-base">Loading favorites...</div>
+          <div className="text-center text-midnight-ink-600 py-6 sm:py-8 text-sm sm:text-base">Loading favorites from database...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // NEW POLICY: Show database connectivity error if connection failed
+  if (dbError && !dbStatus.isConnected) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto py-8 sm:py-12 lg:py-16 px-3 sm:px-6 lg:px-8">
+          <Card className="bg-white border-red-200 shadow-lg rounded-2xl">
+            <CardContent className="p-6 sm:p-8 lg:p-12 text-center">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <span className="text-red-600 text-lg font-bold">!</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-medium text-red-600 mb-2">Database Connection Error</h3>
+              <p className="text-sm sm:text-base text-red-500 mb-4">
+                Unable to connect to the database. Please check your internet connection.
+              </p>
+              <p className="text-xs text-gray-500 mb-4">
+                Error: {dbError}
+              </p>
+              <Button
+                onClick={() => window.location.reload()}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Retry Connection
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -340,7 +407,7 @@ export default function Favorites() {
           })}
           </div>
 
-          {filteredFavorites.length === 0 && (
+          {filteredFavorites.length === 0 && dbStatus.isConnected && (
             <Card className="bg-white border-porcelain-blue-200 shadow-lg rounded-2xl">
               <CardContent className="p-6 sm:p-8 lg:p-12 text-center">
                 <Heart className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-midnight-ink-400 mx-auto mb-3 sm:mb-4" />

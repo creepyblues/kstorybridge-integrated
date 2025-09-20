@@ -4,11 +4,12 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock, Building2, Users, Target, TrendingUp, Calendar, BookOpen } from "lucide-react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
-import { favoritesService } from "@/services/favoritesService";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useSessionCache } from "@/hooks/useSessionCache";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
+import { directApiService } from "@/services/directApiService";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
@@ -23,9 +24,19 @@ function TitleDetailNewContent() {
   const { tier, canAccessPremiumContent } = useTierAccess();
   
   const isAuthenticated = !!user;
-  const { getTitleDetail, setTitleDetail, isFresh, refreshData } = useDataCache();
+  const {
+    getTitleDetail,
+    setTitleDetail,
+    isFresh,
+    isSessionValid,
+    getDbConnectivityStatus,
+    setDbConnectivityStatus,
+    refreshData
+  } = useDataCache();
+  const { } = useSessionCache(); // Initialize session cache management
   const [title, setTitle] = useState<Title | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dbError, setDbError] = useState<string | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState<boolean>(false);
@@ -41,28 +52,48 @@ function TitleDetailNewContent() {
   useEffect(() => {
     if (titleId) {
       const cachedTitle = getTitleDetail(titleId);
-      if (cachedTitle && isFresh(`titleDetail:${titleId}`)) {
+      // NEW POLICY: Check session validity and cache freshness
+      if (cachedTitle && isSessionValid() && isFresh(`titleDetail:${titleId}`)) {
         setTitle(cachedTitle);
         setLoading(false);
       } else {
         loadTitle(titleId);
       }
-      
+
       if (user) {
         checkIfFavorited(titleId);
       }
     }
-  }, [titleId, user, getTitleDetail]);
+  }, [titleId, user, isSessionValid]); // Include session validity
 
   const loadTitle = async (id: string) => {
     try {
       setLoading(true);
-      const data = await titlesService.getTitleById(id);
+      setDbError(null);
+
+      console.log('📖 Loading title detail from database (session-based policy)...', id);
+
+      // Use directApiService for consistent API calls
+      const data = await directApiService.getTitleById(id);
       setTitle(data);
       setTitleDetail(id, data);
+      setDbConnectivityStatus({ isConnected: true });
+
+      console.log('✅ Successfully loaded title detail from database');
     } catch (error) {
-      console.error("Error loading title:", error);
-      toast({ title: "Error loading title", variant: "destructive" });
+      console.error('❌ Database connectivity error loading title detail:', error);
+
+      // Update connectivity status
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      setDbConnectivityStatus({ isConnected: false, error: errorMessage });
+      setDbError(errorMessage);
+
+      // NEW POLICY: Show database error to user instead of fallback
+      toast({
+        title: "Database Connection Error",
+        description: "Unable to load title details. Please check your connection and try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -70,9 +101,9 @@ function TitleDetailNewContent() {
 
   const checkIfFavorited = async (titleId: string) => {
     if (!user) return;
-    
+
     try {
-      const favorited = await favoritesService.isTitleFavorited(user.id, titleId);
+      const favorited = await directApiService.isTitleFavorited(user.id, titleId);
       setIsFavorited(favorited);
     } catch (error) {
       console.error("Error checking favorite status:", error);
@@ -80,27 +111,41 @@ function TitleDetailNewContent() {
   };
 
   const handleFavoriteToggle = async () => {
-    if (!user || !titleId) return;
+    if (!user || !titleId) {
+      console.error("❌ No user or titleId available for favorites toggle");
+      return;
+    }
+
+    console.log('❤️ TITLE DETAIL NEW: Toggling favorite:', {
+      userId: user.id,
+      titleId,
+      currentlyFavorited: isFavorited
+    });
 
     try {
       setFavoriteLoading(true);
-      
+
       if (isFavorited) {
-        await favoritesService.removeFromFavorites(user.id, titleId);
+        console.log('🗑️ TITLE DETAIL NEW: Removing from favorites...');
+        await directApiService.removeFromFavorites(user.id, titleId);
         setIsFavorited(false);
         toast({ title: "Removed from favorites" });
         refreshData('favorites');
+        console.log('✅ TITLE DETAIL NEW: Successfully removed from favorites');
       } else {
-        await favoritesService.addToFavorites(user.id, titleId);
+        console.log('❤️ TITLE DETAIL NEW: Adding to favorites...');
+        await directApiService.addToFavorites(user.id, titleId);
         setIsFavorited(true);
         toast({ title: "Added to favorites" });
         refreshData('favorites');
+        console.log('✅ TITLE DETAIL NEW: Successfully added to favorites');
       }
     } catch (error) {
-      console.error("Error toggling favorite:", error);
-      toast({ 
-        title: "Error updating favorites", 
-        variant: "destructive" 
+      console.error("❌ TITLE DETAIL NEW: Error toggling favorite:", error);
+      toast({
+        title: "Error updating favorites",
+        description: "Please try again.",
+        variant: "destructive"
       });
     } finally {
       setFavoriteLoading(false);
@@ -122,6 +167,36 @@ function TitleDetailNewContent() {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
+      </div>
+    );
+  }
+
+  // NEW POLICY: Show database connectivity error if connection failed
+  if (dbError && !getDbConnectivityStatus().isConnected) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-4">
+        <Card className="border-red-200 shadow-lg">
+          <CardContent className="p-8 text-center">
+            <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-red-600 text-xl font-bold">!</span>
+            </div>
+            <h3 className="text-lg font-medium text-red-600 mb-2">
+              Database Connection Error
+            </h3>
+            <p className="text-red-500 mb-4">
+              Unable to load title details. Please check your internet connection.
+            </p>
+            <p className="text-xs text-gray-500 mb-4">
+              Error: {dbError}
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Retry Connection
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

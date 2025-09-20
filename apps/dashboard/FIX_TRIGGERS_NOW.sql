@@ -68,18 +68,24 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  account_type_value TEXT;
+  raw_account_type TEXT;
+  normalized_account_type TEXT;
   profile_exists BOOLEAN := FALSE;
 BEGIN
-  -- Get account type from metadata
-  account_type_value := NEW.raw_user_meta_data->>'account_type';
-  
+  -- Normalize account type and support legacy values
+  raw_account_type := COALESCE(NEW.raw_user_meta_data->>'account_type', '');
+  normalized_account_type := lower(raw_account_type);
+
+  IF normalized_account_type = 'ip_owner' THEN
+    normalized_account_type := 'creator';
+  END IF;
+
   -- Log for debugging (will appear in Postgres logs)
-  RAISE LOG 'User profile routing for user: %, email: %, account_type: %', 
-    NEW.id, NEW.email, account_type_value;
+  RAISE LOG 'User profile routing for user: %, email: %, raw account_type: %, normalized: %', 
+    NEW.id, NEW.email, raw_account_type, normalized_account_type;
   
   -- Route based on account type in metadata
-  IF account_type_value = 'buyer' THEN
+  IF normalized_account_type = 'buyer' THEN
     -- Check if buyer profile already exists (prevent duplicates)
     SELECT EXISTS(SELECT 1 FROM public.user_buyers WHERE id = NEW.id) INTO profile_exists;
     
@@ -114,7 +120,7 @@ BEGIN
       RAISE LOG 'Buyer profile already exists for user: %, skipping creation', NEW.id;
     END IF;
     
-  ELSIF account_type_value = 'creator' OR account_type_value = 'ip_owner' THEN
+  ELSIF normalized_account_type = 'creator' THEN
     -- Check if creator profile already exists (prevent duplicates)
     SELECT EXISTS(SELECT 1 FROM public.user_creators WHERE id = NEW.id) INTO profile_exists;
     

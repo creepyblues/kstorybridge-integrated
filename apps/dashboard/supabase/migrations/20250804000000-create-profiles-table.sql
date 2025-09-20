@@ -3,7 +3,7 @@
 
 -- Create enum types if they don't exist
 DO $$ BEGIN
-    CREATE TYPE public.account_type AS ENUM ('ip_owner', 'buyer');
+    CREATE TYPE public.account_type AS ENUM ('creator', 'buyer');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -91,7 +91,7 @@ BEGIN
     website_url, created_at, updated_at
   )
   SELECT 
-    ui.id, ui.email, ui.full_name, 'ip_owner'::account_type,
+    ui.id, ui.email, ui.full_name, 'creator'::account_type,
     ui.pen_name_or_studio, ui.ip_owner_role, ui.ip_owner_company,
     ui.website_url, ui.created_at, ui.updated_at
   FROM public.user_ipowners ui
@@ -107,7 +107,23 @@ SELECT public.sync_user_profiles();
 -- Create function to handle new user profile creation
 CREATE OR REPLACE FUNCTION public.handle_new_user_profile()
 RETURNS TRIGGER AS $$
+DECLARE
+  raw_account_type TEXT;
+  normalized_account_type account_type := 'buyer';
+  buyer_role_value buyer_role;
+  ip_owner_role_value ip_owner_role;
 BEGIN
+  raw_account_type := COALESCE(NEW.raw_user_meta_data->>'account_type', '');
+
+  IF lower(raw_account_type) IN ('creator', 'ip_owner') THEN
+    normalized_account_type := 'creator';
+  ELSIF lower(raw_account_type) = 'buyer' THEN
+    normalized_account_type := 'buyer';
+  END IF;
+
+  buyer_role_value := NULLIF(NEW.raw_user_meta_data->>'buyer_role', '')::buyer_role;
+  ip_owner_role_value := NULLIF(NEW.raw_user_meta_data->>'ip_owner_role', '')::ip_owner_role;
+
   INSERT INTO public.profiles (
     id, 
     email, 
@@ -125,21 +141,13 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'account_type', 'ip_owner')::account_type,
-    NEW.raw_user_meta_data->>'pen_name_or_studio',
-    CASE 
-      WHEN NEW.raw_user_meta_data->>'ip_owner_role' IS NOT NULL 
-      THEN (NEW.raw_user_meta_data->>'ip_owner_role')::ip_owner_role 
-      ELSE NULL 
-    END,
+    normalized_account_type,
+    NULLIF(NEW.raw_user_meta_data->>'pen_name', ''),
+    ip_owner_role_value,
     NEW.raw_user_meta_data->>'ip_owner_company',
     NEW.raw_user_meta_data->>'website_url',
     NEW.raw_user_meta_data->>'buyer_company',
-    CASE 
-      WHEN NEW.raw_user_meta_data->>'buyer_role' IS NOT NULL 
-      THEN (NEW.raw_user_meta_data->>'buyer_role')::buyer_role 
-      ELSE NULL 
-    END,
+    buyer_role_value,
     NEW.raw_user_meta_data->>'linkedin_url'
   )
   ON CONFLICT (id) DO UPDATE SET

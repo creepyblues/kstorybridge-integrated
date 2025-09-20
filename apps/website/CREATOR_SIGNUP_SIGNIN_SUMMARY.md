@@ -9,13 +9,13 @@
 ### 1. Regular Email Signup (`/signup/creator`)
 **Process**:
 1. User fills out creator signup form
-2. Form submits with `account_type: 'ip_owner'` metadata
-3. Database trigger routes user to `user_ipowners` table
+2. Form submits with `account_type: 'creator'` metadata
+3. Database trigger routes user to `user_creators` table
 4. User gets email verification
 5. After verification → redirected to `/signin` page
 6. User signs in → directed to `/creator/invited` page (default status)
 
-**Database**: Creates record in `user_ipowners` table with `invitation_status: 'invited'`
+**Database**: Creates record in `user_creators` table with `invitation_status: 'invited'`
 
 ### 2. OAuth Signup (Google)
 **Process**:
@@ -24,7 +24,7 @@
 3. Google redirects to `/auth/callback?account_type=creator`
 4. `AuthCallbackPage` checks if user profile exists
 5. **If no profile**: Redirects to `/signup/creator?complete=true` for additional info
-6. User completes profile → inserted into `user_ipowners` table
+6. User completes profile → inserted into `user_creators` table
 7. Redirected to `/signin` page
 8. User signs in → directed to `/creator/invited` page
 
@@ -33,7 +33,7 @@
 ## Creator Signin Flow
 
 ### Authentication Logic
-- **Regular signin**: Checks `user_ipowners.invitation_status`
+- **Regular signin**: Checks `user_creators.invitation_status`
 - **OAuth signin**: Same logic via `AuthCallbackPage`
 
 ### Redirect Logic
@@ -49,9 +49,9 @@ if (invitation_status === 'accepted') {
 
 ## Database Schema
 
-### user_ipowners Table
+### user_creators Table
 ```sql
-CREATE TABLE user_ipowners (
+CREATE TABLE user_creators (
   id UUID PRIMARY KEY,
   email TEXT NOT NULL,
   full_name TEXT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE user_ipowners (
 ```
 
 ### Database Trigger
-- Routes `account_type: 'ip_owner'` to `user_ipowners` table
+- Routes `account_type: 'creator'` to `user_creators` table
 - Sets `invitation_status: 'invited'` by default
 - Maps metadata fields correctly (`pen_name`, not `pen_name`)
 
@@ -74,7 +74,7 @@ CREATE TABLE user_ipowners (
 
 ✅ **Proper separation maintained**:
 - **Buyers** → `user_buyers` table (with `tier` field)
-- **Creators** → `user_ipowners` table (with `invitation_status` field)
+- **Creators** → `user_creators` table (with `invitation_status` field)
 - OAuth callback checks both tables independently
 - No cross-contamination between account types
 
@@ -85,12 +85,12 @@ CREATE TABLE user_ipowners (
 2. No profile found in either table
 3. Redirects to `/signup/creator?complete=true`
 4. User completes additional information
-5. Profile created in `user_ipowners`
+5. Profile created in `user_creators`
 6. Redirected to `/signin`
 
 ### Existing Creator (Has Profile)
 1. OAuth signin → `/auth/callback`
-2. Profile found in `user_ipowners` table
+2. Profile found in `user_creators` table
 3. Checks `invitation_status`
 4. Redirects to dashboard (if accepted) or `/creator/invited` (if pending)
 
@@ -124,11 +124,11 @@ CREATE TABLE user_ipowners (
 
 ## Testing Checklist
 
-- [ ] Creator email signup → `user_ipowners` table insertion
+- [ ] Creator email signup → `user_creators` table insertion
 - [ ] Creator OAuth signup → profile completion flow
 - [ ] Creator OAuth signin → proper authentication  
 - [ ] Creator regular signin → proper authentication
-- [ ] Table separation maintained (no buyers in `user_ipowners`)
+- [ ] Table separation maintained (no buyers in `user_creators`)
 - [ ] Proper redirect to `/signin` after successful signup
 - [ ] Database trigger creates `invitation_status: 'invited'`
 

@@ -7,6 +7,7 @@ import { titlesService, type Title } from "@/services/titlesService";
 import FeaturedTitlesCarousel from "@/components/FeaturedTitlesCarousel";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useSessionCache } from "@/hooks/useSessionCache";
 import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
@@ -14,20 +15,25 @@ import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { enhancedTitleSearchService, type SearchResult } from "@/services/enhancedTitleSearchService";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
+import { directApiService } from "@/services/directApiService";
 
 function TitleListContent() {
   const { toast } = useToast();
   const { user } = useAuth();
   const location = useLocation();
-  const { 
-    getTitles, 
-    getCreatorTitles, 
-    setTitles, 
-    setCreatorTitles, 
-    isFresh, 
+  const {
+    getTitles,
+    getCreatorTitles,
+    setTitles,
+    setCreatorTitles,
+    isFresh,
+    isSessionValid,
+    getDbConnectivityStatus,
+    setDbConnectivityStatus,
     refreshData,
-    clearCache 
+    clearCache
   } = useDataCache();
+  const { } = useSessionCache(); // Initialize session cache management
   
   const [searchQuery, setSearchQuery] = useState(""); // What user types
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
@@ -39,6 +45,7 @@ function TitleListContent() {
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
+  const [dbError, setDbError] = useState<string | null>(null);
   // activeGenreFilter removed since genre filters are no longer used
   
   // Enhanced search state
@@ -53,18 +60,18 @@ function TitleListContent() {
   const isCreatorView = location.pathname.startsWith('/creators');
   const isBuyerView = location.pathname.startsWith('/buyers');
 
-  // Get data from cache
+  // Get data from cache - NO FALLBACK TO MOCK DATA
   const titles = isCreatorView ? getCreatorTitles() : getTitles();
+  const dbStatus = getDbConnectivityStatus();
 
   useEffect(() => {
-    // Only load data if cache is empty or stale
+    // NEW POLICY: Always fetch from database on new session
+    // Only use cache if session is valid and data is fresh
     const dataKey = isCreatorView ? 'creatorTitles' : 'titles';
-    const shouldLoadTitles = titles.length === 0 || !isFresh(dataKey);
-    
-    if (shouldLoadTitles) {
+    if (user && (!isSessionValid() || titles.length === 0 || !isFresh(dataKey))) {
       loadData();
     }
-  }, [isCreatorView, user, titles.length]); // Remove isFresh from dependencies
+  }, [isCreatorView, user, isSessionValid]); // Depend on session validity
 
   // Check vector search capabilities
   useEffect(() => {
@@ -85,26 +92,45 @@ function TitleListContent() {
   const loadData = async (force = false) => {
     try {
       setLoading(true);
-      
+      setDbError(null);
+
+      console.log('📚 Loading titles from database (session-based policy)...');
+
       if (isCreatorView && user) {
         // Load creator's own titles using rights field
         const creatorTitles = await titlesService.getTitlesByCreatorRights(user.id);
         setCreatorTitles(creatorTitles);
+        setDbConnectivityStatus({ isConnected: true });
+        console.log(`✅ Successfully loaded ${creatorTitles.length} creator titles from database`);
       } else {
-        // Load all titles for buyers
-        const allTitles = await titlesService.getAllTitles();
+        // Load all titles for buyers using direct API service (like BuyerHome)
+        const allTitles = await directApiService.getAllTitles();
         setTitles(allTitles);
-        
+        setDbConnectivityStatus({ isConnected: true });
+        console.log(`✅ Successfully loaded ${allTitles.length} titles from database`);
+
         // Featured titles are now loaded by the FeaturedTitlesCarousel component
       }
-      
+
     } catch (error) {
-      console.error("Error loading data:", error);
-      toast({ title: "Error loading data", variant: "destructive" });
+      console.error("❌ Database connectivity error loading titles:", error);
+
+      // Update connectivity status
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      setDbConnectivityStatus({ isConnected: false, error: errorMessage });
+      setDbError(errorMessage);
+
+      // NEW POLICY: Show database error to user instead of fallback
+      toast({
+        title: "Database Connection Error",
+        description: "Unable to load titles. Please check your connection and try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleRefresh = () => {
     // Clear all cache data including titles, title details, favorites, etc.

@@ -7,7 +7,11 @@ interface LLMChatResponse {
   recommendedTitles: Title[];
   suggestedQueries?: string[];
   vectorSearchUsed?: boolean;
-  searchContext?: any;
+  searchContext?: {
+    query?: string;
+    results?: unknown[];
+    metadata?: Record<string, unknown>;
+  };
 }
 
 interface StandardErrorResponse {
@@ -20,38 +24,43 @@ interface StandardErrorResponse {
 }
 
 class ChatbotErrorHandler {
-  static categorizeError(error: any, environment: 'development' | 'production'): StandardErrorResponse {
+  static categorizeError(error: unknown, environment: 'development' | 'production'): StandardErrorResponse {
+    // Type check error object
+    const errorObj = error as Record<string, unknown>;
+    const errorMessage = errorObj?.message as string || String(error);
+    const errorCode = errorObj?.code as string;
+
     // OpenAI API specific errors
-    if (error.code === 'invalid_api_key') {
+    if (errorCode === 'invalid_api_key') {
       return {
         category: 'openai_api',
         message: 'Invalid OpenAI API key',
         userMessage: 'AI service configuration error. Please try again in a moment.',
         retryable: false,
         suggestedAction: 'Contact support if the issue persists.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
-    if (error.code === 'insufficient_quota' || error.code === 'rate_limit_exceeded') {
+    if (errorCode === 'insufficient_quota' || errorCode === 'rate_limit_exceeded') {
       return {
         category: 'openai_api', 
         message: 'OpenAI API quota or rate limit exceeded',
         userMessage: 'AI service is temporarily busy. Please wait a moment and try again.',
         retryable: true,
         suggestedAction: 'Try again in 1-2 minutes.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
-    if (error.message?.includes('rate limit')) {
+    if (errorMessage?.includes('rate limit')) {
       return {
         category: 'openai_api',
         message: 'Rate limit exceeded',
         userMessage: 'AI service is temporarily busy. Please wait a moment and try again.',
         retryable: true,
         suggestedAction: 'Try again in 1-2 minutes.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
@@ -63,7 +72,7 @@ class ChatbotErrorHandler {
         userMessage: 'Please sign in to use the AI chatbot.',
         retryable: true,
         suggestedAction: 'Try refreshing the page or signing in again.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
@@ -75,7 +84,7 @@ class ChatbotErrorHandler {
         userMessage: 'You do not have permission to use the AI chatbot.',
         retryable: false,
         suggestedAction: 'Contact support if you believe this is an error.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
@@ -87,7 +96,7 @@ class ChatbotErrorHandler {
         userMessage: 'The request took too long to process. Please try again with a shorter query.',
         retryable: true,
         suggestedAction: 'Try again with a simpler or shorter question.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
@@ -98,7 +107,7 @@ class ChatbotErrorHandler {
         userMessage: 'Network error. Please check your connection and try again.',
         retryable: true,
         suggestedAction: 'Check your internet connection and retry.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
@@ -109,7 +118,7 @@ class ChatbotErrorHandler {
         userMessage: 'The request took too long to process. Please try again.',
         retryable: true,
         suggestedAction: 'Try again with a simpler query.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
@@ -121,7 +130,7 @@ class ChatbotErrorHandler {
         userMessage: 'Service temporarily unavailable. Please try again in a moment.',
         retryable: true,
         suggestedAction: 'Try again in a few minutes.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
@@ -133,7 +142,7 @@ class ChatbotErrorHandler {
         userMessage: 'There was an issue accessing the content database. Please try again.',
         retryable: true,
         suggestedAction: 'Try again in a moment.',
-        originalError: error.message
+        originalError: errorMessage
       };
     }
     
@@ -172,7 +181,7 @@ interface CacheEntry<T> {
 
 class UnifiedCacheManager {
   private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes (same as backend)
-  private static caches = new Map<string, CacheEntry<any>>();
+  private static caches = new Map<string, CacheEntry<unknown>>();
   
   static set<T>(key: string, data: T, environment: string): void {
     const entry: CacheEntry<T> = {
@@ -257,7 +266,7 @@ interface ScoredTitle extends Title {
 class UnifiedTitleScorer {
   static scoreTitle(title: Title, query: string, queryWords: string[]): ScoredTitle {
     let score = 0;
-    let vectorScore = 0; // Placeholder for future vector search
+    const vectorScore = 0; // Placeholder for future vector search
     
     const queryLower = query.toLowerCase();
     
@@ -641,7 +650,7 @@ Always be enthusiastic and knowledgeable about Korean content!`;
     return this.createUnifiedKoreanIPContext(this.allTitles, [], '');
   }
 
-  private async findRelevantTitlesWithVector(query: string, userId?: string, sessionId?: string): Promise<{ titles: Title[], vectorSearchUsed: boolean, searchContext?: any }> {
+  private async findRelevantTitlesWithVector(query: string, userId?: string, sessionId?: string): Promise<{ titles: Title[], vectorSearchUsed: boolean, searchContext?: { query: string; results: unknown[]; metadata?: Record<string, unknown>; } }> {
     try {
       // Try vector search first if available
       console.log('🔍 Attempting vector search for:', query.substring(0, 50) + '...', {
@@ -902,7 +911,7 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
         frequency_penalty: 0.1,
       });
 
-      const completion = await Promise.race([apiPromise, timeoutPromise]) as any;
+      const completion = await Promise.race([apiPromise, timeoutPromise]) as OpenAI.Chat.Completions.ChatCompletion;
 
       const aiResponse = completion.choices[0].message.content || "I apologize, but I couldn't generate a response. Please try again.";
       
@@ -912,7 +921,7 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
       const suggestedQueries = this.extractSuggestedQueries(aiResponse);
 
       // Use AI response as-is without additional enhancement text
-      let enhancedResponse = aiResponse;
+      const enhancedResponse = aiResponse;
 
       const responseTime = Date.now() - startTime;
       
@@ -941,7 +950,7 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
         searchContext: searchResult.searchContext,
       };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       const responseTime = Date.now() - startTime;
       
       // Use standardized error handling
@@ -955,7 +964,7 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
         errorMessage: standardError.message,
         userMessage: userMessage,
         retryable: standardError.retryable,
-        originalError: error.message,
+        originalError: errorMessage,
         code: error.code,
         status: error.status,
         type: error.type,
@@ -1114,7 +1123,7 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
         },
       };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       const responseTime = Date.now() - startTime;
       
       // Use standardized error handling
@@ -1128,7 +1137,7 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
         errorMessage: standardError.message,
         userMessage: userMessage,
         retryable: standardError.retryable,
-        originalError: error.message,
+        originalError: errorMessage,
         name: error.name,
         status: error.status,
         responseTime: responseTime + 'ms',
@@ -1187,11 +1196,11 @@ Remember: Your job is to promote and recommend titles from OUR DATABASE, not to 
         max_tokens: 10,
       });
 
-      const response = await Promise.race([apiPromise, timeoutPromise]) as any;
+      const response = await Promise.race([apiPromise, timeoutPromise]) as OpenAI.Chat.Completions.ChatCompletion;
       
       console.log('✅ OpenAI connection test successful:', response.choices[0].message.content);
       return response.choices.length > 0;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ OpenAI connection test failed:', {
         message: error.message,
         status: error.status,

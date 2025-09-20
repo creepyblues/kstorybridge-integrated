@@ -73,7 +73,7 @@ async function testEmailSignup() {
       options: {
         data: {
           full_name: 'Test Creator User',
-          account_type: 'ip_owner',
+          account_type: 'creator',
           pen_name: 'Test Creative Studio',
           ip_owner_role: 'Author',
           ip_owner_company: 'Creative Company',

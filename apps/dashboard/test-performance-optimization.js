@@ -160,7 +160,7 @@ function createMockOptimizedAuth(supabase, monitor) {
     
     // Check metadata first
     const metadataAccountType = user.user_metadata?.account_type;
-    if (metadataAccountType === 'buyer' || metadataAccountType === 'ip_owner') {
+    if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
       console.log('⚡ Using metadata account type:', metadataAccountType);
       
       // Targeted query based on metadata
@@ -186,7 +186,7 @@ function createMockOptimizedAuth(supabase, monitor) {
           .maybeSingle();
           
         return {
-          accountType: 'ip_owner',
+          accountType: 'creator',
           accountTypeSource: 'metadata', 
           accountTypeConfidence: 'high',
           buyerProfile: null,
@@ -224,7 +224,7 @@ function createMockOptimizedAuth(supabase, monitor) {
     
     if (creatorResult.data) {
       return {
-        accountType: 'ip_owner',
+        accountType: 'creator',
         accountTypeSource: 'database',
         accountTypeConfidence: 'high',
         buyerProfile: null,
@@ -303,7 +303,7 @@ function createMockLegacyAuth(supabase, monitor) {
       return { accountType: 'buyer', source: 'database' };
     }
     if (creatorResult.data) {
-      return { accountType: 'ip_owner', source: 'database' };
+      return { accountType: 'creator', source: 'database' };
     }
     return { accountType: 'buyer', source: 'default' };
   };

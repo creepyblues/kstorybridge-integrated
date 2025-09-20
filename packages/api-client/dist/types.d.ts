@@ -269,7 +269,7 @@ export type Database = {
             [_ in never]: never;
         };
         Enums: {
-            account_type: "ip_owner" | "buyer";
+            account_type: "buyer" | "creator";
             buyer_role: "producer" | "executive" | "agent" | "content_scout" | "other";
             content_format: "webtoon" | "web_novel" | "book" | "script" | "game" | "animation" | "other";
             genre: "romance" | "fantasy" | "action" | "drama" | "comedy" | "thriller" | "horror" | "sci_fi" | "slice_of_life" | "historical" | "mystery" | "sports" | "other";
@@ -333,7 +333,7 @@ export type CompositeTypes<PublicCompositeTypeNameOrOptions extends keyof Defaul
 export declare const Constants: {
     readonly public: {
         readonly Enums: {
-            readonly account_type: readonly ["ip_owner", "buyer"];
+            readonly account_type: readonly ["buyer", "creator"];
             readonly buyer_role: readonly ["producer", "executive", "agent", "content_scout", "other"];
             readonly content_format: readonly ["webtoon", "web_novel", "book", "script", "game", "animation", "other"];
             readonly genre: readonly ["romance", "fantasy", "action", "drama", "comedy", "thriller", "horror", "sci_fi", "slice_of_life", "historical", "mystery", "sports", "other"];

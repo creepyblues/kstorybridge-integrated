@@ -2,7 +2,7 @@
 
 -- Create enum types for account types and roles (only if they don't exist)
 DO $$ BEGIN
-    CREATE TYPE public.account_type AS ENUM ('ip_owner', 'buyer');
+    CREATE TYPE public.account_type AS ENUM ('creator', 'buyer');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -88,7 +88,7 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'account_type', 'ip_owner')::account_type,
+    COALESCE(NEW.raw_user_meta_data->>'account_type', 'creator')::account_type,
     NEW.raw_user_meta_data->>'pen_name_or_studio',
     CASE 
       WHEN NEW.raw_user_meta_data->>'ip_owner_role' IS NOT NULL 
@@ -119,4 +119,3 @@ DROP INDEX IF EXISTS profiles_email_idx;
 DROP INDEX IF EXISTS profiles_account_type_idx;
 CREATE INDEX profiles_email_idx ON public.profiles(email);
 CREATE INDEX profiles_account_type_idx ON public.profiles(account_type);
-

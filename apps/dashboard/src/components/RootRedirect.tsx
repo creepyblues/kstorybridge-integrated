@@ -34,8 +34,8 @@ export function RootRedirect() {
         const { data: buyerProfile } = await supabase
           .from('user_buyers')
           .select('id')
-          .eq('email', user.email)
-          .single();
+          .eq('id', user.id)
+          .maybeSingle();
 
         if (buyerProfile) {
           console.log('✅ RootRedirect: Found buyer profile, redirecting to /buyers/home');
@@ -48,8 +48,8 @@ export function RootRedirect() {
         const { data: creatorProfile } = await supabase
           .from('user_creators')
           .select('id')
-          .eq('email', user.email)
-          .single();
+          .eq('id', user.id)
+          .maybeSingle();
 
         if (creatorProfile) {
           console.log('✅ RootRedirect: Found creator profile, redirecting to /creators/home');

@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { directApiService } from '@/services/directApiService';
 import { useEffect, useState } from 'react';
 
 type UserTier = 'basic' | 'pro' | 'suite';
@@ -39,8 +39,6 @@ export const useTierAccess = (): TierAccess => {
   const mockTier: UserTier = 'basic';
 
   // Test email for real data queries (replace with your test account)
-  const testEmail = 'sungho@dadble.com';
-
   useEffect(() => {
     const fetchUserTier = async () => {
       // Handle localhost development
@@ -52,7 +50,7 @@ export const useTierAccess = (): TierAccess => {
       }
 
       // For localhost with real data, use test email
-      const queryEmail = isLocalhost && useRealDataOnLocalhost ? testEmail : user?.email;
+      const queryId = user.id;
 
       if (!user?.id) {
         setTier(null);
@@ -71,33 +69,26 @@ export const useTierAccess = (): TierAccess => {
 
       try {
         if (isLocalhost && useRealDataOnLocalhost) {
-          console.log('🔍 useTierAccess: Using real Supabase data on localhost for:', testEmail);
+          console.log('🔍 useTierAccess: Using real Supabase data on localhost for user id:', queryId);
         } else {
           console.log('🔍 useTierAccess: Fetching tier for buyer user:', { id: user?.id, email: user?.email });
         }
 
-        // Query by email since user_id column doesn't exist yet - only for buyers
-        const { data, error } = await supabase
-          .from('user_buyers')
-          .select('tier, email')
-          .eq('email', queryEmail)
-          .single();
+        // Use the working direct API service instead of hanging Supabase JS
+        const userTier = await directApiService.getUserTier(queryId);
 
-        console.log('🔍 useTierAccess: Query by email result:', { data, error, email: queryEmail });
+        console.log('🔍 useTierAccess: Direct API result:', { tier: userTier, id: queryId });
 
-        if (error) {
-          console.error('❌ Error fetching user tier:', error);
-          console.log('Setting tier to basic due to error');
-          setTier('basic'); // Default to basic tier
+        if (userTier) {
+          console.log('✅ Setting tier to:', userTier);
+          setTier(userTier);
         } else {
-          const finalTier = data.tier || 'basic';
-          console.log('✅ Setting tier to:', finalTier, '(raw data.tier:', data.tier, ')');
-          setTier(finalTier);
+          console.warn('⚠️ No tier found for user, treating as unassigned');
+          setTier(null);
         }
       } catch (error) {
         console.error('❌ Exception fetching user tier:', error);
-        console.log('Setting tier to basic due to exception');
-        setTier('basic'); // Default to basic tier
+        setTier(null);
       } finally {
         setLoading(false);
       }

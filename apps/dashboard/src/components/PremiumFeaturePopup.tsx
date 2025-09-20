@@ -129,8 +129,8 @@ export default function PremiumFeaturePopup({
         const { data: existingRecord, error: fetchError } = await supabase
           .from('user_buyers')
           .select('*')
-          .eq('email', user.email)
-          .single();
+          .eq('id', user.id)
+          .maybeSingle();
 
         if (fetchError && fetchError.code !== 'PGRST116') {
           // PGRST116 means "no rows found", which is expected for new users
@@ -141,7 +141,11 @@ export default function PremiumFeaturePopup({
           const { error: insertError } = await supabase
             .from('user_buyers')
             .insert({
+              id: user.id,
               email: user.email,
+              full_name: user.user_metadata?.full_name || user.email,
+              buyer_company: user.user_metadata?.buyer_company || null,
+              buyer_role: user.user_metadata?.buyer_role || null,
               requested: true
             });
 
@@ -154,7 +158,7 @@ export default function PremiumFeaturePopup({
           const { error: updateError } = await supabase
             .from('user_buyers')
             .update({ requested: true })
-            .eq('email', user.email);
+            .eq('id', user.id);
 
           if (updateError) {
             console.warn('Could not update user_buyers record:', updateError);

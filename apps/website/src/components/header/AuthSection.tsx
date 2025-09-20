@@ -1,9 +1,9 @@
 
-import { Button } from '@kstorybridge/ui';
-import { useLanguage } from '../../contexts/LanguageContext';
 import { trackButtonClick } from '@/utils/analytics';
+import { Button } from '@kstorybridge/ui';
 import { User } from '@supabase/supabase-js';
 import { getDashboardUrl } from '../../config/urls';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface AuthSectionProps {
   user: User | null;
@@ -16,14 +16,14 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
   const { t } = useLanguage();
 
   const formatAccountType = (accountType: string) => {
-    if (accountType === 'ip_owner') return 'Creator';
+    if (accountType === 'creator') return 'Creator';
     if (accountType === 'buyer') return 'Buyer';
     return accountType?.replace('_', ' ') || '';
   };
 
   if (user) {
     const containerClasses = isMobile ? "flex flex-col space-y-2" : "flex items-center space-x-4";
-    
+
     return (
       <div className={containerClasses}>
         <span className="font-bold text-gray-900">
@@ -34,13 +34,13 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
             </span>
           )}
         </span>
-        <Button 
+        <Button
           id="header-signout-btn"
           onClick={() => {
             trackButtonClick('Sign Out', 'header');
             onSignOut();
-          }} 
-          variant="outline" 
+          }}
+          variant="outline"
           size="sm"
           className={`border-gray-300 text-gray-700 hover:bg-gray-50 ${isMobile ? "w-full" : ""}`}
         >
@@ -60,7 +60,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
 
   return (
     <div className={containerClasses}>
-      <Button 
+      <Button
         id="header-signin-btn"
         className={`border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white transition-colors rounded-md px-4 py-2 font-medium ${buttonClasses}`}
         onClick={handleSignInClick}

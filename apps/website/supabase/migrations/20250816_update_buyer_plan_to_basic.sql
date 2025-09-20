@@ -45,7 +45,7 @@ BEGIN
       NEW.raw_user_meta_data->>'linkedin_url',
       COALESCE((NEW.raw_user_meta_data->>'plan')::buyer_plan, 'basic'::buyer_plan)
     );
-  ELSIF NEW.raw_user_meta_data->>'account_type' = 'ip_owner' THEN
+  ELSIF NEW.raw_user_meta_data->>'account_type' = 'creator' THEN
     -- Call the IP owner handler function and pass the NEW record
     INSERT INTO public.user_ipowners (
       id, 

@@ -51,6 +51,9 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
         console.log('🚫 Access denied, redirecting to:', displayInfo.homePath);
         navigate(displayInfo.homePath, { replace: true });
       }
+    } else if (!authLoading && !accountTypeLoading && user && (accountType === null || accountType === undefined)) {
+      console.warn('🚫 Account type could not be determined – redirecting to account type selection');
+      navigate('/account-type-selection?missing=true', { replace: true });
     } else {
       // Debug logging to understand the state
       console.log('🔄 Account type protection waiting:', {
@@ -91,6 +94,17 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-white">Redirecting to your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user && (accountType === null || accountType === undefined)) {
+    return (
+      <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Preparing your workspace...</p>
         </div>
       </div>
     );

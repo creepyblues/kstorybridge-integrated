@@ -50,11 +50,23 @@ CREATE TABLE public.user_buyers (
 );
 ```
 
+**Field Requirements (UPDATED 2025-01-14)**:
+- `id`: UUID primary key, references auth.users(id)
+- `email`: Unique email address, NOT NULL
+- `full_name`: Full name, NOT NULL
+- `buyer_company`: Company name (optional)
+- `buyer_role`: Enum type (producer|executive|agent|content_scout|other)
+- `linkedin_url`: LinkedIn profile URL (optional)
+- `requested`: Boolean flag for premium access requests (default: false)
+- `tier`: User access tier (default: 'basic')
+
 **Tier System**: basic (default) | invited | pro | suite
 - `basic` (1) - Default tier, standard features
-- `invited` (0) - Restricted access (legacy/special cases)  
+- `invited` (0) - Restricted access (legacy/special cases)
 - `pro` (2) - Premium content access
 - `suite` (3) - Full feature access
+
+**CRITICAL**: All signup forms must include the `requested` field with default value `false`
 
 ### user_creators
 Content creator/IP owner accounts (renamed from user_ipowners)

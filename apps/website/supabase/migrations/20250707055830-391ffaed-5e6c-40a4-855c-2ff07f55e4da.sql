@@ -10,7 +10,7 @@ DROP TYPE IF EXISTS public.ip_owner_role;
 DROP TYPE IF EXISTS public.account_type;
 
 -- Create enum types with proper error handling
-CREATE TYPE public.account_type AS ENUM ('ip_owner', 'buyer');
+CREATE TYPE public.account_type AS ENUM ('creator', 'buyer');
 CREATE TYPE public.ip_owner_role AS ENUM ('author', 'agent');
 CREATE TYPE public.buyer_role AS ENUM ('producer', 'executive', 'agent', 'content_scout', 'other');
 
@@ -79,7 +79,7 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'account_type', 'ip_owner')::account_type,
+    COALESCE(NEW.raw_user_meta_data->>'account_type', 'creator')::account_type,
     NEW.raw_user_meta_data->>'pen_name_or_studio',
     CASE 
       WHEN NEW.raw_user_meta_data->>'ip_owner_role' IS NOT NULL 

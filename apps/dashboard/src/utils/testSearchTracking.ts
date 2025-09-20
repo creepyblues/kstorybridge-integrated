@@ -87,8 +87,8 @@ export const checkGA4Status = () => {
 
 // Make functions available globally in development
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).testSearchTracking = testSearchTracking;
-  (window as any).checkGA4Status = checkGA4Status;
+  (window as Record<string, unknown>).testSearchTracking = testSearchTracking;
+  (window as Record<string, unknown>).checkGA4Status = checkGA4Status;
   
   console.log('🔧 Search tracking test functions available:');
   console.log('   - testSearchTracking() - Send test search events');

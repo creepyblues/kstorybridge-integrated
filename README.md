@@ -30,3 +30,8 @@ npm run lint:all
 
 - `apps/` - Applications
 - `packages/` - Shared packages and libraries
+
+## Contributor Guide
+
+See [Repository Guidelines](AGENTS.md) for detailed contribution practices.
+

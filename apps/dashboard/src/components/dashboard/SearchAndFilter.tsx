@@ -20,7 +20,7 @@ import {
 
 interface SearchAndFilterProps {
   onSearchSubmit: (search: string) => void;
-  onFiltersChange: (filters: any) => void;
+  onFiltersChange: (filters: FilterState) => void;
   totalResults?: number;
 }
 
@@ -71,7 +71,7 @@ export function SearchAndFilter({
     onSearchSubmit("");
   };
 
-  const handleFilterChange = (key: keyof FilterState, value: any) => {
+  const handleFilterChange = (key: keyof FilterState, value: string | string[]) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFiltersChange(newFilters);

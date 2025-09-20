@@ -308,39 +308,13 @@ export default function CreatorHome() {
               Welcome to your creator dashboard. Manage your Korean content titles.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium">
-              {filteredTitles.length} {filteredTitles.length === 1 ? 'title' : 'titles'}
-            </div>
-            <Link to="/creators/titles/add">
-              <Button size="sm" className="bg-hanok-teal hover:bg-hanok-teal/90 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Title
-              </Button>
-            </Link>
-          </div>
         </div>
 
         {/* Creator Quick Actions */}
         <div className="mb-8 sm:mb-12">
           <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Quick Actions</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link to="/creators/titles/add">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-hanok-teal/10 p-2 rounded-lg">
-                      <Plus className="w-5 h-5 text-hanok-teal" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800">Add New Title</h3>
-                      <p className="text-sm text-gray-600">Submit a new content title</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
             <Link to="/creators/titles">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -450,13 +424,7 @@ export default function CreatorHome() {
               <Plus className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">No Titles Yet</h3>
-            <p className="text-gray-600 mb-6">Start by adding your first content title</p>
-            <Link to="/creators/titles/add">
-              <Button className="bg-hanok-teal hover:bg-hanok-teal/90 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Your First Title
-              </Button>
-            </Link>
+            <p className="text-gray-600">Check back later for your content titles</p>
           </div>
         )}
       </div>

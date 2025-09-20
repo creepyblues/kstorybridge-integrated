@@ -106,10 +106,11 @@ const AuthCallbackPage = () => {
             setTimeout(() => reject(new Error('Database lookup timeout')), 2000) // Reduced to 2 seconds
           );
 
+          const userId = user.id;
           const [buyerResult, creatorResult] = await Promise.race([
             Promise.all([
-              supabase.from('user_buyers').select('id').eq('email', user.email).maybeSingle(),
-              supabase.from('user_creators').select('id').eq('email', user.email).maybeSingle()
+              supabase.from('user_buyers').select('id').eq('id', userId).maybeSingle(),
+              supabase.from('user_creators').select('id').eq('id', userId).maybeSingle()
             ]),
             timeout
           ]);

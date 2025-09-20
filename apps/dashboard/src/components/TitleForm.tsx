@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
 import { X, Plus } from "lucide-react";
-import { titlesService, type Title } from "@/services/titlesService";
+import type { Title } from "@/services/titlesService";
+import { directApiService } from "@/services/directApiService";
 import { useAuth } from "@/hooks/useAuth";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -119,25 +120,42 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
 
     try {
       setIsSubmitting(true);
+      console.log('📝 TITLE FORM: submit start', { rawData: data, tags, genres, userId: user.id, editing: !!title });
       
+      const titleNameKr = data.title_name_kr?.trim() || data.title_name_en?.trim();
+      if (!titleNameKr) {
+        console.warn('📝 TITLE FORM: missing title_name value', data);
+        toast({
+          title: "Error",
+          description: "Please provide at least one title before saving.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const titleData = {
         ...data,
+        title_name_kr: titleNameKr,
         tags,
-        genres,
         creator_id: user.id,
         genre: genres.length > 0 ? genres : null,
         content_format: (data.content_format && data.content_format !== "") ? data.content_format as Database['public']['Enums']['content_format'] : null,
       };
+      console.log('📝 TITLE FORM: normalized payload', titleData);
 
       let savedTitle: Title;
       if (title) {
-        savedTitle = await titlesService.updateTitle(title.title_id, titleData);
+        console.log('📝 TITLE FORM: updating existing title', title.title_id);
+        savedTitle = await directApiService.updateTitle(title.title_id, titleData) as Title;
         toast({ title: "Title updated successfully" });
       } else {
-        savedTitle = await titlesService.createTitle(titleData);
+        console.log('📝 TITLE FORM: creating new title with creator_id', user.id);
+        savedTitle = await directApiService.createTitle(titleData) as Title;
         toast({ title: "Title created successfully" });
       }
 
+      console.log('📝 TITLE FORM: save success', { titleId: savedTitle.title_id });
       onSave(savedTitle);
       navigate(`/buyers/titles/${savedTitle.title_id}`);
     } catch (error) {
@@ -145,6 +163,7 @@ export function TitleForm({ title, onSave, onCancel }: TitleFormProps) {
       toast({ title: "Error saving title", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
+      console.log('📝 TITLE FORM: submit finished');
     }
   };
 

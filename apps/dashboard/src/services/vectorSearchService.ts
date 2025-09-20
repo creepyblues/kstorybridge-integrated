@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { embeddingService } from './embeddingService';
 import { titlesService, type Title } from './titlesService';
+import type { ChatInteraction } from './chatHistoryService';
 
 export interface VectorSearchResult {
   title_id: string;
@@ -359,7 +360,7 @@ class VectorSearchService {
     preferences: UserPreferences
   ): HybridSearchResult[] {
     return results.map(result => {
-      let boostFactor = 1.0;
+      const boostFactor = 1.0;
 
       // This would typically involve loading title metadata and comparing with preferences
       // For now, using placeholder logic
@@ -380,7 +381,7 @@ class VectorSearchService {
 
     try {
       // Handle session_id - if it's not a UUID, skip recording or create a proper UUID
-      let sessionId = context.session_id;
+      const sessionId = context.session_id;
       
       // Check if session_id is a valid UUID format
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -460,21 +461,35 @@ class VectorSearchService {
   }
 
   // Get user interaction history (placeholder)
-  private async getUserInteractionHistory(userId: string): Promise<any[]> {
+  private async getUserInteractionHistory(userId: string): Promise<ChatInteraction[]> {
     // This would load from chat_interactions table
     return [];
   }
 
   // Analyze user behavior patterns
-  private analyzeUserBehavior(history: any[]): any {
+  private analyzeUserBehavior(history: ChatInteraction[]): {
+    clickPatterns: Record<string, number>;
+    preferredGenres: string[];
+    preferredTones: string[];
+    engagement: number;
+  } {
     // This would analyze click patterns, preferences, etc.
     return {};
   }
 
   // Generate recommendations based on implicit preferences
   private async generateImplicitRecommendations(
-    preferences: any,
-    options?: any
+    preferences: {
+      clickPatterns: Record<string, number>;
+      preferredGenres: string[];
+      preferredTones: string[];
+      engagement: number;
+    },
+    options?: {
+      limit?: number;
+      minScore?: number;
+      excludeIds?: string[];
+    }
   ): Promise<VectorSearchResult[]> {
     // This would generate recommendations based on user behavior
     return [];

@@ -198,7 +198,7 @@ async function testDatabaseQueries() {
 async function testAccountTypeConsistency() {
   console.log('\n🔗 Testing Account Type Consistency...');
   
-  // Test 8: No references to 'ip_owner' in account type logic
+  // Test 8: Account type logic rejects legacy strings
   try {
     const mockUser = { 
       user_metadata: { account_type: 'creator' }
@@ -208,19 +208,18 @@ async function testAccountTypeConsistency() {
       includeDatabaseLookup: false 
     });
     
-    // Should return 'creator', not 'ip_owner'  
-    logTest('Account type consistency (no ip_owner)', 
+    logTest('Account type consistency (no legacy values)', 
       result.accountType === 'creator',
-      `Returns 'creator' instead of legacy 'ip_owner'`
+      `Returns 'creator' instead of legacy value`
     );
   } catch (error) {
-    logTest('Account type consistency (no ip_owner)', false, `Error: ${error.message}`);
+    logTest('Account type consistency (no legacy values)', false, `Error: ${error.message}`);
   }
   
   // Test 9: URL parameter validation
   try {
     const validParams = new URLSearchParams('account_type=creator');
-    const invalidParams = new URLSearchParams('account_type=ip_owner');
+    const invalidParams = new URLSearchParams('account_type=legacy_creator');
     
     const validResult = await determineAccountType(null, { 
       urlParams: validParams, 
@@ -235,7 +234,7 @@ async function testAccountTypeConsistency() {
     
     logTest('URL parameter validation',
       validResult.accountType === 'creator' && invalidResult.accountType === 'buyer',
-      `Valid 'creator' accepted, invalid 'ip_owner' defaults to 'buyer'`
+      `Valid 'creator' accepted, invalid legacy value defaults to 'buyer'`
     );
   } catch (error) {
     logTest('URL parameter validation', false, `Error: ${error.message}`);

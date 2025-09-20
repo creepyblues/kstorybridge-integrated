@@ -9,12 +9,12 @@
 ### ✅ **Official Account Types Confirmed**
 Based on database enum definitions and TypeScript types, the **two valid account types** are:
 1. **`'buyer'`** - For media buyers/content acquirers
-2. **`'ip_owner'`** - For content creators/IP owners
+2. **`'creator'`** (formerly `'ip_owner'`) - For content creators/IP owners
 
 ### 📍 **Source of Truth**
 **File:** `apps/dashboard/src/integrations/supabase/types.ts:429`
 ```typescript
-account_type: ["ip_owner", "buyer"]
+account_type: ["buyer", "creator"]
 ```
 
 This enum is consistently defined across all three applications (dashboard, website, admin).
@@ -52,13 +52,13 @@ type AccountType = 'buyer' | 'ip_owner';
 **2. Authentication Service**
 ```typescript
 // packages/auth/src/authService.ts:5
-account_type: 'buyer' | 'ip_owner';
+account_type: 'buyer' | 'creator';
 
 // Line 31
 const accountType = user.user_metadata?.account_type;
 
 // Lines 34 & 90-91
-if (!accountType || !['buyer', 'ip_owner'].includes(accountType)) {
+if (!accountType || !['buyer', 'creator'].includes(accountType)) {
   console.error('Invalid or missing account_type:', accountType);
 }
 ```
@@ -72,7 +72,7 @@ export type AccountType = 'buyer' | 'ip_owner';  ✅ CORRECT
 **4. Route Protection & Navigation**
 ```typescript
 // Multiple files consistently check:
-if (metadataAccountType === 'buyer' || metadataAccountType === 'ip_owner') {
+if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
   // Handle routing logic
 }
 ```
@@ -93,7 +93,7 @@ const accountType = user?.user_metadata?.account_type || 'buyer';
 ## 🧪 Test Coverage Analysis
 
 ### ✅ **Well-Tested Scenarios**
-1. **Valid Types:** Both `'buyer'` and `'ip_owner'` thoroughly tested
+1. **Valid Types:** Both `'buyer'` and `'creator'` thoroughly tested
 2. **Invalid Types:** Test cases include `'invalid_type'` to verify error handling
 3. **Null/Undefined:** Proper fallback to `'buyer'` when no type available
 4. **Database Lookups:** Both user tables queried correctly
@@ -126,7 +126,7 @@ type AccountType = 'buyer' | 'ip_owner';
 ## 📊 Distribution Analysis
 
 ### **By Usage Context:**
-- **Database Operations:** 100% correct (`'buyer'` | `'ip_owner'`)
+- **Database Operations:** 100% correct (`'buyer'` | `'creator'`)
 - **Route Protection:** 100% correct  
 - **Authentication Logic:** 100% correct
 - **Type Definitions:** 99% correct (1 file with local override)
@@ -144,12 +144,12 @@ type AccountType = 'buyer' | 'ip_owner';
 ### **Enum Consistency Check**
 All applications have identical enum definitions:
 ```typescript
-account_type: ["ip_owner", "buyer"]
+account_type: ["buyer", "creator"]
 ```
 
 ### **Database Table Alignment**
 - `user_buyers` table ✅ (for account_type: 'buyer')
-- `user_creators` table ✅ (for account_type: 'ip_owner') 
+- `user_creators` table ✅ (for account_type: 'creator') 
 
 ### **Cross-App Compatibility**
 All applications use the same Supabase database and consistent account type handling.

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Button } from '@kstorybridge/ui';
 import { searchAnalyticsService, type SearchPerformanceMetrics } from '@/services/searchAnalyticsService';
 import { Clock, Search, TrendingUp, Users, Eye, Target } from 'lucide-react';
@@ -14,11 +14,7 @@ export const SearchAnalyticsDashboard: React.FC<SearchAnalyticsDashboardProps> =
   const [searchIssues, setSearchIssues] = useState<Array<{ query: string; issues: string[]; solutions: string[] }>>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAnalytics();
-  }, [timeRange]);
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     setLoading(true);
     try {
       const [performanceData, issuesData] = await Promise.all([
@@ -45,7 +41,11 @@ export const SearchAnalyticsDashboard: React.FC<SearchAnalyticsDashboardProps> =
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   if (loading) {
     return (

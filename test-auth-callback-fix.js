@@ -81,7 +81,7 @@ const brokenScenario = {
   }
 };
 
-const result1 = simulateAuthCallbackLogic(brokenScenario, 'account_type=ip_owner');
+const result1 = simulateAuthCallbackLogic(brokenScenario, 'account_type=creator');
 console.log('\n📊 RESULT:', result1.shouldUpdate ? 'WILL UPDATE METADATA' : 'NO UPDATE');
 console.log('🎯 Final account_type:', result1.accountType);
 console.log('\n' + '='.repeat(60) + '\n');
@@ -93,12 +93,12 @@ const workingScenario = {
   id: 'oauth-user-2', 
   email: 'creator@example.com',
   user_metadata: {
-    account_type: 'ip_owner', // Already set correctly
+    account_type: 'creator', // Already set correctly
     full_name: 'Test Creator'
   }
 };
 
-const result2 = simulateAuthCallbackLogic(workingScenario, 'account_type=ip_owner');
+const result2 = simulateAuthCallbackLogic(workingScenario, 'account_type=creator');
 console.log('\n📊 RESULT:', result2.shouldUpdate ? 'WILL UPDATE METADATA' : 'NO UPDATE');
 console.log('🎯 Final account_type:', result2.accountType);
 console.log('\n' + '='.repeat(60) + '\n');

@@ -1,8 +1,8 @@
 -- Fix Creator OAuth Account Type Mismatch
--- The issue: Frontend uses 'creator' but database trigger expects 'ip_owner'
+-- The issue: Frontend uses 'creator' but the database trigger previously expected a legacy value
 -- This causes creator OAuth profiles to not be created in user_creators table
 
--- Update the trigger function to use 'creator' instead of 'ip_owner'
+-- Update the trigger function to rely solely on the canonical 'creator' value
 CREATE OR REPLACE FUNCTION public.handle_new_user_routing()
 RETURNS TRIGGER 
 LANGUAGE plpgsql 
@@ -43,7 +43,7 @@ BEGIN
     RAISE LOG 'Successfully created buyer profile for user: %, email: %', NEW.id, NEW.email;
     
   ELSIF NEW.raw_user_meta_data->>'account_type' = 'creator' THEN
-    -- Create creator profile (FIXED: Now uses 'creator' instead of 'ip_owner')
+    -- Create creator profile (normalized to 'creator')
     INSERT INTO public.user_creators (
       id, 
       email, 

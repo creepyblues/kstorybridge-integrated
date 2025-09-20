@@ -177,7 +177,7 @@ const simulatedUser = {
   id: 'simulated-user-id',
   email: 'sungho101@gmail.com',
   user_metadata: {
-    account_type: 'ip_owner',
+    account_type: 'creator',
     email: 'sungho101@gmail.com',
     full_name: 'Sungho Lee',
     ip_owner_company: 'dadble',

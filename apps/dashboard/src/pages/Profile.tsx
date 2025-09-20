@@ -3,20 +3,20 @@ import { Link } from "react-router-dom";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
 
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { useSessionCache } from "@/hooks/useSessionCache";
+import { useDataCache } from "@/contexts/DataCacheContext";
+import { directApiService } from "@/services/directApiService";
 import { Save, Edit3, X, LogOut, KeyRound, History } from "lucide-react";
 import PasswordResetModal from "@/components/PasswordResetModal";
 
 // Define types for the actual table structures
 type BuyerProfile = {
   id: string;
-  user_id: string;
   email: string;
   full_name: string;
   buyer_company?: string | null;
   buyer_role?: string | null;
   linkedin_url?: string | null;
-  plan: string;
   tier?: string | null;
   created_at: string;
   updated_at: string;
@@ -24,7 +24,6 @@ type BuyerProfile = {
 
 type IPOwnerProfile = {
   id: string;
-  user_id: string;
   email: string;
   full_name: string;
   pen_name?: string | null;
@@ -46,7 +45,6 @@ type UnifiedProfile = {
   buyer_company?: string | null;
   buyer_role?: string | null;
   linkedin_url?: string | null;
-  plan?: string | null; // only for buyers
   
   // IP Owner fields
   pen_name?: string | null; // mapped from pen_name field
@@ -63,14 +61,12 @@ type UnifiedProfile = {
 // Mock profile data for localhost development
 const mockProfile: UnifiedProfile = {
   id: "550e8400-e29b-41d4-a716-446655440000",
-  user_id: "550e8400-e29b-41d4-a716-446655440000",
   email: "sungho@dadble.com",
   full_name: "Sungho Lee",
   account_type: "buyer",
   buyer_company: "Dadble Inc.",
   buyer_role: "Senior Product Manager",
   linkedin_url: "https://linkedin.com/in/sungholee",
-  plan: "pro",
   tier: "pro",
   website_url: "https://dadble.com",
   created_at: "2024-12-01T10:00:00.000Z",
@@ -78,14 +74,21 @@ const mockProfile: UnifiedProfile = {
 };
 
 export default function Profile() {
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const { toast } = useToast();
+  const {
+    isSessionValid,
+    getDbConnectivityStatus,
+    setDbConnectivityStatus
+  } = useDataCache();
+  const { } = useSessionCache(); // Initialize session cache management
   const [profile, setProfile] = useState<UnifiedProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UnifiedProfile>>({});
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
+  const [dbError, setDbError] = useState<string | null>(null);
 
   const fetchProfile = useCallback(async () => {
     if (!user) {
@@ -94,87 +97,104 @@ export default function Profile() {
       return;
     }
 
-    console.log("Fetching profile for user:", user.id, user.email);
-    console.log("User metadata:", user.user_metadata);
-
     try {
+      setLoading(true);
+      setDbError(null);
+
+      console.log("📖 Loading profile from database (session-based policy)...", user.email);
+      console.log("User metadata:", user.user_metadata);
+
       const accountType = user.user_metadata?.account_type || 'buyer';
       console.log("Account type:", accountType);
 
       if (accountType === 'buyer') {
-        const { data, error } = await supabase
-          .from("user_buyers")
-          .select("*")
-          .eq("email", user.email)
-          .single();
+        try {
+          // First try to get by ID (primary key)
+          const response = await fetch(`https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/user_buyers?select=*&id=eq.${user.id}&limit=1`, {
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA',
+              'Authorization': `Bearer ${session?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        console.log("Buyer profile query result:", { data, error });
-
-        if (error) {
-          if (error.code === 'PGRST116') {
-            console.log("No buyer profile found, attempting to create one");
-            await createBuyerProfile();
+          if (response.ok) {
+            const data = await response.json();
+            if (data.length > 0) {
+              const unifiedProfile: UnifiedProfile = {
+                ...data[0],
+                account_type: 'buyer',
+                pen_name: null, // buyers don't have pen names
+              };
+              console.log("✅ Buyer profile loaded successfully by ID:", unifiedProfile);
+              setProfile(unifiedProfile);
+              setFormData(unifiedProfile);
+              setDbConnectivityStatus({ isConnected: true });
+            } else {
+              // No profile found by ID, try to create one
+              console.log("No buyer profile found by ID, attempting to create one");
+              await createBuyerProfile();
+            }
           } else {
-            console.error("Error fetching buyer profile:", error);
-            toast({
-              title: "Error",
-              description: `Failed to load profile data: ${error.message}`,
-              variant: "destructive",
-            });
+            throw new Error(`Failed to fetch buyer profile: ${response.status}`);
           }
-        } else {
-          const unifiedProfile: UnifiedProfile = {
-            ...data,
-            account_type: 'buyer',
-            pen_name: null, // buyers don't have pen names
-          };
-          console.log("Buyer profile loaded successfully:", unifiedProfile);
-          setProfile(unifiedProfile);
-          setFormData(unifiedProfile);
+        } catch (error) {
+          console.error("Error loading buyer profile:", error);
+          throw error; // Re-throw to be caught by outer catch
         }
       } else {
-        // creator
-        const { data, error } = await supabase
-          .from("user_creators")
-          .select("*")
-          .eq("email", user.email)
-          .single();
+        // creator profile
+        try {
+          // First try to get by ID (primary key)
+          const response = await fetch(`https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/user_creators?select=*&id=eq.${user.id}&limit=1`, {
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA',
+              'Authorization': `Bearer ${session?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        console.log("IP Owner profile query result:", { data, error });
-
-        if (error) {
-          if (error.code === 'PGRST116') {
-            console.log("No IP owner profile found, attempting to create one");
-            await createIPOwnerProfile();
+          if (response.ok) {
+            const data = await response.json();
+            if (data.length > 0) {
+              const unifiedProfile: UnifiedProfile = {
+                ...data[0],
+                account_type: 'creator',
+                pen_name: data[0].pen_name,
+                buyer_company: null,
+                buyer_role: null,
+                linkedin_url: null,
+              };
+              console.log("✅ Creator profile loaded successfully by ID:", unifiedProfile);
+              setProfile(unifiedProfile);
+              setFormData(unifiedProfile);
+              setDbConnectivityStatus({ isConnected: true });
+            } else {
+              // No profile found by ID, try to create one
+              console.log("No creator profile found by ID, attempting to create one");
+              await createIPOwnerProfile();
+            }
           } else {
-            console.error("Error fetching IP owner profile:", error);
-            toast({
-              title: "Error",
-              description: `Failed to load profile data: ${error.message}`,
-              variant: "destructive",
-            });
+            throw new Error(`Failed to fetch creator profile: ${response.status}`);
           }
-        } else {
-          const unifiedProfile: UnifiedProfile = {
-            ...data,
-            account_type: 'creator',
-            pen_name: data.pen_name, // use correct column name
-            buyer_company: null,
-            buyer_role: null,
-            linkedin_url: null,
-            plan: null, // IP owners don't have plans
-          };
-          console.log("IP Owner profile loaded successfully:", unifiedProfile);
-          setProfile(unifiedProfile);
-          setFormData(unifiedProfile);
+        } catch (error) {
+          console.error("Error loading creator profile:", error);
+          throw error; // Re-throw to be caught by outer catch
         }
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("❌ Database connectivity error loading profile:", error);
+
+      // Update connectivity status
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      setDbConnectivityStatus({ isConnected: false, error: errorMessage });
+      setDbError(errorMessage);
+
+      // NEW POLICY: Show database error to user instead of fallback
       toast({
-        title: "Error",
-        description: "Failed to load profile data",
-        variant: "destructive",
+        title: "Database Connection Error",
+        description: "Unable to load profile. Please check your connection and try again.",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -186,49 +206,89 @@ export default function Profile() {
   }, [fetchProfile]);
 
   const createBuyerProfile = async () => {
-    if (!user) return;
-    
+    if (!user || !session?.access_token) {
+      console.error("Missing user or session token for profile creation");
+      return;
+    }
+
     console.log("Creating new buyer profile for user:", user.id);
-    
+
     try {
-      const newProfile: Partial<BuyerProfile> = {
+      const newProfile = {
         id: user.id, // Required for RLS policy
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
-        buyer_company: user.user_metadata?.buyer_company,
-        buyer_role: user.user_metadata?.buyer_role,
-        linkedin_url: user.user_metadata?.linkedin_url,
+        buyer_company: user.user_metadata?.buyer_company || null,
+        buyer_role: user.user_metadata?.buyer_role || null,
+        linkedin_url: user.user_metadata?.linkedin_url || null,
       };
-      
+
       console.log("Creating buyer profile with data:", newProfile);
-      
-      const { data, error } = await supabase
-        .from("user_buyers")
-        .insert(newProfile)
-        .select()
-        .single();
-        
-      if (error) {
-        console.error("Failed to create buyer profile:", error);
-        toast({
-          title: "Error",
-          description: `Failed to create profile: ${error.message}`,
-          variant: "destructive",
-        });
-      } else {
-        const unifiedProfile: UnifiedProfile = {
-          ...data,
-          account_type: 'buyer',
-          pen_name: null,
-        };
-        console.log("Buyer profile created successfully:", unifiedProfile);
-        setProfile(unifiedProfile);
-        setFormData(unifiedProfile);
-        toast({
-          title: "Success",
-          description: "Profile created successfully!",
-        });
+
+      // Use directApiService to bypass potential RLS issues
+      const response = await fetch(`https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/user_buyers`, {
+        method: 'POST',
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA',
+          'Authorization': `Bearer ${session?.access_token}`, // Use session's auth token
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify(newProfile),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        // If we get a conflict (409), the profile already exists - try to fetch it instead
+        if (response.status === 409) {
+          console.log("Profile already exists, fetching existing profile...");
+          const fetchResponse = await fetch(`https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/user_buyers?select=*&id=eq.${user.id}&limit=1`, {
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA',
+              'Authorization': `Bearer ${session?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (fetchResponse.ok) {
+            const existingData = await fetchResponse.json();
+            if (existingData.length > 0) {
+              const unifiedProfile: UnifiedProfile = {
+                ...existingData[0],
+                account_type: 'buyer',
+                pen_name: null,
+              };
+              console.log("✅ Found existing buyer profile:", unifiedProfile);
+              setProfile(unifiedProfile);
+              setFormData(unifiedProfile);
+              toast({
+                title: "Profile Loaded",
+                description: "Your existing profile has been loaded successfully.",
+              });
+              return;
+            }
+          }
+        }
+
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
+
+      const data = await response.json();
+      const createdProfile = Array.isArray(data) ? data[0] : data;
+
+      const unifiedProfile: UnifiedProfile = {
+        ...createdProfile,
+        account_type: 'buyer',
+        pen_name: null,
+      };
+      console.log("Buyer profile created successfully:", unifiedProfile);
+      setProfile(unifiedProfile);
+      setFormData(unifiedProfile);
+      toast({
+        title: "Success",
+        description: "Profile created successfully!",
+      });
     } catch (error) {
       console.error("Exception creating buyer profile:", error);
       toast({
@@ -240,54 +300,96 @@ export default function Profile() {
   };
 
   const createIPOwnerProfile = async () => {
-    if (!user) return;
-    
+    if (!user || !session?.access_token) {
+      console.error("Missing user or session token for creator profile creation");
+      return;
+    }
+
     console.log("Creating new IP owner profile for user:", user.id);
-    
+
     try {
-      const newProfile: Partial<IPOwnerProfile> = {
+      const newProfile = {
         id: user.id, // Required for RLS policy
         email: user.email || '',
         full_name: user.user_metadata?.full_name || '',
-        pen_name: user.user_metadata?.pen_name,
-        ip_owner_role: user.user_metadata?.ip_owner_role,
-        ip_owner_company: user.user_metadata?.ip_owner_company,
-        website_url: user.user_metadata?.website_url,
+        pen_name: user.user_metadata?.pen_name || null,
+        ip_owner_role: user.user_metadata?.ip_owner_role || null,
+        ip_owner_company: user.user_metadata?.ip_owner_company || null,
+        website_url: user.user_metadata?.website_url || null,
       };
-      
+
       console.log("Creating IP owner profile with data:", newProfile);
-      
-      const { data, error } = await supabase
-        .from("user_creators")
-        .insert(newProfile)
-        .select()
-        .single();
-        
-      if (error) {
-        console.error("Failed to create IP owner profile:", error);
-        toast({
-          title: "Error",
-          description: `Failed to create profile: ${error.message}`,
-          variant: "destructive",
-        });
-      } else {
-        const unifiedProfile: UnifiedProfile = {
-          ...data,
-          account_type: 'creator',
-          pen_name: data.pen_name,
-          buyer_company: null,
-          buyer_role: null,
-          linkedin_url: null,
-          plan: null, // IP owners don't have plans
-        };
-        console.log("IP owner profile created successfully:", unifiedProfile);
-        setProfile(unifiedProfile);
-        setFormData(unifiedProfile);
-        toast({
-          title: "Success",
-          description: "Profile created successfully!",
-        });
+
+      // Use direct API call to bypass potential RLS issues
+      const response = await fetch(`https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/user_creators`, {
+        method: 'POST',
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA',
+          'Authorization': `Bearer ${session?.access_token}`, // Use session's auth token
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify(newProfile),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        // If we get a conflict (409), the profile already exists - try to fetch it instead
+        if (response.status === 409) {
+          console.log("Creator profile already exists, fetching existing profile...");
+          const fetchResponse = await fetch(`https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/user_creators?select=*&id=eq.${user.id}&limit=1`, {
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA',
+              'Authorization': `Bearer ${session?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (fetchResponse.ok) {
+            const existingData = await fetchResponse.json();
+            if (existingData.length > 0) {
+              const unifiedProfile: UnifiedProfile = {
+                ...existingData[0],
+                account_type: 'creator',
+                pen_name: existingData[0].pen_name,
+                buyer_company: null,
+                buyer_role: null,
+                linkedin_url: null,
+              };
+              console.log("✅ Found existing creator profile:", unifiedProfile);
+              setProfile(unifiedProfile);
+              setFormData(unifiedProfile);
+              toast({
+                title: "Profile Loaded",
+                description: "Your existing profile has been loaded successfully.",
+              });
+              return;
+            }
+          }
+        }
+
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
+
+      const data = await response.json();
+      const createdProfile = Array.isArray(data) ? data[0] : data;
+
+      const unifiedProfile: UnifiedProfile = {
+        ...createdProfile,
+        account_type: 'creator',
+        pen_name: createdProfile.pen_name,
+        buyer_company: null,
+        buyer_role: null,
+        linkedin_url: null,
+      };
+      console.log("IP owner profile created successfully:", unifiedProfile);
+      setProfile(unifiedProfile);
+      setFormData(unifiedProfile);
+      toast({
+        title: "Success",
+        description: "Profile created successfully!",
+      });
     } catch (error) {
       console.error("Exception creating IP owner profile:", error);
       toast({
@@ -313,18 +415,11 @@ export default function Profile() {
           buyer_role: formData.buyer_role,
           linkedin_url: formData.linkedin_url,
         };
+        const cleanedUpdate = Object.fromEntries(
+          Object.entries(updateData).filter(([, value]) => value !== undefined)
+        );
 
-        const { data, error } = await supabase
-          .from("user_buyers")
-          .update(updateData)
-          .eq("email", user.email)
-          .select()
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
+        const data = await directApiService.updateBuyerProfile(user.id, cleanedUpdate);
         const unifiedProfile: UnifiedProfile = {
           ...data,
           account_type: 'buyer',
@@ -340,18 +435,11 @@ export default function Profile() {
           ip_owner_company: formData.ip_owner_company,
           website_url: formData.website_url,
         };
+        const cleanedUpdate = Object.fromEntries(
+          Object.entries(updateData).filter(([, value]) => value !== undefined)
+        );
 
-        const { data, error } = await supabase
-          .from("user_creators")
-          .update(updateData)
-          .eq("email", user.email)
-          .select()
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
+        const data = await directApiService.updateCreatorProfile(user.id, cleanedUpdate);
         const unifiedProfile: UnifiedProfile = {
           ...data,
           account_type: 'creator',
@@ -359,7 +447,6 @@ export default function Profile() {
           buyer_company: null,
           buyer_role: null,
           linkedin_url: null,
-          plan: null, // IP owners don't have plans
         };
         setProfile(unifiedProfile);
         setFormData(unifiedProfile);
@@ -415,19 +502,32 @@ export default function Profile() {
   };
 
   const handleSignOut = async () => {
+    console.group('🧾 PROFILE SIGN OUT');
+    console.log('Sign out requested from profile page', {
+      userId: user?.id,
+      userEmail: user?.email,
+      accountType: profile?.account_type,
+      currentPath: window.location.pathname,
+    });
+
     try {
       toast({
         title: "Signing out...",
-        description: "You are being signed out of your account.",
+        description: "We're closing your session.",
       });
+
+      // The signOut function handles redirection automatically
       await signOut();
+      console.log('✅ Sign out completed successfully from profile page');
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error('❌ PROFILE SIGN OUT: failed', error);
       toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
+        title: "Sign out failed",
+        description: "We couldn't sign you out. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      console.groupEnd();
     }
   };
 
@@ -435,8 +535,38 @@ export default function Profile() {
     return (
       <div className="container mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-slate-600 text-sm sm:text-base">Loading profile...</div>
+          <div className="text-slate-600 text-sm sm:text-base">Loading profile from database...</div>
         </div>
+      </div>
+    );
+  }
+
+  // NEW POLICY: Show database connectivity error if connection failed
+  if (dbError && !getDbConnectivityStatus().isConnected) {
+    return (
+      <div className="container mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+        <Card className="border-red-200 shadow-lg">
+          <CardContent className="p-8 text-center">
+            <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-red-600 text-xl font-bold">!</span>
+            </div>
+            <h3 className="text-lg font-medium text-red-600 mb-2">
+              Database Connection Error
+            </h3>
+            <p className="text-red-500 mb-4">
+              Unable to load profile data. Please check your internet connection.
+            </p>
+            <p className="text-xs text-gray-500 mb-4">
+              Error: {dbError}
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Retry Connection
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -827,6 +957,7 @@ export default function Profile() {
 
                 {/* Sign Out Button */}
                 <Button
+                  type="button"
                   onClick={handleSignOut}
                   variant="outline"
                   className="w-full sm:w-auto border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden"

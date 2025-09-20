@@ -23,7 +23,7 @@ SELECT
   CASE 
     WHEN u.raw_user_meta_data->>'account_type' = 'buyer' THEN 
       CASE WHEN b.id IS NOT NULL THEN 'HAS_BUYER_PROFILE' ELSE 'MISSING_BUYER_PROFILE' END
-    WHEN u.raw_user_meta_data->>'account_type' = 'ip_owner' THEN 
+    WHEN u.raw_user_meta_data->>'account_type' IN ('creator', 'ip_owner') THEN 
       CASE WHEN c.id IS NOT NULL THEN 'HAS_CREATOR_PROFILE' ELSE 'MISSING_CREATOR_PROFILE' END
     ELSE 'NO_ACCOUNT_TYPE'
   END as profile_status,
@@ -40,17 +40,17 @@ SELECT
   'SUMMARY' as section,
   COUNT(*) as total_recent_users,
   COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' = 'buyer' THEN 1 END) as buyers_with_metadata,
-  COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' = 'ip_owner' THEN 1 END) as creators_with_metadata,
+  COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' IN ('creator', 'ip_owner') THEN 1 END) as creators_with_metadata,
   COUNT(b.id) as has_buyer_profile,
   COUNT(c.id) as has_creator_profile,
   COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' = 'buyer' AND b.id IS NULL THEN 1 END) as missing_buyer_profiles,
-  COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' = 'ip_owner' AND c.id IS NULL THEN 1 END) as missing_creator_profiles
+  COUNT(CASE WHEN u.raw_user_meta_data->>'account_type' IN ('creator', 'ip_owner') AND c.id IS NULL THEN 1 END) as missing_creator_profiles
 FROM auth.users u
 LEFT JOIN public.user_buyers b ON b.id = u.id
 LEFT JOIN public.user_creators c ON c.id = u.id
 WHERE u.created_at > NOW() - INTERVAL '7 days';
 
--- 4. Find specific OAuth users missing profiles
+-- 4. Find specific OAuth users missing creator profiles
 SELECT 
   'MISSING CREATOR PROFILES' as issue_type,
   u.id,
@@ -61,7 +61,7 @@ SELECT
   u.raw_user_meta_data as full_metadata
 FROM auth.users u
 LEFT JOIN public.user_creators c ON c.id = u.id
-WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
+WHERE u.raw_user_meta_data->>'account_type' IN ('creator', 'ip_owner')
   AND c.id IS NULL
   AND u.created_at > NOW() - INTERVAL '30 days'
 ORDER BY u.created_at DESC;
@@ -89,7 +89,7 @@ DO $$
 DECLARE
   missing_creator RECORD;
 BEGIN
-  -- Find users with ip_owner account_type but no creator profile
+-- Find users with creator account_type (including legacy ip_owner) but no creator profile
   FOR missing_creator IN 
     SELECT 
       u.id,
@@ -97,7 +97,7 @@ BEGIN
       u.raw_user_meta_data
     FROM auth.users u
     LEFT JOIN public.user_creators c ON c.id = u.id
-    WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
+    WHERE u.raw_user_meta_data->>'account_type' IN ('creator', 'ip_owner')
       AND c.id IS NULL
       AND u.created_at > NOW() - INTERVAL '30 days'
   LOOP
@@ -198,7 +198,7 @@ SELECT
   u.raw_user_meta_data->>'account_type' as account_type,
   CASE 
     WHEN u.raw_user_meta_data->>'account_type' = 'buyer' AND b.id IS NOT NULL THEN 'BUYER_PROFILE_CREATED'
-    WHEN u.raw_user_meta_data->>'account_type' = 'ip_owner' AND c.id IS NOT NULL THEN 'CREATOR_PROFILE_CREATED'
+    WHEN u.raw_user_meta_data->>'account_type' IN ('creator', 'ip_owner') AND c.id IS NOT NULL THEN 'CREATOR_PROFILE_CREATED'
     WHEN u.raw_user_meta_data->>'account_type' IS NOT NULL THEN 'PROFILE_MISSING'
     ELSE 'NO_ACCOUNT_TYPE'
   END as trigger_result
@@ -214,4 +214,4 @@ SELECT
   (SELECT COUNT(*) FROM public.user_buyers) as buyer_count,
   (SELECT COUNT(*) FROM public.user_creators) as creator_count,
   (SELECT COUNT(*) FROM auth.users WHERE raw_user_meta_data->>'account_type' = 'buyer') as buyer_metadata_count,
-  (SELECT COUNT(*) FROM auth.users WHERE raw_user_meta_data->>'account_type' = 'ip_owner') as creator_metadata_count;
+  (SELECT COUNT(*) FROM auth.users WHERE raw_user_meta_data->>'account_type' IN ('creator', 'ip_owner')) as creator_metadata_count;

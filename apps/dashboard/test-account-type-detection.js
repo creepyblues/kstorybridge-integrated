@@ -23,9 +23,9 @@ const testUsers = [
     user: {
       id: 'creator-1', 
       email: 'creator@example.com',
-      user_metadata: { account_type: 'ip_owner', full_name: 'Jane Creator', pen_name: 'J.C. Studios' }
+      user_metadata: { account_type: 'creator', full_name: 'Jane Creator', pen_name: 'J.C. Studios' }
     },
-    expected: { accountType: 'ip_owner', source: 'metadata', confidence: 'high' }
+    expected: { accountType: 'creator', source: 'metadata', confidence: 'high' }
   },
   {
     name: 'User without metadata',
@@ -34,7 +34,7 @@ const testUsers = [
       email: 'unknown@example.com', 
       user_metadata: {}
     },
-    expected: { accountType: 'buyer', source: 'default', confidence: 'low' }
+    expected: { accountType: null, source: 'error', confidence: 'low' }
   },
   {
     name: 'Null user',
@@ -45,7 +45,7 @@ const testUsers = [
 
 // Mock URL parameters
 const testUrlParams = new URLSearchParams();
-testUrlParams.set('account_type', 'ip_owner');
+testUrlParams.set('account_type', 'creator');
 
 // Test scenarios
 const runTests = () => {
@@ -69,7 +69,7 @@ const runTests = () => {
     } else {
       const metadataType = test.user.user_metadata?.account_type;
       
-      if (metadataType === 'buyer' || metadataType === 'ip_owner') {
+      if (metadataType === 'buyer' || metadataType === 'creator') {
         result = {
           accountType: metadataType,
           source: 'metadata',
@@ -78,8 +78,8 @@ const runTests = () => {
         };
       } else {
         result = {
-          accountType: 'buyer',
-          source: 'default', 
+          accountType: null,
+          source: 'error', 
           confidence: 'low',
           profileExists: false
         };
@@ -110,8 +110,8 @@ const runTests = () => {
   // Simulate URL param detection
   const urlType = testUrlParams.get('account_type');
   const urlResult = {
-    accountType: urlType === 'buyer' || urlType === 'ip_owner' ? urlType : 'buyer',
-    source: urlType ? 'url_params' : 'default',
+    accountType: urlType === 'buyer' || urlType === 'creator' ? urlType : null,
+    source: urlType ? 'url_params' : 'error',
     confidence: urlType ? 'medium' : 'low',
     profileExists: false
   };
@@ -123,7 +123,7 @@ const runTests = () => {
   console.log('Test: Display Info Helper');
   const displayTests = [
     { type: 'buyer', expected: { label: 'Buyer', dashboardPath: '/buyers/titles' } },
-    { type: 'ip_owner', expected: { label: 'Creator', dashboardPath: '/creators/home/' } },
+    { type: 'creator', expected: { label: 'Creator', dashboardPath: '/creators/home/' } },
     { type: null, expected: { label: 'User', dashboardPath: '/buyers/titles' } }
   ];
   
@@ -145,7 +145,7 @@ function getAccountTypeDisplayInfo(accountType) {
         signupPath: '/signup/buyer',
         homePath: '/buyers/home'
       };
-    case 'ip_owner':
+    case 'creator':
       return {
         label: 'Creator',
         dashboardPath: '/creators/home/',

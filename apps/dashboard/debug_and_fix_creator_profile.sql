@@ -31,7 +31,7 @@ SELECT
     ip.id as ipowner_id
 FROM auth.users u
 LEFT JOIN public.user_creators ip ON ip.email = u.email
-WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
+WHERE u.raw_user_meta_data->>'account_type' = 'creator'
 AND u.created_at > NOW() - INTERVAL '24 hours'
 ORDER BY u.created_at DESC;
 
@@ -77,7 +77,7 @@ BEGIN
     
     RAISE LOG 'Successfully created buyer profile for user: %', NEW.id;
     
-  ELSIF NEW.raw_user_meta_data->>'account_type' = 'ip_owner' THEN
+  ELSIF NEW.raw_user_meta_data->>'account_type' = 'creator' THEN
     INSERT INTO public.user_creators (
       id, 
       email, 
@@ -135,7 +135,7 @@ BEGIN
   SELECT u.* INTO test_user
   FROM auth.users u
   LEFT JOIN public.user_creators ip ON ip.email = u.email
-  WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
+  WHERE u.raw_user_meta_data->>'account_type' = 'creator'
   AND ip.id IS NULL
   AND u.created_at > NOW() - INTERVAL '24 hours'
   LIMIT 1;
@@ -186,6 +186,6 @@ SELECT
     ip.created_at as profile_created
 FROM auth.users u
 LEFT JOIN public.user_creators ip ON ip.email = u.email
-WHERE u.raw_user_meta_data->>'account_type' = 'ip_owner'
+WHERE u.raw_user_meta_data->>'account_type' = 'creator'
 ORDER BY u.created_at DESC
 LIMIT 10;

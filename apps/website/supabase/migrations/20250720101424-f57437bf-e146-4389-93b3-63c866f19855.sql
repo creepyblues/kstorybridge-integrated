@@ -135,7 +135,7 @@ AS $$
 BEGIN
   IF NEW.raw_user_meta_data->>'account_type' = 'buyer' THEN
     PERFORM public.handle_new_buyer();
-  ELSIF NEW.raw_user_meta_data->>'account_type' = 'ip_owner' THEN
+  ELSIF NEW.raw_user_meta_data->>'account_type' = 'creator' THEN
     PERFORM public.handle_new_ipowner();
   END IF;
   RETURN NEW;

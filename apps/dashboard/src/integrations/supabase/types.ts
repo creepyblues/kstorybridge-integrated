@@ -14,121 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          account_type: Database["public"]["Enums"]["account_type"]
-          buyer_company: string | null
-          buyer_role: Database["public"]["Enums"]["buyer_role"] | null
-          created_at: string
-          email: string
-          full_name: string
-          id: string
-          invitation_status: string | null
-          ip_owner_company: string | null
-          ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url: string | null
-          pen_name: string | null
-          updated_at: string
-          website_url: string | null
-        }
-        Insert: {
-          account_type: Database["public"]["Enums"]["account_type"]
-          buyer_company?: string | null
-          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
-          created_at?: string
-          email: string
-          full_name: string
-          id: string
-          invitation_status?: string | null
-          ip_owner_company?: string | null
-          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url?: string | null
-          pen_name?: string | null
-          updated_at?: string
-          website_url?: string | null
-        }
-        Update: {
-          account_type?: Database["public"]["Enums"]["account_type"]
-          buyer_company?: string | null
-          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
-          created_at?: string
-          email?: string
-          full_name?: string
-          id?: string
-          invitation_status?: string | null
-          ip_owner_company?: string | null
-          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url?: string | null
-          pen_name?: string | null
-          updated_at?: string
-          website_url?: string | null
-        }
-        Relationships: []
-      }
-      request: {
+      featured: {
         Row: {
           id: string
           title_id: string
-          user_id: string
-          type: string
+          note: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           title_id: string
-          user_id: string
-          type: string
+          note?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           title_id?: string
-          user_id?: string
-          type?: string
+          note?: string | null
           created_at?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "request_title_id_fkey"
+            foreignKeyName: "featured_title_id_fkey"
             columns: ["title_id"]
             isOneToOne: false
             referencedRelation: "titles"
             referencedColumns: ["title_id"]
           },
-          {
-            foreignKeyName: "request_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       titles: {
         Row: {
-          art_author: string | null
-          audience: string | null
           author: string | null
-          chapters: number | null
-          completed: boolean | null
-          comps: string[] | null
           content_format: Database["public"]["Enums"]["content_format"] | null
           created_at: string
           creator_id: string
           genre: string[] | null
           illustrator: string | null
           likes: number | null
-          note: string | null
-          perfect_for: string | null
           pitch: string | null
           rating: number | null
           rating_count: number | null
-          rights: string | null
-          rights_owner: string | null
-          story_author: string | null
           synopsis: string | null
           tagline: string | null
           tags: string[] | null
@@ -137,32 +66,21 @@ export type Database = {
           title_name_en: string | null
           title_name_kr: string
           title_url: string | null
-          tone: string | null
           updated_at: string
           views: number | null
           writer: string | null
         }
         Insert: {
-          art_author?: string | null
-          audience?: string | null
           author?: string | null
-          chapters?: number | null
-          completed?: boolean | null
-          comps?: string[] | null
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id: string
           genre?: string[] | null
           illustrator?: string | null
           likes?: number | null
-          note?: string | null
-          perfect_for?: string | null
           pitch?: string | null
           rating?: number | null
           rating_count?: number | null
-          rights?: string | null
-          rights_owner?: string | null
-          story_author?: string | null
           synopsis?: string | null
           tagline?: string | null
           tags?: string[] | null
@@ -171,32 +89,21 @@ export type Database = {
           title_name_en?: string | null
           title_name_kr: string
           title_url?: string | null
-          tone?: string | null
           updated_at?: string
           views?: number | null
           writer?: string | null
         }
         Update: {
-          art_author?: string | null
-          audience?: string | null
           author?: string | null
-          chapters?: number | null
-          completed?: boolean | null
-          comps?: string[] | null
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id?: string
           genre?: string[] | null
           illustrator?: string | null
           likes?: number | null
-          note?: string | null
-          perfect_for?: string | null
           pitch?: string | null
           rating?: number | null
           rating_count?: number | null
-          rights?: string | null
-          rights_owner?: string | null
-          story_author?: string | null
           synopsis?: string | null
           tagline?: string | null
           tags?: string[] | null
@@ -205,7 +112,6 @@ export type Database = {
           title_name_en?: string | null
           title_name_kr?: string
           title_url?: string | null
-          tone?: string | null
           updated_at?: string
           views?: number | null
           writer?: string | null
@@ -214,25 +120,40 @@ export type Database = {
       }
       user_buyers: {
         Row: {
+          buyer_company: string | null
+          buyer_role: Database["public"]["Enums"]["buyer_role"] | null
           created_at: string
+          email: string
+          full_name: string
           id: string
-          requested: boolean | null
+          invitation_status: string | null
+          linkedin_url: string | null
           tier: Database["public"]["Enums"]["user_tier"] | null
-          user_id: string
+          updated_at: string
         }
         Insert: {
+          buyer_company?: string | null
+          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
           created_at?: string
-          id?: string
-          requested?: boolean | null
+          email: string
+          full_name: string
+          id: string
+          invitation_status?: string | null
+          linkedin_url?: string | null
           tier?: Database["public"]["Enums"]["user_tier"] | null
-          user_id: string
+          updated_at?: string
         }
         Update: {
+          buyer_company?: string | null
+          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
           created_at?: string
+          email?: string
+          full_name?: string
           id?: string
-          requested?: boolean | null
+          invitation_status?: string | null
+          linkedin_url?: string | null
           tier?: Database["public"]["Enums"]["user_tier"] | null
-          user_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -264,6 +185,45 @@ export type Database = {
             referencedColumns: ["title_id"]
           },
         ]
+      }
+      user_creators: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          invitation_status: string | null
+          ip_owner_company: string | null
+          ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id: string
+          invitation_status?: string | null
+          ip_owner_company?: string | null
+          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          invitation_status?: string | null
+          ip_owner_company?: string | null
+          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -453,6 +413,7 @@ export const Constants = {
         "other",
       ],
       ip_owner_role: ["author", "agent"],
+      user_tier: ["invited", "basic", "pro", "suite"],
     },
   },
 } as const

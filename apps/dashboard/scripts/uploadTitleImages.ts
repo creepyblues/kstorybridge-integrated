@@ -13,7 +13,7 @@ const BUCKET_NAME = 'title-images';
 interface ImageMapping {
   fileName: string;
   titleName: string;
-  matchedTitle?: any;
+  matchedTitle?: { title_id: string; title_name_kr?: string; title_name_en?: string };
 }
 
 // Helper function to normalize title names for matching
@@ -90,7 +90,7 @@ async function main() {
     console.log('🔗 Creating image-to-title mappings...');
     const mappings: ImageMapping[] = [];
     const unmatchedImages: string[] = [];
-    const unmatchedTitles: any[] = [];
+    const unmatchedTitles: Array<{ title_id: string; title_name_kr?: string; title_name_en?: string }> = [];
 
     for (const imageFile of imageFiles) {
       const titleFromFilename = extractTitleFromFilename(imageFile);

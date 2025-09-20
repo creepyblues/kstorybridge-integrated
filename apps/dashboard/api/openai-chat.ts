@@ -1,6 +1,8 @@
 // Vercel Serverless Function for OpenAI Chat
 // This function handles OpenAI API calls securely on the server-side
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type OpenAI from 'openai';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Add extensive error handling to prevent crashes
@@ -42,16 +44,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Initialize clients with error handling
-    let openai: any;
-    let supabase: any;
+    let openai: OpenAI;
+    let supabase: SupabaseClient;
 
     try {
       openai = new OpenAI({
         apiKey: requiredEnvVars.OPENAI_API_KEY,
       });
       console.log('✅ OpenAI client initialized');
-    } catch (error: any) {
-      console.error('❌ OpenAI initialization failed:', error.message);
+    } catch (error: unknown) {
+      console.error('❌ OpenAI initialization failed:', error instanceof Error ? error.message : String(error));
       return res.status(500).json({ error: 'OpenAI client initialization failed' });
     }
 
@@ -61,8 +63,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         requiredEnvVars.SUPABASE_SERVICE_KEY!
       );
       console.log('✅ Supabase client initialized');
-    } catch (error: any) {
-      console.error('❌ Supabase initialization failed:', error.message);
+    } catch (error: unknown) {
+      console.error('❌ Supabase initialization failed:', error instanceof Error ? error.message : String(error));
       return res.status(500).json({ error: 'Database client initialization failed' });
     }
 
@@ -106,7 +108,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('🔐 Token received, length:', token.length);
 
     // Verify user with Supabase
-    let user: any;
+    let user: { id: string; email?: string } | null;
     try {
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
       
@@ -122,8 +124,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       user = authUser;
       console.log('✅ User authenticated:', user.email);
-    } catch (error: any) {
-      console.error('❌ Authentication failed:', error.message);
+    } catch (error: unknown) {
+      console.error('❌ Authentication failed:', error instanceof Error ? error.message : String(error));
       return res.status(401).json({ error: 'Authentication failed' });
     }
 
@@ -163,7 +165,7 @@ Please provide a helpful response that:
 Keep your response conversational, enthusiastic, and focused on Korean content discovery.`;
 
     // Call OpenAI API with timeout protection
-    let completion: any;
+    let completion: OpenAI.Chat.Completions.ChatCompletion;
     try {
       console.log('🤖 Calling OpenAI API...');
       
@@ -183,16 +185,17 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
 
       completion = await Promise.race([apiCall, timeout]);
       console.log('✅ OpenAI API response received');
-    } catch (error: any) {
-      console.error('❌ OpenAI API error:', error.message);
+    } catch (error: unknown) {
+      console.error('❌ OpenAI API error:', error instanceof Error ? error.message : String(error));
       
-      if (error.message?.includes('timeout')) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('timeout')) {
         return res.status(504).json({ error: 'Request timeout - please try again' });
       } else if (error.code === 'insufficient_quota') {
         return res.status(503).json({ error: 'Service temporarily unavailable' });
       } else if (error.code === 'invalid_api_key') {
         return res.status(500).json({ error: 'Server configuration error' });
-      } else if (error.message?.includes('rate limit')) {
+      } else if (errorMessage.includes('rate limit')) {
         return res.status(429).json({ error: 'Too many requests. Please try again later.' });
       }
       
@@ -230,12 +233,13 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       usage: completion.usage || null,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorObj = error instanceof Error ? error : new Error(String(error));
     // Catch-all error handler
     console.error('💥 Unexpected error in OpenAI Chat API:', error);
     console.error('Error details:', {
       name: error.name,
-      message: error.message,
+      message: errorObj.message,
       stack: error.stack?.split('\n').slice(0, 3), // Limited stack trace
     });
     

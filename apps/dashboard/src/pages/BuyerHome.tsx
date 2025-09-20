@@ -7,6 +7,7 @@ import { titlesService, type Title } from "@/services/titlesService";
 import FeaturedTitlesCarousel from "@/components/FeaturedTitlesCarousel";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useSessionCache } from "@/hooks/useSessionCache";
 import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
@@ -14,6 +15,7 @@ import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { enhancedTitleSearchService, type SearchResult } from "@/services/enhancedTitleSearchService";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
+import { directApiService } from "@/services/directApiService";
 
 function BuyerHomeContent() {
   const { toast } = useToast();
@@ -23,8 +25,12 @@ function BuyerHomeContent() {
     getTitles,
     setTitles,
     isFresh,
+    isSessionValid,
+    getDbConnectivityStatus,
+    setDbConnectivityStatus,
     clearCache
   } = useDataCache();
+  const { } = useSessionCache(); // Initialize session cache management
 
   const [searchQuery, setSearchQuery] = useState(""); // What user types
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
@@ -36,6 +42,7 @@ function BuyerHomeContent() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
   const [activeGenreFilter, setActiveGenreFilter] = useState<string | null>(null);
+  const [dbError, setDbError] = useState<string | null>(null);
 
   // Enhanced search state
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -44,17 +51,17 @@ function BuyerHomeContent() {
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Get data from cache
+  // Get data from cache - NO FALLBACK TO MOCK DATA
   const titles = getTitles();
+  const dbStatus = getDbConnectivityStatus();
 
   useEffect(() => {
-    // Only load data if cache is empty or stale
-    const shouldLoadTitles = titles.length === 0 || !isFresh('titles');
-
-    if (shouldLoadTitles) {
+    // NEW POLICY: Always fetch from database on new session
+    // Only use cache if session is valid and data is fresh
+    if (user && (!isSessionValid() || titles.length === 0 || !isFresh('titles'))) {
       loadData();
     }
-  }, [user, titles.length]);
+  }, [user, isSessionValid]); // Depend on session validity
 
   // Check vector search capabilities
   useEffect(() => {
@@ -75,14 +82,33 @@ function BuyerHomeContent() {
   const loadData = async (force = false) => {
     try {
       setLoading(true);
+      setDbError(null);
 
-      // Load all titles for buyers
-      const allTitles = await titlesService.getAllTitles();
+      console.log('🏠 Loading titles from database (session-based policy)...');
+
+      // Use the working direct API service instead of broken Supabase JS
+      const allTitles = await directApiService.getAllTitles();
+
+      // Update cache and connectivity status
       setTitles(allTitles);
+      setDbConnectivityStatus({ isConnected: true });
+
+      console.log(`✅ Successfully loaded ${allTitles.length} titles from database`);
 
     } catch (error) {
-      console.error("Error loading data:", error);
-      toast({ title: "Error loading data", variant: "destructive" });
+      console.error("❌ Database connectivity error loading titles:", error);
+
+      // Update connectivity status
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      setDbConnectivityStatus({ isConnected: false, error: errorMessage });
+      setDbError(errorMessage);
+
+      // NEW POLICY: Show database error to user instead of fallback
+      toast({
+        title: "Database Connection Error",
+        description: "Unable to load titles. Please check your connection and try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

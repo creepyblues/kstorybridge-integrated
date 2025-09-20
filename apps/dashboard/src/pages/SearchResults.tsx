@@ -278,7 +278,7 @@ function SearchResultsContent() {
       : titles;
     
     // Apply filters
-    let filtered = baseResults.filter(title => {
+    const filtered = baseResults.filter(title => {
       // Filter by pitch availability
       if (showOnlyWithPitch && (!title.pitch || !title.pitch.trim())) {
         return false;

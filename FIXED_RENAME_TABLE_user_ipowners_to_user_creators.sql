@@ -135,7 +135,7 @@ BEGIN
     
     RAISE LOG 'Successfully created buyer profile for user: %', NEW.id;
     
-  ELSIF NEW.raw_user_meta_data->>'account_type' = 'ip_owner' THEN
+  ELSIF lower(COALESCE(NEW.raw_user_meta_data->>'account_type', '')) IN ('creator', 'ip_owner') THEN
     -- Call the creator handler function and pass the NEW record (UPDATED TO USE user_creators)
     INSERT INTO public.user_creators (
       id, 

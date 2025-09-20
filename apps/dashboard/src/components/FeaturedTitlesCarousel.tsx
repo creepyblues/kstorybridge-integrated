@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { Button } from '@kstorybridge/ui';
 import { ChevronLeft, ChevronRight, Mic } from 'lucide-react';
-import { featuredService, type FeaturedWithTitle } from '@/services/featuredService';
+import { directApiService } from '@/services/directApiService';
+import type { FeaturedWithTitle } from '@/services/featuredService';
 
 interface FeaturedTitlesCarouselProps {
   className?: string;
@@ -30,31 +31,53 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
     const loadFeaturedTitles = async () => {
       try {
         setLoading(true);
-        console.log('🎬 FeaturedTitlesCarousel: Starting to load featured titles...');
-        
-        // Add timeout protection to prevent infinite loading
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Featured titles loading timeout')), 10000);
+        console.log('🎬 [CAROUSEL VERBOSE] Starting to load featured titles...');
+        console.log('🎬 [CAROUSEL VERBOSE] Component mounted, beginning fetch process');
+
+        // Add timeout protection to prevent infinite loading (increased for debugging)
+        const timeoutPromise = new Promise<FeaturedWithTitle[]>((resolve) => {
+          console.log('🎬 [CAROUSEL VERBOSE] Setting up 15-second timeout promise for debugging');
+          setTimeout(() => {
+            console.warn('⏰ [CAROUSEL VERBOSE] Loading timeout reached (15s), using empty array');
+            console.warn('⏰ [CAROUSEL VERBOSE] This indicates the featuredService call is hanging or very slow');
+            resolve([]);
+          }, 15000); // Increased to 15 seconds for debugging
         });
-        
-        const titlesPromise = featuredService.getFeaturedTitles();
-        
-        const titles = await Promise.race([titlesPromise, timeoutPromise]);
-        
-        console.log(`✅ FeaturedTitlesCarousel: Successfully loaded ${titles.length} featured titles`);
+
+        // Use the working direct API service
+        console.log('🎬 [CAROUSEL VERBOSE] Loading featured titles with direct API...');
+        const titles = await directApiService.getFeaturedTitles();
+
+        console.log(`✅ [CAROUSEL VERBOSE] Race completed with ${titles.length} featured titles`);
+        console.log('🎬 [CAROUSEL VERBOSE] Title details:', titles.map(t => ({
+          id: t.id,
+          title_id: t.title_id,
+          hasTitle: !!t.titles,
+          titleName: t.titles?.title_name_en || 'NO_NAME'
+        })));
+
         setAllFeaturedTitles(titles);
       } catch (error) {
-        console.error('❌ FeaturedTitlesCarousel: Error loading featured titles:', error);
+        console.error('❌ [CAROUSEL VERBOSE] Error loading featured titles:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          fullError: error
+        });
+        console.log('🎬 [CAROUSEL VERBOSE] Setting empty array due to error');
         // Set empty array on error to prevent infinite loading
         setAllFeaturedTitles([]);
       } finally {
         setLoading(false);
-        console.log('🏁 FeaturedTitlesCarousel: Loading complete');
+        console.log('🏁 [CAROUSEL VERBOSE] Loading complete, final state:', {
+          loading: false,
+          titlesCount: 'Set via setAllFeaturedTitles'
+        });
       }
     };
 
     loadFeaturedTitles();
-  }, []);
+  }, []); // Empty dependency array - only run once on mount
 
   const totalTitles = allFeaturedTitles.length;
 

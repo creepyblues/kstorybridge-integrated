@@ -1,125 +1,119 @@
 import { supabase } from "@/integrations/supabase/client";
+import { determineAccountType } from "@/utils/accountTypeDetection";
 
 export const debugProfile = async () => {
-  console.log("=== Profile Debug Utility ===");
-  
-  // 1. Test basic connection
+  console.log("=== Account Profile Debug Utility ===");
+  console.log("📝 Using current account type detection system (user_buyers/user_creators)");
+
+  // 1. Test basic database connection
   try {
-    const { data: testData, error: testError } = await supabase
-      .from("profiles")
+    const { data: titlesTest, error: titlesError } = await supabase
+      .from("titles")
       .select("count")
       .limit(1);
-    
-    if (testError) {
-      console.error("❌ Profiles table test failed:", testError);
-      
-      // Check if table exists by trying to query titles table
-      const { data: titlesTest, error: titlesError } = await supabase
-        .from("titles")
-        .select("count")
-        .limit(1);
-        
-      if (titlesError) {
-        console.error("❌ Database connection failed entirely:", titlesError);
-      } else {
-        console.log("✅ Database connection works, but profiles table has issues");
-      }
+
+    if (titlesError) {
+      console.error("❌ Database connection failed:", titlesError);
+      return;
     } else {
-      console.log("✅ Profiles table accessible");
+      console.log("✅ Database connection working");
     }
   } catch (error) {
     console.error("❌ Connection test failed:", error);
+    return;
   }
 
   // 2. Get current user
   const { data: { user }, error: userError } = await supabase.auth.getUser();
-  
+
   if (userError) {
     console.error("❌ Failed to get current user:", userError);
     return;
   }
-  
+
   if (!user) {
     console.log("❌ No authenticated user found");
     return;
   }
-  
-  console.log("✅ Current user:", { id: user.id, email: user.email });
 
-  // 3. Check if profile exists
+  console.log("✅ Current user:", {
+    id: user.id,
+    email: user.email,
+    metadata: user.user_metadata
+  });
+
+  // 3. Use centralized account type detection
   try {
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-    
-    if (profileError) {
-      console.error("❌ Profile query failed:", profileError);
-      
-      // Try without .single() to see if there are multiple or no results
-      const { data: allProfiles, error: allError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id);
-        
-      if (allError) {
-        console.error("❌ All profiles query failed:", allError);
-      } else {
-        console.log("📊 All profiles for user:", allProfiles);
-      }
-    } else {
-      console.log("✅ Profile found:", profile);
-    }
+    console.log("🔍 Running account type detection...");
+    const accountTypeResult = await determineAccountType({
+      includeDatabaseLookup: true,
+      debug: true
+    });
+
+    console.log("📊 Account type detection result:", accountTypeResult);
   } catch (error) {
-    console.error("❌ Profile fetch exception:", error);
+    console.error("❌ Account type detection failed:", error);
   }
 
-  // 4. Check user_buyers and user_creators tables
+  // 4. Check user_buyers table
   try {
     const { data: buyerData, error: buyerError } = await supabase
       .from("user_buyers")
       .select("*")
       .eq("email", user.email);
-      
-    if (buyerError) {
-      console.log("ℹ️ user_buyers query failed (might not exist):", buyerError.message);
-    } else {
-      console.log("📊 user_buyers data:", buyerData);
-    }
 
+    if (buyerError) {
+      console.log("ℹ️ user_buyers query failed:", buyerError.message);
+    } else {
+      if (buyerData.length > 0) {
+        console.log("✅ Found buyer profile:", buyerData[0]);
+      } else {
+        console.log("📭 No buyer profile found for this user");
+      }
+    }
+  } catch (error) {
+    console.error("❌ Buyer table check failed:", error);
+  }
+
+  // 5. Check user_creators table
+  try {
     const { data: creatorData, error: creatorError } = await supabase
       .from("user_creators")
       .select("*")
       .eq("email", user.email);
-      
+
     if (creatorError) {
-      console.log("ℹ️ user_creators query failed (might not exist):", creatorError.message);
+      console.log("ℹ️ user_creators query failed:", creatorError.message);
     } else {
-      console.log("📊 user_creators data:", creatorData);
+      if (creatorData.length > 0) {
+        console.log("✅ Found creator profile:", creatorData[0]);
+      } else {
+        console.log("📭 No creator profile found for this user");
+      }
     }
   } catch (error) {
-    console.error("❌ User tables check failed:", error);
+    console.error("❌ Creator table check failed:", error);
   }
 
-  // 5. List all tables to see what exists
-  try {
-    const { data: tables, error: tablesError } = await supabase
-      .rpc('get_table_list');
-      
-    if (tablesError) {
-      console.log("ℹ️ Could not list tables:", tablesError.message);
-    } else {
-      console.log("📋 Available tables:", tables);
-    }
-  } catch (error) {
-    console.log("ℹ️ Table listing not available");
+  // 6. Check for account type in user metadata
+  const metadataAccountType = user.user_metadata?.account_type;
+  if (metadataAccountType) {
+    console.log(`🏷️ User metadata account_type: ${metadataAccountType}`);
+  } else {
+    console.log("⚠️ No account_type found in user metadata");
   }
 
-  console.log("=== End Profile Debug ===");
+  // 7. Summary
+  console.log("\n📋 SUMMARY:");
+  console.log("- Database connection: ✅");
+  console.log("- User authenticated: ✅");
+  console.log(`- Email: ${user.email}`);
+  console.log(`- Metadata account_type: ${metadataAccountType || 'Not set'}`);
+
+  console.log("=== End Account Profile Debug ===");
 };
 
 // Make it available globally for testing
 if (typeof window !== 'undefined') {
-  (window as any).debugProfile = debugProfile;
+  (window as Record<string, unknown>).debugProfile = debugProfile;
 }

@@ -21,16 +21,29 @@ export function DashboardEntrypoint() {
   const [recoveryAttempted, setRecoveryAttempted] = useState(false);
   const [timeoutTriggered, setTimeoutTriggered] = useState(false);
 
-  // Check if this is an OAuth signin (has code parameter) and disable database lookup to avoid hanging
+  // Check if this is an OAuth signin or recent OAuth session
   const urlParams = new URLSearchParams(window.location.search);
   const isOAuthCallback = urlParams.has('code');
 
+  // Check if this is a fresh OAuth session (within 30 seconds)
+  const isFreshOAuthSession = useMemo(() => {
+    if (isOAuthCallback) return true;
+
+    // Check if session is very recent (likely from OAuth)
+    if (user?.user_metadata?.account_type) {
+      const sessionAge = Date.now() - (user.created_at ? new Date(user.created_at).getTime() : 0);
+      return sessionAge < 30000; // 30 seconds
+    }
+
+    return false;
+  }, [isOAuthCallback, user]);
+
   // Memoize the options object to prevent unnecessary re-renders
   const accountTypeOptions = useMemo(() => ({
-    includeDatabaseLookup: !isOAuthCallback, // Disable database lookup for OAuth to prevent hanging
+    includeDatabaseLookup: !isFreshOAuthSession, // Disable database lookup for OAuth to prevent hanging
     debug: true,
     bypassCache: recoveryAttempted // Use fresh data if we've attempted recovery
-  }), [recoveryAttempted, isOAuthCallback]);
+  }), [recoveryAttempted, isFreshOAuthSession]);
   
   // Enhanced account type detection with better error handling
   const { 
@@ -39,44 +52,21 @@ export function DashboardEntrypoint() {
     result: accountTypeResult
   } = useAccountType(accountTypeOptions);
 
-  // System health check on mount
+  // Simplified health check to avoid circular dependency
   useEffect(() => {
     const checkSystemHealth = async () => {
       try {
-        console.log('🏥 DashboardEntrypoint: Performing system health check');
-        
-        const [supabaseHealth, sessionHealth] = await Promise.all([
-          performSupabaseHealthCheck(),
-          performSessionHealthCheck()
-        ]);
-        
-        const healthy = supabaseHealth.healthy && sessionHealth.healthy;
-        
+        console.log('🏥 DashboardEntrypoint: Performing simplified system health check');
+
+        // Only check Supabase health, skip session health check to avoid circular dependency
+        const supabaseHealth = await performSupabaseHealthCheck();
+
         console.log('🏥 DashboardEntrypoint: System health check results:', {
           supabase: supabaseHealth.healthy,
-          session: sessionHealth.healthy,
-          overall: healthy
+          overall: supabaseHealth.healthy
         });
-        
-        if (!healthy) {
-          console.warn('⚠️ DashboardEntrypoint: System health issues detected');
-          
-          // Attempt recovery if session is corrupted
-          if (!sessionHealth.healthy && sessionHealth.session) {
-            console.log('🔧 DashboardEntrypoint: Attempting session recovery');
-            try {
-              const recovery = await recoverCorruptedSession();
-              if (recovery.recovered) {
-                console.log('✅ DashboardEntrypoint: Session recovery successful');
-                setRecoveryAttempted(true);
-              }
-            } catch (recoveryError) {
-              console.error('❌ DashboardEntrypoint: Session recovery failed:', recoveryError);
-            }
-          }
-        }
-        
-        setSystemHealthy(healthy);
+
+        setSystemHealthy(supabaseHealth.healthy);
       } catch (error) {
         console.error('❌ DashboardEntrypoint: System health check failed:', error);
         setSystemHealthy(false);
@@ -234,17 +224,18 @@ export function DashboardEntrypoint() {
 
     handleRedirection();
   }, [
-    user, 
-    authLoading, 
-    accountTypeLoading, 
-    accountType, 
+    user,
+    authLoading,
+    accountTypeLoading,
+    accountType,
     accountTypeResult,
-    navigate, 
-    hasRedirected, 
+    navigate,
+    hasRedirected,
     timeoutTriggered,
     systemHealthy,
     recoveryAttempted,
-    signOut
+    signOut,
+    isOAuthCallback
   ]);
 
   // Enhanced loading state with better UX

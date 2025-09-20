@@ -11,7 +11,7 @@ interface EmailData {
   html?: string;
   text?: string;
   template?: string;
-  templateData?: Record<string, any>;
+  templateData?: Record<string, unknown>;
   from?: string;
   replyTo?: string;
 }

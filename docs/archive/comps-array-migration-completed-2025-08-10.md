@@ -1,4 +1,10 @@
-# Comps Field Array Migration Guide
+# Comps Field Array Migration Guide - COMPLETED
+
+## Status: COMPLETED - FOR REFERENCE ONLY
+## Completion Date: 2025-08-10
+## Safe to Follow: NO - MIGRATION COMPLETED
+
+⚠️ **IMPORTANT**: This migration has been completed successfully. Do not attempt to re-run any procedures described in this document.
 
 This guide documents the migration of the `comps` field in the `titles` table from `string` to `text[]` (array) type and the corresponding code changes across both dashboard and admin apps.
 

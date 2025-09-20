@@ -233,7 +233,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      account_type: "ip_owner" | "buyer"
+      account_type: "creator" | "buyer"
       buyer_role: "producer" | "executive" | "agent" | "content_scout" | "other"
       content_format:
         | "webtoon"
@@ -386,7 +386,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type: ["ip_owner", "buyer"],
+      account_type: ["creator", "buyer"],
       buyer_role: ["producer", "executive", "agent", "content_scout", "other"],
       content_format: [
         "webtoon",

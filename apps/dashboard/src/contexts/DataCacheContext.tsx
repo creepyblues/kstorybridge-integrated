@@ -18,6 +18,8 @@ interface DataCacheState {
   favorites: FavoriteWithTitle[];
   titleDetails: { [key: string]: Title };
   myRequests: RequestWithTitle[];
+  sessionId: string | null; // Track current session
+  sessionStartTime: number | null; // Track session start for expiry
   lastUpdated: {
     titles?: number;
     featuredTitles?: number;
@@ -25,6 +27,11 @@ interface DataCacheState {
     favorites?: number;
     titleDetails?: { [key: string]: number };
     myRequests?: number;
+  };
+  dbConnectivityStatus: {
+    isConnected: boolean;
+    lastChecked: number;
+    error?: string;
   };
 }
 
@@ -42,75 +49,121 @@ interface DataCacheContextType {
   getFavorites: () => FavoriteWithTitle[];
   getTitleDetail: (titleId: string) => Title | null;
   getMyRequests: () => RequestWithTitle[];
-  isFresh: (key: keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'> | string, maxAge?: number) => boolean;
+  isFresh: (key: keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'> | string) => boolean;
+  isSessionValid: () => boolean;
   clearCache: () => void;
+  initializeSession: (sessionId: string) => void;
+  setDbConnectivityStatus: (status: { isConnected: boolean; error?: string }) => void;
+  getDbConnectivityStatus: () => { isConnected: boolean; lastChecked: number; error?: string };
   refreshData: (key: keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'> | string) => void;
 }
 
 const DataCacheContext = createContext<DataCacheContextType | undefined>(undefined);
 
-// Helper functions for localStorage
-const CACHE_KEY = 'kstorybridge-cache';
+// Session-based cache constants
+const CACHE_KEY = 'kstorybridge-session-cache';
+const SESSION_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+
+const getEmptyCache = (): DataCacheState => ({
+  titles: [],
+  featuredTitles: [],
+  creatorTitles: [],
+  favorites: [],
+  titleDetails: {},
+  myRequests: [],
+  sessionId: null,
+  sessionStartTime: null,
+  lastUpdated: {},
+  dbConnectivityStatus: {
+    isConnected: true, // Default optimistic
+    lastChecked: 0
+  }
+});
 
 const loadFromStorage = (): DataCacheState => {
   try {
     const stored = localStorage.getItem(CACHE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      return {
-        titles: parsed.titles || [],
-        featuredTitles: parsed.featuredTitles || [],
-        creatorTitles: parsed.creatorTitles || [],
-        favorites: parsed.favorites || [],
-        titleDetails: parsed.titleDetails || {},
-        myRequests: parsed.myRequests || [],
-        lastUpdated: parsed.lastUpdated || {}
-      };
+
+      // Check if session is valid (within 1 hour)
+      const now = Date.now();
+      const sessionAge = parsed.sessionStartTime ? now - parsed.sessionStartTime : Infinity;
+
+      if (sessionAge < SESSION_EXPIRY_MS && parsed.sessionId) {
+        console.log(`📦 Loading valid session cache (${Math.round(sessionAge / (1000 * 60))} minutes old)`);
+        return {
+          titles: parsed.titles || [],
+          featuredTitles: parsed.featuredTitles || [],
+          creatorTitles: parsed.creatorTitles || [],
+          favorites: parsed.favorites || [],
+          titleDetails: parsed.titleDetails || {},
+          myRequests: parsed.myRequests || [],
+          sessionId: parsed.sessionId,
+          sessionStartTime: parsed.sessionStartTime,
+          lastUpdated: parsed.lastUpdated || {},
+          dbConnectivityStatus: parsed.dbConnectivityStatus || {
+            isConnected: true,
+            lastChecked: 0
+          }
+        };
+      } else {
+        console.log('🕒 Session cache expired or invalid, clearing...');
+        localStorage.removeItem(CACHE_KEY);
+      }
     }
   } catch (error) {
-    console.warn('Failed to load cache from localStorage:', error);
+    console.warn('❌ Failed to load cache from localStorage:', error);
+    localStorage.removeItem(CACHE_KEY);
   }
-  
-  return {
-    titles: [],
-    featuredTitles: [],
-    creatorTitles: [],
-    favorites: [],
-    titleDetails: {},
-    myRequests: [],
-    lastUpdated: {}
-  };
+
+  return getEmptyCache();
 };
 
 const saveToStorage = (cache: DataCacheState) => {
+  // Only save cache if we have a valid session
+  if (!cache.sessionId || !cache.sessionStartTime) {
+    return;
+  }
+
+  // Check session expiry before saving
+  const sessionAge = Date.now() - cache.sessionStartTime;
+  if (sessionAge >= SESSION_EXPIRY_MS) {
+    console.log('🕒 Session expired, not saving cache');
+    localStorage.removeItem(CACHE_KEY);
+    return;
+  }
+
   try {
-    // Limit the number of titles stored to prevent localStorage bloat
-    const MAX_TITLES_TO_CACHE = 100;
+    // Limit stored data to prevent localStorage bloat - session-based cache per CLAUDE.md specs
+    const MAX_TITLES_TO_CACHE = 30; // As specified in CLAUDE.md
     const limitedCache = {
       ...cache,
       titles: cache.titles.slice(0, MAX_TITLES_TO_CACHE),
       creatorTitles: cache.creatorTitles.slice(0, MAX_TITLES_TO_CACHE),
-      // Keep other data as is since they're typically smaller
-      featuredTitles: cache.featuredTitles,
+      featuredTitles: cache.featuredTitles.slice(0, 5), // Reduced from 10
       favorites: cache.favorites,
       titleDetails: cache.titleDetails,
       myRequests: cache.myRequests,
-      lastUpdated: cache.lastUpdated
+      sessionId: cache.sessionId,
+      sessionStartTime: cache.sessionStartTime,
+      lastUpdated: cache.lastUpdated,
+      dbConnectivityStatus: cache.dbConnectivityStatus
     };
-    
+
     const serialized = JSON.stringify(limitedCache);
-    // Check size before saving (localStorage typically has 5-10MB limit)
     const sizeInMB = new Blob([serialized]).size / (1024 * 1024);
-    if (sizeInMB > 2) {
-      console.warn(`Cache size too large (${sizeInMB.toFixed(2)}MB), clearing old cache`);
+
+    // Session cache size limit as per CLAUDE.md specifications
+    if (sizeInMB > 0.5) { // 0.5MB limit for session-based storage
+      console.warn(`📦 Session cache size too large (${sizeInMB.toFixed(2)}MB), clearing...`);
       localStorage.removeItem(CACHE_KEY);
       return;
     }
-    
+
     localStorage.setItem(CACHE_KEY, serialized);
   } catch (error) {
-    console.warn('Failed to save cache to localStorage:', error);
-    // Clear cache if storage is full
+    console.warn('❌ Failed to save session cache:', error);
     if (error.name === 'QuotaExceededError') {
       localStorage.removeItem(CACHE_KEY);
     }
@@ -129,6 +182,24 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
     }
     saveToStorage(cache);
   }, [cache]);
+
+  // Auto-expire session and clear cache after 1 hour of inactivity
+  useEffect(() => {
+    if (!cache.sessionStartTime) return;
+
+    const checkSessionExpiry = () => {
+      const sessionAge = Date.now() - cache.sessionStartTime!;
+      if (sessionAge >= SESSION_EXPIRY_MS) {
+        console.log('🕒 Session expired due to inactivity, clearing cache...');
+        setCache(getEmptyCache());
+        localStorage.removeItem(CACHE_KEY);
+      }
+    };
+
+    // Check every 5 minutes
+    const interval = setInterval(checkSessionExpiry, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [cache.sessionStartTime]);
 
   const setTitles = useCallback((titles: Title[]) => {
     setCache(prev => ({
@@ -191,7 +262,17 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
   const getTitleDetail = useCallback((titleId: string) => cache.titleDetails[titleId] || null, [cache.titleDetails]);
   const getMyRequests = useCallback(() => cache.myRequests, [cache.myRequests]);
 
-  const isFresh = useCallback((key: keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'> | string, maxAge = 24 * 60 * 60 * 1000) => {
+  const isFresh = useCallback((key: keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'> | string, maxAge = SESSION_EXPIRY_MS) => {
+    // Check session validity first
+    if (!cache.sessionId || !cache.sessionStartTime) {
+      return false; // No valid session
+    }
+
+    const sessionAge = Date.now() - cache.sessionStartTime;
+    if (sessionAge >= SESSION_EXPIRY_MS) {
+      return false; // Session expired
+    }
+
     // Handle titleDetails separately since it's an object
     if (key.startsWith('titleDetail:')) {
       const titleId = key.split(':')[1];
@@ -199,23 +280,45 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
       if (!timestamp) return false;
       return Date.now() - timestamp < maxAge;
     }
-    
+
     const timestamp = cache.lastUpdated[key as keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'>];
     if (!timestamp) return false;
     return Date.now() - timestamp < maxAge;
-  }, [cache.lastUpdated]);
+  }, [cache.lastUpdated, cache.sessionId, cache.sessionStartTime]);
+
+  const isSessionValid = useCallback(() => {
+    if (!cache.sessionId || !cache.sessionStartTime) {
+      return false;
+    }
+    const sessionAge = Date.now() - cache.sessionStartTime;
+    return sessionAge < SESSION_EXPIRY_MS;
+  }, [cache.sessionId, cache.sessionStartTime]);
+
+  const initializeSession = useCallback((sessionId: string) => {
+    console.log('🚀 Initializing new session cache:', sessionId.substring(0, 8) + '...');
+    setCache(prev => ({
+      ...getEmptyCache(),
+      sessionId,
+      sessionStartTime: Date.now(),
+      dbConnectivityStatus: prev.dbConnectivityStatus
+    }));
+  }, []);
+
+  const setDbConnectivityStatus = useCallback((status: { isConnected: boolean; error?: string }) => {
+    setCache(prev => ({
+      ...prev,
+      dbConnectivityStatus: {
+        ...status,
+        lastChecked: Date.now()
+      }
+    }));
+  }, []);
+
+  const getDbConnectivityStatus = useCallback(() => cache.dbConnectivityStatus, [cache.dbConnectivityStatus]);
 
   const clearCache = useCallback(() => {
-    const emptyCache = {
-      titles: [],
-      featuredTitles: [],
-      creatorTitles: [],
-      favorites: [],
-      titleDetails: {},
-      myRequests: [],
-      lastUpdated: {}
-    };
-    setCache(emptyCache);
+    console.log('🧼 Clearing all cache data...');
+    setCache(getEmptyCache());
     localStorage.removeItem(CACHE_KEY);
   }, []);
 
@@ -255,7 +358,11 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
     getTitleDetail,
     getMyRequests,
     isFresh,
+    isSessionValid,
     clearCache,
+    initializeSession,
+    setDbConnectivityStatus,
+    getDbConnectivityStatus,
     refreshData
   };
 

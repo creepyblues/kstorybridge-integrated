@@ -114,17 +114,17 @@ async function testBasicAccountTypeLogic() {
     `Got: ${creatorResult.accountType} from ${creatorResult.source}`
   );
   
-  // Test 3: Legacy 'ip_owner' should not work
+  // Test 3: Legacy creator strings should not work
   const mockLegacy = {
     id: 'test-legacy',
     email: 'legacy@test.com',
-    user_metadata: { account_type: 'ip_owner' }
+    user_metadata: { account_type: 'legacy_creator' }
   };
-  
+
   const legacyResult = determineAccountTypeSimple(mockLegacy, { defaultAccountType: 'buyer' });
-  logTest('Legacy ip_owner rejection',
+  logTest('Legacy creator string rejection',
     legacyResult.accountType === 'buyer' && legacyResult.source === 'default',
-    `ip_owner correctly defaults to buyer`
+    `Invalid account type correctly defaults to buyer`
   );
 }
 
@@ -199,15 +199,15 @@ async function testURLParameters() {
     `URL param 'buyer' correctly detected`
   );
   
-  // Test 10: Invalid URL param (legacy ip_owner)
-  const invalidParams = new URLSearchParams('account_type=ip_owner');
+  // Test 10: Invalid URL param (legacy value)
+  const invalidParams = new URLSearchParams('account_type=legacy_creator');
   const invalidResult = determineAccountTypeSimple(null, { 
     urlParams: invalidParams, 
     defaultAccountType: 'buyer' 
   });
   logTest('Invalid URL parameter handling',
     invalidResult.accountType === 'buyer' && invalidResult.source === 'default',
-    `Invalid 'ip_owner' correctly defaults to 'buyer'`
+    `Invalid legacy value correctly defaults to 'buyer'`
   );
 }
 

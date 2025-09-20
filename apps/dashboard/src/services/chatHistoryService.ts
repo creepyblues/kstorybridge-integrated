@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+
+type TitleRow = Database['public']['Tables']['titles']['Row'];
 
 export interface ChatSession {
   id: string;
@@ -41,7 +44,7 @@ export interface ChatInteraction {
   interaction_type: 'title_click' | 'suggestion_click' | 'title_view' | 'session_end';
   target_id?: string | null;
   target_title?: string | null;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -63,7 +66,7 @@ export interface ChatMessageFeedback {
   overall_rating: number;
   response_quality: 'excellent' | 'good' | 'fair' | 'poor';
   title_relevance: 'excellent' | 'good' | 'fair' | 'poor';
-  title_feedback: any; // JSON field
+  title_feedback: Record<string, unknown>; // JSON field
   general_feedback?: string;
   suggested_improvements?: string;
   created_at: string;
@@ -100,7 +103,7 @@ export interface CreateInteractionData {
   interaction_type: 'title_click' | 'suggestion_click' | 'title_view' | 'session_end';
   target_id?: string;
   target_title?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CreateSuggestedQueryData {
@@ -303,7 +306,10 @@ class ChatHistoryService {
   }
 
   // Get messages with their related recommendations and suggested queries (OPTIMIZED)
-  async getSessionMessagesWithData(sessionId: string): Promise<any[]> {
+  async getSessionMessagesWithData(sessionId: string): Promise<(ChatMessage & {
+    recommendations: (ChatTitleRecommendation & { title?: TitleRow })[],
+    suggested_queries: string[]
+  })[]> {
     try {
       // Clean up messages older than 24 hours
       await this.cleanupOldMessages(sessionId);
@@ -350,7 +356,7 @@ class ChatHistoryService {
 
       // Extract unique title IDs and batch fetch all titles
       const uniqueTitleIds = [...new Set(allRecommendations.map(rec => rec.title_id))];
-      let titleLookup: Record<string, any> = {};
+      let titleLookup: Record<string, TitleRow> = {};
       
       if (uniqueTitleIds.length > 0) {
         const { titlesService } = await import('./titlesService');
@@ -364,12 +370,12 @@ class ChatHistoryService {
           titleLookup = titles.reduce((acc, title) => {
             acc[title.title_id] = title;
             return acc;
-          }, {} as Record<string, any>);
+          }, {} as Record<string, TitleRow>);
         }
       }
 
       // Group recommendations and queries by message ID for O(1) lookup
-      const recsByMessageId: Record<string, any[]> = {};
+      const recsByMessageId: Record<string, (ChatTitleRecommendation & { title?: TitleRow })[]> = {};
       const queriesByMessageId: Record<string, string[]> = {};
       
       allRecommendations.forEach(rec => {
@@ -676,7 +682,14 @@ class ChatHistoryService {
   }
 
   // Submit feedback for a message
-  async submitMessageFeedback(messageId: string, feedbackData: any): Promise<ChatMessageFeedback | null> {
+  async submitMessageFeedback(messageId: string, feedbackData: {
+    overall_rating: number;
+    response_quality: 'excellent' | 'good' | 'fair' | 'poor';
+    title_relevance: 'excellent' | 'good' | 'fair' | 'poor';
+    title_feedback: Record<string, unknown>;
+    general_feedback?: string;
+    suggested_improvements?: string;
+  }): Promise<ChatMessageFeedback | null> {
     try {
       // First get the message to extract session_id and user_id
       const { data: message, error: messageError } = await supabase
@@ -741,7 +754,14 @@ class ChatHistoryService {
   }
 
   // Get all feedback for analysis (admin function)
-  async getAllFeedback(limit: number = 100): Promise<any[]> {
+  async getAllFeedback(limit: number = 100): Promise<(ChatMessageFeedback & {
+    chat_messages: {
+      content: string;
+      message_type: string;
+      session_id: string;
+      created_at: string;
+    } | null;
+  })[]> {
     try {
       const { data, error } = await supabase
         .from('chat_message_feedback')
@@ -770,7 +790,13 @@ class ChatHistoryService {
   }
 
   // Get feedback analytics
-  async getFeedbackAnalytics(): Promise<any> {
+  async getFeedbackAnalytics(): Promise<{
+    totalFeedback: number;
+    averageRating: number;
+    ratingDistribution: Record<number, number>;
+    qualityDistribution: Record<string, number>;
+    relevanceDistribution: Record<string, number>;
+  } | null> {
     try {
       const { data, error } = await supabase
         .from('chat_message_feedback')

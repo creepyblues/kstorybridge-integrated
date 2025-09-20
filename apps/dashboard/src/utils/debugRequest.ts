@@ -119,7 +119,7 @@ export const debugAuthAndRLS = async () => {
 
 // Add this to window for easy testing in browser console
 if (typeof window !== 'undefined') {
-  (window as any).testRequestTable = testRequestTable;
-  (window as any).testRequestInsert = testRequestInsert;
-  (window as any).debugAuthAndRLS = debugAuthAndRLS;
+  (window as Record<string, unknown>).testRequestTable = testRequestTable;
+  (window as Record<string, unknown>).testRequestInsert = testRequestInsert;
+  (window as Record<string, unknown>).debugAuthAndRLS = debugAuthAndRLS;
 }

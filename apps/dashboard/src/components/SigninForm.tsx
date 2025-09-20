@@ -108,7 +108,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     }
   };
 
-  const handleUserRedirect = async (user: any) => {
+  const handleUserRedirect = async (user: { id: string; email?: string; user_metadata?: Record<string, unknown> }) => {
     try {
       console.log(`🔍 ${accountType.toUpperCase()} SIGNIN: Processing user redirect:`, {
         userId: user.id,
@@ -120,19 +120,22 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
       // Skip complex detection and verify the user has a profile
       let profileExists = false;
 
+      const userId = user.id;
+      console.log(`🔍 ${accountType.toUpperCase()} SIGNIN: Checking profile by user id:`, userId);
+
       if (accountType === 'buyer') {
         const { data } = await supabase
           .from('user_buyers')
           .select('id')
-          .eq('email', user.email)
-          .single();
+          .eq('id', userId)
+          .maybeSingle();
         profileExists = !!data;
       } else if (accountType === 'creator') {
         const { data } = await supabase
           .from('user_creators')
           .select('id')
-          .eq('email', user.email)
-          .single();
+          .eq('id', userId)
+          .maybeSingle();
         profileExists = !!data;
       }
 

@@ -1,5 +1,5 @@
 -- Apply the creator trigger fix directly to production database
--- This fixes OAuth creator signup by updating the trigger to use 'creator' instead of 'ip_owner'
+-- This fixes OAuth creator signup by ensuring the trigger uses the canonical 'creator' value
 
 -- Applying creator trigger fix
 

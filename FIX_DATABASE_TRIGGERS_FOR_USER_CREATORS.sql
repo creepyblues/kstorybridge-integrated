@@ -64,7 +64,7 @@ BEGIN
     
     RAISE LOG 'Successfully created buyer profile for user: %, email: %', NEW.id, NEW.email;
     
-  ELSIF NEW.raw_user_meta_data->>'account_type' = 'ip_owner' THEN
+  ELSIF lower(COALESCE(NEW.raw_user_meta_data->>'account_type', '')) IN ('creator', 'ip_owner') THEN
     -- Create creator profile (FIXED: Now uses user_creators table)
     INSERT INTO public.user_creators (
       id, 
@@ -130,10 +130,11 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
+  normalized_account_type TEXT := lower(COALESCE(account_type, ''));
   profile_exists BOOLEAN := FALSE;
 BEGIN
   -- Check if profile already exists
-  IF account_type = 'buyer' THEN
+  IF normalized_account_type = 'buyer' THEN
     SELECT EXISTS(SELECT 1 FROM public.user_buyers WHERE id = user_id) INTO profile_exists;
     
     IF NOT profile_exists THEN
@@ -157,13 +158,13 @@ BEGIN
           ELSE NULL
         END,
         profile_data->>'linkedin_url',
-        COALESCE((profile_data->>'tier')::user_tier, 'basic'::user_tier)
+        COALESCE(NULLIF(profile_data->>'tier', '')::user_tier, 'basic'::user_tier)
       );
       
       RAISE LOG 'Manual buyer profile created for user: %, email: %', user_id, user_email;
     END IF;
     
-  ELSIF account_type = 'ip_owner' THEN
+  ELSIF normalized_account_type IN ('creator', 'ip_owner') THEN
     SELECT EXISTS(SELECT 1 FROM public.user_creators WHERE id = user_id) INTO profile_exists;
     
     IF NOT profile_exists THEN
@@ -196,7 +197,7 @@ BEGIN
     END IF;
     
   ELSE
-    RAISE EXCEPTION 'Invalid account_type: %. Must be "buyer" or "ip_owner"', account_type;
+    RAISE EXCEPTION 'Invalid account_type: %. Must be "buyer" or "creator"', account_type;
   END IF;
   
   RETURN NOT profile_exists; -- Return TRUE if new profile was created
@@ -245,7 +246,7 @@ BEGIN
       END IF;
       
     -- Check if creator exists  
-    ELSIF oauth_user.metadata_account_type = 'ip_owner' THEN
+    ELSIF oauth_user.metadata_account_type IN ('creator', 'ip_owner') THEN
       IF NOT EXISTS (SELECT 1 FROM public.user_creators WHERE id = oauth_user.id) THEN
         SELECT public.create_user_profile(
           oauth_user.id, 
@@ -307,7 +308,7 @@ SELECT
   CASE 
     WHEN u.raw_user_meta_data->>'account_type' = 'buyer' THEN 
       CASE WHEN b.id IS NOT NULL THEN 'HAS_PROFILE' ELSE 'MISSING_PROFILE' END
-    WHEN u.raw_user_meta_data->>'account_type' = 'ip_owner' THEN 
+    WHEN u.raw_user_meta_data->>'account_type' IN ('creator', 'ip_owner') THEN 
       CASE WHEN c.id IS NOT NULL THEN 'HAS_PROFILE' ELSE 'MISSING_PROFILE' END
     ELSE 'NO_ACCOUNT_TYPE'
   END as profile_status

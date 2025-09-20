@@ -119,17 +119,76 @@ export const favoritesService = {
       return mockFavorites.filter(favorite => favorite.user_id === userId);
     }
 
-    const { data, error } = await supabase
-      .from("user_favorites")
-      .select(`
-        *,
-        titles (*)
-      `)
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-    
-    if (error) throw error;
-    return data;
+    console.log('❤️ FAVORITES SERVICE: Getting user favorites for userId:', userId);
+    console.log('❤️ FAVORITES SERVICE: User ID type:', typeof userId);
+    console.log('❤️ FAVORITES SERVICE: User ID length:', userId?.length);
+
+    try {
+      // Skip the hanging getSession() call and go directly to the query
+      // The auth context from useAuth should be sufficient
+      console.log('❤️ FAVORITES SERVICE: Skipping getSession check (hangs), proceeding with query...');
+
+      // Try a simple query first (without joins)
+      console.log('❤️ FAVORITES SERVICE: Starting simple query (no joins)...');
+
+      const simpleQueryPromise = supabase
+        .from("user_favorites")
+        .select("*")
+        .eq("user_id", userId)
+        .limit(5);
+
+      const timeoutPromise = new Promise<any>((_, reject) =>
+        setTimeout(() => reject(new Error('Database query timeout after 5 seconds')), 5000)
+      );
+
+      const { data: simpleData, error: simpleError } = await Promise.race([simpleQueryPromise, timeoutPromise]);
+
+      if (simpleError) {
+        console.error('❌ FAVORITES SERVICE: Simple query error:', simpleError);
+        console.error('❌ FAVORITES SERVICE: Error details:', {
+          message: simpleError.message,
+          details: simpleError.details,
+          hint: simpleError.hint,
+          code: simpleError.code
+        });
+        throw simpleError;
+      }
+
+      console.log('✅ FAVORITES SERVICE: Simple query successful, found', simpleData?.length || 0, 'favorites');
+      console.log('✅ FAVORITES SERVICE: Sample simple data:', simpleData?.slice(0, 1));
+
+      // If we have data, try the full query with joins
+      if (simpleData && simpleData.length > 0) {
+        console.log('❤️ FAVORITES SERVICE: Found favorites, now trying full query with titles join...');
+
+        const fullQueryPromise = supabase
+          .from("user_favorites")
+          .select(`
+            *,
+            titles (*)
+          `)
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false });
+
+        const { data: fullData, error: fullError } = await Promise.race([fullQueryPromise, timeoutPromise]);
+
+        if (fullError) {
+          console.error('❌ FAVORITES SERVICE: Full query error:', fullError);
+          console.warn('⚠️ FAVORITES SERVICE: Falling back to simple data without title details');
+          return simpleData;
+        }
+
+        console.log('✅ FAVORITES SERVICE: Full query successful with', fullData?.length || 0, 'favorites');
+        return fullData || [];
+      } else {
+        console.log('✅ FAVORITES SERVICE: No favorites found, returning empty array');
+        return [];
+      }
+
+    } catch (error) {
+      console.error('❌ FAVORITES SERVICE: Error in getUserFavorites:', error);
+      throw error;
+    }
   },
 
   // Check if a title is favorited by the user
@@ -168,13 +227,20 @@ export const favoritesService = {
       return newFavorite;
     }
 
+    console.log('❤️ FAVORITES SERVICE: Adding to favorites:', { userId, titleId });
+
     const { data, error } = await supabase
       .from("user_favorites")
       .insert({ user_id: userId, title_id: titleId })
       .select()
       .single();
-    
-    if (error) throw error;
+
+    if (error) {
+      console.error('❌ FAVORITES SERVICE: Error adding to favorites:', error);
+      throw error;
+    }
+
+    console.log('✅ FAVORITES SERVICE: Successfully added to favorites:', data);
     return data;
   },
 
@@ -183,7 +249,7 @@ export const favoritesService = {
     // Mock implementation for localhost development
     if (shouldUseMockData()) {
       console.log('❤️ FAVORITES SERVICE: Mock remove from favorites for localhost development');
-      const index = mockFavorites.findIndex(fav => 
+      const index = mockFavorites.findIndex(fav =>
         fav.user_id === userId && fav.title_id === titleId
       );
       if (index > -1) {
@@ -192,12 +258,19 @@ export const favoritesService = {
       return;
     }
 
+    console.log('🗑️ FAVORITES SERVICE: Removing from favorites:', { userId, titleId });
+
     const { error } = await supabase
       .from("user_favorites")
       .delete()
       .eq("user_id", userId)
       .eq("title_id", titleId);
-    
-    if (error) throw error;
+
+    if (error) {
+      console.error('❌ FAVORITES SERVICE: Error removing from favorites:', error);
+      throw error;
+    }
+
+    console.log('✅ FAVORITES SERVICE: Successfully removed from favorites');
   }
 };

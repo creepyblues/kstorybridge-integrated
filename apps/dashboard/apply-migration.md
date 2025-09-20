@@ -1,6 +1,12 @@
-# Apply Profiles Table Migration
+# Profiles Table Setup Guide - 2025-01-14
 
-The profile page error occurs because the `profiles` table doesn't exist in the database. I've created a migration to fix this.
+## Status: COMPLETED - FOR REFERENCE ONLY
+## Last Updated: 2025-01-14
+## Safe to Follow: NO - MIGRATION ALREADY APPLIED
+
+⚠️ **WARNING**: This migration has been completed. Do not run these commands again as they may cause database conflicts.
+
+The profile page error occurred because the `profiles` table didn't exist in the database. This migration was created to fix this issue and has been successfully applied.
 
 ## How to Apply the Migration
 
@@ -24,11 +30,11 @@ psql -h your-db-host -U your-username -d your-database -f supabase/migrations/20
 
 ## What This Migration Does
 
-1. **Creates the `profiles` table** with all the fields expected by the dashboard code
-2. **Syncs existing user data** from `user_buyers` and `user_ipowners` tables into the new `profiles` table
-3. **Sets up Row Level Security (RLS)** policies for proper access control
-4. **Creates triggers** to automatically populate the profiles table for new users
-5. **Uses consistent field naming** (`pen_name` field to match database schema and TypeScript types)
+1. **Updates account type architecture** to use separate `user_buyers` and `user_creators` tables
+2. **Maintains existing user data** from `user_buyers` and `user_creators` tables with proper account type separation
+3. **Sets up Row Level Security (RLS)** policies for proper access control on account-specific tables
+4. **Creates triggers** to automatically populate the appropriate profile table based on account type for new users
+5. **Uses consistent field naming** (`pen_name` field in `user_creators` table to match database schema and TypeScript types)
 
 ## After Running the Migration
 

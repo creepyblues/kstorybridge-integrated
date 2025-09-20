@@ -24,6 +24,7 @@ export interface BuyerProfileData {
   buyer_role: string;
   linkedin_url?: string | null;
   tier?: 'basic' | 'invited' | 'pro' | 'suite';
+  requested?: boolean;
 }
 
 export interface CreatorProfileData {
@@ -39,7 +40,7 @@ export interface CreatorProfileData {
 
 export interface ProfileCreationResult {
   success: boolean;
-  profile?: any;
+  profile?: BuyerProfileData | CreatorProfileData;
   existed?: boolean;
   created?: boolean;
   updated?: boolean;
@@ -61,7 +62,7 @@ const profileCreationLocks = new Map<string, Promise<ProfileCreationResult>>();
 /**
  * Determines if an error is retryable (transient network/database issues)
  */
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: unknown): boolean {
   const retryablePatterns = [
     'network',
     'timeout',
@@ -78,8 +79,9 @@ function isRetryableError(error: any): boolean {
     '504'
   ];
   
-  const errorMessage = error?.message?.toLowerCase() || '';
-  const errorCode = error?.code?.toLowerCase() || '';
+  const errorObj = error as Record<string, unknown>;
+  const errorMessage = (errorObj?.message as string)?.toLowerCase() || '';
+  const errorCode = (errorObj?.code as string)?.toLowerCase() || '';
   
   return retryablePatterns.some(pattern => 
     errorMessage.includes(pattern) || errorCode.includes(pattern)
@@ -93,7 +95,7 @@ async function waitForTriggerCompletion(
   userId: string,
   accountType: 'buyer' | 'creator',
   maxWait: number = 3000
-): Promise<{ found: boolean; profile?: any }> {
+): Promise<{ found: boolean; profile?: BuyerProfileData | CreatorProfileData }> {
   const startTime = Date.now();
   const checkInterval = 200; // Check every 200ms
   
@@ -221,6 +223,7 @@ async function createBuyerProfileOperation(
       const safeProfileData = {
         ...profileData,
         tier: profileData.tier || 'basic',
+        requested: profileData.requested !== undefined ? profileData.requested : false,
         created_at: new Date().toISOString()
       };
       
@@ -558,7 +561,7 @@ async function createCreatorProfileOperation(
 export async function createProfileFromUser(
   user: User,
   accountType: 'buyer' | 'creator',
-  additionalData: any = {},
+  additionalData: Record<string, unknown> = {},
   options: ProfileCreationOptions = {}
 ): Promise<ProfileCreationResult> {
   if (accountType === 'buyer') {

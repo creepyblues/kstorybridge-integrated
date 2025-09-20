@@ -14,106 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
-      admin: {
+      featured: {
         Row: {
-          active: boolean
-          created_at: string
-          email: string
-          full_name: string
           id: string
+          title_id: string
+          note: string | null
+          created_at: string
           updated_at: string
         }
         Insert: {
-          active?: boolean
-          created_at?: string
-          email: string
-          full_name: string
           id?: string
+          title_id: string
+          note?: string | null
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          active?: boolean
-          created_at?: string
-          email?: string
-          full_name?: string
           id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          account_type: Database["public"]["Enums"]["account_type"]
-          buyer_company: string | null
-          buyer_role: Database["public"]["Enums"]["buyer_role"] | null
-          created_at: string
-          email: string
-          full_name: string
-          id: string
-          invitation_status: string | null
-          ip_owner_company: string | null
-          ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url: string | null
-          pen_name: string | null
-          updated_at: string
-          website_url: string | null
-        }
-        Insert: {
-          account_type: Database["public"]["Enums"]["account_type"]
-          buyer_company?: string | null
-          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
+          title_id?: string
+          note?: string | null
           created_at?: string
-          email: string
-          full_name: string
-          id: string
-          invitation_status?: string | null
-          ip_owner_company?: string | null
-          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url?: string | null
-          pen_name?: string | null
           updated_at?: string
-          website_url?: string | null
         }
-        Update: {
-          account_type?: Database["public"]["Enums"]["account_type"]
-          buyer_company?: string | null
-          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
-          created_at?: string
-          email?: string
-          full_name?: string
-          id?: string
-          invitation_status?: string | null
-          ip_owner_company?: string | null
-          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url?: string | null
-          pen_name?: string | null
-          updated_at?: string
-          website_url?: string | null
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "featured_title_id_fkey"
+            columns: ["title_id"]
+            isOneToOne: false
+            referencedRelation: "titles"
+            referencedColumns: ["title_id"]
+          },
+        ]
       }
       titles: {
         Row: {
-          art_author: string | null
-          audience: string | null
           author: string | null
-          chapters: number | null
-          completed: boolean | null
-          comps: string[] | null
           content_format: Database["public"]["Enums"]["content_format"] | null
           created_at: string
           creator_id: string
-          genre: Database["public"]["Enums"]["genre"] | null
+          genre: string[] | null
           illustrator: string | null
           likes: number | null
-          note: string | null
-          perfect_for: string | null
           pitch: string | null
           rating: number | null
           rating_count: number | null
-          rights: string | null
-          rights_owner: string | null
-          story_author: string | null
           synopsis: string | null
           tagline: string | null
           tags: string[] | null
@@ -122,32 +66,21 @@ export type Database = {
           title_name_en: string | null
           title_name_kr: string
           title_url: string | null
-          tone: string | null
           updated_at: string
           views: number | null
           writer: string | null
         }
         Insert: {
-          art_author?: string | null
-          audience?: string | null
           author?: string | null
-          chapters?: number | null
-          completed?: boolean | null
-          comps?: string[] | null
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id: string
-          genre?: Database["public"]["Enums"]["genre"] | null
+          genre?: string[] | null
           illustrator?: string | null
           likes?: number | null
-          note?: string | null
-          perfect_for?: string | null
           pitch?: string | null
           rating?: number | null
           rating_count?: number | null
-          rights?: string | null
-          rights_owner?: string | null
-          story_author?: string | null
           synopsis?: string | null
           tagline?: string | null
           tags?: string[] | null
@@ -156,32 +89,21 @@ export type Database = {
           title_name_en?: string | null
           title_name_kr: string
           title_url?: string | null
-          tone?: string | null
           updated_at?: string
           views?: number | null
           writer?: string | null
         }
         Update: {
-          art_author?: string | null
-          audience?: string | null
           author?: string | null
-          chapters?: number | null
-          completed?: boolean | null
-          comps?: string[] | null
           content_format?: Database["public"]["Enums"]["content_format"] | null
           created_at?: string
           creator_id?: string
-          genre?: Database["public"]["Enums"]["genre"] | null
+          genre?: string[] | null
           illustrator?: string | null
           likes?: number | null
-          note?: string | null
-          perfect_for?: string | null
           pitch?: string | null
           rating?: number | null
           rating_count?: number | null
-          rights?: string | null
-          rights_owner?: string | null
-          story_author?: string | null
           synopsis?: string | null
           tagline?: string | null
           tags?: string[] | null
@@ -190,7 +112,6 @@ export type Database = {
           title_name_en?: string | null
           title_name_kr?: string
           title_url?: string | null
-          tone?: string | null
           updated_at?: string
           views?: number | null
           writer?: string | null
@@ -199,25 +120,40 @@ export type Database = {
       }
       user_buyers: {
         Row: {
+          buyer_company: string | null
+          buyer_role: Database["public"]["Enums"]["buyer_role"] | null
           created_at: string
+          email: string
+          full_name: string
           id: string
-          requested: boolean | null
+          invitation_status: string | null
+          linkedin_url: string | null
           tier: Database["public"]["Enums"]["user_tier"] | null
-          user_id: string
+          updated_at: string
         }
         Insert: {
+          buyer_company?: string | null
+          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
           created_at?: string
-          id?: string
-          requested?: boolean | null
+          email: string
+          full_name: string
+          id: string
+          invitation_status?: string | null
+          linkedin_url?: string | null
           tier?: Database["public"]["Enums"]["user_tier"] | null
-          user_id: string
+          updated_at?: string
         }
         Update: {
+          buyer_company?: string | null
+          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
           created_at?: string
+          email?: string
+          full_name?: string
           id?: string
-          requested?: boolean | null
+          invitation_status?: string | null
+          linkedin_url?: string | null
           tier?: Database["public"]["Enums"]["user_tier"] | null
-          user_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -250,6 +186,45 @@ export type Database = {
           },
         ]
       }
+      user_creators: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          invitation_status: string | null
+          ip_owner_company: string | null
+          ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id: string
+          invitation_status?: string | null
+          ip_owner_company?: string | null
+          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          invitation_status?: string | null
+          ip_owner_company?: string | null
+          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -258,7 +233,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      account_type: "ip_owner" | "buyer"
+      account_type: "creator" | "buyer"
       buyer_role: "producer" | "executive" | "agent" | "content_scout" | "other"
       content_format:
         | "webtoon"
@@ -383,7 +358,7 @@ export type Enums<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOptions extends {
+> = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
@@ -411,7 +386,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type: ["ip_owner", "buyer"],
+      account_type: ["creator", "buyer"],
       buyer_role: ["producer", "executive", "agent", "content_scout", "other"],
       content_format: [
         "webtoon",

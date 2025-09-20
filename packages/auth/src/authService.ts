@@ -2,7 +2,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export interface UserProfile {
-  account_type: 'buyer' | 'ip_owner';
+  account_type: 'buyer' | 'creator';
   invitation_status: string;
   role?: string;
 }
@@ -29,8 +29,8 @@ export class AuthService {
   async fetchUserProfile(user: User): Promise<UserProfile | null> {
     try {
       const accountType = user.user_metadata?.account_type;
-      
-      if (!accountType || !['buyer', 'ip_owner'].includes(accountType)) {
+
+      if (!accountType || !['buyer', 'creator'].includes(accountType)) {
         console.error('Invalid or missing account_type:', accountType);
         return null;
       }
@@ -54,7 +54,7 @@ export class AuthService {
         };
       }
 
-      if (accountType === 'ip_owner') {
+      if (accountType === 'creator') {
         const { data: profile, error } = await this.supabase
           .from('user_creators')
           .select('invitation_status, ip_owner_role')
@@ -67,7 +67,7 @@ export class AuthService {
         }
 
         return {
-          account_type: 'ip_owner',
+          account_type: 'creator',
           invitation_status: profile?.invitation_status || 'invited',
           role: profile?.ip_owner_role
         };

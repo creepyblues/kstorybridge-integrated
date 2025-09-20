@@ -29,9 +29,10 @@ const BuyerHome = lazy(() => import("./pages/BuyerHome"));
 const CreatorHome = lazy(() => import("./pages/CreatorHome"));
 const Titles = lazy(() => import("./pages/Titles"));
 const TitleList = lazy(() => import("./pages/TitleList"));
-const AddTitle = lazy(() => import("./pages/AddTitle"));
 const TitleDetail = lazy(() => import("./pages/TitleDetail"));
 const TitleDetailNew = lazy(() => import("./pages/TitleDetailNew"));
+const CreatorAddTitlePage = lazy(() => import("./pages/CreatorAddTitlePage"));
+const CreatorTitleDetailNew = lazy(() => import("./pages/CreatorTitleDetailNew"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const MyRequests = lazy(() => import("./pages/MyRequests"));
 const Deals = lazy(() => import("./pages/Deals"));
@@ -189,13 +190,13 @@ const App = () => (
                   <CreatorProtectedLayout><Titles /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles/add" element={
-                  <CreatorProtectedLayout><AddTitle /></CreatorProtectedLayout>
+                  <CreatorProtectedLayout><CreatorAddTitlePage /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles/:titleId" element={
-                  <CreatorProtectedLayout><TitleDetailNew /></CreatorProtectedLayout>
+                  <CreatorProtectedLayout><CreatorTitleDetailNew /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles-new/:titleId" element={
-                  <CreatorProtectedLayout><TitleDetail /></CreatorProtectedLayout>
+                  <CreatorProtectedLayout><CreatorTitleDetailNew /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/requests" element={
                   <CreatorProtectedLayout><MyRequests /></CreatorProtectedLayout>

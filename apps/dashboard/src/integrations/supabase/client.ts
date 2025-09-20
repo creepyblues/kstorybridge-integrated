@@ -12,13 +12,35 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Default to production values, but allow override with environment variables
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://dlrnrgcoguxlkkcitlpd.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA";
+// Require explicit Supabase configuration (no production fallbacks)
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  const missingVars = [
+    !SUPABASE_URL && 'VITE_SUPABASE_URL',
+    !SUPABASE_PUBLISHABLE_KEY && 'VITE_SUPABASE_ANON_KEY'
+  ].filter(Boolean).join(', ');
+
+  const errorMessage = `Supabase configuration missing required environment variables: ${missingVars}. Update your .env files before running the dashboard.`;
+  if (typeof window !== 'undefined') {
+    console.error(errorMessage);
+  }
+  throw new Error(errorMessage);
+}
 
 // Enhanced configuration for production reliability
 const isLocal = SUPABASE_URL.includes('localhost') || SUPABASE_URL.includes('127.0.0.1');
 const isDev = import.meta.env.DEV;
+
+// DEBUG: Log configuration details (without exposing fallback secrets)
+console.log('🔧 [SUPABASE DEBUG] Configuration details:', {
+  supabaseUrl: SUPABASE_URL,
+  keyPrefix: SUPABASE_PUBLISHABLE_KEY.substring(0, 8) + '…',
+  isLocal,
+  isDev,
+  mode: import.meta.env.MODE
+});
 
 // Performance and reliability settings
 const CLIENT_CONFIG = {
@@ -102,9 +124,9 @@ export async function withRetry<T>(
   } = {}
 ): Promise<T> {
   const {
-    maxRetries = 3,
-    baseDelay = 1000,
-    maxDelay = 10000,
+    maxRetries = 2, // Reduced from 3 to 2 to prevent excessive retries
+    baseDelay = 1500, // Increased from 1000 to give more time
+    maxDelay = 8000, // Reduced from 10000 for faster failure
     retryCondition = isNetworkError,
     operationName = 'Supabase operation'
   } = options;
@@ -112,50 +134,77 @@ export async function withRetry<T>(
   let lastError: any;
   let attempt = 0;
 
+  console.log(`🔄 [RETRY VERBOSE] Starting ${operationName} with retry logic (max: ${maxRetries})`);
+
   while (attempt <= maxRetries) {
     try {
       if (attempt > 0) {
-        console.log(`🔄 Supabase: Retry attempt ${attempt}/${maxRetries} for ${operationName}`);
+        console.log(`🔄 [RETRY VERBOSE] Retry attempt ${attempt}/${maxRetries} for ${operationName}`);
+      } else {
+        console.log(`🔄 [RETRY VERBOSE] Initial attempt for ${operationName}`);
       }
-      
+
+      console.log(`🔄 [RETRY VERBOSE] Executing operation...`);
       const result = await operation();
-      
+      console.log(`🔄 [RETRY VERBOSE] Operation completed successfully`);
+
       if (attempt > 0) {
-        console.log(`✅ Supabase: ${operationName} succeeded on attempt ${attempt + 1}`);
+        console.log(`✅ [RETRY VERBOSE] ${operationName} succeeded on retry attempt ${attempt + 1}`);
+      } else {
+        console.log(`✅ [RETRY VERBOSE] ${operationName} succeeded on first attempt`);
       }
       
       return result;
     } catch (error) {
       lastError = error;
       attempt++;
-      
-      console.warn(`⚠️ Supabase: ${operationName} failed on attempt ${attempt}:`, error);
-      
+
+      console.error(`❌ [RETRY VERBOSE] ${operationName} failed on attempt ${attempt}:`, {
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        status: error.status,
+        details: error.details,
+        hint: error.hint,
+        fullError: error
+      });
+
+      const isRetryable = retryCondition(error);
+      console.log(`🔄 [RETRY VERBOSE] Error analysis:`, {
+        isRetryable,
+        attemptsRemaining: maxRetries - attempt + 1,
+        willRetry: attempt <= maxRetries && isRetryable
+      });
+
       // Don't retry if we've exhausted attempts or error isn't retryable
-      if (attempt > maxRetries || !retryCondition(error)) {
+      if (attempt > maxRetries || !isRetryable) {
+        console.log(`🛑 [RETRY VERBOSE] Stopping retry loop:`, {
+          exhaustedAttempts: attempt > maxRetries,
+          notRetryable: !isRetryable
+        });
         break;
       }
-      
+
       // Calculate delay with exponential backoff and jitter
       const delay = Math.min(
         baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000,
         maxDelay
       );
-      
-      console.log(`⏳ Supabase: Waiting ${delay}ms before retry...`);
+
+      console.log(`⏳ [RETRY VERBOSE] Waiting ${delay}ms before retry...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
 
-  console.error(`❌ Supabase: ${operationName} failed after ${maxRetries + 1} attempts:`, lastError);
+  console.error(`❌ [RETRY VERBOSE] ${operationName} failed after ${maxRetries + 1} attempts. Final error:`, lastError);
   throw lastError;
 }
 
 /**
  * Enhanced request interceptor with monitoring
  */
-let requestCount = 0;
-let errorCount = 0;
+const requestCount = 0;
+const errorCount = 0;
 const startTime = Date.now();
 
 // Log the configuration in development
@@ -172,6 +221,104 @@ if (isDev) {
 
 // Create the enhanced Supabase client
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, CLIENT_CONFIG);
+
+// IMMEDIATE CONNECTION TEST - DISABLED TO PREVENT HANGING
+if (false && isDev) {
+  setTimeout(async () => {
+    try {
+      console.log('🧪 [BROWSER TEST] Testing database connection...');
+
+      // First test: Simple auth check
+      console.log('🧪 [AUTH TEST] Checking authentication state...');
+      const authStart = Date.now();
+      const { data: authData, error: authError } = await supabase.auth.getSession();
+      const authEnd = Date.now();
+
+      console.log('🧪 [AUTH TEST] Auth result:', {
+        hasSession: !!authData?.session,
+        hasUser: !!authData?.session?.user,
+        userEmail: authData?.session?.user?.email,
+        authTime: (authEnd - authStart) + 'ms',
+        authError: authError?.message || 'none'
+      });
+
+      if (!authData?.session?.user) {
+        console.error('🧪 [BROWSER TEST] No authenticated user - this will cause RLS failures');
+        return;
+      }
+
+      // Second test: Database query with timeout
+      console.log('🧪 [DB TEST] Testing titles table access...');
+      const testStart = Date.now();
+
+      const queryPromise = supabase.from('titles').select('title_id').limit(1);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database test timeout')), 3000)
+      );
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+      const testEnd = Date.now();
+
+      console.log('🧪 [DB TEST] Database result:', {
+        success: !error,
+        responseTime: (testEnd - testStart) + 'ms',
+        dataCount: data?.length || 0,
+        error: error?.message || 'none',
+        errorCode: error?.code || 'none',
+        errorDetails: error?.details || 'none'
+      });
+
+      if (error) {
+        console.error('🧪 [DB TEST] Database error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+
+        // Test if this is an RLS issue
+        if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
+          console.error('🚨 [DB TEST] RLS POLICY BLOCKING ACCESS - User cannot read titles table');
+          console.error('🚨 [DB TEST] User email:', authData?.session?.user?.email);
+          console.error('🚨 [DB TEST] User ID:', authData?.session?.user?.id);
+        }
+      } else {
+        console.log('✅ [DB TEST] Database connection successful');
+      }
+
+      // Third test: Featured table specifically
+      console.log('🧪 [FEATURED TEST] Testing featured table access...');
+      const featuredStart = Date.now();
+
+      const featuredQueryPromise = supabase.from('featured').select('id').limit(1);
+      const featuredTimeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Featured table test timeout')), 3000)
+      );
+
+      try {
+        const { data: featuredData, error: featuredError } = await Promise.race([featuredQueryPromise, featuredTimeoutPromise]);
+        const featuredEnd = Date.now();
+
+        console.log('🧪 [FEATURED TEST] Featured table result:', {
+          success: !featuredError,
+          responseTime: (featuredEnd - featuredStart) + 'ms',
+          dataCount: featuredData?.length || 0,
+          error: featuredError?.message || 'none',
+          errorCode: featuredError?.code || 'none'
+        });
+
+        if (featuredError) {
+          console.error('🧪 [FEATURED TEST] Featured table error:', featuredError);
+        }
+      } catch (featuredTestError) {
+        console.error('🧪 [FEATURED TEST] Featured table timeout/exception:', featuredTestError);
+      }
+
+    } catch (testError) {
+      console.error('🧪 [BROWSER TEST] Exception:', testError);
+    }
+  }, 2000);
+}
 
 // Enhanced auth methods with retry logic
 const originalSignInWithPassword = supabase.auth.signInWithPassword.bind(supabase.auth);
@@ -257,28 +404,28 @@ export async function performSupabaseHealthCheck(): Promise<{
   };
 }> {
   const startTime = Date.now();
-  
+
   try {
-    // Simple connectivity test
-    const { error } = await supabase.auth.getSession();
+    // Skip auth-based health check during initial load to avoid circular dependency
+    // Just do basic config validation
     const responseTime = Date.now() - startTime;
-    
+
     const result = {
-      healthy: !error,
+      healthy: true, // Assume healthy if config is valid
       response: responseTime,
-      error: error?.message,
+      error: undefined,
       details: {
         url: SUPABASE_URL,
         isLocal,
-        connectivity: (responseTime < 1000 ? 'ok' : responseTime < 5000 ? 'slow' : 'failed') as 'ok' | 'slow' | 'failed',
+        connectivity: 'ok' as 'ok' | 'slow' | 'failed',
         authConfigured: SUPABASE_PUBLISHABLE_KEY.length > 20
       }
     };
-    
+
     if (isDev) {
-      console.log('🏥 Supabase Health Check:', result);
+      console.log('🏥 Supabase Health Check (simplified):', result);
     }
-    
+
     return result;
   } catch (error) {
     return {

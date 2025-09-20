@@ -29,7 +29,7 @@ npm run dev
 1. Open http://localhost:5173/signup/creator
 2. Click "Continue with Google"
 3. Complete Google auth
-4. Check user_ipowners table in Supabase
+4. Check user_creators table in Supabase
 
 ### Test Sign-In Flow
 1. Open http://localhost:5173/signin
@@ -104,7 +104,7 @@ ORDER BY created_at DESC
 LIMIT 5;
 
 -- Check creator profiles  
-SELECT * FROM user_ipowners
+SELECT * FROM user_creators
 ORDER BY created_at DESC
 LIMIT 5;
 ```

@@ -2,8 +2,8 @@
 
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag?: (...args: unknown[]) => void;
+    dataLayer: Record<string, unknown>[];
   }
 }
 
@@ -52,7 +52,7 @@ export const trackEvent = (action: string, category: string, label?: string, val
 };
 
 // Track user interactions specific to dashboard
-export const trackDashboardEvent = (action: string, details?: Record<string, any>) => {
+export const trackDashboardEvent = (action: string, details?: Record<string, unknown>) => {
   trackEvent(action, 'dashboard_interaction', JSON.stringify(details));
 };
 

@@ -8,18 +8,24 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-  account_type_value TEXT;
+  raw_account_type TEXT;
+  normalized_account_type TEXT;
   profile_exists BOOLEAN := FALSE;
 BEGIN
-  -- Get account type from metadata
-  account_type_value := NEW.raw_user_meta_data->>'account_type';
+  -- Normalize account type and handle legacy values
+  raw_account_type := COALESCE(NEW.raw_user_meta_data->>'account_type', '');
+  normalized_account_type := lower(raw_account_type);
+
+  IF normalized_account_type = 'ip_owner' THEN
+    normalized_account_type := 'creator';
+  END IF;
   
   -- Enhanced logging for debugging
-  RAISE LOG 'User profile routing for user: %, email: %, account_type: %', 
-    NEW.id, NEW.email, account_type_value;
+  RAISE LOG 'User profile routing for user: %, email: %, raw account_type: %, normalized: %', 
+    NEW.id, NEW.email, raw_account_type, normalized_account_type;
   
   -- Route based on account type in metadata
-  IF account_type_value = 'buyer' THEN
+  IF normalized_account_type = 'buyer' THEN
     -- Check if buyer profile already exists (prevent duplicates)
     SELECT EXISTS(SELECT 1 FROM public.user_buyers WHERE id = NEW.id) INTO profile_exists;
     
@@ -39,12 +45,12 @@ BEGIN
         COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
         NEW.raw_user_meta_data->>'buyer_company',
         CASE 
-          WHEN NEW.raw_user_meta_data->>'buyer_role' IS NOT NULL AND NEW.raw_user_meta_data->>'buyer_role' != ''
+          WHEN NULLIF(NEW.raw_user_meta_data->>'buyer_role', '') IS NOT NULL
           THEN (NEW.raw_user_meta_data->>'buyer_role')::public.buyer_role
           ELSE NULL
         END,
         NEW.raw_user_meta_data->>'linkedin_url',
-        COALESCE((NEW.raw_user_meta_data->>'tier')::user_tier, 'basic'::user_tier)
+        COALESCE(NULLIF(NEW.raw_user_meta_data->>'tier', '')::user_tier, 'basic'::user_tier)
       );
       
       RAISE LOG 'Successfully created buyer profile for user: %, email: %', NEW.id, NEW.email;
@@ -52,7 +58,7 @@ BEGIN
       RAISE LOG 'Buyer profile already exists for user: %, skipping creation', NEW.id;
     END IF;
     
-  ELSIF account_type_value = 'creator' THEN
+  ELSIF normalized_account_type = 'creator' THEN
     -- Check if creator profile already exists (prevent duplicates)
     SELECT EXISTS(SELECT 1 FROM public.user_creators WHERE id = NEW.id) INTO profile_exists;
     
@@ -71,9 +77,9 @@ BEGIN
         NEW.id,
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-        NEW.raw_user_meta_data->>'pen_name',
+        NULLIF(NEW.raw_user_meta_data->>'pen_name', ''),
         CASE 
-          WHEN NEW.raw_user_meta_data->>'ip_owner_role' IS NOT NULL AND NEW.raw_user_meta_data->>'ip_owner_role' != ''
+          WHEN NULLIF(NEW.raw_user_meta_data->>'ip_owner_role', '') IS NOT NULL
           THEN (NEW.raw_user_meta_data->>'ip_owner_role')::public.ip_owner_role
           ELSE NULL
         END,
@@ -85,41 +91,6 @@ BEGIN
       RAISE LOG 'Successfully created creator profile for user: %, email: %', NEW.id, NEW.email;
     ELSE
       RAISE LOG 'Creator profile already exists for user: %, skipping creation', NEW.id;
-    END IF;
-    
-  ELSIF account_type_value = 'ip_owner' THEN
-    -- Legacy support for ip_owner account type (map to creator)
-    SELECT EXISTS(SELECT 1 FROM public.user_creators WHERE id = NEW.id) INTO profile_exists;
-    
-    IF NOT profile_exists THEN
-      INSERT INTO public.user_creators (
-        id, 
-        email, 
-        full_name, 
-        pen_name,
-        ip_owner_role,
-        ip_owner_company,
-        website_url,
-        invitation_status
-      )
-      VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-        NEW.raw_user_meta_data->>'pen_name_or_studio',
-        CASE 
-          WHEN NEW.raw_user_meta_data->>'ip_owner_role' IS NOT NULL AND NEW.raw_user_meta_data->>'ip_owner_role' != ''
-          THEN (NEW.raw_user_meta_data->>'ip_owner_role')::public.ip_owner_role
-          ELSE NULL
-        END,
-        NEW.raw_user_meta_data->>'ip_owner_company',
-        NEW.raw_user_meta_data->>'website_url',
-        'invited'
-      );
-      
-      RAISE LOG 'Successfully created creator profile (legacy ip_owner) for user: %, email: %', NEW.id, NEW.email;
-    ELSE
-      RAISE LOG 'Creator profile already exists for legacy ip_owner user: %, skipping creation', NEW.id;
     END IF;
     
   ELSE

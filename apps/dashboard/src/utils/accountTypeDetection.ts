@@ -150,20 +150,9 @@ export async function determineAccountType(
     }
   };
 
-  // Handle dependency injection to break circular dependencies
-  let safeUser = user;
-  if (!safeUser) {
-    try {
-      const session = await getCurrentSession();
-      safeUser = session?.user || null;
-    } catch (error) {
-      log('⚠️ Failed to get current session for user fallback', error);
-    }
-  }
-
-  // Handle null user case early
-  if (!safeUser) {
-    log('No user provided or available');
+  // Handle null user case early - DO NOT call getCurrentSession to avoid circular dependency
+  if (!user) {
+    log('No user provided - avoiding circular dependency with session manager');
     return {
       accountType: null,
       source: 'error',
@@ -171,6 +160,8 @@ export async function determineAccountType(
       profileExists: false
     };
   }
+
+  const safeUser = user;
 
   const userId = safeUser.id;
   log('Starting enhanced account type detection', { 
@@ -221,18 +212,19 @@ export async function determineAccountType(
     if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
       log('✅ Found valid account type in metadata');
       
-      // For OAuth flows, metadata is set before profile creation
-      if (includeDatabaseLookup && safeUser.email) {
+      // Skip database verification when metadata is available - trust metadata as authoritative
+      // This prevents 5-second timeouts during OAuth flows and improves performance
+      if (false && includeDatabaseLookup && safeUser.email) { // Disabled for performance
         const tableName = metadataAccountType === 'buyer' ? 'user_buyers' : 'user_creators';
         log('🔍 Verifying profile existence in database', { tableName });
         
         try {
           const profileExists = await dbCircuitBreaker.execute(async () => {
-            const { data, error } = await withRetry(() => 
+            const { data, error } = await withRetry(() =>
               supabase
                 .from(tableName)
                 .select('id')
-                .eq('email', safeUser.email!.toLowerCase())
+                .eq('id', safeUser.id)
                 .maybeSingle(),
               {
                 maxRetries: 2,
@@ -240,12 +232,12 @@ export async function determineAccountType(
                 retryCondition: (error) => isNetworkError(error)
               }
             );
-            
+
             if (error) {
               log('Database query error', { error: error.message });
               throw error;
             }
-            
+
             return !!data;
           }, false);
           
@@ -328,11 +320,11 @@ export async function determineAccountType(
       try {
         const dbResults = await dbCircuitBreaker.execute(async () => {
           const [buyerResult, creatorResult] = await Promise.all([
-            withRetry(() => 
+            withRetry(() =>
               supabase
                 .from('user_buyers')
                 .select('id, tier')
-                .eq('email', safeUser.email!.toLowerCase())
+                .eq('id', safeUser.id)
                 .maybeSingle(),
               {
                 maxRetries: 2,
@@ -340,11 +332,11 @@ export async function determineAccountType(
                 retryCondition: (error) => isNetworkError(error)
               }
             ),
-            withRetry(() => 
+            withRetry(() =>
               supabase
                 .from('user_creators')
                 .select('id, pen_name')
-                .eq('email', safeUser.email!.toLowerCase())
+                .eq('id', safeUser.id)
                 .maybeSingle(),
               {
                 maxRetries: 2,
@@ -513,7 +505,7 @@ export async function checkProfileExists(
   user: User | null,
   accountType: AccountType
 ): Promise<boolean> {
-  if (!user?.email) return false;
+  if (!user?.id) return false;
   
   try {
     const tableName = accountType === 'buyer' ? 'user_buyers' : 'user_creators';
@@ -522,7 +514,7 @@ export async function checkProfileExists(
       supabase
         .from(tableName)
         .select('id')
-        .eq('email', user.email!.toLowerCase())
+        .eq('id', user.id)
         .maybeSingle(),
       {
         maxRetries: 2,
@@ -589,26 +581,52 @@ export function useAccountType(options: AccountTypeOptions = {}) {
     let timeoutId: NodeJS.Timeout;
 
     const detectAccountType = async () => {
+      // Don't run detection if user is not available yet
+      if (!user) {
+        console.log('🔍 [AccountType] Waiting for user to be available...');
+        setResult({
+          accountType: null,
+          source: 'loading',
+          confidence: 'low',
+          profileExists: false
+        });
+        setLoading(true);
+        return;
+      }
+
       setLoading(true);
       
       // Set a timeout to prevent infinite loading
       timeoutId = setTimeout(async () => {
         if (isMounted) {
           console.warn('⏰ Account type detection timed out');
-          
-          // If we have a user but detection timed out, this indicates system issues
+
+          // Don't force logout on timeout - instead use fallback detection
           if (user) {
-            console.error('❌ Account type detection timeout with logged in user - forcing logout');
-            
-            try {
-              await signOut();
-            } catch (error) {
-              console.error('Error during timeout signout:', error);
-              window.location.reload();
-            }
-            return;
+          console.warn('⚠️ Account type detection timeout with logged in user - attempting metadata fallback');
+
+          const metadataAccountType = user.user_metadata?.account_type;
+          if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
+            console.log(`🔄 Using metadata account type fallback: ${metadataAccountType}`);
+            setResult({
+              accountType: metadataAccountType,
+              source: 'metadata',
+              confidence: 'medium',
+              profileExists: false
+            });
+          } else {
+            console.warn('⚠️ Metadata unavailable or invalid during timeout – treating account type as unknown');
+            setResult({
+              accountType: null,
+              source: 'error',
+              confidence: 'low',
+              profileExists: false
+            });
           }
-          
+          setLoading(false);
+          return;
+        }
+
           setResult({
             accountType: null,
             source: 'error',

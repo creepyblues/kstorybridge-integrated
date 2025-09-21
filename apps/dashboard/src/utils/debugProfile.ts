@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { determineAccountType } from "@/utils/accountTypeDetection";
+import { determineAccountType } from "@/utils/simpleAccountTypeService";
 
 export const debugProfile = async () => {
   console.log("=== Account Profile Debug Utility ===");

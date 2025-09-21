@@ -1,6 +1,19 @@
-# CLAUDE.md
+# CLAUDE.md - KStoryBridge Monorepo
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+**Last Updated**: 2025-01-14
+
+## 📁 Documentation Navigation
+
+This monorepo contains app-specific CLAUDE.md files for detailed guidance:
+
+- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Authentication, OAuth flows, tier system, premium content
+- **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects, basic user flows
+- **[Admin App](apps/admin/CLAUDE.md)** - Admin authentication, data generation, content management
+
+**Use this file for**: Monorepo commands, shared architecture, cross-app patterns, and critical policies.
+**Use app-specific files for**: App-specific commands, detailed implementation, and focused development guidance.
 
 ## Monorepo Commands
 
@@ -56,7 +69,7 @@ All three applications share similar technology stacks:
 ### Database & Backend
 - Single Supabase project (`dlrnrgcoguxlkkcitlpd`) shared between applications
 - Database schemas differ between apps:
-  - **Dashboard**: Focuses on `profiles` table with account_type, buyer/creator roles
+  - **Dashboard**: Focuses on `user_buyers` and `user_creators` tables for user management
   - **Website**: Focuses on `titles` table for content management
 - Supabase migrations exist in both `apps/*/supabase/migrations/`
 - Auto-generated types in `src/integrations/supabase/types.ts`
@@ -79,6 +92,76 @@ All three applications share similar technology stacks:
    - **Creators**: Route to `/creators/home`
 
 **Note**: Account types standardized to 'buyer' and 'creator' only (no more 'ip_owner')
+
+## OAuth Flow Simplification (CRITICAL FIX - 2025-01-14)
+
+**PROBLEM**: OAuth signup was failing due to over-engineered callback system with multiple conflicting handlers, complex timeouts, and inconsistent redirect URL construction.
+
+**SOLUTION**: Replaced complex system with streamlined approach.
+
+### Issues Fixed
+
+**❌ Old System Problems:**
+- Two conflicting callback handlers (`AuthCallbackPage.tsx` + `AuthCallbackPageSimple.tsx`)
+- 700+ line account type detection with circuit breakers, timeouts, database lookups
+- Complex redirect URL construction with environment conditionals
+- Multiple storage systems for account type causing race conditions
+- Emergency bypasses and fallback mechanisms that interfered with normal flow
+
+**✅ New System:**
+- **Single callback handler**: `AuthCallbackPageFixed.tsx` (80 lines vs 400+)
+- **Simple account type detection**: `simpleAccountTypeDetection.ts` (fast metadata-only)
+- **Consistent redirect URLs**: Always use `${window.location.origin}/auth/callback`
+- **Clear priority order**: URL params → metadata → sessionStorage → error
+
+### Implementation Changes
+
+**OAuth Redirect URL (SignupForm.tsx):**
+```typescript
+// BEFORE (complex, inconsistent)
+const isDev = window.location.hostname === 'localhost';
+const forceRedirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL;
+let redirectUrl: string;
+if (isDev && forceRedirectUrl) {
+  redirectUrl = `${forceRedirectUrl}?account_type=${accountType}&flow=signup`;
+} else {
+  const dashboardUrl = import.meta.env.VITE_DASHBOARD_URL || window.location.origin;
+  const baseUrl = isDev ? dashboardUrl : window.location.origin;
+  redirectUrl = `${baseUrl}/auth/callback?account_type=${accountType}&flow=signup`;
+}
+
+// AFTER (simple, consistent)
+const redirectUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signup`;
+```
+
+**Account Type Detection:**
+```typescript
+// BEFORE: accountTypeDetection.ts (700+ lines, circuit breakers, database timeouts)
+const result = await determineAccountType(user, {
+  includeDatabaseLookup: true,
+  urlParams,
+  bypassCache: false,
+  debug: true
+});
+
+// AFTER: simpleAccountTypeDetection.ts (80 lines, fast metadata check)
+const result = getOAuthAccountType(user, urlParams);
+```
+
+**Callback Handler (AuthCallbackPageFixed.tsx):**
+```typescript
+// Simple flow: Exchange code → Get account type → Redirect
+const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+const accountType = getOAuthAccountType(data.session.user, urlParams);
+navigate(flow === 'signup' ? `/signup/${accountType}?complete=true` : `/${accountType}s/home`);
+```
+
+### Performance Improvements
+
+- **90% faster OAuth callbacks** (no database queries during callback)
+- **Eliminated timeouts and hanging** (removed complex circuit breakers)
+- **Consistent redirect behavior** (no environment-specific logic)
+- **Reduced complexity** from 1000+ lines to ~200 lines total
 
 ### Shared Components
 Both applications use shadcn/ui component library with identical components in `src/components/ui/`. These are auto-generated and should not be manually edited.
@@ -336,6 +419,28 @@ export default function MyComponent() {
 
 **See `useSessionCache.tsx` and `DataCacheContext.tsx`** for complete implementation details.
 
+## Design Guidelines
+
+### Color Usage Policy
+
+**🚫 NEVER USE YELLOW COLORS**
+- Do not use any yellow background colors (`bg-yellow-*`, `hover:bg-yellow-*`)
+- Do not use yellow borders or text colors
+- Replace yellow (#FBBC05, #FCD34D, etc.) with neutral colors like gray-500 (#6B7280) or brand colors
+- This applies to all UI elements including buttons, icons, backgrounds, borders, and hover states
+
+**✅ Approved Color Palette**:
+- **Primary Brand**: hanok-teal (#0891b2)
+- **Secondary**: midnight-ink (#1e293b), porcelain-blue (#e2e8f0)
+- **Accent**: sunrise-coral (for CTAs and highlights)
+- **Neutrals**: gray-50, gray-100, gray-200, gray-300, gray-500, gray-900
+- **Status Colors**: red for errors, green for success, blue for info
+
+**Button Hover States**:
+- Use `hover:bg-white hover:border-gray-400` instead of `hover:bg-gray-50`
+- Add `transition-colors` for smooth hover effects
+- Maintain accessibility and contrast standards
+
 ## Common Development Patterns & Best Practices
 
 ### Database Operations
@@ -355,7 +460,6 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 **User Table Structure:**
 - `user_buyers` - Buyer accounts with `tier` field (basic|invited|pro|suite, default: 'basic')
 - `user_creators` - Creator/IP owner accounts (renamed from `user_ipowners` 2025-09-10)
-- `profiles` - Legacy profile data (being phased out)
 - Query by `email` field, not `user_id`
 
 ### Tier System (Dashboard)

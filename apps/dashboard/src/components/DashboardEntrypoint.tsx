@@ -9,7 +9,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useAccountType, getAccountTypeDisplayInfo } from "@/utils/accountTypeDetection";
+import { useDatabaseAccountType, getDashboardPath } from "@/hooks/useDatabaseAccountType";
 import { supabase, performSupabaseHealthCheck } from "@/integrations/supabase/client";
 import { performSessionHealthCheck, recoverCorruptedSession } from "@/utils/sessionManager";
 
@@ -38,19 +38,18 @@ export function DashboardEntrypoint() {
     return false;
   }, [isOAuthCallback, user]);
 
-  // Memoize the options object to prevent unnecessary re-renders
-  const accountTypeOptions = useMemo(() => ({
-    includeDatabaseLookup: !isFreshOAuthSession, // Disable database lookup for OAuth to prevent hanging
-    debug: true,
-    bypassCache: recoveryAttempted // Use fresh data if we've attempted recovery
-  }), [recoveryAttempted, isFreshOAuthSession]);
-  
-  // Enhanced account type detection with better error handling
-  const { 
-    accountType, 
+  // Use new database-first account type detection
+  const {
+    accountType,
     loading: accountTypeLoading,
-    result: accountTypeResult
-  } = useAccountType(accountTypeOptions);
+    error: accountTypeError,
+    source: accountTypeSource,
+    profileExists
+  } = useDatabaseAccountType({
+    user,
+    enableMetadataFallback: true, // Allow fallback during migration
+    debug: true
+  });
 
   // Simplified health check to avoid circular dependency
   useEffect(() => {
@@ -150,7 +149,13 @@ export function DashboardEntrypoint() {
         accountTypeLoading,
         accountType,
         systemHealthy,
-        recoveryAttempted
+        recoveryAttempted,
+        currentUrl: window.location.href,
+        pathname: window.location.pathname,
+        search: window.location.search,
+        isFreshOAuth: isFreshOAuthSession,
+        isOAuthCallback,
+        shouldNotBeHere: window.location.pathname.includes('/signup')
       });
 
       // If still loading authentication, wait
@@ -174,8 +179,12 @@ export function DashboardEntrypoint() {
       }
 
       // Check account type result
-      if (!accountType || !accountTypeResult) {
-        console.error('❌ DashboardEntrypoint: No valid account type detected');
+      if (!accountType) {
+        console.error('❌ DashboardEntrypoint: No valid account type detected', {
+          error: accountTypeError,
+          source: accountTypeSource,
+          profileExists
+        });
         setHasRedirected(true);
 
         // For OAuth callbacks, redirect to signin instead of account type selection (which was removed)
@@ -210,16 +219,16 @@ export function DashboardEntrypoint() {
       }
 
       // Valid account type found - redirect to appropriate dashboard
-      const displayInfo = getAccountTypeDisplayInfo(accountType);
+      const dashboardPath = getDashboardPath(accountType);
       console.log('✅ DashboardEntrypoint: Redirecting to dashboard:', {
         accountType,
-        path: displayInfo.dashboardPath,
-        profileExists: accountTypeResult.profileExists,
-        confidence: accountTypeResult.confidence
+        path: dashboardPath,
+        profileExists,
+        source: accountTypeSource
       });
-      
+
       setHasRedirected(true);
-      navigate(displayInfo.dashboardPath, { replace: true });
+      navigate(dashboardPath, { replace: true });
     };
 
     handleRedirection();
@@ -228,7 +237,9 @@ export function DashboardEntrypoint() {
     authLoading,
     accountTypeLoading,
     accountType,
-    accountTypeResult,
+    accountTypeError,
+    accountTypeSource,
+    profileExists,
     navigate,
     hasRedirected,
     timeoutTriggered,

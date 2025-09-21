@@ -120,6 +120,7 @@ export type Database = {
       }
       user_buyers: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
           buyer_company: string | null
           buyer_role: Database["public"]["Enums"]["buyer_role"] | null
           created_at: string
@@ -132,6 +133,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           buyer_company?: string | null
           buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
           created_at?: string
@@ -144,6 +146,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           buyer_company?: string | null
           buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
           created_at?: string
@@ -188,6 +191,7 @@ export type Database = {
       }
       user_creators: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
           created_at: string
           email: string
           full_name: string
@@ -200,6 +204,7 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           created_at?: string
           email: string
           full_name: string
@@ -212,6 +217,7 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           created_at?: string
           email?: string
           full_name?: string

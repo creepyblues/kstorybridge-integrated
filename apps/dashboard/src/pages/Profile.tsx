@@ -40,18 +40,18 @@ type UnifiedProfile = {
   email: string;
   full_name: string;
   account_type: 'buyer' | 'creator';
-  
+
   // Buyer fields
   buyer_company?: string | null;
   buyer_role?: string | null;
   linkedin_url?: string | null;
-  
+
   // IP Owner fields
   pen_name?: string | null; // mapped from pen_name field
   ip_owner_role?: string | null;
   ip_owner_company?: string | null;
   website_url?: string | null;
-  
+
   tier?: string | null;
   created_at: string;
   updated_at: string;
@@ -104,8 +104,58 @@ export default function Profile() {
       console.log("📖 Loading profile from database (session-based policy)...", user.email);
       console.log("User metadata:", user.user_metadata);
 
-      const accountType = user.user_metadata?.account_type || 'buyer';
-      console.log("Account type:", accountType);
+      // First try to detect account type by checking which table has data
+      let accountType = user.user_metadata?.account_type || null;
+      console.log("Account type from metadata:", accountType);
+
+      // If no account type in metadata, detect by checking database tables
+      if (!accountType) {
+        console.log("No account type in metadata, checking database tables...");
+
+        // Check user_creators first
+        const creatorCheck = await fetch(`https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/user_creators?select=id&id=eq.${user.id}&limit=1`, {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA',
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (creatorCheck.ok) {
+          const creatorData = await creatorCheck.json();
+          if (creatorData.length > 0) {
+            accountType = 'creator';
+            console.log("Detected account type from database: creator");
+          }
+        }
+
+        // If not found in creators, check buyers
+        if (!accountType) {
+          const buyerCheck = await fetch(`https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/user_buyers?select=id&id=eq.${user.id}&limit=1`, {
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA',
+              'Authorization': `Bearer ${session?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (buyerCheck.ok) {
+            const buyerData = await buyerCheck.json();
+            if (buyerData.length > 0) {
+              accountType = 'buyer';
+              console.log("Detected account type from database: buyer");
+            }
+          }
+        }
+
+        // Default to buyer if still not found
+        if (!accountType) {
+          accountType = 'buyer';
+          console.log("No profile found in either table, defaulting to buyer");
+        }
+      }
+
+      console.log("Final account type:", accountType);
 
       if (accountType === 'buyer') {
         try {

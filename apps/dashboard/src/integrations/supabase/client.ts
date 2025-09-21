@@ -11,6 +11,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import type { Session } from '@supabase/supabase-js';
 
 // Require explicit Supabase configuration (no production fallbacks)
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -34,13 +35,15 @@ const isLocal = SUPABASE_URL.includes('localhost') || SUPABASE_URL.includes('127
 const isDev = import.meta.env.DEV;
 
 // DEBUG: Log configuration details (without exposing fallback secrets)
-console.log('🔧 [SUPABASE DEBUG] Configuration details:', {
-  supabaseUrl: SUPABASE_URL,
-  keyPrefix: SUPABASE_PUBLISHABLE_KEY.substring(0, 8) + '…',
-  isLocal,
-  isDev,
-  mode: import.meta.env.MODE
-});
+if (isDev && import.meta.env.VITE_CONFIG_DEBUG === 'true') {
+  console.log('🔧 Supabase Configuration:', {
+    supabaseUrl: SUPABASE_URL,
+    keyPrefix: SUPABASE_PUBLISHABLE_KEY.substring(0, 8) + '…',
+    isLocal,
+    isDev,
+    mode: import.meta.env.MODE
+  });
+}
 
 // Performance and reliability settings
 const CLIENT_CONFIG = {
@@ -121,6 +124,7 @@ export async function withRetry<T>(
     maxDelay?: number;
     retryCondition?: (error: any) => boolean;
     operationName?: string;
+    timeoutMs?: number;
   } = {}
 ): Promise<T> {
   const {
@@ -128,60 +132,54 @@ export async function withRetry<T>(
     baseDelay = 1500, // Increased from 1000 to give more time
     maxDelay = 8000, // Reduced from 10000 for faster failure
     retryCondition = isNetworkError,
-    operationName = 'Supabase operation'
+    operationName = 'Supabase operation',
+    timeoutMs = 5000
   } = options;
 
   let lastError: any;
   let attempt = 0;
 
-  console.log(`🔄 [RETRY VERBOSE] Starting ${operationName} with retry logic (max: ${maxRetries})`);
+  // Only log start for critical operations or when debugging
+  const isVerboseLogging = isDev && import.meta.env.VITE_RETRY_DEBUG === 'true';
+
+  if (isVerboseLogging) {
+    console.log(`🔄 Starting ${operationName} with retry logic (max: ${maxRetries})`);
+  }
 
   while (attempt <= maxRetries) {
     try {
+      // Add timeout for operations to prevent hanging
+      const result = await Promise.race([
+        operation(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`${operationName} timeout after ${timeoutMs / 1000} seconds`)), timeoutMs)
+        )
+      ]);
+
+      // Only log retries that succeed after initial failure
       if (attempt > 0) {
-        console.log(`🔄 [RETRY VERBOSE] Retry attempt ${attempt}/${maxRetries} for ${operationName}`);
-      } else {
-        console.log(`🔄 [RETRY VERBOSE] Initial attempt for ${operationName}`);
+        console.log(`✅ ${operationName} succeeded on retry attempt ${attempt + 1}`);
       }
 
-      console.log(`🔄 [RETRY VERBOSE] Executing operation...`);
-      const result = await operation();
-      console.log(`🔄 [RETRY VERBOSE] Operation completed successfully`);
-
-      if (attempt > 0) {
-        console.log(`✅ [RETRY VERBOSE] ${operationName} succeeded on retry attempt ${attempt + 1}`);
-      } else {
-        console.log(`✅ [RETRY VERBOSE] ${operationName} succeeded on first attempt`);
-      }
-      
       return result;
     } catch (error) {
       lastError = error;
       attempt++;
 
-      console.error(`❌ [RETRY VERBOSE] ${operationName} failed on attempt ${attempt}:`, {
-        name: error.name,
+      // Always log errors as they indicate real problems
+      console.error(`❌ ${operationName} failed on attempt ${attempt}:`, {
         message: error.message,
         code: error.code,
-        status: error.status,
-        details: error.details,
-        hint: error.hint,
-        fullError: error
+        status: error.status
       });
 
       const isRetryable = retryCondition(error);
-      console.log(`🔄 [RETRY VERBOSE] Error analysis:`, {
-        isRetryable,
-        attemptsRemaining: maxRetries - attempt + 1,
-        willRetry: attempt <= maxRetries && isRetryable
-      });
 
       // Don't retry if we've exhausted attempts or error isn't retryable
       if (attempt > maxRetries || !isRetryable) {
-        console.log(`🛑 [RETRY VERBOSE] Stopping retry loop:`, {
-          exhaustedAttempts: attempt > maxRetries,
-          notRetryable: !isRetryable
-        });
+        if (isVerboseLogging) {
+          console.log(`🛑 Stopping retry for ${operationName}: ${attempt > maxRetries ? 'exhausted attempts' : 'not retryable'}`);
+        }
         break;
       }
 
@@ -191,12 +189,14 @@ export async function withRetry<T>(
         maxDelay
       );
 
-      console.log(`⏳ [RETRY VERBOSE] Waiting ${delay}ms before retry...`);
+      if (isVerboseLogging) {
+        console.log(`⏳ Retrying ${operationName} in ${delay}ms...`);
+      }
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
 
-  console.error(`❌ [RETRY VERBOSE] ${operationName} failed after ${maxRetries + 1} attempts. Final error:`, lastError);
+  console.error(`❌ ${operationName} failed after ${maxRetries + 1} attempts. Final error:`, lastError);
   throw lastError;
 }
 
@@ -207,8 +207,50 @@ const requestCount = 0;
 const errorCount = 0;
 const startTime = Date.now();
 
+let lastKnownSession: Session | null = null;
+let lastSessionUpdatedAt = 0;
+const SESSION_CACHE_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
+
+const bootstrapCachedSession = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(CLIENT_CONFIG.auth.storageKey);
+    if (!raw) {
+      return;
+    }
+
+    const parsed = JSON.parse(raw) as Session | null;
+    if (parsed && parsed.access_token) {
+      lastKnownSession = parsed;
+      lastSessionUpdatedAt = Date.now();
+      if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
+        console.log('🧊 Bootstrapped session from localStorage');
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Failed to bootstrap cached session', error);
+  }
+};
+
+bootstrapCachedSession();
+
+const isSessionFresh = (session: Session | null) => {
+  if (!session) {
+    return false;
+  }
+
+  const cacheAgeOk = Date.now() - lastSessionUpdatedAt < SESSION_CACHE_MAX_AGE_MS;
+  const expiresAtMs = (session.expires_at ?? 0) * 1000;
+  const expiryBufferOk = expiresAtMs === 0 || expiresAtMs - Date.now() > 5 * 60 * 1000;
+
+  return cacheAgeOk && expiryBufferOk;
+};
+
 // Log the configuration in development
-if (isDev) {
+if (isDev && import.meta.env.VITE_CLIENT_DEBUG === 'true') {
   console.log('🗄️ Enhanced Supabase Client Configuration:', {
     url: SUPABASE_URL,
     isLocal,
@@ -327,6 +369,8 @@ const originalSignOut = supabase.auth.signOut.bind(supabase.auth);
 const originalGetSession = supabase.auth.getSession.bind(supabase.auth);
 const originalRefreshSession = supabase.auth.refreshSession.bind(supabase.auth);
 
+type GetSessionResponse = Awaited<ReturnType<typeof originalGetSession>>;
+
 // Wrap critical auth methods with retry logic
 supabase.auth.signInWithPassword = (credentials) => 
   withRetry(() => originalSignInWithPassword(credentials), {
@@ -347,12 +391,85 @@ supabase.auth.signOut = (options) =>
     operationName: 'signOut'
   });
 
-supabase.auth.getSession = () =>
-  withRetry(() => originalGetSession(), {
-    maxRetries: 3,
-    baseDelay: 500,
-    operationName: 'getSession'
-  });
+supabase.auth.getSession = async () => {
+  const isCallback = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback');
+
+  const handleSessionResult = (result: GetSessionResponse) => {
+    const session = result?.data?.session ?? null;
+    if (session) {
+      lastKnownSession = session;
+      lastSessionUpdatedAt = Date.now();
+    }
+    return result;
+  };
+
+  if (!isCallback && isSessionFresh(lastKnownSession)) {
+    if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
+      console.log('⚡ Returning cached session without remote call');
+    }
+    return {
+      data: { session: lastKnownSession },
+      error: null
+    } satisfies GetSessionResponse;
+  }
+
+  if (isCallback) {
+    // During OAuth callback let Supabase handle its own session exchange without extra timeouts
+    const result = await originalGetSession();
+    return handleSessionResult(result);
+  }
+
+  if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
+    console.log('🌐 Cached session unavailable or stale - fetching from Supabase', {
+      hasCachedSession: !!lastKnownSession,
+      cacheAgeMs: lastSessionUpdatedAt ? Date.now() - lastSessionUpdatedAt : null,
+      path: typeof window !== 'undefined' ? window.location.pathname : 'unknown'
+    });
+  }
+
+  try {
+    const result = await withRetry(() => originalGetSession(), {
+      maxRetries: 1,
+      baseDelay: 200,
+      timeoutMs: 3000,
+      operationName: 'getSession'
+    });
+
+    const resolved = handleSessionResult(result as GetSessionResponse);
+
+    if (!resolved?.data?.session && isSessionFresh(lastKnownSession)) {
+      if (isDev) {
+        console.warn('⚠️ getSession returned empty result, using cached session');
+      }
+      const cachedResponse: GetSessionResponse = {
+        data: { session: lastKnownSession },
+        error: null
+      };
+      return cachedResponse;
+    }
+
+    return resolved;
+  } catch (error) {
+    // Be more aggressive about using cached sessions on any error
+    if (lastKnownSession) {
+      if (isDev) {
+        console.warn('⚠️ getSession failed, returning cached session (aggressive fallback)', error);
+      }
+      const cachedResponse: GetSessionResponse = {
+        data: { session: lastKnownSession },
+        error: null
+      };
+      return cachedResponse;
+    }
+
+    console.error('❌ getSession failed with no cached session available', error);
+    // Return empty session instead of throwing to prevent app crashes
+    return {
+      data: { session: null },
+      error: error
+    };
+  }
+};
 
 supabase.auth.refreshSession = (refreshToken) =>
   withRetry(() => originalRefreshSession(refreshToken), {
@@ -364,29 +481,40 @@ supabase.auth.refreshSession = (refreshToken) =>
 if (isDev) {
   // Monitor auth state changes
   supabase.auth.onAuthStateChange((event, session) => {
-    console.log(`🔐 Auth State Change: ${event}`, {
-      hasSession: !!session,
-      hasUser: !!session?.user,
-      userEmail: session?.user?.email,
-      expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null
-    });
-  });
-
-  // Log performance metrics periodically
-  setInterval(() => {
-    if (requestCount > 0) {
-      const uptime = Date.now() - startTime;
-      const errorRate = (errorCount / requestCount) * 100;
-      
-      console.log('📊 Supabase Client Performance:', {
-        uptime: `${Math.round(uptime / 1000)}s`,
-        requests: requestCount,
-        errors: errorCount,
-        errorRate: `${errorRate.toFixed(1)}%`,
-        avgRequestsPerMin: Math.round((requestCount / uptime) * 60000)
+    if (import.meta.env.VITE_AUTH_STATE_DEBUG === 'true') {
+      console.log(`🔐 Auth State Change: ${event}`, {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        userEmail: session?.user?.email,
+        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null
       });
     }
-  }, 60000); // Log every minute
+
+    if (session) {
+      lastKnownSession = session;
+      lastSessionUpdatedAt = Date.now();
+    } else {
+      lastKnownSession = null;
+    }
+  });
+
+  // Log performance metrics periodically (only if enabled)
+  if (import.meta.env.VITE_PERFORMANCE_DEBUG === 'true') {
+    setInterval(() => {
+      if (requestCount > 0) {
+        const uptime = Date.now() - startTime;
+        const errorRate = (errorCount / requestCount) * 100;
+
+        console.log('📊 Supabase Client Performance:', {
+          uptime: `${Math.round(uptime / 1000)}s`,
+          requests: requestCount,
+          errors: errorCount,
+          errorRate: `${errorRate.toFixed(1)}%`,
+          avgRequestsPerMin: Math.round((requestCount / uptime) * 60000)
+        });
+      }
+    }, 60000); // Log every minute
+  }
 }
 
 /**
@@ -422,7 +550,7 @@ export async function performSupabaseHealthCheck(): Promise<{
       }
     };
 
-    if (isDev) {
+    if (isDev && import.meta.env.VITE_HEALTH_DEBUG === 'true') {
       console.log('🏥 Supabase Health Check (simplified):', result);
     }
 

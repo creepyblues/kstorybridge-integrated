@@ -41,6 +41,7 @@ interface EmailEventData {
  */
 export class EmailService {
   private static instance: EmailService;
+  private emailLogsTableExists: boolean | null = null;
 
   public static getInstance(): EmailService {
     if (!EmailService.instance) {
@@ -50,9 +51,41 @@ export class EmailService {
   }
 
   /**
+   * Check if email_logs table exists in the database
+   */
+  private async checkEmailLogsTableExists(): Promise<boolean> {
+    if (this.emailLogsTableExists !== null) {
+      return this.emailLogsTableExists;
+    }
+
+    try {
+      // Try a simple query to see if table exists
+      const { error } = await supabase
+        .from('email_logs')
+        .select('id')
+        .limit(1);
+
+      this.emailLogsTableExists = !error || error.code !== '42P01'; // 42P01 = relation does not exist
+      console.log(`📧 Email logs table exists: ${this.emailLogsTableExists}`);
+      return this.emailLogsTableExists;
+    } catch (error) {
+      console.log('📧 Email logs table does not exist, email tracking disabled');
+      this.emailLogsTableExists = false;
+      return false;
+    }
+  }
+
+  /**
    * Check if an email has already been sent to prevent duplicates
    */
   private async hasEmailBeenSent(userEmail: string, emailType: string): Promise<boolean> {
+    // Check if email_logs table exists first
+    const tableExists = await this.checkEmailLogsTableExists();
+    if (!tableExists) {
+      console.log('📧 Email logs table not available, skipping duplicate check');
+      return false; // Allow sending if table doesn't exist
+    }
+
     try {
       const { data, error } = await supabase
         .from('email_logs')
@@ -62,8 +95,8 @@ export class EmailService {
         .eq('status', 'sent')
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = table doesn't exist
-        console.warn('⚠️ Could not check email logs (table may not exist):', error);
+      if (error) {
+        console.warn('⚠️ Could not check email logs:', error);
         return false; // Allow sending if we can't check
       }
 
@@ -78,6 +111,13 @@ export class EmailService {
    * Log email attempt for tracking and deduplication
    */
   private async logEmailAttempt(userEmail: string, emailType: string, status: 'sent' | 'failed', messageId?: string, error?: string): Promise<void> {
+    // Check if email_logs table exists first
+    const tableExists = await this.checkEmailLogsTableExists();
+    if (!tableExists) {
+      console.log('📧 Email logs table not available, skipping email logging');
+      return;
+    }
+
     try {
       await supabase
         .from('email_logs')
@@ -90,7 +130,7 @@ export class EmailService {
           sent_at: new Date().toISOString()
         });
     } catch (logError) {
-      console.warn('⚠️ Could not log email attempt (table may not exist):', logError);
+      console.warn('⚠️ Could not log email attempt:', logError);
       // Don't fail the email send if logging fails
     }
   }
@@ -220,8 +260,14 @@ export class EmailService {
    * Log email event for analytics
    */
   private async logEmailEvent(eventType: string, recipient: string, success: boolean, messageId?: string): Promise<void> {
+    // Check if email_logs table exists first
+    const tableExists = await this.checkEmailLogsTableExists();
+    if (!tableExists) {
+      console.log('📧 Email logs table not available, skipping event logging');
+      return;
+    }
+
     try {
-      // You can store email logs in Supabase for analytics
       await supabase.from('email_logs').insert({
         event_type: eventType,
         recipient,

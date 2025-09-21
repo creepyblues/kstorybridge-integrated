@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { useAccountType } from "@/utils/accountTypeDetection";
+import { useAccountType } from "@/utils/simpleAccountTypeService";
 
 interface MenuItem {
   title: string;
@@ -78,8 +78,9 @@ export function CMSSidebar() {
   // Memoize the options object to prevent unnecessary re-renders
   const accountTypeOptions = useMemo(() => ({
     includeDatabaseLookup: true,
-    debug: false
-  }), []);
+    debug: false,
+    user
+  }), [user?.id, user?.user_metadata?.account_type]);
   
   // Use centralized account type detection with database lookup for accuracy
   const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);

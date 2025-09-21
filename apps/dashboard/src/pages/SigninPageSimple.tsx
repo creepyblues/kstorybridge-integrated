@@ -94,16 +94,20 @@ const SigninPageSimple = () => {
           <h1 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
             Welcome Back
           </h1>
-          <p className="text-xl text-midnight-ink-600">
-            Choose your account type to sign in
-          </p>
         </div>
 
         <div className="space-y-6">
           {/* Creator Login Button */}
           <Button
             onClick={handleCreatorLogin}
-            className="w-full h-16 text-lg font-medium bg-hanok-teal hover:bg-hanok-teal/90 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+            className="w-full h-16 text-lg font-medium text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+            style={{ backgroundColor: '#FF6B6B', borderColor: '#FF6B6B' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#FF5252';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#FF6B6B';
+            }}
           >
             <div className="flex items-center justify-center">
               <div className="font-semibold">Creator Login</div>
@@ -130,14 +134,16 @@ const SigninPageSimple = () => {
             <Button
               variant="outline"
               onClick={() => navigate('/signup/creator')}
-              className="w-full border-midnight-ink-200 text-midnight-ink hover:bg-midnight-ink-50"
+              className="w-full text-midnight-ink hover:bg-midnight-ink-50"
+              style={{ borderColor: '#FF6B6B' }}
             >
               Sign up as Creator
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/signup/buyer')}
-              className="w-full border-midnight-ink-200 text-midnight-ink hover:bg-midnight-ink-50"
+              className="w-full text-midnight-ink hover:bg-midnight-ink-50"
+              style={{ borderColor: '#4C9C9B' }}
             >
               Sign up as Buyer
             </Button>

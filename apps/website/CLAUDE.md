@@ -1,6 +1,12 @@
-# CLAUDE.md
+# CLAUDE.md - Website App
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+**App Scope**: Marketing website with basic authentication redirects to dashboard app. Focuses on content presentation and user acquisition.
+
+**Last Updated**: 2025-01-14
+
+> 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
+
+This file provides guidance to Claude Code (claude.ai/code) when working with the Website application.
 
 ## Development Commands
 
@@ -61,25 +67,7 @@ The application uses Supabase with migrations in `supabase/migrations/`. Check t
 
 ## Design Guidelines
 
-### Color Usage Policy
-
-**🚫 NEVER USE YELLOW COLORS**
-- Do not use any yellow background colors (`bg-yellow-*`, `hover:bg-yellow-*`)
-- Do not use yellow borders or text colors
-- Replace yellow (#FBBC05, #FCD34D, etc.) with neutral colors like gray-500 (#6B7280) or brand colors
-- This applies to all UI elements including buttons, icons, backgrounds, borders, and hover states
-
-**✅ Approved Color Palette**:
-- **Primary Brand**: hanok-teal (#0891b2)
-- **Secondary**: midnight-ink (#1e293b), porcelain-blue (#e2e8f0)
-- **Accent**: sunrise-coral (for CTAs and highlights)
-- **Neutrals**: gray-50, gray-100, gray-200, gray-300, gray-500, gray-900
-- **Status Colors**: red for errors, green for success, blue for info
-
-**Button Hover States**:
-- Use `hover:bg-white hover:border-gray-400` instead of `hover:bg-gray-50`
-- Add `transition-colors` for smooth hover effects
-- Maintain accessibility and contrast standards
+> 🎨 **Color Guidelines**: See [Root CLAUDE.md Design Guidelines](../../CLAUDE.md#design-guidelines) for comprehensive color usage policy and approved palette.
 
 ### Design Principles (STRICT)
 1. **NO raw HTML elements** - Use MUI components only (Surface replaces div)

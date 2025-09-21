@@ -6,7 +6,7 @@ This document ensures consistent field naming across the KStoryBridge monorepo t
 
 ## User Profile Fields
 
-### IP Owner Profiles (`user_ipowners` table)
+### Creator Profiles (`user_creators` table)
 
 **✅ CURRENT STANDARD: `pen_name`**
 - Database column: `pen_name TEXT`
@@ -74,7 +74,7 @@ const metadata = { pen_name: penNameValue };
 
 ## Verification Checklist
 
-When working with IP owner profiles, verify:
+When working with creator profiles, verify:
 
 - [ ] Database operations use `pen_name` column
 - [ ] TypeScript interfaces use `pen_name` field

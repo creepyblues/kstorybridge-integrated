@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useAccountType, getAccountTypeDisplayInfo, type AccountType } from "@/utils/accountTypeDetection";
+import { useAccountType, getAccountTypeDisplayInfo, type AccountType } from "@/utils/simpleAccountTypeService";
 
 interface AccountTypeProtectedRouteProps {
   children: ReactNode;
@@ -23,7 +23,8 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
     profileExists 
   } = useAccountType({
     includeDatabaseLookup: true,
-    debug: true
+    debug: true,
+    user
   });
 
   useEffect(() => {
@@ -48,8 +49,8 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
       if (!isAllowed) {
         // Use centralized display info for consistent routing
         const displayInfo = getAccountTypeDisplayInfo(accountType);
-        console.log('🚫 Access denied, redirecting to:', displayInfo.homePath);
-        navigate(displayInfo.homePath, { replace: true });
+        console.log('🚫 Access denied, redirecting to:', displayInfo.dashboardPath);
+        navigate(displayInfo.dashboardPath, { replace: true });
       }
     } else if (!authLoading && !accountTypeLoading && user && (accountType === null || accountType === undefined)) {
       console.warn('🚫 Account type could not be determined – redirecting to account type selection');

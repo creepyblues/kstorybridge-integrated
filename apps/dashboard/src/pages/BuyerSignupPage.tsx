@@ -1,6 +1,12 @@
 import SignupForm from '../components/SignupForm';
 
 const BuyerSignupPage = () => {
+  console.log('📝 BUYER SIGNUP PAGE: Component rendering!', {
+    currentUrl: window.location.href,
+    pathname: window.location.pathname,
+    search: window.location.search
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
       <main className="flex-1">

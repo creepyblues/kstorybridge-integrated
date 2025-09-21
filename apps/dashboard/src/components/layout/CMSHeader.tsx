@@ -3,8 +3,9 @@ import { useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTierAccess } from "@/hooks/useTierAccess";
-import { useAccountType } from "@/utils/accountTypeDetection";
+import { useAccountType } from "@/utils/simpleAccountTypeService";
 import { User, Menu, X } from "lucide-react";
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { cn } from "@/lib/utils";
 
 const getDiscoverItems = (accountType: string) => {
@@ -58,13 +59,6 @@ export function CMSHeader() {
   const { user } = useAuth();
   const { tier, loading: tierLoading } = useTierAccess();
 
-  // Memoize the options object to prevent unnecessary re-renders
-  const accountTypeOptions = useMemo(() => ({
-    includeDatabaseLookup: true,
-    debug: false
-  }), []);
-
-  const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -94,6 +88,15 @@ export function CMSHeader() {
   const displayUser = (isLocalhost && !useRealDataOnLocalhost) ? mockUser : user;
   const displayTier = (isLocalhost && !useRealDataOnLocalhost) ? mockTier : tier;
   const displayTierLoading = (isLocalhost && !useRealDataOnLocalhost) ? false : tierLoading;
+
+  // Memoize the options object to prevent unnecessary re-renders
+  const accountTypeOptions = useMemo(() => ({
+    includeDatabaseLookup: true,
+    debug: false,
+    user: (displayUser as unknown as SupabaseUser | null) ?? null
+  }), [displayUser?.id, displayUser?.user_metadata?.account_type]);
+
+  const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);
 
   // Get account type for display - use centralized detection for accuracy
   const accountType = detectedAccountType || "buyer";

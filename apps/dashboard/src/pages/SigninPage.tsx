@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const SigninPage = () => {
   const navigate = useNavigate();
@@ -7,6 +8,31 @@ const SigninPage = () => {
   // Redirect to account type selection for all general signin requests
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    const verified = urlParams.get('verified') === 'true';
+
+    if (verified) {
+      (async () => {
+        try {
+          console.log('✅ SIGNIN: Email verification detected, determining account type');
+          const { data: { session } } = await supabase.auth.getSession();
+
+          const accountType = session?.user?.user_metadata?.account_type;
+          const suffix = '?verified=true';
+
+          if (accountType === 'creator') {
+            navigate(`/signin/creator${suffix}`, { replace: true });
+          } else {
+            navigate(`/signin/buyer${suffix}`, { replace: true });
+          }
+        } catch (error) {
+          console.error('❌ SIGNIN: Failed to route after verification, defaulting to buyer signin', error);
+          navigate('/signin/buyer?verified=true', { replace: true });
+        } finally {
+          await supabase.auth.signOut().catch(() => {});
+        }
+      })();
+      return;
+    }
 
     // Preserve any existing query parameters and add source=signin
     const searchParams = window.location.search;

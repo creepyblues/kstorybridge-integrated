@@ -13,9 +13,9 @@ This comprehensive reference documents the complete database structure used acro
 ### Application Database Usage
 | Application | Primary Tables | Purpose |
 |-------------|----------------|---------|
-| **Website** | `user_buyers`, `user_ipowners`, `titles`, `featured` | Authentication, signup, content discovery |
-| **Dashboard** | `user_buyers`, `user_ipowners`, `titles`, `user_favorites`, `request`, `profiles` | User management, content browsing, favorites |
-| **Admin** | `admin`, `titles`, `profiles`, `user_buyers`, `user_ipowners` | Administrative management |
+| **Website** | `user_buyers`, `user_creators`, `titles`, `featured` | Authentication, signup, content discovery |
+| **Dashboard** | `user_buyers`, `user_creators`, `titles`, `user_favorites`, `request` | User management, content browsing, favorites |
+| **Admin** | `admin`, `titles`, `user_buyers`, `user_creators` | Administrative management |
 
 ## 📊 Complete Table Schema
 
@@ -57,9 +57,9 @@ CREATE TABLE public.user_buyers (
 - **Dashboard**: Profile management, tier-based feature access
 - **Admin**: User management and tier administration
 
-#### 3. `user_ipowners` - IP Owner/Creator Profiles  
+#### 3. `user_creators` - Content Creator Profiles  
 ```sql
-CREATE TABLE public.user_ipowners (
+CREATE TABLE public.user_creators (
   id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   user_id UUID NOT NULL, -- Duplicate reference for compatibility  
   email TEXT NOT NULL UNIQUE,
@@ -79,34 +79,7 @@ CREATE TABLE public.user_ipowners (
 - **Dashboard**: Creator profile management
 - **Admin**: Creator user management
 
-#### 4. `profiles` - Unified User Profile (Dashboard/Admin)
-```sql
-CREATE TABLE public.profiles (
-  id UUID PRIMARY KEY,
-  account_type account_type NOT NULL, -- 'buyer' | 'creator'
-  email TEXT NOT NULL,
-  full_name TEXT NOT NULL,
-  -- Buyer specific fields
-  buyer_company TEXT,
-  buyer_role buyer_role,
-  linkedin_url TEXT,
-  -- IP Owner specific fields  
-  ip_owner_company TEXT,
-  ip_owner_role ip_owner_role,
-  pen_name TEXT,
-  website_url TEXT,
-  -- Status tracking
-  invitation_status TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
-
-**Usage:**
-- **Dashboard**: Alternative unified profile approach (not currently used in favor of separate user_buyers/user_ipowners)
-- **Admin**: Profile viewing and management
-
-#### 5. `admin` - Admin User Management
+#### 4. `admin` - Admin User Management
 ```sql
 CREATE TABLE public.admin (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -284,8 +257,7 @@ CREATE TYPE user_tier AS ENUM ('invited', 'basic', 'pro', 'suite');
 ### Primary Relationships
 ```
 auth.users (1) ──→ (1) user_buyers
-auth.users (1) ──→ (1) user_ipowners  
-auth.users (1) ──→ (1) profiles
+auth.users (1) ──→ (1) user_creators
 auth.users (1) ──→ (N) user_favorites
 auth.users (1) ──→ (N) request
 auth.users (1) ──→ (N) titles (via creator_id)
@@ -310,13 +282,13 @@ titles (1) ──→ (N) featured
 
 ### Website App
 **Primary Focus**: Authentication and Content Discovery
-- **Signup Flow**: Creates records in `user_buyers` or `user_ipowners`
+- **Signup Flow**: Creates records in `user_buyers` or `user_creators`
 - **Content Display**: Reads from `titles` and `featured` tables
 - **Authentication**: Uses Supabase auth with profile creation
 
 ### Dashboard App  
 **Primary Focus**: User Management and Content Interaction
-- **Profile Management**: Uses `user_buyers` and `user_ipowners` tables directly
+- **Profile Management**: Uses `user_buyers` and `user_creators` tables directly
 - **Content Browsing**: Full `titles` table access with search and filtering
 - **Favorites**: Manages `user_favorites` relationships
 - **Requests**: Handles `request` table for user inquiries
@@ -441,9 +413,9 @@ WHERE created_at > NOW() - INTERVAL '30 days';
 5. **Enum usage**: Always use defined enums for consistency
 
 ### Common Pitfalls
-1. **Table confusion**: Don't mix `profiles` table with `user_buyers`/`user_ipowners` 
+1. **Table separation**: Use `user_buyers` for buyers and `user_creators` for creators - don't mix them
 2. **Foreign key fields**: Use `user_id` not `id` when referencing auth users
-3. **Tier access**: Only buyers have tiers, don't try to access tier for IP owners
+3. **Tier access**: Only buyers have tiers, don't try to access tier for creators
 4. **Array queries**: Use array operators (`&&`, `@>`, `<@`) for array field searches
 
 ---

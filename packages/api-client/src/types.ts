@@ -14,57 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          account_type: Database["public"]["Enums"]["account_type"]
-          buyer_company: string | null
-          buyer_role: Database["public"]["Enums"]["buyer_role"] | null
-          created_at: string
-          email: string
-          full_name: string
-          id: string
-          invitation_status: string | null
-          ip_owner_company: string | null
-          ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url: string | null
-          pen_name: string | null
-          updated_at: string
-          website_url: string | null
-        }
-        Insert: {
-          account_type: Database["public"]["Enums"]["account_type"]
-          buyer_company?: string | null
-          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
-          created_at?: string
-          email: string
-          full_name: string
-          id: string
-          invitation_status?: string | null
-          ip_owner_company?: string | null
-          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url?: string | null
-          pen_name?: string | null
-          updated_at?: string
-          website_url?: string | null
-        }
-        Update: {
-          account_type?: Database["public"]["Enums"]["account_type"]
-          buyer_company?: string | null
-          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
-          created_at?: string
-          email?: string
-          full_name?: string
-          id?: string
-          invitation_status?: string | null
-          ip_owner_company?: string | null
-          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
-          linkedin_url?: string | null
-          pen_name?: string | null
-          updated_at?: string
-          website_url?: string | null
-        }
-        Relationships: []
-      }
       request: {
         Row: {
           id: string
@@ -217,25 +166,79 @@ export type Database = {
       }
       user_buyers: {
         Row: {
+          buyer_company: string | null
+          buyer_role: Database["public"]["Enums"]["buyer_role"] | null
           created_at: string
+          email: string
+          full_name: string
           id: string
+          linkedin_url: string | null
           requested: boolean | null
           tier: Database["public"]["Enums"]["user_tier"] | null
-          user_id: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_company?: string | null
+          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
+          created_at?: string
+          email: string
+          full_name: string
+          id: string
+          linkedin_url?: string | null
+          requested?: boolean | null
+          tier?: Database["public"]["Enums"]["user_tier"] | null
+          updated_at?: string
+        }
+        Update: {
+          buyer_company?: string | null
+          buyer_role?: Database["public"]["Enums"]["buyer_role"] | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          linkedin_url?: string | null
+          requested?: boolean | null
+          tier?: Database["public"]["Enums"]["user_tier"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_creators: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          invitation_status: string | null
+          ip_owner_company: string | null
+          ip_owner_role: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name: string | null
+          updated_at: string
+          website_url: string | null
         }
         Insert: {
           created_at?: string
-          id?: string
-          requested?: boolean | null
-          tier?: Database["public"]["Enums"]["user_tier"] | null
-          user_id: string
+          email: string
+          full_name: string
+          id: string
+          invitation_status?: string | null
+          ip_owner_company?: string | null
+          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name?: string | null
+          updated_at?: string
+          website_url?: string | null
         }
         Update: {
           created_at?: string
+          email?: string
+          full_name?: string
           id?: string
-          requested?: boolean | null
-          tier?: Database["public"]["Enums"]["user_tier"] | null
-          user_id?: string
+          invitation_status?: string | null
+          ip_owner_company?: string | null
+          ip_owner_role?: Database["public"]["Enums"]["ip_owner_role"] | null
+          pen_name?: string | null
+          updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }

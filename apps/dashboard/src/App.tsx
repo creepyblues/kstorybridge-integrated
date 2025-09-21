@@ -58,6 +58,7 @@ const ChatbotFeedbackAnalysis = lazy(() => import("./pages/ChatbotFeedbackAnalys
 const SearchAnalytics = lazy(() => import("./pages/SearchAnalytics"));
 const Experiment = lazy(() => import("./pages/Experiment"));
 const ChatbotTesting = lazy(() => import("./pages/ChatbotTesting"));
+const SignupDebugPage = lazy(() => import("./pages/SignupDebugPage"));
 
 // Authentication pages
 const SigninPage = lazy(() => import("./pages/SigninPageSimple"));
@@ -67,7 +68,7 @@ const SignupPage = lazy(() => import("./pages/SignupPage"));
 const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
 const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
-const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPageSimple"));
+const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackMinimal"));
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,12 @@ const App = () => (
                 <Route path="/signup/creator" element={<CreatorSignupPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+                {/* DEBUG: Test route to verify routing works */}
+                <Route path="/test-signup" element={<div style={{padding: '20px', background: 'white', color: 'black'}}>🎯 TEST ROUTE WORKS! If you can see this, routing is fine. <a href="/signup/buyer" style={{color: 'blue'}}>Try signup/buyer</a></div>} />
+
+                {/* DEBUG: Signup debugger page */}
+                <Route path="/debug-signup" element={<SignupDebugPage />} />
 
                 {/* Legacy auth route - redirect to signin */}
                 <Route path="/auth" element={<SigninPage />} />

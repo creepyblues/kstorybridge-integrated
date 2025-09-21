@@ -34,17 +34,30 @@ async function main() {
       }
     }
 
-    // Check profiles table
-    console.log('\n👤 Checking profiles table...');
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('*')
+    // Check user_buyers table
+    console.log('\n👤 Checking user_buyers table...');
+    const { data: buyers, error: buyersError } = await supabase
+      .from('user_buyers')
+      .select('id, email, full_name, tier')
       .limit(3);
 
-    if (profilesError) {
-      console.error('Error fetching profiles:', profilesError);
+    if (buyersError) {
+      console.error('Error fetching buyers:', buyersError);
     } else {
-      console.log(`Found ${profiles.length} profiles`);
+      console.log(`Found ${buyers.length} buyer profiles`);
+    }
+
+    // Check user_creators table
+    console.log('\n🎨 Checking user_creators table...');
+    const { data: creators, error: creatorsError } = await supabase
+      .from('user_creators')
+      .select('id, email, full_name, pen_name')
+      .limit(3);
+
+    if (creatorsError) {
+      console.error('Error fetching creators:', creatorsError);
+    } else {
+      console.log(`Found ${creators.length} creator profiles`);
     }
 
     // Try to list all tables (this might not work with RLS)

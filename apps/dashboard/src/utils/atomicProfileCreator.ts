@@ -25,6 +25,7 @@ export interface BuyerProfileData {
   linkedin_url?: string | null;
   tier?: 'basic' | 'invited' | 'pro' | 'suite';
   requested?: boolean;
+  account_type?: 'buyer';
 }
 
 export interface CreatorProfileData {
@@ -36,6 +37,7 @@ export interface CreatorProfileData {
   ip_owner_company?: string | null;
   website_url?: string | null;
   invitation_status?: string;
+  account_type?: 'creator';
 }
 
 export interface ProfileCreationResult {
@@ -223,13 +225,18 @@ async function createBuyerProfileOperation(
       const safeProfileData = {
         ...profileData,
         tier: profileData.tier || 'basic',
-        requested: profileData.requested !== undefined ? profileData.requested : false,
+        linkedin_url: profileData.linkedin_url || null,
+        account_type: 'buyer' as const,
         created_at: new Date().toISOString()
       };
       
       if (allowUpdate) {
         // Use upsert with proper conflict resolution
         console.log(`💾 Atomic Profile: Using upsert for buyer profile`);
+
+        // Ensure we have a fresh session before attempting database operation
+        await supabase.auth.getSession();
+
         const { data: profile, error } = await supabase
           .from('user_buyers')
           .upsert(safeProfileData, {
@@ -279,6 +286,10 @@ async function createBuyerProfileOperation(
       } else {
         // Use insert-only approach
         console.log(`📝 Atomic Profile: Using insert-only for buyer profile`);
+
+        // Ensure we have a fresh session before attempting database operation
+        await supabase.auth.getSession();
+
         const { data: profile, error } = await supabase
           .from('user_buyers')
           .insert(safeProfileData)
@@ -436,12 +447,17 @@ async function createCreatorProfileOperation(
       const safeProfileData = {
         ...profileData,
         invitation_status: profileData.invitation_status || 'invited',
+        account_type: 'creator' as const,
         created_at: new Date().toISOString()
       };
       
       if (allowUpdate) {
         // Use upsert with proper conflict resolution
         console.log(`💾 Atomic Profile: Using upsert for creator profile`);
+
+        // Ensure we have a fresh session before attempting database operation
+        await supabase.auth.getSession();
+
         const { data: profile, error } = await supabase
           .from('user_creators')
           .upsert(safeProfileData, {
@@ -490,6 +506,10 @@ async function createCreatorProfileOperation(
       } else {
         // Use insert-only approach
         console.log(`📝 Atomic Profile: Using insert-only for creator profile`);
+
+        // Ensure we have a fresh session before attempting database operation
+        await supabase.auth.getSession();
+
         const { data: profile, error } = await supabase
           .from('user_creators')
           .insert(safeProfileData)

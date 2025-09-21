@@ -1,6 +1,12 @@
-# CLAUDE.md - Admin Portal
+# CLAUDE.md - Admin App
 
-This file provides guidance to Claude Code (claude.ai/code) when working with the KStoryBridge Admin Portal.
+**App Scope**: Secure admin portal for authorized personnel with isolated authentication, content management tools, and data generation scripts.
+
+**Last Updated**: 2025-01-14
+
+> 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
+
+This file provides guidance to Claude Code (claude.ai/code) when working with the Admin application.
 
 ## Development Commands
 

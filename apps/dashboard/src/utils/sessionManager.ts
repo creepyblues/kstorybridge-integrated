@@ -216,12 +216,19 @@ export async function performSessionCleanup(): Promise<{
   
   try {
     console.log('🧹 Session Manager: Starting comprehensive session cleanup');
+    const isAuthCallback = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback');
     
     // Clear localStorage items
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && (key.includes('supabase') || key.includes('auth') || key.includes('sb-'))) {
+      if (!key) continue;
+      const isSupabaseToken = key.startsWith('sb-') && key.endsWith('-auth-token');
+      if (isAuthCallback && isSupabaseToken) {
+        console.log('🛡️ Session Manager: Preserving PKCE storage during auth callback:', key);
+        continue;
+      }
+      if (key.includes('supabase') || key.includes('auth') || key.includes('sb-')) {
         keysToRemove.push(key);
       }
     }
@@ -567,6 +574,7 @@ export async function initializeSessionFromUrl(): Promise<{
  */
 export async function getCurrentSession(): Promise<Session | null> {
   const lockKey = 'getCurrentSession';
+  const isAuthCallback = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback');
   
   // Prevent concurrent session operations
   if (sessionOperationLocks.has(lockKey)) {
@@ -589,7 +597,7 @@ export async function getCurrentSession(): Promise<Session | null> {
         console.error('❌ Session Manager: Error getting session:', error);
         
         // If error is due to corrupted session, attempt recovery
-        if (error.message?.includes('invalid') || error.message?.includes('corrupt')) {
+        if (!isAuthCallback && (error.message?.includes('invalid') || error.message?.includes('corrupt'))) {
           console.log('🔧 Session Manager: Attempting session recovery due to error');
           const recovery = await recoverCorruptedSession();
           if (recovery.recovered) {
@@ -613,15 +621,18 @@ export async function getCurrentSession(): Promise<Session | null> {
         console.warn('⚠️ Session Manager: Session integrity issues:', integrity.issues);
         
         // Attempt recovery for corrupted session
-        const recovery = await recoverCorruptedSession();
-        if (!recovery.recovered) {
-          console.error('❌ Session Manager: Session recovery failed');
-          return null;
+        if (!isAuthCallback) {
+          const recovery = await recoverCorruptedSession();
+          if (!recovery.recovered) {
+            console.error('❌ Session Manager: Session recovery failed');
+            return null;
+          }
+          
+          // Get session again after recovery
+          const { data: { session: recoveredSession } } = await supabase.auth.getSession();
+          return recoveredSession;
         }
-        
-        // Get session again after recovery
-        const { data: { session: recoveredSession } } = await supabase.auth.getSession();
-        return recoveredSession;
+        return session;
       }
 
       // Check if session needs refresh
@@ -641,7 +652,7 @@ export async function getCurrentSession(): Promise<Session | null> {
       console.error('❌ Session Manager: Exception in getCurrentSession:', error);
       
       // If it's a network error, attempt recovery
-      if (isNetworkError(error)) {
+      if (!isAuthCallback && isNetworkError(error)) {
         console.log('🔧 Session Manager: Network error detected, attempting recovery');
         try {
           const recovery = await recoverCorruptedSession();

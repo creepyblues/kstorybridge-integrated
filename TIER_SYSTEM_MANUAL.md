@@ -316,7 +316,6 @@ ORDER BY u.created_at DESC;
 ### TypeScript Updates
 - [x] Update user_buyers table types
 - [x] Add tier enum to constants
-- [x] Keep profiles table unchanged
 
 ### UI Components  
 - [ ] Create tier display in user profile

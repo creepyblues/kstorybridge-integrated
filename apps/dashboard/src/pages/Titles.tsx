@@ -83,21 +83,30 @@ function TitlesContent() {
   const loadData = async (force = false) => {
     try {
       setLoading(true);
-      
+      console.log('🔍 TITLES PAGE: Loading data...', { isCreatorView, user: !!user });
+
       if (isCreatorView && user) {
         // Load creator's own titles using rights field
         const creatorTitles = await titlesService.getTitlesByCreatorRights(user.id);
+        console.log('🔍 TITLES PAGE: Loaded creator titles:', creatorTitles.length);
         setCreatorTitles(creatorTitles);
       } else {
         // Load all titles for buyers
+        console.log('🔍 TITLES PAGE: Loading all titles for buyers...');
         const allTitles = await titlesService.getAllTitles();
+        console.log('🔍 TITLES PAGE: Loaded titles:', allTitles.length);
+
+        // Check pitch data
+        const titlesWithPitch = allTitles.filter(title => title.pitch && title.pitch.trim() !== '');
+        console.log('🔍 TITLES PAGE: Titles with pitch:', titlesWithPitch.length);
+
         setTitles(allTitles);
-        
+
         // Featured titles are now loaded by the FeaturedTitlesCarousel component
       }
-      
+
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("❌ TITLES PAGE: Error loading data:", error);
       toast({ title: "Error loading data", variant: "destructive" });
     } finally {
       setLoading(false);
@@ -272,17 +281,43 @@ function TitlesContent() {
   };
 
   const filteredTitles = (() => {
+    console.log('🔍 TITLES PAGE: Filtering titles...', {
+      totalTitles: titles.length,
+      showOnlyWithPitch,
+      searchTerm: searchTerm.trim(),
+      hasSearchResults: searchResults.length > 0
+    });
+
     // If we have search results from enhanced search, use those
     if (searchTerm && searchResults.length > 0) {
+      console.log('🔍 TITLES PAGE: Using search results:', searchResults.length);
       return searchResults.map(result => result.title);
     }
-    
+
     // Otherwise use traditional filtering
     let result = titles;
-    
+    console.log('🔍 TITLES PAGE: Starting with titles:', result.length);
+
     // Apply pitch filter first
     if (showOnlyWithPitch) {
+      console.log('🔍 TITLES PAGE: Applying pitch filter...');
+      const beforeFilter = result.length;
       result = result.filter(title => title.pitch && title.pitch.trim() !== '');
+      console.log('🔍 TITLES PAGE: Pitch filter result:', {
+        before: beforeFilter,
+        after: result.length,
+        filteredOut: beforeFilter - result.length
+      });
+
+      // Debug first few results
+      if (result.length > 0) {
+        console.log('🔍 TITLES PAGE: Sample filtered titles:', result.slice(0, 3).map(t => ({
+          id: t.title_id,
+          name: t.title_name_en || t.title_name_kr,
+          hasPitch: !!t.pitch,
+          pitchValue: t.pitch
+        })));
+      }
     }
     
     // Apply genre filter - use the same search logic as regular search

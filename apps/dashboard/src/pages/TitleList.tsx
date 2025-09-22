@@ -8,6 +8,7 @@ import FeaturedTitlesCarousel from "@/components/FeaturedTitlesCarousel";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
@@ -22,9 +23,7 @@ function TitleListContent() {
   const { user } = useAuth();
   const location = useLocation();
   const {
-    getTitles,
     getCreatorTitles,
-    setTitles,
     setCreatorTitles,
     isFresh,
     isSessionValid,
@@ -34,20 +33,28 @@ function TitleListContent() {
     clearCache
   } = useDataCache();
   const { } = useSessionCache(); // Initialize session cache management
-  
+
+  // Determine if this is creator view based on route
+  const isCreatorView = location.pathname.startsWith('/creators');
+  const isBuyerView = location.pathname.startsWith('/buyers');
+
+  // Use infinite scroll for buyers, traditional loading for creators
+  const infiniteScroll = useInfiniteScroll({
+    initialLimit: 50, // Increased from 12 to ensure we load titles with pitch data
+    loadMoreThreshold: 300,
+    useEnhancedSearch: true, // Enable fuzzy search for buyers
+    userId: user?.id
+  });
+
   const [searchQuery, setSearchQuery] = useState(""); // What user types
   const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const currentSearchId = useRef<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(51);
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [showOnlyWithPitch, setShowOnlyWithPitch] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
-  // activeGenreFilter removed since genre filters are no longer used
-  
+
   // Enhanced search state
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searchType, setSearchType] = useState<'vector' | 'traditional' | 'hybrid'>('traditional');
@@ -56,20 +63,20 @@ function TitleListContent() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card'); // Default to card view
 
-  // Determine if this is creator view based on route
-  const isCreatorView = location.pathname.startsWith('/creators');
-  const isBuyerView = location.pathname.startsWith('/buyers');
-
-  // Get data from cache - NO FALLBACK TO MOCK DATA
-  const titles = isCreatorView ? getCreatorTitles() : getTitles();
+  // Get creator titles from cache for creator view, use infinite scroll for buyers
+  const creatorTitles = isCreatorView ? getCreatorTitles() : [];
+  const buyerTitles = isBuyerView ? infiniteScroll.titles : [];
+  const titles = isCreatorView ? creatorTitles : buyerTitles;
   const dbStatus = getDbConnectivityStatus();
 
   useEffect(() => {
-    // NEW POLICY: Always fetch from database on new session
-    // Only use cache if session is valid and data is fresh
-    const dataKey = isCreatorView ? 'creatorTitles' : 'titles';
-    if (user && (!isSessionValid() || titles.length === 0 || !isFresh(dataKey))) {
-      loadData();
+    // For creator view: load from cache if needed
+    // For buyer view: infinite scroll handles loading automatically
+    if (isCreatorView) {
+      const dataKey = 'creatorTitles';
+      if (user && (!isSessionValid() || creatorTitles.length === 0 || !isFresh(dataKey))) {
+        loadCreatorData();
+      }
     }
   }, [isCreatorView, user, isSessionValid]); // Depend on session validity
 
@@ -89,38 +96,27 @@ function TitleListContent() {
     checkVectorCapabilities();
   }, []);
 
-  const loadData = async (force = false) => {
+  const loadCreatorData = async () => {
     try {
       setLoading(true);
       setDbError(null);
 
-      console.log('📚 Loading titles from database (session-based policy)...');
+      console.log('📚 Loading creator titles from database...');
 
-      if (isCreatorView && user) {
-        // Load creator's own titles using rights field
+      if (user) {
         const creatorTitles = await titlesService.getTitlesByCreatorRights(user.id);
         setCreatorTitles(creatorTitles);
         setDbConnectivityStatus({ isConnected: true });
         console.log(`✅ Successfully loaded ${creatorTitles.length} creator titles from database`);
-      } else {
-        // Load all titles for buyers using direct API service (like BuyerHome)
-        const allTitles = await directApiService.getAllTitles();
-        setTitles(allTitles);
-        setDbConnectivityStatus({ isConnected: true });
-        console.log(`✅ Successfully loaded ${allTitles.length} titles from database`);
-
-        // Featured titles are now loaded by the FeaturedTitlesCarousel component
       }
 
     } catch (error) {
-      console.error("❌ Database connectivity error loading titles:", error);
+      console.error("❌ Database connectivity error loading creator titles:", error);
 
-      // Update connectivity status
       const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
       setDbConnectivityStatus({ isConnected: false, error: errorMessage });
       setDbError(errorMessage);
 
-      // NEW POLICY: Show database error to user instead of fallback
       toast({
         title: "Database Connection Error",
         description: "Unable to load titles. Please check your connection and try again.",
@@ -131,26 +127,30 @@ function TitleListContent() {
     }
   };
 
-
   const handleRefresh = () => {
-    // Clear all cache data including titles, title details, favorites, etc.
-    clearCache();
-    // Featured titles refresh is handled by the FeaturedTitlesCarousel component
-    loadData(true);
+    if (isCreatorView) {
+      // Clear cache and reload creator data
+      clearCache();
+      loadCreatorData();
+    } else {
+      // Reset infinite scroll for buyers
+      infiniteScroll.reset();
+    }
   };
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const query = searchQuery.trim();
     setSearchTerm(query);
     setShowSuggestions(false);
-    
-    // Genre filters removed - no filter clearing needed
-    
+
     if (!query) {
       setSearchResults([]);
-      setCurrentPage(1);
+      if (isBuyerView) {
+        // Reset infinite scroll to show all titles
+        infiniteScroll.reset();
+      }
       return;
     }
 
@@ -163,39 +163,46 @@ function TitleListContent() {
     // Generate unique search ID to handle race conditions
     const searchId = `search-${Date.now()}-${Math.random()}`;
     currentSearchId.current = searchId;
-    
-    setSearchLoading(true);
-    
-    try {
-      // Use enhanced search service with vector search capabilities
-      const searchResponse = await enhancedTitleSearchService.searchWithFilters(
-        query,
-        titles,
-        {
-          showOnlyWithPitch
-        },
-        {
-          useVectorSearch: vectorSearchAvailable,
-          userId: user?.id,
-          hybridMode: true,
-          maxResults: 28 // Reduced for higher quality, more relevant results
-        }
-      );
 
-      // Only update results if this search is still the current one
-      if (currentSearchId.current !== searchId) {
-        console.log('🔍 Search result discarded - newer search in progress');
-        return;
+    setSearchLoading(true);
+
+    try {
+      if (isBuyerView) {
+        // For buyers: Use infinite scroll search
+        console.log('🔍 Starting infinite scroll search for buyers:', query);
+        await infiniteScroll.search(query);
+        setSearchResults([]); // Clear enhanced search results
+        setSearchType('traditional');
+      } else {
+        // For creators: Use enhanced search on loaded titles
+        const searchResponse = await enhancedTitleSearchService.searchWithFilters(
+          query,
+          titles,
+          {},
+          {
+            useVectorSearch: vectorSearchAvailable,
+            userId: user?.id,
+            hybridMode: true,
+            maxResults: 28
+          }
+        );
+
+        // Only update results if this search is still the current one
+        if (currentSearchId.current !== searchId) {
+          console.log('🔍 Search result discarded - newer search in progress');
+          return;
+        }
+
+        setSearchResults(searchResponse.results);
+        setSearchType(searchResponse.searchType);
+
+        console.log(`🎯 Search completed: ${searchResponse.results.length} results using ${searchResponse.searchType} search`);
       }
 
-      setSearchResults(searchResponse.results);
-      setSearchType(searchResponse.searchType);
-
-      console.log(`🎯 Search completed: ${searchResponse.results.length} results using ${searchResponse.searchType} search`);
-      
       // Track search analytics
       try {
-        await trackSearch(query, searchResponse.searchType, searchResponse.results.length, user?.id);
+        const resultCount = isBuyerView ? infiniteScroll.total : searchResults.length;
+        await trackSearch(query, isBuyerView ? 'infinite_scroll' : searchType, resultCount, user?.id);
       } catch (error) {
         console.warn('Failed to track search:', error);
       }
@@ -203,18 +210,21 @@ function TitleListContent() {
       console.error('Search failed:', error);
       toast({
         title: "Search Error",
-        description: "Search failed. Using traditional search instead.",
+        description: "Search failed. Please try again.",
         variant: "destructive"
       });
-      
-      // Fallback to traditional search
+
+      // Fallback behavior
       if (currentSearchId.current === searchId) {
-        setSearchResults([]);
-        setSearchType('traditional');
+        if (isBuyerView) {
+          infiniteScroll.reset();
+        } else {
+          setSearchResults([]);
+          setSearchType('traditional');
+        }
       }
     } finally {
       setSearchLoading(false);
-      setCurrentPage(1);
     }
   };
 
@@ -223,8 +233,12 @@ function TitleListContent() {
     setSearchTerm("");
     setSearchResults([]);
     setSearchType('traditional');
-    setCurrentPage(1);
-    currentSearchId.current = null; // Clear search ID
+    currentSearchId.current = null;
+
+    if (isBuyerView) {
+      // Reset infinite scroll to show all titles
+      infiniteScroll.reset();
+    }
   };
 
   const handleSearchInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -319,38 +333,60 @@ function TitleListContent() {
   };
 
   const filteredTitles = (() => {
-    // If we have search results from enhanced search (either from search term or active filter), use those
-    if (searchResults.length > 0) {
-      return searchResults.map(result => result.title);
-    }
-    
-    // Otherwise use traditional filtering
-    let result = titles;
-    
-    // Apply pitch filter first
-    if (showOnlyWithPitch) {
-      result = result.filter(title => title.pitch && title.pitch.trim() !== '');
-    }
-    
-    // Apply search filter (fallback for non-enhanced search)
-    if (searchTerm && searchResults.length === 0) {
-      const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
-        result,
-        searchTerm,
-        getTitleSearchFields()
-      );
-      // Combine results with proper ordering: exact matches first, then phrase matches, then expanded matches
-      result = [...exactMatches, ...phraseMatches, ...expandedMatches];
-    }
-    
-    // Apply sorting (but preserve search relevance order when there's a search term)
-    return searchTerm ? result : sortTitles(result);
-  })();
+    if (isBuyerView) {
+      // For buyers: Use infinite scroll titles directly
+      // Infinite scroll handles search internally via API
+      let result = titles;
 
-  // Reset pagination when search term, sorting, or filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, sortField, sortDirection, showOnlyWithPitch]);
+      // Check for duplicates
+      const uniqueIds = new Set();
+      const duplicates = [];
+      result.forEach(title => {
+        if (uniqueIds.has(title.title_id)) {
+          duplicates.push(title.title_id);
+        } else {
+          uniqueIds.add(title.title_id);
+        }
+      });
+
+      if (duplicates.length > 0) {
+        console.warn('🔍 TITLELIST: Found duplicate titles!', duplicates);
+        // Remove duplicates by keeping only the first occurrence
+        const seen = new Set();
+        result = result.filter(title => {
+          if (seen.has(title.title_id)) {
+            return false;
+          }
+          seen.add(title.title_id);
+          return true;
+        });
+        console.log('🔍 TITLELIST: Removed duplicates, now have:', result.length, 'unique titles');
+      }
+
+      // Apply sorting (but preserve search relevance order when there's a search term)
+      return searchTerm ? result : sortTitles(result);
+    } else {
+      // For creators: Use enhanced search results or traditional filtering
+      if (searchResults.length > 0) {
+        return searchResults.map(result => result.title);
+      }
+
+      let result = titles;
+
+      // Apply search filter (fallback for non-enhanced search)
+      if (searchTerm && searchResults.length === 0) {
+        const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
+          result,
+          searchTerm,
+          getTitleSearchFields()
+        );
+        result = [...exactMatches, ...phraseMatches, ...expandedMatches];
+      }
+
+      // Apply sorting (but preserve search relevance order when there's a search term)
+      return searchTerm ? result : sortTitles(result);
+    }
+  })();
 
   const formatGenre = (genre: string | string[]) => {
     if (Array.isArray(genre)) {
@@ -562,56 +598,20 @@ function TitleListContent() {
             
           </div>
           
-          {/* Filters Section */}
-          <div className="mb-6 sm:mb-8">
-            <div className="flex items-start gap-3 flex-wrap">
-              <span className="text-sm font-bold text-hanok-teal mt-1">FILTER:</span>
-              <div className="flex flex-wrap gap-2">
-                {/* Pitch deck filter */}
-                <button 
-                  onClick={() => setShowOnlyWithPitch(!showOnlyWithPitch)}
-                  className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border-2 transition-colors duration-200 ${
-                    showOnlyWithPitch 
-                      ? 'bg-hanok-teal text-white border-hanok-teal' 
-                      : 'bg-hanok-teal/10 text-hanok-teal border-hanok-teal/40 hover:bg-hanok-teal hover:text-white'
-                  }`}
-                >
-                  pitch deck available only
-                </button>
-              </div>
-            </div>
-            
-            {/* Active filters summary */}
-            {showOnlyWithPitch && (
-              <div className="mt-3 text-xs text-midnight-ink-500">
-                Active filters: Pitch deck
-                <button 
-                  onClick={() => setShowOnlyWithPitch(false)}
-                  className="ml-2 text-hanok-teal hover:text-hanok-teal-600 underline"
-                >
-                  Clear
-                </button>
-              </div>
-            )}
-          </div>
           
           {/* Render based on view mode */}
           {viewMode === 'card' ? (
             // Card View
             <div>
-              {loading ? (
+              {(loading || (isBuyerView && infiniteScroll.loading)) ? (
                 <div className="flex justify-center items-center py-12">
                   <RefreshCw className="w-6 h-6 animate-spin text-hanok-teal" />
-                  <span className="ml-2 text-midnight-ink-600">Loading...</span>
+                  <span className="ml-2 text-midnight-ink-600">Loading titles...</span>
                 </div>
               ) : filteredTitles.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                  {(() => {
-                    const startIndex = (currentPage - 1) * itemsPerPage;
-                    const endIndex = startIndex + itemsPerPage;
-                    const currentTitles = filteredTitles.slice(startIndex, endIndex);
-                    
-                    return currentTitles.map((title) => (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {filteredTitles.map((title) => (
                       <Card key={title.title_id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
                         <Link to={`/buyers/titles/${title.title_id}`}>
                           <CardContent className="p-0">
@@ -677,14 +677,35 @@ function TitleListContent() {
                           </CardContent>
                         </Link>
                       </Card>
-                    ));
-                  })()}
-                </div>
+                    ))}
+                  </div>
+
+                  {/* Infinite scroll loading indicator for buyers */}
+                  {isBuyerView && infiniteScroll.loadingMore && (
+                    <div className="flex justify-center items-center py-8">
+                      <RefreshCw className="w-5 h-5 animate-spin text-hanok-teal mr-2" />
+                      <span className="text-midnight-ink-600">Loading more titles...</span>
+                    </div>
+                  )}
+
+                  {/* Infinite scroll end indicator for buyers */}
+                  {isBuyerView && !infiniteScroll.hasMore && filteredTitles.length > 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-midnight-ink-500">You've reached the end! {filteredTitles.length} titles total.</p>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">🔍</div>
                   <h3 className="text-xl font-semibold text-midnight-ink mb-2">No titles found</h3>
-                  <p className="text-midnight-ink-600">No titles found matching your search.</p>
+                  <p className="text-midnight-ink-600">
+                    {isBuyerView && infiniteScroll.error ? (
+                      <>Database error: {infiniteScroll.error}</>
+                    ) : (
+                      <>No titles found matching your search.</>
+                    )}
+                  </p>
                 </div>
               )}
             </div>
@@ -721,17 +742,13 @@ function TitleListContent() {
               </div>
             
             <div className="divide-y">
-              {loading ? (
+              {(loading || (isBuyerView && infiniteScroll.loading)) ? (
                 <div className="px-6 py-12 text-center text-gray-500">
                   Loading titles...
                 </div>
               ) : filteredTitles.length > 0 ? (
-                (() => {
-                  const startIndex = (currentPage - 1) * itemsPerPage;
-                  const endIndex = startIndex + itemsPerPage;
-                  const currentTitles = filteredTitles.slice(startIndex, endIndex);
-                  
-                  return currentTitles.map((title) => (
+                <>
+                  {filteredTitles.map((title) => (
                     <Link key={title.title_id} to={`/buyers/titles/${title.title_id}`} className="block">
                       {/* Desktop Table Row */}
                       <div className="hidden lg:grid px-4 sm:px-6 py-4 grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
@@ -903,17 +920,38 @@ function TitleListContent() {
                         </div>
                       </div>
                     </Link>
-                  ));
-                })()
+                  ))}
+
+                  {/* Infinite scroll loading indicator for buyers */}
+                  {isBuyerView && infiniteScroll.loadingMore && (
+                    <div className="px-6 py-8 text-center">
+                      <div className="flex justify-center items-center">
+                        <RefreshCw className="w-5 h-5 animate-spin text-hanok-teal mr-2" />
+                        <span className="text-midnight-ink-600">Loading more titles...</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Infinite scroll end indicator for buyers */}
+                  {isBuyerView && !infiniteScroll.hasMore && filteredTitles.length > 0 && (
+                    <div className="px-6 py-8 text-center">
+                      <p className="text-midnight-ink-500">You've reached the end! {filteredTitles.length} titles total.</p>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="px-6 py-12 text-center text-gray-500">
-                  No titles found matching your search.
+                  {isBuyerView && infiniteScroll.error ? (
+                    <>Database error: {infiniteScroll.error}</>
+                  ) : (
+                    <>No titles found matching your search.</>
+                  )}
                 </div>
               )}
             </div>
-            
-            {/* Pagination for list view */}
-            {filteredTitles.length > itemsPerPage && (
+
+            {/* Pagination for list view - only for creators */}
+            {isCreatorView && filteredTitles.length > 50 && (
               <div className="bg-gray-50 px-6 py-4 border-t">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-600">
@@ -976,61 +1014,6 @@ function TitleListContent() {
                 </div>
               </div>
             )}
-            </div>
-          )}
-          
-          {/* Pagination for card view */}
-          {viewMode === 'card' && filteredTitles.length > itemsPerPage && (
-            <div className="flex justify-center items-center gap-2 mt-8">
-              <Button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                variant="outline"
-                size="sm"
-                className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
-              >
-                Previous
-              </Button>
-              
-              {Array.from({ length: Math.min(5, Math.ceil(filteredTitles.length / itemsPerPage)) }, (_, i) => {
-                const totalPages = Math.ceil(filteredTitles.length / itemsPerPage);
-                let pageNumber;
-                
-                if (totalPages <= 5) {
-                  pageNumber = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNumber = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNumber = totalPages - 4 + i;
-                } else {
-                  pageNumber = currentPage - 2 + i;
-                }
-                
-                return (
-                  <Button
-                    key={pageNumber}
-                    variant={currentPage === pageNumber ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(pageNumber)}
-                    className={currentPage === pageNumber 
-                      ? "bg-hanok-teal text-white hover:bg-hanok-teal/90" 
-                      : "text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
-                    }
-                  >
-                    {pageNumber}
-                  </Button>
-                );
-              })}
-              
-              <Button
-                onClick={() => setCurrentPage(Math.min(Math.ceil(filteredTitles.length / itemsPerPage), currentPage + 1))}
-                disabled={currentPage === Math.ceil(filteredTitles.length / itemsPerPage)}
-                variant="outline"
-                size="sm"
-                className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
-              >
-                Next
-              </Button>
             </div>
           )}
         </div>

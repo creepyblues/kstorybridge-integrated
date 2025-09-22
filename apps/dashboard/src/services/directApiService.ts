@@ -63,6 +63,55 @@ export const directApiService = {
     }
   },
 
+  // Get paginated titles for infinite scroll
+  async getPaginatedTitles(limit: number = 12, offset: number = 0, searchQuery?: string) {
+    console.log('🔧 DIRECT API SERVICE: Fetching paginated titles...', { limit, offset, searchQuery });
+    try {
+      let query = `titles?select=*&order=created_at.desc&limit=${limit}&offset=${offset}`;
+
+      // Add search filter if provided
+      if (searchQuery && searchQuery.trim()) {
+        const searchTerm = searchQuery.trim();
+        // Search across multiple fields using Supabase text search
+        // Note: Using 'keywords' column instead of 'tags' as per database schema
+        query += `&or=(title_name_en.ilike.*${searchTerm}*,title_name_kr.ilike.*${searchTerm}*,synopsis.ilike.*${searchTerm}*,genre.cs.{${searchTerm}},keywords.cs.{${searchTerm}})`;
+      }
+
+      const data = await makeDirectApiCall(query);
+      console.log('✅ DIRECT API SERVICE: Successfully fetched', data.length, 'paginated titles');
+      return {
+        titles: data,
+        hasMore: data.length === limit, // If we got exactly the limit, there might be more
+        total: offset + data.length
+      };
+    } catch (error) {
+      console.error('❌ DIRECT API SERVICE: Failed to fetch paginated titles:', error);
+      throw error;
+    }
+  },
+
+  // Get enhanced paginated titles with fuzzy search
+  async getEnhancedPaginatedTitles(limit: number = 12, offset: number = 0, searchQuery?: string) {
+    console.log('🔧 DIRECT API SERVICE: Fetching enhanced paginated titles...', { limit, offset, searchQuery });
+    try {
+      // For enhanced search, we need to fetch a larger dataset to apply fuzzy matching
+      // Then paginate the results after applying enhanced search logic
+      const batchSize = Math.max(limit * 8, 100); // Fetch larger batch for better fuzzy matching
+      const data = await makeDirectApiCall(`titles?select=*&order=created_at.desc&limit=${batchSize}&offset=0`);
+
+      console.log(`✅ DIRECT API SERVICE: Successfully fetched ${data.length} titles for enhanced search`);
+      return {
+        titles: data,
+        hasMore: data.length === batchSize, // If we got the full batch, there might be more
+        total: data.length,
+        enhancedSearch: true // Flag to indicate this needs client-side enhanced search processing
+      };
+    } catch (error) {
+      console.error('❌ DIRECT API SERVICE: Failed to fetch enhanced paginated titles:', error);
+      throw error;
+    }
+  },
+
   // Get featured titles
   async getFeaturedTitles() {
     console.log('🔧 DIRECT API SERVICE: Fetching featured titles...');

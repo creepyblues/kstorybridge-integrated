@@ -205,7 +205,7 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages }: { 
     }
 
     // If no quotes found, just process as plain text
-    if (quotedSegments.length === 0) {
+    if (quotedSegments.length === 0 && segments.length === 0) {
       segments.push(...processText(text));
     }
 
@@ -323,6 +323,7 @@ export default function Chat() {
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [showAllMessages, setShowAllMessages] = useState(false);
+  const [isProcessingMessage, setIsProcessingMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check if user is authorized - allow all buyers
@@ -515,19 +516,28 @@ What's been catching your interest lately? Are you looking for something specifi
     console.log('🔄 handleSendMessage called:', {
       hasInput: !!inputMessage.trim(),
       isLoading,
+      isProcessingMessage,
       hasSession: !!currentSession,
       hasUser: !!user,
       inputMessage: inputMessage.substring(0, 50) + '...'
     });
 
-    if (!inputMessage.trim() || isLoading || !user) {
+    if (!inputMessage.trim() || isLoading || isProcessingMessage || !user) {
       console.log('❌ handleSendMessage early return:', {
         noInput: !inputMessage.trim(),
         isLoading,
+        isProcessingMessage,
         noUser: !user
       });
       return;
     }
+
+    // Set processing flag to prevent duplicate submissions
+    setIsProcessingMessage(true);
+
+    // Capture message content immediately and clear input to prevent duplicates
+    const messageContent = inputMessage.trim();
+    setInputMessage("");
 
     // Allow chat to work without database session (fallback mode)
     if (!currentSession) {
@@ -540,13 +550,12 @@ What's been catching your interest lately? Are you looking for something specifi
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputMessage.trim(),
+      content: messageContent,
       sender: 'user',
       timestamp: new Date(),
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputMessage("");
     setIsLoading(true);
     
     // Reset to truncated view when starting new conversation
@@ -682,7 +691,7 @@ What's been catching your interest lately? Are you looking for something specifi
         error: error.message,
         fullError: error,
         user: user?.email,
-        query: inputMessage
+        query: messageContent
       });
       
       const responseTime = Date.now() - startTime;
@@ -718,6 +727,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
       });
     } finally {
       setIsLoading(false);
+      setIsProcessingMessage(false);
     }
   };
 
@@ -1024,9 +1034,6 @@ What's been catching your interest lately? Are you looking for something specifi
                       );
                     })()}
 
-                    <div className="text-xs text-gray-500 mt-1">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1084,7 +1091,7 @@ What's been catching your interest lately? Are you looking for something specifi
                   placeholder="Send a message..."
                   className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-sm placeholder-gray-400"
                   rows={1}
-                  disabled={isLoading || isLoadingHistory}
+                  disabled={isLoading || isLoadingHistory || isProcessingMessage}
                   style={{
                     minHeight: '44px',
                     overflowY: 'hidden'
@@ -1092,9 +1099,9 @@ What's been catching your interest lately? Are you looking for something specifi
                 />
                 <button
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || isLoading || isLoadingHistory}
+                  disabled={!inputMessage.trim() || isLoading || isLoadingHistory || isProcessingMessage}
                   className={`p-2 rounded-lg transition-colors ${
-                    inputMessage.trim() && !isLoading && !isLoadingHistory
+                    inputMessage.trim() && !isLoading && !isLoadingHistory && !isProcessingMessage
                       ? 'bg-gray-700 text-white hover:bg-gray-800'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}

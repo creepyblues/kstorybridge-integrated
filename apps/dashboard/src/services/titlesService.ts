@@ -539,6 +539,91 @@ export const titlesService = {
     }
   },
 
+  // Get multiple titles by IDs (batch operation)
+  async getTitlesByIds(titleIds: string[]) {
+    if (!titleIds || titleIds.length === 0) {
+      return [];
+    }
+
+    // Return mock data for localhost development
+    if (shouldUseMockData()) {
+      console.log('📚 TITLES SERVICE: Using mock data for batch getTitlesByIds');
+      return mockTitles.filter(title => titleIds.includes(title.title_id));
+    }
+
+    try {
+      console.log(`📚 [TITLE BATCH VERBOSE] Fetching ${titleIds.length} titles in batch...`);
+
+      // Add timeout protection for the batch query
+      const queryPromise = supabase
+        .from("titles")
+        .select("*")
+        .in("title_id", titleIds);
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          console.warn(`⏰ [TITLE BATCH VERBOSE] Batch query timeout (10s) for ${titleIds.length} titles`);
+          reject(new Error('Title batch query timeout'));
+        }, 10000);
+      });
+
+      console.log(`📚 [TITLE BATCH VERBOSE] Racing batch query against timeout for ${titleIds.length} titles`);
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
+      console.log(`📚 [TITLE BATCH VERBOSE] Batch query completed:`, {
+        requestedCount: titleIds.length,
+        returnedCount: data?.length || 0,
+        hasError: !!error,
+        errorCode: error?.code,
+        errorMessage: error?.message
+      });
+
+      if (error) {
+        console.error(`❌ [TITLE BATCH VERBOSE] Failed to fetch titles in batch:`, {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          titleIds: titleIds
+        });
+
+        // If it's a permissions error, try to return mock data
+        if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
+          console.log(`📚 [TITLE BATCH VERBOSE] RLS permissions issue for batch, checking mock data`);
+          const mockMatches = mockTitles.filter(title => titleIds.includes(title.title_id));
+          if (mockMatches.length > 0) {
+            console.log(`📚 [TITLE BATCH VERBOSE] Found ${mockMatches.length} mock titles for batch`);
+            return mockMatches;
+          }
+        }
+
+        throw error;
+      }
+
+      console.log(`✅ [TITLE BATCH VERBOSE] Successfully loaded ${data?.length || 0} titles in batch`);
+      return data || [];
+    } catch (error) {
+      console.error(`❌ [TITLE BATCH VERBOSE] Exception in getTitlesByIds:`, {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        titleIds: titleIds
+      });
+
+      // On timeout or connection error, try to return mock data
+      if (error.message?.includes('timeout') || error.message?.includes('network') || error.message?.includes('connection')) {
+        console.log(`📚 [TITLE BATCH VERBOSE] Timeout/connection error for batch, checking mock data`);
+        const mockMatches = mockTitles.filter(title => titleIds.includes(title.title_id));
+        if (mockMatches.length > 0) {
+          console.log(`📚 [TITLE BATCH VERBOSE] Using ${mockMatches.length} mock data fallbacks for batch`);
+          return mockMatches;
+        }
+      }
+
+      throw error;
+    }
+  },
+
   // Create new title
   async createTitle(title: TitleInsert) {
     const { data, error } = await supabase

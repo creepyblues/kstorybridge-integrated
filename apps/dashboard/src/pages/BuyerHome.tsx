@@ -67,11 +67,11 @@ function BuyerHomeContent() {
   }, [user]); // Load featured titles on mount
 
   useEffect(() => {
-    // Only load full titles if user performs a search (lazy loading)
-    if (user && searchTerm.trim() && (!isSessionValid() || titles.length === 0 || !isFresh('titles'))) {
+    // Load full titles if user performs a search OR activates pitch filter (lazy loading)
+    if (user && (searchTerm.trim() || showOnlyWithPitch) && (!isSessionValid() || titles.length === 0 || !isFresh('titles'))) {
       loadAllTitlesForSearch();
     }
-  }, [user, searchTerm, isSessionValid]); // Load all titles only when searching
+  }, [user, searchTerm, showOnlyWithPitch, isSessionValid]); // Load all titles when searching or using pitch filter
 
   // Check vector search capabilities
   useEffect(() => {

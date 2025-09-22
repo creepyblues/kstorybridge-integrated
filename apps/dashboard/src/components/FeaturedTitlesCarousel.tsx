@@ -229,14 +229,14 @@ const FeaturedTitlesCarousel = ({
                           {/* Note Section - Never Truncate */}
                           <div className="min-h-[4.5rem] mb-3 flex items-start">
                             {featured.note ? (
-                              <div className="w-full p-2 md:p-3 bg-red-50 border-l-4 border-r-4 rounded-lg" style={{borderColor: '#FF6B6B'}}>
+                              <div className="w-full p-2 md:p-3 border-l-4 border-r-4 rounded-lg" style={{backgroundColor: '#C3E3E2', borderColor: '#4C9C9B'}}>
                                 <div className="flex items-center gap-2 mb-1">
                                   <Mic className="w-3 h-3 text-black" />
                                   <span className="text-sm font-bold text-black">
                                     Editor's note
                                   </span>
                                 </div>
-                                <p className="text-xs md:text-sm italic leading-tight" style={{color: '#FF6B6B'}}>
+                                <p className="text-xs md:text-sm italic leading-tight" style={{color: '#4C9C9B'}}>
                                   "{featured.note}"
                                 </p>
                               </div>

@@ -672,19 +672,23 @@ Always be enthusiastic and knowledgeable about Korean content!`;
       if (vectorResults && vectorResults.length > 0) {
         console.log(`✅ Vector search found ${vectorResults.length} semantic matches`);
         
-        // Convert vector results to Title format and add scores
-        const vectorTitles = await Promise.all(
-          vectorResults.map(async (result) => {
-            const fullTitle = await titlesService.getTitleById(result.title_id);
-            if (fullTitle) {
-              return {
-                ...fullTitle,
-                score: Math.round(result.similarity * 100) // Convert similarity to score
-              };
-            }
-            return null;
-          })
-        );
+        // Convert vector results to Title format and add scores using batch operation
+        const titleIds = vectorResults.map(result => result.title_id);
+        console.log(`📚 Fetching ${titleIds.length} titles in batch for vector results`);
+
+        const fullTitles = await titlesService.getTitlesByIds(titleIds);
+
+        // Map back to include scores from vector results
+        const vectorTitles = vectorResults.map(result => {
+          const fullTitle = fullTitles.find(title => title.title_id === result.title_id);
+          if (fullTitle) {
+            return {
+              ...fullTitle,
+              score: Math.round(result.similarity * 100) // Convert similarity to score
+            };
+          }
+          return null;
+        });
 
         const validTitles = vectorTitles.filter(title => title !== null) as Title[];
         

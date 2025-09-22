@@ -194,6 +194,22 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
     setSuggestions([]);
   };
 
+  // Remove individual suggestion
+  const removeSuggestion = useCallback((suggestionText: string, suggestionType: string) => {
+    if (suggestionType === 'recent') {
+      // Remove from recent searches
+      const updated = recentSearches.filter(search => search !== suggestionText);
+      setRecentSearches(updated);
+      localStorage.setItem('recentSearches', JSON.stringify(updated));
+
+      // Update current suggestions
+      setSuggestions(prev => prev.filter(s => s.text !== suggestionText));
+    } else {
+      // For other types, just remove from current suggestions
+      setSuggestions(prev => prev.filter(s => s.text !== suggestionText));
+    }
+  }, [recentSearches]);
+
   // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -276,18 +292,33 @@ export const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
           {suggestions.map((suggestion, index) => (
             <div
               key={`${suggestion.type}-${suggestion.text}`}
-              className={`px-3 py-2 cursor-pointer flex items-center justify-between hover:bg-gray-50 ${
+              className={`px-3 py-2 flex items-center justify-between hover:bg-gray-50 group ${
                 selectedSuggestionIndex === index ? 'bg-blue-50 border-l-2 border-blue-500' : ''
               }`}
-              onClick={() => handleSuggestionClick(suggestion)}
             >
-              <div className="flex items-center space-x-2">
+              <div
+                className="flex items-center space-x-2 cursor-pointer flex-1"
+                onClick={() => handleSuggestionClick(suggestion)}
+              >
                 {suggestion.icon}
                 <span className="text-sm">{suggestion.text}</span>
               </div>
-              <Badge variant="outline" className={`text-xs ${getSuggestionTypeColor(suggestion.type)}`}>
-                {getSuggestionTypeLabel(suggestion.type)}
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className={`text-xs ${getSuggestionTypeColor(suggestion.type)}`}>
+                  {getSuggestionTypeLabel(suggestion.type)}
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeSuggestion(suggestion.text, suggestion.type);
+                  }}
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           ))}
           

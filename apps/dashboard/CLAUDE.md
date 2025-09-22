@@ -200,6 +200,52 @@ const profile = {
 - Metadata: Use `pen_name` key consistently
 - Tier system: Default to 'basic' for new user_buyers
 
+## Page Access Controls
+
+### Account Type-Based Access (UPDATED 2025-01-14)
+
+The dashboard implements different access levels based on user account types and specific authorization rules.
+
+**Access Levels**:
+
+### ✅ **Buyer Access**
+Pages accessible to all users with `account_type: 'buyer'`:
+- `/chat` - AI-powered chatbot for content discovery (Updated: Previously admin-only, now buyer-accessible)
+- `/buyers/home` - Buyer dashboard
+- `/buyers/titles` - Browse content catalog
+- `/buyers/favorites` - Saved favorites
+- `/buyers/news` - Industry news
+
+### 🔒 **Admin-Only Access**
+Pages restricted to specific admin emails (`sungho@dadble.com`, `kevin@sandstoneartists.com`):
+- `/ai-chatbot` - Legacy chatbot implementation
+- `/vector-search-manager` - Search index management
+- `/experiment` - Feature testing environment
+- `/chatbot-feedback-analysis` - Analytics dashboard
+
+### 👥 **Creator Access**
+Pages accessible to users with `account_type: 'creator'`:
+- `/creators/home` - Creator dashboard
+- `/creators/titles` - Manage content listings
+- `/creators/profile` - Creator profile management
+
+**Implementation Pattern**:
+```typescript
+// Buyer access pattern
+const accountType = user?.user_metadata?.account_type || 'buyer';
+const isAuthorized = accountType === 'buyer';
+
+// Admin access pattern
+const isAuthorized = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+
+// Creator access pattern
+const accountType = user?.user_metadata?.account_type;
+const isAuthorized = accountType === 'creator';
+```
+
+**Recent Changes**:
+- **2025-01-14**: Chat page (`/chat`) changed from admin-only to buyer-accessible to improve user experience
+
 ## Design Guidelines
 
 > 🎨 **Color Guidelines**: See [Root CLAUDE.md Design Guidelines](../../CLAUDE.md#design-guidelines) for comprehensive color usage policy and approved palette.

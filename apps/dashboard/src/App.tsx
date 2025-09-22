@@ -32,6 +32,7 @@ const TitleList = lazy(() => import("./pages/TitleList"));
 const TitleDetail = lazy(() => import("./pages/TitleDetail"));
 const TitleDetailNew = lazy(() => import("./pages/TitleDetailNew"));
 const CreatorAddTitlePage = lazy(() => import("./pages/CreatorAddTitlePage"));
+const CreatorEditTitlePage = lazy(() => import("./pages/CreatorEditTitlePage"));
 const CreatorTitleDetailNew = lazy(() => import("./pages/CreatorTitleDetailNew"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const MyRequests = lazy(() => import("./pages/MyRequests"));
@@ -49,7 +50,7 @@ const News = lazy(() => import("./pages/News"));
 const SendMessage = lazy(() => import("./pages/SendMessage"));
 const SendMessageTest = lazy(() => import("./pages/SendMessageTest"));
 const AIChatbot = lazy(() => import("./pages/AIChatbot"));
-const OpenAIChatbot = lazy(() => import("./pages/OpenAIChatbot"));
+const Chat = lazy(() => import("./pages/Chat"));
 const ChatHistory = lazy(() => import("./pages/ChatHistory"));
 const VectorSearchManager = lazy(() => import("./pages/VectorSearchManager"));
 const OpenAITest = lazy(() => import("./pages/OpenAITest"));
@@ -179,8 +180,8 @@ const App = () => (
                 <Route path="/buyers/send-message" element={
                   <BuyerProtectedLayout><SendMessage /></BuyerProtectedLayout>
                 } />
-                <Route path="/buyers/openai-chatbot" element={
-                  <BuyerProtectedLayout><OpenAIChatbot /></BuyerProtectedLayout>
+                <Route path="/buyers/chat" element={
+                  <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/ai-chatbot" element={
                   <BuyerProtectedLayout><AIChatbot /></BuyerProtectedLayout>
@@ -198,6 +199,9 @@ const App = () => (
                 } />
                 <Route path="/creators/titles/add" element={
                   <CreatorProtectedLayout><CreatorAddTitlePage /></CreatorProtectedLayout>
+                } />
+                <Route path="/creators/titles/:titleId/edit" element={
+                  <CreatorProtectedLayout><CreatorEditTitlePage /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles/:titleId" element={
                   <CreatorProtectedLayout><CreatorTitleDetailNew /></CreatorProtectedLayout>
@@ -217,8 +221,8 @@ const App = () => (
                 <Route path="/creators/send-message" element={
                   <CreatorProtectedLayout><SendMessage /></CreatorProtectedLayout>
                 } />
-                <Route path="/creators/openai-chatbot" element={
-                  <CreatorProtectedLayout><OpenAIChatbot /></CreatorProtectedLayout>
+                <Route path="/creators/chat" element={
+                  <CreatorProtectedLayout><Chat /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/ai-chatbot" element={
                   <CreatorProtectedLayout><AIChatbot /></CreatorProtectedLayout>
@@ -273,9 +277,9 @@ const App = () => (
                   <ProtectedLayout><AIChatbot /></ProtectedLayout>
                 } />
                 
-                {/* OpenAI Chatbot - restricted access */}
-                <Route path="/openai-chatbot" element={
-                  <ProtectedLayout><OpenAIChatbot /></ProtectedLayout>
+                {/* Chat - buyer access */}
+                <Route path="/chat" element={
+                  <ProtectedLayout><Chat /></ProtectedLayout>
                 } />
                 
                 {/* Chat History - restricted access */}

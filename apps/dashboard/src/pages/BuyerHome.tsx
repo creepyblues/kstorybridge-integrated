@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
 import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
+import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
 import FeaturedTitlesCarousel from "@/components/FeaturedTitlesCarousel";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -30,6 +31,9 @@ function BuyerHomeContent() {
     setDbConnectivityStatus,
     clearCache
   } = useDataCache();
+
+  // State for featured titles
+  const [featuredTitles, setFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const { } = useSessionCache(); // Initialize session cache management
 
   const [searchQuery, setSearchQuery] = useState(""); // What user types
@@ -52,16 +56,22 @@ function BuyerHomeContent() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Get data from cache - NO FALLBACK TO MOCK DATA
-  const titles = getTitles();
+  const titles = getTitles(); // This is for search functionality, not initial display
   const dbStatus = getDbConnectivityStatus();
 
   useEffect(() => {
-    // NEW POLICY: Always fetch from database on new session
-    // Only use cache if session is valid and data is fresh
-    if (user && (!isSessionValid() || titles.length === 0 || !isFresh('titles'))) {
-      loadData();
+    // Load featured titles for home page (lightweight)
+    if (user && featuredTitles.length === 0) {
+      loadFeaturedData();
     }
-  }, [user, isSessionValid]); // Depend on session validity
+  }, [user]); // Load featured titles on mount
+
+  useEffect(() => {
+    // Only load full titles if user performs a search (lazy loading)
+    if (user && searchTerm.trim() && (!isSessionValid() || titles.length === 0 || !isFresh('titles'))) {
+      loadAllTitlesForSearch();
+    }
+  }, [user, searchTerm, isSessionValid]); // Load all titles only when searching
 
   // Check vector search capabilities
   useEffect(() => {
@@ -79,12 +89,47 @@ function BuyerHomeContent() {
     checkVectorCapabilities();
   }, []);
 
-  const loadData = async (force = false) => {
+  // Load featured titles for home page display (lightweight)
+  const loadFeaturedData = async () => {
     try {
       setLoading(true);
       setDbError(null);
 
-      console.log('🏠 Loading titles from database (session-based policy)...');
+      console.log('🏠 Loading featured titles for home page...');
+
+      // Load only featured titles (5-10 items vs 1000+)
+      const featured = await featuredService.getFeaturedTitles();
+
+      setFeaturedTitles(featured);
+      setDbConnectivityStatus({ isConnected: true });
+
+      console.log(`✅ Successfully loaded ${featured.length} featured titles for home page`);
+
+    } catch (error) {
+      console.error("❌ Error loading featured titles:", error);
+
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      setDbConnectivityStatus({ isConnected: false, error: errorMessage });
+      setDbError(errorMessage);
+
+      toast({
+        title: "Error loading featured content",
+        description: errorMessage,
+        variant: "destructive"
+      });
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load all titles for search functionality (heavy operation, lazy loaded)
+  const loadAllTitlesForSearch = async () => {
+    try {
+      setSearchLoading(true);
+      setDbError(null);
+
+      console.log('🔍 Loading all titles for search functionality...');
 
       // Use the working direct API service instead of broken Supabase JS
       const allTitles = await directApiService.getAllTitles();
@@ -93,10 +138,10 @@ function BuyerHomeContent() {
       setTitles(allTitles);
       setDbConnectivityStatus({ isConnected: true });
 
-      console.log(`✅ Successfully loaded ${allTitles.length} titles from database`);
+      console.log(`✅ Successfully loaded ${allTitles.length} titles for search`);
 
     } catch (error) {
-      console.error("❌ Database connectivity error loading titles:", error);
+      console.error("❌ Database connectivity error loading titles for search:", error);
 
       // Update connectivity status
       const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
@@ -106,18 +151,19 @@ function BuyerHomeContent() {
       // NEW POLICY: Show database error to user instead of fallback
       toast({
         title: "Database Connection Error",
-        description: "Unable to load titles. Please check your connection and try again.",
+        description: "Unable to load titles for search. Please check your connection and try again.",
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setSearchLoading(false);
     }
   };
 
   const handleRefresh = () => {
-    // Clear all cache data including titles, title details, favorites, etc.
+    // Clear cache and reload featured content
     clearCache();
-    loadData(true);
+    setFeaturedTitles([]);
+    loadFeaturedData();
   };
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
@@ -134,6 +180,11 @@ function BuyerHomeContent() {
     }
 
     setSearchLoading(true);
+
+    // Ensure we have all titles loaded for search
+    if (titles.length === 0) {
+      await loadAllTitlesForSearch();
+    }
 
     try {
       // Use enhanced search service with vector search capabilities
@@ -342,7 +393,20 @@ function BuyerHomeContent() {
         <div className="mb-8 sm:mb-12">
           <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Featured Titles</h2>
 
-          <FeaturedTitlesCarousel className="" />
+          {!loading && featuredTitles.length === 0 ? (
+            <div className="text-center py-8 bg-gray-50 rounded-lg">
+              <p className="text-gray-500 mb-4">No featured titles available at the moment.</p>
+              <Button onClick={() => loadFeaturedData()} variant="outline">
+                Try Again
+              </Button>
+            </div>
+          ) : (
+            <FeaturedTitlesCarousel
+              className=""
+              featuredTitles={featuredTitles}
+              loading={loading}
+            />
+          )}
         </div>
 
         {/* Divider */}

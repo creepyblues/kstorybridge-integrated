@@ -1,17 +1,34 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
-import { Eye, ExternalLink, FileText, X, Calendar, BookOpen } from "lucide-react";
+import { Eye, ExternalLink, FileText, X, Calendar, BookOpen, Edit } from "lucide-react";
 import { Button, Card, CardContent, CardHeader, CardTitle, Badge, useToast } from "@kstorybridge/ui";
 import type { Title } from "@/services/titlesService";
 
 import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
-import { directApiService } from "@/services/directApiService";
+import { directApiService, setDirectApiAccessToken } from "@/services/directApiService";
+import { useAuth } from "@/hooks/useAuth";
+
+// Creator profile type based on user_creators table schema
+interface CreatorProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  pen_name?: string;
+  ip_owner_role?: string;
+  ip_owner_company?: string;
+  website_url?: string;
+  invitation_status?: string;
+  created_at: string;
+  updated_at: string;
+}
 
 function CreatorTitleDetailContent() {
   const { titleId } = useParams<{ titleId: string }>();
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const { session } = useAuth();
   const {
     getTitleDetail,
     setTitleDetail,
@@ -21,7 +38,9 @@ function CreatorTitleDetailContent() {
     setDbConnectivityStatus
   } = useDataCache();
   const [title, setTitle] = useState<Title | null>(null);
+  const [creator, setCreator] = useState<CreatorProfile | null>(null);
   const [loading, setLoading] = useState(false);
+  const [creatorLoading, setCreatorLoading] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [currentPdfUrl, setCurrentPdfUrl] = useState("");
@@ -36,9 +55,15 @@ function CreatorTitleDetailContent() {
       } else {
         loadTitle(titleId);
       }
-
     }
   }, [titleId, isSessionValid]); // Include session validity
+
+  // Load creator data when title is loaded
+  useEffect(() => {
+    if (title?.creator_id) {
+      loadCreator(title.creator_id);
+    }
+  }, [title?.creator_id]);
 
   const loadTitle = async (id: string) => {
     try {
@@ -70,6 +95,34 @@ function CreatorTitleDetailContent() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCreator = async (creatorId: string) => {
+    try {
+      setCreatorLoading(true);
+      console.log('📖 Loading creator profile from database...', creatorId);
+
+      // Set access token for authenticated requests
+      if (session?.access_token) {
+        setDirectApiAccessToken(session.access_token);
+      }
+
+      // Use directApiService to fetch creator data
+      const data = await directApiService.getCreatorById(creatorId);
+
+      if (data) {
+        setCreator(data);
+        console.log('✅ Successfully loaded creator profile', data);
+      } else {
+        console.log('⚠️ No creator profile found');
+        setCreator(null);
+      }
+    } catch (error) {
+      console.error('❌ Error loading creator profile:', error);
+      setCreator(null);
+    } finally {
+      setCreatorLoading(false);
     }
   };
 
@@ -265,8 +318,18 @@ function CreatorTitleDetailContent() {
               </div>
             </div>
             
-            {/* Action Button */}
+            {/* Action Buttons */}
             <div className="flex flex-row gap-2 sm:gap-3 w-full lg:w-auto justify-center lg:justify-end">
+                {/* Edit Button */}
+                <Button
+                  onClick={() => navigate(`/creators/titles/${title.title_id}/edit`)}
+                  className="flex-1 bg-hanok-teal hover:bg-hanok-teal/90 text-white border-0 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Edit
+                </Button>
+
+                {/* View Original Button */}
                 {title.title_url && (
                   <Button
                     asChild
@@ -381,6 +444,109 @@ function CreatorTitleDetailContent() {
                   </div>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Creator Information */}
+          <Card className="bg-white border-gray-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-semibold text-slate-900">Creator Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {creatorLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-hanok-teal"></div>
+                </div>
+              ) : creator ? (
+                <div className="space-y-4">
+                  {/* Full Name */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Full Name</h5>
+                    <span className="font-bold text-[#4C9C9B] text-xs truncate max-w-[60%] text-right">
+                      {creator.full_name || "Not specified"}
+                    </span>
+                  </div>
+
+                  {/* Pen Name */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Pen Name</h5>
+                    <span className="font-bold text-[#4C9C9B] text-xs truncate max-w-[60%] text-right">
+                      {creator.pen_name || "Not specified"}
+                    </span>
+                  </div>
+
+                  {/* Email */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Email</h5>
+                    <span className="font-bold text-[#4C9C9B] text-xs truncate max-w-[60%] text-right">
+                      {creator.email || "Not specified"}
+                    </span>
+                  </div>
+
+                  {/* IP Owner Role */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Role</h5>
+                    <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
+                      {creator.ip_owner_role ? creator.ip_owner_role.replace('_', ' ') : "Not specified"}
+                    </span>
+                  </div>
+
+                  {/* Company */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Company</h5>
+                    <span className="font-bold text-[#4C9C9B] text-xs truncate max-w-[60%] text-right">
+                      {creator.ip_owner_company || "Not specified"}
+                    </span>
+                  </div>
+
+                  {/* Website */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Website</h5>
+                    <span className="font-bold text-[#4C9C9B] text-xs truncate max-w-[60%] text-right">
+                      {creator.website_url ? (
+                        <a
+                          href={creator.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          {creator.website_url.replace(/https?:\/\//, '')}
+                        </a>
+                      ) : (
+                        "Not specified"
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Invitation Status */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Status</h5>
+                    <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
+                      {creator.invitation_status || "Not specified"}
+                    </span>
+                  </div>
+
+                  {/* Member Since */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Member Since</h5>
+                    <span className="font-bold text-[#4C9C9B] text-xs truncate max-w-[60%] text-right">
+                      {creator.created_at ? new Date(creator.created_at).toLocaleDateString() : "Not specified"}
+                    </span>
+                  </div>
+
+                  {/* Last Updated */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-slate-700">Last Updated</h5>
+                    <span className="font-bold text-[#4C9C9B] text-xs truncate max-w-[60%] text-right">
+                      {creator.updated_at ? new Date(creator.updated_at).toLocaleDateString() : "Not specified"}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  <p>Creator information not available</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
-import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock } from "lucide-react";
+import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock, Edit } from "lucide-react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
 import { directApiService } from "@/services/directApiService";
@@ -19,8 +19,21 @@ function TitleDetailContent() {
   const { titleId } = useParams<{ titleId: string }>();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { tier, canAccessPremiumContent } = useTierAccess();
+
+  // Determine if this is creator view based on route
+  const isCreatorView = location.pathname.startsWith('/creators');
+
+  // Debug logging for creator view detection
+  useEffect(() => {
+    console.log('🔍 TitleDetail - Route info:', {
+      pathname: location.pathname,
+      isCreatorView,
+      titleId
+    });
+  }, [location.pathname, isCreatorView, titleId]);
   
   // Debug logging for localhost
   useEffect(() => {
@@ -292,33 +305,62 @@ function TitleDetailContent() {
             </CardContent>
           </Card>
 
-          {/* View Original Content */}
-          {title.title_url && (
-            <div className="relative bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 rounded-xl p-1 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group">
-              {/* Animated border glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-              
-              <a 
-                href={title.title_url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block bg-white rounded-lg p-4 text-center relative overflow-hidden group-hover:bg-gray-50 transition-colors duration-300"
-              >
-                {/* Shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
-                
-                <div className="relative flex items-center justify-center gap-3">
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-full">
-                    <ExternalLink className="h-5 w-5 text-white" />
+          {/* View Original Content and Edit Button for Creators */}
+          <div className="space-y-4">
+            {title.title_url && (
+              <div className="relative bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 rounded-xl p-1 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group">
+                {/* Animated border glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+
+                <a
+                  href={title.title_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-white rounded-lg p-4 text-center relative overflow-hidden group-hover:bg-gray-50 transition-colors duration-300"
+                >
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+
+                  <div className="relative flex items-center justify-center gap-3">
+                    <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-full">
+                      <ExternalLink className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-bold text-lg text-gray-800 mb-1">View Original Content</div>
+                      <div className="text-sm text-gray-600">Read the full story on original platform</div>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <div className="font-bold text-lg text-gray-800 mb-1">View Original Content</div>
-                    <div className="text-sm text-gray-600">Read the full story on original platform</div>
+                </a>
+              </div>
+            )}
+
+            {/* Edit Button - Only for Creators */}
+            {console.log('🎯 Edit button check:', { isCreatorView, pathname: location.pathname })}
+            {isCreatorView && (
+              <div className="relative bg-gradient-to-r from-hanok-teal via-hanok-teal to-emerald-600 rounded-xl p-1 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group">
+                {/* Animated border glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-hanok-teal to-emerald-500 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+
+                <button
+                  onClick={() => navigate(`/creators/titles/${title.title_id}/edit`)}
+                  className="w-full bg-white rounded-lg p-4 text-center relative overflow-hidden group-hover:bg-gray-50 transition-colors duration-300"
+                >
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-hanok-teal/10 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+
+                  <div className="relative flex items-center justify-center gap-3">
+                    <div className="bg-gradient-to-r from-hanok-teal to-emerald-600 p-2 rounded-full">
+                      <Edit className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-bold text-lg text-gray-800 mb-1">Edit Title</div>
+                      <div className="text-sm text-gray-600">Update title information and details</div>
+                    </div>
                   </div>
-                </div>
-              </a>
-            </div>
-          )}
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Tagline */}
           {title.tagline && (

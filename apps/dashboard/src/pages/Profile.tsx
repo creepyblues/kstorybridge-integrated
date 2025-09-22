@@ -630,7 +630,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
@@ -923,7 +923,7 @@ export default function Profile() {
                     </Button>
                   </Link>
                   
-                  <Link to="/openai-chatbot">
+                  <Link to="/chat">
                     <Button className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
                       {/* Shine effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>

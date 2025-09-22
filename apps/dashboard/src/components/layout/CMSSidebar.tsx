@@ -25,6 +25,7 @@ const getDiscoverItems = (accountType: string | null): MenuItem[] => {
       { title: "Home", href: "/buyers/home" },
       { title: "Titles", href: "/buyers/titles" },
       { title: "Favorites", href: "/buyers/favorites" },
+      { title: "Chat with AI", href: "/chat", badge: "beta" },
       { title: "K-content News", href: "/buyers/news" },
       // { title: "My Requests", href: "/buyers/requests" },
     ];
@@ -120,13 +121,31 @@ export function CMSSidebar() {
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "flex items-center px-3 py-2 rounded-lg text-sm font-bold transition-colors",
+                    "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-bold transition-colors",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
                   )}
                 >
-                  {item.title}
+                  <div className="flex items-center gap-2">
+                    {item.icon && <span className="text-base">{item.icon}</span>}
+                    <span>{item.title}</span>
+                  </div>
+                  {item.badge && (
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider",
+                        item.badge === 'admin'
+                          ? "bg-purple-500 text-white"
+                          : item.badge === 'beta'
+                          ? "text-white"
+                          : "bg-red-500 text-white"
+                      )}
+                      style={item.badge === 'beta' ? { backgroundColor: '#FF6B6B' } : undefined}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -159,12 +178,17 @@ export function CMSSidebar() {
                   <span>{item.title}</span>
                 </div>
                 {item.badge && (
-                  <span className={cn(
-                    "px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider",
-                    item.badge === 'admin' 
-                      ? "bg-purple-500 text-white"
-                      : "bg-red-500 text-white"
-                  )}>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider",
+                      item.badge === 'admin'
+                        ? "bg-purple-500 text-white"
+                        : item.badge === 'beta'
+                        ? "text-white"
+                        : "bg-red-500 text-white"
+                    )}
+                    style={item.badge === 'beta' ? { backgroundColor: '#FF6B6B' } : undefined}
+                  >
                     {item.badge}
                   </span>
                 )}

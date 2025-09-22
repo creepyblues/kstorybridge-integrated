@@ -49,11 +49,11 @@ export default function Experiment() {
       status: 'Legacy'
     },
     {
-      id: 'openai-chatbot',
-      title: 'OpenAI Chatbot',
+      id: 'chat',
+      title: 'Chat',
       description: 'Advanced AI-powered chatbot with vector search capabilities',
       icon: <Brain className="w-6 h-6" />,
-      path: '/openai-chatbot',
+      path: '/chat',
       color: 'from-purple-500 to-blue-500',
       status: 'Active'
     },

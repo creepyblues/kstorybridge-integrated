@@ -20,6 +20,7 @@ const getDiscoverItems = (accountType: string) => {
       { title: "Home", href: "/buyers/home" },
       { title: "Titles", href: "/buyers/titles" },
       { title: "Favorites", href: "/buyers/favorites" },
+      { title: "Chat", href: "/chat", badge: "beta" },
       { title: "News", href: "/buyers/news" },
     ];
   }
@@ -41,11 +42,11 @@ const getSettingsItems = (accountType: string, userEmail?: string) => {
     const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
     const chatbotItems = accountType === "creator" 
       ? [
-          { title: "OpenAI Chatbot", href: "/creators/openai-chatbot", badge: "experiment" },
+          { title: "Chat", href: "/creators/chat", badge: "experiment" },
           { title: "AI Chatbot", href: "/creators/ai-chatbot", badge: "experiment" },
         ]
       : [
-          { title: "OpenAI Chatbot", href: "/buyers/openai-chatbot", badge: "experiment" },
+          { title: "Chat", href: "/buyers/chat", badge: "experiment" },
           { title: "AI Chatbot", href: "/buyers/ai-chatbot", badge: "experiment" },
         ];
     
@@ -206,13 +207,21 @@ export function CMSHeader() {
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center px-4 py-3 text-base font-medium transition-colors border-b border-gray-100 last:border-b-0",
+                    "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors border-b border-gray-100 last:border-b-0",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink hover:bg-gray-50"
                   )}
                 >
-                  {item.title}
+                  <span>{item.title}</span>
+                  {item.badge && (
+                    <span
+                      className="px-1.5 py-0.5 text-[10px] font-bold text-white rounded-full uppercase tracking-wider"
+                      style={{ backgroundColor: '#FF6B6B' }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

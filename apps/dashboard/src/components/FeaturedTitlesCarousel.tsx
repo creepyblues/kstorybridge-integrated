@@ -8,13 +8,22 @@ import type { FeaturedWithTitle } from '@/services/featuredService';
 
 interface FeaturedTitlesCarouselProps {
   className?: string;
+  featuredTitles?: FeaturedWithTitle[]; // Optional external data
+  loading?: boolean; // External loading state
 }
 
-const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps) => {
+const FeaturedTitlesCarousel = ({
+  className = "",
+  featuredTitles,
+  loading: externalLoading
+}: FeaturedTitlesCarouselProps) => {
   const location = useLocation();
   const [allFeaturedTitles, setAllFeaturedTitles] = useState<FeaturedWithTitle[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Use external loading state if provided, otherwise use internal state
+  const isLoading = externalLoading !== undefined ? externalLoading : loading;
   const [isMobile, setIsMobile] = useState(false);
 
   // Paths where FeaturedTitlesCarousel should NOT load
@@ -38,6 +47,14 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
   }, []);
   
   useEffect(() => {
+    // Use external data if provided, otherwise load data internally
+    if (featuredTitles) {
+      console.log('🎬 [CAROUSEL] Using external featured titles data:', featuredTitles.length);
+      setAllFeaturedTitles(featuredTitles);
+      setLoading(false);
+      return;
+    }
+
     const loadFeaturedTitles = async () => {
       try {
         setLoading(true);
@@ -88,7 +105,7 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
     };
 
     loadFeaturedTitles();
-  }, []); // Empty dependency array - only run once on mount
+  }, [featuredTitles]); // Re-run when external data changes
 
   const totalTitles = allFeaturedTitles.length;
 
@@ -108,7 +125,7 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
     return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={`text-center text-gray-500 py-8 ${className}`}>
         Loading featured titles...

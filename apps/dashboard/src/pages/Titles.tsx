@@ -586,34 +586,47 @@ function TitlesContent() {
           )}
           
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            {/* Desktop Table Header */}
-            <div className="hidden lg:block bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b">
-              <div className="grid grid-cols-11 gap-4 items-center font-semibold text-gray-700 text-xs sm:text-sm">
-                <div className="col-span-1">Image</div>
-                <div className="col-span-3">
-                  <SortableHeader field="title">Title</SortableHeader>
-                </div>
-                <div className="col-span-2">
-                  <SortableHeader field="genre">Genre</SortableHeader>
-                </div>
-                <div className="col-span-2">
-                  <SortableHeader field="tone">Tone</SortableHeader>
-                </div>
-                <div className="col-span-2">
-                  <SortableHeader field="keywords">Keywords</SortableHeader>
-                </div>
-                <div className="col-span-1">
-                  <SortableHeader field="comps">Comps</SortableHeader>
+            {/* Desktop Table Header - Only for buyers */}
+            {!isCreatorView && (
+              <div className="hidden lg:block bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b">
+                <div className="grid grid-cols-11 gap-4 items-center font-semibold text-gray-700 text-xs sm:text-sm">
+                  <div className="col-span-1">Image</div>
+                  <div className="col-span-3">
+                    <SortableHeader field="title">Title</SortableHeader>
+                  </div>
+                  <div className="col-span-2">
+                    <SortableHeader field="genre">Genre</SortableHeader>
+                  </div>
+                  <div className="col-span-2">
+                    <SortableHeader field="tone">Tone</SortableHeader>
+                  </div>
+                  <div className="col-span-2">
+                    <SortableHeader field="keywords">Keywords</SortableHeader>
+                  </div>
+                  <div className="col-span-1">
+                    <SortableHeader field="comps">Comps</SortableHeader>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Mobile Header */}
-            <div className="lg:hidden bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 border-b">
-              <div className="text-xs sm:text-sm font-semibold text-gray-700">
-                All Titles ({filteredTitles.length})
+            )}
+
+            {/* Mobile Header - Only for buyers */}
+            {!isCreatorView && (
+              <div className="lg:hidden bg-gray-50 px-3 sm:px-4 py-2 sm:py-3 border-b">
+                <div className="text-xs sm:text-sm font-semibold text-gray-700">
+                  All Titles ({filteredTitles.length})
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Creator Header */}
+            {isCreatorView && (
+              <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b">
+                <div className="text-sm sm:text-base font-semibold text-gray-700">
+                  My Titles ({filteredTitles.length})
+                </div>
+              </div>
+            )}
             
             <div className="divide-y">
               {loading ? (
@@ -633,175 +646,298 @@ function TitlesContent() {
 
                     return (
                       <Link key={title.title_id} to={detailPath} className="block">
-                        {/* Desktop Table Row */}
-                        <div className="hidden lg:grid px-4 sm:px-6 py-4 grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
-                          {/* Desktop content - keeping existing structure */}
-                          <div className="col-span-1">
-                            {title.title_image ? (
-                              <div className="w-12 h-16 sm:w-16 sm:h-20 bg-gray-200 rounded-lg overflow-hidden">
-                                <img 
-                                  src={title.title_image} 
-                                  alt={title.title_name_en || title.title_name_kr}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                    e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
-                                    e.currentTarget.parentElement!.innerHTML = '<span class="text-xs text-gray-400">No Image</span>';
-                                  }}
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-12 h-16 sm:w-16 sm:h-20 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <span className="text-xs text-gray-400">No Image</span>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="col-span-3">
-                            {title.pitch && (
-                              <div className="mb-1">
-                                <span className="text-xs font-medium px-2 py-0.5 rounded-full text-white" style={{backgroundColor: '#FF6B6B'}}>
-                                  Pitch
-                                </span>
-                              </div>
-                            )}
-                            <div className="font-medium text-gray-800 line-clamp-1 text-sm">
-                              {title.title_name_en || title.title_name_kr}
+                        {/* Buyer Desktop Table Row - only for buyers */}
+                        {!isCreatorView && (
+                          <div className="hidden lg:grid px-4 sm:px-6 py-4 grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                            {/* Desktop content - keeping existing structure */}
+                            <div className="col-span-1">
+                              {title.title_image ? (
+                                <div className="w-12 h-16 sm:w-16 sm:h-20 bg-gray-200 rounded-lg overflow-hidden">
+                                  <img
+                                    src={title.title_image}
+                                    alt={title.title_name_en || title.title_name_kr}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                      e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                                      e.currentTarget.parentElement!.innerHTML = '<span class="text-xs text-gray-400">No Image</span>';
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-12 h-16 sm:w-16 sm:h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                                  <span className="text-xs text-gray-400">No Image</span>
+                                </div>
+                              )}
                             </div>
-                            {title.title_name_en && title.title_name_kr && (
-                              <div className="text-xs text-gray-500 line-clamp-1 mt-1">
-                                {title.title_name_kr}
+
+                            <div className="col-span-3">
+                              {title.pitch && (
+                                <div className="mb-1">
+                                  <span className="text-xs font-medium px-2 py-0.5 rounded-full text-white" style={{backgroundColor: '#FF6B6B'}}>
+                                    Pitch
+                                  </span>
+                                </div>
+                              )}
+                              <div className="font-medium text-gray-800 line-clamp-1 text-sm">
+                                {title.title_name_en || title.title_name_kr}
                               </div>
-                            )}
-                          </div>
-                          
-                          <div className="col-span-2">
-                            {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) ? (
-                              <div className="flex flex-wrap gap-1 max-h-[3.5rem] overflow-hidden">
-                                {Array.isArray(title.genre) ? (
-                                  title.genre.map((g, idx) => (
-                                    <div key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={formatGenre(g)}>
-                                      {formatGenre(g)}
+                              {title.title_name_en && title.title_name_kr && (
+                                <div className="text-xs text-gray-500 line-clamp-1 mt-1">
+                                  {title.title_name_kr}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="col-span-2">
+                              {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) ? (
+                                <div className="flex flex-wrap gap-1 max-h-[3.5rem] overflow-hidden">
+                                  {Array.isArray(title.genre) ? (
+                                    title.genre.map((g, idx) => (
+                                      <div key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={formatGenre(g)}>
+                                        {formatGenre(g)}
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={formatGenre(title.genre)}>
+                                      {formatGenre(title.genre)}
                                     </div>
-                                  ))
-                                ) : (
-                                  <div className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={formatGenre(title.genre)}>
-                                    {formatGenre(title.genre)}
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </div>
-                          
-                          <div className="col-span-2">
-                            {title.tone ? (
-                              <div className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-xs font-medium">
-                                {title.tone}
-                              </div>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </div>
-                          
-                          <div className="col-span-2">
-                            {((title as any).keywords || title.tags) && ((title as any).keywords || title.tags).length > 0 ? (
-                              <div className="flex flex-wrap gap-1 max-h-[3.5rem] overflow-hidden">
-                                {((title as any).keywords || title.tags).map((tag: string, idx: number) => (
-                                  <div key={`${title.title_id}-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={tag}>
-                                    {tag}
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </div>
-                          
-                          <div className="col-span-1">
-                            <OptimizedTierGatedContent requiredTier="basic">
-                              {title.comps && title.comps.length > 0 ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {title.comps.map((comp, index) => (
-                                    <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[150px]" title={comp}>
-                                      {comp}
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </div>
+
+                            <div className="col-span-2">
+                              {title.tone ? (
+                                <div className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-xs font-medium">
+                                  {title.tone}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </div>
+
+                            <div className="col-span-2">
+                              {((title as any).keywords || title.tags) && ((title as any).keywords || title.tags).length > 0 ? (
+                                <div className="flex flex-wrap gap-1 max-h-[3.5rem] overflow-hidden">
+                                  {((title as any).keywords || title.tags).map((tag: string, idx: number) => (
+                                    <div key={`${title.title_id}-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={tag}>
+                                      {tag}
                                     </div>
                                   ))}
                                 </div>
                               ) : (
                                 <span className="text-gray-400">-</span>
                               )}
-                            </OptimizedTierGatedContent>
-                          </div>
-                        </div>
+                            </div>
 
-                        {/* Mobile Card Layout */}
-                        <div className="lg:hidden p-3 sm:p-4 hover:bg-gray-50 cursor-pointer transition-colors">
-                          <div className="flex gap-3 sm:gap-4">
-                            {/* Image */}
-                            <div className="flex-shrink-0">
-                              {title.title_image ? (
-                                <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gray-200 rounded-lg overflow-hidden">
-                                  <img 
-                                    src={title.title_image} 
-                                    alt={title.title_name_en || title.title_name_kr}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                                  <span className="text-xs text-gray-400">No Image</span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Content */}
-                            <div className="flex-1 min-w-0">
-                              <div className="mb-2">
-                                {title.pitch && (
-                                  <span className="text-xs font-medium px-2 py-0.5 rounded-lg mr-2 text-white" style={{backgroundColor: '#FF6B6B'}}>
-                                    Pitch
-                                  </span>
+                            <div className="col-span-1">
+                              <OptimizedTierGatedContent requiredTier="basic">
+                                {title.comps && title.comps.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {title.comps.map((comp, index) => (
+                                      <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[150px]" title={comp}>
+                                        {comp}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">-</span>
                                 )}
-                                <h3 className="font-semibold text-gray-800 text-sm sm:text-base line-clamp-2">
-                                  {title.title_name_en || title.title_name_kr}
-                                </h3>
-                                {title.title_name_en && title.title_name_kr && (
-                                  <p className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-1">
-                                    {title.title_name_kr}
-                                  </p>
+                              </OptimizedTierGatedContent>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Creator Card Layout - for all screen sizes */}
+                        {isCreatorView && (
+                          <div className="p-4 sm:p-6 hover:bg-gray-50 cursor-pointer transition-colors border-b last:border-b-0">
+                            <div className="flex gap-4 sm:gap-6">
+                              {/* Image */}
+                              <div className="flex-shrink-0">
+                                {title.title_image ? (
+                                  <div className="w-20 h-28 sm:w-24 sm:h-32 bg-gray-200 rounded-lg overflow-hidden shadow-md">
+                                    <img
+                                      src={title.title_image}
+                                      alt={title.title_name_en || title.title_name_kr}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                                        e.currentTarget.parentElement!.innerHTML = '<span class="text-xs text-gray-400">No Image</span>';
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-20 h-28 sm:w-24 sm:h-32 bg-gray-100 rounded-lg flex items-center justify-center shadow-md">
+                                    <span className="text-xs text-gray-400">No Image</span>
+                                  </div>
                                 )}
                               </div>
-                              
-                              {/* Tags */}
-                              <div className="flex flex-wrap gap-1 items-center">
-                                {title.genre && (
-                                  Array.isArray(title.genre) ? (
-                                    title.genre.slice(0, 2).map((g, idx) => (
-                                      <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
-                                        {formatGenre(g)}
-                                      </span>
-                                    ))
-                                  ) : (
-                                    <span className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
-                                      {formatGenre(title.genre)}
+
+                              {/* Content */}
+                              <div className="flex-1 min-w-0">
+                                <div className="mb-3">
+                                  {title.pitch && (
+                                    <span className="text-xs font-medium px-2 py-1 rounded-lg mr-2 text-white mb-2 inline-block" style={{backgroundColor: '#FF6B6B'}}>
+                                      Pitch Deck Available
                                     </span>
-                                  )
+                                  )}
+                                  <h3 className="font-bold text-gray-800 text-lg sm:text-xl line-clamp-2 mb-1">
+                                    {title.title_name_en || title.title_name_kr}
+                                  </h3>
+                                  {title.title_name_en && title.title_name_kr && (
+                                    <p className="text-sm sm:text-base text-gray-600 line-clamp-1">
+                                      {title.title_name_kr}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Metadata Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                  {/* Genre */}
+                                  {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) && (
+                                    <div>
+                                      <div className="text-xs font-medium text-gray-500 mb-1">Genre</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {Array.isArray(title.genre) ? (
+                                          title.genre.map((g, idx) => (
+                                            <span key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium">
+                                              {formatGenre(g)}
+                                            </span>
+                                          ))
+                                        ) : (
+                                          <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium">
+                                            {formatGenre(title.genre)}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Tone */}
+                                  {title.tone && (
+                                    <div>
+                                      <div className="text-xs font-medium text-gray-500 mb-1">Tone</div>
+                                      <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-xs font-medium">
+                                        {title.tone}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Keywords/Tags */}
+                                {((title as any).keywords || title.tags) && ((title as any).keywords || title.tags).length > 0 && (
+                                  <div className="mb-3">
+                                    <div className="text-xs font-medium text-gray-500 mb-1">Keywords</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {((title as any).keywords || title.tags).slice(0, 6).map((tag: string, idx: number) => (
+                                        <span key={`${title.title_id}-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-xs font-medium">
+                                          {tag}
+                                        </span>
+                                      ))}
+                                      {((title as any).keywords || title.tags).length > 6 && (
+                                        <span className="text-xs text-gray-500 px-2 py-1">
+                                          +{((title as any).keywords || title.tags).length - 6} more
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
                                 )}
-                                {Array.isArray(title.genre) && title.genre.length > 2 && (
-                                  <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
-                                )}
-                                
-                                {title.tone && (
-                                  <span className="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
-                                    {title.tone}
-                                  </span>
+
+                                {/* Comps */}
+                                {title.comps && title.comps.length > 0 && (
+                                  <div>
+                                    <div className="text-xs font-medium text-gray-500 mb-1">Comparable Titles</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {title.comps.slice(0, 4).map((comp, index) => (
+                                        <span key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-medium">
+                                          {comp}
+                                        </span>
+                                      ))}
+                                      {title.comps.length > 4 && (
+                                        <span className="text-xs text-gray-500 px-2 py-1">
+                                          +{title.comps.length - 4} more
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
                                 )}
                               </div>
                             </div>
                           </div>
-                        </div>
+                        )}
+
+                        {/* Mobile Card Layout - for buyers only */}
+                        {!isCreatorView && (
+                          <div className="lg:hidden p-3 sm:p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                            <div className="flex gap-3 sm:gap-4">
+                              {/* Image */}
+                              <div className="flex-shrink-0">
+                                {title.title_image ? (
+                                  <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gray-200 rounded-lg overflow-hidden">
+                                    <img
+                                      src={title.title_image}
+                                      alt={title.title_name_en || title.title_name_kr}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-16 h-20 sm:w-20 sm:h-24 bg-gray-100 rounded-lg flex items-center justify-center">
+                                    <span className="text-xs text-gray-400">No Image</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Content */}
+                              <div className="flex-1 min-w-0">
+                                <div className="mb-2">
+                                  {title.pitch && (
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-lg mr-2 text-white" style={{backgroundColor: '#FF6B6B'}}>
+                                      Pitch
+                                    </span>
+                                  )}
+                                  <h3 className="font-semibold text-gray-800 text-sm sm:text-base line-clamp-2">
+                                    {title.title_name_en || title.title_name_kr}
+                                  </h3>
+                                  {title.title_name_en && title.title_name_kr && (
+                                    <p className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-1">
+                                      {title.title_name_kr}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Tags */}
+                                <div className="flex flex-wrap gap-1 items-center">
+                                  {title.genre && (
+                                    Array.isArray(title.genre) ? (
+                                      title.genre.slice(0, 2).map((g, idx) => (
+                                        <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
+                                          {formatGenre(g)}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
+                                        {formatGenre(title.genre)}
+                                      </span>
+                                    )
+                                  )}
+                                  {Array.isArray(title.genre) && title.genre.length > 2 && (
+                                    <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
+                                  )}
+
+                                  {title.tone && (
+                                    <span className="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
+                                      {title.tone}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </Link>
                     );
                   });

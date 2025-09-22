@@ -222,9 +222,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsSessionHealthy(true); // No session means no health issues
         }
 
-        // Send welcome email for new verified users
+        // Send welcome email for new verified users (only for genuinely new users, not page navigation)
         if (event === 'SIGNED_IN' && session?.user) {
-          await handleWelcomeEmailForNewUser(session.user);
+          // Check if this is a genuinely new user (created within last 5 minutes)
+          // This prevents welcome emails from being sent every time existing users navigate pages
+          const isNewUser = () => {
+            if (!session.user.created_at) return false;
+
+            const userCreatedAt = new Date(session.user.created_at);
+            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+            const isRecent = userCreatedAt > fiveMinutesAgo;
+
+            console.log('🔍 AUTH: New user check:', {
+              userCreatedAt: userCreatedAt.toISOString(),
+              fiveMinutesAgo: fiveMinutesAgo.toISOString(),
+              isRecent,
+              userEmail: session.user.email
+            });
+
+            return isRecent;
+          };
+
+          if (isNewUser()) {
+            console.log('✅ AUTH: Sending welcome email for genuinely new user:', session.user.email);
+            await handleWelcomeEmailForNewUser(session.user);
+          } else {
+            console.log('⏭️ AUTH: Skipping welcome email for existing user on session load:', session.user.email);
+          }
         }
 
         // Handle token refresh events

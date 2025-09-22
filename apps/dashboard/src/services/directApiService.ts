@@ -197,6 +197,23 @@ export const directApiService = {
     }
   },
 
+  // Get creator profile by ID
+  async getCreatorById(id: string) {
+    console.log('🔧 DIRECT API SERVICE: Fetching creator profile by ID:', id);
+    try {
+      const data = await makeDirectApiCall(`user_creators?select=*&id=eq.${id}&limit=1`);
+      if (data.length === 0) {
+        console.log('⚠️ DIRECT API SERVICE: Creator profile not found for ID:', id);
+        return null;
+      }
+      console.log('✅ DIRECT API SERVICE: Successfully fetched creator profile:', data[0].full_name);
+      return data[0];
+    } catch (error) {
+      console.error('❌ DIRECT API SERVICE: Failed to fetch creator profile by ID:', error);
+      throw error;
+    }
+  },
+
   // Get user tier (for buyers)
   async getUserTier(userId: string) {
     console.log('🔧 DIRECT API SERVICE: Fetching user tier for:', userId);

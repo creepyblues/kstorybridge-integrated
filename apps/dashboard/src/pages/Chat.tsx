@@ -19,42 +19,17 @@ interface Message {
   messageId?: string; // Database message ID for tracking
 }
 
-// Component to format markdown-like content with title matching and linking
-const FormattedMessage = ({ content, navigate, titleData, allMessages }: { content: string, navigate: any, titleData?: any[], allMessages?: Message[] }) => {
+// Simplified conversational message component
+const ConversationalMessage = ({ content, navigate, titleData, allMessages }: { content: string, navigate: any, titleData?: any[], allMessages?: Message[] }) => {
   const formatText = (text: string) => {
-    // Split by lines to preserve line breaks
+    // Split by lines to preserve natural conversation flow
     return text.split('\n').map((line, idx) => {
       // Skip empty lines but preserve spacing
       if (line.trim() === '') {
         return <div key={idx} className="h-2" />;
       }
-      
-      // Handle numbered lists (1. 2. etc.) - simple formatting only
-      if (/^\d+\.\s/.test(line)) {
-        const match = line.match(/^(\d+\.\s)(.*)/);
-        if (match) {
-          const [, number, text] = match;
-          return (
-            <div key={idx} className="mt-1 flex">
-              <span className="font-medium mr-2 text-blue-600">{number}</span>
-              <div className="flex-1">{formatInlineText(text, true)}</div>
-            </div>
-          );
-        }
-      }
-      
-      // Handle bullet points (• - *)
-      if (/^[\s]*[•\-\*]\s/.test(line)) {
-        const cleanedLine = line.replace(/^[\s]*[•\-\*]\s/, '');
-        return (
-          <div key={idx} className="mt-1 flex">
-            <span className="mr-2 text-blue-600">•</span>
-            <div>{formatInlineText(cleanedLine)}</div>
-          </div>
-        );
-      }
-      
-      // Regular line
+
+      // Regular line with title linking
       return (
         <div key={idx} className={idx > 0 ? 'mt-1' : ''}>
           {formatInlineText(line)}
@@ -172,137 +147,98 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
       }
     }
     
-    // Remove asterisks used for formatting (e.g., "*Title*" -> "Title")
-    cleanedText = cleanedText.replace(/\*/g, '').trim();
+    // Keep asterisks for formatting - they will be handled by formatInlineText
     
     return cleanedText;
   };
 
-  const formatInlineText = (text: string, isNumberedRecommendation = false) => {
-    // Handle quoted and bold text - add "FIND MORE" links only for numbered recommendations
-    const parts = text.split(/(".*?"|[\*]{2}.*?[\*]{2})/g);
-    return parts.map((part, partIdx) => {
-      // Handle quoted text with possible title ID
-      if (part.startsWith('"') && part.endsWith('"')) {
-        const quotedText = part.slice(1, -1);
-        if (isNumberedRecommendation) {
-          // Check if the quoted text contains a title ID pattern [ID: xxxxx] (Title Name)
-          // Extract just the title name without the ID pattern
-          const titleIdPattern = /\[ID:\s*([a-f0-9-]{8,})\]\s*\(([^)]+)\)/i;
-          const titleIdMatch = quotedText.match(titleIdPattern);
-          
-          if (titleIdMatch) {
-            const titleId = titleIdMatch[1];
-            const titleName = titleIdMatch[2];
-            // Return just the clickable title name without the FIND MORE button
-            return (
-              <button
-                key={partIdx}
-                onClick={() => navigate(`/buyers/titles/${titleId}`)}
-                className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                title={`View "${titleName}" details`}
-              >
-                "{titleName}"
-              </button>
-            );
-          } else {
-            // Try to find title ID by name lookup
-            const foundTitleId = findTitleIdByName(quotedText);
-            if (foundTitleId) {
-              // Return just the clickable title name
-              return (
-                <button
-                  key={partIdx}
-                  onClick={() => navigate(`/buyers/titles/${foundTitleId}`)}
-                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                  title={`View "${quotedText}" details`}
-                >
-                  "{quotedText}"
-                </button>
-              );
-            } else {
-              // Fallback to search if no title ID found
-              const searchQuery = extractEnglishTitle(quotedText);
-              return (
-                <span key={partIdx} className="inline-flex items-center gap-2">
-                  <span className="font-medium">"{quotedText}"</span>
-                  <button
-                    onClick={() => navigate(`/search-results?search=${encodeURIComponent(searchQuery)}`)}
-                    className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                    title={`Search for "${searchQuery}"`}
-                  >
-                    → FIND MORE
-                  </button>
-                </span>
-              );
-            }
-          }
-        } else {
-          return <span key={partIdx} className="font-medium">"{quotedText}"</span>;
-        }
+  const formatInlineText = (text: string) => {
+    // First pass: Find and preserve quoted content (potential titles)
+    const quotedSegments: Array<{start: number, end: number, content: string, titleId?: string}> = [];
+    const quoteRegex = /"([^"]*)"/g;
+    let quoteMatch;
+
+    while ((quoteMatch = quoteRegex.exec(text)) !== null) {
+      const quotedContent = quoteMatch[1];
+      const foundTitleId = findTitleIdByName(quotedContent);
+      quotedSegments.push({
+        start: quoteMatch.index,
+        end: quoteMatch.index + quoteMatch[0].length,
+        content: quotedContent,
+        titleId: foundTitleId
+      });
+    }
+
+    // Second pass: Process the text, avoiding quoted sections for asterisk formatting
+    const segments: Array<{type: string, content: string, titleId?: string}> = [];
+    let currentIndex = 0;
+
+    // Helper to check if position is within a quoted segment
+    const isInQuote = (pos: number) => {
+      return quotedSegments.some(q => pos >= q.start && pos < q.end);
+    };
+
+    // Process quoted segments and text between them
+    const allSegments = [...quotedSegments].sort((a, b) => a.start - b.start);
+
+    allSegments.forEach((quotedSegment, idx) => {
+      // Add text before quote (as plain text)
+      if (quotedSegment.start > currentIndex) {
+        const textBefore = text.slice(currentIndex, quotedSegment.start);
+        segments.push(...processText(textBefore));
       }
-      
-      // Handle bold text with possible title ID
-      if (part.startsWith('**') && part.endsWith('**')) {
-        const boldText = part.slice(2, -2);
-        if (isNumberedRecommendation) {
-          // Check if the bold text contains a title ID pattern [ID: xxxxx] (Title Name)
-          const titleIdPattern = /\[ID:\s*([a-f0-9-]{8,})\]\s*\(([^)]+)\)/i;
-          const titleIdMatch = boldText.match(titleIdPattern);
-          
-          if (titleIdMatch) {
-            const titleId = titleIdMatch[1];
-            const titleName = titleIdMatch[2];
-            // Return just the clickable title name without the FIND MORE button
-            return (
-              <button
-                key={partIdx}
-                onClick={() => navigate(`/buyers/titles/${titleId}`)}
-                className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                title={`View "${titleName}" details`}
-              >
-                {titleName}
-              </button>
-            );
-          } else {
-            // Try to find title ID by name lookup
-            const foundTitleId = findTitleIdByName(boldText);
-            if (foundTitleId) {
-              // Return just the clickable title name
-              return (
-                <button
-                  key={partIdx}
-                  onClick={() => navigate(`/buyers/titles/${foundTitleId}`)}
-                  className="font-semibold text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                  title={`View "${boldText}" details`}
-                >
-                  {boldText}
-                </button>
-              );
-            } else {
-              // Fallback to search if no title ID found
-              const searchQuery = extractEnglishTitle(boldText);
-              return (
-                <span key={partIdx} className="inline-flex items-center gap-2">
-                  <strong className="font-semibold">{boldText}</strong>
-                  <button
-                    onClick={() => navigate(`/search-results?search=${encodeURIComponent(searchQuery)}`)}
-                    className="text-xs text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all"
-                    title={`Search for "${searchQuery}"`}
-                  >
-                    → FIND MORE
-                  </button>
-                </span>
-              );
-            }
-          }
-        } else {
-          return <strong key={partIdx} className="font-semibold">{boldText}</strong>;
-        }
-      }
-      
-      return part;
+
+      // Add the quoted segment
+      segments.push({
+        type: 'quote',
+        content: quotedSegment.content,
+        titleId: quotedSegment.titleId
+      });
+
+      currentIndex = quotedSegment.end;
     });
+
+    // Add remaining text after last quote
+    if (currentIndex < text.length) {
+      const remainingText = text.slice(currentIndex);
+      segments.push(...processText(remainingText));
+    }
+
+    // If no quotes found, just process as plain text
+    if (quotedSegments.length === 0) {
+      segments.push(...processText(text));
+    }
+
+    // Render segments
+    return segments.map((segment, segmentIdx) => {
+      switch (segment.type) {
+        case 'quote':
+          if (segment.titleId) {
+            return (
+              <button
+                key={segmentIdx}
+                onClick={() => navigate(`/buyers/titles/${segment.titleId}`)}
+                className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
+                title={`View "${segment.content}" details`}
+              >
+                "{segment.content}"
+              </button>
+            );
+          } else {
+            return <span key={segmentIdx} className="font-medium">"{segment.content}"</span>;
+          }
+        default:
+          return segment.content;
+      }
+    });
+  };
+
+  // Helper function to process text (remove all asterisks, just return as clean text)
+  const processText = (text: string): Array<{type: string, content: string}> => {
+    return [{
+      type: 'text',
+      content: text.replace(/\*/g, '') // Remove all asterisks
+    }];
   };
 
   const renderTitleCard = (title: any, onTitleCardClick: (title: any) => void) => {
@@ -374,10 +310,10 @@ const FormattedMessage = ({ content, navigate, titleData, allMessages }: { conte
     );
   };
 
-  return <div>{formatText(content)}</div>;
+  return <div className="prose prose-sm max-w-none">{formatText(content)}</div>;
 };
 
-export default function OpenAIChatbot() {
+export default function Chat() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -389,8 +325,9 @@ export default function OpenAIChatbot() {
   const [showAllMessages, setShowAllMessages] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Check if user is authorized (same users as existing chatbot)
-  const isAuthorized = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  // Check if user is authorized - allow all buyers
+  const accountType = user?.user_metadata?.account_type || 'buyer';
+  const isAuthorized = accountType === 'buyer';
 
   // Function to get messages to display (truncated or full)
   const getDisplayMessages = () => {
@@ -399,8 +336,8 @@ export default function OpenAIChatbot() {
     }
     
     // Show greeting + last 4 messages (2 conversations: user->bot, user->bot)
-    const greeting = messages.find(msg => 
-      msg.sender === 'bot' && msg.content.includes('Hello! I\'m your OpenAI-powered assistant')
+    const greeting = messages.find(msg =>
+      msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Alex')
     );
     
     const lastFourMessages = messages.slice(-4);
@@ -418,8 +355,8 @@ export default function OpenAIChatbot() {
       return 0;
     }
     
-    const greeting = messages.find(msg => 
-      msg.sender === 'bot' && msg.content.includes('Hello! I\'m your OpenAI-powered assistant')
+    const greeting = messages.find(msg =>
+      msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Alex')
     );
     
     const visibleCount = greeting ? 5 : 4; // greeting + 4 recent, or just 4 recent
@@ -432,7 +369,7 @@ export default function OpenAIChatbot() {
     if (!isAuthorized) {
       toast({
         title: "Access Denied",
-        description: "You don't have permission to access the OpenAI Chatbot.",
+        description: "You don't have permission to access the Chat.",
         variant: "destructive",
       });
       navigate("/profile");
@@ -493,28 +430,18 @@ export default function OpenAIChatbot() {
             const restoredMessages: Message[] = history;
             
             // Add greeting message at the beginning if not already there
-            const hasGreeting = restoredMessages.some(msg => 
-              msg.sender === 'bot' && msg.content.includes('Hello! I\'m your OpenAI-powered assistant')
+            const hasGreeting = restoredMessages.some(msg =>
+              msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Alex')
             );
             
             if (!hasGreeting) {
               restoredMessages.unshift({
                 id: 'greeting',
-                content: `🤖 Hello! I'm your OpenAI-powered assistant for Korean IP discovery. I use advanced AI to understand your preferences and provide personalized recommendations.
+                content: `Hey there! 👋 I'm Alex, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
 
-**What makes me different:**
-• **Smart Understanding** - I comprehend nuanced requests and context
-• **Conversational** - Ask follow-up questions and have natural discussions
-• **Comprehensive Analysis** - I analyze themes, tones, and complex criteria
-• **Learning** - I remember our conversation to give better suggestions
+I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
 
-**Try asking me things like:**
-• "I love dark psychological thrillers like 'Strangers from Hell'. What would you recommend?"
-• "What are some heartwarming family dramas similar to 'Reply 1988'?"
-• "I'm looking for strong female protagonists in fantasy webtoons"
-• "Recommend something completely different from what's popular"
-
-What kind of Korean content are you in the mood for today?`,
+What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
                 sender: 'bot',
                 timestamp: new Date(session.created_at),
               });
@@ -527,21 +454,11 @@ What kind of Korean content are you in the mood for today?`,
             setMessages([
               {
                 id: Date.now().toString(),
-                content: `🤖 Hello! I'm your OpenAI-powered assistant for Korean IP discovery. I use advanced AI to understand your preferences and provide personalized recommendations.
+                content: `Hey there! 👋 I'm Alex, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
 
-**What makes me different:**
-• **Smart Understanding** - I comprehend nuanced requests and context
-• **Conversational** - Ask follow-up questions and have natural discussions
-• **Comprehensive Analysis** - I analyze themes, tones, and complex criteria
-• **Learning** - I remember our conversation to give better suggestions
+I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
 
-**Try asking me things like:**
-• "I love dark psychological thrillers like 'Strangers from Hell'. What would you recommend?"
-• "What are some heartwarming family dramas similar to 'Reply 1988'?"
-• "I'm looking for strong female protagonists in fantasy webtoons"
-• "Recommend something completely different from what's popular"
-
-What kind of Korean content are you in the mood for today?`,
+What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
                 sender: 'bot',
                 timestamp: new Date(),
               }
@@ -562,21 +479,11 @@ What kind of Korean content are you in the mood for today?`,
         setMessages([
           {
             id: Date.now().toString(),
-            content: `🤖 Hello! I'm your OpenAI-powered assistant for Korean IP discovery. I use advanced AI to understand your preferences and provide personalized recommendations.
+            content: `Hey there! 👋 I'm Alex, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
 
-**What makes me different:**
-• **Smart Understanding** - I comprehend nuanced requests and context
-• **Conversational** - Ask follow-up questions and have natural discussions
-• **Comprehensive Analysis** - I analyze themes, tones, and complex criteria
-• **Learning** - I remember our conversation to give better suggestions
+I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
 
-**Try asking me things like:**
-• "I love dark psychological thrillers like 'Strangers from Hell'. What would you recommend?"
-• "What are some heartwarming family dramas similar to 'Reply 1988'?"
-• "I'm looking for strong female protagonists in fantasy webtoons"
-• "Recommend something completely different from what's popular"
-
-What kind of Korean content are you in the mood for today?`,
+What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
             sender: 'bot',
             timestamp: new Date(),
           }
@@ -821,6 +728,16 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
     }
   };
 
+  // Auto-resize textarea
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputMessage(e.target.value);
+
+    // Auto-resize
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+  };
+
   const handleSuggestedQuery = async (query: string, messageId?: string) => {
     setInputMessage(query);
 
@@ -958,33 +875,54 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
-      <div className="w-full flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-3 px-3 sm:px-4 pt-3 sm:pt-4">
-          <Button
-            onClick={() => navigate("/profile")}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Profile
-          </Button>
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-midnight-ink leading-tight mb-1">
-              🧠 OpenAI Powered Chatbot
-            </h1>
-            <p className="text-xs sm:text-sm text-midnight-ink-600">
-              Advanced AI conversations for Korean IP discovery
-            </p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto h-screen flex flex-col">
+        {/* Header - Dashboard Standard */}
+        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+                  AI Assistant
+                </h1>
+                <span className="px-2 py-1 text-xs font-bold text-white rounded-full uppercase"
+                      style={{ backgroundColor: '#FF6B6B' }}>
+                  BETA
+                </span>
+              </div>
+              <p className="text-sm text-gray-600">
+                Discover Korean content with AI-powered recommendations
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setMessages([{
+                  id: 'greeting',
+                  content: `Hey there! 👋 I'm Alex, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
+
+I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
+
+What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
+                  sender: 'bot',
+                  timestamp: new Date(),
+                }]);
+                setInputMessage('');
+              }}
+              variant="outline"
+              className="hidden sm:flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Chat
+            </Button>
           </div>
         </div>
 
-        {/* Chat Container - Full width and height with minimal margins */}
-        <Card className="bg-white border border-gray-200 shadow-lg rounded-xl flex-1 flex flex-col overflow-hidden mx-2 sm:mx-3 mb-2 sm:mb-3">
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+        {/* Chat Container - Clean, no card wrapper */}
+        <div className="flex-1 flex flex-col overflow-hidden px-4 sm:px-6 lg:px-8 pb-4">
+          {/* Messages Container - Clean ChatGPT style */}
+          <div className="flex-1 overflow-y-auto py-4 space-y-6">
             {/* Loading History Indicator */}
             {isLoadingHistory && (
               <div className="flex items-center justify-center py-8">
@@ -1018,103 +956,100 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
             
             {!isLoadingHistory &&
             getDisplayMessages().map((message, index, messagesArray) => (
-              <div
-                key={message.id}
-                className={`flex items-start gap-3 ${
-                  message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'
-                }`}
-              >
-                {/* Avatar */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  message.sender === 'user' 
-                    ? 'bg-hanok-teal text-white' 
-                    : 'bg-gradient-to-br from-purple-500 to-blue-500 text-white'
-                }`}>
-                  {message.sender === 'user' ? <User size={16} /> : <Brain size={16} />}
-                </div>
+              <div key={message.id} className="group">
+                <div className={`flex gap-4 ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                  {/* Simple Avatar Icon */}
+                  <div className="flex-shrink-0 pt-1">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                      message.sender === 'user'
+                        ? 'bg-gray-700'
+                        : 'bg-gradient-to-br from-green-600 to-green-700'
+                    }`}>
+                      {message.sender === 'user' ? (
+                        <User size={14} className="text-white" />
+                      ) : (
+                        <Sparkles size={14} className="text-white" />
+                      )}
+                    </div>
+                  </div>
 
-                {/* Message Content */}
-                <div className={`flex-1 ${message.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                  <div className={`inline-block max-w-[90%] sm:max-w-[85%] lg:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-2xl ${
-                    message.sender === 'user'
-                      ? 'bg-hanok-teal text-white'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    <div className="text-sm prose prose-sm max-w-none">
-                      <FormattedMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} />
+                  {/* Message Content - Clean and Simple */}
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-700">
+                        {message.sender === 'user' ? 'You' : 'Alex'}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <div className={`prose prose-sm max-w-none ${
+                      message.sender === 'user' ? 'text-gray-700' : 'text-gray-800'
+                    }`}>
+                      <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} />
                     </div>
                     
-                    {/* Suggested Queries */}
+                    {/* Suggested Queries - Cleaner display */}
                     {message.suggestedQueries && message.suggestedQueries.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        <p className="text-xs font-medium text-gray-600">💡 Try these searches:</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="text-xs text-gray-500">Try:</span>
                         <div className="flex flex-wrap gap-2">
                           {message.suggestedQueries.map((query, idx) => (
                             <button
                               key={idx}
                               onClick={() => handleSuggestedQuery(query, message.messageId)}
-                              className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs rounded-lg border border-blue-200 transition-colors"
+                              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors"
                             >
-                              "{query}"
+                              {query}
                             </button>
                           ))}
                         </div>
                       </div>
                     )}
-                    
-                    {/* Always show actual database titles - simple and reliable */}
-                    {message.titles && message.titles.length > 0 && (() => {
+
+                    {/* Feedback Component for Bot Messages - Disabled in favor of per-title feedback */}
+                    {false && message.sender === 'bot' && message.messageId && !message.content.includes('Hey there! 👋 I\'m Alex') && (() => {
                       // Find the preceding user message for context
                       const userMessage = messagesArray.slice(0, index).reverse().find(m => m.sender === 'user');
-                      const userPrompt = userMessage?.content || "User query";
-                      
                       return (
-                        <div className="mt-4 space-y-3">
-                          <div className="border-t border-gray-200 pt-3">
-                            <p className="text-sm font-semibold text-gray-700 mb-3">📚 Here are additional titles you may want to consider:</p>
-                            <div className="space-y-2">
-                              {message.titles.map(title => formatTitleCard(title, message.messageId, userPrompt))}
-                            </div>
-                          </div>
-                        </div>
+                        <ChatbotFeedback
+                          messageId={message.messageId}
+                          userPrompt={userMessage?.content || "User query"}
+                          aiResponse={message.content}
+                          recommendedTitles={message.titles || []}
+                          onFeedbackSubmitted={() => {
+                            // Feedback submitted for message
+                          }}
+                        />
                       );
                     })()}
-                  </div>
-                  
-                  {/* Feedback Component for Bot Messages - Disabled in favor of per-title feedback */}
-                  {false && message.sender === 'bot' && message.messageId && !message.content.includes('Hello! I\'m your OpenAI-powered assistant') && (() => {
-                    // Find the preceding user message for context
-                    const userMessage = messagesArray.slice(0, index).reverse().find(m => m.sender === 'user');
-                    return (
-                      <ChatbotFeedback
-                        messageId={message.messageId}
-                        userPrompt={userMessage?.content || "User query"}
-                        aiResponse={message.content}
-                        recommendedTitles={message.titles || []}
-                        onFeedbackSubmitted={() => {
-                          // Feedback submitted for message
-                        }}
-                      />
-                    );
-                  })()}
-                  
-                  <div className="text-xs text-gray-500 mt-1">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+
+                    <div className="text-xs text-gray-500 mt-1">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
 
-            {/* Loading Message */}
+            {/* Loading Message - Clean Style */}
             {isLoading && (
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-white flex items-center justify-center flex-shrink-0">
-                  <Brain size={16} />
-                </div>
-                <div className="bg-gray-100 text-gray-800 px-4 py-3 rounded-2xl">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">AI is thinking...</span>
+              <div className="group">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 pt-1">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center">
+                      <Sparkles size={14} className="text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-700">Alex</span>
+                      <span className="text-xs text-gray-400">is typing</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
+                      <span className="text-sm text-gray-500">Thinking...</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1138,34 +1073,41 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <div className="border-t border-gray-200 p-3 sm:p-4">
-            <div className="flex gap-2 sm:gap-3">
-              <div className="flex-1 relative">
+          {/* ChatGPT-style Input Area */}
+          <div className="relative mt-4">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="flex items-end gap-2 p-3">
                 <textarea
                   value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
+                  onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
-                  placeholder="Ask me anything about Korean IPs..."
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-sm"
-                  rows={2}
+                  placeholder="Send a message..."
+                  className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-sm placeholder-gray-400"
+                  rows={1}
                   disabled={isLoading || isLoadingHistory}
+                  style={{
+                    minHeight: '44px',
+                    overflowY: 'hidden'
+                  }}
                 />
-                <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs text-gray-400 hidden sm:flex">
-                  <Sparkles size={12} />
-                  <span>OpenAI</span>
-                </div>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim() || isLoading || isLoadingHistory}
+                  className={`p-2 rounded-lg transition-colors ${
+                    inputMessage.trim() && !isLoading && !isLoadingHistory
+                      ? 'bg-gray-700 text-white hover:bg-gray-800'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  <Send size={18} />
+                </button>
               </div>
-              <Button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isLoading || isLoadingHistory}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl self-end"
-              >
-                <Send size={16} />
-              </Button>
+              <div className="px-7 pb-2 text-xs text-gray-400">
+                Press Enter to send, Shift+Enter for new line
+              </div>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

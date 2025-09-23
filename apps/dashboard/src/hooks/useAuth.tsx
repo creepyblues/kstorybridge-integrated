@@ -261,10 +261,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up periodic session health monitoring
     const healthCheckInterval = setInterval(async () => {
       if (!mounted) return;
-      
+
       const healthCheck = await performSessionHealthCheck();
+
+      // Skip updating state if the only issue is missing account_type (non-critical)
+      const criticalIssues = healthCheck.issues.filter(issue => !issue.includes('INFO'));
+      const hasOnlyAccountTypeIssue = healthCheck.issues.length > 0 &&
+                                      criticalIssues.length === 0 &&
+                                      healthCheck.issues.some(issue => issue.includes('Account type metadata missing'));
+
+      if (hasOnlyAccountTypeIssue) {
+        // Skip logging for this common, non-critical issue
+        setIsSessionHealthy(true);
+        return;
+      }
+
       setIsSessionHealthy(healthCheck.healthy);
-      
+
       if (!healthCheck.healthy && healthCheck.session) {
         console.log('🏥 AUTH: Periodic health check found issues, updating session state');
         setSession(healthCheck.session);

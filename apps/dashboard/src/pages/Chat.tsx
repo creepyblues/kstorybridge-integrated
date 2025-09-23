@@ -112,10 +112,14 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
 
     // Final fallback: search in title cache (ALL titles from database)
     if (titleCache && titleCache.length > 0) {
-      console.log('🔍 Searching title cache as fallback:', {
-        searchTerm: cleanedName,
-        cacheSize: titleCache.length
-      });
+      // Only log for actual title searches, not genre names
+      if (cleanedName.length > 2 && !['romantasy', 'fantasy', 'romance'].includes(cleanedName.toLowerCase())) {
+        console.log('🔍 Searching title cache as fallback:', {
+          searchTerm: cleanedName,
+          cacheSize: titleCache.length,
+          firstFewCacheTitles: titleCache.slice(0, 3).map(t => t.title_name_en || t.title_name_kr)
+        });
+      }
 
       // Try exact match in cache
       const exactCacheMatch = titleCache.find(title => {
@@ -143,7 +147,13 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
       }
     }
 
-    console.log('❌ No title match found:', cleanedName);
+    // Only log as error if it looks like a real title (not a genre or category)
+    const isLikelyTitle = cleanedName.length > 2 &&
+                          !['romantasy', 'fantasy', 'romance', 'thriller', 'horror', 'comedy', 'drama', 'action'].includes(cleanedName.toLowerCase());
+
+    if (isLikelyTitle) {
+      console.log('⚠️ Title not found in database:', cleanedName, '(AI may have generated a fictional example)');
+    }
     return null;
   };
   const formatText = (text: string) => {
@@ -550,11 +560,18 @@ What's been catching your interest lately? Are you looking for something specifi
         const { data: allTitles, error } = await supabase
           .from('titles')
           .select('title_id, title_name_en, title_name_kr')
-          .limit(500); // Reasonable limit for performance
+          .limit(1000); // Increased limit to get more titles
 
         if (!error && allTitles) {
           setTitleCache(allTitles);
-          console.log('✅ Title cache loaded:', allTitles.length, 'titles');
+          console.log('✅ Title cache loaded:', {
+            count: allTitles.length,
+            sampleTitles: allTitles.slice(0, 5).map(t => t.title_name_en || t.title_name_kr),
+            hasAIInLove: allTitles.some(t =>
+              t.title_name_en?.toLowerCase().includes('ai') ||
+              t.title_name_kr?.toLowerCase().includes('ai')
+            )
+          });
         } else {
           console.error('❌ Failed to load title cache:', error);
         }

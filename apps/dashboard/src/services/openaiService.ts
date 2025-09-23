@@ -449,20 +449,29 @@ class OpenAIService {
       PROD: import.meta.env.PROD,
       MODE: import.meta.env.MODE
     });
-    
+
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     const isProduction = import.meta.env.PROD;
     const isEnabled = import.meta.env.VITE_OPENAI_ENABLED === 'true';
-    
+    const forceProduction = import.meta.env.VITE_FORCE_OPENAI_PRODUCTION === 'true';
+
     // Check if OpenAI is disabled
     if (!isEnabled) {
       console.warn('🔒 OpenAI is disabled in this environment');
       return;
     }
-    
+
+    // In production or when forced to use backend API, we don't need a direct API key
+    const useBackendAPI = isProduction || forceProduction;
+
+    if (useBackendAPI) {
+      console.log('✅ OpenAI configured for backend API mode - no direct API key needed');
+      return; // Skip direct client initialization when using backend proxy
+    }
+
+    // Only check for API key in development mode when using direct client
     if (!apiKey || apiKey === 'sk-your_actual_api_key_here' || apiKey.trim() === '') {
-      const envFile = isProduction ? 'deployment platform environment variables' : '.env.local file';
-      console.warn(`⚠️ OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your ${envFile}`);
+      console.warn(`⚠️ OpenAI API key not configured for direct client mode. Please add VITE_OPENAI_API_KEY to your .env.local file`);
       console.warn(`⚠️ Current API key value: "${apiKey ? apiKey.substring(0, 10) + '...' : 'undefined'}"`);
       return;
     }

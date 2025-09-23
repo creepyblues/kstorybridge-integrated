@@ -49,9 +49,16 @@ class EmbeddingService {
 
   private initializeClient() {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    
+    const isProduction = import.meta.env.PROD;
+
+    // In production, embedding service is handled by backend - no warning needed
+    if (isProduction) {
+      console.log('✅ Embedding service configured for backend API mode');
+      return;
+    }
+
     if (!apiKey || apiKey === 'sk-your_actual_api_key_here') {
-      console.warn('OpenAI API key not configured for embedding service');
+      console.warn('OpenAI API key not configured for embedding service (development mode)');
       return;
     }
 

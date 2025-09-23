@@ -3,8 +3,10 @@ import { sendSlackNotification } from './slack';
 
 const BEHAVIOR_KEY = 'kstorybridge_session_behavior';
 const SESSION_END_KEY = 'kstorybridge_session_end_notified';
+const NOTIFICATION_COOLDOWN_KEY = 'kstorybridge_notification_cooldown';
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes of inactivity = session end
 const MIN_SESSION_DURATION = 2000; // Don't track sessions shorter than 2 seconds
+const NOTIFICATION_COOLDOWN = 10 * 60 * 1000; // 10 minutes cooldown between duplicate notifications
 
 interface PageVisit {
   url: string;
@@ -181,13 +183,24 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
       }
     }
     
+    // Check notification cooldown to prevent spam
+    const userEmail = user ? user.email! : sessionData.userEmail || 'not-logged-in@anonymous.user';
+    const cooldownKey = `${NOTIFICATION_COOLDOWN_KEY}_${userEmail}`;
+    const lastNotificationTime = localStorage.getItem(cooldownKey);
+    const now = Date.now();
+
+    if (lastNotificationTime && (now - parseInt(lastNotificationTime)) < NOTIFICATION_COOLDOWN) {
+      console.log('🔇 Skipping duplicate session end notification (within cooldown period)');
+      return;
+    }
+
     // Send notification using centralized Slack utility (includes blacklist filtering)
     try {
       await sendSlackNotification({
         event: 'User Session Ended',
         userType: userType === 'anonymous' ? 'buyer' : userType, // Convert to required type
         fullName: user ? (user.user_metadata?.full_name || 'User') : 'Anonymous User',
-        email: user ? user.email! : sessionData.userEmail || 'not-logged-in@anonymous.user',
+        email: userEmail,
         additionalInfo: {
           sessionId: sessionData.sessionId,
           reason,
@@ -206,8 +219,9 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
         }
       });
 
-      // Mark session end as notified
+      // Mark session end as notified and update cooldown
       sessionStorage.setItem(SESSION_END_KEY, sessionData.sessionId);
+      localStorage.setItem(cooldownKey, now.toString());
       console.log('✅ Session end notification sent to Slack');
 
       // Clear session data if ending due to navigation or close

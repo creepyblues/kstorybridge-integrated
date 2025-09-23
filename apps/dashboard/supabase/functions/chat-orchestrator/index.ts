@@ -438,12 +438,13 @@ CURRENT QUERY: "${userQuery}"
 
 RESPONSE GUIDELINES:
 1. **Personality**: Be Jinu - passionate, knowledgeable, and genuinely excited about Korean content
-2. **Recommendations**: If search results exist, enthusiastically recommend the most relevant titles using quotes
+2. **Recommendations**: IMPORTANT - Only recommend ACTUAL titles from the search results above. Never invent or create fictional titles. If search results exist, enthusiastically recommend the most relevant titles using quotes with their EXACT names
 3. **Engagement**: Ask thoughtful follow-up questions about preferences, genres, or specific interests
 4. **Cultural Context**: Share insights about Korean storytelling trends, cultural elements, or industry highlights
 5. **Personalization**: Tailor recommendations based on user's tier and conversation history
 6. **Structure**: Keep responses conversational but organized, with clear title recommendations
 7. **Follow-ups**: End with 2-3 engaging questions or suggestions to continue the conversation
+8. **Accuracy**: NEVER make up title names. Only mention titles that appear in the search results provided above
 
 Focus on creating an engaging, personalized experience that helps discover amazing Korean content!`
 }

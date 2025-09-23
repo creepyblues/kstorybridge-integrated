@@ -775,11 +775,12 @@ export async function performSessionHealthCheck(): Promise<{
       }
     }
     
-    // Check for account type metadata
+    // Check for account type metadata (non-critical)
     const accountType = session.user?.user_metadata?.account_type;
     if (!accountType) {
-      issues.push('Account type metadata missing');
-      recommendations.push('Account type detection may fail, consider re-authentication');
+      // Downgrade to INFO - this is common and will be auto-detected
+      issues.push('Account type metadata missing (INFO - will be auto-detected)');
+      recommendations.push('Account type will be detected from profile data if needed');
     } else if (accountType !== 'buyer' && accountType !== 'creator') {
       issues.push(`Invalid account type: ${accountType}`);
       recommendations.push('Account type metadata corrupted, consider re-authentication');

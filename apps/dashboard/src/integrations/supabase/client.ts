@@ -71,10 +71,31 @@ const CLIENT_CONFIG = {
     }
   },
   
-  // Realtime configuration (if needed)
+  // Realtime configuration with enhanced WebSocket handling
   realtime: {
     params: {
       eventsPerSecond: 10
+    },
+    // Enhanced WebSocket settings for stability
+    heartbeatIntervalMs: 30000,
+    reconnectAfterMs: function(tries: number) {
+      return Math.min(1000 * Math.pow(2, tries), 30000); // Exponential backoff max 30s
+    },
+    logger: isDev ? console.log : undefined,
+    // Handle WebSocket errors gracefully
+    onError: (error: Error) => {
+      if (isDev) {
+        console.warn('🔌 WebSocket connection issue (non-critical):', error.message);
+      }
+    },
+    onClose: (event: CloseEvent) => {
+      if (isDev && event.code === 1006) {
+        console.log('🔌 WebSocket closed unexpectedly (common, will reconnect):', {
+          code: event.code,
+          reason: event.reason || 'No reason provided',
+          wasClean: event.wasClean
+        });
+      }
     }
   }
 };

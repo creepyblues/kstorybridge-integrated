@@ -27,7 +27,6 @@ const Browse = lazy(() => import("./pages/Browse"));
 const Home = lazy(() => import("./pages/Home"));
 const BuyerHome = lazy(() => import("./pages/BuyerHome"));
 const CreatorHome = lazy(() => import("./pages/CreatorHome"));
-const Titles = lazy(() => import("./pages/Titles"));
 const TitleList = lazy(() => import("./pages/TitleList"));
 const TitleDetail = lazy(() => import("./pages/TitleDetail"));
 const TitleDetailNew = lazy(() => import("./pages/TitleDetailNew"));
@@ -88,7 +87,7 @@ const TitleRedirect = () => {
 
 const TitleNewRedirect = () => {
   const { titleId } = useParams();
-  return <Navigate to={`/buyers/titles-new/${titleId}`} replace />;
+  return <Navigate to={`/buyers/titles/${titleId}`} replace />;
 };
 
 const App = () => (
@@ -138,14 +137,8 @@ const App = () => (
                 <Route path="/buyers/titles" element={
                   <BuyerProtectedLayout><TitleList /></BuyerProtectedLayout>
                 } />
-                <Route path="/buyers/title-list" element={
-                  <BuyerProtectedLayout><Titles /></BuyerProtectedLayout>
-                } />
                 <Route path="/buyers/titles/:titleId" element={
                   <BuyerProtectedLayout><TitleDetailNew /></BuyerProtectedLayout>
-                } />
-                <Route path="/buyers/titles-new/:titleId" element={
-                  <BuyerProtectedLayout><TitleDetail /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/favorites" element={
                   <BuyerProtectedLayout><Favorites /></BuyerProtectedLayout>
@@ -195,7 +188,7 @@ const App = () => (
                   <CreatorProtectedLayout><CreatorHome /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles" element={
-                  <CreatorProtectedLayout><Titles /></CreatorProtectedLayout>
+                  <CreatorProtectedLayout><TitleList /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles/add" element={
                   <CreatorProtectedLayout><CreatorAddTitlePage /></CreatorProtectedLayout>
@@ -204,9 +197,6 @@ const App = () => (
                   <CreatorProtectedLayout><CreatorEditTitlePage /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/titles/:titleId" element={
-                  <CreatorProtectedLayout><CreatorTitleDetailNew /></CreatorProtectedLayout>
-                } />
-                <Route path="/creators/titles-new/:titleId" element={
                   <CreatorProtectedLayout><CreatorTitleDetailNew /></CreatorProtectedLayout>
                 } />
                 <Route path="/creators/requests" element={
@@ -237,7 +227,7 @@ const App = () => (
                 
                 {/* Legacy routes - redirect to buyer routes */}
                 <Route path="/titles" element={
-                  <ProtectedLayout><Titles /></ProtectedLayout>
+                  <ProtectedLayout><TitleList /></ProtectedLayout>
                 } />
                 <Route path="/titles/:titleId" element={
                   <TitleRedirect />

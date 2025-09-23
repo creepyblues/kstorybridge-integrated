@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { syncOAuthUserMetadata, getCurrentUserForSync } from '@/utils/oauthMetadataSync';
 
 interface BaseEmailData {
   to: string;
@@ -160,7 +161,7 @@ export class EmailService {
   }
 
   /**
-   * Send welcome email to new users with duplicate prevention
+   * Send welcome email to new users with duplicate prevention and OAuth metadata sync
    */
   async sendWelcomeEmail(data: WelcomeEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
     const emailType = 'welcome';
@@ -173,15 +174,46 @@ export class EmailService {
       return { success: true, error: 'Email already sent (duplicate prevented)' };
     }
 
+    // OAuth Metadata Sync: Ensure metadata matches database for OAuth users
+    let finalAccountType = data.accountType;
+    try {
+      console.log(`🔍 OAuth Sync: Checking metadata for ${userEmail} (${data.accountType})`);
+
+      // Get current user for OAuth detection and metadata update
+      const currentUser = await getCurrentUserForSync();
+
+      // Sync OAuth user metadata (email users are skipped automatically)
+      const correctedAccountType = await syncOAuthUserMetadata(
+        userEmail,
+        data.accountType,
+        currentUser
+      );
+
+      if (correctedAccountType !== data.accountType) {
+        console.log(`✅ OAuth Sync: Account type corrected for welcome email - ${data.accountType} → ${correctedAccountType}`);
+        finalAccountType = correctedAccountType;
+      }
+
+    } catch (error) {
+      console.warn('⚠️ OAuth Sync: Metadata sync failed, using original account type:', error);
+      // Continue with original account type - don't fail email sending
+    }
+
     const subject = `Welcome to KStoryBridge, ${data.userName}! 🎉`;
 
-    console.log(`📧 Sending welcome email to ${userEmail} (${data.accountType})`);
+    console.log(`📧 Sending welcome email to ${userEmail} (${finalAccountType})`);
+
+    // Use corrected account type for email template data
+    const emailData = {
+      ...data,
+      accountType: finalAccountType
+    };
 
     const result = await this.sendEmail({
       to: data.userEmail,
       subject,
       template: 'welcome',
-      templateData: data,
+      templateData: emailData,
       from: 'KStoryBridge Team <welcome@kstorybridge.com>'
     });
 

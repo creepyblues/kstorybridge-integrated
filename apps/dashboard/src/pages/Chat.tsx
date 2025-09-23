@@ -338,7 +338,7 @@ export default function Chat() {
     
     // Show greeting + last 4 messages (2 conversations: user->bot, user->bot)
     const greeting = messages.find(msg =>
-      msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Alex')
+      msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Jinu')
     );
     
     const lastFourMessages = messages.slice(-4);
@@ -357,7 +357,7 @@ export default function Chat() {
     }
     
     const greeting = messages.find(msg =>
-      msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Alex')
+      msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Jinu')
     );
     
     const visibleCount = greeting ? 5 : 4; // greeting + 4 recent, or just 4 recent
@@ -432,13 +432,13 @@ export default function Chat() {
             
             // Add greeting message at the beginning if not already there
             const hasGreeting = restoredMessages.some(msg =>
-              msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Alex')
+              msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Jinu')
             );
             
             if (!hasGreeting) {
               restoredMessages.unshift({
                 id: 'greeting',
-                content: `Hey there! 👋 I'm Alex, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
+                content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
 
 I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
 
@@ -455,7 +455,7 @@ What's been catching your interest lately? Are you looking for something specifi
             setMessages([
               {
                 id: Date.now().toString(),
-                content: `Hey there! 👋 I'm Alex, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
+                content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
 
 I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
 
@@ -480,7 +480,7 @@ What's been catching your interest lately? Are you looking for something specifi
         setMessages([
           {
             id: Date.now().toString(),
-            content: `Hey there! 👋 I'm Alex, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
+            content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
 
 I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
 
@@ -908,7 +908,7 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
               onClick={() => {
                 setMessages([{
                   id: 'greeting',
-                  content: `Hey there! 👋 I'm Alex, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
+                  content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
 
 I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
 
@@ -987,7 +987,7 @@ What's been catching your interest lately? Are you looking for something specifi
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-gray-700">
-                        {message.sender === 'user' ? 'You' : 'Alex'}
+                        {message.sender === 'user' ? 'You' : 'Jinu'}
                       </span>
                       <span className="text-xs text-gray-400">
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1018,7 +1018,7 @@ What's been catching your interest lately? Are you looking for something specifi
                     )}
 
                     {/* Feedback Component for Bot Messages - Disabled in favor of per-title feedback */}
-                    {false && message.sender === 'bot' && message.messageId && !message.content.includes('Hey there! 👋 I\'m Alex') && (() => {
+                    {false && message.sender === 'bot' && message.messageId && !message.content.includes('Hey there! 👋 I\'m Jinu') && (() => {
                       // Find the preceding user message for context
                       const userMessage = messagesArray.slice(0, index).reverse().find(m => m.sender === 'user');
                       return (
@@ -1050,7 +1050,7 @@ What's been catching your interest lately? Are you looking for something specifi
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-700">Alex</span>
+                      <span className="text-xs font-medium text-gray-700">Jinu</span>
                       <span className="text-xs text-gray-400">is typing</span>
                     </div>
                     <div className="flex items-center gap-2">

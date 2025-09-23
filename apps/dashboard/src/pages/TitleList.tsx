@@ -4,12 +4,10 @@ import { Link, useLocation } from "react-router-dom";
 import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown, LayoutGrid, List as ListIcon } from "lucide-react";
 import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
-import FeaturedTitlesCarousel from "@/components/FeaturedTitlesCarousel";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
@@ -40,9 +38,9 @@ function TitleListContent() {
 
   // Use infinite scroll for buyers, traditional loading for creators
   const infiniteScroll = useInfiniteScroll({
-    initialLimit: 50, // Increased from 12 to ensure we load titles with pitch data
+    initialLimit: 12, // Load only 12 titles initially for faster page performance
     loadMoreThreshold: 300,
-    useEnhancedSearch: true, // Enable fuzzy search for buyers
+    useEnhancedSearch: false, // Disable enhanced search for normal browsing to fix infinite scroll
     userId: user?.id
   });
 
@@ -54,6 +52,10 @@ function TitleListContent() {
   const [sortField, setSortField] = useState<string | null>('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [dbError, setDbError] = useState<string | null>(null);
+
+  // Pagination state for creators only
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   // Enhanced search state
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -148,8 +150,9 @@ function TitleListContent() {
     if (!query) {
       setSearchResults([]);
       if (isBuyerView) {
-        // Reset infinite scroll to show all titles
-        infiniteScroll.reset();
+        // For buyers: just clear search results, infinite scroll will show all titles
+        setSearchResults([]);
+        setSearchType('traditional');
       }
       return;
     }
@@ -168,11 +171,25 @@ function TitleListContent() {
 
     try {
       if (isBuyerView) {
-        // For buyers: Use infinite scroll search
-        console.log('🔍 Starting infinite scroll search for buyers:', query);
-        await infiniteScroll.search(query);
-        setSearchResults([]); // Clear enhanced search results
-        setSearchType('traditional');
+        // For buyers: Use enhanced search directly since infinite scroll has enhanced search disabled
+        console.log('🔍 Starting enhanced search for buyers:', query);
+
+        // Use enhanced search service directly for buyers when searching
+        const searchResponse = await enhancedTitleSearchService.searchWithFilters(
+          query,
+          titles.length > 0 ? titles : [], // Use current titles or empty array
+          {},
+          {
+            useVectorSearch: vectorSearchAvailable,
+            userId: user?.id,
+            hybridMode: true,
+            maxResults: 50
+          }
+        );
+
+        setSearchResults(searchResponse.results);
+        setSearchType(searchResponse.searchType);
+        console.log(`🎯 Enhanced search completed for buyers: ${searchResponse.results.length} results`);
       } else {
         // For creators: Use enhanced search on loaded titles
         const searchResponse = await enhancedTitleSearchService.searchWithFilters(
@@ -201,8 +218,8 @@ function TitleListContent() {
 
       // Track search analytics
       try {
-        const resultCount = isBuyerView ? infiniteScroll.total : searchResults.length;
-        await trackSearch(query, isBuyerView ? 'infinite_scroll' : searchType, resultCount, user?.id);
+        const resultCount = searchResults.length;
+        await trackSearch(query, searchType, resultCount, user?.id);
       } catch (error) {
         console.warn('Failed to track search:', error);
       }
@@ -216,12 +233,8 @@ function TitleListContent() {
 
       // Fallback behavior
       if (currentSearchId.current === searchId) {
-        if (isBuyerView) {
-          infiniteScroll.reset();
-        } else {
-          setSearchResults([]);
-          setSearchType('traditional');
-        }
+        setSearchResults([]);
+        setSearchType('traditional');
       }
     } finally {
       setSearchLoading(false);
@@ -235,10 +248,9 @@ function TitleListContent() {
     setSearchType('traditional');
     currentSearchId.current = null;
 
-    if (isBuyerView) {
-      // Reset infinite scroll to show all titles
-      infiniteScroll.reset();
-    }
+    // Clear search results for both buyers and creators
+    setSearchResults([]);
+    setSearchType('traditional');
   };
 
   const handleSearchInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -332,59 +344,76 @@ function TitleListContent() {
     });
   };
 
+  // Get the full list of titles for creators (before pagination)
+  const allCreatorTitles = (() => {
+    if (!isCreatorView) return titles;
+
+    if (searchResults.length > 0) {
+      return searchResults.map(result => result.title);
+    }
+
+    let result = titles;
+
+    // Apply search filter (fallback for non-enhanced search)
+    if (searchTerm && searchResults.length === 0) {
+      const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
+        result,
+        searchTerm,
+        getTitleSearchFields()
+      );
+      result = [...exactMatches, ...phraseMatches, ...expandedMatches];
+    }
+
+    // Apply sorting (but preserve search relevance order when there's a search term)
+    return searchTerm ? result : sortTitles(result);
+  })();
+
   const filteredTitles = (() => {
     if (isBuyerView) {
-      // For buyers: Use infinite scroll titles directly
-      // Infinite scroll handles search internally via API
-      let result = titles;
-
-      // Check for duplicates
-      const uniqueIds = new Set();
-      const duplicates = [];
-      result.forEach(title => {
-        if (uniqueIds.has(title.title_id)) {
-          duplicates.push(title.title_id);
-        } else {
-          uniqueIds.add(title.title_id);
-        }
-      });
-
-      if (duplicates.length > 0) {
-        console.warn('🔍 TITLELIST: Found duplicate titles!', duplicates);
-        // Remove duplicates by keeping only the first occurrence
-        const seen = new Set();
-        result = result.filter(title => {
-          if (seen.has(title.title_id)) {
-            return false;
-          }
-          seen.add(title.title_id);
-          return true;
-        });
-        console.log('🔍 TITLELIST: Removed duplicates, now have:', result.length, 'unique titles');
-      }
-
-      // Apply sorting (but preserve search relevance order when there's a search term)
-      return searchTerm ? result : sortTitles(result);
-    } else {
-      // For creators: Use enhanced search results or traditional filtering
+      // For buyers: Show search results when searching, otherwise show infinite scroll titles
       if (searchResults.length > 0) {
         return searchResults.map(result => result.title);
       }
 
       let result = titles;
 
-      // Apply search filter (fallback for non-enhanced search)
-      if (searchTerm && searchResults.length === 0) {
-        const { exactMatches, expandedMatches, phraseMatches } = enhancedSearch(
-          result,
-          searchTerm,
-          getTitleSearchFields()
-        );
-        result = [...exactMatches, ...phraseMatches, ...expandedMatches];
+      // Only check for duplicates during search, not during normal browsing
+      if (searchTerm) {
+        const uniqueIds = new Set();
+        const duplicates = [];
+        result.forEach(title => {
+          if (uniqueIds.has(title.title_id)) {
+            duplicates.push(title.title_id);
+          } else {
+            uniqueIds.add(title.title_id);
+          }
+        });
+
+        if (duplicates.length > 0) {
+          console.warn('🔍 TITLELIST: Found duplicate titles during search!', duplicates);
+          // Remove duplicates by keeping only the first occurrence
+          const seen = new Set();
+          result = result.filter(title => {
+            if (seen.has(title.title_id)) {
+              return false;
+            }
+            seen.add(title.title_id);
+            return true;
+          });
+          console.log('🔍 TITLELIST: Removed duplicates, now have:', result.length, 'unique titles');
+        }
+
+        // Apply sorting only during search
+        return sortTitles(result);
       }
 
-      // Apply sorting (but preserve search relevance order when there's a search term)
-      return searchTerm ? result : sortTitles(result);
+      // For normal browsing: preserve chronological order from infinite scroll
+      return result;
+    } else {
+      // For creators: Apply pagination to the full list
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      return allCreatorTitles.slice(startIndex, endIndex);
     }
   })();
 
@@ -951,11 +980,11 @@ function TitleListContent() {
             </div>
 
             {/* Pagination for list view - only for creators */}
-            {isCreatorView && filteredTitles.length > 50 && (
+            {isCreatorView && allCreatorTitles.length > itemsPerPage && (
               <div className="bg-gray-50 px-6 py-4 border-t">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-600">
-                    Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredTitles.length)} to {Math.min(currentPage * itemsPerPage, filteredTitles.length)} of {filteredTitles.length} titles
+                    Showing {Math.min((currentPage - 1) * itemsPerPage + 1, allCreatorTitles.length)} to {Math.min(currentPage * itemsPerPage, allCreatorTitles.length)} of {allCreatorTitles.length} titles
                   </div>
                   
                   <div className="flex items-center gap-2">
@@ -970,8 +999,8 @@ function TitleListContent() {
                     </Button>
                     
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, Math.ceil(filteredTitles.length / itemsPerPage)) }, (_, i) => {
-                        const totalPages = Math.ceil(filteredTitles.length / itemsPerPage);
+                      {Array.from({ length: Math.min(5, Math.ceil(allCreatorTitles.length / itemsPerPage)) }, (_, i) => {
+                        const totalPages = Math.ceil(allCreatorTitles.length / itemsPerPage);
                         let pageNumber;
                         
                         if (totalPages <= 5) {
@@ -1004,8 +1033,8 @@ function TitleListContent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredTitles.length / itemsPerPage)))}
-                      disabled={currentPage === Math.ceil(filteredTitles.length / itemsPerPage)}
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(allCreatorTitles.length / itemsPerPage)))}
+                      disabled={currentPage === Math.ceil(allCreatorTitles.length / itemsPerPage)}
                       className="text-midnight-ink-600 border-porcelain-blue-300 hover:bg-porcelain-blue-100"
                     >
                       Next

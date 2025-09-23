@@ -292,10 +292,35 @@ function formatSlackMessage(data: SlackNotificationData): string {
         
         // Handle behavior field specially to avoid [object Object]
         if (key === 'behavior' && Array.isArray(value)) {
-          message += `• *${formattedKey}:* ${value.length} page visits\n`
-        } else if (typeof value === 'object') {
-          // Convert objects to JSON string for display
-          message += `• *${formattedKey}:* ${JSON.stringify(value)}\n`
+          const behaviorPages = value as Array<{order: number, url: string, title: string, duration: string}>
+          if (behaviorPages.length > 0) {
+            // Create a readable page journey summary
+            const pageNames = behaviorPages
+              .slice(0, 4) // Show first 4 pages
+              .map(page => {
+                // Extract page name from URL
+                const url = page.url.replace(/^https?:\/\/[^\/]+/, '') // Remove protocol and domain
+                const pageName = url.split('/').filter(Boolean).pop() || 'Home'
+                return pageName.charAt(0).toUpperCase() + pageName.slice(1)
+              })
+
+            const morePages = behaviorPages.length > 4 ? ` +${behaviorPages.length - 4} more` : ''
+            const journey = pageNames.join(' → ')
+            message += `• *${formattedKey}:* ${behaviorPages.length} pages (${journey}${morePages})\n`
+          } else {
+            message += `• *${formattedKey}:* No pages visited\n`
+          }
+        } else if (typeof value === 'object' && value !== null) {
+          // Handle other objects more gracefully
+          if (Array.isArray(value)) {
+            message += `• *${formattedKey}:* ${value.length} items\n`
+          } else {
+            // Try to extract meaningful information from objects
+            const objectInfo = Object.keys(value).length > 0
+              ? `{${Object.keys(value).slice(0, 3).join(', ')}${Object.keys(value).length > 3 ? '...' : ''}}`
+              : 'Empty object'
+            message += `• *${formattedKey}:* ${objectInfo}\n`
+          }
         } else {
           message += `• *${formattedKey}:* ${value}\n`
         }

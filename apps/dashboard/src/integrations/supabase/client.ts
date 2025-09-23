@@ -209,7 +209,7 @@ const startTime = Date.now();
 
 let lastKnownSession: Session | null = null;
 let lastSessionUpdatedAt = 0;
-const SESSION_CACHE_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
+const SESSION_CACHE_MAX_AGE_MS = 20 * 60 * 1000; // 20 minutes - increased to reduce getSession calls
 
 const bootstrapCachedSession = () => {
   console.log('🧊 [BOOTSTRAP] Starting session bootstrap from localStorage');
@@ -278,7 +278,7 @@ const isSessionFresh = (session: Session | null) => {
 
   const cacheAgeOk = Date.now() - lastSessionUpdatedAt < SESSION_CACHE_MAX_AGE_MS;
   const expiresAtMs = (session.expires_at ?? 0) * 1000;
-  const expiryBufferOk = expiresAtMs === 0 || expiresAtMs - Date.now() > 5 * 60 * 1000;
+  const expiryBufferOk = expiresAtMs === 0 || expiresAtMs - Date.now() > 10 * 60 * 1000; // Increased buffer to 10 minutes
 
   return cacheAgeOk && expiryBufferOk;
 };
@@ -462,10 +462,13 @@ supabase.auth.getSession = async () => {
   }
 
   try {
+    // Context-aware timeout: OAuth callbacks need more time for PKCE exchange
+    const timeoutMs = isCallback ? 12000 : 8000;
+
     const result = await withRetry(() => originalGetSession(), {
       maxRetries: 1,
       baseDelay: 200,
-      timeoutMs: 3000,
+      timeoutMs,
       operationName: 'getSession'
     });
 

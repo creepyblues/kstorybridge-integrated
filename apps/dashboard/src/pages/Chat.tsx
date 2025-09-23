@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { openaiService } from "@/services/openaiService";
 import { titlesService } from "@/services/titlesService";
 import { chatHistoryService, type ChatSession } from "@/services/chatHistoryService";
+import { chatOrchestratorService, type ChatMessage as OrchestratorMessage } from "@/services/chatOrchestratorService";
 import { ChatbotFeedback } from "@/components/ChatbotFeedback";
 import { TitleFeedback } from "@/components/TitleFeedback";
 
@@ -20,7 +21,131 @@ interface Message {
 }
 
 // Simplified conversational message component
-const ConversationalMessage = ({ content, navigate, titleData, allMessages }: { content: string, navigate: any, titleData?: any[], allMessages?: Message[] }) => {
+const ConversationalMessage = ({ content, navigate, titleData, allMessages, titleCache }: { content: string, navigate: any, titleData?: any[], allMessages?: Message[], titleCache?: any[] }) => {
+
+  // Helper function to find title ID by title name from available title data
+  const findTitleIdByName = (titleName: string): string | null => {
+    // Clean the title name by normalizing outer quotes and removing trailing punctuation
+    const cleanedName = titleName
+      .replace(/^["""'']+|["""'']+$/g, '"')  // Normalize only leading/trailing quotes
+      .replace(/[.,!?;:]+$/, '')  // Remove only trailing punctuation
+      .trim();
+
+    // Debug logging in development
+    if (import.meta.env.DEV && titleName.toLowerCase().includes('first love')) {
+      console.log('🔍 Title matching debug:', {
+        originalTitle: titleName,
+        cleanedName,
+        messageSpecificTitles: titleData?.length || 0,
+        allMessagesCount: allMessages?.length || 0,
+        titleCacheSize: titleCache?.length || 0
+      });
+    }
+
+    // First, try to find in current message's titles (these are most relevant)
+    if (titleData && Array.isArray(titleData)) {
+      // Try exact match first
+      const exactMatch = titleData.find(title => {
+        const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+        const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+        return titleEn === cleanedName || titleKr === cleanedName;
+      });
+
+      if (exactMatch) return exactMatch.title_id;
+
+      // Try case-insensitive match
+      const caseInsensitiveMatch = titleData.find(title => {
+        const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+        const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+        const searchName = cleanedName.toLowerCase();
+        return titleEn === searchName || titleKr === searchName;
+      });
+
+      if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
+    }
+
+    // Then, search across ALL messages' titles (for cross-references)
+    if (allMessages && Array.isArray(allMessages)) {
+      const allAvailableTitles: any[] = [];
+      allMessages.forEach(msg => {
+        if (msg.titles && Array.isArray(msg.titles)) {
+          allAvailableTitles.push(...msg.titles);
+        }
+      });
+
+      // Remove duplicates by title_id
+      const uniqueTitles = Array.from(
+        new Map(allAvailableTitles.map(item => [item.title_id, item])).values()
+      );
+
+      if (uniqueTitles.length > 0) {
+        // Try exact match
+        const exactMatch = uniqueTitles.find(title => {
+          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+          return titleEn === cleanedName || titleKr === cleanedName;
+        });
+
+        if (exactMatch) return exactMatch.title_id;
+
+        // Try case-insensitive match
+        const caseInsensitiveMatch = uniqueTitles.find(title => {
+          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+          const searchName = cleanedName.toLowerCase();
+          return titleEn === searchName || titleKr === searchName;
+        });
+
+        if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
+
+        // Try partial match (contains) - last resort
+        const partialMatch = uniqueTitles.find(title => {
+          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+          const searchName = cleanedName.toLowerCase();
+          return titleEn?.includes(searchName) || titleKr?.includes(searchName);
+        });
+
+        if (partialMatch) return partialMatch.title_id;
+      }
+    }
+
+    // Final fallback: search in title cache (ALL titles from database)
+    if (titleCache && titleCache.length > 0) {
+      console.log('🔍 Searching title cache as fallback:', {
+        searchTerm: cleanedName,
+        cacheSize: titleCache.length
+      });
+
+      // Try exact match in cache
+      const exactCacheMatch = titleCache.find(title => {
+        const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+        const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+        return titleEn === cleanedName || titleKr === cleanedName;
+      });
+
+      if (exactCacheMatch) {
+        console.log('✅ Found exact match in title cache:', exactCacheMatch.title_name_en || exactCacheMatch.title_name_kr);
+        return exactCacheMatch.title_id;
+      }
+
+      // Try case-insensitive match in cache
+      const caseInsensitiveCacheMatch = titleCache.find(title => {
+        const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+        const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
+        const searchName = cleanedName.toLowerCase();
+        return titleEn === searchName || titleKr === searchName;
+      });
+
+      if (caseInsensitiveCacheMatch) {
+        console.log('✅ Found case-insensitive match in title cache:', caseInsensitiveCacheMatch.title_name_en || caseInsensitiveCacheMatch.title_name_kr);
+        return caseInsensitiveCacheMatch.title_id;
+      }
+    }
+
+    console.log('❌ No title match found:', cleanedName);
+    return null;
+  };
   const formatText = (text: string) => {
     // Split by lines to preserve natural conversation flow
     return text.split('\n').map((line, idx) => {
@@ -36,95 +161,6 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages }: { 
         </div>
       );
     });
-  };
-  
-  // Helper function to find title ID by title name from available title data
-  const findTitleIdByName = (titleName: string): string | null => {
-    // Clean the title name by normalizing outer quotes and removing trailing punctuation
-    const cleanedName = titleName
-      .replace(/^["""'']+|["""'']+$/g, '"')  // Normalize only leading/trailing quotes
-      .replace(/[.,!?;:]+$/, '')  // Remove only trailing punctuation
-      .trim();
-    
-    // Debug logging in development
-    if (import.meta.env.DEV && titleName.toLowerCase().includes('first love')) {
-      console.log('🔍 Title matching debug:', {
-        originalTitle: titleName,
-        cleanedName,
-        messageSpecificTitles: titleData?.length || 0,
-        allMessagesCount: allMessages?.length || 0
-      });
-    }
-    
-    // First, try to find in current message's titles (these are most relevant)
-    if (titleData && Array.isArray(titleData)) {
-      // Try exact match first
-      const exactMatch = titleData.find(title => {
-        const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
-        const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
-        return titleEn === cleanedName || titleKr === cleanedName;
-      });
-      
-      if (exactMatch) return exactMatch.title_id;
-      
-      // Try case-insensitive match
-      const caseInsensitiveMatch = titleData.find(title => {
-        const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
-        const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
-        const searchName = cleanedName.toLowerCase();
-        return titleEn === searchName || titleKr === searchName;
-      });
-      
-      if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
-    }
-    
-    // Then, search across ALL messages' titles (for cross-references)
-    if (allMessages && Array.isArray(allMessages)) {
-      const allAvailableTitles: any[] = [];
-      allMessages.forEach(msg => {
-        if (msg.titles && Array.isArray(msg.titles)) {
-          allAvailableTitles.push(...msg.titles);
-        }
-      });
-      
-      // Remove duplicates by title_id
-      const uniqueTitles = Array.from(
-        new Map(allAvailableTitles.map(item => [item.title_id, item])).values()
-      );
-      
-      if (uniqueTitles.length > 0) {
-        // Try exact match
-        const exactMatch = uniqueTitles.find(title => {
-          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
-          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
-          return titleEn === cleanedName || titleKr === cleanedName;
-        });
-        
-        if (exactMatch) return exactMatch.title_id;
-        
-        // Try case-insensitive match
-        const caseInsensitiveMatch = uniqueTitles.find(title => {
-          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
-          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
-          const searchName = cleanedName.toLowerCase();
-          return titleEn === searchName || titleKr === searchName;
-        });
-        
-        if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
-        
-        // Try partial match (contains) - last resort
-        const partialMatch = uniqueTitles.find(title => {
-          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
-          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim()?.toLowerCase();
-          const searchName = cleanedName.toLowerCase();
-          return titleEn?.includes(searchName) || titleKr?.includes(searchName);
-        });
-        
-        if (partialMatch) return partialMatch.title_id;
-      }
-    }
-    
-    return null;
   };
 
   // Helper function to extract English title only and clean formatting
@@ -324,6 +360,10 @@ export default function Chat() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [showAllMessages, setShowAllMessages] = useState(false);
   const [isProcessingMessage, setIsProcessingMessage] = useState(false);
+  const [streamingResponse, setStreamingResponse] = useState<string>('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [useOrchestrator, setUseOrchestrator] = useState(true); // Feature flag
+  const [titleCache, setTitleCache] = useState<any[]>([]); // Cache for ALL titles for matching
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check if user is authorized - allow all buyers
@@ -500,6 +540,32 @@ What's been catching your interest lately? Are you looking for something specifi
     // Sessions will be managed by activity timeout or explicit logout
   }, [isAuthorized, user?.id]); // Reduced dependencies - only re-run when user changes or authorization status changes
 
+  // Load title cache for better title matching
+  useEffect(() => {
+    const loadTitleCache = async () => {
+      if (!user) return;
+
+      try {
+        console.log('📚 Loading title cache for improved matching...');
+        const { data: allTitles, error } = await supabase
+          .from('titles')
+          .select('title_id, title_name_en, title_name_kr')
+          .limit(500); // Reasonable limit for performance
+
+        if (!error && allTitles) {
+          setTitleCache(allTitles);
+          console.log('✅ Title cache loaded:', allTitles.length, 'titles');
+        } else {
+          console.error('❌ Failed to load title cache:', error);
+        }
+      } catch (error) {
+        console.error('❌ Exception loading title cache:', error);
+      }
+    };
+
+    loadTitleCache();
+  }, [user]);
+
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.sender === 'bot') {
@@ -519,14 +585,16 @@ What's been catching your interest lately? Are you looking for something specifi
       isProcessingMessage,
       hasSession: !!currentSession,
       hasUser: !!user,
+      useOrchestrator,
       inputMessage: inputMessage.substring(0, 50) + '...'
     });
 
-    if (!inputMessage.trim() || isLoading || isProcessingMessage || !user) {
+    if (!inputMessage.trim() || isLoading || isProcessingMessage || isStreaming || !user) {
       console.log('❌ handleSendMessage early return:', {
         noInput: !inputMessage.trim(),
         isLoading,
         isProcessingMessage,
+        isStreaming,
         noUser: !user
       });
       return;
@@ -539,15 +607,6 @@ What's been catching your interest lately? Are you looking for something specifi
     const messageContent = inputMessage.trim();
     setInputMessage("");
 
-    // Allow chat to work without database session (fallback mode)
-    if (!currentSession) {
-      console.log('⚠️ No session available, working in fallback mode (no history saving)');
-    }
-
-    console.log('✅ handleSendMessage proceeding with message processing');
-
-    // Starting message processing
-
     const userMessage: Message = {
       id: Date.now().toString(),
       content: messageContent,
@@ -556,12 +615,150 @@ What's been catching your interest lately? Are you looking for something specifi
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setIsLoading(true);
-    
+
     // Reset to truncated view when starting new conversation
     if (showAllMessages) {
       setShowAllMessages(false);
     }
+
+    const startTime = Date.now();
+
+    try {
+      if (useOrchestrator) {
+        console.log('🎯 Using Enhanced Mode (OpenAI GPT-4 via Orchestrator)', {
+          model: 'gpt-4-turbo-preview',
+          provider: 'OpenAI',
+          mode: 'Enhanced',
+          query: messageContent.substring(0, 50) + '...',
+          user: user?.email
+        });
+        // Use new orchestrator service with streaming
+        await handleOrchestratorMessage(messageContent, userMessage, startTime);
+      } else {
+        console.log('🎯 Using Legacy Mode (OpenAI Direct)', {
+          model: 'gpt-4-turbo',
+          provider: 'OpenAI',
+          mode: 'Legacy',
+          query: messageContent.substring(0, 50) + '...',
+          user: user?.email
+        });
+        // Fallback to existing OpenAI service
+        await handleLegacyMessage(messageContent, userMessage, startTime);
+      }
+    } catch (error: any) {
+      console.error("🚨 CHAT ERROR:", {
+        system: useOrchestrator ? 'Chat Orchestrator' : 'OpenAI Direct',
+        error: error.message,
+        user: user?.email,
+        query: messageContent
+      });
+
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `I apologize, but I encountered an error: ${error.message}
+
+Please try again or switch to the legacy chat mode if the issue persists.`,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+      toast({
+        title: "Chat Error",
+        description: error.message || "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setIsProcessingMessage(false);
+      setIsStreaming(false);
+      setStreamingResponse('');
+    }
+  };
+
+  const handleOrchestratorMessage = async (messageContent: string, userMessage: Message, startTime: number) => {
+    console.log('🚀 Starting orchestrator message handling:', {
+      messageContent: messageContent.substring(0, 50) + '...',
+      hasSession: !!currentSession,
+      sessionId: currentSession?.id
+    });
+
+    setIsStreaming(true);
+    setStreamingResponse('');
+
+    // Convert message history to orchestrator format
+    const conversationHistory = chatOrchestratorService.formatConversationHistory([...messages, userMessage]);
+
+    console.log('📋 Conversation history prepared:', {
+      historyLength: conversationHistory.length,
+      lastMessage: conversationHistory[conversationHistory.length - 1]
+    });
+
+    // Create a placeholder bot message for streaming
+    const streamingBotMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: '',
+      sender: 'bot',
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, streamingBotMessage]);
+
+    await chatOrchestratorService.sendMessageStream(conversationHistory, {
+      sessionId: currentSession?.id,
+      onChunk: (text: string) => {
+        setStreamingResponse(prev => prev + text);
+        // Update the bot message in real-time
+        setMessages(prev => {
+          return prev.map(msg =>
+            msg.id === streamingBotMessage.id
+              ? { ...msg, content: (msg.content || '') + text }
+              : msg
+          );
+        });
+      },
+      onComplete: (fullResponse: string) => {
+        console.log('✅ Orchestrator streaming completed:', {
+          responseLength: fullResponse.length,
+          responseTime: Date.now() - startTime
+        });
+
+        // Final update with complete response
+        setMessages(prev => {
+          return prev.map(msg =>
+            msg.id === streamingBotMessage.id
+              ? { ...msg, content: fullResponse }
+              : msg
+          );
+        });
+
+        setIsStreaming(false);
+        setStreamingResponse('');
+      },
+      onError: (error: string) => {
+        console.error('❌ Orchestrator streaming error:', error);
+
+        // Update message with error
+        setMessages(prev => {
+          return prev.map(msg =>
+            msg.id === streamingBotMessage.id
+              ? {
+                  ...msg,
+                  content: `I apologize, but I encountered an error: ${error}\n\nPlease try again or switch to legacy mode.`
+                }
+              : msg
+          );
+        });
+
+        setIsStreaming(false);
+        setStreamingResponse('');
+        throw new Error(error);
+      }
+    });
+  };
+
+  const handleLegacyMessage = async (messageContent: string, userMessage: Message, startTime: number) => {
+    setIsLoading(true);
 
     // Record user message in database (if session available)
     let userDbMessage = null;
@@ -582,153 +779,78 @@ What's been catching your interest lately? Are you looking for something specifi
       }
     }
 
-    const startTime = Date.now();
+    // Get conversation history for context
+    const conversationHistory = messages.slice(-6).map(msg =>
+      `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+    );
 
-    try {
-      // Get conversation history for context
-      const conversationHistory = messages.slice(-6).map(msg => 
-        `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
-      );
+    const response = await openaiService.generateChatResponse(
+      userMessage.content,
+      conversationHistory,
+      user?.id,
+      currentSession?.id
+    );
 
-      console.log('🤖 Calling OpenAI service:', {
-        query: userMessage.content.substring(0, 100) + '...',
-        historyLength: conversationHistory.length,
-        userId: user?.id?.substring(0, 8) + '...' || 'no-user',
-        sessionId: currentSession?.id?.substring(0, 8) + '...' || 'no-session'
-      });
+    const responseTime = Date.now() - startTime;
 
-      const response = await openaiService.generateChatResponse(
-        userMessage.content, 
-        conversationHistory,
-        user?.id,
-        currentSession?.id // Pass session ID if available
-      );
+    // Create bot message
+    const botMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: response.message,
+      sender: 'bot',
+      timestamp: new Date(),
+      titles: response.recommendedTitles ? [...response.recommendedTitles] : undefined,
+      suggestedQueries: response.suggestedQueries ? [...response.suggestedQueries] : undefined
+    };
 
-      console.log('✅ OpenAI service response received:', {
-        hasMessage: !!response.message,
-        messageLength: response.message?.length || 0,
-        titlesCount: response.recommendedTitles?.length || 0,
-        suggestedQueriesCount: response.suggestedQueries?.length || 0
-      });
-      
-      const responseTime = Date.now() - startTime;
-      // OpenAI chatbot success - response processed
+    // Record AI response in database (if session available)
+    let botDbMessage = null;
+    if (currentSession) {
+      try {
+        botDbMessage = await chatHistoryService.recordMessage({
+          session_id: currentSession.id,
+          user_id: user.id,
+          message_type: 'ai_response',
+          content: response.message,
+          tokens_used: 0,
+          response_time_ms: responseTime,
+        });
 
-      // Create defensive copy to prevent mutation during database operations
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: response.message,
-        sender: 'bot',
-        timestamp: new Date(),
-        titles: response.recommendedTitles ? [...response.recommendedTitles] : undefined,
-        suggestedQueries: response.suggestedQueries ? [...response.suggestedQueries] : undefined
-      };
+        if (botDbMessage) {
+          botMessage.messageId = botDbMessage.id;
 
-      // Created bot message with titles
+          // Record title recommendations and suggested queries
+          if (response.recommendedTitles?.length) {
+            const recommendations = response.recommendedTitles.map(title => ({
+              message_id: botDbMessage.id,
+              session_id: currentSession.id,
+              title_id: title.title_id,
+              title_name_en: title.title_name_en,
+              title_name_kr: title.title_name_kr,
+              recommendation_score: title.score || 0,
+              recommendation_reason: `AI recommended based on user query: "${userMessage.content}"`,
+            }));
 
-      // Record AI response in database (if session available)
-      let botDbMessage = null;
-      if (currentSession) {
-        try {
-          botDbMessage = await chatHistoryService.recordMessage({
-            session_id: currentSession.id,
-            user_id: user.id,
-            message_type: 'ai_response',
-            content: response.message,
-            tokens_used: 0, // Could be calculated from OpenAI response if available
-            response_time_ms: responseTime,
-          });
-        } catch (error) {
-          console.warn('Failed to record AI response:', error);
+            await chatHistoryService.recordRecommendations(recommendations);
+          }
+
+          if (response.suggestedQueries?.length) {
+            const suggestedQueries = response.suggestedQueries.map((query, index) => ({
+              message_id: botDbMessage.id,
+              session_id: currentSession.id,
+              suggested_query: query,
+              query_position: index,
+            }));
+
+            await chatHistoryService.recordSuggestedQueries(suggestedQueries);
+          }
         }
+      } catch (error) {
+        console.warn('Failed to record AI response:', error);
       }
-
-      if (botDbMessage) {
-        botMessage.messageId = botDbMessage.id;
-
-        // Record title recommendations if any
-        if (response.recommendedTitles && response.recommendedTitles.length > 0) {
-          const recommendations = response.recommendedTitles.map((title, index) => ({
-            message_id: botDbMessage.id,
-            session_id: currentSession.id,
-            title_id: title.title_id,
-            title_name_en: title.title_name_en,
-            title_name_kr: title.title_name_kr,
-            recommendation_score: title.score || 0,
-            recommendation_reason: `AI recommended based on user query: "${userMessage.content}"`,
-          }));
-
-          await chatHistoryService.recordRecommendations(recommendations);
-        }
-
-        // Recorded recommendations
-
-        // Record suggested queries if any
-        if (response.suggestedQueries && response.suggestedQueries.length > 0) {
-          const suggestedQueries = response.suggestedQueries.map((query, index) => ({
-            message_id: botDbMessage.id,
-            session_id: currentSession.id,
-            suggested_query: query,
-            query_position: index,
-          }));
-
-          await chatHistoryService.recordSuggestedQueries(suggestedQueries);
-        }
-
-        // Recorded queries
-      }
-
-      // Adding message to state
-
-      setMessages(prev => {
-        // Setting messages state
-        return [...prev, botMessage];
-      });
-    } catch (error: any) {
-      console.error("🚨 OPENAI CHATBOT ERROR:", {
-        system: 'OpenAI API with Vector Search',
-        service: 'openaiService.generateChatResponse',
-        error: error.message,
-        fullError: error,
-        user: user?.email,
-        query: messageContent
-      });
-      
-      const responseTime = Date.now() - startTime;
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `I apologize, but I encountered an error: ${error.message}
-
-Please make sure your OpenAI API key is properly configured. You can test it by visiting the OpenAI Test page.`,
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-
-      // Record error response (if session available)
-      if (currentSession) {
-        try {
-          await chatHistoryService.recordMessage({
-            session_id: currentSession.id,
-            user_id: user.id,
-            message_type: 'ai_response',
-            content: `ERROR: ${error.message}`,
-            response_time_ms: responseTime,
-          });
-        } catch (dbError) {
-          console.warn('Failed to record error message:', dbError);
-        }
-      }
-      
-      setMessages(prev => [...prev, errorMessage]);
-      toast({
-        title: "OpenAI Error",
-        description: error.message || "Failed to get AI response. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-      setIsProcessingMessage(false);
     }
+
+    setMessages(prev => [...prev, botMessage]);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -899,33 +1021,69 @@ Please make sure your OpenAI API key is properly configured. You can test it by 
                       style={{ backgroundColor: '#FF6B6B' }}>
                   BETA
                 </span>
+                {useOrchestrator && (
+                  <span className="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-800 rounded-full uppercase">
+                    Enhanced
+                  </span>
+                )}
               </div>
               <p className="text-sm text-gray-600">
                 Discover Korean content with AI-powered recommendations
               </p>
             </div>
-            <Button
-              onClick={() => {
-                setMessages([{
-                  id: 'greeting',
-                  content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
+            <div className="flex items-center gap-2">
+              {/* Mode Toggle */}
+              <Button
+                onClick={() => {
+                  const newMode = !useOrchestrator;
+                  console.log('🎛️ Chat Mode Toggle', {
+                    from: useOrchestrator ? 'Enhanced (OpenAI GPT-4)' : 'Legacy (OpenAI Direct)',
+                    to: newMode ? 'Enhanced (OpenAI GPT-4)' : 'Legacy (OpenAI Direct)',
+                    timestamp: new Date().toISOString()
+                  });
+                  setUseOrchestrator(newMode);
+                }}
+                variant="outline"
+                className="hidden sm:flex items-center gap-2"
+                title={useOrchestrator ? "Switch to Legacy Mode" : "Switch to Enhanced Mode"}
+              >
+                {useOrchestrator ? (
+                  <>
+                    <Brain size={16} />
+                    Enhanced
+                  </>
+                ) : (
+                  <>
+                    <Bot size={16} />
+                    Legacy
+                  </>
+                )}
+              </Button>
+
+              {/* New Chat Button */}
+              <Button
+                onClick={() => {
+                  setMessages([{
+                    id: 'greeting',
+                    content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
 
 I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
 
 What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
-                  sender: 'bot',
-                  timestamp: new Date(),
-                }]);
-                setInputMessage('');
-              }}
-              variant="outline"
-              className="hidden sm:flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Chat
-            </Button>
+                    sender: 'bot',
+                    timestamp: new Date(),
+                  }]);
+                  setInputMessage('');
+                }}
+                variant="outline"
+                className="hidden sm:flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Chat
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -996,7 +1154,7 @@ What's been catching your interest lately? Are you looking for something specifi
                     <div className={`prose prose-sm max-w-none ${
                       message.sender === 'user' ? 'text-gray-700' : 'text-gray-800'
                     }`}>
-                      <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} />
+                      <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} titleCache={titleCache} />
                     </div>
                     
                     {/* Suggested Queries - Cleaner display */}
@@ -1039,8 +1197,8 @@ What's been catching your interest lately? Are you looking for something specifi
               </div>
             ))}
 
-            {/* Loading Message - Clean Style */}
-            {isLoading && (
+            {/* Loading/Streaming Message - Enhanced Style */}
+            {(isLoading || isStreaming) && (
               <div className="group">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 pt-1">
@@ -1051,11 +1209,25 @@ What's been catching your interest lately? Are you looking for something specifi
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-gray-700">Jinu</span>
-                      <span className="text-xs text-gray-400">is typing</span>
+                      <span className="text-xs text-gray-400">
+                        {isStreaming ? 'streaming response...' : 'is typing'}
+                      </span>
+                      {useOrchestrator && (
+                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
+                          Enhanced
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
-                      <span className="text-sm text-gray-500">Thinking...</span>
+                      <span className="text-sm text-gray-500">
+                        {isStreaming ? 'Streaming...' : 'Thinking...'}
+                      </span>
+                      {isStreaming && streamingResponse && (
+                        <span className="text-xs text-gray-400">
+                          ({streamingResponse.length} chars)
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1099,9 +1271,9 @@ What's been catching your interest lately? Are you looking for something specifi
                 />
                 <button
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || isLoading || isLoadingHistory || isProcessingMessage}
+                  disabled={!inputMessage.trim() || isLoading || isLoadingHistory || isProcessingMessage || isStreaming}
                   className={`p-2 rounded-lg transition-colors ${
-                    inputMessage.trim() && !isLoading && !isLoadingHistory && !isProcessingMessage
+                    inputMessage.trim() && !isLoading && !isLoadingHistory && !isProcessingMessage && !isStreaming
                       ? 'bg-gray-700 text-white hover:bg-gray-800'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}
@@ -1109,8 +1281,26 @@ What's been catching your interest lately? Are you looking for something specifi
                   <Send size={18} />
                 </button>
               </div>
-              <div className="px-7 pb-2 text-xs text-gray-400">
-                Press Enter to send, Shift+Enter for new line
+              <div className="px-7 pb-2 text-xs text-gray-400 flex justify-between items-center">
+                <span>Press Enter to send, Shift+Enter for new line</span>
+                <span className="flex items-center gap-1">
+                  {useOrchestrator ? (
+                    <>
+                      <Brain size={12} />
+                      Enhanced Mode
+                    </>
+                  ) : (
+                    <>
+                      <Bot size={12} />
+                      Legacy Mode
+                    </>
+                  )}
+                  {isStreaming && (
+                    <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
+                      Streaming
+                    </span>
+                  )}
+                </span>
               </div>
             </div>
           </div>

@@ -187,7 +187,6 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
     const userEmail = user ? user.email! : sessionData.userEmail || 'not-logged-in@anonymous.user';
     const cooldownKey = `${NOTIFICATION_COOLDOWN_KEY}_${userEmail}`;
     const lastNotificationTime = localStorage.getItem(cooldownKey);
-    const now = Date.now();
 
     if (lastNotificationTime && (now - parseInt(lastNotificationTime)) < NOTIFICATION_COOLDOWN) {
       console.log('🔇 Skipping duplicate session end notification (within cooldown period)');

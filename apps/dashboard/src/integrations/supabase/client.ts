@@ -222,13 +222,36 @@ const bootstrapCachedSession = () => {
       return;
     }
 
-    const parsed = JSON.parse(raw) as Session | null;
-    if (parsed && parsed.access_token) {
-      lastKnownSession = parsed;
+    // Parse Supabase's localStorage format correctly
+    const authData = JSON.parse(raw);
+
+    // Supabase stores auth data in a specific format, not directly as Session
+    if (authData && authData.access_token && authData.expires_at) {
+      // Convert to proper Session format that our code expects
+      lastKnownSession = {
+        access_token: authData.access_token,
+        refresh_token: authData.refresh_token,
+        expires_at: authData.expires_at,
+        user: authData.user,
+        token_type: authData.token_type || 'bearer'
+      } as Session;
       lastSessionUpdatedAt = Date.now();
+
       if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
-        console.log('🧊 Bootstrapped session from localStorage');
+        console.log('🧊 Bootstrapped session from localStorage:', {
+          hasAccessToken: !!authData.access_token,
+          hasUser: !!authData.user,
+          userEmail: authData.user?.email,
+          expiresAt: authData.expires_at ? new Date(authData.expires_at * 1000).toISOString() : null
+        });
       }
+    } else if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
+      console.log('🧊 localStorage auth data format:', {
+        hasRawData: !!authData,
+        hasAccessToken: !!authData?.access_token,
+        hasExpiresAt: !!authData?.expires_at,
+        authDataKeys: authData ? Object.keys(authData) : []
+      });
     }
   } catch (error) {
     console.warn('⚠️ Failed to bootstrap cached session', error);

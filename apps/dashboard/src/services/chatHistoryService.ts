@@ -12,6 +12,7 @@ export interface ChatSession {
   ended_at?: string | null;
   created_at: string;
   updated_at: string;
+  messages?: any[]; // JSONB conversation context
 }
 
 export interface ChatMessage {

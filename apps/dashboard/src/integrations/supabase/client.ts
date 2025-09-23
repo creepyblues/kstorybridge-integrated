@@ -212,13 +212,23 @@ let lastSessionUpdatedAt = 0;
 const SESSION_CACHE_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
 
 const bootstrapCachedSession = () => {
+  console.log('🧊 [BOOTSTRAP] Starting session bootstrap from localStorage');
+
   if (typeof window === 'undefined') {
+    console.log('🧊 [BOOTSTRAP] Skipping - no window object');
     return;
   }
 
   try {
     const raw = window.localStorage.getItem(CLIENT_CONFIG.auth.storageKey);
+    console.log('🧊 [BOOTSTRAP] localStorage check:', {
+      storageKey: CLIENT_CONFIG.auth.storageKey,
+      hasData: !!raw,
+      dataLength: raw ? raw.length : 0
+    });
+
     if (!raw) {
+      console.log('🧊 [BOOTSTRAP] No localStorage data found');
       return;
     }
 
@@ -237,20 +247,21 @@ const bootstrapCachedSession = () => {
       } as Session;
       lastSessionUpdatedAt = Date.now();
 
-      if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
-        console.log('🧊 Bootstrapped session from localStorage:', {
-          hasAccessToken: !!authData.access_token,
-          hasUser: !!authData.user,
-          userEmail: authData.user?.email,
-          expiresAt: authData.expires_at ? new Date(authData.expires_at * 1000).toISOString() : null
-        });
-      }
-    } else if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
-      console.log('🧊 localStorage auth data format:', {
+      // Production-safe logging to diagnose session bootstrap issues
+      console.log('🧊 [BOOTSTRAP SUCCESS] Session cached from localStorage:', {
+        hasAccessToken: !!authData.access_token,
+        hasUser: !!authData.user,
+        userEmail: authData.user?.email,
+        expiresAt: authData.expires_at ? new Date(authData.expires_at * 1000).toISOString() : null
+      });
+    } else {
+      // Production-safe logging for failed bootstrap attempts
+      console.log('🧊 [BOOTSTRAP FAILED] localStorage auth data inspection:', {
         hasRawData: !!authData,
         hasAccessToken: !!authData?.access_token,
         hasExpiresAt: !!authData?.expires_at,
-        authDataKeys: authData ? Object.keys(authData) : []
+        authDataKeys: authData ? Object.keys(authData) : [],
+        rawDataType: typeof authData
       });
     }
   } catch (error) {

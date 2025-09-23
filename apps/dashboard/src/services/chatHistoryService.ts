@@ -854,6 +854,114 @@ class ChatHistoryService {
       return null;
     }
   }
+
+  // === AI Orchestrator Methods ===
+
+  /**
+   * Get recent conversation context for AI orchestrator
+   */
+  async getRecentMessagesContext(userId: string, limit: number = 15): Promise<ChatSession | null> {
+    try {
+      const { data, error } = await supabase.rpc('get_recent_messages', {
+        p_user_id: userId,
+        p_limit: limit
+      });
+
+      if (error) {
+        console.error('Error fetching recent messages context:', error);
+        return null;
+      }
+
+      return data && data.length > 0 ? data[0] : null;
+    } catch (error) {
+      console.error('Exception fetching recent messages context:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Update session conversation context
+   */
+  async updateSessionMessages(sessionId: string, messages: any[]): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('update_session_messages', {
+        p_session_id: sessionId,
+        p_messages: JSON.stringify(messages)
+      });
+
+      if (error) {
+        console.error('Error updating session messages:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Exception updating session messages:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Append a single message to session context
+   */
+  async appendSessionMessage(sessionId: string, message: any): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('append_session_message', {
+        p_session_id: sessionId,
+        p_message: JSON.stringify(message)
+      });
+
+      if (error) {
+        console.error('Error appending session message:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Exception appending session message:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get conversation with all related data for orchestrator
+   */
+  async getConversationWithTitles(sessionId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase.rpc('get_conversation_with_titles', {
+        p_session_id: sessionId
+      });
+
+      if (error) {
+        console.error('Error fetching conversation with titles:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Exception fetching conversation with titles:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get formatted conversation history for LLM context
+   */
+  async getFormattedConversationHistory(sessionId: string, limit: number = 10): Promise<string[]> {
+    try {
+      const messages = await this.getConversationWithTitles(sessionId);
+
+      return messages
+        .slice(-limit * 2) // Get last N conversation pairs
+        .map(msg => {
+          const role = msg.message_type === 'user_prompt' ? 'User' : 'Assistant';
+          return `${role}: ${msg.content}`;
+        });
+    } catch (error) {
+      console.error('Exception formatting conversation history:', error);
+      return [];
+    }
+  }
 }
 
 export const chatHistoryService = new ChatHistoryService();

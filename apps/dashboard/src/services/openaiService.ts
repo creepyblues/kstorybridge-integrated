@@ -653,6 +653,87 @@ Always be enthusiastic and knowledgeable about Korean content!`;
     return context;
   }
 
+  // Optimized version that works with only relevant titles from vector search
+  private createOptimizedKoreanIPContext(relevantTitles: Title[], userQuery: string = ''): string {
+    // Extract genres and formats from the relevant titles we have
+    const genres = [...new Set(
+      relevantTitles.map(t => Array.isArray(t.genre) ? t.genre : [t.genre])
+        .flat()
+        .filter(Boolean)
+    )];
+    const formats = [...new Set(relevantTitles.map(t => t.content_format).filter(Boolean))];
+
+    let context = `You are an expert assistant for KStoryBridge's Korean IP marketplace. Our database contains thousands of Korean titles including webtoons, novels, manhwa, and other content.
+
+From the titles relevant to your query, we have these genres: ${genres.join(', ')}
+Available formats in results: ${formats.join(', ')}
+
+`;
+
+    if (relevantTitles && relevantTitles.length > 0) {
+      context += `Most relevant titles from our database for this query:\n\n`;
+
+      relevantTitles.slice(0, 6).forEach((title, index) => {
+        context += `${index + 1}. "${title.title_name_en || title.title_name_kr}"`;
+        if (title.title_name_en && title.title_name_kr) {
+          context += ` (${title.title_name_kr})`;
+        }
+        context += `\n`;
+
+        if (title.genre) {
+          const genreList = Array.isArray(title.genre) ? title.genre.join(', ') : title.genre;
+          context += `   Genre: ${genreList}\n`;
+        }
+
+        if (title.content_format) {
+          context += `   Format: ${title.content_format}\n`;
+        }
+
+        if (title.synopsis) {
+          context += `   Synopsis: ${title.synopsis.substring(0, 150)}${title.synopsis.length > 150 ? '...' : ''}\n`;
+        }
+
+        if (title.tags) {
+          const tagList = Array.isArray(title.tags) ? title.tags.join(', ') : title.tags;
+          context += `   Tags: ${tagList}\n`;
+        }
+
+        if (title.tone) {
+          context += `   Tone: ${title.tone}\n`;
+        }
+
+        if (title.audience) {
+          context += `   Target audience: ${title.audience}\n`;
+        }
+
+        if (title.perfect_for) {
+          context += `   Perfect for: ${title.perfect_for}\n`;
+        }
+
+        if (title.comps && Array.isArray(title.comps) && title.comps.length > 0) {
+          context += `   Similar to: ${title.comps.join(', ')}\n`;
+        }
+
+        context += `\n`;
+      });
+    } else {
+      context += `No specific titles were found for this query, but I can still help you explore Korean content based on your interests.\n\n`;
+    }
+
+    context += `
+
+IMPORTANT RESPONSE GUIDELINES:
+- Use a conversational, enthusiastic tone as Alex, a Korean content enthusiast
+- Always recommend titles from the numbered list above when relevant
+- Include title recommendations with clickable quoted names when appropriate
+- Provide engaging commentary about story elements, themes, or comparisons
+
+CRITICAL: Always use the exact title names from the numbered list above. Do not create or modify title names.
+Always be enthusiastic and knowledgeable about Korean content!`;
+
+    return context;
+  }
+
   // Legacy method for backward compatibility - now uses unified context
   private createKoreanIPContext(): string {
     console.log('⚠️ Using legacy createKoreanIPContext - consider migrating to createUnifiedKoreanIPContext');
@@ -819,32 +900,27 @@ Always be enthusiastic and knowledgeable about Korean content!`;
     // Now using lazy loading for better performance
 
     try {
-      // Load titles on-demand (this will be cached after first request)
-      console.log(`📚 [${requestId}] Loading titles on-demand for chat context...`);
-      const allTitles = await this.getAllTitles();
-      
-      // Find relevant titles first to create proper context
+      // Find relevant titles using vector search - this is our primary data source
       console.log(`🔍 [${requestId}] Finding relevant titles for context...`);
       const searchResult = await this.findRelevantTitlesWithVector(userQuery, userId, sessionId);
-      
+
       // Defensive check for searchResult
       if (!searchResult) {
         throw new Error('Search result is undefined - fallback search failed');
       }
-      
+
       // Ensure searchResult.titles is an array
       const relevantTitles = Array.isArray(searchResult.titles) ? searchResult.titles : [];
-      
-      // Create unified context with actual search results (same as production)
-      const context = this.createUnifiedKoreanIPContext(allTitles, relevantTitles, userQuery);
+
+      // Create context using only the relevant titles from vector search (optimized approach)
+      const context = this.createOptimizedKoreanIPContext(relevantTitles, userQuery);
       
       console.log(`🔧 [${requestId}] Context created:`, {
-        contextMethod: 'unified-korean-ip-context',
-        allTitlesCount: allTitles.length,
+        contextMethod: 'optimized-korean-ip-context',
         relevantTitlesCount: relevantTitles.length,
         vectorSearchUsed: searchResult.vectorSearchUsed,
         contextLength: context.length,
-        cacheStats: UnifiedCacheManager.getStats()
+        optimizationApplied: 'removed_full_database_load'
       });
       
       const historyContext = conversationHistory.length > 0 
@@ -927,8 +1003,8 @@ Respond as if you're having a friendly, engaging conversation about Korean enter
         suggestedQueriesCount: suggestedQueries.length,
         responsePreview: aiResponse.substring(0, 100) + '...',
         titleIds: relevantTitles.map(t => t.title_id?.substring(0, 8)),
-        contextMethod: 'unified-korean-ip-context',
-        allTitlesInContext: allTitles.length,
+        contextMethod: 'optimized-korean-ip-context',
+        contextTitlesUsed: relevantTitles.length,
         relevantTitlesInContext: relevantTitles.length,
         openaiTokens: completion.usage?.total_tokens || 0
       });
@@ -955,7 +1031,7 @@ Respond as if you're having a friendly, engaging conversation about Korean enter
         errorMessage: standardError.message,
         userMessage: userMessage,
         retryable: standardError.retryable,
-        originalError: errorMessage,
+        originalError: standardError.originalError,
         code: error.code,
         status: error.status,
         type: error.type,
@@ -1128,7 +1204,7 @@ Respond as if you're having a friendly, engaging conversation about Korean enter
         errorMessage: standardError.message,
         userMessage: userMessage,
         retryable: standardError.retryable,
-        originalError: errorMessage,
+        originalError: standardError.originalError,
         name: error.name,
         status: error.status,
         responseTime: responseTime + 'ms',

@@ -9,6 +9,7 @@ import { chatHistoryService, type ChatSession } from "@/services/chatHistoryServ
 import { chatOrchestratorService, type ChatMessage as OrchestratorMessage } from "@/services/chatOrchestratorService";
 import { ChatbotFeedback } from "@/components/ChatbotFeedback";
 import { TitleFeedback } from "@/components/TitleFeedback";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -372,7 +373,7 @@ export default function Chat() {
   const [isProcessingMessage, setIsProcessingMessage] = useState(false);
   const [streamingResponse, setStreamingResponse] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [useOrchestrator, setUseOrchestrator] = useState(true); // Feature flag
+  const [useOrchestrator, setUseOrchestrator] = useState(false); // Feature flag - default to legacy mode
   const [titleCache, setTitleCache] = useState<any[]>([]); // Cache for ALL titles for matching
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -642,20 +643,20 @@ What's been catching your interest lately? Are you looking for something specifi
 
     try {
       if (useOrchestrator) {
-        console.log('🎯 Using Enhanced Mode (OpenAI GPT-4 via Orchestrator)', {
+        console.log('🎯 Using Enhanced Mode (Pro Feature - OpenAI GPT-4 via Orchestrator)', {
           model: 'gpt-4-turbo-preview',
           provider: 'OpenAI',
-          mode: 'Enhanced',
+          mode: 'Enhanced (Pro)',
           query: messageContent.substring(0, 50) + '...',
           user: user?.email
         });
         // Use new orchestrator service with streaming
         await handleOrchestratorMessage(messageContent, userMessage, startTime);
       } else {
-        console.log('🎯 Using Legacy Mode (OpenAI Direct)', {
+        console.log('🎯 Using Standard Mode (OpenAI Direct)', {
           model: 'gpt-4-turbo',
           provider: 'OpenAI',
-          mode: 'Legacy',
+          mode: 'Standard',
           query: messageContent.substring(0, 50) + '...',
           user: user?.email
         });
@@ -1049,34 +1050,6 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {/* Mode Toggle */}
-              <Button
-                onClick={() => {
-                  const newMode = !useOrchestrator;
-                  console.log('🎛️ Chat Mode Toggle', {
-                    from: useOrchestrator ? 'Enhanced (OpenAI GPT-4)' : 'Legacy (OpenAI Direct)',
-                    to: newMode ? 'Enhanced (OpenAI GPT-4)' : 'Legacy (OpenAI Direct)',
-                    timestamp: new Date().toISOString()
-                  });
-                  setUseOrchestrator(newMode);
-                }}
-                variant="outline"
-                className="hidden sm:flex items-center gap-2"
-                title={useOrchestrator ? "Switch to Legacy Mode" : "Switch to Enhanced Mode"}
-              >
-                {useOrchestrator ? (
-                  <>
-                    <Brain size={16} />
-                    Enhanced
-                  </>
-                ) : (
-                  <>
-                    <Bot size={16} />
-                    Legacy
-                  </>
-                )}
-              </Button>
-
               {/* New Chat Button */}
               <Button
                 onClick={() => {
@@ -1214,8 +1187,8 @@ What's been catching your interest lately? Are you looking for something specifi
               </div>
             ))}
 
-            {/* Loading/Streaming Message - Enhanced Style */}
-            {(isLoading || isStreaming) && (
+            {/* Loading Message - Only for non-streaming operations */}
+            {isLoading && !isStreaming && (
               <div className="group">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 pt-1">
@@ -1226,9 +1199,7 @@ What's been catching your interest lately? Are you looking for something specifi
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-gray-700">Jinu</span>
-                      <span className="text-xs text-gray-400">
-                        {isStreaming ? 'streaming response...' : 'is typing'}
-                      </span>
+                      <span className="text-xs text-gray-400">is typing</span>
                       {useOrchestrator && (
                         <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
                           Enhanced
@@ -1237,14 +1208,7 @@ What's been catching your interest lately? Are you looking for something specifi
                     </div>
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
-                      <span className="text-sm text-gray-500">
-                        {isStreaming ? 'Streaming...' : 'Thinking...'}
-                      </span>
-                      {isStreaming && streamingResponse && (
-                        <span className="text-xs text-gray-400">
-                          ({streamingResponse.length} chars)
-                        </span>
-                      )}
+                      <span className="text-sm text-gray-500">Thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -1300,24 +1264,44 @@ What's been catching your interest lately? Are you looking for something specifi
               </div>
               <div className="px-7 pb-2 text-xs text-gray-400 flex justify-between items-center">
                 <span>Press Enter to send, Shift+Enter for new line</span>
-                <span className="flex items-center gap-1">
-                  {useOrchestrator ? (
-                    <>
-                      <Brain size={12} />
-                      Enhanced Mode
-                    </>
-                  ) : (
-                    <>
-                      <Bot size={12} />
-                      Legacy Mode
-                    </>
-                  )}
+                <div className="flex items-center gap-2">
+                  {/* Mode Toggle Switch */}
+                  <button
+                    onClick={() => {
+                      const newMode = !useOrchestrator;
+                      console.log('🎛️ Chat Mode Toggle', {
+                        from: useOrchestrator ? 'Enhanced (OpenAI GPT-4)' : 'Standard (OpenAI Direct)',
+                        to: newMode ? 'Enhanced (OpenAI GPT-4)' : 'Standard (OpenAI Direct)',
+                        timestamp: new Date().toISOString()
+                      });
+                      setUseOrchestrator(newMode);
+                    }}
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
+                    title={useOrchestrator ? "Switch to Standard Mode" : "Switch to Enhanced Mode (Pro Users Only)"}
+                  >
+                    {useOrchestrator ? (
+                      <>
+                        <Sparkles size={12} className="text-blue-600" />
+                        <span className="text-gray-700 font-medium">Enhanced Mode</span>
+                        <span className="text-blue-600 text-xs">(Pro)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Bot size={12} className="text-gray-600" />
+                        <span className="text-gray-700 font-medium">Standard Mode</span>
+                      </>
+                    )}
+                    <svg className="w-3 h-3 text-gray-500 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </button>
+
                   {isStreaming && (
-                    <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
                       Streaming
                     </span>
                   )}
-                </span>
+                </div>
               </div>
             </div>
           </div>

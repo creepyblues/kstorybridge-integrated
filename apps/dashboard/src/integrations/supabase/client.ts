@@ -532,7 +532,8 @@ supabase.auth.getSession = async () => {
 supabase.auth.refreshSession = (refreshToken) =>
   withRetry(() => originalRefreshSession(refreshToken), {
     maxRetries: 2,
-    operationName: 'refreshSession'
+    operationName: 'refreshSession',
+    timeoutMs: 15000 // Increased to 15 seconds for session refresh operations
   });
 
 // Performance monitoring (development only)

@@ -106,13 +106,13 @@ Set these via Supabase CLI:
 
 ```bash
 # Stripe Secret Key (from Stripe Dashboard → Developers → API Keys)
-npx supabase secrets set STRIPE_SECRET_KEY=sk_test_51SAkTTDLpIqT346kFuweS24cU98dHbcApD7xo3gKU7oKFLVWHb5ZX2IrQe1K6j1755iaq0o3uHl8HKTwtLF2oxYa00gYW4khLK
+npx supabase secrets set STRIPE_SECRET_KEY=
 
 # Webhook Secret (from webhook endpoint you created)
-npx supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_LoJNq0sTQ97igo0Hou6ZcXq32vNV1QL9
+npx supabase secrets set STRIPE_WEBHOOK_SECRET=
 
 # Pro Plan Price ID (from the product you created)
-npx supabase secrets set STRIPE_PRICE_ID_PRO=prod_T70UJXv7nZZEmX
+npx supabase secrets set STRIPE_PRICE_ID_PRO=
 ```
 
 ## ✅ Verification Steps

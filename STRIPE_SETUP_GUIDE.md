@@ -97,7 +97,7 @@ Create or update `apps/dashboard/.env`
 
 ```bash
 # Stripe Configuration
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY_HERE
+VITE_STRIPE_PUBLISHABLE_KEY=
 ```
 
 ### Supabase Edge Function Secrets

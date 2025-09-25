@@ -160,8 +160,108 @@ export function CMSSidebar() {
   }
 
   return (
-    /* Desktop Sidebar - hidden on mobile */
-    <div className="hidden lg:block fixed left-0 top-0 w-64 bg-gray-50 h-screen flex flex-col z-30">
+    <>
+      {/* Mobile Header with Logo and Menu Button */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-gray-50 shadow-sm border-b border-gray-200 z-50">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Logo on the left */}
+          <Link
+            to={accountType === "creator" ? "/creators/home" : "/buyers/home"}
+            className="flex items-center"
+          >
+            <img
+              src="/kstorybridge-logo.png"
+              alt="KStoryBridge"
+              className="h-8 w-auto object-contain"
+            />
+          </Link>
+
+          {/* Menu button on the right */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed left-4 right-4 top-[60px] bg-white rounded-2xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+          <div className="py-2">
+            {/* Discover items */}
+            {discoverItems.map((item) => {
+              const isActive = location.pathname === item.href;
+
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors border-b border-gray-100 last:border-b-0",
+                    isActive
+                      ? "bg-hanok-teal text-white"
+                      : "text-midnight-ink hover:bg-gray-50"
+                  )}
+                >
+                  <span>{item.title}</span>
+                  {item.badge && (
+                    <span
+                      className="px-1.5 py-0.5 text-[10px] font-bold text-white rounded-full uppercase tracking-wider"
+                      style={{ backgroundColor: '#FF6B6B' }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+
+            {/* Separator */}
+            <div className="border-t border-gray-200 my-1"></div>
+
+            {/* Settings items */}
+            {settingsItems.map((item) => {
+              const isActive = location.pathname === item.href;
+
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors",
+                    isActive
+                      ? "bg-hanok-teal text-white"
+                      : "text-midnight-ink hover:bg-gray-50"
+                  )}
+                >
+                  <span>{item.title}</span>
+                  {item.badge && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-purple-500 text-white rounded-full uppercase tracking-wider">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Sidebar - hidden on mobile */}
+      <div className="hidden lg:block fixed left-0 top-0 w-64 bg-gray-50 h-screen flex flex-col z-30">
       {/* Logo and Title Section */}
       <div className="p-4 pt-6">
         <Link
@@ -287,102 +387,7 @@ export function CMSSidebar() {
           </div>
         </div>
       )}
-
-      {/* Mobile Menu Button - Fixed at top */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-gray-50 border-b border-gray-200 px-4 py-3 z-50">
-        <div className="flex items-center justify-between">
-          <Link
-            to={accountType === "creator" ? "/creators/home" : "/buyers/home"}
-            className="flex items-center"
-          >
-            <img
-              src="/kstorybridge-logo.png"
-              alt="KStoryBridge"
-              className="h-8 w-auto object-contain hover:opacity-80 transition-opacity cursor-pointer"
-            />
-          </Link>
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Menu Dropdown */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed left-3 right-3 top-[80px] bg-white rounded-2xl shadow-xl border border-gray-200 z-50 overflow-hidden">
-          <div className="py-2">
-            {/* Discover items */}
-            {discoverItems.map((item) => {
-              const isActive = location.pathname === item.href;
-
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors border-b border-gray-100 last:border-b-0",
-                    isActive
-                      ? "bg-hanok-teal text-white"
-                      : "text-midnight-ink hover:bg-gray-50"
-                  )}
-                >
-                  <span>{item.title}</span>
-                  {item.badge && (
-                    <span
-                      className="px-1.5 py-0.5 text-[10px] font-bold text-white rounded-full uppercase tracking-wider"
-                      style={{ backgroundColor: '#FF6B6B' }}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-
-            {/* Separator */}
-            <div className="border-t border-gray-200 my-1"></div>
-
-            {/* Settings items */}
-            {settingsItems.map((item) => {
-              const isActive = location.pathname === item.href;
-
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors",
-                    isActive
-                      ? "bg-hanok-teal text-white"
-                      : "text-midnight-ink hover:bg-gray-50"
-                  )}
-                >
-                  <span>{item.title}</span>
-                  {item.badge && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full uppercase tracking-wider">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
+    </>
   );
 }

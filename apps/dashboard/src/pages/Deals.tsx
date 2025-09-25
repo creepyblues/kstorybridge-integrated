@@ -86,7 +86,7 @@ export default function Deals() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">DEALS</h1>
+              <h2 className="text-3xl lg:text-3xl font-bold text-midnight-ink leading-tight mb-4">DEALS</h2>
               <p className="text-xl text-midnight-ink-600 leading-relaxed">
                 Manage your content deals and negotiations.
               </p>

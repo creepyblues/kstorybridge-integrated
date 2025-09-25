@@ -70,6 +70,10 @@ const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackMinimal"));
 
+// Payment pages
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PaymentCancel = lazy(() => import("./pages/PaymentCancel"));
+
 const queryClient = new QueryClient();
 
 // Loading fallback component
@@ -164,7 +168,7 @@ const App = () => (
                 <Route path="/buyers/profile" element={
                   <BuyerProtectedLayout><Profile /></BuyerProtectedLayout>
                 } />
-                <Route path="/buyers/pricing" element={
+                <Route path="/buyers/plan" element={
                   <BuyerProtectedLayout><BuyersPricing /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/news" element={
@@ -179,6 +183,10 @@ const App = () => (
                 <Route path="/buyers/ai-chatbot" element={
                   <BuyerProtectedLayout><AIChatbot /></BuyerProtectedLayout>
                 } />
+
+                {/* Legacy route redirects */}
+                <Route path="/buyers/pricing" element={<Navigate to="/buyers/plan" replace />} />
+                <Route path="/buyers/subscription" element={<Navigate to="/buyers/plan" replace />} />
                 
                 {/* Creator routes */}
                 <Route path="/creators" element={
@@ -267,11 +275,6 @@ const App = () => (
                   <ProtectedLayout><AIChatbot /></ProtectedLayout>
                 } />
                 
-                {/* Chat - buyer access */}
-                <Route path="/chat" element={
-                  <ProtectedLayout><Chat /></ProtectedLayout>
-                } />
-                
                 {/* Chat History - restricted access */}
                 <Route path="/chat-history" element={
                   <ProtectedLayout><ChatHistory /></ProtectedLayout>
@@ -306,7 +309,15 @@ const App = () => (
                 <Route path="/openai-chatbot-testing" element={
                   <ProtectedLayout><ChatbotTesting /></ProtectedLayout>
                 } />
-                
+
+                {/* Payment and subscription routes */}
+                <Route path="/payment/success" element={
+                  <ProtectedRoute><PaymentSuccess /></ProtectedRoute>
+                } />
+                <Route path="/payment/cancel" element={
+                  <ProtectedRoute><PaymentCancel /></ProtectedRoute>
+                } />
+
                 <Route path="*" element={
                   <ProtectedRoute>
                     <NotFound />

@@ -10,7 +10,7 @@ export default function SearchAnalytics() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Search Analytics</h1>
+            <h2 className="text-3xl font-bold text-gray-900">Search Analytics</h2>
             <p className="text-gray-600 mt-2">Monitor search performance and user behavior</p>
           </div>
           

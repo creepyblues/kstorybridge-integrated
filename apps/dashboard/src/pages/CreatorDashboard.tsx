@@ -107,7 +107,7 @@ export default function CreatorDashboard() {
     <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
-          <h1 className="text-4xl font-bold text-gray-800">Your Creative Studio</h1>
+          <h2 className="text-3xl font-bold text-gray-800">Your Creative Studio</h2>
           <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
         </div>
 

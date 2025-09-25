@@ -430,16 +430,127 @@ export default function MyComponent() {
 - This applies to all UI elements including buttons, icons, backgrounds, borders, and hover states
 
 **✅ Approved Color Palette**:
-- **Primary Brand**: hanok-teal (#0891b2)
+- **Primary Text**: black (for labels, headings, field names)
 - **Secondary**: midnight-ink (#1e293b), porcelain-blue (#e2e8f0)
 - **Accent**: sunrise-coral (for CTAs and highlights)
 - **Neutrals**: gray-50, gray-100, gray-200, gray-300, gray-500, gray-900
 - **Status Colors**: red for errors, green for success, blue for info
+- **Links**: black with `hover:text-gray-700` for hover state
 
-**Button Hover States**:
-- Use `hover:bg-white hover:border-gray-400` instead of `hover:bg-gray-50`
-- Add `transition-colors` for smooth hover effects
-- Maintain accessibility and contrast standards
+### Default Button Design (UPDATED 2025-01-14)
+
+**Standard Button Style - MUST be used across all pages**:
+
+```jsx
+// Default button (all standard buttons should use this)
+<Button
+  variant="outline"
+  className="border-gray-300 hover:bg-gray-100"
+>
+  Button Text
+</Button>
+
+// Responsive button
+<Button
+  variant="outline"
+  className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
+>
+  Button Text
+</Button>
+
+// Destructive action button (e.g., Sign Out, Delete)
+<Button
+  variant="outline"
+  className="border-gray-300 hover:bg-gray-100 text-red-600"
+>
+  Sign Out
+</Button>
+```
+
+**Button Design Requirements**:
+- **Variant**: Always use `variant="outline"` for standard buttons
+- **Border**: Always use `border-gray-300` for consistent border color
+- **Hover**: Always use `hover:bg-gray-100` for light grey hover background
+- **Text only**: No icons in buttons - keep them clean and minimal
+- **No effects**: No shadows, gradients, glows, or complex animations
+- **Consistent spacing**: Use standard padding (handled by Button component)
+
+### Card/Box Design Standards (UPDATED 2025-01-14)
+
+**IMPORTANT**: All cards, boxes, and containers across the application MUST follow the Profile page design standard.
+
+**Standard Card Style - MANDATORY for ALL pages**:
+```jsx
+<Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+  <CardContent className="p-4 sm:p-6">
+    {/* Content */}
+  </CardContent>
+</Card>
+```
+
+**Card Design Requirements (STRICT)**:
+- **Background**: `bg-transparent` - NO solid backgrounds, NO white backgrounds
+- **Border**: `border-gray-200` - Light gray border for subtle definition
+- **Shadow**: `shadow-none` - NO shadows, NO drop shadows, NO box shadows
+- **Corners**: `rounded-2xl` - Consistent large border radius
+- **Spacing**: `mb-6 sm:mb-8 lg:mb-12` - Responsive bottom margins between cards
+- **Padding**: `p-4 sm:p-6` - Responsive internal padding
+
+**✅ DO:**
+- Use transparent backgrounds for all cards
+- Use light gray borders for structure
+- Keep design flat and minimal
+- Follow `/buyers/profile` page as the design reference
+
+**❌ DON'T:**
+- Use `bg-white` or any solid background colors
+- Add shadows (`shadow-sm`, `shadow-lg`, etc.)
+- Use heavy borders or dark borders
+- Create visual "weight" or depth effects
+
+**Reference Implementation**: See `/buyers/profile` page for the correct visual implementation of this standard.
+
+**Migration Guide**: When updating existing pages to follow this standard:
+1. Replace `bg-white` with `bg-transparent`
+2. Replace any `shadow-*` classes with `shadow-none`
+3. Ensure `border-gray-200` is used for borders
+4. Add responsive margins: `mb-6 sm:mb-8 lg:mb-12`
+5. Test visual consistency against Profile page
+
+**Examples of Non-Compliant Designs to Fix**:
+- Cards with solid white backgrounds
+- Drop shadows or box shadows
+- Heavy or dark borders
+- Cards that visually "float" above the page background
+
+### Typography Standards (UPDATED 2025-01-14)
+
+**Default Font - SF Pro**:
+SF Pro is now the default font for the entire Dashboard application. All text elements automatically use SF Pro.
+
+```jsx
+// All text automatically uses SF Pro (no class needed)
+<h3 className="text-lg font-semibold text-gray-900">
+  Header Text
+</h3>
+
+// Field labels automatically use SF Pro
+<h5 className="font-semibold text-black mb-1 text-sm sm:text-base">
+  Field Label
+</h5>
+
+// Body text automatically uses SF Pro
+<p className="text-gray-600 text-sm">
+  Body text content
+</p>
+```
+
+**Typography Requirements**:
+- **Default Font**: SF Pro is automatically applied to all text elements
+- **No Font Classes**: The `font-sf-pro` class is no longer needed (deprecated)
+- **Text Color**: Use `text-black` for primary labels and headings
+- **Consistent Typography**: All text (headers, body, labels, buttons) uses SF Pro
+- **Fallback Stack**: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif
 
 ## Common Development Patterns & Best Practices
 

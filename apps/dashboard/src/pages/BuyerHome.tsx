@@ -382,7 +382,7 @@ function BuyerHomeContent() {
       <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">HOME</h1>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">HOME</h2>
             <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
               Welcome to your dashboard. Discover and browse Korean content titles.
             </p>
@@ -396,7 +396,7 @@ function BuyerHomeContent() {
           {!loading && featuredTitles.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg">
               <p className="text-gray-500 mb-4">No featured titles available at the moment.</p>
-              <Button onClick={() => loadFeaturedData()} variant="outline">
+              <Button onClick={() => loadFeaturedData()} variant="outline" className="border-gray-300 hover:bg-gray-100 transition-colors">
                 Try Again
               </Button>
             </div>

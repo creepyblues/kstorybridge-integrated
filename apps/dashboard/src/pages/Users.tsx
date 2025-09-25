@@ -106,7 +106,7 @@ export default function Users() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">User Management</h1>
+          <h2 className="text-3xl font-bold text-white mb-2">User Management</h2>
           <p className="text-slate-400">Manage user accounts, roles, and permissions</p>
         </div>
         <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">

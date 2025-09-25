@@ -136,7 +136,7 @@ export default function MyRequests() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight mb-4">MY REQUESTS</h1>
+            <h2 className="text-3xl lg:text-3xl font-bold text-midnight-ink leading-tight mb-4">MY REQUESTS</h2>
             <p className="text-xl text-midnight-ink-600 leading-relaxed">
               Track your content requests and their status.
             </p>

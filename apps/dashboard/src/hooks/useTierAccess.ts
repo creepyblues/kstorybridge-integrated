@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
-import { directApiService } from '@/services/directApiService';
+import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 
 type UserTier = 'basic' | 'pro' | 'suite';
@@ -13,6 +13,7 @@ interface TierAccess {
   hasMinimumTier: (requiredTier: UserTier) => boolean;
   canAccessPremiumContent: boolean;
   canAccessSuiteFeatures: boolean;
+  refreshTier: () => Promise<void>;
 }
 
 const tierHierarchy: Record<UserTier, number> = {
@@ -38,9 +39,8 @@ export const useTierAccess = (): TierAccess => {
   // NOTE: Should match the mockTier in CMSHeader.tsx for consistency
   const mockTier: UserTier = 'basic';
 
-  // Test email for real data queries (replace with your test account)
-  useEffect(() => {
-    const fetchUserTier = async () => {
+  // Function to fetch user tier (extracted for reuse)
+  const fetchUserTier = async () => {
       // Handle localhost development
       if (isLocalhost && !useRealDataOnLocalhost) {
         console.log('🧪 useTierAccess: Using localhost mock tier:', mockTier);
@@ -68,23 +68,129 @@ export const useTierAccess = (): TierAccess => {
       }
 
       try {
-        if (isLocalhost && useRealDataOnLocalhost) {
-          console.log('🔍 useTierAccess: Using real Supabase data on localhost for user id:', queryId);
-        } else {
-          console.log('🔍 useTierAccess: Fetching tier for buyer user:', { id: user?.id, email: user?.email });
+        console.log('🔍 useTierAccess: Fetching tier for buyer user:', { id: user?.id, email: user?.email });
+
+        // Get user tier from user_buyers table
+        const { data: userBuyer, error: buyerError } = await supabase
+          .from('user_buyers')
+          .select('tier')
+          .eq('id', user.id)
+          .single();
+
+        if (buyerError && buyerError.code !== 'PGRST116') {
+          console.error('❌ Error fetching user tier:', buyerError);
+          setTier(null);
+          return;
         }
 
-        // Use the working direct API service instead of hanging Supabase JS
-        const userTier = await directApiService.getUserTier(queryId);
-
-        console.log('🔍 useTierAccess: Direct API result:', { tier: userTier, id: queryId });
+        const userTier = userBuyer?.tier as UserTier;
+        console.log('🔍 useTierAccess: Database tier result:', { tier: userTier, id: user.id });
 
         if (userTier) {
-          console.log('✅ Setting tier to:', userTier);
-          setTier(userTier);
+          // If user has Pro tier, validate subscription status with grace period
+          if (userTier === 'pro') {
+            try {
+              const { data: stripeCustomer, error: stripeError } = await supabase
+                .from('stripe_customers')
+                .select('subscription_status, current_period_end, updated_at')
+                .eq('user_id', user.id)
+                .single();
+
+              if (stripeError && stripeError.code !== 'PGRST116') {
+                console.warn('⚠️ Error checking subscription status, keeping Pro tier:', stripeError);
+                // Continue with tier from database in case of error
+                setTier(userTier);
+              } else if (stripeCustomer) {
+                console.log('🔍 useTierAccess: Subscription validation data:', {
+                  subscriptionStatus: stripeCustomer.subscription_status,
+                  currentPeriodEnd: stripeCustomer.current_period_end,
+                  updatedAt: stripeCustomer.updated_at,
+                  now: new Date().toISOString(),
+                  hasSubscriptionId: !!stripeCustomer.stripe_subscription_id,
+                  userId: user.id
+                });
+
+                // Handle null subscription status - treat as processing/incomplete data
+                const isActive = stripeCustomer.subscription_status === 'active' ||
+                                stripeCustomer.subscription_status === 'trialing';
+                const isNull = stripeCustomer.subscription_status === null;
+                const isCanceled = stripeCustomer.subscription_status === 'canceled' ||
+                                  stripeCustomer.subscription_status === 'incomplete_expired';
+
+                // Check if subscription period has truly expired (with 1-minute grace period)
+                const gracePeriodMs = 60 * 1000; // 1 minute grace period
+                const isExpired = stripeCustomer.current_period_end &&
+                                 (new Date(stripeCustomer.current_period_end).getTime() + gracePeriodMs) < new Date().getTime();
+
+                // Check if this is a very recent subscription (within last 10 minutes to allow for webhook processing)
+                const isRecentSubscription = stripeCustomer.updated_at &&
+                                           (new Date().getTime() - new Date(stripeCustomer.updated_at).getTime()) < (10 * 60 * 1000);
+
+                console.log('🔍 useTierAccess: Subscription evaluation:', {
+                  isActive,
+                  isNull,
+                  isCanceled,
+                  isExpired,
+                  isRecentSubscription,
+                  subscriptionAge: stripeCustomer.updated_at ? `${(new Date().getTime() - new Date(stripeCustomer.updated_at).getTime()) / 1000}s` : 'unknown'
+                });
+
+                if (isActive && !isExpired) {
+                  console.log('✅ Pro subscription validated:', stripeCustomer.subscription_status);
+                  setTier('pro');
+                } else if (isNull && isRecentSubscription) {
+                  console.log('⏳ Recent subscription with null status - keeping Pro tier during webhook processing');
+                  setTier('pro');
+                } else if (isNull && !isRecentSubscription) {
+                  console.log('🔄 Subscription status null but not recent - keeping Pro tier (may be incomplete webhook processing)');
+                  // Don't downgrade on null status - could be incomplete webhook data
+                  setTier('pro');
+                } else if (isCanceled && !isExpired) {
+                  console.log('⏳ Canceled subscription but not expired - keeping Pro tier until period end');
+                  setTier('pro');
+                } else if (isCanceled && isExpired) {
+                  console.warn('⚠️ Pro subscription canceled and expired, downgrading to basic:', {
+                    status: stripeCustomer.subscription_status,
+                    periodEnd: stripeCustomer.current_period_end
+                  });
+                  await supabase
+                    .from('user_buyers')
+                    .update({ tier: 'basic' })
+                    .eq('id', user.id);
+                  setTier('basic');
+                } else if (isExpired) {
+                  console.warn('⚠️ Pro subscription expired, downgrading to basic:', {
+                    periodEnd: stripeCustomer.current_period_end,
+                    now: new Date().toISOString()
+                  });
+                  await supabase
+                    .from('user_buyers')
+                    .update({ tier: 'basic' })
+                    .eq('id', user.id);
+                  setTier('basic');
+                } else {
+                  console.log('✅ Pro tier conditions unclear, keeping Pro tier (conservative approach)');
+                  setTier('pro');
+                }
+              } else {
+                console.warn('⚠️ No subscription record found for Pro user');
+                // For Pro users without subscription records, keep Pro tier for now
+                // This handles cases where webhook hasn't processed yet
+                console.log('ℹ️ Keeping Pro tier - subscription record may be processing');
+                setTier('pro');
+              }
+            } catch (subscriptionError) {
+              console.warn('⚠️ Subscription validation error, keeping Pro tier:', subscriptionError);
+              // Continue with tier from database in case of subscription check failure
+              setTier(userTier);
+            }
+          } else {
+            console.log('✅ Setting tier to:', userTier);
+            setTier(userTier);
+          }
         } else {
-          console.warn('⚠️ No tier found for user, treating as unassigned');
-          setTier(null);
+          console.warn('⚠️ No tier found for user, defaulting to basic');
+          setTier('basic');
         }
       } catch (error) {
         console.error('❌ Exception fetching user tier:', error);
@@ -94,6 +200,14 @@ export const useTierAccess = (): TierAccess => {
       }
     };
 
+  // Force refresh tier data
+  const refreshTier = async () => {
+    setLoading(true);
+    await fetchUserTier();
+  };
+
+  // Initial load
+  useEffect(() => {
     fetchUserTier();
   }, [user?.id, isLocalhost, mockTier]);
 
@@ -110,6 +224,7 @@ export const useTierAccess = (): TierAccess => {
     isSuite: tier === 'suite',
     hasMinimumTier,
     canAccessPremiumContent: hasMinimumTier('pro'),
-    canAccessSuiteFeatures: hasMinimumTier('suite')
+    canAccessSuiteFeatures: hasMinimumTier('suite'),
+    refreshTier
   };
 };

@@ -461,7 +461,7 @@ function TitleListContent() {
           <div className="mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight">TITLES</h1>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight">TITLES</h2>
                 <Button
                   onClick={handleRefresh}
                   disabled={loading}
@@ -514,7 +514,7 @@ function TitleListContent() {
           {isCreatorView && (
             <div className="hidden sm:flex justify-end mb-6 sm:mb-8">
               <Link to="/creators/titles/add">
-                <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-6 py-3 text-base rounded-lg font-medium">
+                <Button className="border-gray-300 hover:bg-gray-100 px-6 py-3 text-base rounded-lg font-medium transition-colors">
                   + Add a new title
                 </Button>
               </Link>
@@ -525,7 +525,7 @@ function TitleListContent() {
           {isCreatorView && (
             <div className="sm:hidden mb-4">
               <Link to="/creators/titles/add">
-                <Button className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 py-2 text-sm rounded-lg font-medium w-full">
+                <Button className="border-gray-300 hover:bg-gray-100 px-4 py-2 text-sm rounded-lg font-medium w-full transition-colors">
                   + Add a new title
                 </Button>
               </Link>
@@ -563,27 +563,22 @@ function TitleListContent() {
                 )}
                 <Button
                   type="submit"
+                  variant="outline"
                   size="sm"
                   disabled={searchLoading}
-                  className="bg-hanok-teal hover:bg-hanok-teal-600 text-white shadow-lg hover:shadow-xl border-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 transform hover:scale-105 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="border-gray-300 hover:bg-gray-100 px-4 py-2 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {/* Shine effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                  
                   {/* Search icon */}
                   {searchLoading ? (
-                    <RefreshCw className="h-3 w-3 mr-1 pointer-events-none animate-spin" />
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
                   ) : (
-                    <Search className="h-3 w-3 mr-1 pointer-events-none" />
+                    <Search className="h-3 w-3 mr-1" />
                   )}
-                  
+
                   {/* Text - Hide on mobile */}
-                  <span className="relative z-10 pointer-events-none hidden sm:inline">
+                  <span className="hidden sm:inline">
                     {searchLoading ? 'Searching...' : 'Search'}
                   </span>
-                  
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 rounded-xl bg-hanok-teal/50 blur-md group-hover:bg-hanok-teal/60 transition-colors duration-300 pointer-events-none"></div>
                 </Button>
               </div>
             </form>

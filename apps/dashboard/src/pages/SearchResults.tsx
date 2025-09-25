@@ -340,7 +340,7 @@ function SearchResultsContent() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-3xl font-bold text-midnight-ink tracking-tight">
               SEARCH RESULTS
             </h2>
             {searchTerm && (

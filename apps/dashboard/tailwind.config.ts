@@ -20,14 +20,30 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'serif': ['Merriweather', 'Georgia', 'serif'],
-				'sans': ['Inter', 'system-ui', 'sans-serif'],
+				'serif': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+				'sans': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+				'inter': ['Inter', 'system-ui', 'sans-serif'],
 				'noto-kr': ['Noto Sans KR', 'sans-serif'],
 			},
 			colors: {
 				// KStoryBridge Brand Colors
 				...tailwindColors,
-				
+
+				// Pro tier purple color
+				'pro-purple': {
+					DEFAULT: 'hsl(var(--pro-purple))',
+					50: 'hsl(var(--pro-purple-50))',
+					100: 'hsl(var(--pro-purple-100))',
+					200: 'hsl(var(--pro-purple-200))',
+					300: 'hsl(var(--pro-purple-300))',
+					400: 'hsl(var(--pro-purple-400))',
+					500: 'hsl(var(--pro-purple-500))',
+					600: 'hsl(var(--pro-purple-600))',
+					700: 'hsl(var(--pro-purple-700))',
+					800: 'hsl(var(--pro-purple-800))',
+					900: 'hsl(var(--pro-purple-900))',
+				},
+
 				// shadcn/ui system colors
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

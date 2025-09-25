@@ -174,9 +174,9 @@ export default function VectorSearchManager() {
             Back to Profile
           </Button>
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink leading-tight mb-2">
+            <h2 className="text-2xl sm:text-3xl lg:text-3xl font-bold text-midnight-ink leading-tight mb-2">
               🔍 Vector Search Manager
-            </h1>
+            </h2>
             <p className="text-sm sm:text-base text-midnight-ink-600">
               Manage content processing and vector search functionality
             </p>

@@ -131,9 +131,9 @@ const SendMessageTest = () => {
               <MessageSquare className="w-5 h-5 text-hanok-teal" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink">
+              <h2 className="text-2xl sm:text-3xl lg:text-3xl font-bold text-midnight-ink">
                 Send Message (Test)
-              </h1>
+              </h2>
               <p className="text-sm sm:text-base text-midnight-ink-600 mt-1">
                 Test the message functionality without authentication
               </p>

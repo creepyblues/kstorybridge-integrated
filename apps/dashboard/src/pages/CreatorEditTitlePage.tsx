@@ -262,9 +262,9 @@ export default function CreatorEditTitlePage() {
       <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">
               EDIT TITLE
-            </h1>
+            </h2>
             <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
               Update your title information and details.
             </p>

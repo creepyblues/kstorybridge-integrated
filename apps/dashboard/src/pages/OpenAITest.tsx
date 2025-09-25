@@ -138,9 +138,9 @@ export default function OpenAITest() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-midnight-ink mb-2">
+          <h2 className="text-3xl font-bold text-midnight-ink mb-2">
             🔧 OpenAI API Diagnostics
-          </h1>
+          </h2>
           <p className="text-gray-600">
             Test your OpenAI API configuration and troubleshoot issues
           </p>

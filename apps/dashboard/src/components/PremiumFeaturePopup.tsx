@@ -245,18 +245,31 @@ export default function PremiumFeaturePopup({
                   
                   <div className="space-y-4">
                     <Button
+                      id="premium-popup-upgrade-btn"
+                      onClick={() => window.location.href = '/buyers/plan'}
+                      className="w-full bg-gradient-to-r from-hanok-teal to-emerald-600 hover:from-hanok-teal/90 hover:to-emerald-700 text-white px-8 py-4 text-lg rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
+                    >
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+
+                      {/* Text */}
+                      <span className="relative z-10">🚀 Upgrade to Pro - $250/mo</span>
+                    </Button>
+
+                    <Button
                       id="premium-popup-request-btn"
                       onClick={handleRequest}
                       disabled={loading}
-                      className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                      variant="outline"
+                      className="w-full border-sunrise-coral text-sunrise-coral hover:bg-sunrise-coral hover:text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       {loading ? (
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                           Requesting...
                         </div>
                       ) : (
-                        "Request Access"
+                        "Request Access Instead"
                       )}
                     </Button>
                   </div>

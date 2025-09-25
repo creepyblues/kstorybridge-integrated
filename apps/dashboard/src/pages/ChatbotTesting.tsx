@@ -353,9 +353,9 @@ export default function ChatbotTesting() {
             Back to Profile
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-midnight-ink leading-tight">
+            <h2 className="text-3xl font-bold text-midnight-ink leading-tight">
               🧪 OpenAI Chatbot Environment Testing
-            </h1>
+            </h2>
             <p className="text-lg text-midnight-ink-600 mt-2">
               Compare responses across different execution environments
             </p>

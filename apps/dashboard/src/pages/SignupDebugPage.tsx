@@ -162,9 +162,9 @@ const SignupDebugPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-midnight-ink mb-8">
+        <h2 className="text-3xl font-bold text-midnight-ink mb-8">
           Signup Flow Debugger
-        </h1>
+        </h2>
 
         <Card className="mb-8">
           <CardHeader>

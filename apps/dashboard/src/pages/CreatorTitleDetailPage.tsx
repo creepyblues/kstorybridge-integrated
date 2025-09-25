@@ -140,9 +140,9 @@ export default function CreatorTitleDetailPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-midnight-ink md:text-4xl">
+              <h2 className="text-3xl font-bold text-midnight-ink md:text-4xl">
                 {title.title_name_en || title.title_name_kr}
-              </h1>
+              </h2>
               {genre.length > 0 && (
                 <Badge variant="outline" className="border-hanok-teal text-hanok-teal">
                   {formatList(genre)}

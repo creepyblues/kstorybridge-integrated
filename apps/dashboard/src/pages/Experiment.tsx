@@ -117,10 +117,10 @@ export default function Experiment() {
                   Back to Profile
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                     <Zap className="w-6 h-6 text-purple-400" />
                     Experimental Tools
-                  </h1>
+                  </h2>
                   <p className="text-sm text-slate-400">
                     Advanced AI and analytics tools for administrators
                   </p>

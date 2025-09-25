@@ -248,7 +248,38 @@ const isAuthorized = accountType === 'creator';
 
 ## Design Guidelines
 
-> 🎨 **Color Guidelines**: See [Root CLAUDE.md Design Guidelines](../../CLAUDE.md#design-guidelines) for comprehensive color usage policy and approved palette.
+> 🎨 **CRITICAL DESIGN REQUIREMENTS**: See [Root CLAUDE.md Design Guidelines](../../CLAUDE.md#design-guidelines) for:
+> - **Card/Box Standard** (MANDATORY: `bg-transparent border-gray-200 shadow-none` - Follow `/buyers/profile` design)
+> - **Button Standard** (MUST use `border-gray-300 hover:bg-gray-100` for ALL buttons)
+> - **Typography Standard** (SF Pro is now the DEFAULT font - no classes needed)
+> - **Color Policy** (black for text/labels, no yellow colors, no solid backgrounds)
+> - **Pro Tier Standard** (MANDATORY: Use purple #AF52DE for ALL Pro/Suite tier components and features)
+>
+> **✨ NEW**: SF Pro is now the default font for the entire Dashboard app. All text automatically uses SF Pro typography.
+>
+> **⚠️ IMPORTANT**: ALL cards, boxes, and containers MUST use transparent backgrounds and no shadows as shown on the Profile page. This is now the mandatory standard across the entire application.
+>
+> **🔧 STANDARD COMPONENTS**: Use these components for consistent design:
+> - **StandardButton** (`@/components/StandardButton`) - Consistent button with light grey hover
+> - **StandardCard** (`@/components/StandardCard`) - Transparent card with proper borders
+> - **Usage**: `import { StandardButton, StandardCard } from '@/components/StandardButton'` and `'@/components/StandardCard'`
+>
+> **💜 PRO TIER COLOR SYSTEM**:
+> - **Primary Color**: `#AF52DE` (purple) - Available as `pro-purple` in Tailwind
+> - **Usage**: `bg-pro-purple`, `text-pro-purple`, `border-pro-purple-500`, etc.
+> - **Apply to**: Badges, buttons, icons, borders for Pro/Suite tier features only
+> - **Examples**: Premium badges, Pro feature buttons, tier upgrade prompts, Crown icons
+> - **Variants**: Full color scale available (50-900) for hover states and backgrounds
+>
+> **🎯 PRO TIER COMPONENTS**:
+> - **StandardButton** with `variant="pro"` - Purple button for Pro actions
+> - **ProBadge** (`@/components/ProBadge`) - Consistent Pro/Suite tier badges
+> - **Usage Examples**:
+>   ```tsx
+>   <StandardButton variant="pro">Upgrade to Pro</StandardButton>
+>   <ProBadge tier="pro" />
+>   <Crown className="h-5 w-5 text-pro-purple" />
+>   ```
 
 ### Design Principles (STRICT)
 1. **NO raw HTML elements** - Use MUI components only (Surface replaces div)

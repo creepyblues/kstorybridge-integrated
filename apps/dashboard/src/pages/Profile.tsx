@@ -6,7 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { directApiService } from "@/services/directApiService";
-import { Save, Edit3, X, LogOut, KeyRound, History } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Users } from "lucide-react";
 import PasswordResetModal from "@/components/PasswordResetModal";
 
 // Define types for the actual table structures
@@ -89,6 +90,7 @@ export default function Profile() {
   const [formData, setFormData] = useState<Partial<UnifiedProfile>>({});
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [subscriptionData, setSubscriptionData] = useState<any>(null);
 
   const fetchProfile = useCallback(async () => {
     if (!user) {
@@ -251,8 +253,28 @@ export default function Profile() {
     }
   }, [user, toast]);
 
+  const fetchSubscriptionData = async () => {
+    if (!user) return;
+
+    try {
+      // Fetch subscription data from stripe_customers table
+      const { data, error } = await supabase
+        .from('stripe_customers')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setSubscriptionData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription data:', error);
+    }
+  };
+
   useEffect(() => {
     fetchProfile();
+    fetchSubscriptionData();
   }, [fetchProfile]);
 
   const createBuyerProfile = async () => {
@@ -632,79 +654,65 @@ export default function Profile() {
   return (
     <div>
       <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">MY PROFILE</h1>
-            <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
-              Manage your account information and preferences.
-            </p>
-          </div>
-        
-        <div className="flex flex-col sm:flex-row gap-2">
-          {!isEditing ? (
-            <Button
-              onClick={() => setIsEditing(true)}
-              className="w-full sm:w-auto bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base"
-            >
-              <Edit3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Edit Profile</span>
-              <span className="sm:hidden">Edit</span>
-            </Button>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-                onClick={handleUpdateProfile}
-                disabled={updating}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base"
-              >
-                <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                {updating ? "Saving..." : "Save Changes"}
-              </Button>
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                disabled={updating}
-                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base"
-              >
-                <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Cancel
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
         {/* Profile Information Card */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-midnight-ink text-lg sm:text-xl">Profile Information</CardTitle>
-          </CardHeader>
+        <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
           <CardContent className="p-4 sm:p-6">
+            {/* Edit/Save buttons positioned at top right */}
+            <div className="flex justify-end mb-4">
+              {!isEditing ? (
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="outline"
+                  className="border-gray-300 hover:bg-gray-100"
+                >
+                  Edit Profile
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleUpdateProfile}
+                    disabled={updating}
+                    variant="outline"
+                    className="border-gray-300 hover:bg-gray-100"
+                  >
+                    {updating ? "Saving..." : "Save Changes"}
+                  </Button>
+                  <Button
+                    onClick={handleCancel}
+                    variant="outline"
+                    disabled={updating}
+                    className="border-gray-300 hover:bg-gray-100"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
               {/* Left Column - Basic Information */}
               <div className="space-y-4 sm:space-y-6">
                 {/* Full Name */}
                 <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Full Name</h5>
+                  <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Full Name</h5>
                   <p className="text-gray-600 text-xs sm:text-sm">{profile.full_name || "Not specified"}</p>
                 </div>
 
                 {/* Email */}
                 <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Email Address</h5>
+                  <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Email Address</h5>
                   <p className="text-gray-600 text-xs sm:text-sm break-all">{profile.email}</p>
                 </div>
 
                 {/* Account Type */}
                 <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Account Type</h5>
+                  <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Account Type</h5>
                   <p className="text-gray-600 text-xs sm:text-sm">{formatAccountType(profile.account_type)}</p>
                 </div>
 
                 {/* Pen Name for IP Owners */}
                 {profile.account_type === 'creator' && (
                   <div>
-                    <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Pen Name / Studio Name</h5>
+                    <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Pen Name / Studio Name</h5>
                     {isEditing ? (
                       <Input
                         id="pen_name"
@@ -717,12 +725,6 @@ export default function Profile() {
                     )}
                   </div>
                 )}
-
-                {/* Member Since */}
-                <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Member Since</h5>
-                  <p className="text-gray-600 text-xs sm:text-sm">{formatDate(profile.created_at)}</p>
-                </div>
               </div>
 
               {/* Right Column - Professional Information */}
@@ -731,7 +733,7 @@ export default function Profile() {
                   <>
                     {/* Company */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Company</h5>
+                      <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Company</h5>
                       {isEditing ? (
                         <Input
                           id="buyer_company"
@@ -746,7 +748,7 @@ export default function Profile() {
 
                     {/* Role */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Role</h5>
+                      <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Role</h5>
                       {isEditing ? (
                         <Select
                           value={formData.buyer_role || ""}
@@ -777,7 +779,7 @@ export default function Profile() {
 
                     {/* LinkedIn URL */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">LinkedIn URL</h5>
+                      <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">LinkedIn URL</h5>
                       {isEditing ? (
                         <Input
                           id="linkedin_url"
@@ -793,7 +795,7 @@ export default function Profile() {
                               href={profile.linkedin_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-hanok-teal hover:text-hanok-teal-600 transition-colors break-all"
+                              className="text-black hover:text-gray-700 transition-colors break-all"
                             >
                               LinkedIn Profile
                             </a>
@@ -808,7 +810,7 @@ export default function Profile() {
                   <>
                     {/* Company */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Company</h5>
+                      <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Company</h5>
                       {isEditing ? (
                         <Input
                           id="ip_owner_company"
@@ -823,7 +825,7 @@ export default function Profile() {
 
                     {/* Role */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Role</h5>
+                      <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Role</h5>
                       {isEditing ? (
                         <Select
                           value={formData.ip_owner_role || ""}
@@ -849,7 +851,7 @@ export default function Profile() {
 
                     {/* Website URL */}
                     <div>
-                      <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Website URL</h5>
+                      <h5 className="font-semibold text-black mb-1 text-sm sm:text-base">Website URL</h5>
                       {isEditing ? (
                         <Input
                           id="website_url"
@@ -865,7 +867,7 @@ export default function Profile() {
                               href={profile.website_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-hanok-teal hover:text-hanok-teal-600 transition-colors break-all"
+                              className="text-black hover:text-gray-700 transition-colors break-all"
                             >
                               {profile.website_url}
                             </a>
@@ -877,30 +879,91 @@ export default function Profile() {
                     </div>
                   </>
                 )}
-
-                {/* Membership Tier */}
-                {profile.tier && (
-                  <div>
-                    <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Membership Tier</h5>
-                    <p className="text-gray-600 text-xs sm:text-sm">
-                      {profile.tier === "suite" ? "Suite" : profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1)}
-                    </p>
-                  </div>
-                )}
-
-                {/* Last Updated */}
-                <div>
-                  <h5 className="font-semibold text-hanok-teal mb-1 text-sm sm:text-base">Last Updated</h5>
-                  <p className="text-gray-600 text-xs sm:text-sm">{formatDate(profile.updated_at)}</p>
-                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Subscription Plan Section */}
+        {profile?.account_type === 'buyer' && (
+          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+                    <Users className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {profile?.tier === 'pro' || subscriptionData?.subscription_status === 'active'
+                        ? 'Pro plan'
+                        : profile?.tier === 'suite'
+                        ? 'Suite plan'
+                        : 'Basic plan'}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {subscriptionData?.subscription_status === 'active' ? (
+                        <>
+                          Pro tier access with premium features
+                          <br />
+                          Your subscription will auto renew on{' '}
+                          {subscriptionData?.current_period_end
+                            ? new Date(subscriptionData.current_period_end).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })
+                            : 'N/A'}
+                          .
+                        </>
+                      ) : profile?.tier === 'pro' ? (
+                        <>
+                          Pro tier access with premium features
+                          <br />
+                          Full access to pitch decks and creator contacts
+                        </>
+                      ) : profile?.tier === 'suite' ? (
+                        <>
+                          Suite tier with all features unlocked
+                          <br />
+                          Maximum access and priority support
+                        </>
+                      ) : (
+                        <>
+                          Basic tier with standard features
+                          <br />
+                          Upgrade to Pro for pitch deck access and more
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                {(profile.email === 'sungho@dadble.com' || profile.email === 'kevin@sandstoneartists.com') ? (
+                  <Link to="/buyers/plan">
+                    <Button
+                      variant="outline"
+                      className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
+                    >
+                      Adjust plan
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+                    disabled
+                  >
+                    Adjust plan
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* AI Chatbot Section - Only for specific users */}
         {(profile.email === 'sungho@dadble.com' || profile.email === 'kevin@sandstoneartists.com') && (
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
             <CardContent className="p-4 sm:p-6 lg:p-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
                 <div>
@@ -923,7 +986,7 @@ export default function Profile() {
                     </Button>
                   </Link>
                   
-                  <Link to="/chat">
+                  <Link to="/buyers/chat">
                     <Button className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
                       {/* Shine effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
@@ -968,30 +1031,20 @@ export default function Profile() {
         )}
 
         {/* Account Actions Section */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+        <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl">
           <CardContent className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-midnight-ink mb-2">Account Actions</h3>
-                <p className="text-gray-600 text-sm sm:text-base">
-                  Manage your account security and session settings.
-                </p>
+                <h3 className="text-lg sm:text-xl font-bold text-midnight-ink">Account Actions</h3>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 {/* Change Password Button */}
                 <Button
                   onClick={() => setIsPasswordResetModalOpen(true)}
                   variant="outline"
-                  className="w-full sm:w-auto border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden"
+                  className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
                 >
-                  {/* Subtle glow effect */}
-                  <div className="absolute inset-0 rounded-2xl bg-hanok-teal/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                  
-                  {/* Icon */}
-                  <KeyRound className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 relative z-10" />
-                  
-                  {/* Text */}
-                  <span className="relative z-10">Change Password</span>
+                  Change Password
                 </Button>
 
                 {/* Sign Out Button */}
@@ -999,16 +1052,9 @@ export default function Profile() {
                   type="button"
                   onClick={handleSignOut}
                   variant="outline"
-                  className="w-full sm:w-auto border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden"
+                  className="w-full sm:w-auto border-gray-300 hover:bg-gray-100 text-red-600"
                 >
-                  {/* Subtle glow effect */}
-                  <div className="absolute inset-0 rounded-2xl bg-red-100/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                  
-                  {/* Icon */}
-                  <LogOut className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 relative z-10" />
-                  
-                  {/* Text */}
-                  <span className="relative z-10">Sign Out</span>
+                  Sign Out
                 </Button>
               </div>
             </div>

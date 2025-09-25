@@ -20,7 +20,7 @@ const getDiscoverItems = (accountType: string) => {
       { title: "Home", href: "/buyers/home" },
       { title: "Titles", href: "/buyers/titles" },
       { title: "Favorites", href: "/buyers/favorites" },
-      { title: "Chat", href: "/chat", badge: "beta" },
+      { title: "Chat", href: "/buyers/chat", badge: "beta" },
       { title: "News", href: "/buyers/news" },
     ];
   }
@@ -130,7 +130,7 @@ export function CMSHeader() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 w-full bg-white border-b border-porcelain-blue-200 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 z-40">
+      <header className="fixed top-0 left-0 right-0 w-full bg-gray-50 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 z-40">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Mobile menu button */}

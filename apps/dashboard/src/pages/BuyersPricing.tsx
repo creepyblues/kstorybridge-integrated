@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button, Card, CardContent, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
 import { useTierAccess } from '@/hooks/useTierAccess';
+import UpgradeToProButton from '@/components/UpgradeToProButton';
 
 const BuyersPricing = () => {
   const { tier, loading } = useTierAccess();
@@ -82,9 +83,9 @@ const BuyersPricing = () => {
       <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink mb-4 sm:mb-6">
             Flexible Plans for Your Needs
-          </h1>
+          </h2>
           <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 max-w-3xl mx-auto">
             Choose the plan that best fits your content acquisition strategy
           </p>
@@ -106,7 +107,7 @@ const BuyersPricing = () => {
                   <div className="text-xs sm:text-sm text-slate-600 font-medium mb-2">
                     {plan.tagline}
                   </div>
-                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-sunrise-coral mb-3 sm:mb-4">
+                  <h3 className="text-2xl sm:text-3xl lg:text-3xl font-bold text-sunrise-coral mb-3 sm:mb-4">
                     {plan.name}
                   </h3>
                   <p className="text-slate-600 text-xs sm:text-sm mb-4 sm:mb-6 line-clamp-2">
@@ -158,18 +159,31 @@ const BuyersPricing = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
+                  ) : plan.id === 'pro' ? (
+                    <UpgradeToProButton className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 hover:from-orange-600 hover:via-orange-700 hover:to-red-700 text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group border-2 border-orange-400 hover:border-orange-300">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+
+                      {/* Pulsing background */}
+                      <div className="absolute inset-0 bg-orange-400/50 blur-xl group-hover:bg-orange-300/60 transition-colors duration-300 animate-pulse"></div>
+
+                      {/* Text with icon */}
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        🚀 Upgrade Now
+                      </span>
+                    </UpgradeToProButton>
                   ) : (
                     <Link to="/contact">
                       <Button className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 hover:from-orange-600 hover:via-orange-700 hover:to-red-700 text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group border-2 border-orange-400 hover:border-orange-300">
                         {/* Shine effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
-                        
+
                         {/* Pulsing background */}
                         <div className="absolute inset-0 bg-orange-400/50 blur-xl group-hover:bg-orange-300/60 transition-colors duration-300 animate-pulse"></div>
-                        
+
                         {/* Text with icon */}
                         <span className="relative z-10 flex items-center justify-center gap-2">
-                          🚀 Upgrade Now
+                          📞 Contact Us
                         </span>
                       </Button>
                     </Link>
@@ -194,24 +208,6 @@ const BuyersPricing = () => {
           ))}
         </div>
 
-
-        {/* Contact Section */}
-        <div className="mt-20 text-center bg-gradient-to-r from-hanok-teal/10 to-porcelain-blue/10 rounded-3xl p-12">
-          <h2 className="text-3xl font-bold text-midnight-ink mb-4">
-            Have questions about our plans?
-          </h2>
-          <p className="text-xl text-midnight-ink-600 mb-8">
-            Our team is here to help you find the perfect plan for your needs
-          </p>
-          <Link to="/contact">
-            <Button 
-              size="lg" 
-              className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              Contact Sales
-            </Button>
-          </Link>
-        </div>
       </div>
     </div>
   );

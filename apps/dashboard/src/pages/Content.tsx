@@ -98,7 +98,7 @@ export default function Content() {
       {/* Header */}
       <div className="flex items-center justify-between mb-12">
         <div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">My Titles</h1>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">My Titles</h2>
           <p className="text-gray-600">Manage your intellectual property portfolio</p>
         </div>
         <div className="flex items-center gap-4">

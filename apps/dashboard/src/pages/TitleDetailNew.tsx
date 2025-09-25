@@ -252,9 +252,9 @@ function TitleDetailNewContent() {
                 </div>
 
                 <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 mb-2 sm:mb-3 leading-tight">
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-slate-900 mb-2 sm:mb-3 leading-tight">
                     {title.title_name_en || title.title_name_kr}
-                  </h1>
+                  </h2>
                   {title.title_name_kr && title.title_name_en && (
                     <p className="text-lg sm:text-xl text-slate-600 font-medium mb-3 sm:mb-4">
                       {title.title_name_kr}
@@ -299,9 +299,9 @@ function TitleDetailNewContent() {
               
               {/* Mobile: Content section */}
               <div className="sm:hidden">
-                <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight text-center">
+                <h2 className="text-2xl font-bold text-slate-900 mb-2 leading-tight text-center">
                   {title.title_name_en || title.title_name_kr}
-                </h1>
+                </h2>
                 {title.title_name_kr && title.title_name_en && (
                   <p className="text-lg text-slate-600 font-medium mb-3 text-center">
                     {title.title_name_kr}
@@ -351,10 +351,7 @@ function TitleDetailNewContent() {
                     onClick={handleFavoriteToggle}
                     disabled={favoriteLoading}
                     variant="outline"
-                    className={`flex-1 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200 ${isFavorited 
-                      ? "border-hanok-teal text-hanok-teal bg-hanok-teal/5 hover:bg-hanok-teal/10" 
-                      : "border-purple-500 text-slate-600 hover:border-purple-600 hover:text-purple-600 hover:bg-purple-50"
-                    }`}
+                    className="flex-1 border-gray-300 hover:bg-gray-100 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base transition-colors"
                   >
                     <Heart className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${isFavorited ? "fill-current" : ""}`} />
                     {isFavorited ? "Saved" : "Save"}
@@ -365,7 +362,7 @@ function TitleDetailNewContent() {
                   <Button
                     asChild
                     variant="outline"
-                    className="flex-1 border-purple-500 text-slate-600 hover:bg-purple-50 hover:border-purple-600 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200"
+                    className="flex-1 border-gray-300 hover:bg-gray-100 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base transition-colors"
                   >
                     <a href={title.title_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
@@ -386,7 +383,7 @@ function TitleDetailNewContent() {
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           
           {/* Key Business Info Panel */}
-          <Card className="bg-white border-gray-200 shadow-sm">
+          <Card className="bg-transparent border-gray-200 shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-semibold text-slate-900">
                 Business Information
@@ -409,7 +406,7 @@ function TitleDetailNewContent() {
                         setPremiumFeatureName("Contact Creator");
                         setPremiumPopupOpen(true);
                       }}
-                      className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm hover:from-purple-600 hover:to-purple-700 transition-all duration-200"
+                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full transition-colors"
                     >
                       Contact
                     </Button>
@@ -458,7 +455,7 @@ function TitleDetailNewContent() {
           </Card>
 
           {/* Format & Genre */}
-          <Card className="bg-white border-gray-200 shadow-sm">
+          <Card className="bg-transparent border-gray-200 shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-semibold text-slate-900">Content Details</CardTitle>
             </CardHeader>
@@ -501,7 +498,7 @@ function TitleDetailNewContent() {
         <div className="lg:col-span-3 space-y-6">
           
           {/* Synopsis - Compact with expand option */}
-          <Card className="bg-white border-gray-200 shadow-sm">
+          <Card className="bg-transparent border-gray-200 shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-semibold text-slate-900">Synopsis</CardTitle>
             </CardHeader>
@@ -538,7 +535,7 @@ function TitleDetailNewContent() {
                           setShowUpgradeModal(true);
                         }
                       }}
-                      className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-medium px-4 py-1.5 sm:px-3 sm:py-1 rounded-full shadow-sm hover:from-purple-600 hover:to-purple-700 transition-all duration-200 w-full sm:w-auto"
+                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-medium px-4 py-1.5 sm:px-3 sm:py-1 rounded-full transition-colors w-full sm:w-auto"
                     >
                       View
                     </Button>
@@ -564,7 +561,7 @@ function TitleDetailNewContent() {
 
           {/* Additional Details */}
           {title.note && (
-            <Card className="bg-white border-gray-200 shadow-sm">
+            <Card className="bg-transparent border-gray-200 shadow-none">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                   <FileText className="h-5 w-5 text-hanok-teal" />
@@ -583,7 +580,7 @@ function TitleDetailNewContent() {
           
           {/* Extended Author Information */}
           {(title.author || title.writer || title.illustrator) && (
-            <Card className="bg-white border-gray-200 shadow-sm">
+            <Card className="bg-transparent border-gray-200 shadow-none">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-semibold text-slate-900">Creator Details</CardTitle>
               </CardHeader>
@@ -649,8 +646,8 @@ function TitleDetailNewContent() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowUpgradeModal(false)} />
           <div className="relative bg-white rounded-xl p-6 max-w-md w-full">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                <Crown className="h-6 w-6 text-purple-600" />
+              <div className="mx-auto w-12 h-12 bg-pro-purple-100 rounded-full flex items-center justify-center mb-4">
+                <Crown className="h-6 w-6 text-pro-purple" />
               </div>
               <h2 className="text-xl font-semibold text-slate-900 mb-2">Premium Feature</h2>
               <p className="text-slate-600 mb-6">
@@ -672,7 +669,7 @@ function TitleDetailNewContent() {
                   className="w-full"
                   onClick={() => {
                     setShowUpgradeModal(false);
-                    navigate('/buyers/pricing');
+                    navigate('/buyers/plan');
                   }}
                 >
                   Upgrade Plan

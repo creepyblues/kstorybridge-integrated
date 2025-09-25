@@ -1,14 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* SF Pro Font Stack for Headers */
+.font-sf-pro {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+}
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
 
 @layer base {
+  /* SF Pro is now the default sans-serif font via Tailwind config */
+
   :root {
     /* KStoryBridge Brand Colors */
     --hanok-teal: 180 34% 45%;
@@ -72,6 +78,19 @@ All colors MUST be HSL.
     --warm-sand-700: 33 25% 78%;
     --warm-sand-800: 31 21% 75%;
     --warm-sand-900: 29 17% 72%;
+
+    /* Pro tier purple (#AF52DE) */
+    --pro-purple: 286 67% 58%;
+    --pro-purple-50: 286 67% 95%;
+    --pro-purple-100: 286 67% 88%;
+    --pro-purple-200: 286 67% 81%;
+    --pro-purple-300: 286 67% 74%;
+    --pro-purple-400: 286 67% 66%;
+    --pro-purple-500: 286 67% 58%;
+    --pro-purple-600: 286 67% 50%;
+    --pro-purple-700: 286 67% 42%;
+    --pro-purple-800: 286 67% 34%;
+    --pro-purple-900: 286 67% 26%;
 
     /* shadcn/ui system colors */
     --background: 0 0% 100%;
@@ -167,27 +186,27 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Merriweather', Georgia, serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
     line-height: 1.2;
     font-weight: 700;
   }
 
   .serif-display {
-    font-family: 'Merriweather', Georgia, serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
   }
 
   .sans-body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
   }
 
   .korean-text {
-    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
   }
 }
 

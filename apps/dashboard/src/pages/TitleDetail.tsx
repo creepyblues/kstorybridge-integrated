@@ -207,13 +207,13 @@ function TitleDetailContent() {
   return (
     <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         {/* Title Card */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+        <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
           <CardContent className="p-4 sm:p-6 lg:p-8 xl:p-10">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
               <div className="flex-1">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-2 sm:mb-3 leading-tight">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink mb-2 sm:mb-3 leading-tight">
                   {title.title_name_en || title.title_name_kr}
-                </h1>
+                </h2>
                 {title.title_name_kr && title.title_name_en && (
                   <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-gray-500 font-medium mb-4 sm:mb-6">
                     {title.title_name_kr}
@@ -242,10 +242,7 @@ function TitleDetailContent() {
                     onClick={handleFavoriteToggle}
                     disabled={favoriteLoading}
                     variant="outline"
-                    className={`w-full sm:w-auto shadow-lg rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base ${isFavorited 
-                      ? "border-hanok-teal bg-hanok-teal/5 text-hanok-teal hover:bg-hanok-teal hover:text-white" 
-                      : "border-gray-300 text-gray-600 hover:border-hanok-teal hover:text-hanok-teal hover:bg-hanok-teal/5"
-                    }`}
+                    className="w-full sm:w-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base border-gray-300 hover:bg-gray-100 transition-colors"
                   >
                     <Heart className={`h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 ${isFavorited ? "fill-current" : ""}`} />
                     <span className="hidden sm:inline">{isFavorited ? "Remove from Favorites" : "Add to Favorites"}</span>
@@ -253,7 +250,7 @@ function TitleDetailContent() {
                   </Button>
                 )}
                 
-                <Button 
+                <Button
                   id="title-detail-contact-creator-btn"
                   onClick={() => {
                     console.log('🔥 Contact Creator button clicked!');
@@ -263,8 +260,8 @@ function TitleDetailContent() {
                     setPremiumPopupOpen(true);
                     console.log('✅ Premium popup state set to true');
                   }}
-                  variant="outline" 
-                  className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50 shadow-lg rounded-2xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base"
+                  variant="outline"
+                  className="w-full sm:w-auto border-gray-300 hover:bg-gray-100 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base"
                 >
                   <span className="hidden sm:inline">Contact Creator</span>
                   <span className="sm:hidden">Contact</span>
@@ -278,7 +275,7 @@ function TitleDetailContent() {
         {/* Left Column - Cover Image and Title Info */}
         <div className="lg:col-span-1 space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Cover Image */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl overflow-hidden">
+          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl overflow-hidden">
             <CardContent className="p-0">
               {title.title_image ? (
                 <div className="w-full h-64 sm:h-80 lg:h-96 bg-gray-100 overflow-hidden">
@@ -382,7 +379,7 @@ function TitleDetailContent() {
 
           {/* Note Card - Only show if note exists */}
           {title.note && (
-            <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+            <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-midnight-ink text-xl flex items-center gap-2">
                   <FileText className="h-5 w-5 text-hanok-teal" />
@@ -403,7 +400,7 @@ function TitleDetailContent() {
         {/* Right Column - Description and Details */}
         <div className="lg:col-span-2 space-y-8">
           {/* Synopsis */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
               <CardTitle className="text-midnight-ink text-2xl font-bold">Synopsis</CardTitle>
             </CardHeader>
@@ -438,7 +435,7 @@ function TitleDetailContent() {
                   <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <Crown className="h-5 w-5 text-purple-600" />
+                        <Crown className="h-5 w-5 text-pro-purple" />
                         <span className="font-semibold text-purple-800">Premium Content Available</span>
                       </div>
                       {isAuthenticated && (
@@ -446,9 +443,9 @@ function TitleDetailContent() {
                           <div className="flex items-center gap-2">
                             <Button 
                               id="title-detail-view-pitch-btn" 
-                              className={canAccessPremiumContent 
-                                ? "bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-700 text-white shadow-xl border-0 rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden group"
-                                : "bg-gray-100 hover:bg-gray-200 text-gray-600 shadow-md border border-gray-300 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 relative"}
+                              className={canAccessPremiumContent
+                                ? "border-gray-300 hover:bg-gray-100 px-4 py-2 text-sm font-bold transition-colors"
+                                : "border-gray-300 hover:bg-gray-100 text-gray-600 px-4 py-2 text-sm font-medium transition-colors"}
                               onClick={() => {
                                 console.log('🔍 View Pitch clicked:', { canAccessPremiumContent, tier });
                                 if (canAccessPremiumContent) {
@@ -464,9 +461,6 @@ function TitleDetailContent() {
                             >
                               {canAccessPremiumContent ? (
                                 <>
-                                  {/* Shine effect */}
-                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                                  
                                   {/* Icons */}
                                   <Crown className="h-3 w-3 mr-1 text-yellow-300 animate-pulse pointer-events-none" />
                                   <FileText className="h-3 w-3 mr-1 pointer-events-none" />
@@ -712,7 +706,7 @@ function TitleDetailContent() {
           </Card>
 
           {/* Title Information and Details */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl">
             <CardHeader className="pb-6">
               <CardTitle className="text-midnight-ink text-2xl font-bold">Title Information</CardTitle>
             </CardHeader>
@@ -846,8 +840,8 @@ function TitleDetailContent() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowUpgradeModal(false)} />
           <div className="relative bg-white rounded-2xl p-6 max-w-[400px] w-full mx-4">
             <div className="flex items-center justify-center mb-4">
-              <div className="p-3 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full">
-                <Crown className="h-8 w-8 text-purple-600" />
+              <div className="p-3 bg-gradient-to-br from-pro-purple-100 to-pro-purple-200 rounded-full">
+                <Crown className="h-8 w-8 text-pro-purple" />
               </div>
             </div>
             <h2 className="text-xl font-bold text-center text-midnight-ink mb-4">
@@ -858,7 +852,8 @@ function TitleDetailContent() {
             </p>
             <div className="space-y-3">
               <Button
-                className="w-full bg-white hover:bg-gray-50 text-hanok-teal border-2 border-hanok-teal font-semibold py-3"
+                variant="outline"
+                className="w-full border-gray-300 hover:bg-gray-100 font-semibold py-3"
                 onClick={() => {
                   console.log('View Sample Pitch clicked from upgrade modal');
                   setCurrentPdfUrl(SAMPLE_PDF_URL);
@@ -869,11 +864,11 @@ function TitleDetailContent() {
                 View Sample Pitch
               </Button>
               <Button
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3"
+                className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white font-semibold py-3"
                 onClick={() => {
                   console.log('Upgrade button clicked, navigating to pricing');
                   setShowUpgradeModal(false);
-                  navigate('/buyers/pricing');
+                  navigate('/buyers/plan');
                 }}
               >
                 Upgrade Your Plan

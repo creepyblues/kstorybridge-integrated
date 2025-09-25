@@ -1032,9 +1032,9 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+                <h2 className="text-3xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
                   AI Assistant
-                </h1>
+                </h2>
                 <span className="px-2 py-1 text-xs font-bold text-white rounded-full uppercase"
                       style={{ backgroundColor: '#FF6B6B' }}>
                   BETA

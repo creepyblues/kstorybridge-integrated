@@ -226,9 +226,9 @@ function CreatorTitleDetailContent() {
                 </div>
 
                 <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 mb-2 sm:mb-3 leading-tight">
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-slate-900 mb-2 sm:mb-3 leading-tight">
                     {title.title_name_en || title.title_name_kr}
-                  </h1>
+                  </h2>
                   {title.title_name_kr && title.title_name_en && (
                     <p className="text-lg sm:text-xl text-slate-600 font-medium mb-3 sm:mb-4">
                       {title.title_name_kr}
@@ -273,9 +273,9 @@ function CreatorTitleDetailContent() {
               
               {/* Mobile: Content section */}
               <div className="sm:hidden">
-                <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight text-center">
+                <h2 className="text-2xl font-bold text-slate-900 mb-2 leading-tight text-center">
                   {title.title_name_en || title.title_name_kr}
-                </h1>
+                </h2>
                 {title.title_name_kr && title.title_name_en && (
                   <p className="text-lg text-slate-600 font-medium mb-3 text-center">
                     {title.title_name_kr}

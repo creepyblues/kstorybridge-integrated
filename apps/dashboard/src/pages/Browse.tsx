@@ -81,7 +81,7 @@ export default function Browse() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Browse Titles</h1>
+          <h2 className="text-3xl font-bold text-white mb-2">Browse Titles</h2>
           <p className="text-slate-400">Discover intellectual property and content</p>
         </div>
       </div>

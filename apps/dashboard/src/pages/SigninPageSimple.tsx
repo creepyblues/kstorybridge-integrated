@@ -93,9 +93,9 @@ const SigninPageSimple = () => {
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-6">
+          <h2 className="text-3xl lg:text-4xl font-bold text-midnight-ink mb-6">
             Welcome Back
-          </h1>
+          </h2>
         </div>
 
         <div className="space-y-6">

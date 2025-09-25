@@ -172,7 +172,7 @@ const ChatbotFeedbackAnalysis: React.FC<FeedbackAnalysisProps> = () => {
                 Back to Profile
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Chatbot Feedback Analysis</h1>
+                <h2 className="text-2xl font-bold text-gray-900">Chatbot Feedback Analysis</h2>
                 <p className="text-sm text-gray-600">Review and analyze user feedback to improve chatbot performance</p>
               </div>
             </div>

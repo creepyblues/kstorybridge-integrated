@@ -290,7 +290,7 @@ export default function News() {
         <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">K-CONTENT NEWS</h1>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">K-CONTENT NEWS</h2>
               <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
                 The latest hot K-content news you don't want to miss
               </p>
@@ -305,12 +305,12 @@ export default function News() {
               placeholder="Search news sections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-porcelain-blue-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
+              className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-transparent border border-gray-300 rounded-2xl outline-none focus:ring-2 focus:ring-gray-400 text-midnight-ink"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
               <Button
                 type="submit"
-                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-medium"
+                className="border-gray-300 hover:bg-gray-100 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-medium transition-colors"
               >
                 Search
               </Button>
@@ -319,7 +319,7 @@ export default function News() {
                   type="button"
                   onClick={handleClearSearch}
                   variant="outline"
-                  className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-medium"
+                  className="border-gray-300 hover:bg-gray-100 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-medium transition-colors"
                 >
                   Clear
                 </Button>
@@ -341,7 +341,7 @@ export default function News() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
             </div>
           ) : filteredSections.length === 0 ? (
-            <Card className="bg-white border-gray-200">
+            <Card className="bg-transparent border-gray-200 shadow-none">
               <CardContent className="p-12 text-center">
                 <p className="text-gray-500">
                   {searchTerm 
@@ -356,9 +356,8 @@ export default function News() {
             {filteredSections.map((section, index) => {
               return (
                 <div
-                  key={`section-${index}`} 
-                  className="rounded-[20px] p-3 sm:p-5 mx-1 sm:mx-8 my-4 sm:my-8 newsletter-section"
-                  style={{ backgroundColor: '#BCDFF4' }}
+                  key={`section-${index}`}
+                  className="bg-transparent border-gray-200 border shadow-none rounded-2xl p-3 sm:p-5 mx-1 sm:mx-8 my-4 sm:my-8 newsletter-section"
                 >
                   {/* Tags */}
                   {section.tags && section.tags.length > 0 && (
@@ -370,9 +369,9 @@ export default function News() {
                   )}
                   
                   {/* Title */}
-                  <h1 className="text-left text-2xl md:text-3xl font-bold italic text-gray-800 leading-tight mb-6">
+                  <h2 className="text-left text-2xl md:text-3xl font-bold italic text-gray-800 leading-tight mb-6">
                     {section.title}
-                  </h1>
+                  </h2>
                   
                   {/* Main Content */}
                   {section.contentHtml && (

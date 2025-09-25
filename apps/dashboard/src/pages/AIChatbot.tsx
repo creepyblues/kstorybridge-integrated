@@ -287,9 +287,9 @@ What type of Korean IP are you looking for today?`,
             Back to Profile
           </Button>
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-midnight-ink leading-tight mb-1">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-midnight-ink leading-tight mb-1">
               🤖 AI IP Discovery Chatbot
-            </h1>
+            </h2>
             <p className="text-xs sm:text-sm text-midnight-ink-600">
               Find the perfect Korean IPs using natural language search
             </p>

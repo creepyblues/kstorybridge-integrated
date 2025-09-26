@@ -17,7 +17,7 @@ export const StandardCard: React.FC<StandardCardProps> = ({
   contentClassName,
   headerClassName,
 }) => {
-  const baseCardClasses = "bg-transparent border-gray-200 shadow-none rounded-2xl";
+  const baseCardClasses = "bg-transparent border-gray-300 shadow-none rounded-2xl";
 
   return (
     <Card className={cn(baseCardClasses, className)}>

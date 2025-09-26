@@ -32,7 +32,7 @@ export default function Settings() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Settings Navigation */}
-        <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+        <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="text-gray-800 flex items-center gap-2">
               <SettingsIcon className="h-5 w-5" />
@@ -70,7 +70,7 @@ export default function Settings() {
         {/* Settings Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* General Settings */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+          <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
             <CardHeader>
               <CardTitle className="text-gray-800 flex items-center gap-2">
                 <Globe className="h-5 w-5" />
@@ -120,7 +120,7 @@ export default function Settings() {
           </Card>
 
           {/* Security Settings */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+          <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
             <CardHeader>
               <CardTitle className="text-gray-800 flex items-center gap-2">
                 <Shield className="h-5 w-5" />
@@ -162,7 +162,7 @@ export default function Settings() {
           </Card>
 
           {/* Notification Settings */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+          <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
             <CardHeader>
               <CardTitle className="text-gray-800 flex items-center gap-2">
                 <Bell className="h-5 w-5" />
@@ -208,7 +208,7 @@ export default function Settings() {
           </Card>
 
           {/* API Settings */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+          <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
             <CardHeader>
               <CardTitle className="text-gray-800 flex items-center gap-2">
                 <Key className="h-5 w-5" />

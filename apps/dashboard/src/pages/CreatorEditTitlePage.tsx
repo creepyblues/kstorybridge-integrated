@@ -558,7 +558,7 @@ export default function CreatorEditTitlePage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+                <div className="flex justify-end gap-3 pt-6 border-t border-gray-300">
                   <Button
                     type="button"
                     variant="outline"

@@ -195,7 +195,7 @@ export function CMSHeader() {
 
       {/* Simple Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed left-3 right-3 top-[80px] bg-white rounded-2xl shadow-xl border border-gray-200 z-40 overflow-hidden">
+        <div className="lg:hidden fixed left-3 right-3 top-[80px] bg-white rounded-2xl shadow-xl border border-gray-300 z-40 overflow-hidden">
           <div className="py-2">
             {/* All menu items in a simple list */}
             {discoverItems.map((item) => {
@@ -227,7 +227,7 @@ export function CMSHeader() {
             })}
             
             {/* Separator */}
-            <div className="border-t border-gray-200 my-1"></div>
+            <div className="border-t border-gray-300 my-1"></div>
             
             {settingsItems.map((item) => {
               const isActive = location.pathname === item.href;

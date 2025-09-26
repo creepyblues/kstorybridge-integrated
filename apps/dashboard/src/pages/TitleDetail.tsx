@@ -207,7 +207,7 @@ function TitleDetailContent() {
   return (
     <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         {/* Title Card */}
-        <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
           <CardContent className="p-4 sm:p-6 lg:p-8 xl:p-10">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
               <div className="flex-1">
@@ -275,7 +275,7 @@ function TitleDetailContent() {
         {/* Left Column - Cover Image and Title Info */}
         <div className="lg:col-span-1 space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Cover Image */}
-          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl overflow-hidden">
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl overflow-hidden">
             <CardContent className="p-0">
               {title.title_image ? (
                 <div className="w-full h-64 sm:h-80 lg:h-96 bg-gray-100 overflow-hidden">
@@ -379,7 +379,7 @@ function TitleDetailContent() {
 
           {/* Note Card - Only show if note exists */}
           {title.note && (
-            <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl">
+            <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-midnight-ink text-xl flex items-center gap-2">
                   <FileText className="h-5 w-5 text-hanok-teal" />
@@ -400,7 +400,7 @@ function TitleDetailContent() {
         {/* Right Column - Description and Details */}
         <div className="lg:col-span-2 space-y-8">
           {/* Synopsis */}
-          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl">
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
               <CardTitle className="text-midnight-ink text-2xl font-bold">Synopsis</CardTitle>
             </CardHeader>
@@ -413,7 +413,7 @@ function TitleDetailContent() {
                 )}
 
                 {/* Keywords Section */}
-                <div className="pt-6 border-t border-gray-200">
+                <div className="pt-6 border-t border-gray-300">
                   <h5 className="font-bold text-hanok-teal mb-4 text-lg">Keywords</h5>
                   <div className="flex flex-wrap gap-2">
                     {(title.keywords || title.tags) && (title.keywords || title.tags).length > 0 ? (
@@ -624,7 +624,7 @@ function TitleDetailContent() {
                 )}
 
                 {/* Market Information */}
-                <div className="pt-8 border-t border-gray-200 space-y-8">
+                <div className="pt-8 border-t border-gray-300 space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                       <div className="mb-4">
@@ -706,7 +706,7 @@ function TitleDetailContent() {
           </Card>
 
           {/* Title Information and Details */}
-          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl">
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardHeader className="pb-6">
               <CardTitle className="text-midnight-ink text-2xl font-bold">Title Information</CardTitle>
             </CardHeader>

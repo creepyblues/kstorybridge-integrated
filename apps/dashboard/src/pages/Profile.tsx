@@ -655,7 +655,7 @@ export default function Profile() {
     <div>
       <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
         {/* Profile Information Card */}
-        <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
           <CardContent className="p-4 sm:p-6">
             {/* Edit/Save buttons positioned at top right */}
             <div className="flex justify-end mb-4">
@@ -886,7 +886,7 @@ export default function Profile() {
 
         {/* Subscription Plan Section */}
         {profile?.account_type === 'buyer' && (
-          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
             <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-start gap-4">
@@ -963,7 +963,7 @@ export default function Profile() {
 
         {/* AI Chatbot Section - Only for specific users */}
         {(profile.email === 'sungho@dadble.com' || profile.email === 'kevin@sandstoneartists.com') && (
-          <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
             <CardContent className="p-4 sm:p-6 lg:p-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
                 <div>
@@ -1031,7 +1031,7 @@ export default function Profile() {
         )}
 
         {/* Account Actions Section */}
-        <Card className="bg-transparent border-gray-200 shadow-none rounded-2xl">
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
           <CardContent className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
               <div>

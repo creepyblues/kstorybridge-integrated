@@ -290,7 +290,7 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
 
   const renderTitleCard = (title: any, onTitleCardClick: (title: any) => void) => {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+      <div className="bg-white rounded-lg border border-gray-300 p-4 hover:shadow-md transition-shadow cursor-pointer"
            onClick={() => onTitleCardClick(title)}>
         <div className="flex gap-3">
         {title.title_image ? (
@@ -938,7 +938,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
     };
 
     return (
-      <div key={title.title_id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow group relative">
+      <div key={title.title_id} className="bg-white rounded-lg border border-gray-300 p-4 hover:shadow-md transition-shadow group relative">
         <div className="flex gap-3" onClick={handleTitleCardClick} style={{cursor: 'pointer'}}>
           {title.title_image ? (
             <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
@@ -1235,7 +1235,7 @@ What's been catching your interest lately? Are you looking for something specifi
 
           {/* ChatGPT-style Input Area */}
           <div className="relative mt-4">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
               <div className="flex items-end gap-2 p-3">
                 <textarea
                   value={inputMessage}

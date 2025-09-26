@@ -140,7 +140,7 @@ export function CMSSidebar() {
   // Show loading state while detecting account type
   if (accountTypeLoading) {
     return (
-      <div className="hidden lg:block fixed left-0 top-0 w-64 bg-gray-50 h-screen flex flex-col z-30">
+      <div className="hidden lg:block fixed left-0 top-0 w-72 bg-gray-100 h-screen flex flex-col z-30">
         {/* Logo and Title Section during loading */}
         <div className="p-4 pt-6">
           <div className="flex justify-center mb-6">
@@ -162,7 +162,7 @@ export function CMSSidebar() {
   return (
     <>
       {/* Mobile Header with Logo and Menu Button */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-gray-50 shadow-sm border-b border-gray-200 z-50">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-gray-100 shadow-sm border-b border-gray-300 z-50">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Logo on the left */}
           <Link
@@ -197,7 +197,7 @@ export function CMSSidebar() {
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed left-4 right-4 top-[60px] bg-white rounded-2xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+        <div className="lg:hidden fixed left-4 right-4 top-[60px] bg-white rounded-2xl shadow-xl border border-gray-300 z-50 overflow-hidden">
           <div className="py-2">
             {/* Discover items */}
             {discoverItems.map((item) => {
@@ -209,7 +209,7 @@ export function CMSSidebar() {
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors border-b border-gray-100 last:border-b-0",
+                    "flex items-center justify-between px-4 py-3 text-base font-normal transition-colors border-b border-gray-100 last:border-b-0",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink hover:bg-gray-50"
@@ -229,7 +229,7 @@ export function CMSSidebar() {
             })}
 
             {/* Separator */}
-            <div className="border-t border-gray-200 my-1"></div>
+            <div className="border-t border-gray-300 my-1"></div>
 
             {/* Settings items */}
             {settingsItems.map((item) => {
@@ -241,7 +241,7 @@ export function CMSSidebar() {
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors",
+                    "flex items-center justify-between px-4 py-3 text-base font-normal transition-colors",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink hover:bg-gray-50"
@@ -261,7 +261,7 @@ export function CMSSidebar() {
       )}
 
       {/* Desktop Sidebar - hidden on mobile */}
-      <div className="hidden lg:block fixed left-0 top-0 w-64 bg-gray-50 h-screen flex flex-col z-30">
+      <div className="hidden lg:block fixed left-0 top-0 w-72 bg-gray-100 h-screen flex flex-col z-30">
       {/* Logo and Title Section */}
       <div className="p-4 pt-6">
         <Link
@@ -291,7 +291,7 @@ export function CMSSidebar() {
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-bold transition-colors",
+                    "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
@@ -337,7 +337,7 @@ export function CMSSidebar() {
                 key={item.href}
                 to={item.href}
                 className={cn(
-                  "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors",
                   isActive
                     ? "bg-hanok-teal text-white"
                     : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
@@ -370,7 +370,7 @@ export function CMSSidebar() {
 
       {/* User Info Section - Fixed at Bottom */}
       {displayUser && (
-        <div className="p-4 border-t border-gray-200 mt-auto">
+        <div className="p-4 border-t border-gray-300 mt-auto">
           <div className="flex items-center justify-between px-3 py-2">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-midnight-ink-400" />

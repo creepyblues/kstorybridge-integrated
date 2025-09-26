@@ -410,7 +410,7 @@ function BuyerHomeContent() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 my-8 sm:my-12"></div>
+        <div className="border-t border-gray-300 my-8 sm:my-12"></div>
       </div>
     </div>
   );

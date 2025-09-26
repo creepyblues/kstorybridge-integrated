@@ -113,7 +113,7 @@ export default function Content() {
         </div>
       </div>
 
-      <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+      <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
         <CardHeader>
           <CardTitle className="text-gray-800">Title Library</CardTitle>
           <CardDescription className="text-gray-600">
@@ -146,7 +146,7 @@ export default function Content() {
                   Genre: {genreFilter === "all" ? "All" : genreFilter}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white border-gray-200">
+              <DropdownMenuContent className="bg-white border-gray-300">
                 <DropdownMenuItem 
                   onClick={() => setGenreFilter("all")}
                   className="text-gray-700 hover:text-gray-800 hover:bg-gray-50"
@@ -167,7 +167,7 @@ export default function Content() {
                   Format: {formatFilter === "all" ? "All" : formatFilter}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white border-gray-200">
+              <DropdownMenuContent className="bg-white border-gray-300">
                 <DropdownMenuItem 
                   onClick={() => setFormatFilter("all")}
                   className="text-gray-700 hover:text-gray-800 hover:bg-gray-50"

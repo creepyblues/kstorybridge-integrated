@@ -481,7 +481,7 @@ export default function MyComponent() {
 
 **Standard Card Style - MANDATORY for ALL pages**:
 ```jsx
-<Card className="bg-transparent border-gray-200 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
   <CardContent className="p-4 sm:p-6">
     {/* Content */}
   </CardContent>
@@ -490,7 +490,7 @@ export default function MyComponent() {
 
 **Card Design Requirements (STRICT)**:
 - **Background**: `bg-transparent` - NO solid backgrounds, NO white backgrounds
-- **Border**: `border-gray-200` - Light gray border for subtle definition
+- **Border**: `border-gray-300` - Light gray border for subtle definition
 - **Shadow**: `shadow-none` - NO shadows, NO drop shadows, NO box shadows
 - **Corners**: `rounded-2xl` - Consistent large border radius
 - **Spacing**: `mb-6 sm:mb-8 lg:mb-12` - Responsive bottom margins between cards
@@ -513,7 +513,7 @@ export default function MyComponent() {
 **Migration Guide**: When updating existing pages to follow this standard:
 1. Replace `bg-white` with `bg-transparent`
 2. Replace any `shadow-*` classes with `shadow-none`
-3. Ensure `border-gray-200` is used for borders
+3. Ensure `border-gray-300` is used for borders
 4. Add responsive margins: `mb-6 sm:mb-8 lg:mb-12`
 5. Test visual consistency against Profile page
 

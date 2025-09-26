@@ -177,7 +177,7 @@ const FeaturedTitlesCarousel = ({
             {(isMobile ? allFeaturedTitles : allFeaturedTitles.slice(currentIndex, currentIndex + 1)).map((featured) => {
               const title = featured.titles;
               return (
-                <Card key={featured.id} className="flex-shrink-0 w-80 sm:w-96 md:w-auto h-[34rem] md:h-96 bg-white rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden">
+                <Card key={featured.id} className="flex-shrink-0 w-80 sm:w-96 md:w-auto h-[34rem] md:h-96 bg-white rounded-2xl border border-gray-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden">
                   <Link to={`/buyers/titles/${title.title_id}`}>
                     <CardContent className="p-0 flex flex-col md:flex-row h-full">
                       {/* Left Section - Image and Badges */}

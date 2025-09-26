@@ -326,7 +326,7 @@ export default function ChatbotTesting() {
   };
 
   const getStatusColor = (result?: TestResult) => {
-    if (!result) return 'border-gray-200';
+    if (!result) return 'border-gray-300';
     return result.success ? 'border-green-200' : 'border-red-200';
   };
 

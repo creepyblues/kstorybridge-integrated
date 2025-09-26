@@ -109,7 +109,7 @@ export default function Deals() {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-gray-200 my-12"></div>
+          <div className="border-t border-gray-300 my-12"></div>
 
           {/* Deals List */}
           <div className="grid grid-cols-1 gap-8 mb-8">

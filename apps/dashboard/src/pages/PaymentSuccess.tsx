@@ -266,7 +266,7 @@ const PaymentSuccess = () => {
 
             {/* Debug Information (only show if there are issues) */}
             {debugInfo && tier !== 'pro' && (
-              <details className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <details className="bg-gray-50 border border-gray-300 rounded-lg p-4">
                 <summary className="text-sm font-medium text-gray-700 cursor-pointer">
                   Debug Information (Click to expand)
                 </summary>

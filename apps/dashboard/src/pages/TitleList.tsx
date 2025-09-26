@@ -585,7 +585,7 @@ function TitleListContent() {
 
             {/* Search Suggestions Dropdown */}
             {showSuggestions && searchSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
                 <div className="p-2">
                   <div className="text-xs font-medium text-midnight-ink-500 mb-2 px-2">Suggestions:</div>
                   {searchSuggestions.map((suggestion, index) => (

@@ -341,7 +341,7 @@ export default function News() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
             </div>
           ) : filteredSections.length === 0 ? (
-            <Card className="bg-transparent border-gray-200 shadow-none">
+            <Card className="bg-transparent border-gray-300 shadow-none">
               <CardContent className="p-12 text-center">
                 <p className="text-gray-500">
                   {searchTerm 
@@ -357,7 +357,7 @@ export default function News() {
               return (
                 <div
                   key={`section-${index}`}
-                  className="bg-transparent border-gray-200 border shadow-none rounded-2xl p-3 sm:p-5 mx-1 sm:mx-8 my-4 sm:my-8 newsletter-section"
+                  className="bg-transparent border-gray-300 border shadow-none rounded-2xl p-3 sm:p-5 mx-1 sm:mx-8 my-4 sm:my-8 newsletter-section"
                 >
                   {/* Tags */}
                   {section.tags && section.tags.length > 0 && (

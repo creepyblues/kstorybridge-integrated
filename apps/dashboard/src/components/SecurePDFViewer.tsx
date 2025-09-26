@@ -485,7 +485,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   // Enhanced authentication UI
   if (!user) {
     return (
-      <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+      <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
           <div className="flex flex-col items-center gap-4">
             <Shield className="h-16 w-16 text-red-500" />
@@ -514,7 +514,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
 
   if (loading) {
     return (
-      <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+      <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
           <p className="text-gray-600">Loading PDF...</p>
         </CardContent>
@@ -524,7 +524,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
 
   if (error) {
     return (
-      <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
+      <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
           <div className="flex flex-col items-center gap-4">
             <AlertTriangle className="h-16 w-16 text-red-500" />
@@ -609,7 +609,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         {/* PDF Viewer */}
         <div 
           ref={containerRef}
-          className="secure-pdf-viewer border border-gray-200 rounded-lg overflow-hidden relative flex justify-center items-center"
+          className="secure-pdf-viewer border border-gray-300 rounded-lg overflow-hidden relative flex justify-center items-center"
           style={{ 
             height: 'calc(100vh - 300px)', // Make it larger to use more of the popup space
             minHeight: '500px',

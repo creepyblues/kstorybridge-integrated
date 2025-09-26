@@ -383,7 +383,7 @@ function TitleDetailNewContent() {
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           
           {/* Key Business Info Panel */}
-          <Card className="bg-transparent border-gray-200 shadow-none">
+          <Card className="bg-transparent border-gray-300 shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-semibold text-slate-900">
                 Business Information
@@ -455,7 +455,7 @@ function TitleDetailNewContent() {
           </Card>
 
           {/* Format & Genre */}
-          <Card className="bg-transparent border-gray-200 shadow-none">
+          <Card className="bg-transparent border-gray-300 shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-semibold text-slate-900">Content Details</CardTitle>
             </CardHeader>
@@ -498,7 +498,7 @@ function TitleDetailNewContent() {
         <div className="lg:col-span-3 space-y-6">
           
           {/* Synopsis - Compact with expand option */}
-          <Card className="bg-transparent border-gray-200 shadow-none">
+          <Card className="bg-transparent border-gray-300 shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-semibold text-slate-900">Synopsis</CardTitle>
             </CardHeader>
@@ -561,7 +561,7 @@ function TitleDetailNewContent() {
 
           {/* Additional Details */}
           {title.note && (
-            <Card className="bg-transparent border-gray-200 shadow-none">
+            <Card className="bg-transparent border-gray-300 shadow-none">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                   <FileText className="h-5 w-5 text-hanok-teal" />
@@ -580,7 +580,7 @@ function TitleDetailNewContent() {
           
           {/* Extended Author Information */}
           {(title.author || title.writer || title.illustrator) && (
-            <Card className="bg-transparent border-gray-200 shadow-none">
+            <Card className="bg-transparent border-gray-300 shadow-none">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-semibold text-slate-900">Creator Details</CardTitle>
               </CardHeader>

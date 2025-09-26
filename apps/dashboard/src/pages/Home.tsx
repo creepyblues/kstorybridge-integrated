@@ -393,7 +393,7 @@ function HomeContent() {
         )}
 
         {/* Divider - Only show for buyers */}
-        {!isCreatorView && <div className="border-t border-gray-200 my-8 sm:my-12"></div>}
+        {!isCreatorView && <div className="border-t border-gray-300 my-8 sm:my-12"></div>}
 
       </div>
     </div>

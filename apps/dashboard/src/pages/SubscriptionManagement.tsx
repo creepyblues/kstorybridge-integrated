@@ -142,7 +142,7 @@ const SubscriptionManagement = () => {
 
       <div className="space-y-6">
           {/* Current Plan */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <Card className="bg-white border-gray-300 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center gap-3 text-midnight-ink text-lg sm:text-xl">
                 <div className={cn(
@@ -199,7 +199,7 @@ const SubscriptionManagement = () => {
 
           {/* Subscription Details */}
           {stripeData && tier === 'pro' && (
-            <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+            <Card className="bg-white border-gray-300 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-midnight-ink text-lg sm:text-xl">
                   <div className="p-2 rounded-lg bg-hanok-teal/10 text-hanok-teal">
@@ -259,7 +259,7 @@ const SubscriptionManagement = () => {
 
           {/* Billing Management */}
           {stripeData && tier === 'pro' && (
-            <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+            <Card className="bg-white border-gray-300 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-midnight-ink text-lg sm:text-xl">
                   <div className="p-2 rounded-lg bg-midnight-ink/10 text-midnight-ink">
@@ -307,7 +307,7 @@ const SubscriptionManagement = () => {
           )}
 
           {/* Features Overview */}
-          <Card className="bg-white border-gray-200 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <Card className="bg-white border-gray-300 shadow-lg rounded-2xl mb-6 sm:mb-8 lg:mb-12">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="text-midnight-ink text-lg sm:text-xl">Pro Features Overview</CardTitle>
             </CardHeader>

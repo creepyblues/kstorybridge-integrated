@@ -202,7 +202,7 @@ What type of Korean IP are you looking for today?`,
   };
 
   const formatTitleCard = (title: any) => (
-    <div key={title.title_id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+    <div key={title.title_id} className="bg-white rounded-lg border border-gray-300 p-4 hover:shadow-md transition-shadow cursor-pointer"
          onClick={() => navigate(`/buyers/titles/${title.title_id}`)}>
       <div className="flex gap-3">
         {title.title_image ? (
@@ -297,7 +297,7 @@ What type of Korean IP are you looking for today?`,
         </div>
 
         {/* Chat Container - Full width and height with minimal margins */}
-        <Card className="bg-white border border-gray-200 shadow-lg rounded-xl flex-1 flex flex-col overflow-hidden mx-2 sm:mx-3 mb-2 sm:mb-3">
+        <Card className="bg-white border border-gray-300 shadow-lg rounded-xl flex-1 flex flex-col overflow-hidden mx-2 sm:mx-3 mb-2 sm:mb-3">
           {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
             {messages.map((message) => (
@@ -359,7 +359,7 @@ What type of Korean IP are you looking for today?`,
           </div>
 
           {/* Input Area */}
-          <div className="border-t border-gray-200 p-3 sm:p-4">
+          <div className="border-t border-gray-300 p-3 sm:p-4">
             <div className="flex gap-2 sm:gap-3">
               <div className="flex-1 relative">
                 <textarea

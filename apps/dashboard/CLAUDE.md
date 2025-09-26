@@ -249,7 +249,7 @@ const isAuthorized = accountType === 'creator';
 ## Design Guidelines
 
 > 🎨 **CRITICAL DESIGN REQUIREMENTS**: See [Root CLAUDE.md Design Guidelines](../../CLAUDE.md#design-guidelines) for:
-> - **Card/Box Standard** (MANDATORY: `bg-transparent border-gray-200 shadow-none` - Follow `/buyers/profile` design)
+> - **Card/Box Standard** (MANDATORY: `bg-transparent border-gray-300 shadow-none` - Follow `/buyers/profile` design)
 > - **Button Standard** (MUST use `border-gray-300 hover:bg-gray-100` for ALL buttons)
 > - **Typography Standard** (SF Pro is now the DEFAULT font - no classes needed)
 > - **Color Policy** (black for text/labels, no yellow colors, no solid backgrounds)

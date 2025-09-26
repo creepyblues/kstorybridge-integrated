@@ -79,7 +79,7 @@ const PaymentCancel = () => {
             </div>
 
             {/* Continue Browsing */}
-            <div className="text-center pt-6 border-t border-gray-200">
+            <div className="text-center pt-6 border-t border-gray-300">
               <p className="text-gray-600 mb-4">
                 You can continue using KStoryBridge with your current plan.
               </p>

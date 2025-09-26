@@ -17,9 +17,9 @@ export const OAuthProviders: React.FC<OAuthProvidersProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center mb-6">
-        <div className="flex-1 border-t border-gray-200"></div>
+        <div className="flex-1 border-t border-gray-300"></div>
         <span className="px-4 text-sm text-gray-500">or</span>
-        <div className="flex-1 border-t border-gray-200"></div>
+        <div className="flex-1 border-t border-gray-300"></div>
       </div>
 
       <Button

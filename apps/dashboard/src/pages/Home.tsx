@@ -372,9 +372,11 @@ function HomeContent() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
               <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">HOME</h2>
-              <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
-                {isCreatorView ? "Welcome to your dashboard. Manage your Korean content titles." : "Welcome to your dashboard. Discover and browse Korean content titles."}
-              </p>
+              {isCreatorView && (
+                <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
+                  Welcome to your dashboard. Manage your Korean content titles.
+                </p>
+              )}
             </div>
             {!isCreatorView && (
               <div className="text-midnight-ink-600 text-sm sm:text-base lg:text-lg font-medium text-right sm:text-left">

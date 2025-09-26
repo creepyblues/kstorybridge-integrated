@@ -1025,15 +1025,15 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto h-screen flex flex-col">
-        {/* Header - Dashboard Standard */}
-        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex items-center justify-between">
+    <div className="fixed inset-0 lg:left-72 bg-gray-50 overflow-hidden">
+      <div className="max-w-7xl mx-auto h-full flex flex-col">
+        {/* Header */}
+        <div className="py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-3xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-                  AI Assistant
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight">
+                  AI ASSISTANT
                 </h2>
                 <span className="px-2 py-1 text-xs font-bold text-white rounded-full uppercase"
                       style={{ backgroundColor: '#FF6B6B' }}>
@@ -1045,9 +1045,6 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-600">
-                Discover Korean content with AI-powered recommendations
-              </p>
             </div>
             <div className="flex items-center gap-2">
               {/* New Chat Button */}
@@ -1078,9 +1075,9 @@ What's been catching your interest lately? Are you looking for something specifi
         </div>
 
         {/* Chat Container - Clean, no card wrapper */}
-        <div className="flex-1 flex flex-col overflow-hidden px-4 sm:px-6 lg:px-8 pb-4">
+        <div className="flex-1 flex flex-col overflow-hidden px-3 sm:px-6 lg:px-8">
           {/* Messages Container - Clean ChatGPT style */}
-          <div className="flex-1 overflow-y-auto py-4 space-y-6">
+          <div className="flex-1 overflow-y-auto py-4 space-y-6 pb-40">
             {/* Loading History Indicator */}
             {isLoadingHistory && (
               <div className="flex items-center justify-center py-8">
@@ -1233,9 +1230,13 @@ What's been catching your interest lately? Are you looking for something specifi
             <div ref={messagesEndRef} />
           </div>
 
-          {/* ChatGPT-style Input Area */}
-          <div className="relative mt-4">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
+        </div>
+      </div>
+
+      {/* Fixed ChatGPT-style Input Area */}
+      <div className="absolute bottom-0 left-0 right-0 z-50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
               <div className="flex items-end gap-2 p-3">
                 <textarea
                   value={inputMessage}
@@ -1304,7 +1305,6 @@ What's been catching your interest lately? Are you looking for something specifi
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>

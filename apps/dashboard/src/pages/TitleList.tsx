@@ -502,9 +502,11 @@ function TitleListContent() {
                 </button>
               </div>
             </div>
-            <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
-              {isCreatorView ? "Manage your Korean content titles." : "Browse all Korean content titles in list view."}
-            </p>
+            {isCreatorView && (
+              <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
+                Manage your Korean content titles.
+              </p>
+            )}
           </div>
 
 

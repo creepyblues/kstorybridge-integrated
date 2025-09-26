@@ -613,27 +613,25 @@ function TitleDetailNewContent() {
 
       {/* PDF Modal */}
       {isPdfModalOpen && (
-        <div 
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2 sm:p-4"
           onClick={() => setIsPdfModalOpen(false)}
         >
-          <div 
-            className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] relative overflow-hidden"
+          <div
+            className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] h-auto relative overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-hanok-teal p-4 text-white flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Pitch Document</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsPdfModalOpen(false)}
-                className="text-white hover:bg-white/20 p-2"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            
-            <div style={{ height: 'calc(90vh - 72px)' }}>
+            {/* Floating Close Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsPdfModalOpen(false)}
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 p-0"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+
+            <div className="h-full">
               <SecurePDFViewer pdfUrl={currentPdfUrl} />
             </div>
           </div>

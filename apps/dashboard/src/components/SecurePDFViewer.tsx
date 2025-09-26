@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Shield, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Shield, AlertTriangle } from 'lucide-react';
 import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -472,7 +472,6 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     const currentScale = typeof prev === 'number' ? prev : 1;
     return Math.max(0.3, currentScale - 0.2);
   });
-  const rotate = () => setRotation(prev => (prev + 90) % 360);
   const fitToPage = () => {
     // Fit entire page in view
     setScale("page");
@@ -547,8 +546,8 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   }
 
   return (
-    <div className="bg-white rounded-lg">
-      <div className="p-6">
+    <div className="bg-white rounded-lg h-full flex flex-col">
+      <div className="p-6 flex-shrink-0">
         {title && (
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-midnight-ink mb-2">{title}</h2>
@@ -600,19 +599,14 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </Button>
-            <Button variant="outline" size="sm" onClick={rotate}>
-              <RotateCw className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
         {/* PDF Viewer */}
-        <div 
+        <div
           ref={containerRef}
-          className="secure-pdf-viewer border border-gray-300 rounded-lg overflow-hidden relative flex justify-center items-center"
-          style={{ 
-            height: 'calc(100vh - 300px)', // Make it larger to use more of the popup space
-            minHeight: '500px',
+          className="secure-pdf-viewer border border-gray-300 rounded-lg overflow-hidden relative flex justify-center items-center flex-1"
+          style={{
             userSelect: 'none',
             WebkitUserSelect: 'none',
             position: 'relative',

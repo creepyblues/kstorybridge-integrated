@@ -8,7 +8,7 @@ import {
   Button,
   Badge
 } from "@kstorybridge/ui";
-import { RefreshCw, Search } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useToast } from "@kstorybridge/ui";
 
 interface NewsSection {
@@ -31,8 +31,6 @@ export default function News() {
   const [sections, setSections] = useState<NewsSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [searchQuery, setSearchQuery] = useState(""); // What user types
-  const [searchTerm, setSearchTerm] = useState(""); // What's actually searched/filtered
 
   const RSS_FEED_URL = "https://rss.beehiiv.com/feeds/oaQs6YbGE8.xml";
   const CORS_PROXY = "https://corsproxy.io/?url=";
@@ -246,32 +244,7 @@ export default function News() {
     return sections;
   };
 
-  // Filter sections based on search term
-  const filteredSections = sections.filter(section => {
-    if (!searchTerm) return true;
-    
-    const searchLower = searchTerm.toLowerCase();
-    const inTitle = section.title?.toLowerCase().includes(searchLower);
-    const inContent = section.content?.toLowerCase().includes(searchLower);
-    const inTakeaway = section.takeaway?.toLowerCase().includes(searchLower);
-    const inTags = section.tags?.some(tag => tag.toLowerCase().includes(searchLower));
-    const inReference = 
-      section.reference?.titleFormat?.toLowerCase().includes(searchLower) ||
-      section.reference?.keyNumbers?.toLowerCase().includes(searchLower) ||
-      section.reference?.whyProducersCare?.toLowerCase().includes(searchLower);
-    
-    return inTitle || inContent || inTakeaway || inTags || inReference;
-  });
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchTerm(searchQuery);
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery("");
-    setSearchTerm("");
-  };
 
   return (
     <>
@@ -297,67 +270,29 @@ export default function News() {
             </div>
           </div>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-6 sm:mb-8">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search news sections..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-24 sm:pr-32 py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-transparent border border-gray-300 rounded-2xl outline-none focus:ring-2 focus:ring-gray-400 text-midnight-ink"
-            />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
-              <Button
-                type="submit"
-                className="border-gray-300 hover:bg-gray-100 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-medium transition-colors"
-              >
-                Search
-              </Button>
-              {searchTerm && (
-                <Button
-                  type="button"
-                  onClick={handleClearSearch}
-                  variant="outline"
-                  className="border-gray-300 hover:bg-gray-100 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-medium transition-colors"
-                >
-                  Clear
-                </Button>
-              )}
-            </div>
-          </form>
 
-          {/* Results count when searching */}
-          {searchTerm && (
-            <div className="mb-6 text-sm text-midnight-ink-600">
-              Found {filteredSections.length} section{filteredSections.length !== 1 ? 's' : ''} 
-              {searchTerm && ` matching "${searchTerm}"`}
-            </div>
-          )}
 
           {/* Newsletter Sections */}
           {loading ? (
             <div className="flex justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
             </div>
-          ) : filteredSections.length === 0 ? (
+          ) : sections.length === 0 ? (
             <Card className="bg-transparent border-gray-300 shadow-none">
               <CardContent className="p-12 text-center">
                 <p className="text-gray-500">
-                  {searchTerm 
-                    ? `No news sections found matching "${searchTerm}"`
-                    : "No news sections available at the moment."}
+                  No news sections available at the moment.
                 </p>
               </CardContent>
             </Card>
           ) : (
           
           <div className="space-y-8">
-            {filteredSections.map((section, index) => {
+            {sections.map((section, index) => {
               return (
                 <div
                   key={`section-${index}`}
-                  className="bg-transparent border-gray-300 border shadow-none rounded-2xl p-3 sm:p-5 mx-1 sm:mx-8 my-4 sm:my-8 newsletter-section"
+                  className="bg-transparent border-gray-300 border shadow-none rounded-2xl p-6 sm:p-10 newsletter-section"
                 >
                   {/* Tags */}
                   {section.tags && section.tags.length > 0 && (

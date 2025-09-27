@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card, CardContent, Input, Badge, useToast } from "@kstorybridge/ui";
+import { Button, Card, CardContent, Input, Badge } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 
 import {
   Search,
@@ -222,7 +223,10 @@ export default function Favorites() {
       // Update cache by filtering out the removed favorite
       const updatedFavorites = favorites.filter(fav => fav.title_id !== titleId);
       setFavorites(updatedFavorites);
-      toast({ title: "Removed from favorites" });
+      toast({
+        title: "Removed from favorites",
+        description: "This title has been removed from your favorites"
+      });
 
       console.log('✅ Successfully removed from favorites');
     } catch (error) {

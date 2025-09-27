@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock, Building2, Users, Target, TrendingUp, Calendar, BookOpen } from "lucide-react";
-import { Button, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
+import { Button, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 import { Surface, Stack } from '@/components/design-system';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { titlesService, type Title } from "@/services/titlesService";
@@ -115,6 +116,17 @@ function TitleDetailNewContent() {
   const handleFavoriteToggle = async () => {
     if (!user || !titleId) {
       console.error("❌ No user or titleId available for favorites toggle");
+      toast({
+        title: "Authentication Error",
+        description: "Please sign in to save favorites.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Prevent rapid clicking while already processing
+    if (favoriteLoading) {
+      console.log('⏳ TITLE DETAIL NEW: Favorites toggle already in progress, ignoring click');
       return;
     }
 
@@ -131,22 +143,41 @@ function TitleDetailNewContent() {
         console.log('🗑️ TITLE DETAIL NEW: Removing from favorites...');
         await directApiService.removeFromFavorites(user.id, titleId);
         setIsFavorited(false);
-        toast({ title: "Removed from favorites" });
+        toast({
+          title: "Removed from favorites",
+          description: "This title has been removed from your favorites"
+        });
         refreshData('favorites');
         console.log('✅ TITLE DETAIL NEW: Successfully removed from favorites');
       } else {
         console.log('❤️ TITLE DETAIL NEW: Adding to favorites...');
         await directApiService.addToFavorites(user.id, titleId);
         setIsFavorited(true);
-        toast({ title: "Added to favorites" });
+        toast({
+          title: "Added to favorites",
+          description: "You can find this title in your favorites list"
+        });
         refreshData('favorites');
         console.log('✅ TITLE DETAIL NEW: Successfully added to favorites');
       }
     } catch (error) {
       console.error("❌ TITLE DETAIL NEW: Error toggling favorite:", error);
+
+      // Revert the UI state since the operation failed
+      // (UI was already updated optimistically)
+
+      let errorMessage = "Failed to update favorites. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else if (error.message.includes('unauthorized') || error.message.includes('403')) {
+          errorMessage = "You don't have permission to save favorites. Please sign in again.";
+        }
+      }
+
       toast({
         title: "Error updating favorites",
-        description: "Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -377,9 +408,12 @@ function TitleDetailNewContent() {
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="max-w-6xl mx-auto px-3 sm:px-4">
+      {/* Horizontal divider with padding */}
+      <div className="py-4 sm:py-5 lg:py-6">
+        <hr className="border-gray-50" />
+      </div>
 
+      {/* Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Left Column - Business Critical Info (2/5) */}
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
@@ -681,7 +715,6 @@ function TitleDetailNewContent() {
         }
       />
 
-      </div>
     </PageContainer>
   );
 }

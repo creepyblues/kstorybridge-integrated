@@ -6,7 +6,7 @@ import type {
 } from "./toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -140,6 +140,39 @@ function dispatch(action: Action) {
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
+  // Enhanced validation: Prevent empty notifications (including empty strings and whitespace)
+  const titleContent = typeof props.title === 'string' ? props.title.trim() : props.title
+  const descriptionContent = typeof props.description === 'string' ? props.description.trim() : props.description
+
+  // Strict validation: Check for null, undefined, empty strings, whitespace-only content
+  const hasValidTitle = titleContent && titleContent !== '' && titleContent !== null && titleContent !== undefined
+  const hasValidDescription = descriptionContent && descriptionContent !== '' && descriptionContent !== null && descriptionContent !== undefined
+
+  if (!hasValidTitle && !hasValidDescription) {
+    console.warn('🚫 Toast blocked: Called without meaningful title or description.', {
+      originalTitle: props.title,
+      originalDescription: props.description,
+      trimmedTitle: titleContent,
+      trimmedDescription: descriptionContent,
+      hasValidTitle,
+      hasValidDescription,
+      stack: new Error().stack?.split('\n').slice(1, 4).join('\n')
+    })
+    // Return early without adding to toasts array
+    return {
+      id: '',
+      dismiss: () => {},
+      update: () => {},
+    }
+  }
+
+  // Debug logging for successful toasts
+  console.log('✅ Toast created:', {
+    title: titleContent || '[no title]',
+    description: descriptionContent || '[no description]',
+    variant: props.variant || 'default'
+  })
+
   const id = genId()
 
   const update = (props: ToasterToast) =>

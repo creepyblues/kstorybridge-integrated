@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock, Edit } from "lucide-react";
-import { Button, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
+import { Button, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 import { Surface, Stack } from '@/components/design-system';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { titlesService, type Title } from "@/services/titlesService";
@@ -142,7 +143,10 @@ function TitleDetailContent() {
         console.log('🗑️ TITLE DETAIL: Removing from favorites...');
         await directApiService.removeFromFavorites(user.id, titleId);
         setIsFavorited(false);
-        toast({ title: "Removed from favorites" });
+        toast({
+          title: "Removed from favorites",
+          description: "This title has been removed from your favorites"
+        });
 
         // Invalidate favorites cache so Favorites page will refresh
         refreshData('favorites');
@@ -151,7 +155,10 @@ function TitleDetailContent() {
         console.log('❤️ TITLE DETAIL: Adding to favorites...');
         await directApiService.addToFavorites(user.id, titleId);
         setIsFavorited(true);
-        toast({ title: "Added to favorites" });
+        toast({
+          title: "Added to favorites",
+          description: "You can find this title in your favorites list"
+        });
 
         // Invalidate favorites cache so Favorites page will refresh
         refreshData('favorites');
@@ -208,9 +215,9 @@ function TitleDetailContent() {
 
   return (
     <PageContainer>
-      <div>
+      <Stack gap="xl" className="gap-20">
         {/* Title Card */}
-        <Surface variant="card" padding="lg" spacing="md" as="section">
+        <Surface variant="card" padding="lg" spacing="none" as="section">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
             <div className="flex-1">
               <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink mb-2 sm:mb-3 leading-tight">
@@ -272,7 +279,12 @@ function TitleDetailContent() {
           </div>
         </Surface>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 xl:gap-12 mb-8 sm:mb-12 lg:mb-16">
+        {/* Horizontal divider with padding */}
+        <div className="py-8 sm:py-10 lg:py-12">
+          <hr className="border-gray-300" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 xl:gap-12 mb-8 sm:mb-12 lg:mb-16">
         {/* Left Column - Cover Image and Title Info */}
         <div className="lg:col-span-1 space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Cover Image */}
@@ -871,7 +883,7 @@ function TitleDetailContent() {
         </div>
       )}
 
-      </div>
+      </Stack>
     </PageContainer>
   );
 }

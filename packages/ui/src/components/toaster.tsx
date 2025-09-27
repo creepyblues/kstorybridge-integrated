@@ -14,12 +14,21 @@ export function Toaster() {
   return (
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
+        // Only render toast if there's meaningful content
+        const hasTitle = title && typeof title === 'string' ? title.trim() : title
+        const hasDescription = description && typeof description === 'string' ? description.trim() : description
+
+        // Skip rendering if no meaningful content
+        if (!hasTitle && !hasDescription) {
+          return null
+        }
+
         return (
           <Toast key={id} {...props}>
             <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
+              {hasTitle && <ToastTitle>{hasTitle}</ToastTitle>}
+              {hasDescription && (
+                <ToastDescription>{hasDescription}</ToastDescription>
               )}
             </div>
             {action}

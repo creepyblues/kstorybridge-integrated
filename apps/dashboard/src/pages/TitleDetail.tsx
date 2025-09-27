@@ -650,7 +650,7 @@ function TitleDetailContent() {
                         {title.comps && title.comps.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {title.comps.map((comp, index) => (
-                              <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium truncate max-w-[200px]" title={comp}>
+                              <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium break-words">
                                 {comp}
                               </div>
                             ))}
@@ -758,8 +758,8 @@ function TitleDetailContent() {
                   )}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <h5 className="font-semibold text-hanok-teal text-base">Rights Owner</h5>
-                      <span className="bg-gray-200 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full font-medium">
+                      <h5 className="font-semibold text-hanok-teal text-base">Rights Holder</h5>
+                      <span className="bg-gray-200 text-gray-600 text-xs px-2.5 py-0.5 rounded-full font-semibold">
                         PRO PLAN
                       </span>
                     </div>

@@ -15,6 +15,7 @@ import { enhancedTitleSearchService, type SearchResult } from "@/services/enhanc
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
 import { directApiService } from "@/services/directApiService";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 function TitleListContent() {
   const { toast } = useToast();
@@ -50,7 +51,7 @@ function TitleListContent() {
   const [searchLoading, setSearchLoading] = useState(false);
   const currentSearchId = useRef<string | null>(null);
   const [sortField, setSortField] = useState<string | null>('title');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [dbError, setDbError] = useState<string | null>(null);
 
   // Pagination state for creators only
@@ -296,6 +297,41 @@ function TitleListContent() {
     }
   };
 
+  const prioritizeTitlesForBuyers = (titles: Title[]) => {
+    return [...titles].sort((a, b) => {
+      // 1. Database priority field (1 = high, 3 = low, default to 2 if not set)
+      const aPriority = (a as any).priority || 2;
+      const bPriority = (b as any).priority || 2;
+
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority; // Lower number first (1 before 2 before 3)
+      }
+
+      // 2. Pitch availability (titles with pitch first)
+      const aHasPitch = !!a.pitch;
+      const bHasPitch = !!b.pitch;
+
+      if (aHasPitch !== bHasPitch) {
+        return bHasPitch ? 1 : -1; // Titles with pitch first
+      }
+
+      // 3. MANTA/RIDI rights (titles with MANTA/RIDI first)
+      const aHasMantaRidi = (a.rights_owner?.includes('MANTA') || a.rights_owner?.includes('RIDI') ||
+                             a.rights?.includes('MANTA') || a.rights?.includes('RIDI'));
+      const bHasMantaRidi = (b.rights_owner?.includes('MANTA') || b.rights_owner?.includes('RIDI') ||
+                             b.rights?.includes('MANTA') || b.rights?.includes('RIDI'));
+
+      if (aHasMantaRidi !== bHasMantaRidi) {
+        return bHasMantaRidi ? 1 : -1; // Titles with MANTA/RIDI first
+      }
+
+      // 4. Alphabetical by title_name_en (descending Z to A)
+      const aTitle = (a.title_name_en || a.title_name_kr || '').toLowerCase();
+      const bTitle = (b.title_name_en || b.title_name_kr || '').toLowerCase();
+      return bTitle.localeCompare(aTitle);
+    });
+  };
+
   const sortTitles = (titles: Title[]) => {
     if (!sortField) return titles;
 
@@ -407,8 +443,12 @@ function TitleListContent() {
         return sortTitles(result);
       }
 
-      // For normal browsing: preserve chronological order from infinite scroll
-      return result;
+      // Apply priority sorting only on initial load, preserve order during infinite scroll
+      if (infiniteScroll.titles.length <= 12) { // Initial load only
+        return prioritizeTitlesForBuyers(sortTitles(result));
+      } else {
+        return result; // Preserve infinite scroll order
+      }
     } else {
       // For creators: Apply pagination to the full list
       const startIndex = (currentPage - 1) * itemsPerPage;
@@ -455,9 +495,9 @@ function TitleListContent() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PageContainer>
         {/* Header */}
-        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+        <div>
           <div className="mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="flex items-center gap-2">
@@ -678,9 +718,17 @@ function TitleListContent() {
                               
                               <div className="flex flex-wrap gap-1 mb-3">
                                 {title.genre && (
-                                  <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded text-xs">
-                                    {formatGenre(title.genre)}
-                                  </span>
+                                  Array.isArray(title.genre) ? (
+                                    title.genre.map((g, idx) => (
+                                      <span key={`${title.title_id}-genre-${idx}`} className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                                        {formatGenre(g)}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                                      {formatGenre(title.genre)}
+                                    </span>
+                                  )
                                 )}
                                 {title.content_format && (
                                   <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
@@ -1044,7 +1092,7 @@ function TitleListContent() {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

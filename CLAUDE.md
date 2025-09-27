@@ -552,6 +552,46 @@ SF Pro is now the default font for the entire Dashboard application. All text el
 - **Consistent Typography**: All text (headers, body, labels, buttons) uses SF Pro
 - **Fallback Stack**: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif
 
+### Badge Design Standards (UPDATED 2025-01-14)
+
+**IMPORTANT**: All badges across the application MUST follow the default Badge component design for consistency.
+
+**Default Badge Styling** (from `packages/ui/src/components/badge.tsx`):
+- **Shape**: `rounded-full` (fully circular/pill shape)
+- **Padding**: `px-2.5 py-0.5` (horizontal: 10px, vertical: 2px)
+- **Font Size**: `text-xs` (12px)
+- **Font Weight**: `font-semibold` (NOT font-bold)
+- **Text Transform**: Normal case (NO uppercase)
+- **Letter Spacing**: Normal (NO tracking-wider)
+
+**✅ CORRECT Badge Implementation**:
+```tsx
+// Standard badge with custom color
+<span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
+  BETA
+</span>
+
+// Using Badge component from @kstorybridge/ui
+<Badge className="bg-pro-purple text-white">Pro</Badge>
+```
+
+**❌ INCORRECT Badge Implementation**:
+```tsx
+// Wrong: Custom sizing and styling
+<span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider">
+  BETA
+</span>
+```
+
+**Color Preservation Rule**:
+- When creating or updating badges, ALWAYS preserve brand-specific background and text colors
+- Only apply the standardized sizing, shape, font weight, and text transform
+- Do NOT change badge colors during standardization updates
+
+**Badge Component Location**:
+- Shared component: `packages/ui/src/components/badge.tsx`
+- Used across all apps in the monorepo via `@kstorybridge/ui` package
+
 ## Common Development Patterns & Best Practices
 
 ### Database Operations

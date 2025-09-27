@@ -18,6 +18,7 @@ import type { Title } from "@/services/titlesService";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 type FavoriteWithTitle = {
   id: string;
@@ -306,9 +307,9 @@ export default function Favorites() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PageContainer>
         {/* Header */}
-        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+        <div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
               <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">MY FAVORITES</h2>
@@ -402,17 +403,14 @@ export default function Favorites() {
           </div>
 
           {filteredFavorites.length === 0 && dbStatus.isConnected && (
-            <Card className="bg-white border-porcelain-blue-200 shadow-lg rounded-2xl">
-              <CardContent className="p-6 sm:p-8 lg:p-12 text-center">
+            <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+              <CardContent className="p-4 sm:p-6 text-center">
                 <Heart className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-midnight-ink-400 mx-auto mb-3 sm:mb-4" />
                 <h3 className="text-base sm:text-lg font-medium text-midnight-ink mb-2">No favorites found</h3>
-                <p className="text-sm sm:text-base text-midnight-ink-600">
-                  {searchTerm ? "No favorites match your search." : "Start browsing content to add favorites."}
-                </p>
               </CardContent>
             </Card>
           )}
         </div>
-    </div>
+    </PageContainer>
   );
 }

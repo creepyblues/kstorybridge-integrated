@@ -392,10 +392,10 @@ function TitleDetailNewContent() {
             <CardContent>
               <div className="space-y-4">
               
-                {/* Rights Owner */}
+                {/* Rights Holder */}
                 <div>
                   <div className="flex items-center justify-between">
-                    <h5 className="font-medium text-slate-700">Rights Owner</h5>
+                    <h5 className="font-medium text-slate-700">Rights Holder</h5>
                     <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                       {title.rights_owner || title.rights || "Not specified"}
                     </span>
@@ -406,7 +406,7 @@ function TitleDetailNewContent() {
                         setPremiumFeatureName("Contact Creator");
                         setPremiumPopupOpen(true);
                       }}
-                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full transition-colors"
+                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors"
                     >
                       Contact
                     </Button>
@@ -437,15 +437,12 @@ function TitleDetailNewContent() {
 
                 {/* Comps */}
                 {title.comps && title.comps.length > 0 && (
-                  <div className="flex items-center justify-between">
+                  <div className="grid grid-cols-2 gap-4">
                     <h5 className="font-medium text-slate-700">Comps</h5>
                     <OptimizedTierGatedContent requiredTier="basic">
-                      <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
-                        {title.comps.slice(0, 2).map(comp => 
-                          comp.length > 12 ? comp.substring(0, 12) + '...' : comp
-                        ).join(', ')}
-                        {title.comps.length > 2 && ` +${title.comps.length - 2}`}
-                      </span>
+                      <div className="font-bold text-[#4C9C9B] uppercase text-xs text-right break-words">
+                        {title.comps.join(', ')}
+                      </div>
                     </OptimizedTierGatedContent>
                   </div>
                 )}
@@ -535,7 +532,7 @@ function TitleDetailNewContent() {
                           setShowUpgradeModal(true);
                         }
                       }}
-                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-medium px-4 py-1.5 sm:px-3 sm:py-1 rounded-full transition-colors w-full sm:w-auto"
+                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors w-full sm:w-auto"
                     >
                       View
                     </Button>
@@ -548,7 +545,7 @@ function TitleDetailNewContent() {
                     <h5 className="font-bold text-slate-700 mb-3">Keywords</h5>
                     <div className="flex flex-wrap gap-2">
                       {(title.keywords || title.tags).map((tag, idx) => (
-                        <Badge key={idx} className="bg-slate-50 text-slate-600 border border-slate-200 font-medium px-2.5 py-1 rounded-md text-xs hover:bg-slate-100 transition-colors">
+                        <Badge key={idx} className="bg-slate-50 text-slate-600 border border-slate-200 font-medium px-2.5 py-1 rounded-full text-xs hover:bg-slate-100 transition-colors">
                           {tag.toUpperCase()}
                         </Badge>
                       ))}

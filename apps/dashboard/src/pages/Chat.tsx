@@ -1025,30 +1025,26 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
   }
 
   return (
-    <div className="fixed inset-0 lg:left-72 bg-gray-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto h-full flex flex-col">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto flex flex-col min-h-screen">
         {/* Header */}
-        <div className="py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
-            <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight">
-                  AI ASSISTANT
-                </h2>
-                <span className="px-2 py-1 text-xs font-bold text-white rounded-full uppercase"
+        <div className="page-padding-x page-padding-y">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight">AI ASSISTANT</h2>
+                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full text-white"
                       style={{ backgroundColor: '#FF6B6B' }}>
                   BETA
                 </span>
                 {useOrchestrator && (
-                  <span className="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-800 rounded-full uppercase">
+                  <span className="px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
                     Enhanced
                   </span>
                 )}
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* New Chat Button */}
-              <Button
+              <div className="flex items-center gap-2">
+                <Button
                 onClick={() => {
                   setMessages([{
                     id: 'greeting',
@@ -1063,7 +1059,7 @@ What's been catching your interest lately? Are you looking for something specifi
                   setInputMessage('');
                 }}
                 variant="outline"
-                className="hidden sm:flex items-center gap-2"
+                className="border-gray-300 hover:bg-gray-100"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1071,13 +1067,17 @@ What's been catching your interest lately? Are you looking for something specifi
                 New Chat
               </Button>
             </div>
+            </div>
+            <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
+              Chat with Jinu, our AI assistant, to discover Korean content recommendations from our collection.
+            </p>
           </div>
         </div>
 
         {/* Chat Container - Clean, no card wrapper */}
-        <div className="flex-1 flex flex-col overflow-hidden px-3 sm:px-6 lg:px-8">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Messages Container - Clean ChatGPT style */}
-          <div className="flex-1 overflow-y-auto py-4 space-y-6 pb-40">
+          <div className="flex-1 overflow-y-auto py-4 space-y-6 pb-40 page-padding-x">
             {/* Loading History Indicator */}
             {isLoadingHistory && (
               <div className="flex items-center justify-center py-8">
@@ -1234,9 +1234,10 @@ What's been catching your interest lately? Are you looking for something specifi
       </div>
 
       {/* Fixed ChatGPT-style Input Area */}
-      <div className="absolute bottom-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:ml-72">
+        <div className="max-w-7xl mx-auto py-4">
+          <div className="page-padding-x flex justify-center">
+            <div className="w-[90%] bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
               <div className="flex items-end gap-2 p-3">
                 <textarea
                   value={inputMessage}
@@ -1305,6 +1306,7 @@ What's been catching your interest lately? Are you looking for something specifi
                 </div>
               </div>
             </div>
+          </div>
         </div>
       </div>
     </div>

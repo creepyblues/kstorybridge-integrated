@@ -16,9 +16,9 @@ export const ProBadge: React.FC<ProBadgeProps> = ({
   className
 }) => {
   const sizeClasses = {
-    sm: "px-1.5 py-0.5 text-xs",
-    default: "px-2 py-1 text-sm",
-    lg: "px-3 py-1.5 text-base"
+    sm: "px-2.5 py-0.5 text-xs",
+    default: "px-2.5 py-0.5 text-xs",
+    lg: "px-2.5 py-0.5 text-xs"
   };
 
   const iconSizes = {
@@ -30,7 +30,7 @@ export const ProBadge: React.FC<ProBadgeProps> = ({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 bg-pro-purple text-white rounded-full font-bold uppercase tracking-wider",
+        "inline-flex items-center gap-1 bg-pro-purple text-white rounded-full font-semibold",
         sizeClasses[size],
         className
       )}

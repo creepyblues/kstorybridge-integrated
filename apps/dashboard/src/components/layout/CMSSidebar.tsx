@@ -304,7 +304,7 @@ export function CMSSidebar() {
                   {item.badge && (
                     <span
                       className={cn(
-                        "px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider",
+                        "px-2.5 py-0.5 text-xs font-semibold rounded-full",
                         item.badge === 'admin'
                           ? "bg-purple-500 text-white"
                           : item.badge === 'beta'
@@ -350,7 +350,7 @@ export function CMSSidebar() {
                 {item.badge && (
                   <span
                     className={cn(
-                      "px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider",
+                      "px-2.5 py-0.5 text-xs font-semibold rounded-full",
                       item.badge === 'admin'
                         ? "bg-purple-500 text-white"
                         : item.badge === 'beta'

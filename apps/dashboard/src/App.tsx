@@ -18,6 +18,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { BuyerProtectedLayout } from "@/components/BuyerProtectedLayout";
 import { CreatorProtectedLayout } from "@/components/CreatorProtectedLayout";
+import { DocsProtectedLayout } from "@/components/DocsProtectedLayout";
 import { RootRedirect } from "./components/RootRedirect";
 import { DashboardEntrypoint } from "./components/DashboardEntrypoint";
 
@@ -59,6 +60,11 @@ const SearchAnalytics = lazy(() => import("./pages/SearchAnalytics"));
 const Experiment = lazy(() => import("./pages/Experiment"));
 const ChatbotTesting = lazy(() => import("./pages/ChatbotTesting"));
 const SignupDebugPage = lazy(() => import("./pages/SignupDebugPage"));
+
+// Documentation pages
+const Docs = lazy(() => import("./pages/Docs"));
+const DocumentViewer = lazy(() => import("./pages/DocumentViewer"));
+const DatabaseSchema = lazy(() => import("./pages/DatabaseSchema"));
 
 // Authentication pages
 const SigninPage = lazy(() => import("./pages/SigninPageSimple"));
@@ -308,6 +314,17 @@ const App = () => (
                 {/* OpenAI Chatbot Testing - environment comparison tool */}
                 <Route path="/openai-chatbot-testing" element={
                   <ProtectedLayout><ChatbotTesting /></ProtectedLayout>
+                } />
+
+                {/* Documentation routes - accessible to all authenticated users */}
+                <Route path="/docs" element={
+                  <DocsProtectedLayout><Docs /></DocsProtectedLayout>
+                } />
+                <Route path="/docs/schema" element={
+                  <DocsProtectedLayout><DatabaseSchema /></DocsProtectedLayout>
+                } />
+                <Route path="/docs/view/:filename" element={
+                  <DocsProtectedLayout><DocumentViewer /></DocsProtectedLayout>
                 } />
 
                 {/* Payment and subscription routes */}

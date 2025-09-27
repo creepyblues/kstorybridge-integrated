@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Shield, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Shield, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
@@ -515,7 +515,10 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     return (
       <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
-          <p className="text-gray-600">Loading PDF...</p>
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+            <p className="text-gray-600">Loading PDF...</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -645,7 +648,14 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
                 file={pdfData}
                 onLoadSuccess={onDocumentLoadSuccess}
                 onLoadError={onDocumentLoadError}
-                loading={<div className="p-8 text-center">Loading PDF...</div>}
+                loading={
+                  <div className="p-8 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-gray-600" />
+                      <span className="text-gray-600">Rendering PDF...</span>
+                    </div>
+                  </div>
+                }
               >
                 <Page
                   key={`${pageNumber}-${rotation}-${containerDimensions.width}-${containerDimensions.height}`} // Re-render on dimension changes

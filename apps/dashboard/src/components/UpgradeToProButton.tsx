@@ -8,9 +8,10 @@ interface UpgradeToProButtonProps {
   children: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  style?: React.CSSProperties;
 }
 
-const UpgradeToProButton = ({ children, className, disabled = false }: UpgradeToProButtonProps) => {
+const UpgradeToProButton = ({ children, className, disabled = false, style }: UpgradeToProButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -75,6 +76,7 @@ const UpgradeToProButton = ({ children, className, disabled = false }: UpgradeTo
       onClick={handleUpgrade}
       disabled={isLoading || disabled}
       className={className}
+      style={style}
     >
       {isLoading ? (
         <div className="flex items-center gap-2">

@@ -264,9 +264,6 @@ export default function News() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
               <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">K-CONTENT NEWS</h2>
-              <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
-                The latest hot K-content news you don't want to miss
-              </p>
             </div>
           </div>
 

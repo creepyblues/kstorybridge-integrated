@@ -364,10 +364,10 @@ function CreatorTitleDetailContent() {
             <CardContent>
               <div className="space-y-4">
               
-                {/* Rights Owner */}
+                {/* Rights Holder */}
                 <div>
                   <div className="flex items-center justify-between">
-                    <h5 className="font-medium text-slate-700">Rights Owner</h5>
+                    <h5 className="font-medium text-slate-700">Rights Holder</h5>
                     <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
                       {title.rights_owner || title.rights || "Not specified"}
                     </span>

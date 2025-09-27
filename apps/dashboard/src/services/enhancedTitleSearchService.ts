@@ -1,6 +1,7 @@
 import { vectorSearchService } from './vectorSearchService';
 import { titlesService, type Title } from './titlesService';
 import { enhancedSearch, getTitleSearchFields } from '@/utils/searchUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface SearchResult {
   title: Title;
@@ -26,7 +27,7 @@ export interface SearchResponse {
 }
 
 class EnhancedTitleSearchService {
-  private readonly DEFAULT_VECTOR_THRESHOLD = 0.76; // Increased from 0.65 for better relevance
+  private readonly DEFAULT_VECTOR_THRESHOLD = 0.5; // Lowered from 0.76 to fix low result counts
   private readonly DEFAULT_MAX_RESULTS = 28; // Reduced from 50 to focus on quality
   private readonly HYBRID_BOOST_FACTOR = 1.2; // Boost factor for titles that match both vector and traditional search
 
@@ -68,37 +69,82 @@ class EnhancedTitleSearchService {
     try {
       // Try vector search if enabled and available
       if (useVectorSearch) {
-        console.log('🔍 Attempting vector search for titles page');
-        
-        const vectorSearchResults = await vectorSearchService.vectorSearch(query, {
-          user_id: userId,
-          session_id: `search-${Date.now()}`,
-        }, {
-          threshold: vectorThreshold,
-          limit: maxResults,
-          includeAnalysis: true
-        });
+        console.log('🔍 Attempting vector search with progressive threshold fallback');
 
-        if (vectorSearchResults && vectorSearchResults.length > 0) {
-          console.log(`✅ Vector search found ${vectorSearchResults.length} results`);
-          vectorSearchUsed = true;
+        // Progressive threshold fallback - try higher thresholds first, then lower if insufficient results
+        const fallbackThresholds = [vectorThreshold, vectorThreshold * 0.8, vectorThreshold * 0.6, 0.3, 0.2];
+        const minResultsThreshold = 3; // Try lower thresholds if we get fewer than 3 results
 
-          // Convert vector results to SearchResult format
-          const titleMap = new Map(titles.map(title => [title.title_id, title]));
-          
-          vectorResults = vectorSearchResults
-            .map(result => {
-              const title = titleMap.get(result.title_id);
-              if (!title) return null;
-              
-              return {
-                title,
-                score: Math.round(result.similarity * 100),
-                matchType: 'vector' as const,
-                similarity: result.similarity
-              };
-            })
-            .filter(Boolean) as SearchResult[];
+        for (const threshold of fallbackThresholds) {
+          console.log(`🔍 Trying vector search with threshold: ${threshold}`);
+
+          const vectorSearchResults = await vectorSearchService.vectorSearch(query, {
+            user_id: userId,
+            session_id: `search-${Date.now()}`,
+          }, {
+            threshold,
+            limit: maxResults,
+            includeAnalysis: true
+          });
+
+          if (vectorSearchResults && vectorSearchResults.length > 0) {
+            console.log(`✅ Vector search found ${vectorSearchResults.length} results with threshold ${threshold}`);
+            vectorSearchUsed = true;
+
+            // Convert vector results to SearchResult format
+            const titleMap = new Map(titles.map(title => [title.title_id, title]));
+
+            // Check if we have title data for the vector results
+            const missingTitles = vectorSearchResults.filter(result => !titleMap.has(result.title_id));
+
+            if (missingTitles.length > 0) {
+              console.log(`🔍 Vector search found ${missingTitles.length} titles not in current dataset, fetching details...`);
+
+              // Fetch missing title details from database
+              try {
+                const { data: fetchedTitles, error } = await supabase
+                  .from('titles')
+                  .select('*')
+                  .in('title_id', missingTitles.map(result => result.title_id));
+
+                if (!error && fetchedTitles) {
+                  // Add fetched titles to the map
+                  fetchedTitles.forEach(title => titleMap.set(title.title_id, title));
+                  console.log(`✅ Fetched ${fetchedTitles.length} additional title details`);
+                } else {
+                  console.warn('⚠️ Failed to fetch missing title details:', error?.message);
+                }
+              } catch (error) {
+                console.warn('⚠️ Error fetching title details:', error);
+              }
+            }
+
+            vectorResults = vectorSearchResults
+              .map(result => {
+                const title = titleMap.get(result.title_id);
+                if (!title) {
+                  console.warn(`⚠️ Title not found for vector result: ${result.title_id}`);
+                  return null;
+                }
+
+                return {
+                  title,
+                  score: Math.round(result.similarity * 100),
+                  matchType: 'vector' as const,
+                  similarity: result.similarity
+                };
+              })
+              .filter(Boolean) as SearchResult[];
+
+            // If we have enough results, stop trying lower thresholds
+            if (vectorResults.length >= minResultsThreshold) {
+              break;
+            }
+          }
+        }
+
+        if (!vectorSearchUsed || vectorResults.length === 0) {
+          console.log('⚠️ Vector search found no results with any threshold');
         }
       }
     } catch (error) {
@@ -121,16 +167,15 @@ class EnhancedTitleSearchService {
         'expanded': 60
       };
       
-      // Minimum score thresholds for quality control
-      const minScoreThreshold = 70; // Only show results with score >= 70
+      // Removed harsh minimum score threshold that was blocking valid results
+      // All traditional search results are now included for better coverage
 
       return matches
         .map(title => ({
           title,
           score: scoreMap[matchType],
           matchType
-        }))
-        .filter(result => result.score >= minScoreThreshold); // Filter out low-quality matches
+        }));
     };
 
     traditionalResults = [

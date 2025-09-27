@@ -173,7 +173,7 @@ export function CMSHeader() {
                     </div>
                     {/* Status badge - tier for buyers only */}
                     {accountType === "buyer" && (
-                      <div className={`inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium w-fit ${tierDisplay.className}`}>
+                      <div className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold w-fit ${tierDisplay.className}`}>
                         {tierDisplay.label}
                       </div>
                     )}
@@ -216,7 +216,7 @@ export function CMSHeader() {
                   <span>{item.title}</span>
                   {item.badge && (
                     <span
-                      className="px-1.5 py-0.5 text-[10px] font-bold text-white rounded-full uppercase tracking-wider"
+                      className="px-2.5 py-0.5 text-xs font-semibold text-white rounded-full"
                       style={{ backgroundColor: '#FF6B6B' }}
                     >
                       {item.badge}
@@ -246,7 +246,7 @@ export function CMSHeader() {
                 >
                   <span>{item.title}</span>
                   {item.badge && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 text-xs font-semibold bg-red-500 text-white rounded-full">
                       {item.badge}
                     </span>
                   )}

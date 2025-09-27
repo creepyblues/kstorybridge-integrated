@@ -54,7 +54,7 @@ export interface SearchAnalytics {
 }
 
 class VectorSearchService {
-  private readonly DEFAULT_MATCH_THRESHOLD = 0.7;
+  private readonly DEFAULT_MATCH_THRESHOLD = 0.4;
   private readonly DEFAULT_RESULT_COUNT = 10;
   private readonly HYBRID_TEXT_WEIGHT = 0.3;
   private readonly HYBRID_VECTOR_WEIGHT = 0.7;

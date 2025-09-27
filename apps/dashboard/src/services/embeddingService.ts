@@ -340,13 +340,33 @@ Format your response as JSON with these exact keys:
     try {
       console.log(`💾 Storing embeddings for title: ${titleId}`);
 
+      // Ensure embeddings are exactly 1536 dimensions and properly formatted for vector storage
+      const formatEmbedding = (embedding: number[]) => {
+        if (!embedding || embedding.length === 0) {
+          console.warn(`⚠️ Empty embedding detected, using zero vector`);
+          return new Array(1536).fill(0);
+        }
+
+        // Truncate or pad to exactly 1536 dimensions
+        if (embedding.length !== 1536) {
+          console.warn(`⚠️ Embedding dimension mismatch: ${embedding.length} → 1536`);
+          const formattedEmbedding = new Array(1536).fill(0);
+          for (let i = 0; i < Math.min(1536, embedding.length); i++) {
+            formattedEmbedding[i] = embedding[i] || 0;
+          }
+          return formattedEmbedding;
+        }
+
+        return embedding;
+      };
+
       const { error } = await supabase
         .from('titles')
         .update({
-          title_embedding: embeddings.title_embedding,
-          synopsis_embedding: embeddings.description_embedding,
-          content_embedding: embeddings.content_embedding,
-          combined_embedding: embeddings.combined_embedding,
+          title_embedding: formatEmbedding(embeddings.title_embedding),
+          synopsis_embedding: formatEmbedding(embeddings.description_embedding),
+          content_embedding: formatEmbedding(embeddings.content_embedding),
+          combined_embedding: formatEmbedding(embeddings.combined_embedding),
           embedding_model: this.EMBEDDING_MODEL,
           embedding_created_at: new Date().toISOString(),
           embedding_updated_at: new Date().toISOString()

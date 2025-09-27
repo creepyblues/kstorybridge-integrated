@@ -18,7 +18,11 @@
     "test:openai:direct": "cp .env.local .env && npm run dev",
     "test:openai:local": "cp .env.testing .env && npm run dev",
     "test:openai:production": "cp .env.staging .env && npm run dev",
-    "test:openai:compare": "npm run dev -- --mode testing"
+    "test:openai:compare": "npm run dev -- --mode testing",
+    "docs:copy": "node scripts/copy-docs.js",
+    "docs:watch": "node scripts/copy-docs.js --watch",
+    "prebuild": "npm run docs:copy",
+    "predev": "npm run docs:copy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -91,6 +95,7 @@
     "@vercel/node": "^3.0.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
+    "chokidar": "^3.6.0",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",

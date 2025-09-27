@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 
 import { Plus, Search, Filter } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Badge, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, useToast } from "@kstorybridge/ui";
-import { TitleCard } from "@/components/TitleCard";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Badge, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";import { TitleCard } from "@/components/TitleCard";
 import { TitleForm } from "@/components/TitleForm";
 import { titlesService, type Title } from "@/services/titlesService";
 import { useAuth } from "@/hooks/useAuth";

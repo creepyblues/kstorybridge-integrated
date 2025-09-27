@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown, LayoutGrid, List as ListIcon } from "lucide-react";
-import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
-import { titlesService, type Title } from "@/services/titlesService";
+import { Button, Card, CardContent } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";import { titlesService, type Title } from "@/services/titlesService";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";

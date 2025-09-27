@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";

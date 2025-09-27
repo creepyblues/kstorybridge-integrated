@@ -37,7 +37,7 @@ import {
 
 // Existing Services
 import { titlesService, type Title } from '@/services/titlesService';
-import { useToast, Button } from '@kstorybridge/ui';
+import { Button } from '@kstorybridge/ui';
 import { enhancedSearch, getTitleSearchFields } from '@/utils/searchUtils';
 import { useDataCache } from '@/contexts/DataCacheContext';
 

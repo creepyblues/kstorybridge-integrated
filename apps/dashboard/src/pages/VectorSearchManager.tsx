@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, CardContent, CardHeader, CardTitle, useToast } from '@kstorybridge/ui';
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
 import { 
   ArrowLeft, 
   Database, 

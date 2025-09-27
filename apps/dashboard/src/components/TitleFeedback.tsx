@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from "@kstorybridge/ui";
 import { ThumbsUp, ThumbsDown, Star, MessageSquare, X } from 'lucide-react';
-import { useToast } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 import { chatHistoryService } from '@/services/chatHistoryService';
 
 interface TitleFeedbackProps {

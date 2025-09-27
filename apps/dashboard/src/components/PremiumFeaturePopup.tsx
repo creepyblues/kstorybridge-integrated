@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, useToast } from "@kstorybridge/ui";
-
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 import { Crown, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";

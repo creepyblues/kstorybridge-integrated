@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
-import { ArrowLeft, Play, RefreshCw, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { Button, Card, CardContent } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";import { ArrowLeft, Play, RefreshCw, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { openaiService } from '@/services/openaiService';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';

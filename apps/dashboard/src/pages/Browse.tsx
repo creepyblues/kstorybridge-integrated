@@ -15,8 +15,8 @@ import {
 import { Search, Filter, TrendingUp, Star } from "lucide-react";
 import { TitleCard } from "@/components/TitleCard";
 import { titlesService, type Title } from "@/services/titlesService";
-import { useToast } from "@kstorybridge/ui";
-
+import {} from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 export default function Browse() {
   const { toast } = useToast();
   const [titles, setTitles] = useState<Title[]>([]);

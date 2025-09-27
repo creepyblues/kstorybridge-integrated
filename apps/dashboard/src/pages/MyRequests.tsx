@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card, CardContent, CardHeader, CardTitle, useToast } from "@kstorybridge/ui";
-
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 import { 
   MessageSquare, 
   Calendar,

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { Eye, ExternalLink, FileText, X, Calendar, BookOpen, Edit } from "lucide-react";
-import { Button, Card, CardContent, CardHeader, CardTitle, Badge, useToast } from "@kstorybridge/ui";
-import type { Title } from "@/services/titlesService";
+import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";import type { Title } from "@/services/titlesService";
 
 import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";

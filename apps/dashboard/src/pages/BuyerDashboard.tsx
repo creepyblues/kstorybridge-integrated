@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Tabs, TabsContent, TabsList, TabsTrigger, useToast } from "@kstorybridge/ui";
-
+import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Search, 
   Grid,

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, Card, CardContent, CardHeader, CardTitle, useToast } from "@kstorybridge/ui";
-import { CheckCircle, XCircle, Loader2, AlertCircle } from "lucide-react";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";import { CheckCircle, XCircle, Loader2, AlertCircle } from "lucide-react";
 import { openaiService } from "@/services/openaiService";
 
 export default function OpenAITest() {

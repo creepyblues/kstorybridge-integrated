@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, Card, CardContent, CardHeader, CardTitle, Textarea, useToast } from "@kstorybridge/ui";
-import { Send, MessageSquare } from "lucide-react";
+import { Button, Card, CardContent, CardHeader, CardTitle, Textarea } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";import { Send, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { sendSlackNotification } from "@/utils/slack";
 

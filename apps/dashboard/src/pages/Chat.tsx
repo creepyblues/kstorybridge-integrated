@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
-import { Send, Bot, User, Loader2, ArrowLeft, Sparkles, Brain } from "lucide-react";
+import { Button, Card, CardContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@kstorybridge/ui";
+import { useToast } from "@/hooks/use-toast";import { Send, Bot, User, Loader2, ArrowLeft, Sparkles, Brain, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { openaiService } from "@/services/openaiService";
 import { titlesService } from "@/services/titlesService";
@@ -12,6 +12,9 @@ import { TitleFeedback } from "@/components/TitleFeedback";
 import { supabase } from "@/integrations/supabase/client";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ChatEmptyState } from "@/components/ChatEmptyState";
+import ProBadge from "@/components/ProBadge";
+import { useTierAccess } from "@/hooks/useTierAccess";
+import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 
 interface Message {
   id: string;
@@ -381,7 +384,11 @@ export default function Chat() {
   const [titleCache, setTitleCache] = useState<any[]>([]); // Cache for ALL titles for matching
   const [hasStartedConversation, setHasStartedConversation] = useState(false);
   const [showHistory, setShowHistory] = useState(false); // Toggle between current chat and full history
+  const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Tier access for Advanced mode restriction
+  const { hasMinimumTier } = useTierAccess();
 
   // Check if user is authorized - allow all buyers
   const accountType = user?.user_metadata?.account_type || 'buyer';
@@ -1321,51 +1328,68 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                   <Send size={18} />
                 </button>
               </div>
-              <div className="px-7 pb-2 text-xs text-gray-400 flex justify-between items-center">
-                <div>
-                  <button
-                    onClick={() => {
-                      setShowHistory(!showHistory);
-                    }}
-                    className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1 transition-colors"
-                  >
-                    {showHistory ? '← Back to current chat' : '→ Chat History'}
-                  </button>
-                </div>
+              <div className="px-7 pb-2 text-xs text-gray-400 flex justify-end items-center">
                 <div className="flex items-center gap-2">
-                  {/* Mode Toggle Switch */}
-                  <button
-                    onClick={() => {
-                      const newMode = !useOrchestrator;
-                      console.log('🎛️ Chat Mode Toggle', {
-                        from: useOrchestrator ? 'Enhanced (OpenAI GPT-4)' : 'Standard (OpenAI Direct)',
-                        to: newMode ? 'Enhanced (OpenAI GPT-4)' : 'Standard (OpenAI Direct)',
-                        timestamp: new Date().toISOString()
-                      });
-                      setUseOrchestrator(newMode);
-                    }}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
-                    title={useOrchestrator ? "Switch to Standard Mode" : "Switch to Enhanced Mode (Pro Users Only)"}
-                  >
-                    {useOrchestrator ? (
-                      <>
-                        <Sparkles size={12} className="text-blue-600" />
-                        <span className="text-gray-700 font-medium">Enhanced Mode</span>
-                        <span className="text-blue-600 text-xs">(Pro)</span>
-                      </>
-                    ) : (
-                      <>
-                        <Bot size={12} className="text-gray-600" />
-                        <span className="text-gray-700 font-medium">Standard Mode</span>
-                      </>
-                    )}
-                    <svg className="w-3 h-3 text-gray-500 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                    </svg>
-                  </button>
+                  {/* Mode Dropdown Menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer">
+                        {useOrchestrator ? (
+                          <>
+                            <Sparkles size={12} className="text-pro-purple" />
+                            <span className="text-gray-700 font-medium">Advanced</span>
+                            <ProBadge tier="pro" size="sm" showIcon={false} className="ml-0.5" />
+                          </>
+                        ) : (
+                          <>
+                            <Bot size={12} className="text-gray-600" />
+                            <span className="text-gray-700 font-medium">Standard</span>
+                          </>
+                        )}
+                        <ChevronDown size={12} className="text-gray-500 ml-0.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end" className="min-w-[180px] bg-white">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          console.log('🎛️ Chat Mode Changed to Standard', {
+                            from: 'Enhanced (OpenAI GPT-4)',
+                            to: 'Standard (OpenAI Direct)',
+                            timestamp: new Date().toISOString()
+                          });
+                          setUseOrchestrator(false);
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <Bot size={14} className="mr-2 text-gray-600" />
+                        <span>Standard (Basic)</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => {
+                          if (hasMinimumTier('pro')) {
+                            console.log('🎛️ Chat Mode Changed to Advanced', {
+                              from: 'Standard (OpenAI Direct)',
+                              to: 'Enhanced (OpenAI GPT-4)',
+                              timestamp: new Date().toISOString()
+                            });
+                            setUseOrchestrator(true);
+                          } else {
+                            setPremiumPopupOpen(true);
+                          }
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <Sparkles size={14} className="mr-2 text-pro-purple" />
+                        <span>Advanced</span>
+                        <ProBadge tier="pro" size="sm" showIcon={false} className="ml-auto" />
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   {isStreaming && (
-                    <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
+                    <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
                       Streaming
                     </span>
                   )}
@@ -1375,6 +1399,13 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
           </div>
         </div>
       </div>
+
+      {/* Premium Feature Popup for Advanced Mode */}
+      <PremiumFeaturePopup
+        isOpen={premiumPopupOpen}
+        onClose={() => setPremiumPopupOpen(false)}
+        featureName="Advanced Chat Mode"
+      />
     </div>
   );
 }

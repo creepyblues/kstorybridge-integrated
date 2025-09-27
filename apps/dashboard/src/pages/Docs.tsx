@@ -238,6 +238,42 @@ export default function Docs() {
           </CardContent>
         </Card>
 
+        {/* Quick Access - UX Management */}
+        <Card className="bg-transparent border-gray-300 shadow-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-purple-600" />
+              UX Management Dashboard
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">User Journey Maps</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Interactive flowcharts showing complete buyer and creator user journeys from signup to dashboard navigation.
+                </p>
+                <Link to="/docs/user_journey">
+                  <StandardButton variant="outline" className="w-full sm:w-auto">
+                    View User Journeys
+                  </StandardButton>
+                </Link>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Messaging Management</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Centralized interface to update page titles, descriptions, CTAs, and empty states across the entire application.
+                </p>
+                <Link to="/docs/messaging">
+                  <StandardButton variant="outline" className="w-full sm:w-auto">
+                    Manage Messaging
+                  </StandardButton>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Documentation Grid */}
         <div className="grid gap-6">
           {documentCategories.map(category => {

@@ -26,9 +26,9 @@ const getDiscoverItems = (accountType: string | null): MenuItem[] => {
   } else if (accountType === "buyer") {
     return [
       { title: "Home", href: "/buyers/home" },
-      { title: "Titles", href: "/buyers/titles" },
+      { title: "Featured", href: "/buyers/featured" },
+      { title: "Title Library", href: "/buyers/titles" },
       { title: "Favorites", href: "/buyers/favorites" },
-      { title: "Chat with AI", href: "/buyers/chat", badge: "beta" },
       { title: "K-content News", href: "/buyers/news" },
       // { title: "My Requests", href: "/buyers/requests" },
     ];
@@ -57,18 +57,12 @@ const getSettingsItems = (accountType: string | null, userEmail?: string): MenuI
   // Add admin pages for admin users right after Profile
   if (isAdmin) {
     const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
-    baseItems.splice(profileIndex + 1, 0, 
+    baseItems.splice(profileIndex + 1, 0,
       {
         title: "Experiment",
         href: "/experiment",
         badge: "admin",
         icon: "⚡"
-      },
-      {
-        title: "OpenAI Testing",
-        href: "/openai-chatbot-testing",
-        badge: "admin",
-        icon: "🧪"
       }
     );
   }

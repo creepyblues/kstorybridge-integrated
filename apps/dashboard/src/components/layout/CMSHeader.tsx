@@ -18,9 +18,9 @@ const getDiscoverItems = (accountType: string) => {
   } else {
     return [
       { title: "Home", href: "/buyers/home" },
-      { title: "Titles", href: "/buyers/titles" },
+      { title: "Featured", href: "/buyers/featured" },
+      { title: "Title Library", href: "/buyers/titles" },
       { title: "Favorites", href: "/buyers/favorites" },
-      { title: "Chat", href: "/buyers/chat", badge: "beta" },
       { title: "News", href: "/buyers/news" },
     ];
   }
@@ -40,14 +40,12 @@ const getSettingsItems = (accountType: string, userEmail?: string) => {
   // Add chatbot items for authorized users right after Profile
   if (isAuthorizedForChatbot) {
     const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
-    const chatbotItems = accountType === "creator" 
+    const chatbotItems = accountType === "creator"
       ? [
           { title: "Chat", href: "/creators/chat", badge: "experiment" },
-          { title: "AI Chatbot", href: "/creators/ai-chatbot", badge: "experiment" },
         ]
       : [
           { title: "Chat", href: "/buyers/chat", badge: "experiment" },
-          { title: "AI Chatbot", href: "/buyers/ai-chatbot", badge: "experiment" },
         ];
     
     baseItems.splice(profileIndex + 1, 0, ...chatbotItems);

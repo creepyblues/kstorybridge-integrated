@@ -10,6 +10,7 @@ import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { enhancedTitleSearchService, type SearchResult } from "@/services/enhancedTitleSearchService";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 export default function CreatorHome() {
   const { toast } = useToast();
@@ -298,9 +299,8 @@ export default function CreatorHome() {
   }, [searchTerm, sortField, sortDirection, showOnlyWithPitch, activeGenreFilter]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+    <PageContainer>
+      <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
             <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">HOME</h2>
@@ -428,6 +428,6 @@ export default function CreatorHome() {
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

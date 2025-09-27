@@ -1,0 +1,170 @@
+[
+  {
+    "route": "/buyers/home",
+    "title": "Featured Titles",
+    "description": "Jinu, our friendly AI agent, handpicked these titles just for you!",
+    "emptyStateTitle": "No featured titles available",
+    "emptyStateDescription": "Check back soon for new recommendations"
+  },
+  {
+    "route": "/buyers/titles",
+    "title": "Title Library",
+    "description": "Browse our complete collection of Korean content",
+    "emptyStateTitle": "No titles found",
+    "emptyStateDescription": "Try adjusting your search or filters"
+  },
+  {
+    "route": "/buyers/titles/:id",
+    "title": "Title Details",
+    "description": "View detailed information about this title",
+    "emptyStateTitle": "Title not found",
+    "emptyStateDescription": "This title may have been removed or is temporarily unavailable"
+  },
+  {
+    "route": "/buyers/favorites",
+    "title": "My Favorites",
+    "description": "Your saved titles and content",
+    "emptyStateTitle": "No favorites yet",
+    "emptyStateDescription": "Start exploring titles and add them to your favorites"
+  },
+  {
+    "route": "/buyers/requests",
+    "title": "My Requests",
+    "description": "Track your content requests and deals",
+    "emptyStateTitle": "No requests yet",
+    "emptyStateDescription": "Submit a request to connect with content creators"
+  },
+  {
+    "route": "/buyers/deals",
+    "title": "My Deals",
+    "description": "Manage your active deals and negotiations",
+    "emptyStateTitle": "No active deals",
+    "emptyStateDescription": "Your completed deals will appear here"
+  },
+  {
+    "route": "/buyers/browse",
+    "title": "Browse Content",
+    "description": "Discover Korean content across all genres",
+    "emptyStateTitle": "No content found",
+    "emptyStateDescription": "Try different search terms or browse categories"
+  },
+  {
+    "route": "/buyers/media",
+    "title": "Media Center",
+    "description": "Access your media files and downloads",
+    "emptyStateTitle": "No media files",
+    "emptyStateDescription": "Your downloaded content will appear here"
+  },
+  {
+    "route": "/buyers/users",
+    "title": "User Management",
+    "description": "Manage team members and permissions",
+    "emptyStateTitle": "No team members",
+    "emptyStateDescription": "Invite team members to collaborate"
+  },
+  {
+    "route": "/buyers/settings",
+    "title": "Settings",
+    "description": "Configure your account preferences",
+    "emptyStateTitle": null,
+    "emptyStateDescription": null
+  },
+  {
+    "route": "/buyers/profile",
+    "title": "Buyer Profile",
+    "description": "Manage your professional profile and company information",
+    "emptyStateTitle": null,
+    "emptyStateDescription": null
+  },
+  {
+    "route": "/buyers/plan",
+    "title": "Subscription Plan",
+    "description": "Manage your subscription and billing",
+    "emptyStateTitle": null,
+    "emptyStateDescription": null
+  },
+  {
+    "route": "/buyers/news",
+    "title": "K-Content News",
+    "description": "Stay updated with the latest Korean entertainment industry news",
+    "emptyStateTitle": "No news articles",
+    "emptyStateDescription": "Check back for the latest industry updates"
+  },
+  {
+    "route": "/buyers/send-message",
+    "title": "Send Message",
+    "description": "Contact content creators directly",
+    "emptyStateTitle": null,
+    "emptyStateDescription": null
+  },
+  {
+    "route": "/creators/home",
+    "title": "Creator Dashboard",
+    "description": "Manage your content and track performance",
+    "emptyStateTitle": "No content yet",
+    "emptyStateDescription": "Upload your first title to get started"
+  },
+  {
+    "route": "/creators/titles",
+    "title": "My Titles",
+    "description": "Manage your published content",
+    "emptyStateTitle": "No titles published",
+    "emptyStateDescription": "Create your first title to share with buyers"
+  },
+  {
+    "route": "/creators/titles/add",
+    "title": "Add New Title",
+    "description": "Upload and publish new content",
+    "emptyStateTitle": null,
+    "emptyStateDescription": null
+  },
+  {
+    "route": "/creators/titles/:id/edit",
+    "title": "Edit Title",
+    "description": "Update your content information",
+    "emptyStateTitle": null,
+    "emptyStateDescription": null
+  },
+  {
+    "route": "/creators/titles/:id",
+    "title": "Title Details",
+    "description": "View and manage your title",
+    "emptyStateTitle": "Title not found",
+    "emptyStateDescription": "This title may have been removed"
+  },
+  {
+    "route": "/creators/requests",
+    "title": "Incoming Requests",
+    "description": "Manage buyer requests for your content",
+    "emptyStateTitle": "No requests received",
+    "emptyStateDescription": "Buyers will contact you about your content here"
+  },
+  {
+    "route": "/creators/profile",
+    "title": "Creator Profile",
+    "description": "Manage your creator profile and portfolio",
+    "emptyStateTitle": null,
+    "emptyStateDescription": null
+  },
+  {
+    "route": "/creators/news",
+    "title": "K-Content News",
+    "description": "Stay updated with industry trends and opportunities",
+    "emptyStateTitle": "No news articles",
+    "emptyStateDescription": "Check back for the latest industry updates"
+  },
+  {
+    "route": "/creators/send-message",
+    "title": "Send Message",
+    "description": "Contact buyers and industry professionals",
+    "emptyStateTitle": null,
+    "emptyStateDescription": null
+  },
+  {
+    "route": "/creators/chat",
+    "title": "AI Chat Assistant",
+    "description": "Get help with content creation and industry insights",
+    "emptyStateTitle": "Start a conversation",
+    "emptyStateDescription": "Ask me anything about content creation or the industry"
+  }
+]

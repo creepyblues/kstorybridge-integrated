@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock, Edit } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
+import { Button, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
+import { Surface, Stack } from '@/components/design-system';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { titlesService, type Title } from "@/services/titlesService";
 import { directApiService } from "@/services/directApiService";
 
@@ -205,78 +207,76 @@ function TitleDetailContent() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+    <PageContainer>
+      <div>
         {/* Title Card */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-          <CardContent className="p-4 sm:p-6 lg:p-8 xl:p-10">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
-              <div className="flex-1">
-                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink mb-2 sm:mb-3 leading-tight">
-                  {title.title_name_en || title.title_name_kr}
-                </h2>
-                {title.title_name_kr && title.title_name_en && (
-                  <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-gray-500 font-medium mb-4 sm:mb-6">
-                    {title.title_name_kr}
-                  </p>
+        <Surface variant="card" padding="lg" spacing="md" as="section">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink mb-2 sm:mb-3 leading-tight">
+                {title.title_name_en || title.title_name_kr}
+              </h2>
+              {title.title_name_kr && title.title_name_en && (
+                <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-gray-500 font-medium mb-4 sm:mb-6">
+                  {title.title_name_kr}
+                </p>
+              )}
+
+              {/* Story and Art Authors */}
+              <div className="flex flex-wrap gap-3 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">
+                {title.story_author && (
+                  <div>
+                    <span className="font-semibold text-hanok-teal">Story by</span> <span className="text-gray-600">{title.story_author}</span>
+                  </div>
                 )}
-                
-                {/* Story and Art Authors */}
-                <div className="flex flex-wrap gap-3 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6">
-                  {title.story_author && (
-                    <div>
-                      <span className="font-semibold text-hanok-teal">Story by</span> <span className="text-gray-600">{title.story_author}</span>
-                    </div>
-                  )}
-                  {title.art_author && (
-                    <div>
-                      <span className="font-semibold text-hanok-teal">Art by</span> <span className="text-gray-600">{title.art_author}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:ml-4 lg:ml-8">
-                {isAuthenticated && (
-                  <Button
-                    id="title-detail-favorite-toggle-btn"
-                    onClick={handleFavoriteToggle}
-                    disabled={favoriteLoading}
-                    variant="outline"
-                    className="w-full sm:w-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base border-gray-300 hover:bg-gray-100 transition-colors"
-                  >
-                    <Heart className={`h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 ${isFavorited ? "fill-current" : ""}`} />
-                    <span className="hidden sm:inline">{isFavorited ? "Remove from Favorites" : "Add to Favorites"}</span>
-                    <span className="sm:hidden">{isFavorited ? "Remove" : "Add"}</span>
-                  </Button>
+                {title.art_author && (
+                  <div>
+                    <span className="font-semibold text-hanok-teal">Art by</span> <span className="text-gray-600">{title.art_author}</span>
+                  </div>
                 )}
-                
-                <Button
-                  id="title-detail-contact-creator-btn"
-                  onClick={() => {
-                    console.log('🔥 Contact Creator button clicked!');
-                    console.log('📝 Setting premium feature name to: Contact Creator');
-                    setPremiumFeatureName("Contact Creator");
-                    console.log('🚪 Opening premium popup...');
-                    setPremiumPopupOpen(true);
-                    console.log('✅ Premium popup state set to true');
-                  }}
-                  variant="outline"
-                  className="w-full sm:w-auto border-gray-300 hover:bg-gray-100 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base"
-                >
-                  <span className="hidden sm:inline">Contact Creator</span>
-                  <span className="sm:hidden">Contact</span>
-                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 sm:ml-4 lg:ml-8">
+              {isAuthenticated && (
+                <Button
+                  id="title-detail-favorite-toggle-btn"
+                  onClick={handleFavoriteToggle}
+                  disabled={favoriteLoading}
+                  variant="outline"
+                  className="w-full sm:w-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base border-gray-300 hover:bg-gray-100 transition-colors"
+                >
+                  <Heart className={`h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 ${isFavorited ? "fill-current" : ""}`} />
+                  <span className="hidden sm:inline">{isFavorited ? "Remove from Favorites" : "Add to Favorites"}</span>
+                  <span className="sm:hidden">{isFavorited ? "Remove" : "Add"}</span>
+                </Button>
+              )}
+
+              <Button
+                id="title-detail-contact-creator-btn"
+                onClick={() => {
+                  console.log('🔥 Contact Creator button clicked!');
+                  console.log('📝 Setting premium feature name to: Contact Creator');
+                  setPremiumFeatureName("Contact Creator");
+                  console.log('🚪 Opening premium popup...');
+                  setPremiumPopupOpen(true);
+                  console.log('✅ Premium popup state set to true');
+                }}
+                variant="outline"
+                className="w-full sm:w-auto border-gray-300 hover:bg-gray-100 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-sm sm:text-base"
+              >
+                <span className="hidden sm:inline">Contact Creator</span>
+                <span className="sm:hidden">Contact</span>
+              </Button>
+            </div>
+          </div>
+        </Surface>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 xl:gap-12 mb-8 sm:mb-12 lg:mb-16">
         {/* Left Column - Cover Image and Title Info */}
         <div className="lg:col-span-1 space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Cover Image */}
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl overflow-hidden">
-            <CardContent className="p-0">
+          <Surface variant="card" padding="none" spacing="md" as="figure" className="overflow-hidden">
               {title.title_image ? (
                 <div className="w-full h-64 sm:h-80 lg:h-96 bg-gray-100 overflow-hidden">
                   <img 
@@ -299,8 +299,7 @@ function TitleDetailContent() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </Surface>
 
           {/* View Original Content and Edit Button for Creators */}
           <div className="space-y-4">
@@ -379,32 +378,28 @@ function TitleDetailContent() {
 
           {/* Note Card - Only show if note exists */}
           {title.note && (
-            <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-midnight-ink text-xl flex items-center gap-2">
+            <Surface variant="card" padding="md" spacing="md" as="section">
+              <Stack gap="sm">
+                <h3 className="text-midnight-ink text-xl flex items-center gap-2">
                   <FileText className="h-5 w-5 text-hanok-teal" />
                   Note
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                </h3>
                 <div className="p-4 bg-gradient-to-r from-hanok-teal/5 to-porcelain-blue-50 rounded-lg border-l-4 border-hanok-teal">
                   <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
                     {title.note}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </Stack>
+            </Surface>
           )}
         </div>
 
         {/* Right Column - Description and Details */}
         <div className="lg:col-span-2 space-y-8">
           {/* Synopsis */}
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
-              <CardTitle className="text-midnight-ink text-2xl font-bold">Synopsis</CardTitle>
-            </CardHeader>
-            <CardContent className="px-6 pb-8">
+          <Surface variant="card" padding="lg" spacing="md" as="article">
+            <Stack gap="md">
+              <h2 className="text-midnight-ink text-2xl font-bold">Synopsis</h2>
               <div className="space-y-8">
                 {title.synopsis ? (
                   <p className="text-gray-600 leading-relaxed text-base lg:text-lg">{title.synopsis}</p>
@@ -702,15 +697,13 @@ function TitleDetailContent() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </Stack>
+          </Surface>
 
           {/* Title Information and Details */}
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-            <CardHeader className="pb-6">
-              <CardTitle className="text-midnight-ink text-2xl font-bold">Title Information</CardTitle>
-            </CardHeader>
-            <CardContent className="px-6 pb-8">
+          <Surface variant="card" padding="lg" spacing="md" as="section">
+            <Stack gap="md">
+              <h2 className="text-midnight-ink text-2xl font-bold">Title Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {/* Left Column - Creator Information */}
                 <div className="space-y-6">
@@ -814,8 +807,8 @@ function TitleDetailContent() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </Stack>
+          </Surface>
 
         </div>
       </div>
@@ -877,8 +870,9 @@ function TitleDetailContent() {
           </div>
         </div>
       )}
-      
-    </div>
+
+      </div>
+    </PageContainer>
   );
 }
 

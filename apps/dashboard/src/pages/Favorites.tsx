@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, CardContent, Input, Badge, useToast } from "@kstorybridge/ui";
 
-import { 
-  Search, 
-  Heart, 
-  Eye, 
+import {
+  Search,
+  Heart,
+  Eye,
   Star,
   Filter
 } from "lucide-react";
@@ -19,6 +19,7 @@ import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { EmptyState } from "@/components/design-system";
 
 type FavoriteWithTitle = {
   id: string;
@@ -403,12 +404,10 @@ export default function Favorites() {
           </div>
 
           {filteredFavorites.length === 0 && dbStatus.isConnected && (
-            <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <Heart className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-midnight-ink-400 mx-auto mb-3 sm:mb-4" />
-                <h3 className="text-base sm:text-lg font-medium text-midnight-ink mb-2">No favorites found</h3>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Heart}
+              title="No favorites found"
+            />
           )}
         </div>
     </PageContainer>

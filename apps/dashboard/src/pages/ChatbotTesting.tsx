@@ -344,13 +344,13 @@ export default function ChatbotTesting() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/experiment")}
             variant="outline"
             size="sm"
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Profile
+            Back to Experiment
           </Button>
           <div>
             <h2 className="text-3xl font-bold text-midnight-ink leading-tight">

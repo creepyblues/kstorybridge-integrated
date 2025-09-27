@@ -9,6 +9,7 @@ import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
 import { directApiService, setDirectApiAccessToken } from "@/services/directApiService";
 import { useAuth } from "@/hooks/useAuth";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 // Creator profile type based on user_creators table schema
 interface CreatorProfile {
@@ -186,10 +187,10 @@ function CreatorTitleDetailContent() {
 
 
   return (
-    <div className="space-y-6">
-      {/* Hero Section - Full Width */}
-      <div>
-        <div className="max-w-6xl mx-auto py-6 sm:py-8 px-3 sm:px-4">
+    <PageContainer>
+      <div className="space-y-6">
+        {/* Hero Section - Full Width */}
+        <div>
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1 min-w-0">
               {/* Mobile: Full width image first */}
@@ -702,7 +703,7 @@ function CreatorTitleDetailContent() {
       )}
 
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

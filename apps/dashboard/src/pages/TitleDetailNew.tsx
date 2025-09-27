@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock, Building2, Users, Target, TrendingUp, Calendar, BookOpen } from "lucide-react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
+import { Button, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, useToast } from "@kstorybridge/ui";
+import { Surface, Stack } from '@/components/design-system';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { titlesService, type Title } from "@/services/titlesService";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -212,10 +214,10 @@ function TitleDetailNewContent() {
 
 
   return (
-    <div className="space-y-6">
-      {/* Hero Section - Full Width */}
-      <div>
-        <div className="max-w-6xl mx-auto py-6 sm:py-8 px-3 sm:px-4">
+    <PageContainer>
+      <div className="space-y-6">
+        {/* Hero Section - Full Width */}
+        <div>
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1 min-w-0">
               {/* Mobile: Full width image first */}
@@ -383,13 +385,11 @@ function TitleDetailNewContent() {
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           
           {/* Key Business Info Panel */}
-          <Card className="bg-transparent border-gray-300 shadow-none">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-slate-900">
+          <Surface variant="card" padding="md" spacing="md" as="section">
+            <Stack gap="sm">
+              <h3 className="text-xl font-semibold text-slate-900">
                 Business Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
               <div className="space-y-4">
               
                 {/* Rights Holder */}
@@ -448,15 +448,13 @@ function TitleDetailNewContent() {
                 )}
               </div>
               </div>
-            </CardContent>
-          </Card>
+            </Stack>
+          </Surface>
 
           {/* Format & Genre */}
-          <Card className="bg-transparent border-gray-300 shadow-none">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-slate-900">Content Details</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Surface variant="card" padding="md" spacing="md" as="section">
+            <Stack gap="sm">
+              <h3 className="text-xl font-semibold text-slate-900">Content Details</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h5 className="font-medium text-slate-700">Format</h5>
@@ -486,20 +484,18 @@ function TitleDetailNewContent() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </Stack>
+          </Surface>
 
         </div>
 
         {/* Right Column - Content Overview (3/5) */}
         <div className="lg:col-span-3 space-y-6">
-          
+
           {/* Synopsis - Compact with expand option */}
-          <Card className="bg-transparent border-gray-300 shadow-none">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-slate-900">Synopsis</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Surface variant="card" padding="md" spacing="md" as="section">
+            <Stack gap="sm">
+              <h3 className="text-xl font-semibold text-slate-900">Synopsis</h3>
               <div className="space-y-4">
                 {title.synopsis ? (
                   <p className="text-slate-700 leading-relaxed">
@@ -553,35 +549,31 @@ function TitleDetailNewContent() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </Stack>
+          </Surface>
 
           {/* Additional Details */}
           {title.note && (
-            <Card className="bg-transparent border-gray-300 shadow-none">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <Surface variant="card" padding="md" spacing="md" as="section">
+              <Stack gap="sm">
+                <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                   <FileText className="h-5 w-5 text-hanok-teal" />
                   Additional Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                </h3>
                 <div className="p-4 bg-slate-50 rounded-lg">
                   <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
                     {title.note}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </Stack>
+            </Surface>
           )}
-          
+
           {/* Extended Author Information */}
           {(title.author || title.writer || title.illustrator) && (
-            <Card className="bg-transparent border-gray-300 shadow-none">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-slate-900">Creator Details</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <Surface variant="card" padding="md" spacing="md" as="section">
+              <Stack gap="sm">
+                <h3 className="text-lg font-semibold text-slate-900">Creator Details</h3>
                 <div className="space-y-3">
                   {title.author && (
                     <div className="flex justify-between items-center py-2 border-b border-slate-100 last:border-b-0">
@@ -602,8 +594,8 @@ function TitleDetailNewContent() {
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </Stack>
+            </Surface>
           )}
         </div>
       </div>
@@ -689,9 +681,8 @@ function TitleDetailNewContent() {
         }
       />
 
-      
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

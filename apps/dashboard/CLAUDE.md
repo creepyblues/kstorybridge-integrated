@@ -218,10 +218,9 @@ Pages accessible to all users with `account_type: 'buyer'`:
 
 ### 🔒 **Admin-Only Access**
 Pages restricted to specific admin emails (`sungho@dadble.com`, `kevin@sandstoneartists.com`):
-- `/ai-chatbot` - Legacy chatbot implementation
-- `/vector-search-manager` - Search index management
-- `/experiment` - Feature testing environment
-- `/chatbot-feedback-analysis` - Analytics dashboard
+- `/experiment` - Feature testing environment (gateway to all admin tools)
+  - Includes: Vector Search Manager, OpenAI Testing, Chat History, Chatbot Feedback Analysis
+- Individual tool pages accessible directly but intended to be accessed via Experiment page
 
 ### 👥 **Creator Access**
 Pages accessible to users with `account_type: 'creator'`:
@@ -280,6 +279,233 @@ const isAuthorized = accountType === 'creator';
 >   <ProBadge tier="pro" />
 >   <Crown className="h-5 w-5 text-pro-purple" />
 >   ```
+
+## 🎨 Design System (NEW - 2025-01-26)
+
+### Overview
+
+The Dashboard now uses a **centralized design system** where changing ONE component file updates the design across ALL pages automatically. **No `<div>` elements** - only semantic components.
+
+### 📁 Architecture - 3 Layers
+
+**Layer 1: Base Components** (`@kstorybridge/ui`)
+- Low-level primitives (Button, Card, Input, Badge)
+- From shadcn/ui + Radix UI
+- Handle accessibility automatically
+
+**Layer 2: Design System** (`@/components/design-system`)
+- **Surface** - Replaces all `<div>`, semantic layout primitive
+- **Stack** / **Inline** - Layout with automatic spacing
+- **EmptyState** - Standardized "no items found" pattern
+- **More components coming**: ActionCard, StatCard, ContentCard, etc.
+
+**Layer 3: App Components** (`@/components`)
+- App-specific compositions: StandardButton, StandardCard, ProBadge
+
+### 🎯 Core Principles
+
+1. **Single Source of Truth** - All design values in `design-tokens.css`
+2. **Semantic HTML** - Use `<Surface as="article">` not `<div>`
+3. **Variant System** - Change design by passing props, not writing CSS
+4. **Type Safety** - TypeScript types for all design tokens
+5. **No Manual Styles** - Use components and variants only
+
+### 📦 Design System Components
+
+#### Surface (Replaces `<div>`)
+```tsx
+import { Surface } from '@/components/design-system';
+
+// Standard card
+<Surface variant="card" padding="md">Content</Surface>
+
+// Semantic article
+<Surface as="article" variant="elevated" padding="lg">Article content</Surface>
+
+// Transparent wrapper
+<Surface as="header" variant="transparent" padding="none">Header</Surface>
+```
+
+**Variants**: `card` (default), `elevated`, `flat`, `transparent`, `outlined`
+**Padding**: `none`, `xs`, `sm`, `md`, `lg`, `xl`
+**Spacing**: `none`, `xs`, `sm`, `md`, `lg`, `xl` (bottom margin)
+
+#### Stack (Vertical Layout)
+```tsx
+import { Stack } from '@/components/design-system';
+
+<Stack gap="md">
+  <Surface>Item 1</Surface>
+  <Surface>Item 2</Surface>
+</Stack>
+```
+
+**Gap**: `none`, `xs`, `sm`, `md`, `lg`, `xl`
+**Align**: `start`, `center`, `end`, `stretch`
+**Justify**: `start`, `center`, `end`, `between`
+
+#### Inline (Horizontal Layout)
+```tsx
+import { Inline } from '@/components/design-system';
+
+<Inline gap="sm" align="center">
+  <Button>Action 1</Button>
+  <Button>Action 2</Button>
+</Inline>
+```
+
+**Gap**: `none`, `xs`, `sm`, `md`, `lg`, `xl`
+**Align**: `start`, `center`, `end`, `baseline`, `stretch`
+**Justify**: `start`, `center`, `end`, `between`, `around`
+**Wrap**: `wrap`, `nowrap`, `reverse`
+
+#### EmptyState (Standardized Empty States)
+```tsx
+import { EmptyState } from '@/components/design-system';
+import { Heart } from 'lucide-react';
+
+// Basic
+<EmptyState icon={Heart} title="No favorites found" />
+
+// With description
+<EmptyState
+  icon={Search}
+  title="No results"
+  description="Try different keywords"
+/>
+
+// With action
+<EmptyState
+  icon={Inbox}
+  title="All done!"
+  action={<Button>Add New</Button>}
+  size="lg"
+/>
+```
+
+**Size**: `sm`, `default`, `lg`
+
+### 🎨 Design Tokens (CSS Variables)
+
+All design values are centralized in `src/styles/design-tokens.css`:
+
+```css
+:root {
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+
+  /* Shadows */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+  /* Component-specific */
+  --surface-bg-default: transparent;
+  --surface-border-color: var(--color-gray-300);
+  --surface-shadow: var(--shadow-none);
+  --surface-radius: var(--radius-xl);
+}
+```
+
+**To change the design globally**: Edit `design-tokens.css` → Updates entire app!
+
+### 📝 TypeScript Design Config
+
+Type-safe access to design tokens via `design-config.ts`:
+
+```typescript
+import { designConfig } from '@/theme/design-config';
+
+// Access tokens with TypeScript autocomplete
+const mySpacing = designConfig.spacing.md;
+const myRadius = designConfig.radius.xl;
+const surfaceBg = designConfig.components.surface.bg.default;
+```
+
+### ✅ Migration Examples
+
+**Before** (Old way):
+```tsx
+<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+  <CardContent className="p-4 sm:p-6 text-center">
+    <Heart className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-midnight-ink-400 mx-auto mb-3 sm:mb-4" />
+    <h3 className="text-base sm:text-lg font-medium text-midnight-ink mb-2">No favorites found</h3>
+  </CardContent>
+</Card>
+```
+
+**After** (Design system):
+```tsx
+<EmptyState icon={Heart} title="No favorites found" />
+```
+
+**Result**: 7 lines → 1 line, fully consistent, design controlled centrally!
+
+### 🚀 Benefits
+
+1. **Change border color once** → Updates 50+ pages instantly
+2. **Adjust card padding** → One CSS variable affects all cards
+3. **No more `<div>`** → Semantic HTML everywhere
+4. **Type-safe** → TypeScript autocomplete for all design values
+5. **Consistent patterns** → EmptyState, ActionCard used everywhere
+6. **Faster development** → Compose components, not copy styles
+7. **Better accessibility** → Semantic HTML enforced
+8. **Easier testing** → Components testable in isolation
+
+### 🔄 Migration Strategy
+
+**Migrated Pages** (Using design system):
+- ✅ Favorites.tsx - Uses `<EmptyState>`
+
+**To migrate a page**:
+1. Import design system components: `import { Surface, EmptyState } from '@/components/design-system'`
+2. Replace manual Card styling with `<Surface variant="card">`
+3. Replace empty states with `<EmptyState>`
+4. Use `<Stack>` / `<Inline>` for layouts instead of manual flex
+5. Remove all hardcoded className styling
+
+### 📚 Component Reference
+
+**Files**:
+- `src/styles/design-tokens.css` - All design values (SINGLE SOURCE OF TRUTH)
+- `src/theme/design-config.ts` - TypeScript types and exports
+- `src/components/design-system/Surface.tsx` - Base primitive
+- `src/components/design-system/Stack.tsx` - Vertical layout
+- `src/components/design-system/Inline.tsx` - Horizontal layout
+- `src/components/design-system/EmptyState.tsx` - Empty state pattern
+- `src/components/design-system/index.ts` - All exports
+
+**Import Pattern**:
+```tsx
+import { Surface, Stack, Inline, EmptyState } from '@/components/design-system';
+```
+
+### 🎓 Design System Rules
+
+**✅ DO:**
+- Use Surface with semantic HTML: `<Surface as="article">`
+- Use Stack/Inline for layouts
+- Use EmptyState for "no items" states
+- Use variants to control styling
+- Change design in `design-tokens.css`
+
+**❌ DON'T:**
+- Use `<div>` directly (use Surface instead)
+- Write inline styles or manual classes
+- Copy-paste design patterns
+- Create custom empty states
+- Hardcode spacing values
+
+---
 
 ### Badge Design Standards (UPDATED 2025-01-14)
 

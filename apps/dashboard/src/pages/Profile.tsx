@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useToast } from "@kstorybridge/ui";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";
@@ -9,6 +9,8 @@ import { directApiService } from "@/services/directApiService";
 import { supabase } from "@/integrations/supabase/client";
 import { Users } from "lucide-react";
 import PasswordResetModal from "@/components/PasswordResetModal";
+import { Surface, Stack, Inline } from "@/components/design-system";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 // Define types for the actual table structures
 type BuyerProfile = {
@@ -652,8 +654,8 @@ export default function Profile() {
   }
 
   return (
-    <div>
-      <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+    <PageContainer>
+      <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
@@ -662,8 +664,7 @@ export default function Profile() {
         </div>
 
         {/* Profile Information Card */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-          <CardContent className="p-4 sm:p-6">
+        <Surface variant="card" padding="md" spacing="md" as="section">
             {/* Edit/Save buttons positioned at top right */}
             <div className="flex justify-end mb-4">
               {!isEditing ? (
@@ -888,13 +889,11 @@ export default function Profile() {
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </Surface>
 
         {/* Subscription Plan Section */}
         {profile?.account_type === 'buyer' && (
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-            <CardContent className="p-4 sm:p-6">
+          <Surface variant="card" padding="md" spacing="md" as="section">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
@@ -964,85 +963,14 @@ export default function Profile() {
                   </Button>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* AI Chatbot Section - Only for specific users */}
-        {(profile.email === 'sungho@dadble.com' || profile.email === 'kevin@sandstoneartists.com') && (
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-            <CardContent className="p-4 sm:p-6 lg:p-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-midnight-ink mb-2">AI IP Discovery</h3>
-                  <p className="text-gray-600 text-sm sm:text-base">
-                    Access AI-powered Korean IP discovery tools and view your conversation history and analytics.
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link to="/ai-chatbot">
-                    <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
-                      {/* Shine effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                      
-                      {/* Text */}
-                      <span className="relative z-10">🤖 AI CHATBOT</span>
-                      
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 rounded-2xl bg-purple-500/50 blur-md group-hover:bg-purple-500/60 transition-colors duration-300 pointer-events-none"></div>
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/buyers/chat">
-                    <Button className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
-                      {/* Shine effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                      
-                      {/* Text */}
-                      <span className="relative z-10">🧠 OPENAI CHAT</span>
-                      
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 rounded-2xl bg-emerald-500/50 blur-md group-hover:bg-emerald-500/60 transition-colors duration-300 pointer-events-none"></div>
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/chat-history">
-                    <Button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
-                      {/* Shine effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                      
-                      {/* Text */}
-                      <span className="relative z-10">📊 CHAT HISTORY</span>
-                      
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 rounded-2xl bg-indigo-500/50 blur-md group-hover:bg-indigo-500/60 transition-colors duration-300 pointer-events-none"></div>
-                    </Button>
-                  </Link>
-
-                  <Link to="/vector-search-manager">
-                    <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg rounded-2xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 group relative overflow-hidden">
-                      {/* Shine effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
-                      
-                      {/* Text */}
-                      <span className="relative z-10">🔍 VECTOR SEARCH</span>
-                      
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 rounded-2xl bg-purple-500/50 blur-md group-hover:bg-purple-500/60 transition-colors duration-300 pointer-events-none"></div>
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          </Surface>
         )}
 
         {/* Account Actions Section */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-          <CardContent className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
+        <Surface variant="card" padding="md" spacing="md" as="section">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-midnight-ink">Account Actions</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Account Actions</h3>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 {/* Change Password Button */}
@@ -1065,15 +993,14 @@ export default function Profile() {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </Surface>
       </div>
 
       {/* Password Reset Modal */}
-      <PasswordResetModal 
-        isOpen={isPasswordResetModalOpen} 
-        onClose={() => setIsPasswordResetModalOpen(false)} 
+      <PasswordResetModal
+        isOpen={isPasswordResetModalOpen}
+        onClose={() => setIsPasswordResetModalOpen(false)}
       />
-    </div>
+    </PageContainer>
   );
 }

@@ -10,6 +10,8 @@ import { chatOrchestratorService, type ChatMessage as OrchestratorMessage } from
 import { ChatbotFeedback } from "@/components/ChatbotFeedback";
 import { TitleFeedback } from "@/components/TitleFeedback";
 import { supabase } from "@/integrations/supabase/client";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ChatEmptyState } from "@/components/ChatEmptyState";
 
 interface Message {
   id: string;
@@ -26,17 +28,19 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
 
   // Helper function to find title ID by title name from available title data
   const findTitleIdByName = (titleName: string): string | null => {
-    // Clean the title name by normalizing outer quotes and removing trailing punctuation
+    // Clean the title name by extracting from markdown links and normalizing
     const cleanedName = titleName
-      .replace(/^["""'']+|["""'']+$/g, '"')  // Normalize only leading/trailing quotes
-      .replace(/[.,!?;:]+$/, '')  // Remove only trailing punctuation
+      .replace(/^\[([^\]]+)\]\([^)]*\)$/, '$1')  // Extract title from [title](url) markdown links
+      .replace(/^["""'']+|["""'']+$/g, '"')     // Normalize only leading/trailing quotes
+      .replace(/[.,!?;:]+$/, '')                // Remove only trailing punctuation
       .trim();
 
-    // Debug logging in development
-    if (import.meta.env.DEV && titleName.toLowerCase().includes('first love')) {
+    // Debug logging in development for markdown links and specific cases
+    if (import.meta.env.DEV && (titleName.includes('[') || titleName.toLowerCase().includes('first love'))) {
       console.log('🔍 Title matching debug:', {
         originalTitle: titleName,
         cleanedName,
+        wasMarkdownLink: titleName.includes('[') && titleName.includes(']('),
         messageSpecificTitles: titleData?.length || 0,
         allMessagesCount: allMessages?.length || 0,
         titleCacheSize: titleCache?.length || 0
@@ -368,36 +372,42 @@ export default function Chat() {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false); // Changed to false - no loading on mount
   const [showAllMessages, setShowAllMessages] = useState(false);
   const [isProcessingMessage, setIsProcessingMessage] = useState(false);
   const [streamingResponse, setStreamingResponse] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [useOrchestrator, setUseOrchestrator] = useState(false); // Feature flag - default to legacy mode
   const [titleCache, setTitleCache] = useState<any[]>([]); // Cache for ALL titles for matching
+  const [hasStartedConversation, setHasStartedConversation] = useState(false);
+  const [showHistory, setShowHistory] = useState(false); // Toggle between current chat and full history
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check if user is authorized - allow all buyers
   const accountType = user?.user_metadata?.account_type || 'buyer';
   const isAuthorized = accountType === 'buyer';
 
+  // Determine if we should show empty state - always show on page load until user sends first message or views history
+  const shouldShowEmptyState = !hasStartedConversation && !isLoadingHistory && !showHistory;
+
   // Function to get messages to display (truncated or full)
   const getDisplayMessages = () => {
+    // Only show all messages if explicitly requested, not just for history view
     if (showAllMessages || messages.length <= 5) {
       return messages;
     }
-    
+
     // Show greeting + last 4 messages (2 conversations: user->bot, user->bot)
     const greeting = messages.find(msg =>
       msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Jinu')
     );
-    
+
     const lastFourMessages = messages.slice(-4);
-    
+
     if (greeting && !lastFourMessages.includes(greeting)) {
       return [greeting, ...lastFourMessages];
     }
-    
+
     return lastFourMessages;
   };
 
@@ -406,11 +416,11 @@ export default function Chat() {
     if (showAllMessages || messages.length <= 5) {
       return 0;
     }
-    
+
     const greeting = messages.find(msg =>
       msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Jinu')
     );
-    
+
     const visibleCount = greeting ? 5 : 4; // greeting + 4 recent, or just 4 recent
     return Math.max(0, messages.length - visibleCount);
   };
@@ -425,131 +435,23 @@ export default function Chat() {
         variant: "destructive",
       });
       navigate("/profile");
-      setIsLoadingHistory(false);
       return;
     }
 
-    if (!user) {
-      setIsLoadingHistory(false);
-      return;
-    }
+    // No history loading on mount - will load lazily when user sends first message
+  }, [isAuthorized, user?.id]);
 
-    // Prevent re-initialization if we already have a session and messages
-    if (currentSession && messages.length > 0) {
-      setIsLoadingHistory(false);
-      // Session already initialized, skipping initialization
-      return;
-    }
-
-    // Initialize chat session and load history
-    const initializeSession = async () => {
-      if (!user) {
-        setIsLoadingHistory(false);
-        return;
-      }
-
-      try {
-        setIsLoadingHistory(true);
-        
-        // Add timeout to prevent hanging forever
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Initialization timeout')), 10000); // 10 second timeout
-        });
-        
-        // Check for existing active session or create new one
-        const sessionPromise = chatHistoryService.getActiveSession(user.id, 'openai');
-        let session = await Promise.race([sessionPromise, timeoutPromise]) as any;
-        
-        if (!session) {
-          const createSessionPromise = chatHistoryService.createSession({
-            user_id: user.id,
-            user_email: user.email || '',
-            session_type: 'openai'
-          });
-          session = await Promise.race([createSessionPromise, timeoutPromise]) as any;
-        }
-
-        if (session) {
-          setCurrentSession(session);
-          // Chat session initialized
-          
-          // Load conversation history with related data from this session
-          const historyPromise = chatHistoryService.getSessionMessagesWithData(session.id);
-          const history = await Promise.race([historyPromise, timeoutPromise]) as any;
-          
-          if (history && history.length > 0) {
-            // Messages are already enhanced with titles and suggestedQueries
-            const restoredMessages: Message[] = history;
-            
-            // Add greeting message at the beginning if not already there
-            const hasGreeting = restoredMessages.some(msg =>
-              msg.sender === 'bot' && msg.content.includes('Hey there! 👋 I\'m Jinu')
-            );
-            
-            if (!hasGreeting) {
-              restoredMessages.unshift({
-                id: 'greeting',
-                content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
-
-I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
-
-What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
-                sender: 'bot',
-                timestamp: new Date(session.created_at),
-              });
-            }
-            
-            setMessages(restoredMessages);
-            // Loaded messages from session history
-          } else {
-            // No history, show initial greeting
-            setMessages([
-              {
-                id: Date.now().toString(),
-                content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
-
-I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
-
-What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
-                sender: 'bot',
-                timestamp: new Date(),
-              }
-            ]);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to initialize chat session:', error);
-        
-        // Show toast notification for debugging
-        toast({
-          title: "Chat Initialization",
-          description: `Failed to load chat history: ${error.message}. Starting fresh session.`,
-          variant: "default"
-        });
-        
-        // Still show greeting message even if session fails
-        setMessages([
-          {
-            id: Date.now().toString(),
-            content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
-
-I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
-
-What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
-            sender: 'bot',
-            timestamp: new Date(),
-          }
-        ]);
-      } finally {
-        setIsLoadingHistory(false);
+  // Load history when user clicks "Go back to Chat history"
+  useEffect(() => {
+    const loadHistoryWhenRequested = async () => {
+      if (showHistory && messages.length === 0 && user && !currentSession) {
+        // User wants to see history but no messages loaded yet
+        await ensureSessionAndLoadHistory();
       }
     };
 
-    initializeSession();
-
-    // Don't end session on unmount - keep it active for the user's session
-    // Sessions will be managed by activity timeout or explicit logout
-  }, [isAuthorized, user?.id]); // Reduced dependencies - only re-run when user changes or authorization status changes
+    loadHistoryWhenRequested();
+  }, [showHistory, user]);
 
   // Load title cache for better title matching
   useEffect(() => {
@@ -596,6 +498,142 @@ What's been catching your interest lately? Are you looking for something specifi
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Lazy load session and history when user sends first message
+  const ensureSessionAndLoadHistory = async () => {
+    if (!user) return null;
+
+    // If we already have a session, return it
+    if (currentSession) {
+      return currentSession;
+    }
+
+    try {
+      setIsLoadingHistory(true);
+
+      // Check for existing active session or create new one
+      let session = await chatHistoryService.getActiveSession(user.id, 'openai');
+
+      if (!session) {
+        session = await chatHistoryService.createSession({
+          user_id: user.id,
+          user_email: user.email || '',
+          session_type: 'openai'
+        });
+      }
+
+      if (session) {
+        setCurrentSession(session);
+
+        // Load conversation history
+        const history = await chatHistoryService.getSessionMessagesWithData(session.id);
+
+        if (history && history.length > 0) {
+          // Prepend history to messages (before the user's current message)
+          setMessages(prev => [...history, ...prev]);
+        }
+      }
+
+      return session;
+    } catch (error) {
+      console.error('Failed to initialize chat session:', error);
+      return null;
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const handleEmptyStateMessage = async (message: string) => {
+    if (!message.trim() || isLoading || isProcessingMessage || isStreaming || !user) {
+      return;
+    }
+
+    // Set conversation as started
+    setHasStartedConversation(true);
+
+    // Set processing flag to prevent duplicate submissions
+    setIsProcessingMessage(true);
+
+    // Lazy load session and history before sending message
+    const session = await ensureSessionAndLoadHistory();
+    if (!session && !currentSession) {
+      toast({
+        title: "Session Error",
+        description: "Failed to create chat session. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessingMessage(false);
+      return;
+    }
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: message.trim(),
+      sender: 'user',
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+
+    // Reset to truncated view when starting new conversation
+    if (showAllMessages) {
+      setShowAllMessages(false);
+    }
+
+    const startTime = Date.now();
+
+    try {
+      if (useOrchestrator) {
+        console.log('🎯 Using Enhanced Mode (Pro Feature - OpenAI GPT-4 via Orchestrator)', {
+          model: 'gpt-4-turbo-preview',
+          provider: 'OpenAI',
+          mode: 'Enhanced (Pro)',
+          query: message.substring(0, 50) + '...',
+          user: user?.email
+        });
+        // Use new orchestrator service with streaming
+        await handleOrchestratorMessage(message, userMessage, startTime);
+      } else {
+        console.log('🎯 Using Standard Mode (OpenAI Direct)', {
+          model: 'gpt-4-turbo',
+          provider: 'OpenAI',
+          mode: 'Standard',
+          query: message.substring(0, 50) + '...',
+          user: user?.email
+        });
+        // Fallback to existing OpenAI service
+        await handleLegacyMessage(message, userMessage, startTime);
+      }
+    } catch (error: any) {
+      console.error("🚨 CHAT ERROR:", {
+        system: useOrchestrator ? 'Chat Orchestrator' : 'OpenAI Direct',
+        error: error.message,
+        user: user?.email,
+        query: message
+      });
+
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `I apologize, but I encountered an error: ${error.message}
+
+Please try again or switch to the legacy chat mode if the issue persists.`,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+      toast({
+        title: "Chat Error",
+        description: error.message || "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setIsProcessingMessage(false);
+      setIsStreaming(false);
+      setStreamingResponse('');
+    }
+  };
+
   const handleSendMessage = async () => {
     console.log('🔄 handleSendMessage called:', {
       hasInput: !!inputMessage.trim(),
@@ -618,8 +656,23 @@ What's been catching your interest lately? Are you looking for something specifi
       return;
     }
 
+    // Set conversation as started when sending any message
+    setHasStartedConversation(true);
+
     // Set processing flag to prevent duplicate submissions
     setIsProcessingMessage(true);
+
+    // Lazy load session and history before sending message
+    const session = await ensureSessionAndLoadHistory();
+    if (!session && !currentSession) {
+      toast({
+        title: "Session Error",
+        description: "Failed to create chat session. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessingMessage(false);
+      return;
+    }
 
     // Capture message content immediately and clear input to prevent duplicates
     const messageContent = inputMessage.trim();
@@ -1024,19 +1077,28 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
     return null;
   }
 
+  // Show empty state when no conversation has started
+  if (shouldShowEmptyState) {
+    return (
+      <ChatEmptyState
+        onSubmitMessage={handleEmptyStateMessage}
+        isLoading={isLoading || isProcessingMessage || isStreaming}
+        showHistory={showHistory}
+        onToggleHistory={() => {
+          setShowHistory(!showHistory);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto flex flex-col min-h-screen">
-        {/* Header */}
-        <div className="page-padding-x page-padding-y">
+        {/* Header - Uses PageContainer padding - Remove AI ASSISTANT in conversation mode */}
+        <div className="page-padding-x" style={{ paddingTop: 'var(--page-padding-y-mobile)', paddingBottom: 'var(--page-padding-y-mobile)' }}>
           <div className="mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight">AI ASSISTANT</h2>
-                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full text-white"
-                      style={{ backgroundColor: '#FF6B6B' }}>
-                  BETA
-                </span>
                 {useOrchestrator && (
                   <span className="px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
                     Enhanced
@@ -1046,17 +1108,10 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
               <div className="flex items-center gap-2">
                 <Button
                 onClick={() => {
-                  setMessages([{
-                    id: 'greeting',
-                    content: `Hey there! 👋 I'm Jinu, and I'm absolutely obsessed with Korean content! I spend my days discovering amazing stories in our KStoryBridge collection, and I love nothing more than helping fellow enthusiasts find their next favorite read or watch.
-
-I'm really excited to chat with you about Korean entertainment! Whether you're into intense psychological thrillers, heartwarming slice-of-life stories, epic fantasy adventures, or anything in between - I've got some incredible recommendations from our collection.
-
-What's been catching your interest lately? Are you looking for something specific, or are you in the mood to discover something completely new? I love hearing about what draws people to different stories!`,
-                    sender: 'bot',
-                    timestamp: new Date(),
-                  }]);
+                  setMessages([]);
                   setInputMessage('');
+                  setHasStartedConversation(false);
+                  setShowAllMessages(false);
                 }}
                 variant="outline"
                 className="border-gray-300 hover:bg-gray-100"
@@ -1068,9 +1123,6 @@ What's been catching your interest lately? Are you looking for something specifi
               </Button>
             </div>
             </div>
-            <p className="text-sm sm:text-base lg:text-xl text-midnight-ink-600 leading-relaxed">
-              Chat with Jinu, our AI assistant, to discover Korean content recommendations from our collection.
-            </p>
           </div>
         </div>
 
@@ -1112,37 +1164,41 @@ What's been catching your interest lately? Are you looking for something specifi
             {!isLoadingHistory &&
             getDisplayMessages().map((message, index, messagesArray) => (
               <div key={message.id} className="group">
-                <div className={`flex gap-4 ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
-                  {/* Simple Avatar Icon */}
-                  <div className="flex-shrink-0 pt-1">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                      message.sender === 'user'
-                        ? 'bg-gray-700'
-                        : 'bg-gradient-to-br from-green-600 to-green-700'
-                    }`}>
-                      {message.sender === 'user' ? (
-                        <User size={14} className="text-white" />
-                      ) : (
-                        <Sparkles size={14} className="text-white" />
-                      )}
+                {message.sender === 'user' ? (
+                  <div className="flex justify-end">
+                    <div className="max-w-3xl w-full bg-[#F5F3F0] border border-stone-200 rounded-2xl p-4 sm:p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-6 h-6 rounded-lg bg-gray-700 flex items-center justify-center flex-shrink-0">
+                          <User size={12} className="text-white" />
+                        </div>
+                        <span className="text-xs font-medium text-gray-700">You</span>
+                        <span className="text-xs text-gray-400">
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div className="prose prose-sm max-w-none text-gray-800">
+                        {message.content}
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 pt-1">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-green-600 to-green-700">
+                        <Sparkles size={14} className="text-white" />
+                      </div>
+                    </div>
 
-                  {/* Message Content - Clean and Simple */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-700">
-                        {message.sender === 'user' ? 'You' : 'Jinu'}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div className={`prose prose-sm max-w-none ${
-                      message.sender === 'user' ? 'text-gray-700' : 'text-gray-800'
-                    }`}>
-                      <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} titleCache={titleCache} />
-                    </div>
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-700">Jinu</span>
+                        <span className="text-xs text-gray-400">
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div className="prose prose-sm max-w-none text-gray-800">
+                        <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} titleCache={titleCache} />
+                      </div>
                     
                     {/* Suggested Queries - Cleaner display */}
                     {message.suggestedQueries && message.suggestedQueries.length > 0 && (
@@ -1179,8 +1235,9 @@ What's been catching your interest lately? Are you looking for something specifi
                       );
                     })()}
 
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ))}
 
@@ -1243,7 +1300,7 @@ What's been catching your interest lately? Are you looking for something specifi
                   value={inputMessage}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
-                  placeholder="Send a message..."
+                  placeholder="Describe the story you need, and I'll curate options..."
                   className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-sm placeholder-gray-400"
                   rows={1}
                   disabled={isLoading || isLoadingHistory || isProcessingMessage}
@@ -1265,7 +1322,16 @@ What's been catching your interest lately? Are you looking for something specifi
                 </button>
               </div>
               <div className="px-7 pb-2 text-xs text-gray-400 flex justify-between items-center">
-                <span>Press Enter to send, Shift+Enter for new line</span>
+                <div>
+                  <button
+                    onClick={() => {
+                      setShowHistory(!showHistory);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1 transition-colors"
+                  >
+                    {showHistory ? '← Back to current chat' : '→ Chat History'}
+                  </button>
+                </div>
                 <div className="flex items-center gap-2">
                   {/* Mode Toggle Switch */}
                   <button

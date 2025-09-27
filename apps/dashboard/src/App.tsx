@@ -49,7 +49,6 @@ const Contact = lazy(() => import("./pages/Contact"));
 const News = lazy(() => import("./pages/News"));
 const SendMessage = lazy(() => import("./pages/SendMessage"));
 const SendMessageTest = lazy(() => import("./pages/SendMessageTest"));
-const AIChatbot = lazy(() => import("./pages/AIChatbot"));
 const Chat = lazy(() => import("./pages/Chat"));
 const ChatHistory = lazy(() => import("./pages/ChatHistory"));
 const VectorSearchManager = lazy(() => import("./pages/VectorSearchManager"));
@@ -58,13 +57,15 @@ const SearchResults = lazy(() => import("./pages/SearchResults"));
 const ChatbotFeedbackAnalysis = lazy(() => import("./pages/ChatbotFeedbackAnalysis"));
 const SearchAnalytics = lazy(() => import("./pages/SearchAnalytics"));
 const Experiment = lazy(() => import("./pages/Experiment"));
-const ChatbotTesting = lazy(() => import("./pages/ChatbotTesting"));
 const SignupDebugPage = lazy(() => import("./pages/SignupDebugPage"));
 
 // Documentation pages
 const Docs = lazy(() => import("./pages/Docs"));
 const DocumentViewer = lazy(() => import("./pages/DocumentViewer"));
 const DatabaseSchema = lazy(() => import("./pages/DatabaseSchema"));
+const UXDashboard = lazy(() => import("./pages/ux/UXDashboard"));
+const UserJourneyPage = lazy(() => import("./pages/ux/UserJourneyPage"));
+const MessagingPage = lazy(() => import("./pages/ux/MessagingPage"));
 
 // Authentication pages
 const SigninPage = lazy(() => import("./pages/SigninPageSimple"));
@@ -139,6 +140,9 @@ const App = () => (
                   <BuyerProtectedLayout><RootRedirect /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/home" element={
+                  <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
+                } />
+                <Route path="/buyers/featured" element={
                   <BuyerProtectedLayout><BuyerHome /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/dashboard-new" element={
@@ -183,12 +187,6 @@ const App = () => (
                 <Route path="/buyers/send-message" element={
                   <BuyerProtectedLayout><SendMessage /></BuyerProtectedLayout>
                 } />
-                <Route path="/buyers/chat" element={
-                  <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
-                } />
-                <Route path="/buyers/ai-chatbot" element={
-                  <BuyerProtectedLayout><AIChatbot /></BuyerProtectedLayout>
-                } />
 
                 {/* Legacy route redirects */}
                 <Route path="/buyers/pricing" element={<Navigate to="/buyers/plan" replace />} />
@@ -227,9 +225,6 @@ const App = () => (
                 } />
                 <Route path="/creators/chat" element={
                   <CreatorProtectedLayout><Chat /></CreatorProtectedLayout>
-                } />
-                <Route path="/creators/ai-chatbot" element={
-                  <CreatorProtectedLayout><AIChatbot /></CreatorProtectedLayout>
                 } />
                 {/* Creator-specific routes only - removed inappropriate routes:
                      favorites, deals, browse, media, users, settings, pricing */}
@@ -275,12 +270,7 @@ const App = () => (
                 <Route path="/contact" element={
                   <ProtectedLayout><Contact /></ProtectedLayout>
                 } />
-                
-                {/* AI Chatbot - restricted access */}
-                <Route path="/ai-chatbot" element={
-                  <ProtectedLayout><AIChatbot /></ProtectedLayout>
-                } />
-                
+
                 {/* Chat History - restricted access */}
                 <Route path="/chat-history" element={
                   <ProtectedLayout><ChatHistory /></ProtectedLayout>
@@ -310,11 +300,6 @@ const App = () => (
                 <Route path="/experiment" element={
                   <ProtectedLayout><Experiment /></ProtectedLayout>
                 } />
-                
-                {/* OpenAI Chatbot Testing - environment comparison tool */}
-                <Route path="/openai-chatbot-testing" element={
-                  <ProtectedLayout><ChatbotTesting /></ProtectedLayout>
-                } />
 
                 {/* Documentation routes - accessible to all authenticated users */}
                 <Route path="/docs" element={
@@ -325,6 +310,15 @@ const App = () => (
                 } />
                 <Route path="/docs/view/:filename" element={
                   <DocsProtectedLayout><DocumentViewer /></DocsProtectedLayout>
+                } />
+                <Route path="/docs/ux" element={
+                  <DocsProtectedLayout><UXDashboard /></DocsProtectedLayout>
+                } />
+                <Route path="/docs/user_journey" element={
+                  <DocsProtectedLayout><UserJourneyPage /></DocsProtectedLayout>
+                } />
+                <Route path="/docs/messaging" element={
+                  <DocsProtectedLayout><MessagingPage /></DocsProtectedLayout>
                 } />
 
                 {/* Payment and subscription routes */}

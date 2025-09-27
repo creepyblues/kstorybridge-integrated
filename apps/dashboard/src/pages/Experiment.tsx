@@ -1,14 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@kstorybridge/ui";
 import { useAuth } from "@/hooks/useAuth";
-import { 
-  ArrowLeft, 
-  Bot, 
-  Brain, 
-  MessageSquare, 
-  BarChart3, 
-  Search, 
+import {
+  ArrowLeft,
+  Bot,
+  Brain,
+  MessageSquare,
+  BarChart3,
+  Search,
   Zap,
   ExternalLink,
   List
@@ -58,15 +58,6 @@ export default function Experiment() {
       status: 'Active'
     },
     {
-      id: 'ai-chatbot',
-      title: 'Traditional AI Chatbot',
-      description: 'Legacy chatbot implementation for comparison',
-      icon: <Bot className="w-6 h-6" />,
-      path: '/ai-chatbot',
-      color: 'from-green-500 to-teal-500',
-      status: 'Legacy'
-    },
-    {
       id: 'chatbot-feedback',
       title: 'Chatbot Feedback Analysis',
       description: 'Analytics dashboard for user feedback on chatbot performance',
@@ -92,6 +83,15 @@ export default function Experiment() {
       path: '/vector-search-manager',
       color: 'from-cyan-500 to-blue-500',
       status: 'System'
+    },
+    {
+      id: 'openai-testing',
+      title: 'OpenAI Environment Testing',
+      description: 'Compare OpenAI responses across direct client, local backend, and production environments',
+      icon: <Zap className="w-6 h-6" />,
+      path: '/openai-chatbot-testing',
+      color: 'from-cyan-500 to-teal-500',
+      status: 'Tools'
     }
   ];
 
@@ -205,6 +205,61 @@ export default function Experiment() {
                 </Card>
               ))}
             </div>
+
+            {/* AI IP Discovery Section */}
+            <Card className="bg-slate-800/50 border-slate-700 mt-8">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-emerald-400" />
+                  AI IP Discovery
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-300 mb-6">
+                  Access AI-powered Korean IP discovery tools and view your conversation history and analytics.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Link to="/buyers/chat" className="block">
+                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg rounded-2xl px-6 py-3 transition-all duration-300 group relative overflow-hidden">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+
+                      {/* Text */}
+                      <span className="relative z-10">🧠 OPENAI CHAT</span>
+
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-emerald-500/50 blur-md group-hover:bg-emerald-500/60 transition-colors duration-300 pointer-events-none"></div>
+                    </Button>
+                  </Link>
+
+                  <Link to="/chat-history" className="block">
+                    <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg rounded-2xl px-6 py-3 transition-all duration-300 group relative overflow-hidden">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+
+                      {/* Text */}
+                      <span className="relative z-10">📊 CHAT HISTORY</span>
+
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-indigo-500/50 blur-md group-hover:bg-indigo-500/60 transition-colors duration-300 pointer-events-none"></div>
+                    </Button>
+                  </Link>
+
+                  <Link to="/vector-search-manager" className="block">
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg rounded-2xl px-6 py-3 transition-all duration-300 group relative overflow-hidden">
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none"></div>
+
+                      {/* Text */}
+                      <span className="relative z-10">🔍 VECTOR SEARCH</span>
+
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-purple-500/50 blur-md group-hover:bg-purple-500/60 transition-colors duration-300 pointer-events-none"></div>
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Footer Info */}
             <div className="mt-12 text-center">

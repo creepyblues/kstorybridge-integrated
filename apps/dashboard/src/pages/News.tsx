@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle,
+import {
   Button,
   Badge
 } from "@kstorybridge/ui";
 import { RefreshCw } from "lucide-react";
 import { useToast } from "@kstorybridge/ui";
+import { Surface } from '@/components/design-system';
+import { PageContainer } from "@/components/layout/PageContainer";
 
 interface NewsSection {
   title: string;
@@ -258,9 +255,8 @@ export default function News() {
           text-decoration: none;
         }
       `}</style>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-2 sm:px-6 lg:px-8">
+      <PageContainer>
+        <div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
               <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">K-CONTENT NEWS</h2>
@@ -275,21 +271,23 @@ export default function News() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
             </div>
           ) : sections.length === 0 ? (
-            <Card className="bg-transparent border-gray-300 shadow-none">
-              <CardContent className="p-12 text-center">
-                <p className="text-gray-500">
-                  No news sections available at the moment.
-                </p>
-              </CardContent>
-            </Card>
+            <Surface variant="card" padding="xl" spacing="none" as="article">
+              <p className="text-center text-gray-500">
+                No news sections available at the moment.
+              </p>
+            </Surface>
           ) : (
           
           <div className="space-y-8">
             {sections.map((section, index) => {
               return (
-                <div
+                <Surface
                   key={`section-${index}`}
-                  className="bg-transparent border-gray-300 border shadow-none rounded-2xl p-6 sm:p-10 newsletter-section"
+                  variant="card"
+                  padding="lg"
+                  spacing="none"
+                  className="newsletter-section"
+                  as="article"
                 >
                   {/* Tags */}
                   {section.tags && section.tags.length > 0 && (
@@ -360,13 +358,13 @@ export default function News() {
                       </ul>
                     </div>
                   )}
-                </div>
+                </Surface>
               );
             })}
           </div>
           )}
         </div>
-      </div>
+      </PageContainer>
     </>
   );
 }

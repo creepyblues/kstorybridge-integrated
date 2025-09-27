@@ -5,6 +5,7 @@ import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-r
 import { Button, Card, CardContent, useToast } from "@kstorybridge/ui";
 import { titlesService, type Title } from "@/services/titlesService";
 import FeaturedTitlesCarousel from "@/components/FeaturedTitlesCarousel";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 import { useAuth } from "@/hooks/useAuth";
 import PremiumColumn from "@/components/PremiumColumn";
@@ -366,9 +367,9 @@ function HomeContent() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PageContainer>
         {/* Header */}
-        <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+        <div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
               <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">HOME</h2>
@@ -398,7 +399,7 @@ function HomeContent() {
         {!isCreatorView && <div className="border-t border-gray-300 my-8 sm:my-12"></div>}
 
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

@@ -17,6 +17,7 @@ import { enhancedTitleSearchService, type SearchResult } from "@/services/enhanc
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
 import { directApiService } from "@/services/directApiService";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 function BuyerHomeContent() {
   const { toast } = useToast();
@@ -377,18 +378,17 @@ function BuyerHomeContent() {
   }, [searchTerm, sortField, sortDirection, showOnlyWithPitch, activeGenreFilter]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+    <PageContainer>
+      <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">HOME</h2>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2">Featured Titles</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-2 sm:mb-4">Jinu, our friendly AI agent, handpicked these titles just for you!</p>
           </div>
         </div>
 
         {/* Featured Titles Section */}
         <div className="mb-8 sm:mb-12">
-          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Featured Titles</h2>
 
           {!loading && featuredTitles.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg">
@@ -409,7 +409,7 @@ function BuyerHomeContent() {
         {/* Divider */}
         <div className="border-t border-gray-300 my-8 sm:my-12"></div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

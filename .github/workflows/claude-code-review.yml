@@ -3,12 +3,13 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+    # Focus on design system related files
+    paths:
+      - "apps/dashboard/src/components/**/*.tsx"
+      - "apps/dashboard/src/pages/**/*.tsx"
+      - "apps/dashboard/src/design-system/**/*.tsx"
+      - "apps/dashboard/src/components/design-system/**/*.tsx"
+      - "apps/dashboard/src/styles/**/*.css"
 
 jobs:
   claude-review:
@@ -42,14 +43,35 @@ jobs:
           
           # Direct prompt for automated review (no @claude mention needed)
           direct_prompt: |
-            Please review this pull request and provide feedback on:
+            Review this PR focusing on DESIGN SYSTEM COMPLIANCE and code quality:
+
+            **🎨 DESIGN SYSTEM REQUIREMENTS (CRITICAL):**
+            - All cards MUST use Surface component instead of Card/div
+            - All layouts MUST use Stack/Inline instead of manual flexbox
+            - NO hardcoded styling (bg-white, shadow-*, border-*)
+            - Components MUST use design-tokens.css variables
+            - Pages MUST use PageContainer for consistent padding
+            - All empty states MUST use EmptyState component
+
+            **🔍 CHECK FOR VIOLATIONS:**
+            - Legacy Card component usage → Should be Surface
+            - Hardcoded Tailwind classes (bg-white, shadow-lg, rounded-*) → Should use variants
+            - Manual div containers → Should be Surface with semantic HTML
+            - Inconsistent spacing/padding → Should use design tokens
+            - Missing design system imports
+            - Direct CSS classes instead of component variants
+
+            **📊 SCORING:**
+            Rate design system compliance: 1-10 (10 = fully compliant)
+
+            **💡 OTHER REVIEW AREAS:**
             - Code quality and best practices
             - Potential bugs or issues
             - Performance considerations
             - Security concerns
             - Test coverage
-            
-            Be constructive and helpful in your feedback.
+
+            Be constructive and helpful. Prioritize design system compliance issues.
 
           # Optional: Use sticky comments to make Claude reuse the same comment on subsequent pushes to the same PR
           # use_sticky_comment: true

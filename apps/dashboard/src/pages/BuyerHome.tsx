@@ -81,6 +81,11 @@ function BuyerHomeContent() {
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showOnboardingFlow, setShowOnboardingFlow] = useState(false);
 
+  // Debug: Log onboarding state changes
+  useEffect(() => {
+    console.log('🔄 DEBUG: Onboarding state changed:', { showOnboardingModal, showOnboardingFlow });
+  }, [showOnboardingModal, showOnboardingFlow]);
+
   // Get data from cache - NO FALLBACK TO MOCK DATA
   const titles = getTitles(); // This is for search functionality, not initial display
   const dbStatus = getDbConnectivityStatus();
@@ -461,8 +466,11 @@ function BuyerHomeContent() {
 
   // Onboarding handlers (PRD 2.1)
   const handleStartOnboarding = () => {
+    console.log('🎬 DEBUG: handleStartOnboarding called - Starting onboarding flow');
+    console.log('📊 DEBUG: State before:', { showOnboardingModal, showOnboardingFlow });
     setShowOnboardingModal(false);
     setShowOnboardingFlow(true);
+    console.log('✅ DEBUG: State updates queued');
   };
 
   const handleSkipOnboarding = async () => {

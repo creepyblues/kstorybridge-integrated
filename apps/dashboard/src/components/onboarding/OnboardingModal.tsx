@@ -18,7 +18,8 @@ export default function OnboardingModal({ open, onStart, onSkip }: OnboardingMod
           left: '50%',
           transform: 'translate(-50%, -50%)',
           zIndex: 9999,
-          backgroundColor: 'white'
+          backgroundColor: 'white',
+          pointerEvents: 'auto'
         }}>
 
         <DialogHeader>
@@ -51,13 +52,19 @@ export default function OnboardingModal({ open, onStart, onSkip }: OnboardingMod
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
             variant="outline"
-            onClick={onSkip}
+            onClick={() => {
+              console.log('⏭️ DEBUG: Skip Tour button clicked!');
+              onSkip();
+            }}
             className="w-full border-gray-300 hover:bg-gray-100"
           >
             Skip Tour
           </Button>
           <Button
-            onClick={onStart}
+            onClick={() => {
+              console.log('🔘 DEBUG: Take Tour button clicked!');
+              onStart();
+            }}
             className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white"
           >
             Take Tour (30s)

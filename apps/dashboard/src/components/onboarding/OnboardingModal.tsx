@@ -9,9 +9,25 @@ interface OnboardingModalProps {
 }
 
 export default function OnboardingModal({ open, onStart, onSkip }: OnboardingModalProps) {
+  console.log('🔧 DEBUG MODAL: OnboardingModal render', { open, hasOnStart: !!onStart, hasOnSkip: !!onSkip });
+
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[500px] bg-white [&>button]:hidden">
+      <DialogContent className="sm:max-w-[500px] bg-white [&>button]:hidden z-[9999] border-4 border-red-500 shadow-2xl !opacity-100 !visibility-visible !transform-none !translate-x-0 !translate-y-0"
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 9999,
+          backgroundColor: 'white',
+          minHeight: '400px',
+          minWidth: '500px'
+        }}>
+        <div className="bg-yellow-200 p-4 border-2 border-blue-500">
+          <h1 className="text-black text-xl font-bold">🔧 DEBUG: MODAL CONTENT VISIBLE?</h1>
+        </div>
+
         <DialogHeader>
           <div className="flex items-center justify-center mb-4">
             <div className="w-16 h-16 bg-gradient-to-br from-hanok-teal to-blue-500 rounded-full flex items-center justify-center">

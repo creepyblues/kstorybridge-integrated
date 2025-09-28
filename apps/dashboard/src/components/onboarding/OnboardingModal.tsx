@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@kstorybridge/ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@kstorybridge/ui";
 import { Button } from "@kstorybridge/ui";
 import { Sparkles } from "lucide-react";
 
@@ -11,7 +11,7 @@ interface OnboardingModalProps {
 export default function OnboardingModal({ open, onStart, onSkip }: OnboardingModalProps) {
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[500px] bg-white" hideCloseButton>
+      <DialogContent className="sm:max-w-[500px] bg-white [&>button]:hidden">
         <DialogHeader>
           <div className="flex items-center justify-center mb-4">
             <div className="w-16 h-16 bg-gradient-to-br from-hanok-teal to-blue-500 rounded-full flex items-center justify-center">
@@ -21,12 +21,12 @@ export default function OnboardingModal({ open, onStart, onSkip }: OnboardingMod
           <DialogTitle className="text-center text-2xl font-bold text-gray-900">
             Welcome to KStoryBridge!
           </DialogTitle>
+          <DialogDescription className="text-center text-gray-600 text-base leading-relaxed">
+            Discover premium Korean content and connect with creators in just 30 seconds.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="py-6 space-y-4">
-          <p className="text-center text-gray-600 text-base leading-relaxed">
-            Discover premium Korean content and connect with creators in just 30 seconds.
-          </p>
 
           <div className="bg-gradient-to-r from-hanok-teal/10 to-blue-50 rounded-xl p-4 space-y-2">
             <p className="text-sm font-medium text-gray-900">✨ Quick Tour Highlights:</p>

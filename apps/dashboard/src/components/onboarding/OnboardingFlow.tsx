@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "@kstorybridge/ui";
+import { Dialog, DialogContent, DialogDescription } from "@kstorybridge/ui";
 import { Button } from "@kstorybridge/ui";
 import { MessageSquare, Heart, FileText, Users, X, ArrowRight, ArrowLeft } from "lucide-react";
 
@@ -99,7 +99,7 @@ export default function OnboardingFlow({ open, onComplete, onSkip }: OnboardingF
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[600px] bg-white" hideCloseButton>
+      <DialogContent className="sm:max-w-[600px] bg-white [&>button]:hidden">
         {/* Close button */}
         <button
           onClick={onSkip}
@@ -123,6 +123,11 @@ export default function OnboardingFlow({ open, onComplete, onSkip }: OnboardingF
             />
           ))}
         </div>
+
+        {/* Hidden description for accessibility */}
+        <DialogDescription className="sr-only">
+          Onboarding step {step.step} of {ONBOARDING_STEPS.length}: {step.title}. {step.description}
+        </DialogDescription>
 
         {/* Content */}
         <div className="py-8 space-y-6">

@@ -105,9 +105,9 @@ function BuyerHomeContent() {
         return;
       }
 
-      // Check if user is new (created in last 24 hours)
+      // Check if user is new (created in last 7 days for easier testing)
       const accountAge = user.created_at ? Date.now() - new Date(user.created_at).getTime() : Infinity;
-      const isNewUser = accountAge < 24 * 60 * 60 * 1000; // Less than 24 hours old
+      const isNewUser = accountAge < 7 * 24 * 60 * 60 * 1000; // Less than 7 days old (extended for testing)
 
       console.log('📅 IMMEDIATE ONBOARDING: Account age analysis:', {
         createdAt: user.created_at,
@@ -115,7 +115,7 @@ function BuyerHomeContent() {
         accountAgeMs: accountAge,
         accountAgeHours: Math.round(accountAge / (1000 * 60 * 60) * 10) / 10,
         isNewUser,
-        threshold: '24 hours'
+        threshold: '7 days (extended for testing)'
       });
 
       if (isNewUser) {
@@ -137,7 +137,7 @@ function BuyerHomeContent() {
         });
 
       } else {
-        console.log('👤 IMMEDIATE ONBOARDING: Existing user (older than 24h), no onboarding needed');
+        console.log('👤 IMMEDIATE ONBOARDING: Existing user (older than 7 days), no onboarding needed');
 
         // Still mark as seen to prevent future checks
         if (!hasSeenOnboarding) {

@@ -18,6 +18,8 @@ import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
 import { useTierAccess } from "@/hooks/useTierAccess";
+import { ContactUpgradePrompt, PremiumContentUpgradePrompt } from "@/components/UpgradePrompt";
+import { triggerContactAttemptEmail, triggerPremiumContentEmail, triggerFirstSaveEmail } from "@/services/emailService";
 
 function TitleDetailNewContent() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -118,7 +120,7 @@ function TitleDetailNewContent() {
       console.error("❌ No user or titleId available for favorites toggle");
       toast({
         title: "Authentication Error",
-        description: "Please sign in to save favorites.",
+        description: "Please sign in to save titles.",
         variant: "destructive"
       });
       return;
@@ -144,8 +146,8 @@ function TitleDetailNewContent() {
         await directApiService.removeFromFavorites(user.id, titleId);
         setIsFavorited(false);
         toast({
-          title: "Removed from favorites",
-          description: "This title has been removed from your favorites"
+          title: "Removed from saved titles",
+          description: "This title has been removed from your saved titles"
         });
         refreshData('favorites');
         console.log('✅ TITLE DETAIL NEW: Successfully removed from favorites');
@@ -154,10 +156,20 @@ function TitleDetailNewContent() {
         await directApiService.addToFavorites(user.id, titleId);
         setIsFavorited(true);
         toast({
-          title: "Added to favorites",
-          description: "You can find this title in your favorites list"
+          title: "Added to saved titles",
+          description: "You can find this title in your saved titles"
         });
         refreshData('favorites');
+
+        // PRD 2.1: Trigger first save email for new users
+        try {
+          const userName = user.user_metadata?.full_name || user.email || 'User';
+          await triggerFirstSaveEmail(user.id, user.email, userName);
+        } catch (error) {
+          console.warn('Failed to trigger first save email:', error);
+          // Don't fail the save operation if email fails
+        }
+
         console.log('✅ TITLE DETAIL NEW: Successfully added to favorites');
       }
     } catch (error) {
@@ -166,17 +178,17 @@ function TitleDetailNewContent() {
       // Revert the UI state since the operation failed
       // (UI was already updated optimistically)
 
-      let errorMessage = "Failed to update favorites. Please try again.";
+      let errorMessage = "Failed to update saved titles. Please try again.";
       if (error instanceof Error) {
         if (error.message.includes('network') || error.message.includes('fetch')) {
           errorMessage = "Network error. Please check your connection and try again.";
         } else if (error.message.includes('unauthorized') || error.message.includes('403')) {
-          errorMessage = "You don't have permission to save favorites. Please sign in again.";
+          errorMessage = "You don't have permission to save titles. Please sign in again.";
         }
       }
 
       toast({
-        title: "Error updating favorites",
+        title: "Error updating saved titles",
         description: errorMessage,
         variant: "destructive"
       });
@@ -436,7 +448,21 @@ function TitleDetailNewContent() {
                   </div>
                   <div className="flex justify-end mt-2">
                     <Button
-                      onClick={() => {
+                      onClick={async () => {
+                        // PRD 2.1: Trigger conversion email for basic users trying to contact
+                        if (tier === 'basic' && user?.email && user?.user_metadata?.full_name) {
+                          try {
+                            await triggerContactAttemptEmail(
+                              user.id,
+                              user.email,
+                              user.user_metadata.full_name,
+                              tier
+                            );
+                          } catch (error) {
+                            console.warn('Failed to trigger contact attempt email:', error);
+                          }
+                        }
+
                         setPremiumFeatureName("Contact Creator");
                         setPremiumPopupOpen(true);
                       }}
@@ -445,6 +471,16 @@ function TitleDetailNewContent() {
                       Contact
                     </Button>
                   </div>
+                </div>
+
+                {/* PRD 2.1: Contact upgrade prompt for basic users */}
+                <div className="pt-4">
+                  <ContactUpgradePrompt
+                    variant="callout"
+                    size="sm"
+                    titleName={title.title_name_en || title.title_name_kr}
+                    dismissible={true}
+                  />
                 </div>
 
                 {/* Target Market Info */}
@@ -554,11 +590,26 @@ function TitleDetailNewContent() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                     <span className="text-slate-600 text-sm sm:text-base text-center sm:text-left">View the Pitch Deck</span>
                     <Button
-                      onClick={() => {
+                      onClick={async () => {
                         if (canAccessPremiumContent) {
                           setCurrentPdfUrl(title.pitch || "");
                           setTimeout(() => setIsPdfModalOpen(true), 10);
                         } else {
+                          // PRD 2.1: Trigger conversion email for basic users trying to view premium content
+                          if (tier === 'basic' && user?.email && user?.user_metadata?.full_name) {
+                            try {
+                              await triggerPremiumContentEmail(
+                                user.id,
+                                user.email,
+                                user.user_metadata.full_name,
+                                tier,
+                                title.title_name_en || title.title_name_kr || 'Title'
+                              );
+                            } catch (error) {
+                              console.warn('Failed to trigger premium content email:', error);
+                            }
+                          }
+
                           setShowUpgradeModal(true);
                         }
                       }}
@@ -567,6 +618,16 @@ function TitleDetailNewContent() {
                       View
                     </Button>
                   </div>
+                </div>
+
+                {/* PRD 2.1: Premium content upgrade prompt for basic users */}
+                <div className="pt-4">
+                  <PremiumContentUpgradePrompt
+                    variant="callout"
+                    size="sm"
+                    titleName={title.title_name_en || title.title_name_kr}
+                    dismissible={true}
+                  />
                 </div>
 
                 {/* Keywords */}

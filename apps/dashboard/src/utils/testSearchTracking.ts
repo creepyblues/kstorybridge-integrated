@@ -18,12 +18,12 @@ export const testSearchTracking = () => {
     page: '/buyers/titles'
   });
   
-  // Test 2: Favorites search
-  console.log('\n2️⃣ Testing favorites search...');
+  // Test 2: Saved titles search
+  console.log('\n2️⃣ Testing saved titles search...');
   trackSearch('action drama', 8, {
     userType: 'buyer',
-    searchContext: 'favorites',
-    page: '/buyers/favorites'
+    searchContext: 'saved',
+    page: '/buyers/saved'
   });
   
   // Test 3: Creator search

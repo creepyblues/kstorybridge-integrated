@@ -45,6 +45,22 @@ const documents: DocumentItem[] = [
     lastUpdated: '2025-01-26'
   },
   {
+    filename: 'PRD-2.1.md',
+    title: 'PRD 2.1: User Engagement & Paid Conversion',
+    description: 'Strategic improvements to onboarding, analytics tracking, email re-engagement, and conversion optimization.',
+    category: 'core',
+    icon: Rocket,
+    lastUpdated: '2025-01-27'
+  },
+  {
+    filename: 'PRD-2.1-Implementation-Plan.md',
+    title: 'PRD 2.1 Implementation Plan',
+    description: 'Detailed task tracking, sprint planning, and execution roadmap for PRD 2.1 features.',
+    category: 'development',
+    icon: FileText,
+    lastUpdated: '2025-01-27'
+  },
+  {
     filename: 'AI_CHATBOT_DOCUMENTATION.md',
     title: 'AI Chatbot System Documentation',
     description: 'Architecture, data structures, search pipelines, and improvement areas for the AI chatbot system.',

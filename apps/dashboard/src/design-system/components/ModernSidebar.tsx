@@ -31,7 +31,7 @@ const getNavigationItems = (accountType: string) => {
       ]
     : [
         { name: 'Browse Titles', href: '/buyers/titles' },
-        { name: 'Favorites', href: '/buyers/favorites' },
+        { name: 'Saved Titles', href: '/buyers/saved' },
         { name: 'Requests', href: '/buyers/requests' },
       ];
 

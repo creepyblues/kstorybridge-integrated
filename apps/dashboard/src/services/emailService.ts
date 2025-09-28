@@ -37,6 +37,42 @@ interface EmailEventData {
   timestamp: string;
 }
 
+// PRD 2.1: Enhanced email trigger types for engagement and conversion
+interface OnboardingEmailData {
+  userEmail: string;
+  userName: string;
+  userId: string;
+  completedSteps: number;
+  totalSteps: number;
+  skipped: boolean;
+}
+
+interface EngagementEmailData {
+  userEmail: string;
+  userName: string;
+  userId: string;
+  eventType: 'first_search' | 'first_save' | 'daily_return' | 'weekly_return';
+  metadata?: {
+    searchQuery?: string;
+    titlesSaved?: number;
+    daysSinceSignup?: number;
+  };
+}
+
+interface ConversionEmailData {
+  userEmail: string;
+  userName: string;
+  userId: string;
+  currentTier: string;
+  targetTier: 'pro' | 'suite';
+  triggerEvent: 'premium_content_view' | 'contact_attempt' | 'multiple_saves' | 'extended_usage';
+  metadata?: {
+    contentTitle?: string;
+    savesCount?: number;
+    usageDays?: number;
+  };
+}
+
 /**
  * Core email sending service using Supabase Edge Function with centralized tracking
  */
@@ -265,6 +301,169 @@ export class EmailService {
     });
   }
 
+  // PRD 2.1: Automated email triggers for engagement and conversion
+
+  /**
+   * Send onboarding completion celebration email
+   */
+  async sendOnboardingCompletionEmail(data: OnboardingEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const emailType = 'onboarding_completion';
+
+    // Check for duplicates
+    const alreadySent = await this.hasEmailBeenSent(data.userEmail, emailType);
+    if (alreadySent) {
+      console.log(`🔄 Onboarding completion email already sent to ${data.userEmail}`);
+      return { success: true, error: 'Email already sent (duplicate prevented)' };
+    }
+
+    const subject = data.skipped
+      ? "Getting started with KStoryBridge - We're here to help!"
+      : "🎉 Welcome aboard! You're all set to discover amazing content";
+
+    const result = await this.sendEmail({
+      to: data.userEmail,
+      subject,
+      template: 'onboarding_completion',
+      templateData: data,
+      from: 'KStoryBridge Team <onboarding@kstorybridge.com>'
+    });
+
+    await this.logEmailAttempt(data.userEmail, emailType, result.success ? 'sent' : 'failed', result.messageId, result.error);
+    return result;
+  }
+
+  /**
+   * Send engagement milestone emails (first search, save, return visits)
+   */
+  async sendEngagementEmail(data: EngagementEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const emailType = `engagement_${data.eventType}`;
+
+    // Check for duplicates (some engagement emails should only be sent once)
+    const alreadySent = await this.hasEmailBeenSent(data.userEmail, emailType);
+    if (alreadySent && ['first_search', 'first_save'].includes(data.eventType)) {
+      console.log(`🔄 Engagement email ${data.eventType} already sent to ${data.userEmail}`);
+      return { success: true, error: 'Email already sent (duplicate prevented)' };
+    }
+
+    const emailConfigs = {
+      first_search: {
+        subject: "Great first search! Here's what else you can discover",
+        template: 'engagement_first_search'
+      },
+      first_save: {
+        subject: "🔖 Title saved! Building your perfect content collection",
+        template: 'engagement_first_save'
+      },
+      daily_return: {
+        subject: "Welcome back! New content recommendations await",
+        template: 'engagement_daily_return'
+      },
+      weekly_return: {
+        subject: "We missed you! Check out this week's hottest Korean content",
+        template: 'engagement_weekly_return'
+      }
+    };
+
+    const config = emailConfigs[data.eventType];
+    if (!config) {
+      console.warn(`Unknown engagement event type: ${data.eventType}`);
+      return { success: false, error: 'Unknown engagement event type' };
+    }
+
+    const result = await this.sendEmail({
+      to: data.userEmail,
+      subject: config.subject,
+      template: config.template,
+      templateData: data,
+      from: 'KStoryBridge Team <engagement@kstorybridge.com>'
+    });
+
+    await this.logEmailAttempt(data.userEmail, emailType, result.success ? 'sent' : 'failed', result.messageId, result.error);
+    return result;
+  }
+
+  /**
+   * Send conversion emails to encourage Pro upgrades
+   */
+  async sendConversionEmail(data: ConversionEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const emailType = `conversion_${data.triggerEvent}`;
+
+    // Check for recent conversion emails (don't spam users)
+    const recentEmailSent = await this.hasRecentEmailBeenSent(data.userEmail, 'conversion_', 7); // 7 days cooldown
+    if (recentEmailSent) {
+      console.log(`🔄 Recent conversion email sent to ${data.userEmail}, respecting cooldown`);
+      return { success: true, error: 'Conversion email cooldown active' };
+    }
+
+    const emailConfigs = {
+      premium_content_view: {
+        subject: "🔓 Unlock full access to premium Korean content",
+        template: 'conversion_premium_view'
+      },
+      contact_attempt: {
+        subject: "Connect directly with creators - Upgrade to Pro!",
+        template: 'conversion_contact_attempt'
+      },
+      multiple_saves: {
+        subject: "📚 You're building a great collection! Unlock Pro features",
+        template: 'conversion_multiple_saves'
+      },
+      extended_usage: {
+        subject: "🌟 You're a power user! Time for Pro benefits",
+        template: 'conversion_extended_usage'
+      }
+    };
+
+    const config = emailConfigs[data.triggerEvent];
+    if (!config) {
+      console.warn(`Unknown conversion trigger: ${data.triggerEvent}`);
+      return { success: false, error: 'Unknown conversion trigger' };
+    }
+
+    const result = await this.sendEmail({
+      to: data.userEmail,
+      subject: config.subject,
+      template: config.template,
+      templateData: data,
+      from: 'KStoryBridge Team <growth@kstorybridge.com>'
+    });
+
+    await this.logEmailAttempt(data.userEmail, emailType, result.success ? 'sent' : 'failed', result.messageId, result.error);
+    return result;
+  }
+
+  /**
+   * Check if a recent email of a certain type has been sent (for conversion cooldowns)
+   */
+  private async hasRecentEmailBeenSent(userEmail: string, emailTypePrefix: string, daysCooldown: number): Promise<boolean> {
+    const tableExists = await this.checkEmailLogsTableExists();
+    if (!tableExists) return false;
+
+    try {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysCooldown);
+
+      const { data, error } = await supabase
+        .from('email_logs')
+        .select('id')
+        .eq('user_email', userEmail.toLowerCase())
+        .like('email_type', `${emailTypePrefix}%`)
+        .eq('status', 'sent')
+        .gte('sent_at', cutoffDate.toISOString())
+        .limit(1);
+
+      if (error) {
+        console.warn('⚠️ Could not check recent email logs:', error);
+        return false;
+      }
+
+      return data && data.length > 0;
+    } catch (error) {
+      console.warn('⚠️ Could not check recent email logs:', error);
+      return false;
+    }
+  }
+
   /**
    * Generic event-based email sender
    */
@@ -395,3 +594,114 @@ export const sendVerificationReminder = (email: string, userName: string) => ema
 export const sendPasswordResetConfirmation = (email: string, userName: string) => emailService.sendPasswordResetConfirmation(email, userName);
 export const sendTierUpgradeEmail = (email: string, userName: string, newTier: string) => emailService.sendTierUpgradeEmail(email, userName, newTier);
 export const sendEventEmail = (eventData: EmailEventData) => emailService.sendEventEmail(eventData);
+
+// PRD 2.1: New automated email triggers
+export const sendOnboardingCompletionEmail = (data: OnboardingEmailData) => emailService.sendOnboardingCompletionEmail(data);
+export const sendEngagementEmail = (data: EngagementEmailData) => emailService.sendEngagementEmail(data);
+export const sendConversionEmail = (data: ConversionEmailData) => emailService.sendConversionEmail(data);
+
+// Export types for use in other modules
+export type {
+  WelcomeEmailData,
+  EmailEventData,
+  OnboardingEmailData,
+  EngagementEmailData,
+  ConversionEmailData
+};
+
+/**
+ * PRD 2.1: Email trigger utilities for easy integration
+ * These functions make it easy to trigger emails from various parts of the app
+ */
+
+/**
+ * Trigger engagement email when user performs first search
+ */
+export const triggerFirstSearchEmail = async (userId: string, userEmail: string, userName: string, searchQuery: string) => {
+  return sendEngagementEmail({
+    userEmail,
+    userName,
+    userId,
+    eventType: 'first_search',
+    metadata: { searchQuery }
+  });
+};
+
+/**
+ * Trigger engagement email when user saves first title
+ */
+export const triggerFirstSaveEmail = async (userId: string, userEmail: string, userName: string) => {
+  return sendEngagementEmail({
+    userEmail,
+    userName,
+    userId,
+    eventType: 'first_save'
+  });
+};
+
+/**
+ * Trigger conversion email when user tries to view premium content
+ */
+export const triggerPremiumContentEmail = async (
+  userId: string,
+  userEmail: string,
+  userName: string,
+  currentTier: string,
+  contentTitle: string
+) => {
+  if (currentTier === 'basic') {
+    return sendConversionEmail({
+      userEmail,
+      userName,
+      userId,
+      currentTier,
+      targetTier: 'pro',
+      triggerEvent: 'premium_content_view',
+      metadata: { contentTitle }
+    });
+  }
+};
+
+/**
+ * Trigger conversion email when basic user tries to contact creator
+ */
+export const triggerContactAttemptEmail = async (
+  userId: string,
+  userEmail: string,
+  userName: string,
+  currentTier: string
+) => {
+  if (currentTier === 'basic') {
+    return sendConversionEmail({
+      userEmail,
+      userName,
+      userId,
+      currentTier,
+      targetTier: 'pro',
+      triggerEvent: 'contact_attempt'
+    });
+  }
+};
+
+/**
+ * Trigger conversion email when user has saved multiple titles (5+)
+ */
+export const triggerMultipleSavesEmail = async (
+  userId: string,
+  userEmail: string,
+  userName: string,
+  currentTier: string,
+  savesCount: number
+) => {
+  if (currentTier === 'basic' && savesCount >= 5) {
+    return sendConversionEmail({
+      userEmail,
+      userName,
+      userId,
+      currentTier,
+      targetTier: 'pro',
+      triggerEvent: 'multiple_saves',
+      metadata: { savesCount }
+    });
+  }
+};

@@ -28,7 +28,7 @@ const getDiscoverItems = (accountType: string | null): MenuItem[] => {
       { title: "Home", href: "/buyers/home" },
       { title: "Featured", href: "/buyers/featured" },
       { title: "Title Library", href: "/buyers/titles" },
-      { title: "Favorites", href: "/buyers/favorites" },
+      { title: "Saved Titles", href: "/buyers/saved" },
       { title: "K-content News", href: "/buyers/news" },
       // { title: "My Requests", href: "/buyers/requests" },
     ];

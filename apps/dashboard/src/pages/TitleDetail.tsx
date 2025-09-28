@@ -144,8 +144,8 @@ function TitleDetailContent() {
         await directApiService.removeFromFavorites(user.id, titleId);
         setIsFavorited(false);
         toast({
-          title: "Removed from favorites",
-          description: "This title has been removed from your favorites"
+          title: "Removed from saved titles",
+          description: "This title has been removed from your saved titles"
         });
 
         // Invalidate favorites cache so Favorites page will refresh
@@ -156,8 +156,8 @@ function TitleDetailContent() {
         await directApiService.addToFavorites(user.id, titleId);
         setIsFavorited(true);
         toast({
-          title: "Added to favorites",
-          description: "You can find this title in your favorites list"
+          title: "Added to saved titles",
+          description: "You can find this title in your saved titles"
         });
 
         // Invalidate favorites cache so Favorites page will refresh

@@ -19,7 +19,7 @@ graph TD
 
     BuyerHome --> Featured["Featured Titles<br/>/buyers/featured"]
     BuyerHome --> Titles["Browse All Titles<br/>/buyers/titles"]
-    BuyerHome --> Favorites["My Favorites<br/>/buyers/favorites"]
+    BuyerHome --> Favorites["Saved Titles<br/>/buyers/saved"]
     BuyerHome --> News["Industry News<br/>/buyers/news"]
     BuyerHome --> Profile["My Profile<br/>/buyers/profile"]
 

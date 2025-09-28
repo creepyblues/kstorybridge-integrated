@@ -8,7 +8,7 @@ const BuyersPricing = () => {
 
   // Map tiers to their corresponding plan names
   const tierToPlan: Record<string, string> = {
-    basic: 'free', // Free = 'basic' in tier field  
+    basic: 'free', // Basic tier (free plan)
     pro: 'pro',
     suite: 'suite'
   };
@@ -25,17 +25,17 @@ const BuyersPricing = () => {
   const plans = [
     {
       id: 'free',
-      name: 'Free',
+      name: 'Basic',
       tagline: '',
       description: 'Browse Korean titles with AI chatbot',
-      price: '$0',
+      price: 'Free',
       priceUnit: '/month',
       features: [
         'Browse title catalog',
         'Access title info',
         'AI Chatbot'
       ],
-      tierLevel: 'basic' // Free = 'basic' in tier field
+      tierLevel: 'basic' // Basic tier (free plan)
     },
     {
       id: 'pro',
@@ -45,7 +45,7 @@ const BuyersPricing = () => {
       price: '$250',
       priceUnit: '/month',
       features: [
-        'Everything in Free, plus:',
+        'Everything in Basic, plus:',
         'Advanced AI Chatbot',
         'Contact IP holder',
         'Access premium Pitch deck'

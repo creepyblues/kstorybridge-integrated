@@ -11,10 +11,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 ## Development Commands
 
 - `npm run dev` - Start development server on port 8080
-- `npm run build` - Build for production  
+- `npm run build` - Build for production
 - `npm run build:dev` - Build for development mode
 - `npm run lint` - Run ESLint on all files
 - `npm run preview` - Preview production build locally
+
+## Documentation System
+
+### Adding New Documentation Files
+
+**CRITICAL**: For documentation to be viewable at `/docs/view/[filename].md`, files MUST be placed in the correct location:
+
+**Required Location**: `/apps/dashboard/public/docs/[filename].md`
+
+**Why**: The DocumentViewer component fetches documentation via HTTP from the Vite dev server, which serves files from the `public/` directory.
+
+**Process for Adding New Documentation**:
+1. Create markdown file: `/apps/dashboard/public/docs/your-doc.md`
+2. Add entry to Docs page listing: `/apps/dashboard/src/pages/Docs.tsx`
+3. Verify accessibility: `http://localhost:8081/docs/view/your-doc.md`
+
+**Example**:
+```typescript
+// In Docs.tsx documents array:
+{
+  filename: 'PRD-2.1.md',
+  title: 'PRD 2.1: User Engagement & Paid Conversion',
+  description: 'Strategic improvements to onboarding, analytics, and conversion.',
+  category: 'core',
+  icon: Rocket,
+  lastUpdated: '2025-01-27'
+}
+```
+
+**Common Mistake**: Creating docs in root `/docs/` directory instead of `/apps/dashboard/public/docs/` will result in blank DocumentViewer pages.
 
 ## Architecture Overview
 
@@ -213,7 +243,7 @@ Pages accessible to all users with `account_type: 'buyer'`:
 - `/chat` - AI-powered chatbot for content discovery (Updated: Previously admin-only, now buyer-accessible)
 - `/buyers/home` - Buyer dashboard
 - `/buyers/titles` - Browse content catalog
-- `/buyers/favorites` - Saved favorites
+- `/buyers/saved` - Saved titles
 - `/buyers/news` - Industry news
 
 ### 🔒 **Admin-Only Access**
@@ -282,8 +312,8 @@ import { useToast } from "@kstorybridge/ui"; // NEVER use this in dashboard
 
 **Fixed Pages Include**:
 - Profile.tsx (profile editing)
-- TitleDetail.tsx & TitleDetailNew.tsx (favorites functionality)
-- Favorites.tsx (remove from favorites)
+- TitleDetail.tsx & TitleDetailNew.tsx (saved titles functionality)
+- Favorites.tsx (remove from saved titles)
 - TitleForm.tsx, TitleFeedback.tsx, ChatbotFeedback.tsx
 - All buyer/creator dashboard pages
 
@@ -297,8 +327,8 @@ toast({
 });
 
 toast({
-  title: "Added to favorites",
-  description: "You can find this title in your favorites list"
+  title: "Added to saved titles",
+  description: "You can find this title in your saved titles"
 });
 ```
 
@@ -345,7 +375,7 @@ toast({ title: "Success" }); // Missing description - avoid this pattern
 - Include both title and description in toast calls
 - Test database operations after implementation
 
-**Note**: This fix eliminates empty notification boxes for Profile editing, favorites functionality, and all other database update operations across the dashboard.
+**Note**: This fix eliminates empty notification boxes for Profile editing, saved titles functionality, and all other database update operations across the dashboard.
 
 ## Design Guidelines
 
@@ -467,7 +497,7 @@ import { EmptyState } from '@/components/design-system';
 import { Heart } from 'lucide-react';
 
 // Basic
-<EmptyState icon={Heart} title="No favorites found" />
+<EmptyState icon={Heart} title="No saved titles found" />
 
 // With description
 <EmptyState
@@ -540,14 +570,14 @@ const surfaceBg = designConfig.components.surface.bg.default;
 <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
   <CardContent className="p-4 sm:p-6 text-center">
     <Heart className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-midnight-ink-400 mx-auto mb-3 sm:mb-4" />
-    <h3 className="text-base sm:text-lg font-medium text-midnight-ink mb-2">No favorites found</h3>
+    <h3 className="text-base sm:text-lg font-medium text-midnight-ink mb-2">No saved titles found</h3>
   </CardContent>
 </Card>
 ```
 
 **After** (Design system):
 ```tsx
-<EmptyState icon={Heart} title="No favorites found" />
+<EmptyState icon={Heart} title="No saved titles found" />
 ```
 
 **Result**: 7 lines → 1 line, fully consistent, design controlled centrally!
@@ -751,7 +781,7 @@ All of these bypass the centralized system and will cause inconsistency.
 
 **Migrated Pages (Using PageContainer)**:
 - ✅ `/buyers/titles` (TitleList.tsx) - Migrated to centralized system (2025-01-26)
-- ✅ `/buyers/favorites` (Favorites.tsx) - Migrated to centralized system (2025-01-26)
+- ✅ `/buyers/saved` (Favorites.tsx) - Migrated to centralized system (2025-01-26)
 - ✅ `/buyers/chat` (Chat.tsx) - Migrated to centralized system (2025-01-26)
 
 **Migration Status**: 3 core pages migrated. Additional pages should be migrated as they are updated.

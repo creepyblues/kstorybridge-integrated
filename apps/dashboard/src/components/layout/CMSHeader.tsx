@@ -20,7 +20,7 @@ const getDiscoverItems = (accountType: string) => {
       { title: "Home", href: "/buyers/home" },
       { title: "Featured", href: "/buyers/featured" },
       { title: "Title Library", href: "/buyers/titles" },
-      { title: "Favorites", href: "/buyers/favorites" },
+      { title: "Saved Titles", href: "/buyers/saved" },
       { title: "News", href: "/buyers/news" },
     ];
   }

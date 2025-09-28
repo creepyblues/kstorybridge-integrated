@@ -21,6 +21,9 @@ import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { EmptyState } from "@/components/design-system";
+import { FavoritesUpgradePrompt } from "@/components/UpgradePrompt";
+import { triggerMultipleSavesEmail } from "@/services/emailService";
+import { useTierAccess } from "@/hooks/useTierAccess";
 
 type FavoriteWithTitle = {
   id: string;
@@ -89,6 +92,7 @@ const mockFavorites: FavoriteWithTitle[] = [
 export default function Favorites() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { tier } = useTierAccess();
   const { getFavorites, setFavorites, isFresh, isSessionValid, getDbConnectivityStatus, setDbConnectivityStatus } = useDataCache();
   const { } = useSessionCache(); // Initialize session cache management
   const [searchQuery, setSearchQuery] = useState(""); // What user types
@@ -161,6 +165,23 @@ export default function Favorites() {
       setDbConnectivityStatus({ isConnected: true });
 
       console.log(`✅ FAVORITES PAGE: Successfully loaded ${data.length} favorites from database`);
+
+      // PRD 2.1: Trigger conversion email when user has saved multiple titles (5+)
+      if (user && data.length >= 5 && tier === 'basic') {
+        try {
+          const userName = user.user_metadata?.full_name || user.email || 'User';
+          await triggerMultipleSavesEmail(
+            user.id,
+            user.email,
+            userName,
+            tier,
+            data.length
+          );
+        } catch (emailError) {
+          console.warn('Failed to trigger multiple saves email:', emailError);
+          // Don't fail the favorites loading if email fails
+        }
+      }
     } catch (error) {
       console.error("❌ FAVORITES PAGE: Error loading favorites:", error);
 
@@ -200,8 +221,8 @@ export default function Favorites() {
       // Track the search query with favorites context
       trackSearch(searchQuery.trim(), resultCount, {
         userType: 'buyer', // Favorites are typically used by buyers
-        searchContext: 'favorites',
-        page: '/buyers/favorites'
+        searchContext: 'saved',
+        page: '/buyers/saved'
       });
     }
   };
@@ -224,8 +245,8 @@ export default function Favorites() {
       const updatedFavorites = favorites.filter(fav => fav.title_id !== titleId);
       setFavorites(updatedFavorites);
       toast({
-        title: "Removed from favorites",
-        description: "This title has been removed from your favorites"
+        title: "Removed from saved titles",
+        description: "This title has been removed from your saved titles"
       });
 
       console.log('✅ Successfully removed from favorites');
@@ -317,8 +338,20 @@ export default function Favorites() {
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
             <div>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">MY FAVORITES</h2>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2 sm:mb-4">SAVED TITLES</h2>
             </div>
+          </div>
+
+          {/* PRD 2.1: Upgrade prompt for basic tier users */}
+          <div className="mb-6">
+            <FavoritesUpgradePrompt
+              variant="banner"
+              size="md"
+              customMessage={favorites.length >= 5
+                ? `You've saved ${favorites.length} titles! Unlock unlimited saves and advanced features with Pro.`
+                : "Save unlimited titles and organize them with Pro features."
+              }
+            />
           </div>
 
 
@@ -410,7 +443,7 @@ export default function Favorites() {
           {filteredFavorites.length === 0 && dbStatus.isConnected && (
             <EmptyState
               icon={Heart}
-              title="No favorites found"
+              title="No saved titles found"
             />
           )}
         </div>

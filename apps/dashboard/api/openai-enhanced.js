@@ -272,14 +272,32 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token' });
     }
 
-    // Check authorized users
+    // Check authorized users - Allow all buyers, maintain admin access
     console.log('✅ User authenticated:', user.email);
-    const ALLOWED_USERS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
-    if (!ALLOWED_USERS.includes(user.email)) {
-      console.log('❌ User not authorized:', user.email);
-      return res.status(403).json({ error: 'Forbidden - User not authorized' });
+
+    // Admin users (always allowed)
+    const ADMIN_USERS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+    if (ADMIN_USERS.includes(user.email)) {
+      console.log('✅ Admin user authorized for OpenAI chatbot:', user.email);
+    } else {
+      // Check if user is a buyer
+      console.log('🔍 Checking buyer authorization for:', user.email);
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_buyers')
+        .select('tier, email')
+        .eq('email', user.email)
+        .single();
+
+      if (profileError || !userProfile) {
+        console.log('❌ User is not a buyer:', user.email, profileError?.message);
+        return res.status(403).json({ error: 'Forbidden - Chat is only available for buyers' });
+      }
+
+      console.log('✅ Buyer user authorized for OpenAI chatbot:', {
+        email: user.email,
+        tier: userProfile.tier
+      });
     }
-    console.log('✅ User authorized for OpenAI chatbot');
 
     // Get request data
     const { query, conversationHistory } = req.body || {};

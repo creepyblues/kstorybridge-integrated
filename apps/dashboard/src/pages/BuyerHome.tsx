@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
+import { Search, RefreshCw, ChevronUp, ChevronDown, ArrowUpDown, Sparkles } from "lucide-react";
 import { Button, Card, CardContent } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";import { titlesService, type Title } from "@/services/titlesService";
 import { featuredService, type FeaturedWithTitle } from "@/services/featuredService";
@@ -18,6 +18,9 @@ import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch } from "@/utils/analytics";
 import { directApiService } from "@/services/directApiService";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { OnboardingModal, OnboardingFlow } from "@/components/onboarding";
+import { OnboardingService } from "@/services/onboardingService";
+import "@/utils/onboardingDebug"; // Load debug utilities for console access
 
 function BuyerHomeContent() {
   const { toast } = useToast();
@@ -56,6 +59,10 @@ function BuyerHomeContent() {
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // Onboarding state (PRD 2.1)
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showOnboardingFlow, setShowOnboardingFlow] = useState(false);
+
   // Get data from cache - NO FALLBACK TO MOCK DATA
   const titles = getTitles(); // This is for search functionality, not initial display
   const dbStatus = getDbConnectivityStatus();
@@ -66,6 +73,103 @@ function BuyerHomeContent() {
       loadFeaturedData();
     }
   }, [user]); // Load featured titles on mount
+
+  // IMMEDIATE FIX: Session-independent onboarding check (PRD 2.1)
+  useEffect(() => {
+    const showOnboardingForNewUsers = () => {
+      console.log('🚀 IMMEDIATE ONBOARDING: Starting session-independent check...', {
+        hasUser: !!user,
+        userId: user?.id,
+        userEmail: user?.email,
+        createdAt: user?.created_at,
+        timestamp: new Date().toISOString()
+      });
+
+      if (!user) {
+        console.log('❌ IMMEDIATE ONBOARDING: No user found, skipping');
+        return;
+      }
+
+      // Check localStorage first to prevent duplicate showings
+      const localStorageKey = `onboarding_seen_${user.id}`;
+      const hasSeenOnboarding = localStorage.getItem(localStorageKey);
+
+      console.log('💾 IMMEDIATE ONBOARDING: LocalStorage check:', {
+        key: localStorageKey,
+        hasSeenBefore: !!hasSeenOnboarding,
+        storedValue: hasSeenOnboarding
+      });
+
+      if (hasSeenOnboarding) {
+        console.log('⏭️ IMMEDIATE ONBOARDING: User has seen onboarding before, skipping');
+        return;
+      }
+
+      // Check if user is new (created in last 24 hours)
+      const accountAge = user.created_at ? Date.now() - new Date(user.created_at).getTime() : Infinity;
+      const isNewUser = accountAge < 24 * 60 * 60 * 1000; // Less than 24 hours old
+
+      console.log('📅 IMMEDIATE ONBOARDING: Account age analysis:', {
+        createdAt: user.created_at,
+        currentTime: new Date().toISOString(),
+        accountAgeMs: accountAge,
+        accountAgeHours: Math.round(accountAge / (1000 * 60 * 60) * 10) / 10,
+        isNewUser,
+        threshold: '24 hours'
+      });
+
+      if (isNewUser) {
+        console.log('🎉 IMMEDIATE ONBOARDING: New user detected! Showing onboarding...');
+
+        // Show onboarding modal after brief delay
+        setTimeout(() => {
+          console.log('✨ IMMEDIATE ONBOARDING: Triggering modal display');
+          setShowOnboardingModal(true);
+        }, 1000);
+
+        // Mark as seen in localStorage (basic deduplication)
+        localStorage.setItem(localStorageKey, new Date().toISOString());
+
+        // Show welcome toast
+        toast({
+          title: "Welcome to KStoryBridge! 🎉",
+          description: "Let's get you started with a quick tour of the platform."
+        });
+
+      } else {
+        console.log('👤 IMMEDIATE ONBOARDING: Existing user (older than 24h), no onboarding needed');
+
+        // Still mark as seen to prevent future checks
+        if (!hasSeenOnboarding) {
+          localStorage.setItem(localStorageKey, 'existing_user_' + new Date().toISOString());
+        }
+      }
+    };
+
+    // Run the check
+    showOnboardingForNewUsers();
+
+    // Also make available globally for manual testing
+    if (typeof window !== 'undefined') {
+      (window as any).forceOnboarding = () => {
+        console.log('🔧 MANUAL TRIGGER: Forcing onboarding modal');
+        setShowOnboardingModal(true);
+      };
+
+      (window as any).resetOnboardingFlag = () => {
+        if (user) {
+          const key = `onboarding_seen_${user.id}`;
+          localStorage.removeItem(key);
+          console.log('🔄 MANUAL RESET: Cleared onboarding flag, refresh page to see onboarding');
+        }
+      };
+
+      console.log('🛠️ MANUAL CONTROLS: Available in console:');
+      console.log('   - forceOnboarding() - Show onboarding modal immediately');
+      console.log('   - resetOnboardingFlag() - Clear localStorage flag and refresh');
+    }
+
+  }, [user]);
 
   useEffect(() => {
     // Load full titles if user performs a search OR activates pitch filter (lazy loading)
@@ -377,13 +481,100 @@ function BuyerHomeContent() {
     setCurrentPage(1);
   }, [searchTerm, sortField, sortDirection, showOnlyWithPitch, activeGenreFilter]);
 
+  // Onboarding handlers (PRD 2.1)
+  const handleStartOnboarding = () => {
+    setShowOnboardingModal(false);
+    setShowOnboardingFlow(true);
+  };
+
+  const handleSkipOnboarding = async () => {
+    console.log('⏭️ ONBOARDING: User skipped onboarding');
+
+    // Mark as completed in localStorage
+    if (user) {
+      const localStorageKey = `onboarding_seen_${user.id}`;
+      localStorage.setItem(localStorageKey, `skipped_${new Date().toISOString()}`);
+      console.log('💾 ONBOARDING: Marked as skipped in localStorage:', localStorageKey);
+
+      // Try to save to database (but don't block UI if it fails)
+      try {
+        const userName = user.user_metadata?.full_name || user.email || 'User';
+        await OnboardingService.skipOnboarding(user.id, userName);
+        console.log('✅ ONBOARDING: Also saved skip to database');
+      } catch (error) {
+        console.warn('⚠️ ONBOARDING: Database save failed (using localStorage only):', error);
+      }
+    }
+
+    setShowOnboardingModal(false);
+    setShowOnboardingFlow(false);
+
+    toast({
+      title: "Tour skipped",
+      description: "You can always take the tour later using the 'Take Tour' button."
+    });
+  };
+
+  const handleCompleteOnboarding = async () => {
+    console.log('✅ ONBOARDING: User completed onboarding');
+
+    // Mark as completed in localStorage
+    if (user) {
+      const localStorageKey = `onboarding_seen_${user.id}`;
+      localStorage.setItem(localStorageKey, `completed_${new Date().toISOString()}`);
+      console.log('💾 ONBOARDING: Marked as completed in localStorage:', localStorageKey);
+
+      // Try to save to database (but don't block UI if it fails)
+      try {
+        const userName = user.user_metadata?.full_name || user.email || 'User';
+        await OnboardingService.updateOnboardingStep(user.id, 4, 'complete', userName);
+        console.log('✅ ONBOARDING: Also saved completion to database');
+      } catch (error) {
+        console.warn('⚠️ ONBOARDING: Database save failed (using localStorage only):', error);
+      }
+
+      toast({
+        title: "Welcome aboard! 🎉",
+        description: "You're all set to discover amazing Korean content."
+      });
+    }
+
+    setShowOnboardingFlow(false);
+  };
+
   return (
     <PageContainer>
+      {/* Onboarding Modals (PRD 2.1) */}
+      <OnboardingModal
+        open={showOnboardingModal}
+        onStart={handleStartOnboarding}
+        onSkip={handleSkipOnboarding}
+      />
+      <OnboardingFlow
+        open={showOnboardingFlow}
+        onComplete={handleCompleteOnboarding}
+        onSkip={handleSkipOnboarding}
+      />
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
             <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2">Featured Titles</h2>
             <p className="text-sm sm:text-base text-gray-600 mb-2 sm:mb-4">Jinu, our friendly AI agent, handpicked these titles just for you!</p>
+          </div>
+
+          {/* Manual Onboarding Trigger */}
+          <div>
+            <Button
+              onClick={() => {
+                console.log('🎯 MANUAL TRIGGER: User clicked "Take Tour" button');
+                setShowOnboardingModal(true);
+              }}
+              variant="outline"
+              className="border-gray-300 hover:bg-gray-100 text-sm"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Take Tour
+            </Button>
           </div>
         </div>
 

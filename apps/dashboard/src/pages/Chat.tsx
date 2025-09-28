@@ -15,6 +15,8 @@ import { ChatEmptyState } from "@/components/ChatEmptyState";
 import ProBadge from "@/components/ProBadge";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
+import { ChatUpgradePrompt } from "@/components/UpgradePrompt";
+import { triggerFirstSearchEmail } from "@/services/emailService";
 
 interface Message {
   id: string;
@@ -269,14 +271,16 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
         case 'quote':
           if (segment.titleId) {
             return (
-              <button
+              <a
                 key={segmentIdx}
-                onClick={() => navigate(`/buyers/titles/${segment.titleId}`)}
+                href={`/buyers/titles/${segment.titleId}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
                 title={`View "${segment.content}" details`}
               >
                 "{segment.content}"
-              </button>
+              </a>
             );
           } else {
             return <span key={segmentIdx} className="font-medium">"{segment.content}"</span>;
@@ -666,6 +670,15 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
     // Set conversation as started when sending any message
     setHasStartedConversation(true);
 
+    // PRD 2.1: Trigger first search email for new users
+    try {
+      const userName = user.user_metadata?.full_name || user.email || 'User';
+      await triggerFirstSearchEmail(user.id, user.email, userName, inputMessage.trim());
+    } catch (error) {
+      console.warn('Failed to trigger first search email:', error);
+      // Don't fail the chat if email fails
+    }
+
     // Set processing flag to prevent duplicate submissions
     setIsProcessingMessage(true);
 
@@ -993,8 +1006,8 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
           }
         });
       }
-      
-      navigate(`/buyers/titles/${title.title_id}`);
+
+      window.open(`/buyers/titles/${title.title_id}`, '_blank');
     };
 
     return (
@@ -1131,6 +1144,15 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
             </div>
             </div>
           </div>
+        </div>
+
+        {/* PRD 2.1: Upgrade prompt for basic tier users */}
+        <div className="page-padding-x mb-4">
+          <ChatUpgradePrompt
+            variant="banner"
+            size="sm"
+            dismissible={true}
+          />
         </div>
 
         {/* Chat Container - Clean, no card wrapper */}
@@ -1333,24 +1355,24 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                   {/* Mode Dropdown Menu */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer">
+                      <button className="flex items-center gap-1.5 px-3 py-2 sm:px-2 sm:py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer">
                         {useOrchestrator ? (
                           <>
-                            <Sparkles size={12} className="text-pro-purple" />
+                            <Sparkles size={16} className="text-pro-purple sm:w-3 sm:h-3" />
                             <span className="text-gray-700 font-medium">Advanced</span>
                             <ProBadge tier="pro" size="sm" showIcon={false} className="ml-0.5" />
                           </>
                         ) : (
                           <>
-                            <Bot size={12} className="text-gray-600" />
+                            <Bot size={16} className="text-gray-600 sm:w-3 sm:h-3" />
                             <span className="text-gray-700 font-medium">Standard</span>
                           </>
                         )}
-                        <ChevronDown size={12} className="text-gray-500 ml-0.5" />
+                        <ChevronDown size={16} className="text-gray-500 ml-0.5 sm:w-3 sm:h-3" />
                       </button>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end" className="min-w-[180px] bg-white">
+                    <DropdownMenuContent align="end" sideOffset={8} className="min-w-[180px] bg-white">
                       <DropdownMenuItem
                         onClick={() => {
                           console.log('🎛️ Chat Mode Changed to Standard', {
@@ -1362,7 +1384,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                         }}
                         className="cursor-pointer"
                       >
-                        <Bot size={14} className="mr-2 text-gray-600" />
+                        <Bot size={16} className="mr-2 text-gray-600" />
                         <span>Standard (Basic)</span>
                       </DropdownMenuItem>
 
@@ -1381,7 +1403,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                         }}
                         className="cursor-pointer"
                       >
-                        <Sparkles size={14} className="mr-2 text-pro-purple" />
+                        <Sparkles size={16} className="mr-2 text-pro-purple" />
                         <span>Advanced</span>
                         <ProBadge tier="pro" size="sm" showIcon={false} className="ml-auto" />
                       </DropdownMenuItem>

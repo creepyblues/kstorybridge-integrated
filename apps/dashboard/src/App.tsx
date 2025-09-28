@@ -154,7 +154,7 @@ const App = () => (
                 <Route path="/buyers/titles/:titleId" element={
                   <BuyerProtectedLayout><TitleDetailNew /></BuyerProtectedLayout>
                 } />
-                <Route path="/buyers/favorites" element={
+                <Route path="/buyers/saved" element={
                   <BuyerProtectedLayout><Favorites /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/requests" element={
@@ -246,9 +246,6 @@ const App = () => (
                 } />
                 <Route path="/search-results" element={
                   <ProtectedLayout><SearchResults /></ProtectedLayout>
-                } />
-                <Route path="/favorites" element={
-                  <ProtectedLayout><Favorites /></ProtectedLayout>
                 } />
                 <Route path="/deals" element={
                   <ProtectedLayout><Deals /></ProtectedLayout>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription } from "@kstorybridge/ui";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@kstorybridge/ui";
 import { Button } from "@kstorybridge/ui";
 import { MessageSquare, Heart, FileText, Users, X, ArrowRight, ArrowLeft } from "lucide-react";
 
@@ -124,7 +124,10 @@ export default function OnboardingFlow({ open, onComplete, onSkip }: OnboardingF
           ))}
         </div>
 
-        {/* Hidden description for accessibility */}
+        {/* Hidden title and description for accessibility */}
+        <DialogTitle className="sr-only">
+          {step.title}
+        </DialogTitle>
         <DialogDescription className="sr-only">
           Onboarding step {step.step} of {ONBOARDING_STEPS.length}: {step.title}. {step.description}
         </DialogDescription>

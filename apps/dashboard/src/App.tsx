@@ -140,10 +140,10 @@ const App = () => (
                   <BuyerProtectedLayout><RootRedirect /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/home" element={
-                  <BuyerProtectedLayout><BuyerHome /></BuyerProtectedLayout>
+                  <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/featured" element={
-                  <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
+                  <BuyerProtectedLayout><BuyerHome /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/dashboard-new" element={
                   <BuyerProtectedLayout><BuyerDashboardNew /></BuyerProtectedLayout>

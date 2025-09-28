@@ -17,6 +17,7 @@ import { useTierAccess } from "@/hooks/useTierAccess";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import { ChatUpgradePrompt } from "@/components/UpgradePrompt";
 import { triggerFirstSearchEmail } from "@/services/emailService";
+import { OnboardingModal, OnboardingFlow } from "@/components/onboarding";
 
 interface Message {
   id: string;
@@ -391,6 +392,15 @@ export default function Chat() {
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Onboarding state (PRD 2.1)
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showOnboardingFlow, setShowOnboardingFlow] = useState(false);
+
+  // Debug: Log onboarding state changes
+  useEffect(() => {
+    console.log('🔄 DEBUG: Onboarding state changed:', { showOnboardingModal, showOnboardingFlow });
+  }, [showOnboardingModal, showOnboardingFlow]);
+
   // Tier access for Advanced mode restriction
   const { hasMinimumTier } = useTierAccess();
 
@@ -451,6 +461,63 @@ export default function Chat() {
 
     // No history loading on mount - will load lazily when user sends first message
   }, [isAuthorized, user?.id]);
+
+  // DEBUG MODE: Show onboarding for ALL users on every login (PRD 2.1)
+  useEffect(() => {
+    const showOnboardingForAllUsers = () => {
+      console.log('🚀 DEBUG ONBOARDING: Showing onboarding for ALL users (DEBUG MODE)...', {
+        hasUser: !!user,
+        userId: user?.id,
+        userEmail: user?.email,
+        createdAt: user?.created_at,
+        timestamp: new Date().toISOString(),
+        mode: 'DEBUG - ALL USERS'
+      });
+
+      if (!user) {
+        console.log('❌ DEBUG ONBOARDING: No user found, skipping');
+        return;
+      }
+
+      console.log('🎯 DEBUG ONBOARDING: Bypassing all checks - showing onboarding for every user');
+
+      // Show onboarding modal after brief delay
+      setTimeout(() => {
+        console.log('✨ DEBUG ONBOARDING: Triggering modal display for debugging');
+        setShowOnboardingModal(true);
+      }, 1000);
+
+      // Show welcome toast (every time for debugging)
+      toast({
+        title: "Welcome to KStoryBridge! 🎉 (DEBUG)",
+        description: "Debug mode: Onboarding shows for all users on every login."
+      });
+    };
+
+    // Run the check
+    showOnboardingForAllUsers();
+
+    // Also make available globally for manual testing
+    if (typeof window !== 'undefined') {
+      (window as any).forceOnboarding = () => {
+        console.log('🔧 MANUAL TRIGGER: Forcing onboarding modal');
+        setShowOnboardingModal(true);
+      };
+
+      (window as any).resetOnboardingFlag = () => {
+        if (user) {
+          const key = `onboarding_seen_${user.id}`;
+          localStorage.removeItem(key);
+          console.log('🔄 MANUAL RESET: Cleared onboarding flag, refresh page to see onboarding');
+        }
+      };
+
+      console.log('🛠️ MANUAL CONTROLS: Available in console:');
+      console.log('   - forceOnboarding() - Show onboarding modal immediately');
+      console.log('   - resetOnboardingFlag() - Clear localStorage flag and refresh');
+    }
+
+  }, [user]);
 
   // Load history when user clicks "Go back to Chat history"
   useEffect(() => {
@@ -551,6 +618,44 @@ export default function Chat() {
     } finally {
       setIsLoadingHistory(false);
     }
+  };
+
+  // Onboarding handlers (PRD 2.1)
+  const handleStartOnboarding = () => {
+    console.log('🎬 DEBUG: handleStartOnboarding called - Starting onboarding flow');
+    console.log('📊 DEBUG: State before:', { showOnboardingModal, showOnboardingFlow });
+    setShowOnboardingModal(false);
+    setShowOnboardingFlow(true);
+    console.log('✅ DEBUG: State updates queued');
+  };
+
+  const handleSkipOnboarding = async () => {
+    console.log('⏭️ DEBUG ONBOARDING: User skipped onboarding (DEBUG MODE - not persisting)');
+
+    // DEBUG MODE: Don't save to localStorage to allow repeated testing
+    console.log('🔧 DEBUG ONBOARDING: Skipping localStorage save for debug purposes');
+
+    setShowOnboardingModal(false);
+    setShowOnboardingFlow(false);
+
+    toast({
+      title: "Tour skipped (DEBUG)",
+      description: "Debug mode: Onboarding will show again on next login for testing."
+    });
+  };
+
+  const handleCompleteOnboarding = async () => {
+    console.log('✅ DEBUG ONBOARDING: User completed onboarding (DEBUG MODE - not persisting)');
+
+    // DEBUG MODE: Don't save to localStorage to allow repeated testing
+    console.log('🔧 DEBUG ONBOARDING: Skipping localStorage save for debug purposes');
+
+    toast({
+      title: "Welcome aboard! 🎉 (DEBUG)",
+      description: "Debug mode: Onboarding will show again on next login for testing."
+    });
+
+    setShowOnboardingFlow(false);
   };
 
   const handleEmptyStateMessage = async (message: string) => {
@@ -1113,6 +1218,18 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Onboarding Modals (PRD 2.1) */}
+      <OnboardingModal
+        open={showOnboardingModal}
+        onStart={handleStartOnboarding}
+        onSkip={handleSkipOnboarding}
+      />
+      <OnboardingFlow
+        open={showOnboardingFlow}
+        onComplete={handleCompleteOnboarding}
+        onSkip={handleSkipOnboarding}
+      />
+
       <div className="max-w-7xl mx-auto flex flex-col min-h-screen">
         {/* Header - Uses PageContainer padding - Remove AI ASSISTANT in conversation mode */}
         <div className="page-padding-x" style={{ paddingTop: 'var(--page-padding-y-mobile)', paddingBottom: 'var(--page-padding-y-mobile)' }}>

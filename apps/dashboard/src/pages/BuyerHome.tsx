@@ -1,3 +1,21 @@
+/**
+ * BuyerHome.tsx - Debug Mode Enabled
+ *
+ * 🚨 DEBUG MODE ACTIVE: Onboarding shows for ALL users on every login
+ *
+ * To revert to production settings:
+ * 1. Change showOnboardingForAllUsers() back to showOnboardingForNewUsers()
+ * 2. Restore localStorage checks and account age validation
+ * 3. Restore localStorage persistence in handleSkipOnboarding and handleCompleteOnboarding
+ * 4. Update toast messages to remove "(DEBUG)" text
+ * 5. Search for "DEBUG" comments and revert the logic
+ *
+ * Current debug behavior:
+ * - Onboarding appears for every user on every page load
+ * - No localStorage persistence (won't remember skip/complete)
+ * - Clear debug logging for testing purposes
+ */
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -74,80 +92,40 @@ function BuyerHomeContent() {
     }
   }, [user]); // Load featured titles on mount
 
-  // IMMEDIATE FIX: Session-independent onboarding check (PRD 2.1)
+  // DEBUG MODE: Show onboarding for ALL users on every login (PRD 2.1)
   useEffect(() => {
-    const showOnboardingForNewUsers = () => {
-      console.log('🚀 IMMEDIATE ONBOARDING: Starting session-independent check...', {
+    const showOnboardingForAllUsers = () => {
+      console.log('🚀 DEBUG ONBOARDING: Showing onboarding for ALL users (DEBUG MODE)...', {
         hasUser: !!user,
         userId: user?.id,
         userEmail: user?.email,
         createdAt: user?.created_at,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        mode: 'DEBUG - ALL USERS'
       });
 
       if (!user) {
-        console.log('❌ IMMEDIATE ONBOARDING: No user found, skipping');
+        console.log('❌ DEBUG ONBOARDING: No user found, skipping');
         return;
       }
 
-      // Check localStorage first to prevent duplicate showings
-      const localStorageKey = `onboarding_seen_${user.id}`;
-      const hasSeenOnboarding = localStorage.getItem(localStorageKey);
+      console.log('🎯 DEBUG ONBOARDING: Bypassing all checks - showing onboarding for every user');
 
-      console.log('💾 IMMEDIATE ONBOARDING: LocalStorage check:', {
-        key: localStorageKey,
-        hasSeenBefore: !!hasSeenOnboarding,
-        storedValue: hasSeenOnboarding
+      // Show onboarding modal after brief delay
+      setTimeout(() => {
+        console.log('✨ DEBUG ONBOARDING: Triggering modal display for debugging');
+        setShowOnboardingModal(true);
+      }, 1000);
+
+      // Show welcome toast (every time for debugging)
+      toast({
+        title: "Welcome to KStoryBridge! 🎉 (DEBUG)",
+        description: "Debug mode: Onboarding shows for all users on every login."
       });
-
-      if (hasSeenOnboarding) {
-        console.log('⏭️ IMMEDIATE ONBOARDING: User has seen onboarding before, skipping');
-        return;
-      }
-
-      // Check if user is new (created in last 7 days for easier testing)
-      const accountAge = user.created_at ? Date.now() - new Date(user.created_at).getTime() : Infinity;
-      const isNewUser = accountAge < 7 * 24 * 60 * 60 * 1000; // Less than 7 days old (extended for testing)
-
-      console.log('📅 IMMEDIATE ONBOARDING: Account age analysis:', {
-        createdAt: user.created_at,
-        currentTime: new Date().toISOString(),
-        accountAgeMs: accountAge,
-        accountAgeHours: Math.round(accountAge / (1000 * 60 * 60) * 10) / 10,
-        isNewUser,
-        threshold: '7 days (extended for testing)'
-      });
-
-      if (isNewUser) {
-        console.log('🎉 IMMEDIATE ONBOARDING: New user detected! Showing onboarding...');
-
-        // Show onboarding modal after brief delay
-        setTimeout(() => {
-          console.log('✨ IMMEDIATE ONBOARDING: Triggering modal display');
-          setShowOnboardingModal(true);
-        }, 1000);
-
-        // Mark as seen in localStorage (basic deduplication)
-        localStorage.setItem(localStorageKey, new Date().toISOString());
-
-        // Show welcome toast
-        toast({
-          title: "Welcome to KStoryBridge! 🎉",
-          description: "Let's get you started with a quick tour of the platform."
-        });
-
-      } else {
-        console.log('👤 IMMEDIATE ONBOARDING: Existing user (older than 7 days), no onboarding needed');
-
-        // Still mark as seen to prevent future checks
-        if (!hasSeenOnboarding) {
-          localStorage.setItem(localStorageKey, 'existing_user_' + new Date().toISOString());
-        }
-      }
     };
 
     // Run the check
-    showOnboardingForNewUsers();
+    showOnboardingForAllUsers();
 
     // Also make available globally for manual testing
     if (typeof window !== 'undefined') {
@@ -488,56 +466,30 @@ function BuyerHomeContent() {
   };
 
   const handleSkipOnboarding = async () => {
-    console.log('⏭️ ONBOARDING: User skipped onboarding');
+    console.log('⏭️ DEBUG ONBOARDING: User skipped onboarding (DEBUG MODE - not persisting)');
 
-    // Mark as completed in localStorage
-    if (user) {
-      const localStorageKey = `onboarding_seen_${user.id}`;
-      localStorage.setItem(localStorageKey, `skipped_${new Date().toISOString()}`);
-      console.log('💾 ONBOARDING: Marked as skipped in localStorage:', localStorageKey);
-
-      // Try to save to database (but don't block UI if it fails)
-      try {
-        const userName = user.user_metadata?.full_name || user.email || 'User';
-        await OnboardingService.skipOnboarding(user.id, userName);
-        console.log('✅ ONBOARDING: Also saved skip to database');
-      } catch (error) {
-        console.warn('⚠️ ONBOARDING: Database save failed (using localStorage only):', error);
-      }
-    }
+    // DEBUG MODE: Don't save to localStorage to allow repeated testing
+    console.log('🔧 DEBUG ONBOARDING: Skipping localStorage save for debug purposes');
 
     setShowOnboardingModal(false);
     setShowOnboardingFlow(false);
 
     toast({
-      title: "Tour skipped",
-      description: "You can always take the tour later using the 'Take Tour' button."
+      title: "Tour skipped (DEBUG)",
+      description: "Debug mode: Onboarding will show again on next login for testing."
     });
   };
 
   const handleCompleteOnboarding = async () => {
-    console.log('✅ ONBOARDING: User completed onboarding');
+    console.log('✅ DEBUG ONBOARDING: User completed onboarding (DEBUG MODE - not persisting)');
 
-    // Mark as completed in localStorage
-    if (user) {
-      const localStorageKey = `onboarding_seen_${user.id}`;
-      localStorage.setItem(localStorageKey, `completed_${new Date().toISOString()}`);
-      console.log('💾 ONBOARDING: Marked as completed in localStorage:', localStorageKey);
+    // DEBUG MODE: Don't save to localStorage to allow repeated testing
+    console.log('🔧 DEBUG ONBOARDING: Skipping localStorage save for debug purposes');
 
-      // Try to save to database (but don't block UI if it fails)
-      try {
-        const userName = user.user_metadata?.full_name || user.email || 'User';
-        await OnboardingService.updateOnboardingStep(user.id, 4, 'complete', userName);
-        console.log('✅ ONBOARDING: Also saved completion to database');
-      } catch (error) {
-        console.warn('⚠️ ONBOARDING: Database save failed (using localStorage only):', error);
-      }
-
-      toast({
-        title: "Welcome aboard! 🎉",
-        description: "You're all set to discover amazing Korean content."
-      });
-    }
+    toast({
+      title: "Welcome aboard! 🎉 (DEBUG)",
+      description: "Debug mode: Onboarding will show again on next login for testing."
+    });
 
     setShowOnboardingFlow(false);
   };

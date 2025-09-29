@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";
+import { trackAuthAction, trackUserJourneyStep } from "@/utils/analytics";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";
@@ -584,6 +585,13 @@ export default function Profile() {
       userEmail: user?.email,
       accountType: profile?.account_type,
       currentPath: window.location.pathname,
+    });
+
+    // Track sign-out action
+    trackAuthAction('sign_out', 'form', profile?.account_type);
+    trackUserJourneyStep('authentication', 'signout_requested', 3, true, profile?.account_type, {
+      signout_source: 'profile_page',
+      user_id: user?.id
     });
 
     try {

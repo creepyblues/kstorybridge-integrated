@@ -5,6 +5,7 @@ import { Input } from '@kstorybridge/ui';
 import { Label } from '@kstorybridge/ui';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '@/hooks/use-toast';
+import { trackAuthAction, trackFormSubmission, trackUserJourneyStep } from '@/utils/analytics';
 import { supabase, performSupabaseHealthCheck } from '@/integrations/supabase/client';
 import { performSessionHealthCheck, getCurrentSession, recoverCorruptedSession } from '@/utils/sessionManager';
 import { determineAccountType, clearAccountTypeCache, getAccountTypeDisplayInfo } from '@/utils/simpleAccountTypeService';
@@ -82,6 +83,12 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
+
+    // Track Google OAuth sign-in attempt
+    trackAuthAction('sign_in', 'google', accountType);
+    trackUserJourneyStep('authentication', 'google_signin_initiated', 1, false, accountType, {
+      signin_method: 'google'
+    });
 
     try {
       // Account-specific OAuth redirect (clean pattern like signup)
@@ -215,6 +222,12 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     setIsLoading(true);
     setSigninError('');
 
+    // Track form submission attempt
+    trackFormSubmission('signin', 'signin_page', accountType, {
+      signin_method: 'email',
+      account_type: accountType
+    });
+
     try {
       // Clear any cached account type info before signin
       clearAccountTypeCache();
@@ -240,6 +253,13 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
 
       if (data.user) {
         console.log(`✅ ${accountType.toUpperCase()} SIGNIN: Email signin successful for:`, data.user.email);
+
+        // Track successful authentication
+        trackAuthAction('sign_in', 'email', accountType);
+        trackUserJourneyStep('authentication', 'signin_successful', 2, true, accountType, {
+          signin_method: 'email',
+          user_id: data.user.id
+        });
 
         // Prepare for Slack notification
         try {

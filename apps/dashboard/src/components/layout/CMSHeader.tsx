@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import { useAccountType } from "@/utils/simpleAccountTypeService";
+import { trackNavigationClick, trackLogoClick, trackMobileMenuToggle, trackTierBadgeClick } from "@/utils/analytics";
 import { User, Menu, X } from "lucide-react";
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { cn } from "@/lib/utils";
@@ -133,16 +134,25 @@ export function CMSHeader() {
           <div className="flex items-center gap-3">
             {/* Mobile menu button */}
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => {
+                const newState = !isMobileMenuOpen;
+                setIsMobileMenuOpen(newState);
+                trackMobileMenuToggle(newState ? 'open' : 'close', accountType as 'buyer' | 'creator');
+              }}
               className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Toggle menu"
+              data-track-button="true"
+              data-button-id="mobile-menu-toggle"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             
-            <Link 
+            <Link
               to={accountType === "creator" ? "/creators/home" : "/buyers/home"}
               className="flex items-center"
+              onClick={() => trackLogoClick('header', accountType as 'buyer' | 'creator')}
+              data-track-button="true"
+              data-button-id="header-logo"
             >
               <img
                 src="/kstorybridge-logo.png"
@@ -171,7 +181,12 @@ export function CMSHeader() {
                     </div>
                     {/* Status badge - tier for buyers only */}
                     {accountType === "buyer" && (
-                      <div className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold w-fit ${tierDisplay.className}`}>
+                      <div
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold w-fit cursor-pointer hover:opacity-80 transition-opacity ${tierDisplay.className}`}
+                        onClick={() => trackTierBadgeClick(displayTier || 'unknown', 'header', accountType as 'buyer' | 'creator')}
+                        data-track-button="true"
+                        data-button-id="header-tier-badge"
+                      >
                         {tierDisplay.label}
                       </div>
                     )}
@@ -203,13 +218,18 @@ export function CMSHeader() {
                 <Link
                   key={item.href}
                   to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    trackNavigationClick(item.title, item.href, 'mobile_menu', accountType as 'buyer' | 'creator');
+                  }}
                   className={cn(
                     "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors border-b border-gray-100 last:border-b-0",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink hover:bg-gray-50"
                   )}
+                  data-track-button="true"
+                  data-button-id={`mobile-nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <span>{item.title}</span>
                   {item.badge && (
@@ -234,13 +254,18 @@ export function CMSHeader() {
                 <Link
                   key={item.href}
                   to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    trackNavigationClick(item.title, item.href, 'mobile_menu', accountType as 'buyer' | 'creator');
+                  }}
                   className={cn(
                     "flex items-center justify-between px-4 py-3 text-base font-medium transition-colors",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink hover:bg-gray-50"
                   )}
+                  data-track-button="true"
+                  data-button-id={`mobile-settings-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <span>{item.title}</span>
                   {item.badge && (

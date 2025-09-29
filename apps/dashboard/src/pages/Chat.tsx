@@ -16,11 +16,10 @@ import ProBadge from "@/components/ProBadge";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import { ChatUpgradePrompt } from "@/components/UpgradePrompt";
-import { triggerFirstSearchEmail } from "@/services/emailService";
 import { OnboardingModal, OnboardingFlow } from "@/components/onboarding";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 import { OnboardingService } from "@/services/onboardingService";
 import { trackSearch, trackTitleView, trackAdvancedChatUsage, trackEvent } from "@/utils/analytics";
-console.log('✅ DEBUG: OnboardingModal imported:', typeof OnboardingModal, OnboardingModal);
 
 interface Message {
   id: string;
@@ -395,14 +394,18 @@ export default function Chat() {
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Onboarding state (PRD 2.1)
+  // Onboarding state (OPTIMIZED - Using context)
+  const { onboardingState, markCompleted, markSkipped } = useOnboarding();
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showOnboardingFlow, setShowOnboardingFlow] = useState(false);
 
-  // Debug: Log onboarding state changes
+  // Show onboarding when context indicates it should be shown
   useEffect(() => {
-    console.log('🔄 DEBUG: Onboarding state changed:', { showOnboardingModal, showOnboardingFlow });
-  }, [showOnboardingModal, showOnboardingFlow]);
+    if (onboardingState.shouldShow && !onboardingState.isLoading && user) {
+      console.log('✨ ONBOARDING: Context indicates onboarding should be shown');
+      setTimeout(() => setShowOnboardingModal(true), 1000);
+    }
+  }, [onboardingState.shouldShow, onboardingState.isLoading, user]);
 
   // Tier access for Advanced mode restriction
   const { hasMinimumTier } = useTierAccess();
@@ -465,56 +468,7 @@ export default function Chat() {
     // No history loading on mount - will load lazily when user sends first message
   }, [isAuthorized, user?.id]);
 
-  // PRD 2.1: Show onboarding for new users only
-  useEffect(() => {
-    const checkAndShowOnboarding = async () => {
-      console.log('🚀 ONBOARDING: Checking if user should see onboarding...', {
-        hasUser: !!user,
-        userId: user?.id,
-        userEmail: user?.email
-      });
-
-      if (!user) {
-        console.log('❌ ONBOARDING: No user found, skipping');
-        return;
-      }
-
-      try {
-        // Check if user should see onboarding (new users or incomplete)
-        const shouldShow = await OnboardingService.shouldShowOnboarding(user.id);
-
-        console.log('🎯 ONBOARDING: Decision result:', {
-          shouldShow,
-          userId: user.id,
-          userEmail: user.email
-        });
-
-        if (shouldShow) {
-          // Initialize onboarding if no record exists
-          await OnboardingService.startOnboarding(user.id, user.email || '');
-
-          // Show onboarding modal after brief delay
-          setTimeout(() => {
-            console.log('✨ ONBOARDING: Showing modal for new user');
-            setShowOnboardingModal(true);
-          }, 1000);
-
-          // Show welcome toast for new users
-          toast({
-            title: "Welcome to KStoryBridge! 🎉",
-            description: "Let's get you started with a quick tour of our features."
-          });
-        } else {
-          console.log('✅ ONBOARDING: User has already completed onboarding');
-        }
-      } catch (error) {
-        console.error('❌ ONBOARDING: Error checking onboarding status:', error);
-        // Don't show onboarding if there's an error
-      }
-    };
-
-    checkAndShowOnboarding();
-  }, [user]);
+  // REMOVED: Old navigation-based onboarding trigger (replaced with context)
 
   // Load history when user clicks "Go back to Chat history"
   useEffect(() => {
@@ -831,14 +785,16 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
     // Set conversation as started when sending any message
     setHasStartedConversation(true);
 
-    // PRD 2.1: Trigger first search email for new users
-    try {
-      const userName = user.user_metadata?.full_name || user.email || 'User';
-      await triggerFirstSearchEmail(user.id, user.email, userName, inputMessage.trim());
-    } catch (error) {
-      console.warn('Failed to trigger first search email:', error);
-      // Don't fail the chat if email fails
-    }
+    // DISABLED: First search email trigger (templates not yet implemented)
+    // try {
+    //   const userName = user.user_metadata?.full_name || user.email || 'User';
+    //   await triggerFirstSearchEmail(user.id, user.email, userName, inputMessage.trim());
+    // } catch (error) {
+    //   console.warn('Failed to trigger first search email:', error);
+    // }
+
+    // Get message content for tracking
+    const messageContent = inputMessage.trim();
 
     // Track chat search query
     trackSearch(messageContent, 0, {
@@ -863,8 +819,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
       return;
     }
 
-    // Capture message content immediately and clear input to prevent duplicates
-    const messageContent = inputMessage.trim();
+    // Clear input to prevent duplicates (messageContent already captured above)
     setInputMessage("");
 
     const userMessage: Message = {

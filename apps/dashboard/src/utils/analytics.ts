@@ -370,3 +370,284 @@ export const trackPricingPageView = (source: string, tier: string) => {
     console.log(`💰 PRICING PAGE: Viewed from ${source} (Tier: ${tier})`);
   }
 };
+
+// ============================================================================
+// COMPREHENSIVE BUTTON/LINK TRACKING SYSTEM
+// ============================================================================
+
+export interface ButtonTrackingContext {
+  buttonId: string;
+  buttonText: string;
+  buttonCategory: 'navigation' | 'content_discovery' | 'content_action' | 'authentication' | 'premium_feature' | 'ui_control';
+  pageSection: 'header' | 'sidebar' | 'main_content' | 'footer' | 'modal' | 'mobile_menu';
+  userType?: 'buyer' | 'creator';
+  currentPage?: string;
+  additionalContext?: Record<string, unknown>;
+}
+
+/**
+ * Comprehensive button/link click tracking
+ * @param context - Complete tracking context
+ */
+export const trackButtonClick = (context: ButtonTrackingContext) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'button_click',
+      'button_id': context.buttonId,
+      'button_text': context.buttonText,
+      'button_category': context.buttonCategory,
+      'page_section': context.pageSection,
+      'user_type': context.userType || 'unknown',
+      'current_page': context.currentPage || window.location.pathname,
+      'timestamp': new Date().toISOString(),
+      'app_section': 'dashboard',
+      ...context.additionalContext
+    });
+
+    console.log(`🖱️ BUTTON CLICK: ${context.buttonId} (${context.buttonCategory})`, {
+      text: context.buttonText,
+      section: context.pageSection,
+      page: context.currentPage || window.location.pathname
+    });
+  }
+};
+
+/**
+ * Track navigation link clicks (header, sidebar, mobile menu)
+ */
+export const trackNavigationClick = (
+  linkText: string,
+  linkHref: string,
+  location: 'header' | 'sidebar' | 'mobile_menu',
+  userType?: 'buyer' | 'creator'
+) => {
+  trackButtonClick({
+    buttonId: `nav-${linkText.toLowerCase().replace(/\s+/g, '-')}`,
+    buttonText: linkText,
+    buttonCategory: 'navigation',
+    pageSection: location,
+    userType,
+    additionalContext: {
+      destination_href: linkHref,
+      navigation_type: 'internal_link'
+    }
+  });
+};
+
+/**
+ * Track logo clicks (home navigation)
+ */
+export const trackLogoClick = (
+  location: 'header' | 'sidebar',
+  userType?: 'buyer' | 'creator'
+) => {
+  trackButtonClick({
+    buttonId: `logo-${location}`,
+    buttonText: 'KStoryBridge Logo',
+    buttonCategory: 'navigation',
+    pageSection: location,
+    userType,
+    additionalContext: {
+      action_type: 'home_navigation'
+    }
+  });
+};
+
+/**
+ * Track mobile menu toggle
+ */
+export const trackMobileMenuToggle = (
+  action: 'open' | 'close',
+  userType?: 'buyer' | 'creator'
+) => {
+  trackButtonClick({
+    buttonId: 'mobile-menu-toggle',
+    buttonText: `${action === 'open' ? 'Open' : 'Close'} Menu`,
+    buttonCategory: 'ui_control',
+    pageSection: 'header',
+    userType,
+    additionalContext: {
+      menu_action: action
+    }
+  });
+};
+
+/**
+ * Track content discovery actions (search, filter, sort)
+ */
+export const trackContentDiscoveryAction = (
+  actionType: 'search' | 'filter' | 'sort' | 'view_toggle',
+  actionValue: string,
+  userType?: 'buyer' | 'creator',
+  additionalData?: Record<string, unknown>
+) => {
+  trackButtonClick({
+    buttonId: `content-${actionType}-${actionValue.toLowerCase().replace(/\s+/g, '-')}`,
+    buttonText: actionValue,
+    buttonCategory: 'content_discovery',
+    pageSection: 'main_content',
+    userType,
+    additionalContext: {
+      discovery_type: actionType,
+      discovery_value: actionValue,
+      ...additionalData
+    }
+  });
+};
+
+/**
+ * Track title card interactions
+ */
+export const trackTitleCardClick = (
+  titleId: string,
+  titleName: string,
+  clickType: 'card_click' | 'title_link' | 'image_click',
+  source: 'browse' | 'search' | 'favorites' | 'featured',
+  userType?: 'buyer' | 'creator'
+) => {
+  trackButtonClick({
+    buttonId: `title-card-${clickType}`,
+    buttonText: titleName,
+    buttonCategory: 'content_action',
+    pageSection: 'main_content',
+    userType,
+    additionalContext: {
+      title_id: titleId,
+      click_type: clickType,
+      content_source: source,
+      action_type: 'title_selection'
+    }
+  });
+};
+
+/**
+ * Track authentication actions
+ */
+export const trackAuthAction = (
+  action: 'sign_in' | 'sign_out' | 'sign_up' | 'forgot_password',
+  method?: 'email' | 'google' | 'form',
+  userType?: 'buyer' | 'creator'
+) => {
+  trackButtonClick({
+    buttonId: `auth-${action}`,
+    buttonText: action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    buttonCategory: 'authentication',
+    pageSection: 'main_content',
+    userType,
+    additionalContext: {
+      auth_action: action,
+      auth_method: method,
+      timestamp: new Date().toISOString()
+    }
+  });
+};
+
+/**
+ * Track tier/badge clicks
+ */
+export const trackTierBadgeClick = (
+  currentTier: string,
+  location: 'header' | 'sidebar' | 'profile',
+  userType?: 'buyer' | 'creator'
+) => {
+  trackButtonClick({
+    buttonId: `tier-badge-${location}`,
+    buttonText: `${currentTier} Badge`,
+    buttonCategory: 'premium_feature',
+    pageSection: location,
+    userType,
+    additionalContext: {
+      current_tier: currentTier,
+      badge_location: location,
+      action_type: 'tier_info_view'
+    }
+  });
+};
+
+/**
+ * Track form submissions
+ */
+export const trackFormSubmission = (
+  formType: 'profile_edit' | 'contact' | 'feedback' | 'search',
+  formLocation: string,
+  userType?: 'buyer' | 'creator',
+  formData?: Record<string, unknown>
+) => {
+  trackButtonClick({
+    buttonId: `form-submit-${formType}`,
+    buttonText: 'Submit Form',
+    buttonCategory: 'content_action',
+    pageSection: 'main_content',
+    userType,
+    additionalContext: {
+      form_type: formType,
+      form_location: formLocation,
+      form_timestamp: new Date().toISOString(),
+      ...formData
+    }
+  });
+};
+
+/**
+ * Enhanced search tracking with context and suggestions
+ */
+export const trackSearchWithContext = (
+  searchTerm: string,
+  searchContext: 'main_search' | 'chat_search' | 'favorites_search',
+  resultCount: number,
+  searchSuggestions?: string[],
+  userType?: 'buyer' | 'creator'
+) => {
+  // Use existing search tracking but with enhanced context
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    const cleanSearchTerm = searchTerm.replace(/^(favorites|main):/i, '').trim();
+
+    window.dataLayer.push({
+      'event': 'search_enhanced',
+      'search_term': cleanSearchTerm,
+      'search_context': searchContext,
+      'search_results': resultCount,
+      'search_suggestions': searchSuggestions,
+      'user_type': userType,
+      'timestamp': new Date().toISOString(),
+      'app_section': 'dashboard',
+      'funnel_step': 'content_discovery',
+      'funnel_name': 'buyer_engagement'
+    });
+
+    console.log('🔍 ENHANCED SEARCH:', {
+      term: cleanSearchTerm,
+      context: searchContext,
+      results: resultCount,
+      suggestions: searchSuggestions?.length || 0
+    });
+  }
+};
+
+/**
+ * Track user journey progression
+ */
+export const trackUserJourneyStep = (
+  journeyName: string,
+  stepName: string,
+  stepOrder: number,
+  completed: boolean,
+  userType?: 'buyer' | 'creator',
+  metadata?: Record<string, unknown>
+) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'user_journey_step',
+      'journey_name': journeyName,
+      'step_name': stepName,
+      'step_order': stepOrder,
+      'step_completed': completed,
+      'user_type': userType,
+      'timestamp': new Date().toISOString(),
+      'app_section': 'dashboard',
+      ...metadata
+    });
+
+    console.log(`🛤️ USER JOURNEY: ${journeyName} - ${stepName} (${completed ? 'Completed' : 'Started'})`);
+  }
+};

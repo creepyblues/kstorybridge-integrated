@@ -21,116 +21,30 @@ export interface OnboardingStatus {
  */
 export class OnboardingService {
   /**
-   * Check if user has completed onboarding
+   * Check if user has completed onboarding (SIMPLIFIED - No retry logic)
    */
   static async checkOnboardingStatus(userId: string): Promise<OnboardingStatus | null> {
-    console.log('🔍 ONBOARDING SERVICE: Checking onboarding status for user:', userId);
+    try {
+      const { data, error } = await supabase
+        .from('user_onboarding')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    // Add retry logic for session timeout issues
-    let retryCount = 0;
-    const maxRetries = 3;
-
-    while (retryCount < maxRetries) {
-      try {
-        console.log(`📡 ONBOARDING SERVICE: Executing database query (attempt ${retryCount + 1}/${maxRetries})...`);
-
-        const queryPromise = supabase
-          .from('user_onboarding')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        // Add timeout wrapper to handle hanging queries
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Database query timeout after 10 seconds')), 10000);
-        });
-
-        const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
-
-        console.log('📊 ONBOARDING SERVICE: Database query result:', {
-          hasData: !!data,
-          hasError: !!error,
-          data: data,
-          error: error,
-          userId: userId,
-          attempt: retryCount + 1
-        });
-
-        if (error) {
-          // Check for specific error types that warrant retry
-          const shouldRetry = error.message?.includes('timeout') ||
-                             error.message?.includes('network') ||
-                             error.code === 'PGRST301'; // PostgREST timeout
-
-          if (shouldRetry && retryCount < maxRetries - 1) {
-            console.warn(`⚠️ ONBOARDING SERVICE: Query failed (attempt ${retryCount + 1}), retrying...`, {
-              error: error.message,
-              code: error.code,
-              retryCount: retryCount + 1
-            });
-            retryCount++;
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
-            continue;
-          }
-
-          console.error('❌ ONBOARDING SERVICE: Database error checking onboarding status:', {
-            error: error,
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            userId: userId,
-            finalAttempt: true
-          });
-
-          // Check if table doesn't exist
-          if (error.code === '42P01') {
-            console.error('🚨 ONBOARDING SERVICE: user_onboarding table does NOT exist! Migration not applied.');
-            throw new Error('Onboarding table not found. Database migration required.');
-          }
-
-          return null;
+      if (error) {
+        // Check if table doesn't exist
+        if (error.code === '42P01') {
+          throw new Error('Onboarding table not found. Database migration required.');
         }
-
-        if (data) {
-          console.log('✅ ONBOARDING SERVICE: Found existing onboarding record:', data);
-        } else {
-          console.log('🆕 ONBOARDING SERVICE: No existing onboarding record found (new user)');
-        }
-
-        return data;
-
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('timeout')) {
-          console.warn(`⚠️ ONBOARDING SERVICE: Query timeout (attempt ${retryCount + 1}), retrying...`);
-          retryCount++;
-          if (retryCount < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-            continue;
-          }
-        }
-
-        console.error('❌ ONBOARDING SERVICE: Exception checking onboarding status:', {
-          error: error,
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined,
-          userId: userId,
-          attempt: retryCount + 1
-        });
-
-        if (retryCount === maxRetries - 1) {
-          // Final attempt failed
-          throw error;
-        }
-
-        retryCount++;
-        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+        console.warn('⚠️ ONBOARDING SERVICE: Database error:', error.message);
+        return null;
       }
-    }
 
-    // Should never reach here, but just in case
-    console.error('❌ ONBOARDING SERVICE: All retry attempts failed');
-    return null;
+      return data;
+    } catch (error) {
+      console.error('❌ ONBOARDING SERVICE: Failed to check onboarding status:', error);
+      throw error;
+    }
   }
 
   /**
@@ -323,37 +237,21 @@ export class OnboardingService {
   }
 
   /**
-   * Check if user should see onboarding
+   * Check if user should see onboarding (SIMPLIFIED - Minimal logging)
    * Returns true if user is new and hasn't completed or skipped onboarding
    */
   static async shouldShowOnboarding(userId: string): Promise<boolean> {
-    console.log('🤔 ONBOARDING SERVICE: Evaluating if user should see onboarding...', { userId });
-
     const status = await this.checkOnboardingStatus(userId);
-
-    console.log('📋 ONBOARDING SERVICE: Onboarding status evaluation:', {
-      userId,
-      hasStatus: !!status,
-      status: status,
-      onboarding_completed: status?.onboarding_completed,
-      skipped: status?.skipped
-    });
 
     // Show onboarding if:
     // 1. No status exists (new user)
     // 2. Status exists but not completed and not skipped
     const shouldShow = !status || (!status.onboarding_completed && !status.skipped);
 
-    console.log('🎯 ONBOARDING SERVICE: Final decision:', {
+    console.log('🎯 ONBOARDING SERVICE:', {
+      userId,
       shouldShow,
-      reason: !status
-        ? 'No onboarding record found (new user)'
-        : status.onboarding_completed
-          ? 'Onboarding already completed'
-          : status.skipped
-            ? 'Onboarding was skipped'
-            : 'Onboarding not completed and not skipped',
-      userId
+      reason: !status ? 'new_user' : status.onboarding_completed ? 'completed' : status.skipped ? 'skipped' : 'in_progress'
     });
 
     return shouldShow;

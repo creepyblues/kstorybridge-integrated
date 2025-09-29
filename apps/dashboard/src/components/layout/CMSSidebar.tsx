@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccountType } from "@/utils/simpleAccountTypeService";
 import { useTierAccess } from "@/hooks/useTierAccess";
+import { trackNavigationClick, trackLogoClick, trackMobileMenuToggle, trackTierBadgeClick } from "@/utils/analytics";
 import { User, Menu, X } from "lucide-react";
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -172,9 +173,15 @@ export function CMSSidebar() {
 
           {/* Menu button on the right */}
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={() => {
+              const newState = !isMobileMenuOpen;
+              setIsMobileMenuOpen(newState);
+              trackMobileMenuToggle(newState ? 'open' : 'close', accountType as 'buyer' | 'creator');
+            }}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Toggle menu"
+            data-track-button="true"
+            data-button-id="mobile-menu-toggle-sidebar"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -201,13 +208,18 @@ export function CMSSidebar() {
                 <Link
                   key={item.href}
                   to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    trackNavigationClick(item.title, item.href, 'mobile_menu', accountType as 'buyer' | 'creator');
+                  }}
                   className={cn(
                     "flex items-center justify-between px-4 py-3 text-base font-normal transition-colors border-b border-gray-100 last:border-b-0",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink hover:bg-gray-50"
                   )}
+                  data-track-button="true"
+                  data-button-id={`mobile-sidebar-nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <span>{item.title}</span>
                   {item.badge && (
@@ -233,13 +245,18 @@ export function CMSSidebar() {
                 <Link
                   key={item.href}
                   to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    trackNavigationClick(item.title, item.href, 'mobile_menu', accountType as 'buyer' | 'creator');
+                  }}
                   className={cn(
                     "flex items-center justify-between px-4 py-3 text-base font-normal transition-colors",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink hover:bg-gray-50"
                   )}
+                  data-track-button="true"
+                  data-button-id={`mobile-sidebar-settings-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <span>{item.title}</span>
                   {item.badge && (
@@ -261,6 +278,9 @@ export function CMSSidebar() {
         <Link
           to={accountType === "creator" ? "/creators/home" : "/buyers/home"}
           className="flex items-center justify-center mb-6"
+          onClick={() => trackLogoClick('sidebar', accountType as 'buyer' | 'creator')}
+          data-track-button="true"
+          data-button-id="sidebar-logo"
         >
           <img
             src="/kstorybridge-logo.png"
@@ -284,12 +304,15 @@ export function CMSSidebar() {
                 <Link
                   key={item.href}
                   to={item.href}
+                  onClick={() => trackNavigationClick(item.title, item.href, 'sidebar', accountType as 'buyer' | 'creator')}
                   className={cn(
                     "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors",
                     isActive
                       ? "bg-hanok-teal text-white"
                       : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
                   )}
+                  data-track-button="true"
+                  data-button-id={`sidebar-nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <div className="flex items-center gap-2">
                     {item.icon && <span className="text-base">{item.icon}</span>}
@@ -330,12 +353,15 @@ export function CMSSidebar() {
               <Link
                 key={item.href}
                 to={item.href}
+                onClick={() => trackNavigationClick(item.title, item.href, 'sidebar', accountType as 'buyer' | 'creator')}
                 className={cn(
                   "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors",
                   isActive
                     ? "bg-hanok-teal text-white"
                     : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
                 )}
+                data-track-button="true"
+                data-button-id={`sidebar-settings-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <div className="flex items-center gap-2">
                   {item.icon && <span className="text-base">{item.icon}</span>}
@@ -374,7 +400,12 @@ export function CMSSidebar() {
             </div>
             {/* Tier badge for buyers only */}
             {accountType === "buyer" && (
-              <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${tierDisplay.className}`}>
+              <div
+                className={`inline-block px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${tierDisplay.className}`}
+                onClick={() => trackTierBadgeClick(displayTier || 'unknown', 'sidebar', accountType as 'buyer' | 'creator')}
+                data-track-button="true"
+                data-button-id="sidebar-tier-badge"
+              >
                 {tierDisplay.label}
               </div>
             )}

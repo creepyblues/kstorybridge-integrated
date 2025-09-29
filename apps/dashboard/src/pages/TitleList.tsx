@@ -13,7 +13,7 @@ import { TierProvider } from "@/contexts/TierContext";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { enhancedTitleSearchService, type SearchResult } from "@/services/enhancedTitleSearchService";
 import { useDataCache } from "@/contexts/DataCacheContext";
-import { trackSearch } from "@/utils/analytics";
+import { trackSearch, trackContentDiscoveryAction, trackTitleCardClick, trackSearchWithContext } from "@/utils/analytics";
 import { directApiService } from "@/services/directApiService";
 import { PageContainer } from "@/components/layout/PageContainer";
 
@@ -217,10 +217,19 @@ function TitleListContent() {
         console.log(`🎯 Search completed: ${searchResponse.results.length} results using ${searchResponse.searchType} search`);
       }
 
-      // Track search analytics
+      // Track search analytics with enhanced context
       try {
         const resultCount = searchResults.length;
         await trackSearch(query, searchType, resultCount, user?.id);
+
+        // Also track with enhanced search context
+        trackSearchWithContext(
+          query,
+          'main_search',
+          resultCount,
+          searchSuggestions,
+          user?.user_metadata?.account_type
+        );
       } catch (error) {
         console.warn('Failed to track search:', error);
       }
@@ -278,6 +287,14 @@ function TitleListContent() {
   const handleSuggestionClick = (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
+
+    // Track suggestion usage
+    trackContentDiscoveryAction('search', `suggestion: ${suggestion}`, user?.user_metadata?.account_type, {
+      suggestion_used: suggestion,
+      original_query: searchQuery,
+      suggestion_position: searchSuggestions.indexOf(suggestion)
+    });
+
     // Auto-submit search
     const form = document.querySelector('form');
     if (form) {
@@ -287,6 +304,10 @@ function TitleListContent() {
   };
 
   const handleSort = (field: string) => {
+    const newDirection = sortField === field
+      ? (sortDirection === 'asc' ? 'desc' : 'asc')
+      : 'asc';
+
     if (sortField === field) {
       // Toggle direction if same field
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -295,6 +316,16 @@ function TitleListContent() {
       setSortField(field);
       setSortDirection('asc');
     }
+
+    // Track sort action
+    trackContentDiscoveryAction('sort', `${field} ${newDirection}`, user?.user_metadata?.account_type, {
+      sort_field: field,
+      sort_direction: newDirection,
+      previous_field: sortField,
+      previous_direction: sortDirection,
+      current_view: viewMode,
+      total_results: filteredTitles.length
+    });
   };
 
   const prioritizeTitlesForBuyers = (titles: Title[]) => {
@@ -503,12 +534,20 @@ function TitleListContent() {
               <div className="flex items-center gap-2">
                 <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight">Title Library</h2>
                 <Button
-                  onClick={handleRefresh}
+                  onClick={() => {
+                    handleRefresh();
+                    trackContentDiscoveryAction('filter', 'Refresh', user?.user_metadata?.account_type, {
+                      current_view: viewMode,
+                      search_active: searchTerm.length > 0
+                    });
+                  }}
                   disabled={loading}
                   variant="outline"
                   size="sm"
                   className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 p-1.5 sm:p-2"
                   title="Refresh"
+                  data-track-button="true"
+                  data-button-id="refresh-titles"
                 >
                   <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
                 </Button>
@@ -517,25 +556,41 @@ function TitleListContent() {
               {/* View Mode Toggle - Same line as TITLES, far right */}
               <div className="flex items-center bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setViewMode('card')}
+                  onClick={() => {
+                    setViewMode('card');
+                    trackContentDiscoveryAction('view_toggle', 'Card View', user?.user_metadata?.account_type, {
+                      from_view: viewMode,
+                      to_view: 'card'
+                    });
+                  }}
                   className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all ${
                     viewMode === 'card'
                       ? 'bg-white text-hanok-teal shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                   title="Card View"
+                  data-track-button="true"
+                  data-button-id="view-mode-card"
                 >
                   <LayoutGrid className="w-4 h-4" />
                   <span className="text-sm font-medium hidden sm:inline ml-1">Card</span>
                 </button>
                 <button
-                  onClick={() => setViewMode('list')}
+                  onClick={() => {
+                    setViewMode('list');
+                    trackContentDiscoveryAction('view_toggle', 'List View', user?.user_metadata?.account_type, {
+                      from_view: viewMode,
+                      to_view: 'list'
+                    });
+                  }}
                   className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all ${
                     viewMode === 'list'
                       ? 'bg-white text-hanok-teal shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                   title="List View"
+                  data-track-button="true"
+                  data-button-id="view-mode-list"
                 >
                   <ListIcon className="w-4 h-4" />
                   <span className="text-sm font-medium hidden sm:inline ml-1">List</span>
@@ -679,7 +734,18 @@ function TitleListContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     {filteredTitles.map((title) => (
                       <Card key={title.title_id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
-                        <Link to={`/buyers/titles/${title.title_id}`}>
+                        <Link
+                          to={`/buyers/titles/${title.title_id}`}
+                          onClick={() => trackTitleCardClick(
+                            title.title_id,
+                            title.title_name_en || title.title_name_kr,
+                            'card_click',
+                            searchTerm ? 'search' : 'browse',
+                            user?.user_metadata?.account_type
+                          )}
+                          data-track-button="true"
+                          data-button-id={`title-card-${title.title_id}`}
+                        >
                           <CardContent className="p-0">
                             <div className="relative h-48 bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal/10 overflow-hidden">
                               {title.title_image ? (
@@ -823,7 +889,20 @@ function TitleListContent() {
               ) : filteredTitles.length > 0 ? (
                 <>
                   {filteredTitles.map((title) => (
-                    <Link key={title.title_id} to={`/buyers/titles/${title.title_id}`} className="block">
+                    <Link
+                      key={title.title_id}
+                      to={`/buyers/titles/${title.title_id}`}
+                      className="block"
+                      onClick={() => trackTitleCardClick(
+                        title.title_id,
+                        title.title_name_en || title.title_name_kr,
+                        'title_link',
+                        searchTerm ? 'search' : 'browse',
+                        user?.user_metadata?.account_type
+                      )}
+                      data-track-button="true"
+                      data-button-id={`title-list-${title.title_id}`}
+                    >
                       {/* Desktop Table Row */}
                       <div className="hidden lg:grid px-4 sm:px-6 py-4 grid-cols-11 gap-4 items-center hover:bg-gray-50 cursor-pointer transition-colors">
                         {/* Desktop content - keeping existing structure */}

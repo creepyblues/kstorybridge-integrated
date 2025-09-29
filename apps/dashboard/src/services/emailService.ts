@@ -641,6 +641,7 @@ export const triggerFirstSaveEmail = async (userId: string, userEmail: string, u
 
 /**
  * Trigger conversion email when user tries to view premium content
+ * TEMPORARILY DISABLED: Email templates not yet implemented in edge function
  */
 export const triggerPremiumContentEmail = async (
   userId: string,
@@ -649,21 +650,32 @@ export const triggerPremiumContentEmail = async (
   currentTier: string,
   contentTitle: string
 ) => {
-  if (currentTier === 'basic') {
-    return sendConversionEmail({
-      userEmail,
-      userName,
-      userId,
-      currentTier,
-      targetTier: 'pro',
-      triggerEvent: 'premium_content_view',
-      metadata: { contentTitle }
-    });
-  }
+  // TEMPORARY: Disable conversion emails until templates are added to edge function
+  console.log('🚫 Conversion email temporarily disabled:', {
+    type: 'premium_content_view',
+    userEmail,
+    currentTier,
+    contentTitle
+  });
+  return { success: true, error: 'Conversion emails temporarily disabled' };
+
+  // TODO: Re-enable once templates are added to Supabase edge function
+  // if (currentTier === 'basic') {
+  //   return sendConversionEmail({
+  //     userEmail,
+  //     userName,
+  //     userId,
+  //     currentTier,
+  //     targetTier: 'pro',
+  //     triggerEvent: 'premium_content_view',
+  //     metadata: { contentTitle }
+  //   });
+  // }
 };
 
 /**
  * Trigger conversion email when basic user tries to contact creator
+ * TEMPORARILY DISABLED: Email templates not yet implemented in edge function
  */
 export const triggerContactAttemptEmail = async (
   userId: string,
@@ -671,20 +683,30 @@ export const triggerContactAttemptEmail = async (
   userName: string,
   currentTier: string
 ) => {
-  if (currentTier === 'basic') {
-    return sendConversionEmail({
-      userEmail,
-      userName,
-      userId,
-      currentTier,
-      targetTier: 'pro',
-      triggerEvent: 'contact_attempt'
-    });
-  }
+  // TEMPORARY: Disable conversion emails until templates are added to edge function
+  console.log('🚫 Conversion email temporarily disabled:', {
+    type: 'contact_attempt',
+    userEmail,
+    currentTier
+  });
+  return { success: true, error: 'Conversion emails temporarily disabled' };
+
+  // TODO: Re-enable once templates are added to Supabase edge function
+  // if (currentTier === 'basic') {
+  //   return sendConversionEmail({
+  //     userEmail,
+  //     userName,
+  //     userId,
+  //     currentTier,
+  //     targetTier: 'pro',
+  //     triggerEvent: 'contact_attempt'
+  //   });
+  // }
 };
 
 /**
  * Trigger conversion email when user has saved multiple titles (5+)
+ * TEMPORARILY DISABLED: Email templates not yet implemented in edge function
  */
 export const triggerMultipleSavesEmail = async (
   userId: string,
@@ -693,15 +715,25 @@ export const triggerMultipleSavesEmail = async (
   currentTier: string,
   savesCount: number
 ) => {
-  if (currentTier === 'basic' && savesCount >= 5) {
-    return sendConversionEmail({
-      userEmail,
-      userName,
-      userId,
-      currentTier,
-      targetTier: 'pro',
-      triggerEvent: 'multiple_saves',
-      metadata: { savesCount }
-    });
-  }
+  // TEMPORARY: Disable conversion emails until templates are added to edge function
+  console.log('🚫 Conversion email temporarily disabled:', {
+    type: 'multiple_saves',
+    userEmail,
+    currentTier,
+    savesCount
+  });
+  return { success: true, error: 'Conversion emails temporarily disabled' };
+
+  // TODO: Re-enable once templates are added to Supabase edge function
+  // if (currentTier === 'basic' && savesCount >= 5) {
+  //   return sendConversionEmail({
+  //     userEmail,
+  //     userName,
+  //     userId,
+  //     currentTier,
+  //     targetTier: 'pro',
+  //     triggerEvent: 'multiple_saves',
+  //     metadata: { savesCount }
+  //   });
+  // }
 };

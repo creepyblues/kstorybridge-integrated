@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-
 import { AuthProvider } from "@/hooks/useAuth";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { DataCacheProvider } from "@/contexts/DataCacheContext";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import { lazy, Suspense } from "react";
 
 // Load debug utilities in development
@@ -105,10 +106,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <DataCacheProvider>
-          <Toaster />
-          <BrowserRouter>
-            <AnalyticsProvider>
+        <OnboardingProvider>
+          <DataCacheProvider>
+            <Toaster />
+            <BrowserRouter>
+              <AnalyticsProvider>
               <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -335,8 +337,9 @@ const App = () => (
               </Suspense>
               </div>
             </AnalyticsProvider>
-        </BrowserRouter>
-        </DataCacheProvider>
+            </BrowserRouter>
+          </DataCacheProvider>
+        </OnboardingProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

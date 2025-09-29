@@ -20,7 +20,7 @@ import { TierProvider } from "@/contexts/TierContext";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import { ContactUpgradePrompt, PremiumContentUpgradePrompt } from "@/components/UpgradePrompt";
 import { triggerContactAttemptEmail, triggerPremiumContentEmail, triggerFirstSaveEmail } from "@/services/emailService";
-import { trackSavedTitle, trackPitchView, trackContactCreatorClick, trackUpgradeButtonClick } from "@/utils/analytics";
+import { trackSavedTitle, trackPitchView, trackContactCreatorClick, trackUpgradeButtonClick, trackPremiumFeatureAccess, trackTierUpgrade } from "@/utils/analytics";
 
 function TitleDetailNewContent() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -51,6 +51,56 @@ function TitleDetailNewContent() {
   
   // Sample PDF URL from Supabase storage (properly encoded)
   const SAMPLE_PDF_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/Werewolves%20Going%20Crazy%20Over%20Me-Sample.pdf";
+
+  // Enhanced tracking handlers for premium features
+  const handleViewSampleClick = () => {
+    const titleName = title?.title_name_en || title?.title_name_kr || 'Unknown Title';
+
+    // Track premium feature access
+    trackPremiumFeatureAccess(
+      'view_sample',
+      title?.title_id,
+      titleName,
+      tier,
+      {
+        source_page: 'title_detail',
+        sample_pdf_url: SAMPLE_PDF_URL,
+        popup_trigger: 'upgrade_modal'
+      }
+    );
+
+    // Continue with original functionality
+    setCurrentPdfUrl(SAMPLE_PDF_URL);
+    setShowUpgradeModal(false);
+    setTimeout(() => setIsPdfModalOpen(true), 10);
+  };
+
+  const handleUpgradePlanClick = () => {
+    const titleName = title?.title_name_en || title?.title_name_kr || 'Unknown Title';
+
+    // Track premium feature access
+    trackPremiumFeatureAccess(
+      'upgrade_plan',
+      title?.title_id,
+      titleName,
+      tier,
+      {
+        source_page: 'title_detail',
+        popup_trigger: 'upgrade_modal'
+      }
+    );
+
+    // Track tier upgrade intent
+    trackTierUpgrade('pro', tier, 'title_detail', {
+      source_title_id: title?.title_id,
+      source_title_name: titleName,
+      upgrade_trigger: 'view_pitch_attempt'
+    });
+
+    // Continue with original functionality
+    setShowUpgradeModal(false);
+    navigate('/buyers/plan');
+  };
   
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const [premiumFeatureName, setPremiumFeatureName] = useState("");
@@ -767,21 +817,14 @@ function TitleDetailNewContent() {
               <div className="space-y-3">
                 <Button
                   className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white"
-                  onClick={() => {
-                    setCurrentPdfUrl(SAMPLE_PDF_URL);
-                    setShowUpgradeModal(false);
-                    setTimeout(() => setIsPdfModalOpen(true), 10);
-                  }}
+                  onClick={handleViewSampleClick}
                 >
                   View Sample
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => {
-                    setShowUpgradeModal(false);
-                    navigate('/buyers/plan');
-                  }}
+                  onClick={handleUpgradePlanClick}
                 >
                   Upgrade Plan
                 </Button>

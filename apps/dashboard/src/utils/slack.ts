@@ -112,6 +112,36 @@ if (typeof window !== 'undefined') {
   (window as typeof window & { testSlackNotification: typeof testSlackNotification }).testSlackNotification = testSlackNotification;
 }
 
+// Convenience function for auth failure notifications
+export const notifyAuthFailure = async (failureData: {
+  userEmail?: string;
+  userFullName?: string;
+  failureType: string;
+  errorMessage: string;
+  stage?: string;
+  accountType?: 'buyer' | 'creator';
+  oauthProvider?: string;
+  additionalContext?: Record<string, unknown>;
+}) => {
+  // Use a generic email if not provided to ensure notification goes through
+  const email = failureData.userEmail || 'auth.failure@kstorybridge.com';
+
+  await sendSlackNotification({
+    event: `Auth Failure: ${failureData.failureType}`,
+    userType: failureData.accountType || 'buyer',
+    fullName: failureData.userFullName || 'Unknown User',
+    email: email,
+    additionalInfo: {
+      errorMessage: failureData.errorMessage,
+      stage: failureData.stage,
+      oauthProvider: failureData.oauthProvider,
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      ...failureData.additionalContext
+    }
+  });
+};
+
 // Convenience function for pitch request notifications
 export const notifyPitchRequest = async (requestData: {
   userFullName: string;

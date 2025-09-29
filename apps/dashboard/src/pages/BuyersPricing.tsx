@@ -2,15 +2,74 @@ import { Link } from 'react-router-dom';
 import { Button, Card, CardContent, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
 import { useTierAccess } from '@/hooks/useTierAccess';
 import UpgradeToProButton from '@/components/UpgradeToProButton';
+import { trackTierUpgrade, trackTierDowngrade, trackButtonClick } from '@/utils/analytics';
+import { useAuth } from '@/hooks/useAuth';
 
 const BuyersPricing = () => {
   const { tier, loading } = useTierAccess();
+  const { user } = useAuth();
 
   // Map tiers to their corresponding plan names
   const tierToPlan: Record<string, string> = {
     basic: 'free', // Basic tier (free plan)
     pro: 'pro',
     suite: 'suite'
+  };
+
+  // Enhanced tracking handlers for tier changes
+  const handleUpgradeToProClick = () => {
+    const userType = user?.user_metadata?.account_type as 'buyer' | 'creator';
+
+    // Track tier upgrade intent
+    trackTierUpgrade('pro', tier, 'pricing_page', {
+      current_plan: tierToPlan[tier],
+      target_plan: 'pro',
+      source_page: '/buyers/plan',
+      user_id: user?.id
+    });
+
+    // Track button click for GTM
+    trackButtonClick({
+      buttonId: 'pricing-upgrade-to-pro-btn',
+      buttonText: 'Upgrade Now',
+      buttonCategory: 'premium_feature',
+      pageSection: 'main_content',
+      userType: userType,
+      currentPage: '/buyers/plan',
+      additionalContext: {
+        current_tier: tier,
+        target_tier: 'pro',
+        conversion_value: 250,
+        plan_comparison: 'tier_upgrade'
+      }
+    });
+  };
+
+  const handleDowngradeClick = () => {
+    const userType = user?.user_metadata?.account_type as 'buyer' | 'creator';
+
+    // Track tier downgrade intent
+    trackTierDowngrade('basic', tier, 'user_initiated', {
+      current_plan: tierToPlan[tier],
+      target_plan: 'free',
+      source_page: '/buyers/plan',
+      user_id: user?.id
+    });
+
+    // Track button click for GTM
+    trackButtonClick({
+      buttonId: 'pricing-downgrade-plan-btn',
+      buttonText: 'Downgrade Plan',
+      buttonCategory: 'premium_feature',
+      pageSection: 'main_content',
+      userType: userType,
+      currentPage: '/buyers/plan',
+      additionalContext: {
+        current_tier: tier,
+        target_tier: 'basic',
+        plan_comparison: 'tier_downgrade'
+      }
+    });
   };
 
   const currentPlan = tier ? tierToPlan[tier] || 'free' : 'free';
@@ -143,7 +202,10 @@ const BuyersPricing = () => {
                     ) : tierHierarchy[tier || 'basic'] > tierHierarchy[plan.tierLevel] ? (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button className="w-full bg-slate-400 hover:bg-slate-500 text-white py-3 rounded-2xl font-medium transition-colors duration-300">
+                          <Button
+                            className="w-full bg-slate-400 hover:bg-slate-500 text-white py-3 rounded-2xl font-medium transition-colors duration-300"
+                            onClick={handleDowngradeClick}
+                          >
                             Downgrade Plan
                           </Button>
                         </DialogTrigger>
@@ -165,6 +227,7 @@ const BuyersPricing = () => {
                       <UpgradeToProButton
                         className="w-full py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 text-white !bg-[#4C9C9B] !border-[#4C9C9B]"
                         style={{ backgroundColor: '#4C9C9B !important', borderColor: '#4C9C9B !important' }}
+                        onClick={handleUpgradeToProClick}
                       >
                         <span className="flex items-center justify-center gap-2">
                           Upgrade Now

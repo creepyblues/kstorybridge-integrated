@@ -9,14 +9,18 @@ interface UpgradeToProButtonProps {
   className?: string;
   disabled?: boolean;
   style?: React.CSSProperties;
+  onClick?: () => void; // Optional click handler for additional tracking
 }
 
-const UpgradeToProButton = ({ children, className, disabled = false, style }: UpgradeToProButtonProps) => {
+const UpgradeToProButton = ({ children, className, disabled = false, style, onClick }: UpgradeToProButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
   const handleUpgrade = async () => {
+    // Call optional external click handler for tracking
+    onClick?.();
+
     if (!user) {
       toast({
         title: 'Authentication required',

@@ -651,3 +651,122 @@ export const trackUserJourneyStep = (
     console.log(`🛤️ USER JOURNEY: ${journeyName} - ${stepName} (${completed ? 'Completed' : 'Started'})`);
   }
 };
+
+/**
+ * Track premium feature access attempts (view sample, upgrade plan, etc.)
+ */
+export const trackPremiumFeatureAccess = (
+  action: 'view_sample' | 'upgrade_plan' | 'contact_creator' | 'request_pitch',
+  titleId?: string,
+  titleName?: string,
+  userTier?: string,
+  additionalContext?: Record<string, unknown>
+) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'premium_feature_access',
+      'feature_action': action,
+      'title_id': titleId,
+      'title_name': titleName,
+      'user_tier': userTier || 'unknown',
+      'conversion_intent': action === 'upgrade_plan' ? 'tier_upgrade' : 'content_access',
+      'app_section': 'dashboard',
+      'timestamp': new Date().toISOString(),
+      ...additionalContext
+    });
+
+    console.log(`👑 PREMIUM FEATURE ACCESS: ${action}`, {
+      titleId,
+      titleName,
+      userTier,
+      context: additionalContext
+    });
+  }
+};
+
+/**
+ * Track tier upgrade intentions and actions
+ */
+export const trackTierUpgrade = (
+  targetTier: string,
+  currentTier?: string,
+  source?: 'premium_popup' | 'pricing_page' | 'profile_page' | 'title_detail',
+  additionalContext?: Record<string, unknown>
+) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'tier_upgrade_intent',
+      'target_tier': targetTier,
+      'current_tier': currentTier || 'unknown',
+      'upgrade_source': source || 'unknown',
+      'conversion_category': 'tier_upgrade',
+      'conversion_value': targetTier === 'pro' ? 250 : targetTier === 'suite' ? 500 : 0,
+      'app_section': 'dashboard',
+      'timestamp': new Date().toISOString(),
+      ...additionalContext
+    });
+
+    console.log(`📈 TIER UPGRADE INTENT: ${currentTier} → ${targetTier}`, {
+      source,
+      value: targetTier === 'pro' ? 250 : targetTier === 'suite' ? 500 : 0,
+      context: additionalContext
+    });
+  }
+};
+
+/**
+ * Track tier downgrade actions
+ */
+export const trackTierDowngrade = (
+  targetTier: string,
+  currentTier?: string,
+  reason?: string,
+  additionalContext?: Record<string, unknown>
+) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'tier_downgrade_intent',
+      'target_tier': targetTier,
+      'current_tier': currentTier || 'unknown',
+      'downgrade_reason': reason || 'user_initiated',
+      'conversion_category': 'tier_downgrade',
+      'app_section': 'dashboard',
+      'timestamp': new Date().toISOString(),
+      ...additionalContext
+    });
+
+    console.log(`📉 TIER DOWNGRADE INTENT: ${currentTier} → ${targetTier}`, {
+      reason,
+      context: additionalContext
+    });
+  }
+};
+
+/**
+ * Track premium popup interactions specifically
+ */
+export const trackPremiumPopupInteraction = (
+  action: 'show' | 'upgrade_click' | 'close' | 'request_submit',
+  featureName?: string,
+  userTier?: string,
+  additionalContext?: Record<string, unknown>
+) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'premium_popup_interaction',
+      'popup_action': action,
+      'feature_name': featureName,
+      'user_tier': userTier || 'unknown',
+      'conversion_intent': action === 'upgrade_click' ? 'tier_upgrade' : 'feature_request',
+      'app_section': 'dashboard',
+      'timestamp': new Date().toISOString(),
+      ...additionalContext
+    });
+
+    console.log(`🎁 PREMIUM POPUP: ${action}`, {
+      featureName,
+      userTier,
+      context: additionalContext
+    });
+  }
+};

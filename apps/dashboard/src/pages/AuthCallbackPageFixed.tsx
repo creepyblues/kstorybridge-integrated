@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 import { getOAuthAccountType, getDashboardPath, getSignupPath } from '@/utils/simpleAccountTypeDetection';
+import { trackOAuthCallbackError } from '@/services/authErrorTracking';
 
 const STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-auth-token';
 
@@ -254,6 +255,19 @@ const AuthCallbackPageFixed = () => {
             const alreadyHandled = error.message?.toLowerCase().includes('authorization code already used');
             if (!alreadyHandled) {
               console.error('❌ OAuth code exchange failed:', error.message);
+
+              // Track OAuth code exchange failure
+              await trackOAuthCallbackError(
+                error,
+                'callback_exchange',
+                {
+                  email: user?.email,
+                  accountType: accountType as 'buyer' | 'creator' | undefined,
+                  oauthProvider: 'google',
+                  errorCode: (error as any).code
+                }
+              );
+
               toast({
                 title: "Authentication Failed",
                 description: error.message,
@@ -346,6 +360,18 @@ const AuthCallbackPageFixed = () => {
 
         if (!user) {
           console.error('❌ No user found after OAuth processing');
+
+          // Track session initialization failure
+          await trackOAuthCallbackError(
+            new Error('No user found after OAuth processing'),
+            'session_init',
+            {
+              accountType: accountType as 'buyer' | 'creator' | undefined,
+              oauthProvider: 'google',
+              sessionValid: false
+            }
+          );
+
           navigate('/signin?error=no_user');
           return;
         }
@@ -417,6 +443,18 @@ const AuthCallbackPageFixed = () => {
 
       } catch (error) {
         console.error('❌ Unexpected error in OAuth callback:', error);
+
+        // Track unexpected OAuth callback error
+        await trackOAuthCallbackError(
+          error,
+          'callback_exchange',
+          {
+            accountType: accountType as 'buyer' | 'creator' | undefined,
+            oauthProvider: 'google',
+            errorMessage: error instanceof Error ? error.message : 'Unexpected error in OAuth callback'
+          }
+        );
+
         toast({
           title: "Authentication Error",
           description: "Something went wrong during authentication. Please try again.",

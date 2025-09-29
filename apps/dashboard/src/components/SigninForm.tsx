@@ -11,6 +11,7 @@ import { performSessionHealthCheck, getCurrentSession, recoverCorruptedSession }
 import { determineAccountType, clearAccountTypeCache, getAccountTypeDisplayInfo } from '@/utils/simpleAccountTypeService';
 import { notifyUserSignin } from '@/utils/slack';
 import { createBuyerProfileAtomic } from '@/utils/atomicProfileCreator';
+import { trackSigninError, trackValidationError } from '@/services/authErrorTracking';
 
 interface SigninFormProps {
   accountType: 'buyer' | 'creator';
@@ -114,6 +115,19 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
 
       if (error) {
         console.error('Google signin error:', error);
+
+        // Track OAuth signin error
+        await trackSigninError(
+          error,
+          '',
+          true,
+          {
+            stage: 'supabase_auth',
+            accountType: accountType,
+            oauthProvider: 'google'
+          }
+        );
+
         toast({
           title: "Sign in failed",
           description: "There was an error signing in with Google. Please try again.",
@@ -122,6 +136,19 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
       }
     } catch (error) {
       console.error('Google signin error:', error);
+
+      // Track OAuth signin error
+      await trackSigninError(
+        error,
+        '',
+        true,
+        {
+          stage: 'supabase_auth',
+          accountType: accountType,
+          oauthProvider: 'google'
+        }
+      );
+
       toast({
         title: "Sign in failed",
         description: "There was an error signing in with Google. Please try again.",
@@ -222,6 +249,25 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     setIsLoading(true);
     setSigninError('');
 
+    // Validate required fields
+    if (!formData.email || !formData.password) {
+      const validationError = !formData.email ? 'Email is required' : 'Password is required';
+
+      // Track validation error
+      await trackValidationError(
+        validationError,
+        formData.email || '',
+        accountType,
+        {
+          failureType: 'signin_email'
+        }
+      );
+
+      setSigninError(validationError);
+      setIsLoading(false);
+      return;
+    }
+
     // Track form submission attempt
     trackFormSubmission('signin', 'signin_page', accountType, {
       signin_method: 'email',
@@ -238,6 +284,18 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
       });
 
       if (error) {
+        // Track signin error
+        await trackSigninError(
+          error,
+          formData.email,
+          false,
+          {
+            stage: 'supabase_auth',
+            accountType: accountType,
+            errorCode: (error as any).code || undefined
+          }
+        );
+
         // Handle different error types appropriately
         if (error.message.includes('Invalid login credentials')) {
           setSigninError('Invalid email or password. Please check your credentials and try again.');

@@ -19,7 +19,7 @@ import { ChatUpgradePrompt } from "@/components/UpgradePrompt";
 import { OnboardingModal, OnboardingFlow } from "@/components/onboarding";
 import { useOnboarding } from "@/contexts/OnboardingContext";
 import { OnboardingService } from "@/services/onboardingService";
-import { trackSearch, trackTitleView, trackAdvancedChatUsage, trackEvent } from "@/utils/analytics";
+import { trackSearch, trackTitleView, trackAdvancedChatUsage, trackEvent, trackTitleCardClick } from "@/utils/analytics";
 
 interface Message {
   id: string;
@@ -1115,7 +1115,24 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
     const handleTitleCardClick = async () => {
       const titleName = title.title_name_en || title.title_name_kr || 'Unknown Title';
 
-      // Track title view with analytics
+      // Enhanced title card click tracking for GA4/GTM
+      const userType = user?.user_metadata?.account_type as 'buyer' | 'creator';
+      trackTitleCardClick(
+        title.title_id,
+        titleName,
+        'card_click',
+        'chat',
+        userType,
+        {
+          chat_mode: useOrchestrator ? 'advanced' : 'standard',
+          session_id: currentSession?.id,
+          message_id: messageId,
+          user_prompt: userPrompt,
+          recommendation_score: title.score
+        }
+      );
+
+      // Legacy title view tracking (keep for backward compatibility)
       trackTitleView(title.title_id, titleName, 'chat', useOrchestrator ? 'advanced' : 'standard');
 
       // Record title view interaction

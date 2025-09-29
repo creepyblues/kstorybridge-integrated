@@ -3,6 +3,7 @@ import { databaseClient } from '../database/DatabaseClient';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { sendWelcomeEmail } from '@/services/emailService';
 import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
+import { trackAuthError } from '@/services/authErrorTracking';
 
 export interface AuthUser extends User {
   // Extended with common fields we use
@@ -71,6 +72,14 @@ export class AuthService {
       });
 
       if (error) {
+        // Track signup error in AuthService
+        await trackAuthError(error, {
+          failureType: 'signup_email',
+          stage: 'supabase_auth',
+          email: data.email,
+          errorMessage: error.message
+        });
+
         return { user: null, session: null, error: error.message };
       }
 
@@ -99,6 +108,14 @@ export class AuthService {
       });
 
       if (error) {
+        // Track signin error in AuthService
+        await trackAuthError(error, {
+          failureType: 'signin_email',
+          stage: 'supabase_auth',
+          email: email,
+          errorMessage: error.message
+        });
+
         return { user: null, session: null, error: error.message };
       }
 
@@ -133,6 +150,14 @@ export class AuthService {
       });
 
       if (error) {
+        // Track OAuth signin error in AuthService
+        await trackAuthError(error, {
+          failureType: provider === 'google' ? 'signin_oauth' : 'signin_oauth',
+          stage: 'supabase_auth',
+          oauthProvider: provider,
+          errorMessage: error.message
+        });
+
         return { error: error.message };
       }
 

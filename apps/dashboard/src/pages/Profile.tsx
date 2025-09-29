@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";
-import { trackAuthAction, trackUserJourneyStep } from "@/utils/analytics";
+import { trackAuthAction, trackUserJourneyStep, trackButtonClick } from "@/utils/analytics";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";
@@ -982,7 +982,25 @@ export default function Profile() {
                   </div>
                 </div>
                 {(profile.email === 'sungho@dadble.com' || profile.email === 'kevin@sandstoneartists.com') ? (
-                  <Link to="/buyers/plan">
+                  <Link
+                    to="/buyers/plan"
+                    onClick={() => {
+                      // Track adjust plan button click
+                      trackButtonClick({
+                        buttonId: 'profile-adjust-plan-btn',
+                        buttonText: 'Adjust plan',
+                        buttonCategory: 'navigation',
+                        pageSection: 'main_content',
+                        userType: profile.account_type as 'buyer' | 'creator',
+                        currentPage: '/buyers/profile',
+                        additionalContext: {
+                          user_tier: profile.tier,
+                          navigation_destination: '/buyers/plan',
+                          admin_user: true
+                        }
+                      });
+                    }}
+                  >
                     <Button
                       variant="outline"
                       className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"

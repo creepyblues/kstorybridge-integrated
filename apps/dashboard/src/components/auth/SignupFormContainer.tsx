@@ -5,6 +5,7 @@ import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { trackSignupError, trackValidationError, trackProfileCreationError } from '@/services/authErrorTracking';
 
 import type { AccountType, BuyerFormData, CreatorFormData, SignupState } from './types';
 import {
@@ -112,9 +113,24 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
         if (accountType === 'buyer') {
           // For OAuth completion, we only need profile data validation
           if (!buyerFormData.full_name || !buyerFormData.buyer_company || !buyerFormData.buyer_role) {
+            const validationError = "Please fill in all required fields (name, company, role)";
+
+            // Track validation error
+            await trackValidationError(
+              validationError,
+              buyerFormData.email || user.email || '',
+              'buyer',
+              {
+                failureType: 'signup_oauth',
+                fullName: buyerFormData.full_name,
+                company: buyerFormData.buyer_company,
+                oauthProvider: 'google'
+              }
+            );
+
             toast({
               title: "Validation Error",
-              description: "Please fill in all required fields (name, company, role)",
+              description: validationError,
               variant: "destructive"
             });
             return;
@@ -140,6 +156,20 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
           } catch (error) {
             console.error('❌ OAuth profile completion failed or timed out:', error);
 
+            // Track profile creation error
+            await trackProfileCreationError(
+              error,
+              buyerFormData.email || user.email || '',
+              'buyer',
+              {
+                fullName: buyerFormData.full_name,
+                company: buyerFormData.buyer_company,
+                oauthProvider: 'google',
+                recoveryAttempted: true,
+                recoveryMethod: 'signin_redirect'
+              }
+            );
+
             // Show helpful message with signin option
             toast({
               title: "Profile Setup Issue",
@@ -160,6 +190,20 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
 
           if (!result.success) {
             console.error('❌ OAuth profile completion failed:', result.error);
+
+            // Track profile creation failure
+            await trackProfileCreationError(
+              new Error(result.error || 'Profile creation failed'),
+              buyerFormData.email || user.email || '',
+              'buyer',
+              {
+                fullName: buyerFormData.full_name,
+                company: buyerFormData.buyer_company,
+                oauthProvider: 'google',
+                profileExists: false
+              }
+            );
+
             toast({
               title: "Profile Creation Failed",
               description: result.error || "Failed to create buyer profile. Please try signing in or contact support.",
@@ -223,6 +267,18 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
         // Validate buyer form
         const formError = validateBuyerForm(buyerFormData);
         if (formError) {
+          // Track validation error
+          await trackValidationError(
+            formError,
+            buyerFormData.email,
+            'buyer',
+            {
+              failureType: 'signup_email',
+              fullName: buyerFormData.full_name,
+              company: buyerFormData.buyer_company
+            }
+          );
+
           toast({
             title: "Validation Error",
             description: formError,
@@ -241,6 +297,20 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
         // Submit buyer signup
         const result = await signupBuyer(buyerFormData);
         if (!result.success) {
+          // Track signup error
+          await trackSignupError(
+            new Error(result.error || 'Signup failed'),
+            buyerFormData.email,
+            'buyer',
+            false,
+            {
+              stage: 'supabase_auth',
+              fullName: buyerFormData.full_name,
+              company: buyerFormData.buyer_company,
+              profileExists: false
+            }
+          );
+
           toast({
             title: "Signup Failed",
             description: result.error || "Failed to create account",
@@ -262,6 +332,18 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
         // Validate creator form
         const formError = validateCreatorForm(creatorFormData);
         if (formError) {
+          // Track validation error
+          await trackValidationError(
+            formError,
+            creatorFormData.email,
+            'creator',
+            {
+              failureType: 'signup_email',
+              fullName: creatorFormData.full_name,
+              company: creatorFormData.ip_owner_company
+            }
+          );
+
           toast({
             title: "Validation Error",
             description: formError,
@@ -284,6 +366,20 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
         // Submit creator signup
         const result = await signupCreator(creatorFormData);
         if (!result.success) {
+          // Track signup error
+          await trackSignupError(
+            new Error(result.error || 'Signup failed'),
+            creatorFormData.email,
+            'creator',
+            false,
+            {
+              stage: 'supabase_auth',
+              fullName: creatorFormData.full_name,
+              company: creatorFormData.ip_owner_company,
+              profileExists: false
+            }
+          );
+
           toast({
             title: "Signup Failed",
             description: result.error || "Failed to create account",
@@ -304,6 +400,22 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
 
     } catch (error) {
       console.error('Signup error:', error);
+
+      // Track unexpected errors
+      const email = accountType === 'buyer' ? buyerFormData.email : creatorFormData.email;
+      const fullName = accountType === 'buyer' ? buyerFormData.full_name : creatorFormData.full_name;
+      await trackSignupError(
+        error,
+        email,
+        accountType,
+        state.isOAuthUser,
+        {
+          stage: 'supabase_auth',
+          fullName: fullName,
+          errorMessage: error instanceof Error ? error.message : 'Unexpected error'
+        }
+      );
+
       toast({
         title: "Signup Failed",
         description: "An unexpected error occurred. Please try again.",
@@ -320,6 +432,19 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
       const result = await handleOAuthSignup('google', accountType);
 
       if (result.error) {
+        // Track OAuth signup error
+        await trackSignupError(
+          new Error(result.error),
+          '',
+          accountType,
+          true,
+          {
+            stage: 'supabase_auth',
+            oauthProvider: 'google',
+            errorMessage: result.error
+          }
+        );
+
         toast({
           title: "OAuth Error",
           description: result.error,
@@ -328,6 +453,20 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
       }
     } catch (error) {
       console.error('Google signup error:', error);
+
+      // Track OAuth error
+      await trackSignupError(
+        error,
+        '',
+        accountType,
+        true,
+        {
+          stage: 'supabase_auth',
+          oauthProvider: 'google',
+          errorMessage: error instanceof Error ? error.message : 'Failed to initiate Google signup'
+        }
+      );
+
       toast({
         title: "OAuth Error",
         description: "Failed to initiate Google signup",

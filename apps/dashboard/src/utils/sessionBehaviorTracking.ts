@@ -193,6 +193,9 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
       return;
     }
 
+    // TEMPORARILY PAUSED: User Session Ended notifications
+    // Uncomment the block below to re-enable session end notifications
+    /*
     // Send notification using centralized Slack utility (includes blacklist filtering)
     try {
       await sendSlackNotification({
@@ -229,6 +232,24 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
       }
     } catch (error) {
       console.error('Failed to send session end notification:', error);
+    }
+    */
+
+    // Session tracking still happens, just notifications are paused
+    console.log('📊 Session ended (notifications paused):', {
+      sessionId: sessionData.sessionId,
+      reason,
+      totalDuration: `${Math.round(totalDuration)}s`,
+      pageCount: sessionData.pages.length
+    });
+
+    // Still mark session as processed to avoid duplicate processing
+    sessionStorage.setItem(SESSION_END_KEY, sessionData.sessionId);
+    localStorage.setItem(cooldownKey, now.toString());
+
+    // Clear session data if ending due to navigation or close
+    if (reason !== 'inactivity') {
+      sessionStorage.removeItem(BEHAVIOR_KEY);
     }
   } catch (error) {
     console.error('Error ending session:', error);

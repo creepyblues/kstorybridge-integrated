@@ -225,7 +225,7 @@ function TitleListContent() {
         // Also track with enhanced search context
         trackSearchWithContext(
           query,
-          'main_search',
+          'titles_page',
           resultCount,
           searchSuggestions,
           user?.user_metadata?.account_type

@@ -14,7 +14,8 @@ import {
   Rocket,
   Code,
   Search,
-  Filter
+  Filter,
+  Target
 } from "lucide-react";
 
 interface DocumentItem {

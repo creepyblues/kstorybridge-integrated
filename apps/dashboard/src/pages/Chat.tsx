@@ -18,6 +18,9 @@ import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import { ChatUpgradePrompt } from "@/components/UpgradePrompt";
 import { triggerFirstSearchEmail } from "@/services/emailService";
 import { OnboardingModal, OnboardingFlow } from "@/components/onboarding";
+import { OnboardingService } from "@/services/onboardingService";
+import { trackSearch, trackTitleView, trackAdvancedChatUsage, trackEvent } from "@/utils/analytics";
+console.log('✅ DEBUG: OnboardingModal imported:', typeof OnboardingModal, OnboardingModal);
 
 interface Message {
   id: string;
@@ -462,61 +465,55 @@ export default function Chat() {
     // No history loading on mount - will load lazily when user sends first message
   }, [isAuthorized, user?.id]);
 
-  // DEBUG MODE: Show onboarding for ALL users on every login (PRD 2.1)
+  // PRD 2.1: Show onboarding for new users only
   useEffect(() => {
-    const showOnboardingForAllUsers = () => {
-      console.log('🚀 DEBUG ONBOARDING: Showing onboarding for ALL users (DEBUG MODE)...', {
+    const checkAndShowOnboarding = async () => {
+      console.log('🚀 ONBOARDING: Checking if user should see onboarding...', {
         hasUser: !!user,
         userId: user?.id,
-        userEmail: user?.email,
-        createdAt: user?.created_at,
-        timestamp: new Date().toISOString(),
-        mode: 'DEBUG - ALL USERS'
+        userEmail: user?.email
       });
 
       if (!user) {
-        console.log('❌ DEBUG ONBOARDING: No user found, skipping');
+        console.log('❌ ONBOARDING: No user found, skipping');
         return;
       }
 
-      console.log('🎯 DEBUG ONBOARDING: Bypassing all checks - showing onboarding for every user');
+      try {
+        // Check if user should see onboarding (new users or incomplete)
+        const shouldShow = await OnboardingService.shouldShowOnboarding(user.id);
 
-      // Show onboarding modal after brief delay
-      setTimeout(() => {
-        console.log('✨ DEBUG ONBOARDING: Triggering modal display for debugging');
-        setShowOnboardingModal(true);
-      }, 1000);
+        console.log('🎯 ONBOARDING: Decision result:', {
+          shouldShow,
+          userId: user.id,
+          userEmail: user.email
+        });
 
-      // Show welcome toast (every time for debugging)
-      toast({
-        title: "Welcome to KStoryBridge! 🎉 (DEBUG)",
-        description: "Debug mode: Onboarding shows for all users on every login."
-      });
+        if (shouldShow) {
+          // Initialize onboarding if no record exists
+          await OnboardingService.startOnboarding(user.id, user.email || '');
+
+          // Show onboarding modal after brief delay
+          setTimeout(() => {
+            console.log('✨ ONBOARDING: Showing modal for new user');
+            setShowOnboardingModal(true);
+          }, 1000);
+
+          // Show welcome toast for new users
+          toast({
+            title: "Welcome to KStoryBridge! 🎉",
+            description: "Let's get you started with a quick tour of our features."
+          });
+        } else {
+          console.log('✅ ONBOARDING: User has already completed onboarding');
+        }
+      } catch (error) {
+        console.error('❌ ONBOARDING: Error checking onboarding status:', error);
+        // Don't show onboarding if there's an error
+      }
     };
 
-    // Run the check
-    showOnboardingForAllUsers();
-
-    // Also make available globally for manual testing
-    if (typeof window !== 'undefined') {
-      (window as any).forceOnboarding = () => {
-        console.log('🔧 MANUAL TRIGGER: Forcing onboarding modal');
-        setShowOnboardingModal(true);
-      };
-
-      (window as any).resetOnboardingFlag = () => {
-        if (user) {
-          const key = `onboarding_seen_${user.id}`;
-          localStorage.removeItem(key);
-          console.log('🔄 MANUAL RESET: Cleared onboarding flag, refresh page to see onboarding');
-        }
-      };
-
-      console.log('🛠️ MANUAL CONTROLS: Available in console:');
-      console.log('   - forceOnboarding() - Show onboarding modal immediately');
-      console.log('   - resetOnboardingFlag() - Clear localStorage flag and refresh');
-    }
-
+    checkAndShowOnboarding();
   }, [user]);
 
   // Load history when user clicks "Go back to Chat history"
@@ -622,40 +619,91 @@ export default function Chat() {
 
   // Onboarding handlers (PRD 2.1)
   const handleStartOnboarding = () => {
-    console.log('🎬 DEBUG: handleStartOnboarding called - Starting onboarding flow');
-    console.log('📊 DEBUG: State before:', { showOnboardingModal, showOnboardingFlow });
+    console.log('🎬 ONBOARDING: Starting onboarding flow');
     setShowOnboardingModal(false);
     setShowOnboardingFlow(true);
-    console.log('✅ DEBUG: State updates queued');
   };
 
   const handleSkipOnboarding = async () => {
-    console.log('⏭️ DEBUG ONBOARDING: User skipped onboarding (DEBUG MODE - not persisting)');
+    console.log('⏭️ ONBOARDING: User skipped onboarding');
 
-    // DEBUG MODE: Don't save to localStorage to allow repeated testing
-    console.log('🔧 DEBUG ONBOARDING: Skipping localStorage save for debug purposes');
+    if (!user) {
+      console.error('❌ ONBOARDING: No user found for skip action');
+      return;
+    }
 
-    setShowOnboardingModal(false);
-    setShowOnboardingFlow(false);
+    try {
+      // Save skip to database
+      const success = await OnboardingService.skipOnboarding(user.id, user.user_metadata?.full_name);
 
-    toast({
-      title: "Tour skipped (DEBUG)",
-      description: "Debug mode: Onboarding will show again on next login for testing."
-    });
+      if (success) {
+        console.log('✅ ONBOARDING: Skip saved to database');
+        setShowOnboardingModal(false);
+        setShowOnboardingFlow(false);
+
+        toast({
+          title: "Tour skipped",
+          description: "You can restart the tour anytime from your profile settings."
+        });
+      } else {
+        console.error('❌ ONBOARDING: Failed to save skip to database');
+        toast({
+          title: "Error",
+          description: "Failed to save preference. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('❌ ONBOARDING: Error skipping onboarding:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save preference. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleCompleteOnboarding = async () => {
-    console.log('✅ DEBUG ONBOARDING: User completed onboarding (DEBUG MODE - not persisting)');
+    console.log('✅ ONBOARDING: User completed onboarding');
 
-    // DEBUG MODE: Don't save to localStorage to allow repeated testing
-    console.log('🔧 DEBUG ONBOARDING: Skipping localStorage save for debug purposes');
+    if (!user) {
+      console.error('❌ ONBOARDING: No user found for completion');
+      return;
+    }
 
-    toast({
-      title: "Welcome aboard! 🎉 (DEBUG)",
-      description: "Debug mode: Onboarding will show again on next login for testing."
-    });
+    try {
+      // Save completion to database (step 4 = final step)
+      const success = await OnboardingService.updateOnboardingStep(
+        user.id,
+        4,
+        'complete',
+        user.user_metadata?.full_name
+      );
 
-    setShowOnboardingFlow(false);
+      if (success) {
+        console.log('✅ ONBOARDING: Completion saved to database');
+        setShowOnboardingFlow(false);
+
+        toast({
+          title: "Welcome aboard! 🎉",
+          description: "You're all set to explore KStoryBridge and find amazing content."
+        });
+      } else {
+        console.error('❌ ONBOARDING: Failed to save completion to database');
+        toast({
+          title: "Error",
+          description: "Failed to save progress. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('❌ ONBOARDING: Error completing onboarding:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save progress. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEmptyStateMessage = async (message: string) => {
@@ -665,6 +713,14 @@ export default function Chat() {
 
     // Set conversation as started
     setHasStartedConversation(true);
+
+    // Track empty state chat search query
+    trackSearch(message.trim(), 0, {
+      userType: 'buyer',
+      searchContext: 'chat_empty_state',
+      page: '/buyers/chat',
+      chatMode: useOrchestrator ? 'advanced' : 'standard'
+    });
 
     // Set processing flag to prevent duplicate submissions
     setIsProcessingMessage(true);
@@ -783,6 +839,14 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
       console.warn('Failed to trigger first search email:', error);
       // Don't fail the chat if email fails
     }
+
+    // Track chat search query
+    trackSearch(messageContent, 0, {
+      userType: 'buyer',
+      searchContext: 'chat',
+      page: '/buyers/chat',
+      chatMode: useOrchestrator ? 'advanced' : 'standard'
+    });
 
     // Set processing flag to prevent duplicate submissions
     setIsProcessingMessage(true);
@@ -1094,6 +1158,11 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
 
   const formatTitleCard = (title: any, messageId?: string, userPrompt?: string) => {
     const handleTitleCardClick = async () => {
+      const titleName = title.title_name_en || title.title_name_kr || 'Unknown Title';
+
+      // Track title view with analytics
+      trackTitleView(title.title_id, titleName, 'chat', useOrchestrator ? 'advanced' : 'standard');
+
       // Record title view interaction
       if (currentSession && user) {
         await chatHistoryService.recordInteraction({
@@ -1101,7 +1170,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
           user_id: user.id,
           interaction_type: 'title_view',
           target_id: title.title_id,
-          target_title: title.title_name_en || title.title_name_kr || 'Unknown Title',
+          target_title: titleName,
           metadata: {
             source: 'recommended_titles_card',
             title_name_en: title.title_name_en,
@@ -1219,6 +1288,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Onboarding Modals (PRD 2.1) */}
+      {console.log('🎬 DEBUG: About to render OnboardingModal, showOnboardingModal =', showOnboardingModal)}
       <OnboardingModal
         open={showOnboardingModal}
         onStart={handleStartOnboarding}
@@ -1446,7 +1516,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                   value={inputMessage}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
-                  placeholder="Describe the story you need, and I'll curate options..."
+                  placeholder="Describe the story you are looking for..."
                   className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-sm placeholder-gray-400"
                   rows={1}
                   disabled={isLoading || isLoadingHistory || isProcessingMessage}
@@ -1497,6 +1567,10 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                             to: 'Standard (OpenAI Direct)',
                             timestamp: new Date().toISOString()
                           });
+
+                          // Track chat mode change
+                          trackEvent('mode_change', 'chat', 'advanced_to_standard');
+
                           setUseOrchestrator(false);
                         }}
                         className="cursor-pointer"
@@ -1513,6 +1587,11 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                               to: 'Enhanced (OpenAI GPT-4)',
                               timestamp: new Date().toISOString()
                             });
+
+                            // Track chat mode change and advanced usage
+                            trackEvent('mode_change', 'chat', 'standard_to_advanced');
+                            trackAdvancedChatUsage(user?.id);
+
                             setUseOrchestrator(true);
                           } else {
                             setPremiumPopupOpen(true);

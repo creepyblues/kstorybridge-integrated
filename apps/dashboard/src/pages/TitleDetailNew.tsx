@@ -20,6 +20,7 @@ import { TierProvider } from "@/contexts/TierContext";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import { ContactUpgradePrompt, PremiumContentUpgradePrompt } from "@/components/UpgradePrompt";
 import { triggerContactAttemptEmail, triggerPremiumContentEmail, triggerFirstSaveEmail } from "@/services/emailService";
+import { trackSavedTitle, trackPitchView, trackContactCreatorClick, trackUpgradeButtonClick } from "@/utils/analytics";
 
 function TitleDetailNewContent() {
   const { titleId } = useParams<{ titleId: string }>();
@@ -150,6 +151,12 @@ function TitleDetailNewContent() {
           description: "This title has been removed from your saved titles"
         });
         refreshData('favorites');
+
+        // PRD 2.1: Track unsave action
+        if (title) {
+          trackSavedTitle(titleId, title.title_name_en || title.title_name_kr || 'Unknown Title', 'detail', user.id);
+        }
+
         console.log('✅ TITLE DETAIL NEW: Successfully removed from favorites');
       } else {
         console.log('❤️ TITLE DETAIL NEW: Adding to favorites...');
@@ -160,6 +167,11 @@ function TitleDetailNewContent() {
           description: "You can find this title in your saved titles"
         });
         refreshData('favorites');
+
+        // PRD 2.1: Track save action
+        if (title) {
+          trackSavedTitle(titleId, title.title_name_en || title.title_name_kr || 'Unknown Title', 'detail', user.id);
+        }
 
         // PRD 2.1: Trigger first save email for new users
         try {
@@ -449,6 +461,16 @@ function TitleDetailNewContent() {
                   <div className="flex justify-end mt-2">
                     <Button
                       onClick={async () => {
+                        // PRD 2.1: Track contact creator click
+                        if (title) {
+                          trackContactCreatorClick(
+                            titleId,
+                            title.title_name_en || title.title_name_kr || 'Unknown Title',
+                            tier,
+                            'detail'
+                          );
+                        }
+
                         // PRD 2.1: Trigger conversion email for basic users trying to contact
                         if (tier === 'basic' && user?.email && user?.user_metadata?.full_name) {
                           try {
@@ -591,6 +613,13 @@ function TitleDetailNewContent() {
                     <span className="text-slate-600 text-sm sm:text-base text-center sm:text-left">View the Pitch Deck</span>
                     <Button
                       onClick={async () => {
+                        // PRD 2.1: Track pitch view attempt
+                        trackPitchView(
+                          titleId,
+                          title.title_name_en || title.title_name_kr || 'Unknown Title',
+                          tier
+                        );
+
                         if (canAccessPremiumContent) {
                           setCurrentPdfUrl(title.pitch || "");
                           setTimeout(() => setIsPdfModalOpen(true), 10);

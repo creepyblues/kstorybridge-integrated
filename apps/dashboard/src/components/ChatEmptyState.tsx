@@ -52,7 +52,7 @@ export const ChatEmptyState = ({ onSubmitMessage, isLoading = false, showHistory
               value={inputMessage}
               onChange={handleInputChange}
               onKeyDown={handleKeyPress}
-              placeholder="Describe the story you need, and I'll curate options..."
+              placeholder="Describe the story you are looking for..."
               className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-base placeholder-gray-400"
               rows={1}
               disabled={isLoading}

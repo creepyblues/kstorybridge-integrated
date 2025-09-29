@@ -398,26 +398,9 @@ function BuyerHomeContent() {
   return (
     <PageContainer>
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
-          <div>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2">Featured Titles</h2>
-            <p className="text-sm sm:text-base text-gray-600 mb-2 sm:mb-4">Jinu, our friendly AI agent, handpicked these titles just for you!</p>
-          </div>
-
-          {/* Manual Onboarding Trigger */}
-          <div>
-            <Button
-              onClick={() => {
-                console.log('🎯 MANUAL TRIGGER: User clicked "Take Tour" button');
-                setShowOnboardingModal(true);
-              }}
-              variant="outline"
-              className="border-gray-300 hover:bg-gray-100 text-sm"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Take Tour
-            </Button>
-          </div>
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight mb-2">Featured Titles</h2>
+          <p className="text-sm sm:text-base text-gray-600 mb-2 sm:mb-4">Jinu, our friendly AI agent, handpicked these titles just for you!</p>
         </div>
 
         {/* Featured Titles Section */}

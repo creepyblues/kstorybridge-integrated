@@ -46,6 +46,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 **Common Mistake**: Creating docs in root `/docs/` directory instead of `/apps/dashboard/public/docs/` will result in blank DocumentViewer pages.
 
+### Project Tracking System
+
+**CRITICAL**: For consistent project tracking and progress management, use the dedicated project tracking files.
+
+**Current Active Projects**:
+- **PRD 2.1**: Track progress in `/apps/dashboard/public/docs/project_KSB_2_1.md`
+- **Future Projects**: Create similar `project_[NAME].md` files for new initiatives
+
+**Project Tracking Guidelines**:
+1. **Always update project files** when completing tasks, features, or milestones
+2. **Use structured tables** for task status tracking (✅ Complete, 🔄 In Progress, ⏳ Pending)
+3. **Include progress percentages** and detailed notes for complex features
+4. **Update "Last Updated" date** whenever changes are made
+5. **Verify web accessibility** at `/docs/view/project_[NAME].md` after updates
+
+**Example Project Update Pattern**:
+```markdown
+| Task | Status | Progress | Notes |
+|------|---------|----------|-------|
+| Feature Implementation | ✅ Complete | 100% | Deployed and tested |
+| Bug Fix | 🔄 In Progress | 75% | Investigation complete, fix in progress |
+| New Feature | ⏳ Pending | 0% | Awaiting requirements clarification |
+```
+
+**Integration with TodoWrite**: Use TodoWrite for short-term task management during active development, then consolidate completed work into project tracking files for historical record and stakeholder visibility.
+
 ## Architecture Overview
 
 This is a React-based dashboard application for KStoryBridge, built with Vite, TypeScript, and shadcn/ui components. The application serves different dashboards based on user account types (buyers vs creators).

@@ -8,10 +8,11 @@ import { useSessionCache } from "@/hooks/useSessionCache";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { directApiService } from "@/services/directApiService";
 import { supabase } from "@/integrations/supabase/client";
-import { Users } from "lucide-react";
+import { Users, Sparkles } from "lucide-react";
 import PasswordResetModal from "@/components/PasswordResetModal";
 import { Surface, Stack, Inline } from "@/components/design-system";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { OnboardingModal, OnboardingFlow } from "@/components/onboarding";
 
 // Define types for the actual table structures
 type BuyerProfile = {
@@ -94,6 +95,8 @@ export default function Profile() {
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   const [subscriptionData, setSubscriptionData] = useState<any>(null);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showOnboardingFlow, setShowOnboardingFlow] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     if (!user) {
@@ -604,6 +607,31 @@ export default function Profile() {
     }
   };
 
+  const handleStartOnboarding = () => {
+    console.log('🎬 PROFILE: Starting onboarding flow from Take Tour button');
+    setShowOnboardingModal(false);
+    setShowOnboardingFlow(true);
+  };
+
+  const handleSkipOnboarding = () => {
+    console.log('⏭️ PROFILE: User skipped onboarding from Take Tour');
+    setShowOnboardingModal(false);
+    setShowOnboardingFlow(false);
+    toast({
+      title: "Tour skipped",
+      description: "You can restart the tour anytime from your profile.",
+    });
+  };
+
+  const handleCompleteOnboarding = () => {
+    console.log('✅ PROFILE: User completed onboarding tour');
+    setShowOnboardingFlow(false);
+    toast({
+      title: "Tour completed! 🎉",
+      description: "You're all set to explore KStoryBridge.",
+    });
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
@@ -974,6 +1002,16 @@ export default function Profile() {
                 <h3 className="text-lg font-semibold text-gray-900">Account Actions</h3>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
+                {/* Take Tour Button */}
+                <Button
+                  onClick={() => setShowOnboardingModal(true)}
+                  variant="outline"
+                  className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Take Tour
+                </Button>
+
                 {/* Change Password Button */}
                 <Button
                   onClick={() => setIsPasswordResetModalOpen(true)}
@@ -1001,6 +1039,18 @@ export default function Profile() {
       <PasswordResetModal
         isOpen={isPasswordResetModalOpen}
         onClose={() => setIsPasswordResetModalOpen(false)}
+      />
+
+      {/* Onboarding Modals */}
+      <OnboardingModal
+        open={showOnboardingModal}
+        onStart={handleStartOnboarding}
+        onSkip={handleSkipOnboarding}
+      />
+      <OnboardingFlow
+        open={showOnboardingFlow}
+        onComplete={handleCompleteOnboarding}
+        onSkip={handleSkipOnboarding}
       />
     </PageContainer>
   );

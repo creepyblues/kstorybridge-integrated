@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+console.log('📦 DEBUG: OnboardingFlow.tsx module is loading');
+
+import { useState, useEffect, useLayoutEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@kstorybridge/ui";
 import { Button } from "@kstorybridge/ui";
 import { MessageSquare, Heart, FileText, Users, X, ArrowRight, ArrowLeft } from "lucide-react";
@@ -44,9 +46,51 @@ const ONBOARDING_STEPS = [
   }
 ];
 
+console.log('🎯 DEBUG: OnboardingFlow component definition loaded');
+
 export default function OnboardingFlow({ open, onComplete, onSkip }: OnboardingFlowProps) {
+  console.log('🔍 DEBUG: OnboardingFlow render, open =', open);
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
+
+  // Debug: Track when open prop changes
+  useEffect(() => {
+    console.log('🔄 DEBUG: OnboardingFlow open state changed:', { open, currentStep, progress });
+  }, [open, currentStep, progress]);
+
+  // Use useLayoutEffect to inject z-index override styles synchronously before browser paint
+  useLayoutEffect(() => {
+    console.log('⚡ DEBUG: OnboardingFlow useLayoutEffect running, open =', open);
+
+    if (open) {
+      console.log('🎨 DEBUG: OnboardingFlow injecting z-index override styles to DOM');
+
+      const style = document.createElement('style');
+      style.id = 'onboarding-flow-override';
+      style.textContent = `
+        [data-radix-dialog-overlay] {
+          z-index: 99999 !important;
+          position: fixed !important;
+          inset: 0 !important;
+          background: rgba(0, 0, 0, 0.5) !important;
+          pointer-events: auto !important;
+        }
+        [data-radix-dialog-content] {
+          z-index: 100000 !important;
+          pointer-events: auto !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      return () => {
+        const existingStyle = document.getElementById('onboarding-flow-override');
+        if (existingStyle) {
+          console.log('🧹 DEBUG: OnboardingFlow cleaning up override styles');
+          existingStyle.remove();
+        }
+      };
+    }
+  }, [open]);
 
   const step = ONBOARDING_STEPS[currentStep];
   const Icon = step?.icon;
@@ -95,11 +139,25 @@ export default function OnboardingFlow({ open, onComplete, onSkip }: OnboardingF
     }
   };
 
-  if (!step) return null;
+  if (!step) {
+    console.log('❌ DEBUG: OnboardingFlow - no step found, returning null');
+    return null;
+  }
+
+  console.log('🎬 DEBUG: OnboardingFlow about to render Dialog, open =', open, 'currentStep =', currentStep);
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[600px] bg-white [&>button]:hidden">
+      <DialogContent className="sm:max-w-[600px] bg-white [&>button]:hidden z-[100000]"
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          pointerEvents: 'auto',
+          zIndex: 100000
+        }}>
         {/* Close button */}
         <button
           onClick={onSkip}

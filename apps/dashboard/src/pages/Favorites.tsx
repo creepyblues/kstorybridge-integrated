@@ -18,7 +18,7 @@ import { directApiService } from "@/services/directApiService";
 import type { Title } from "@/services/titlesService";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
-import { trackSearch } from "@/utils/analytics";
+import { trackSearch, trackSavedTitle } from "@/utils/analytics";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { EmptyState } from "@/components/design-system";
 import { FavoritesUpgradePrompt } from "@/components/UpgradePrompt";
@@ -235,6 +235,10 @@ export default function Favorites() {
   const handleRemoveFromFavorites = async (titleId: string) => {
     if (!user) return;
 
+    // Find the title being removed for analytics tracking
+    const titleBeingRemoved = favorites.find(fav => fav.title_id === titleId);
+    const titleName = titleBeingRemoved?.titles?.title_name_en || titleBeingRemoved?.titles?.title_name_kr || 'Unknown Title';
+
     try {
       console.log('🗑️ Removing from favorites:', { userId: user.id, titleId });
 
@@ -244,6 +248,10 @@ export default function Favorites() {
       // Update cache by filtering out the removed favorite
       const updatedFavorites = favorites.filter(fav => fav.title_id !== titleId);
       setFavorites(updatedFavorites);
+
+      // Track the unsave action (remove from saved titles)
+      trackSavedTitle(titleId, titleName, 'saved', user.id, 'remove');
+
       toast({
         title: "Removed from saved titles",
         description: "This title has been removed from your saved titles"

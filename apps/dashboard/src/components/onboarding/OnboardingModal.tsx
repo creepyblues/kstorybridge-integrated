@@ -1,6 +1,10 @@
+console.log('📦 DEBUG: OnboardingModal.tsx module is loading');
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@kstorybridge/ui";
 import { Button } from "@kstorybridge/ui";
 import { Sparkles } from "lucide-react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { useLayoutEffect } from "react";
 
 interface OnboardingModalProps {
   open: boolean;
@@ -8,16 +12,55 @@ interface OnboardingModalProps {
   onSkip: () => void;
 }
 
+console.log('🎯 DEBUG: OnboardingModal component definition loaded');
+
 export default function OnboardingModal({ open, onStart, onSkip }: OnboardingModalProps) {
+  // DEBUG: Confirm component is rendering
+  console.log('🔍 DEBUG: OnboardingModal render, open =', open);
+
+  // Use useLayoutEffect to inject styles synchronously before browser paint
+  // This runs AFTER DOM mutations but BEFORE the browser paints, ensuring styles apply before visibility
+  useLayoutEffect(() => {
+    console.log('⚡ DEBUG: useLayoutEffect running, open =', open);
+
+    if (open) {
+      console.log('🎨 DEBUG: Injecting z-index override styles to DOM');
+
+      const style = document.createElement('style');
+      style.id = 'onboarding-modal-override';
+      style.textContent = `
+        [data-radix-dialog-overlay] {
+          z-index: 99998 !important;
+          position: fixed !important;
+          inset: 0 !important;
+          background: rgba(0, 0, 0, 0.5) !important;
+          pointer-events: auto !important;
+        }
+        [data-radix-dialog-content] {
+          z-index: 99999 !important;
+          pointer-events: auto !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      return () => {
+        const existingStyle = document.getElementById('onboarding-modal-override');
+        if (existingStyle) {
+          console.log('🧹 DEBUG: Cleaning up modal override styles');
+          existingStyle.remove();
+        }
+      };
+    }
+  }, [open]);
+
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[500px] bg-white [&>button]:hidden"
+    <Dialog open={open} onOpenChange={() => {}} modal={true}>
+      <DialogContent className="sm:max-w-[500px] bg-white [&>button]:hidden z-[99999]"
         style={{
           position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          zIndex: 9999,
           backgroundColor: 'white',
           pointerEvents: 'auto'
         }}>

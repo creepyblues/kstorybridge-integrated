@@ -9,6 +9,7 @@ interface CreatorSignupFormProps {
   passwordError: string | null;
   roleError?: string | null;
   hidePassword?: boolean;
+  showRoleValidation?: boolean;
 }
 
 export const CreatorSignupForm: React.FC<CreatorSignupFormProps> = ({
@@ -16,12 +17,53 @@ export const CreatorSignupForm: React.FC<CreatorSignupFormProps> = ({
   onChange,
   passwordError,
   roleError = null,
-  hidePassword = false
+  hidePassword = false,
+  showRoleValidation = false
 }) => {
   const handleChange = (field: keyof CreatorFormData) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     onChange({ [field]: e.target.value });
+    // Clear custom validity when user types
+    e.target.setCustomValidity('');
+  };
+
+  const validatePassword = (password: string, inputElement: HTMLInputElement) => {
+    if (!password) {
+      inputElement.setCustomValidity('Password is required');
+      return false;
+    } else if (password.length < 6) {
+      inputElement.setCustomValidity('Password must be at least 6 characters long');
+      return false;
+    } else if (!/[a-z]/.test(password)) {
+      inputElement.setCustomValidity('Password must contain at least one lowercase letter');
+      return false;
+    } else if (!/[A-Z]/.test(password)) {
+      inputElement.setCustomValidity('Password must contain at least one uppercase letter');
+      return false;
+    } else if (!/[0-9]/.test(password)) {
+      inputElement.setCustomValidity('Password must contain at least one number');
+      return false;
+    } else if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)) {
+      inputElement.setCustomValidity('Password must contain at least one special character');
+      return false;
+    } else {
+      inputElement.setCustomValidity('');
+      return true;
+    }
+  };
+
+  const handlePasswordInvalid = (e: React.InvalidEvent<HTMLInputElement>) => {
+    validatePassword(formData.password, e.target);
+  };
+
+  const handlePasswordBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (formData.password && formData.password.length > 0) {
+      const isValid = validatePassword(formData.password, e.target);
+      if (!isValid) {
+        e.target.reportValidity(); // Show browser validation popup
+      }
+    }
   };
 
   const handleRoleChange = (value: string) => {
@@ -31,7 +73,7 @@ export const CreatorSignupForm: React.FC<CreatorSignupFormProps> = ({
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
         <Input
           id="email"
           type="email"
@@ -45,15 +87,20 @@ export const CreatorSignupForm: React.FC<CreatorSignupFormProps> = ({
 
       {!hidePassword && (
         <div>
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Password <span className="text-red-500">*</span></Label>
           <Input
             id="password"
             type="password"
             value={formData.password}
             onChange={handleChange('password')}
+            onBlur={handlePasswordBlur}
+            onInvalid={handlePasswordInvalid}
             required
             className="mt-1"
           />
+          <p className="text-sm text-gray-700 mt-1.5 mb-1">
+            Password must be at least 6 characters and include: uppercase letter, lowercase letter, number, and special character
+          </p>
           {passwordError && (
             <p className="text-red-500 text-sm mt-1">{passwordError}</p>
           )}
@@ -61,7 +108,7 @@ export const CreatorSignupForm: React.FC<CreatorSignupFormProps> = ({
       )}
 
       <div>
-        <Label htmlFor="full_name">Full Name</Label>
+        <Label htmlFor="full_name">Full Name <span className="text-red-500">*</span></Label>
         <Input
           id="full_name"
           type="text"
@@ -101,6 +148,15 @@ export const CreatorSignupForm: React.FC<CreatorSignupFormProps> = ({
             <SelectItem value="agent">Agent</SelectItem>
           </SelectContent>
         </Select>
+        <p className="text-sm text-gray-700 mt-1.5 mb-1">
+          Select Author if you create content, or Agent if you represent creators
+        </p>
+        {(!formData.ip_owner_role && showRoleValidation) && (
+          <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+            <span>⚠️</span>
+            Please select your role
+          </p>
+        )}
         {roleError && (
           <p className="text-red-500 text-sm mt-1">{roleError}</p>
         )}

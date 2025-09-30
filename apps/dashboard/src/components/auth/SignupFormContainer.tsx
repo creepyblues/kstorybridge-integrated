@@ -38,6 +38,8 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
     roleError: null
   });
 
+  const [showRoleValidation, setShowRoleValidation] = useState(false);
+
   const [buyerFormData, setBuyerFormData] = useState<BuyerFormData>({
     email: '',
     password: '',
@@ -105,6 +107,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
   const handleSubmit = async () => {
     try {
       updateState({ isLoading: true, passwordError: null, roleError: null });
+      setShowRoleValidation(true); // Show role validation errors if any
 
       // Handle OAuth completion differently from regular signup
       if (isOAuthCompletion && user) {
@@ -279,18 +282,25 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
             }
           );
 
+          // Show specific error message
           toast({
-            title: "Validation Error",
+            title: "Cannot Create Account",
             description: formError,
             variant: "destructive"
           });
+          updateState({ isLoading: false });
           return;
         }
 
         // Validate role
         const roleError = validateBuyerRole(buyerFormData.buyer_role);
         if (roleError) {
-          updateState({ roleError });
+          updateState({ roleError, isLoading: false });
+          toast({
+            title: "Cannot Create Account",
+            description: roleError,
+            variant: "destructive"
+          });
           return;
         }
 
@@ -344,19 +354,22 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
             }
           );
 
+          // Show specific error message
           toast({
-            title: "Validation Error",
+            title: "Cannot Create Account",
             description: formError,
             variant: "destructive"
           });
+          updateState({ isLoading: false });
           return;
         }
 
         // Validate creator role (now required)
         const roleError = validateCreatorRole(creatorFormData.ip_owner_role);
         if (roleError) {
+          updateState({ roleError, isLoading: false });
           toast({
-            title: "Validation Error",
+            title: "Cannot Create Account",
             description: roleError,
             variant: "destructive"
           });
@@ -549,6 +562,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
                 passwordError={state.passwordError}
                 roleError={state.roleError}
                 hidePassword={isOAuthCompletion}
+                showRoleValidation={showRoleValidation}
               />
             ) : (
               <CreatorSignupForm
@@ -557,6 +571,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
                 passwordError={state.passwordError}
                 roleError={state.roleError}
                 hidePassword={isOAuthCompletion}
+                showRoleValidation={showRoleValidation}
               />
             )}
 

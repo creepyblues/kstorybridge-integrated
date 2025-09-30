@@ -147,8 +147,8 @@ export default function OnboardingFlow({ open, onComplete, onSkip }: OnboardingF
   console.log('🎬 DEBUG: OnboardingFlow about to render Dialog, open =', open, 'currentStep =', currentStep);
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[600px] bg-white [&>button]:hidden z-[100000]"
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) { onSkip(); } }}>
+      <DialogContent className="sm:max-w-[600px] bg-white z-[100000]"
         style={{
           position: 'fixed',
           top: '50%',

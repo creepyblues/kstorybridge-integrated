@@ -256,24 +256,57 @@ module.exports = async function handler(req, res) {
 
     // Authentication
     console.log('🔐 Starting authentication...');
+
+    // 📱 MOBILE DEBUG: Enhanced request logging
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
+    console.log('📱 REQUEST DEBUG:', {
+      isMobile,
+      userAgent: userAgent.substring(0, 100),
+      origin: req.headers.origin,
+      referer: req.headers.referer,
+      hasAuthHeader: !!req.headers.authorization,
+      allHeaders: Object.keys(req.headers)
+    });
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('❌ No auth header provided');
+      console.log('❌ No auth header provided - Mobile Debug:', {
+        isMobile,
+        authHeader: authHeader ? authHeader.substring(0, 20) + '...' : 'null',
+        headerType: typeof authHeader
+      });
       return res.status(401).json({ error: 'Unauthorized - No token provided' });
     }
 
     const token = authHeader.substring(7);
-    console.log('🔑 Token received, length:', token.length);
+    console.log('🔑 Token received - Mobile Debug:', {
+      isMobile,
+      tokenLength: token.length,
+      tokenPrefix: token.substring(0, 10) + '...',
+      tokenSuffix: '...' + token.substring(token.length - 10)
+    });
     
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
-      console.log('❌ Authentication failed:', authError?.message || 'No user returned');
+      console.log('❌ Authentication failed - Mobile Debug:', {
+        isMobile,
+        errorMessage: authError?.message || 'No user returned',
+        errorCode: authError?.code,
+        hasUser: !!user,
+        userEmail: user?.email || 'none'
+      });
       return res.status(401).json({ error: 'Unauthorized - Invalid token' });
     }
 
     // Check authorized users - Allow all buyers, maintain admin access
-    console.log('✅ User authenticated:', user.email);
+    console.log('✅ User authenticated - Mobile Debug:', {
+      isMobile,
+      userEmail: user.email,
+      userId: user.id,
+      userMetadata: user.user_metadata
+    });
 
     // Admin users (always allowed)
     const ADMIN_USERS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
@@ -281,21 +314,46 @@ module.exports = async function handler(req, res) {
       console.log('✅ Admin user authorized for OpenAI chatbot:', user.email);
     } else {
       // Check if user is a buyer
-      console.log('🔍 Checking buyer authorization for:', user.email);
+      console.log('🔍 Checking buyer authorization - Mobile Debug:', {
+        isMobile,
+        userEmail: user.email,
+        userId: user.id
+      });
+
       const { data: userProfile, error: profileError } = await supabase
         .from('user_buyers')
         .select('tier, email')
         .eq('email', user.email)
         .single();
 
+      console.log('📊 Database query result - Mobile Debug:', {
+        isMobile,
+        queryEmail: user.email,
+        hasProfile: !!userProfile,
+        profileData: userProfile,
+        hasError: !!profileError,
+        errorMessage: profileError?.message,
+        errorCode: profileError?.code,
+        errorDetails: profileError?.details
+      });
+
       if (profileError || !userProfile) {
-        console.log('❌ User is not a buyer:', user.email, profileError?.message);
+        console.log('❌ User is not a buyer - Mobile Debug:', {
+          isMobile,
+          userEmail: user.email,
+          errorMessage: profileError?.message,
+          errorCode: profileError?.code,
+          hasProfile: !!userProfile,
+          profileContent: userProfile
+        });
         return res.status(403).json({ error: 'Forbidden - Chat is only available for buyers' });
       }
 
-      console.log('✅ Buyer user authorized for OpenAI chatbot:', {
+      console.log('✅ Buyer user authorized for OpenAI chatbot - Mobile Debug:', {
+        isMobile,
         email: user.email,
-        tier: userProfile.tier
+        tier: userProfile.tier,
+        profileId: userProfile.id
       });
     }
 

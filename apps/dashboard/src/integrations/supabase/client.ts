@@ -467,17 +467,21 @@ supabase.auth.signOut = (options) =>
 supabase.auth.getSession = async () => {
   const isCallback = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback');
   const hasOAuthCode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('code');
+  const isOAuthCompletion = typeof window !== 'undefined' && window.location.search.includes('complete=true');
+  const needsExtendedTimeout = isCallback || isOAuthCompletion;
   const isOAuthFlow = isCallback && hasOAuthCode;
 
-  // 🔧 CALLBACK DEBUG: Verify callback detection logic
+  // 🔧 CALLBACK DEBUG: Verify enhanced callback detection logic
   if (typeof window !== 'undefined') {
-    console.log('🔧 CALLBACK DETECTION:', {
+    console.log('🔧 ENHANCED CALLBACK DETECTION:', {
       pathname: window.location.pathname,
       search: window.location.search,
       isCallback,
       hasOAuthCode,
+      isOAuthCompletion,
+      needsExtendedTimeout,
       isOAuthFlow,
-      willUseExtendedTimeout: isCallback
+      willUseExtendedTimeout: needsExtendedTimeout
     });
   }
 
@@ -518,21 +522,23 @@ supabase.auth.getSession = async () => {
   }
 
   try {
-    // Context-aware timeout: OAuth callbacks need more time for PKCE exchange in production
+    // Context-aware timeout: OAuth callbacks AND OAuth completion need more time for session operations
     // DEPLOYMENT FIX: Force deployment to activate 25s OAuth timeout (was stuck at 12s in prod)
-    const timeoutMs = isCallback ? 25000 : 12000; // Production-optimized: OAuth 25s, regular 12s
+    const timeoutMs = needsExtendedTimeout ? 25000 : 12000; // Production-optimized: OAuth 25s, regular 12s
 
-    // 🔧 RUNTIME DEBUG: Verify timeout configuration is working
-    console.log('🔧 TIMEOUT CONFIG:', {
+    // 🔧 RUNTIME DEBUG: Verify enhanced timeout configuration is working
+    console.log('🔧 ENHANCED TIMEOUT CONFIG:', {
       isCallback,
+      isOAuthCompletion,
+      needsExtendedTimeout,
       timeoutMs,
       pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
       search: typeof window !== 'undefined' ? window.location.search : 'unknown',
-      expectedTimeout: isCallback ? '25 seconds' : '12 seconds'
+      expectedTimeout: needsExtendedTimeout ? '25 seconds' : '12 seconds'
     });
 
     const result = await withRetry(() => originalGetSession(), {
-      maxRetries: isCallback ? 2 : 1, // More retries for OAuth callbacks
+      maxRetries: needsExtendedTimeout ? 2 : 1, // More retries for OAuth flows (callback + completion)
       baseDelay: 200,
       timeoutMs,
       operationName: 'getSession'

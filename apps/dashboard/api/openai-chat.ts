@@ -2,7 +2,7 @@
 // This function handles OpenAI API calls securely on the server-side
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type OpenAI from 'openai';
+import OpenAI, { type ChatCompletion } from 'openai';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Add extensive error handling to prevent crashes
@@ -165,10 +165,10 @@ Please provide a helpful response that:
 Keep your response conversational, enthusiastic, and focused on Korean content discovery.`;
 
     // Call OpenAI API with timeout protection
-    let completion: OpenAI.Chat.Completions.ChatCompletion;
+    let completion: ChatCompletion;
     try {
       console.log('🤖 Calling OpenAI API...');
-      
+
       const apiCall = openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
@@ -179,21 +179,23 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
       });
 
       // Add timeout protection
-      const timeout = new Promise((_, reject) => 
+      const timeout = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('OpenAI API timeout after 25 seconds')), 25000)
       );
 
-      completion = await Promise.race([apiCall, timeout]);
+      completion = await Promise.race([apiCall, timeout]) as ChatCompletion;
       console.log('✅ OpenAI API response received');
     } catch (error: unknown) {
       console.error('❌ OpenAI API error:', error instanceof Error ? error.message : String(error));
       
       const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorCode = (error && typeof error === 'object' && 'code' in error) ? (error as any).code : '';
+
       if (errorMessage.includes('timeout')) {
         return res.status(504).json({ error: 'Request timeout - please try again' });
-      } else if (error.code === 'insufficient_quota') {
+      } else if (errorCode === 'insufficient_quota') {
         return res.status(503).json({ error: 'Service temporarily unavailable' });
-      } else if (error.code === 'invalid_api_key') {
+      } else if (errorCode === 'invalid_api_key') {
         return res.status(500).json({ error: 'Server configuration error' });
       } else if (errorMessage.includes('rate limit')) {
         return res.status(429).json({ error: 'Too many requests. Please try again later.' });
@@ -238,9 +240,9 @@ Keep your response conversational, enthusiastic, and focused on Korean content d
     // Catch-all error handler
     console.error('💥 Unexpected error in OpenAI Chat API:', error);
     console.error('Error details:', {
-      name: error.name,
+      name: errorObj.name,
       message: errorObj.message,
-      stack: error.stack?.split('\n').slice(0, 3), // Limited stack trace
+      stack: errorObj.stack?.split('\n').slice(0, 3), // Limited stack trace
     });
     
     return res.status(500).json({ 

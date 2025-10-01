@@ -337,15 +337,28 @@ if (isDev && import.meta.env.VITE_CLIENT_DEBUG === 'true') {
 // Create the enhanced Supabase client
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, CLIENT_CONFIG);
 
-// Create service role client for bypassing RLS during signup flows
+// Create completely isolated service role client BEFORE applying any global overrides
+// This ensures it operates independently of user session management
 export const supabaseServiceRole = SUPABASE_SERVICE_ROLE_KEY
   ? createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: {
-        persistSession: false, // Service role doesn't need sessions
+        persistSession: false,      // No session persistence
+        autoRefreshToken: false,    // No token refresh
+        detectSessionInUrl: false,  // No URL session detection
+        storageKey: undefined,      // No storage key to prevent conflicts
+      },
+      db: {
+        schema: 'public'
       },
       global: {
         headers: {
           'X-Client-Info': 'kstorybridge-dashboard-service-role'
+        }
+      },
+      // Disable realtime to prevent any session dependencies
+      realtime: {
+        params: {
+          eventsPerSecond: 0
         }
       }
     })
@@ -354,6 +367,8 @@ export const supabaseServiceRole = SUPABASE_SERVICE_ROLE_KEY
 // Validation for service role client
 if (typeof window !== 'undefined' && !supabaseServiceRole) {
   console.warn('🚨 Service role client not available - signup profile creation may fail');
+} else if (typeof window !== 'undefined' && supabaseServiceRole) {
+  console.log('✅ Service role client created with complete session isolation');
 }
 
 // IMMEDIATE CONNECTION TEST - DISABLED TO PREVENT HANGING
@@ -454,12 +469,22 @@ if (false && isDev) {
   }, 2000);
 }
 
-// Enhanced auth methods with retry logic
+// Enhanced auth methods with retry logic - ONLY applied to main client
+// CRITICAL: These overrides must NOT affect the service role client
 const originalSignInWithPassword = supabase.auth.signInWithPassword.bind(supabase.auth);
 const originalSignInWithOAuth = supabase.auth.signInWithOAuth.bind(supabase.auth);
 const originalSignOut = supabase.auth.signOut.bind(supabase.auth);
 const originalGetSession = supabase.auth.getSession.bind(supabase.auth);
 const originalRefreshSession = supabase.auth.refreshSession.bind(supabase.auth);
+
+// Ensure service role client auth methods are preserved (never override them)
+const serviceRoleAuthMethods = supabaseServiceRole ? {
+  signInWithPassword: supabaseServiceRole.auth.signInWithPassword.bind(supabaseServiceRole.auth),
+  signInWithOAuth: supabaseServiceRole.auth.signInWithOAuth.bind(supabaseServiceRole.auth),
+  signOut: supabaseServiceRole.auth.signOut.bind(supabaseServiceRole.auth),
+  getSession: supabaseServiceRole.auth.getSession.bind(supabaseServiceRole.auth),
+  refreshSession: supabaseServiceRole.auth.refreshSession.bind(supabaseServiceRole.auth)
+} : null;
 
 type GetSessionResponse = Awaited<ReturnType<typeof originalGetSession>>;
 
@@ -605,6 +630,21 @@ supabase.auth.refreshSession = (refreshToken) =>
     operationName: 'refreshSession',
     timeoutMs: 15000 // Increased to 15 seconds for session refresh operations
   });
+
+// CRITICAL: Restore original auth methods to service role client after global overrides
+// This ensures the service role client operates independently of user session management
+if (supabaseServiceRole && serviceRoleAuthMethods) {
+  console.log('🔒 Protecting service role client from global auth overrides');
+
+  // Restore original auth methods to prevent session timeouts
+  supabaseServiceRole.auth.signInWithPassword = serviceRoleAuthMethods.signInWithPassword;
+  supabaseServiceRole.auth.signInWithOAuth = serviceRoleAuthMethods.signInWithOAuth;
+  supabaseServiceRole.auth.signOut = serviceRoleAuthMethods.signOut;
+  supabaseServiceRole.auth.getSession = serviceRoleAuthMethods.getSession;
+  supabaseServiceRole.auth.refreshSession = serviceRoleAuthMethods.refreshSession;
+
+  console.log('✅ Service role client auth methods protected from overrides');
+}
 
 // Performance monitoring (development only)
 if (isDev) {

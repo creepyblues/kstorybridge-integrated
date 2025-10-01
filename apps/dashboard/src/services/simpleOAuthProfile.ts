@@ -44,6 +44,16 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
 
     console.log('✅ Using service role for direct profile creation');
 
+    // Debug: Check if service role client has isolated auth methods
+    if (typeof window !== 'undefined') {
+      console.log('🔍 Service role auth method isolation check:', {
+        hasAuth: !!supabaseServiceRole.auth,
+        authType: typeof supabaseServiceRole.auth.getSession,
+        isProtected: supabaseServiceRole.auth.getSession !== supabase.auth.getSession,
+        timestamp: Date.now()
+      });
+    }
+
     // Prepare profile data with required fields
     const safeProfileData = {
       id: profileData.id,
@@ -58,6 +68,9 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
     };
 
     // Direct service role profile creation (bypasses RLS)
+    console.log('🚀 Starting service role database operation for buyer profile');
+    const operationStart = Date.now();
+
     const { data: profile, error } = await supabaseServiceRole
       .from('user_buyers')
       .upsert(safeProfileData, {
@@ -66,6 +79,13 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
       })
       .select()
       .single();
+
+    const operationEnd = Date.now();
+    console.log(`⚡ Service role operation completed in ${operationEnd - operationStart}ms`, {
+      success: !error,
+      hasProfile: !!profile,
+      errorMessage: error?.message || 'none'
+    });
 
     if (error) {
       console.error('❌ Service role profile creation failed:', error);
@@ -115,6 +135,16 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
 
     console.log('✅ Using service role for direct creator profile creation');
 
+    // Debug: Check if service role client has isolated auth methods
+    if (typeof window !== 'undefined') {
+      console.log('🔍 Service role auth method isolation check (creator):', {
+        hasAuth: !!supabaseServiceRole.auth,
+        authType: typeof supabaseServiceRole.auth.getSession,
+        isProtected: supabaseServiceRole.auth.getSession !== supabase.auth.getSession,
+        timestamp: Date.now()
+      });
+    }
+
     // Prepare profile data with required fields
     const safeProfileData = {
       id: profileData.id,
@@ -129,6 +159,9 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
     };
 
     // Direct service role profile creation (bypasses RLS)
+    console.log('🚀 Starting service role database operation for creator profile');
+    const operationStart = Date.now();
+
     const { data: profile, error } = await supabaseServiceRole
       .from('user_creators')
       .upsert(safeProfileData, {
@@ -137,6 +170,13 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
       })
       .select()
       .single();
+
+    const operationEnd = Date.now();
+    console.log(`⚡ Service role operation completed in ${operationEnd - operationStart}ms`, {
+      success: !error,
+      hasProfile: !!profile,
+      errorMessage: error?.message || 'none'
+    });
 
     if (error) {
       console.error('❌ Service role creator profile creation failed:', error);

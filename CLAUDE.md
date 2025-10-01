@@ -710,6 +710,14 @@ try {
 - Verify database migrations are applied
 - Check responsive design and accessibility
 
+**🚨 CRITICAL: OAuth Production Requirements (UPDATED 2025-01-30):**
+- **Database Migration Required**: Apply `20250130000000_fix_oauth_rls_timing.sql` to production
+- **Enhanced RLS Policies**: OAuth-friendly policies handle session timing without service role keys
+- **Migration Command**: `cd apps/dashboard/supabase && npx supabase db push`
+- **Impact**: OAuth signup will work reliably with proper RLS policy timing
+- **Verification**: No more "RLS policy violation" errors during OAuth profile creation
+- **Security**: Maintains RLS security model without exposing service role keys
+
 ### Common Issues & Solutions
 
 **Database Schema:**
@@ -723,6 +731,14 @@ try {
 - Mock vs real data configuration for localhost development
 - Tier-based content access implementation
 - Cross-domain session management between apps
+
+**OAuth Production Issues (UPDATED 2025-01-30):**
+- **Session Timeouts**: Production OAuth PKCE flows take 5-18 seconds vs 1-2 seconds locally
+- **RLS Timing Issues**: Fixed with enhanced OAuth-friendly policies (no service role needed)
+- **Migration Required**: Must apply `20250130000000_fix_oauth_rls_timing.sql` for OAuth to work
+- **Enhanced Policies**: Use JWT claims as fallback when `auth.uid()` is temporarily null
+- **Error Messages**: "RLS policy violation" now indicates missing migration, not configuration issue
+- **Monitoring**: Check console for session timing metrics and policy application status
 
 **Performance:**
 - Rate limiting for external API calls

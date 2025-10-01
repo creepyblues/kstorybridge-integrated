@@ -6,13 +6,74 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { createBuyerProfileWithServiceRole, createCreatorProfileWithServiceRole } from '@/integrations/supabase/serviceClient';
+import type { Session } from '@supabase/supabase-js';
 
 export interface SimpleProfileResult {
   success: boolean;
   error?: string;
   profile?: any;
   userExists?: boolean;
+}
+
+/**
+ * Wait for a valid session with polling and exponential backoff
+ */
+async function waitForValidSession(maxAttempts = 60, initialDelay = 500): Promise<Session | null> {
+  const startTime = Date.now();
+  console.log('🔄 Starting session polling with exponential backoff...');
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (session && session.user) {
+        const elapsedTime = Date.now() - startTime;
+        console.log(`✅ Valid session found on attempt ${attempt} for user: ${session.user.email} (${elapsedTime}ms)`);
+
+        // Log performance metrics for monitoring
+        if (elapsedTime > 5000) {
+          console.warn(`⚠️ OAuth session establishment took ${elapsedTime}ms - consider optimizing`);
+        }
+
+        return session;
+      }
+
+      if (error) {
+        console.warn(`⚠️ Session check attempt ${attempt} error:`, error.message);
+      } else {
+        console.log(`⏳ Session check attempt ${attempt}: No session yet, waiting...`);
+      }
+
+      // Exponential backoff with jitter
+      const delay = Math.min(initialDelay * Math.pow(1.5, attempt - 1), 3000);
+      const jitter = Math.random() * 100; // Add up to 100ms jitter
+
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delay + jitter));
+      }
+
+    } catch (error) {
+      console.error(`❌ Session polling attempt ${attempt} failed:`, error);
+
+      if (attempt < maxAttempts) {
+        const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), 5000);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  const totalTime = Date.now() - startTime;
+  console.error(`❌ Failed to establish session after ${maxAttempts} attempts (${totalTime}ms total, ~${Math.round(totalTime / 1000)}s)`);
+
+  // Log failure metrics for monitoring
+  console.error('📊 OAuth Session Failure Metrics:', {
+    totalAttempts: maxAttempts,
+    totalTimeMs: totalTime,
+    avgTimePerAttempt: Math.round(totalTime / maxAttempts),
+    userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'unknown'
+  });
+
+  return null;
 }
 
 /**
@@ -32,9 +93,19 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
   try {
     console.log('🚀 Simple OAuth: Creating buyer profile for', profileData.email);
 
-    // Skip the profile check for now - getSession timeouts are causing issues
-    // We'll attempt creation directly and handle conflicts
-    console.log('⚡ Skipping profile check due to session timeout issues, attempting direct creation...');
+    // Wait for valid session before attempting profile creation
+    console.log('⏳ Waiting for valid session establishment before profile creation...');
+    const session = await waitForValidSession();
+
+    if (!session) {
+      console.error('❌ Failed to establish valid session within timeout period');
+      return {
+        success: false,
+        error: 'Session establishment failed. Please try signing in again.'
+      };
+    }
+
+    console.log('✅ Valid session established, proceeding with profile creation');
 
     // Prepare profile data
     const profileToCreate = {
@@ -82,36 +153,14 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
         }
       }
 
-      // If it's an RLS policy violation, try using service role
+      // RLS policy violations should now be handled by enhanced OAuth-friendly policies
       if (createError.code === '42501' || createError.message?.includes('row-level security')) {
-        console.log('🔐 RLS policy violation detected, trying service role...');
-
-        try {
-          const serviceProfile = await createBuyerProfileWithServiceRole({
-            id: profileData.id,
-            email: profileData.email,
-            full_name: profileData.full_name,
-            buyer_company: profileData.buyer_company,
-            buyer_role: profileData.buyer_role,
-            linkedin_url: profileData.linkedin_url,
-            tier: profileData.tier || 'basic',
-            requested: profileData.requested || false
-          });
-
-          console.log('✅ Service role profile creation successful');
-          return {
-            success: true,
-            profile: serviceProfile,
-            userExists: false
-          };
-
-        } catch (serviceError) {
-          console.error('❌ Service role profile creation also failed:', serviceError);
-          return {
-            success: false,
-            error: `Profile creation failed with both regular and service role methods. Please contact support.`
-          };
-        }
+        console.error('🚨 RLS policy violation - this should not happen with enhanced OAuth policies');
+        console.error('🔧 Check that OAuth-friendly RLS policies are applied in database');
+        return {
+          success: false,
+          error: `Profile creation failed due to permission issue. The enhanced database policies may not be applied yet. Please try again in a few minutes.`
+        };
       }
 
       console.error('❌ Profile creation failed:', createError);
@@ -151,6 +200,20 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
 }): Promise<SimpleProfileResult> {
   try {
     console.log('🚀 Simple OAuth: Creating creator profile for', profileData.email);
+
+    // Wait for valid session before attempting any operations
+    console.log('⏳ Waiting for valid session establishment before creator profile operations...');
+    const session = await waitForValidSession();
+
+    if (!session) {
+      console.error('❌ Failed to establish valid session within timeout period');
+      return {
+        success: false,
+        error: 'Session establishment failed. Please try signing in again.'
+      };
+    }
+
+    console.log('✅ Valid session established, proceeding with creator profile operations');
 
     // First, check if profile already exists
     console.log('🔍 Checking if creator profile already exists...');
@@ -219,36 +282,14 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
         }
       }
 
-      // If it's an RLS policy violation, try using service role
+      // RLS policy violations should now be handled by enhanced OAuth-friendly policies
       if (createError.code === '42501' || createError.message?.includes('row-level security')) {
-        console.log('🔐 RLS policy violation detected for creator, trying service role...');
-
-        try {
-          const serviceProfile = await createCreatorProfileWithServiceRole({
-            id: profileData.id,
-            email: profileData.email,
-            full_name: profileData.full_name,
-            pen_name: profileData.pen_name,
-            ip_owner_role: profileData.ip_owner_role,
-            ip_owner_company: profileData.ip_owner_company,
-            website_url: profileData.website_url,
-            invitation_status: 'invited'
-          });
-
-          console.log('✅ Service role creator profile creation successful');
-          return {
-            success: true,
-            profile: serviceProfile,
-            userExists: false
-          };
-
-        } catch (serviceError) {
-          console.error('❌ Service role creator profile creation also failed:', serviceError);
-          return {
-            success: false,
-            error: `Creator profile creation failed with both regular and service role methods. Please contact support.`
-          };
-        }
+        console.error('🚨 RLS policy violation for creator - this should not happen with enhanced OAuth policies');
+        console.error('🔧 Check that OAuth-friendly RLS policies are applied in database');
+        return {
+          success: false,
+          error: `Creator profile creation failed due to permission issue. The enhanced database policies may not be applied yet. Please try again in a few minutes.`
+        };
       }
 
       console.error('❌ Creator profile creation failed:', createError);

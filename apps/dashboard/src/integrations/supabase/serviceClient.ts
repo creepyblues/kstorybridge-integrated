@@ -20,7 +20,9 @@ let serviceClient: ReturnType<typeof createClient<Database>> | null = null;
 
 export const getServiceClient = () => {
   if (!SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('⚠️ Service role key not configured. Using regular client.');
+    console.error('🚨 PRODUCTION ISSUE: Service role key not configured');
+    console.error('🔧 Add VITE_SUPABASE_SERVICE_ROLE_KEY to environment variables');
+    console.error('📋 This will cause OAuth profile creation to fail in production');
     return null;
   }
 
@@ -56,7 +58,7 @@ export const createBuyerProfileWithServiceRole = async (profileData: {
   const client = getServiceClient();
 
   if (!client) {
-    throw new Error('Service role client not available');
+    throw new Error('Service role client not available. Missing VITE_SUPABASE_SERVICE_ROLE_KEY environment variable. This is required for OAuth profile creation in production.');
   }
 
   const safeProfileData = {
@@ -100,7 +102,7 @@ export const createCreatorProfileWithServiceRole = async (profileData: {
   const client = getServiceClient();
 
   if (!client) {
-    throw new Error('Service role client not available');
+    throw new Error('Service role client not available. Missing VITE_SUPABASE_SERVICE_ROLE_KEY environment variable. This is required for OAuth profile creation in production.');
   }
 
   const safeProfileData = {

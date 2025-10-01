@@ -16,6 +16,7 @@ import type { Session } from '@supabase/supabase-js';
 // Require explicit Supabase configuration (no production fallbacks)
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   const missingVars = [
@@ -28,6 +29,13 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     console.error(errorMessage);
   }
   throw new Error(errorMessage);
+}
+
+// Production environment validation for OAuth flows
+if (typeof window !== 'undefined' && !SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('🚨 PRODUCTION WARNING: Service role key missing');
+  console.warn('🔧 OAuth profile creation may fail without VITE_SUPABASE_SERVICE_ROLE_KEY');
+  console.warn('📋 Add this environment variable to prevent OAuth signup failures');
 }
 
 // Enhanced configuration for production reliability
@@ -151,10 +159,10 @@ export async function withRetry<T>(
   const {
     maxRetries = 2, // Reduced from 3 to 2 to prevent excessive retries
     baseDelay = 1500, // Increased from 1000 to give more time
-    maxDelay = 8000, // Reduced from 10000 for faster failure
+    maxDelay = 12000, // Increased from 8000 for production network delays
     retryCondition = isNetworkError,
     operationName = 'Supabase operation',
-    timeoutMs = 5000
+    timeoutMs = 8000 // Increased from 5000 for production latency
   } = options;
 
   let lastError: any;
@@ -488,8 +496,8 @@ supabase.auth.getSession = async () => {
   }
 
   try {
-    // Context-aware timeout: OAuth callbacks need more time for PKCE exchange
-    const timeoutMs = isCallback ? 15000 : 8000; // Increased OAuth timeout from 12s to 15s
+    // Context-aware timeout: OAuth callbacks need more time for PKCE exchange in production
+    const timeoutMs = isCallback ? 25000 : 12000; // Production-optimized: OAuth 25s, regular 12s
 
     const result = await withRetry(() => originalGetSession(), {
       maxRetries: isCallback ? 2 : 1, // More retries for OAuth callbacks

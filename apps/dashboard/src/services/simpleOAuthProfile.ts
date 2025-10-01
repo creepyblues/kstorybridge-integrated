@@ -3,6 +3,8 @@
  *
  * A lightweight approach to OAuth profile creation that focuses on
  * working around session timeout issues during OAuth callback flow.
+ *
+ * Updated: Edge function approach implemented for reliable server-side profile creation
  */
 
 import { supabase } from '@/integrations/supabase/client';

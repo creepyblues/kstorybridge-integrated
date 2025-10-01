@@ -41,6 +41,7 @@ export const useTierAccess = (): TierAccess => {
 
   // Function to fetch user tier (extracted for reuse)
   const fetchUserTier = async () => {
+      const startTime = Date.now();
       // Handle localhost development
       if (isLocalhost && !useRealDataOnLocalhost) {
         console.log('🧪 useTierAccess: Using localhost mock tier:', mockTier);
@@ -70,21 +71,79 @@ export const useTierAccess = (): TierAccess => {
       try {
         console.log('🔍 useTierAccess: Fetching tier for buyer user:', { id: user?.id, email: user?.email });
 
-        // Get user tier from user_buyers table
-        const { data: userBuyer, error: buyerError } = await supabase
+        // Optimized query with specific field selection and timeout handling
+        const queryPromise = supabase
           .from('user_buyers')
-          .select('tier')
+          .select('tier, id, email')  // Include additional fields for debugging
           .eq('id', user.id)
           .single();
 
+        // Add timeout for tier lookup to prevent hanging
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Tier lookup timeout after 10 seconds')), 10000)
+        );
+
+        const { data: userBuyer, error: buyerError } = await Promise.race([
+          queryPromise,
+          timeoutPromise
+        ]);
+
+        console.log('🔍 useTierAccess: Raw database response:', {
+          data: userBuyer,
+          error: buyerError,
+          hasData: !!userBuyer,
+          dataKeys: userBuyer ? Object.keys(userBuyer) : [],
+          tierValue: userBuyer?.tier,
+          tierType: typeof userBuyer?.tier
+        });
+
         if (buyerError && buyerError.code !== 'PGRST116') {
-          console.error('❌ Error fetching user tier:', buyerError);
-          setTier(null);
+          console.error('❌ Error fetching user tier:', {
+            message: buyerError.message,
+            code: buyerError.code,
+            details: buyerError.details,
+            hint: buyerError.hint
+          });
+          setTier('basic'); // Default to basic instead of null
+          return;
+        }
+
+        // Handle case where user is not found in user_buyers table
+        if (buyerError && buyerError.code === 'PGRST116') {
+          console.warn('⚠️ User not found in user_buyers table, defaulting to basic tier');
+          setTier('basic');
           return;
         }
 
         const userTier = userBuyer?.tier as UserTier;
-        console.log('🔍 useTierAccess: Database tier result:', { tier: userTier, id: user.id });
+        console.log('🔍 useTierAccess: Database tier result:', {
+          tier: userTier,
+          id: user.id,
+          tierIsUndefined: userTier === undefined,
+          tierIsNull: userTier === null,
+          actualValue: userTier
+        });
+
+        // Handle undefined/null tier values explicitly
+        if (userTier === undefined || userTier === null) {
+          console.warn('⚠️ Tier value is undefined/null, defaulting to basic tier');
+          console.log('🔧 Setting tier to basic due to undefined/null database value');
+          setTier('basic');
+          return;
+        }
+
+        // Validate tier value is one of the expected enum values
+        const validTiers: UserTier[] = ['basic', 'pro', 'suite'];
+        if (!validTiers.includes(userTier)) {
+          console.warn('⚠️ Invalid tier value from database:', {
+            tierValue: userTier,
+            expectedValues: validTiers,
+            userId: user.id
+          });
+          console.log('🔧 Setting tier to basic due to invalid database value');
+          setTier('basic');
+          return;
+        }
 
         if (userTier) {
           // If user has Pro tier, validate subscription status with grace period
@@ -192,9 +251,32 @@ export const useTierAccess = (): TierAccess => {
           console.warn('⚠️ No tier found for user, defaulting to basic');
           setTier('basic');
         }
+
+        // Log performance metrics for production monitoring
+        const duration = Date.now() - startTime;
+        if (duration > 3000) {
+          console.warn('🐌 TIER ACCESS MONITOR: Slow tier lookup detected', {
+            userId: user.id,
+            duration: `${duration}ms`,
+            operation: 'fetchUserTier'
+          });
+        }
+
       } catch (error) {
-        console.error('❌ Exception fetching user tier:', error);
-        setTier(null);
+        console.error('❌ Exception fetching user tier:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+
+        // Handle timeout specifically
+        if (error.message?.includes('timeout')) {
+          console.warn('⏰ Tier lookup timed out, defaulting to basic tier');
+          setTier('basic');
+        } else {
+          console.warn('🔧 Database error during tier lookup, defaulting to basic tier');
+          setTier('basic'); // Default to basic instead of null for better UX
+        }
       } finally {
         setLoading(false);
       }

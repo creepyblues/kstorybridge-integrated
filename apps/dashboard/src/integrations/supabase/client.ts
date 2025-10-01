@@ -167,16 +167,20 @@ export async function withRetry<T>(
   } = {}
 ): Promise<T> {
   const {
-    maxRetries = 2, // Reduced from 3 to 2 to prevent excessive retries
-    baseDelay = 1500, // Increased from 1000 to give more time
-    maxDelay = 12000, // Increased from 8000 for production network delays
+    maxRetries = 2, // Keep at 2 to prevent excessive retries
+    baseDelay = 2000, // Increased from 1500 to 2000 for production stability
+    maxDelay = 20000, // Increased from 12000 to 20000 for high-latency production networks
     retryCondition = isNetworkError,
     operationName = 'Supabase operation',
-    timeoutMs = 8000 // Increased from 5000 for production latency
+    timeoutMs = 15000 // Increased from 8000 to 15000 to handle production database latency
   } = options;
 
   let lastError: any;
   let attempt = 0;
+  const startTime = Date.now();
+
+  // Record the request for monitoring
+  recordRequest();
 
   // Only log start for critical operations or when debugging
   const isVerboseLogging = isDev && import.meta.env.VITE_RETRY_DEBUG === 'true';
@@ -187,6 +191,8 @@ export async function withRetry<T>(
 
   while (attempt <= maxRetries) {
     try {
+      const operationStart = Date.now();
+
       // Add timeout for operations to prevent hanging
       const result = await Promise.race([
         operation(),
@@ -195,9 +201,14 @@ export async function withRetry<T>(
         )
       ]);
 
+      const duration = Date.now() - operationStart;
+
+      // Record slow queries for monitoring
+      recordSlowQuery(duration, operationName);
+
       // Only log retries that succeed after initial failure
       if (attempt > 0) {
-        console.log(`✅ ${operationName} succeeded on retry attempt ${attempt + 1}`);
+        console.log(`✅ ${operationName} succeeded on retry attempt ${attempt + 1} (${duration}ms)`);
       }
 
       return result;
@@ -205,11 +216,15 @@ export async function withRetry<T>(
       lastError = error;
       attempt++;
 
+      // Record error for monitoring
+      recordError(error, operationName);
+
       // Always log errors as they indicate real problems
       console.error(`❌ ${operationName} failed on attempt ${attempt}:`, {
         message: error.message,
         code: error.code,
-        status: error.status
+        status: error.status,
+        duration: Date.now() - startTime
       });
 
       const isRetryable = retryCondition(error);
@@ -242,13 +257,47 @@ export async function withRetry<T>(
 /**
  * Enhanced request interceptor with monitoring
  */
-const requestCount = 0;
-const errorCount = 0;
+let requestCount = 0;
+let errorCount = 0;
+let timeoutCount = 0;
+let slowQueryCount = 0;
 const startTime = Date.now();
+
+// Production monitoring utilities
+const recordRequest = () => {
+  requestCount++;
+};
+
+const recordError = (error: any, operationName?: string) => {
+  errorCount++;
+
+  // Track specific error types for production monitoring
+  if (error?.message?.includes('timeout')) {
+    timeoutCount++;
+    console.warn('⏰ PRODUCTION MONITOR: Timeout detected', {
+      operation: operationName,
+      errorMessage: error.message,
+      totalTimeouts: timeoutCount,
+      timeoutRate: `${((timeoutCount / requestCount) * 100).toFixed(1)}%`
+    });
+  }
+};
+
+const recordSlowQuery = (duration: number, operationName?: string) => {
+  if (duration > 5000) { // Queries taking more than 5 seconds
+    slowQueryCount++;
+    console.warn('🐌 PRODUCTION MONITOR: Slow query detected', {
+      operation: operationName,
+      duration: `${duration}ms`,
+      totalSlowQueries: slowQueryCount,
+      slowQueryRate: `${((slowQueryCount / requestCount) * 100).toFixed(1)}%`
+    });
+  }
+};
 
 let lastKnownSession: Session | null = null;
 let lastSessionUpdatedAt = 0;
-const SESSION_CACHE_MAX_AGE_MS = 20 * 60 * 1000; // 20 minutes - increased to reduce getSession calls
+const SESSION_CACHE_MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes - increased from 20 to reduce getSession calls further
 
 const bootstrapCachedSession = () => {
   console.log('🧊 [BOOTSTRAP] Starting session bootstrap from localStorage');
@@ -317,7 +366,20 @@ const isSessionFresh = (session: Session | null) => {
 
   const cacheAgeOk = Date.now() - lastSessionUpdatedAt < SESSION_CACHE_MAX_AGE_MS;
   const expiresAtMs = (session.expires_at ?? 0) * 1000;
-  const expiryBufferOk = expiresAtMs === 0 || expiresAtMs - Date.now() > 10 * 60 * 1000; // Increased buffer to 10 minutes
+  const expiryBufferOk = expiresAtMs === 0 || expiresAtMs - Date.now() > 15 * 60 * 1000; // Increased buffer to 15 minutes
+
+  // Log session freshness details in development
+  if (isDev && import.meta.env.VITE_SESSION_CACHE_DEBUG === 'true') {
+    console.log('🧊 Session freshness check:', {
+      hasCachedSession: !!session,
+      cacheAge: Math.round((Date.now() - lastSessionUpdatedAt) / 1000 / 60) + ' minutes',
+      cacheAgeOk,
+      expiresAt: expiresAtMs ? new Date(expiresAtMs).toISOString() : 'never',
+      timeToExpiry: expiresAtMs ? Math.round((expiresAtMs - Date.now()) / 1000 / 60) + ' minutes' : 'never',
+      expiryBufferOk,
+      isFresh: cacheAgeOk && expiryBufferOk
+    });
+  }
 
   return cacheAgeOk && expiryBufferOk;
 };
@@ -567,8 +629,8 @@ supabase.auth.getSession = async () => {
 
   try {
     // Context-aware timeout: OAuth callbacks AND OAuth completion need more time for session operations
-    // DEPLOYMENT FIX: Force deployment to activate 25s OAuth timeout (was stuck at 12s in prod)
-    const timeoutMs = needsExtendedTimeout ? 25000 : 12000; // Production-optimized: OAuth 25s, regular 12s
+    // PRODUCTION FIX: Increased timeouts to handle real production database latency
+    const timeoutMs = needsExtendedTimeout ? 35000 : 20000; // Production-optimized: OAuth 35s, regular 20s
 
     // 🔧 RUNTIME DEBUG: Verify enhanced timeout configuration is working
     console.log('🔧 ENHANCED TIMEOUT CONFIG:', {
@@ -578,7 +640,7 @@ supabase.auth.getSession = async () => {
       timeoutMs,
       pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
       search: typeof window !== 'undefined' ? window.location.search : 'unknown',
-      expectedTimeout: needsExtendedTimeout ? '25 seconds' : '12 seconds'
+      expectedTimeout: needsExtendedTimeout ? '35 seconds' : '20 seconds'
     });
 
     const result = await withRetry(() => originalGetSession(), {
@@ -628,7 +690,7 @@ supabase.auth.refreshSession = (refreshToken) =>
   withRetry(() => originalRefreshSession(refreshToken), {
     maxRetries: 2,
     operationName: 'refreshSession',
-    timeoutMs: 15000 // Increased to 15 seconds for session refresh operations
+    timeoutMs: 25000 // Increased to 25 seconds for production session refresh operations
   });
 
 // CRITICAL: Restore original auth methods to service role client after global overrides

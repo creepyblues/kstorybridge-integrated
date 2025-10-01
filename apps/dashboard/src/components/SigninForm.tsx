@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { trackAuthAction, trackFormSubmission, trackUserJourneyStep } from '@/utils/analytics';
 import { supabase, performSupabaseHealthCheck } from '@/integrations/supabase/client';
 import { performSessionHealthCheck, getCurrentSession, recoverCorruptedSession } from '@/utils/sessionManager';
-import { determineAccountType, clearAccountTypeCache, getAccountTypeDisplayInfo } from '@/utils/simpleAccountTypeService';
+import { getAccountType, getAccountTypeDisplayInfo } from '@/hooks/useAccountType';
 import { notifyUserSignin } from '@/utils/slack';
 import { createBuyerProfileAtomic } from '@/utils/atomicProfileCreator';
 import { trackSigninError, trackValidationError } from '@/services/authErrorTracking';
@@ -218,7 +218,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
 
           if (profileResult.success) {
             console.log('✅ BUYER SIGNIN: Profile created successfully, redirecting to dashboard');
-            navigate('/buyers/home');
+            navigate('/buyers/chat');
           } else {
             console.error('❌ BUYER SIGNIN: Failed to create profile:', profileResult.error);
             toast({
@@ -275,8 +275,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     });
 
     try {
-      // Clear any cached account type info before signin
-      clearAccountTypeCache();
+      // No need to clear cache with metadata-first approach
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,

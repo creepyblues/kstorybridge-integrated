@@ -167,6 +167,99 @@ class SearchAnalyticsService {
     return [];
   }
 
+  /**
+   * Get search history for a specific user
+   * Returns user's recent searches sorted by date
+   */
+  async getUserSearchHistory(userId: string, limit: number = 20): Promise<SearchAnalytics[]> {
+    try {
+      const { data, error } = await supabase
+        .from('vector_search_analytics')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error('Failed to fetch user search history:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Exception fetching user search history:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get recent unique search queries for a user
+   * Useful for showing "recent searches" UI
+   */
+  async getRecentSearches(userId: string, limit: number = 10): Promise<string[]> {
+    try {
+      const { data, error } = await supabase
+        .from('vector_search_analytics')
+        .select('query')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit * 2); // Fetch more to account for duplicates
+
+      if (error) {
+        console.error('Failed to fetch recent searches:', error);
+        return [];
+      }
+
+      if (!data) return [];
+
+      // Remove duplicates and return unique queries
+      const uniqueQueries = Array.from(new Set(data.map(item => item.query)));
+      return uniqueQueries.slice(0, limit);
+    } catch (error) {
+      console.error('Exception fetching recent searches:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get user's search statistics
+   */
+  async getUserSearchStats(userId: string): Promise<{
+    totalSearches: number;
+    averageResults: number;
+    topQueries: Array<{ query: string; count: number }>;
+  }> {
+    try {
+      const { data, error } = await supabase
+        .from('vector_search_analytics')
+        .select('query, result_count')
+        .eq('user_id', userId);
+
+      if (error || !data) {
+        return { totalSearches: 0, averageResults: 0, topQueries: [] };
+      }
+
+      const totalSearches = data.length;
+      const averageResults = data.reduce((sum, item) => sum + (item.result_count || 0), 0) / totalSearches || 0;
+
+      // Calculate top queries
+      const queryCount = new Map<string, number>();
+      data.forEach(item => {
+        queryCount.set(item.query, (queryCount.get(item.query) || 0) + 1);
+      });
+
+      const topQueries = Array.from(queryCount.entries())
+        .map(([query, count]) => ({ query, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      return { totalSearches, averageResults, topQueries };
+    } catch (error) {
+      console.error('Exception fetching user search stats:', error);
+      return { totalSearches: 0, averageResults: 0, topQueries: [] };
+    }
+  }
+
   // Private helper methods
   private generateSessionId(): string {
     return `search-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;

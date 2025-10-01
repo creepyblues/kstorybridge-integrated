@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { useAccountType } from "@/utils/simpleAccountTypeService";
+import { useAccountType } from "@/hooks/useAccountType";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import { trackNavigationClick, trackLogoClick, trackMobileMenuToggle, trackTierBadgeClick } from "@/utils/analytics";
 import { User, Menu, X } from "lucide-react";
@@ -26,7 +26,7 @@ const getDiscoverItems = (accountType: string | null): MenuItem[] => {
     ];
   } else if (accountType === "buyer") {
     return [
-      { title: "Home", href: "/buyers/home" },
+      { title: "Chat", href: "/buyers/chat" },
       { title: "Featured", href: "/buyers/featured" },
       { title: "Title Library", href: "/buyers/titles" },
       { title: "Saved Titles", href: "/buyers/saved" },
@@ -95,18 +95,10 @@ export function CMSSidebar() {
   const displayTier = (isLocalhost && !useRealDataOnLocalhost) ? mockTier : tier;
   const displayTierLoading = (isLocalhost && !useRealDataOnLocalhost) ? false : tierLoading;
 
-  // Memoize the options object to prevent unnecessary re-renders
-  const accountTypeOptions = useMemo(() => ({
-    includeDatabaseLookup: true,
-    debug: false,
+  // Use streamlined metadata-first account type detection
+  const { accountType, loading: accountTypeLoading } = useAccountType({
     user: (displayUser as unknown as SupabaseUser | null) ?? null
-  }), [displayUser?.id, displayUser?.user_metadata?.account_type]);
-
-  // Use centralized account type detection with database lookup for accuracy
-  const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);
-
-  // Use detected account type, no fallback since users should have proper account type in authenticated areas
-  const accountType = detectedAccountType;
+  });
   const userEmail = displayUser?.email;
   const discoverItems = getDiscoverItems(accountType);
   const settingsItems = getSettingsItems(accountType, userEmail);
@@ -161,7 +153,7 @@ export function CMSSidebar() {
         <div className="flex items-center justify-between px-4 py-3">
           {/* Logo on the left */}
           <Link
-            to={accountType === "creator" ? "/creators/home" : "/buyers/home"}
+            to={accountType === "creator" ? "/creators/home" : "/buyers/chat"}
             className="flex items-center"
           >
             <img
@@ -276,7 +268,7 @@ export function CMSSidebar() {
       {/* Logo and Title Section */}
       <div className="p-4 pt-6">
         <Link
-          to={accountType === "creator" ? "/creators/home" : "/buyers/home"}
+          to={accountType === "creator" ? "/creators/home" : "/buyers/chat"}
           className="flex items-center justify-center mb-6"
           onClick={() => trackLogoClick('sidebar', accountType as 'buyer' | 'creator')}
           data-track-button="true"

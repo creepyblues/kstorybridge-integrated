@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Card, CardContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";import { Send, Bot, User, Loader2, ArrowLeft, Sparkles, Brain, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAccountType } from "@/hooks/useAccountType";
 import { openaiService } from "@/services/openaiService";
 import { titlesService } from "@/services/titlesService";
 import { chatHistoryService, type ChatSession } from "@/services/chatHistoryService";
@@ -16,9 +17,6 @@ import ProBadge from "@/components/ProBadge";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import { ChatUpgradePrompt } from "@/components/UpgradePrompt";
-import { OnboardingModal, OnboardingFlow } from "@/components/onboarding";
-import { useOnboarding } from "@/contexts/OnboardingContext";
-import { OnboardingService } from "@/services/onboardingService";
 import { trackSearch, trackTitleView, trackAdvancedChatUsage, trackEvent, trackTitleCardClick } from "@/utils/analytics";
 
 interface Message {
@@ -228,43 +226,108 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
       });
     }
 
-    // Second pass: Process the text, avoiding quoted sections for asterisk formatting
+    // Second pass: Find unquoted title names (fallback pattern matching)
+    // Look for capitalized phrases that might be titles
+    const unquotedTitleSegments: Array<{start: number, end: number, content: string, titleId?: string}> = [];
+
+    // Only search if we have titleData or titleCache to match against
+    if ((titleData && titleData.length > 0) || (titleCache && titleCache.length > 0)) {
+      // Build a list of all available title names (both English and Korean)
+      const availableTitles: Array<{name: string, titleId: string}> = [];
+
+      // Add titles from titleData
+      if (titleData) {
+        titleData.forEach(title => {
+          if (title.title_name_en) availableTitles.push({ name: title.title_name_en, titleId: title.title_id });
+          if (title.title_name_kr) availableTitles.push({ name: title.title_name_kr, titleId: title.title_id });
+        });
+      }
+
+      // Add titles from titleCache
+      if (titleCache) {
+        titleCache.forEach(title => {
+          if (title.title_name_en) availableTitles.push({ name: title.title_name_en, titleId: title.title_id });
+          if (title.title_name_kr) availableTitles.push({ name: title.title_name_kr, titleId: title.title_id });
+        });
+      }
+
+      // Remove duplicates
+      const uniqueTitles = Array.from(
+        new Map(availableTitles.map(item => [item.name, item])).values()
+      );
+
+      // Sort by length (longest first) to match multi-word titles before single words
+      uniqueTitles.sort((a, b) => b.name.length - a.name.length);
+
+      // Search for each title name in the text (case-insensitive)
+      uniqueTitles.forEach(titleInfo => {
+        const titleName = titleInfo.name;
+        const regex = new RegExp(`\\b${titleName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+        let match;
+
+        while ((match = regex.exec(text)) !== null) {
+          const matchStart = match.index;
+          const matchEnd = matchStart + match[0].length;
+
+          // Check if this position is already inside a quoted segment
+          const isInsideQuote = quotedSegments.some(seg =>
+            matchStart >= seg.start && matchEnd <= seg.end
+          );
+
+          // Check if this position overlaps with another unquoted segment
+          const overlapsExisting = unquotedTitleSegments.some(seg =>
+            (matchStart >= seg.start && matchStart < seg.end) ||
+            (matchEnd > seg.start && matchEnd <= seg.end)
+          );
+
+          if (!isInsideQuote && !overlapsExisting) {
+            unquotedTitleSegments.push({
+              start: matchStart,
+              end: matchEnd,
+              content: match[0], // Use the actual matched text (preserves case)
+              titleId: titleInfo.titleId
+            });
+          }
+        }
+      });
+    }
+
+    // Third pass: Process the text with all segments (quoted + unquoted titles)
     const segments: Array<{type: string, content: string, titleId?: string}> = [];
     let currentIndex = 0;
 
-    // Helper to check if position is within a quoted segment
-    const isInQuote = (pos: number) => {
-      return quotedSegments.some(q => pos >= q.start && pos < q.end);
-    };
+    // Combine and sort all segments (quoted and unquoted titles)
+    const allSegments = [...quotedSegments, ...unquotedTitleSegments].sort((a, b) => a.start - b.start);
 
-    // Process quoted segments and text between them
-    const allSegments = [...quotedSegments].sort((a, b) => a.start - b.start);
-
-    allSegments.forEach((quotedSegment, idx) => {
-      // Add text before quote (as plain text)
-      if (quotedSegment.start > currentIndex) {
-        const textBefore = text.slice(currentIndex, quotedSegment.start);
+    allSegments.forEach((segment) => {
+      // Add text before this segment (as plain text)
+      if (segment.start > currentIndex) {
+        const textBefore = text.slice(currentIndex, segment.start);
         segments.push(...processText(textBefore));
       }
 
-      // Add the quoted segment
+      // Determine segment type
+      const isQuoted = quotedSegments.includes(segment);
+      const segmentType = isQuoted ? 'quote' : 'unquoted-title';
+
+      // Add the segment
       segments.push({
-        type: 'quote',
-        content: quotedSegment.content,
-        titleId: quotedSegment.titleId
+        type: segmentType,
+        content: segment.content,
+        titleId: segment.titleId
       });
 
-      currentIndex = quotedSegment.end;
+      currentIndex = segment.end;
     });
 
-    // Add remaining text after last quote
+    // Add remaining text after last segment
     if (currentIndex < text.length) {
       const remainingText = text.slice(currentIndex);
       segments.push(...processText(remainingText));
     }
 
-    // If no quotes found, just process as plain text
-    if (quotedSegments.length === 0 && segments.length === 0) {
+    // If no segments found, just process as plain text
+    if (allSegments.length === 0 && segments.length === 0) {
       segments.push(...processText(text));
     }
 
@@ -287,6 +350,23 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
             );
           } else {
             return <span key={segmentIdx} className="font-medium">"{segment.content}"</span>;
+          }
+        case 'unquoted-title':
+          if (segment.titleId) {
+            return (
+              <a
+                key={segmentIdx}
+                href={`/buyers/titles/${segment.titleId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
+                title={`View "${segment.content}" details`}
+              >
+                {segment.content}
+              </a>
+            );
+          } else {
+            return <span key={segmentIdx} className="font-medium">{segment.content}</span>;
           }
         default:
           return segment.content;
@@ -393,25 +473,42 @@ export default function Chat() {
   const [showHistory, setShowHistory] = useState(false); // Toggle between current chat and full history
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Onboarding state (OPTIMIZED - Using context)
-  const { onboardingState, markCompleted, markSkipped } = useOnboarding();
-  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
-  const [showOnboardingFlow, setShowOnboardingFlow] = useState(false);
-
-  // Show onboarding when context indicates it should be shown
-  useEffect(() => {
-    if (onboardingState.shouldShow && !onboardingState.isLoading && user) {
-      console.log('✨ ONBOARDING: Context indicates onboarding should be shown');
-      setTimeout(() => setShowOnboardingModal(true), 1000);
-    }
-  }, [onboardingState.shouldShow, onboardingState.isLoading, user]);
+  const previousUserIdRef = useRef<string | null>(null); // Track user changes
 
   // Tier access for Advanced mode restriction
   const { hasMinimumTier } = useTierAccess();
 
+  // User change detection - reset chat when user changes (logout/login with different account)
+  useEffect(() => {
+    if (user?.id) {
+      // If user ID changed (different user logged in), reset all state
+      if (previousUserIdRef.current && previousUserIdRef.current !== user.id) {
+        console.log('[UserChange] User changed, resetting chat state');
+        setMessages([]);
+        setCurrentSession(null);
+        setHasStartedConversation(false);
+        setShowHistory(false);
+        setInputMessage('');
+      }
+
+      // Update the previous user ID
+      previousUserIdRef.current = user.id;
+    } else {
+      // User logged out, clear state
+      if (previousUserIdRef.current) {
+        console.log('[UserChange] User logged out, clearing chat state');
+        setMessages([]);
+        setCurrentSession(null);
+        setHasStartedConversation(false);
+        setShowHistory(false);
+        setInputMessage('');
+        previousUserIdRef.current = null;
+      }
+    }
+  }, [user?.id]);
+
   // Check if user is authorized - allow all buyers
-  const accountType = user?.user_metadata?.account_type || 'buyer';
+  const { accountType, loading: accountTypeLoading } = useAccountType();
   const isAuthorized = accountType === 'buyer';
 
   // Determine if we should show empty state - always show on page load until user sends first message or views history
@@ -455,18 +552,23 @@ export default function Chat() {
   // Debug logging removed to prevent console alerts
 
   useEffect(() => {
+    // Wait for account type loading to complete before checking authorization
+    if (accountTypeLoading) {
+      return;
+    }
+
     if (!isAuthorized) {
       toast({
         title: "Access Denied",
         description: "You don't have permission to access the Chat.",
         variant: "destructive",
       });
-      navigate("/profile");
+      navigate("/signin");
       return;
     }
 
     // No history loading on mount - will load lazily when user sends first message
-  }, [isAuthorized, user?.id]);
+  }, [isAuthorized, accountTypeLoading, user?.id]);
 
   // REMOVED: Old navigation-based onboarding trigger (replaced with context)
 
@@ -571,94 +673,6 @@ export default function Chat() {
     }
   };
 
-  // Onboarding handlers (PRD 2.1)
-  const handleStartOnboarding = () => {
-    console.log('🎬 ONBOARDING: Starting onboarding flow');
-    setShowOnboardingModal(false);
-    setShowOnboardingFlow(true);
-  };
-
-  const handleSkipOnboarding = async () => {
-    console.log('⏭️ ONBOARDING: User skipped onboarding');
-
-    if (!user) {
-      console.error('❌ ONBOARDING: No user found for skip action');
-      return;
-    }
-
-    try {
-      // Save skip to database
-      const success = await OnboardingService.skipOnboarding(user.id, user.user_metadata?.full_name);
-
-      if (success) {
-        console.log('✅ ONBOARDING: Skip saved to database');
-        setShowOnboardingModal(false);
-        setShowOnboardingFlow(false);
-
-        toast({
-          title: "Tour skipped",
-          description: "You can restart the tour anytime from your profile settings."
-        });
-      } else {
-        console.error('❌ ONBOARDING: Failed to save skip to database');
-        toast({
-          title: "Error",
-          description: "Failed to save preference. Please try again.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('❌ ONBOARDING: Error skipping onboarding:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save preference. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleCompleteOnboarding = async () => {
-    console.log('✅ ONBOARDING: User completed onboarding');
-
-    if (!user) {
-      console.error('❌ ONBOARDING: No user found for completion');
-      return;
-    }
-
-    try {
-      // Save completion to database (step 4 = final step)
-      const success = await OnboardingService.updateOnboardingStep(
-        user.id,
-        4,
-        'complete',
-        user.user_metadata?.full_name
-      );
-
-      if (success) {
-        console.log('✅ ONBOARDING: Completion saved to database');
-        setShowOnboardingFlow(false);
-
-        toast({
-          title: "Welcome aboard! 🎉",
-          description: "You're all set to explore KStoryBridge and find amazing content."
-        });
-      } else {
-        console.error('❌ ONBOARDING: Failed to save completion to database');
-        toast({
-          title: "Error",
-          description: "Failed to save progress. Please try again.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('❌ ONBOARDING: Error completing onboarding:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save progress. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleEmptyStateMessage = async (message: string) => {
     if (!message.trim() || isLoading || isProcessingMessage || isStreaming || !user) {
@@ -1116,13 +1130,12 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
       const titleName = title.title_name_en || title.title_name_kr || 'Unknown Title';
 
       // Enhanced title card click tracking for GA4/GTM
-      const userType = user?.user_metadata?.account_type as 'buyer' | 'creator';
       trackTitleCardClick(
         title.title_id,
         titleName,
         'card_click',
         'chat',
-        userType,
+        accountType || 'buyer',
         {
           chat_mode: useOrchestrator ? 'advanced' : 'standard',
           session_id: currentSession?.id,
@@ -1239,6 +1252,15 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
     );
   };
 
+  // Show loading while account type is being determined
+  if (accountTypeLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hanok-teal"></div>
+      </div>
+    );
+  }
+
   if (!isAuthorized) {
     return null;
   }
@@ -1259,19 +1281,6 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Onboarding Modals (PRD 2.1) */}
-      {console.log('🎬 DEBUG: About to render OnboardingModal, showOnboardingModal =', showOnboardingModal)}
-      <OnboardingModal
-        open={showOnboardingModal}
-        onStart={handleStartOnboarding}
-        onSkip={handleSkipOnboarding}
-      />
-      <OnboardingFlow
-        open={showOnboardingFlow}
-        onComplete={handleCompleteOnboarding}
-        onSkip={handleSkipOnboarding}
-      />
-
       <div className="max-w-7xl mx-auto flex flex-col min-h-screen">
         {/* Header - Uses PageContainer padding - Remove AI ASSISTANT in conversation mode */}
         <div className="page-padding-x" style={{ paddingTop: 'var(--page-padding-y-mobile)', paddingBottom: 'var(--page-padding-y-mobile)' }}>

@@ -405,23 +405,31 @@ export default function Favorites() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="p-4">
                       <h3 className="font-semibold text-lg text-midnight-ink mb-2 line-clamp-2 group-hover:text-hanok-teal transition-colors">
                         {title.title_name_en || title.title_name_kr}
                       </h3>
-                      
+
                       {title.title_name_en && title.title_name_kr && (
                         <p className="text-sm text-midnight-ink-600 mb-2 line-clamp-1">
                           {title.title_name_kr}
                         </p>
                       )}
-                      
+
                       <div className="flex flex-wrap gap-1 mb-3">
                         {title.genre && (
-                          <span className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded text-xs">
-                            {formatGenre(title.genre)}
-                          </span>
+                          Array.isArray(title.genre) ? (
+                            title.genre.map((g, idx) => (
+                              <span key={`${title.title_id}-genre-${idx}`} className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                                {formatGenre(g)}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                              {formatGenre(title.genre)}
+                            </span>
+                          )
                         )}
                         {title.content_format && (
                           <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
@@ -434,7 +442,7 @@ export default function Favorites() {
                           </span>
                         )}
                       </div>
-                      
+
                       {title.synopsis && (
                         <p className="text-sm text-midnight-ink-600 line-clamp-3 leading-relaxed">
                           {title.synopsis}

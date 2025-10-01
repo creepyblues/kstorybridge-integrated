@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useAccountType, getAccountTypeDisplayInfo, type AccountType } from "@/utils/simpleAccountTypeService";
+import { useAccountType, getAccountTypeDisplayInfo, type AccountType } from "@/hooks/useAccountType";
 
 interface AccountTypeProtectedRouteProps {
   children: ReactNode;
@@ -14,17 +14,15 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Use centralized account type detection with static options
-  const { 
-    accountType, 
-    loading: accountTypeLoading, 
-    source, 
-    confidence,
-    profileExists 
+  // Use streamlined metadata-first account type detection
+  const {
+    accountType,
+    loading: accountTypeLoading,
+    source,
+    confidence
   } = useAccountType({
-    includeDatabaseLookup: true,
-    debug: true,
-    user
+    user,
+    debug: true
   });
 
   useEffect(() => {
@@ -41,7 +39,7 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
         currentPath: location.pathname,
         source,
         confidence,
-        profileExists,
+        hasUserData: !!user,
         authLoading,
         accountTypeLoading
       });
@@ -65,7 +63,7 @@ export function AccountTypeProtectedRoute({ children, allowedAccountTypes }: Acc
         currentPath: location.pathname
       });
     }
-  }, [authLoading, accountTypeLoading, user, accountType, allowedAccountTypes, navigate, location.pathname, source, confidence, profileExists]);
+  }, [authLoading, accountTypeLoading, user, accountType, allowedAccountTypes, navigate, location.pathname, source, confidence]);
 
   // Show loading while auth or account type is loading
   if (authLoading || accountTypeLoading) {

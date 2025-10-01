@@ -141,7 +141,8 @@ const App = () => (
                 <Route path="/buyers" element={
                   <BuyerProtectedLayout><RootRedirect /></BuyerProtectedLayout>
                 } />
-                <Route path="/buyers/home" element={
+                <Route path="/buyers/home" element={<Navigate to="/buyers/chat" replace />} />
+                <Route path="/buyers/chat" element={
                   <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/featured" element={
@@ -261,9 +262,7 @@ const App = () => (
                 <Route path="/settings" element={
                   <ProtectedLayout><Settings /></ProtectedLayout>
                 } />
-                <Route path="/profile" element={
-                  <ProtectedLayout><Profile /></ProtectedLayout>
-                } />
+                <Route path="/profile" element={<Navigate to="/buyers/chat" replace />} />
                 
                 {/* Contact page - accessible to all authenticated users */}
                 <Route path="/contact" element={

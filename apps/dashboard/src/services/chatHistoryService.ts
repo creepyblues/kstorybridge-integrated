@@ -115,7 +115,9 @@ export interface CreateSuggestedQueryData {
 }
 
 class ChatHistoryService {
-  
+  // Session expiry constant: 24 hours
+  private readonly SESSION_EXPIRY_HOURS = 24;
+
   // Session Management
   async createSession(data: CreateSessionData): Promise<ChatSession | null> {
     try {
@@ -653,6 +655,25 @@ class ChatHistoryService {
         return null;
       }
 
+      // If no session found, return null
+      if (!session) {
+        return null;
+      }
+
+      // Check if session is expired (older than SESSION_EXPIRY_HOURS)
+      const sessionAge = Date.now() - new Date(session.started_at).getTime();
+      const sessionAgeHours = sessionAge / (1000 * 60 * 60);
+
+      if (sessionAgeHours > this.SESSION_EXPIRY_HOURS) {
+        console.log(`[SessionExpiry] Session ${session.id} is ${sessionAgeHours.toFixed(1)}h old, expiring it`);
+
+        // End the expired session
+        await this.endSession(session.id);
+
+        return null; // Return null so a new session will be created
+      }
+
+      console.log(`[SessionValidation] Session ${session.id} is valid (${sessionAgeHours.toFixed(1)}h old)`);
       return session;
     } catch (error) {
       console.error('Exception fetching active session:', error);
@@ -679,6 +700,91 @@ class ChatHistoryService {
     } catch (error) {
       console.error('Exception cleaning up old sessions:', error);
       return false;
+    }
+  }
+
+  /**
+   * Validate if a session is still valid (belongs to user and not expired)
+   */
+  async validateSession(sessionId: string, userId: string): Promise<boolean> {
+    try {
+      const session = await this.getSession(sessionId);
+
+      if (!session) {
+        console.log(`[SessionValidation] Session ${sessionId} not found`);
+        return false;
+      }
+
+      // Check user ownership
+      if (session.user_id !== userId) {
+        console.log(`[SessionValidation] Session ${sessionId} belongs to different user`);
+        return false;
+      }
+
+      // Check if session ended
+      if (session.ended_at) {
+        console.log(`[SessionValidation] Session ${sessionId} already ended`);
+        return false;
+      }
+
+      // Check session age
+      const sessionAge = Date.now() - new Date(session.started_at).getTime();
+      const sessionAgeHours = sessionAge / (1000 * 60 * 60);
+
+      if (sessionAgeHours > this.SESSION_EXPIRY_HOURS) {
+        console.log(`[SessionValidation] Session ${sessionId} expired (${sessionAgeHours.toFixed(1)}h old)`);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Exception validating session:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Invalidate (end) all old sessions for a user
+   * Useful for cleanup on login or periodically
+   */
+  async invalidateOldSessions(userId: string): Promise<number> {
+    try {
+      const cutoffDate = new Date();
+      cutoffDate.setHours(cutoffDate.getHours() - this.SESSION_EXPIRY_HOURS);
+
+      // Find all active sessions older than expiry threshold
+      const { data: oldSessions, error: fetchError } = await supabase
+        .from('chat_sessions')
+        .select('id, started_at')
+        .eq('user_id', userId)
+        .is('ended_at', null)
+        .lt('started_at', cutoffDate.toISOString());
+
+      if (fetchError) {
+        console.error('Error fetching old sessions:', fetchError);
+        return 0;
+      }
+
+      if (!oldSessions || oldSessions.length === 0) {
+        return 0;
+      }
+
+      // End all old sessions
+      const { error: updateError } = await supabase
+        .from('chat_sessions')
+        .update({ ended_at: new Date().toISOString() })
+        .in('id', oldSessions.map(s => s.id));
+
+      if (updateError) {
+        console.error('Error invalidating old sessions:', updateError);
+        return 0;
+      }
+
+      console.log(`[SessionCleanup] Invalidated ${oldSessions.length} expired sessions for user ${userId}`);
+      return oldSessions.length;
+    } catch (error) {
+      console.error('Exception invalidating old sessions:', error);
+      return 0;
     }
   }
 

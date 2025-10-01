@@ -89,27 +89,19 @@ export class EmailService {
 
   /**
    * Check if email_logs table exists in the database
+   * DISABLED: Table doesn't exist and causes OAuth signup timeouts
    */
   private async checkEmailLogsTableExists(): Promise<boolean> {
+    // Fast path: Return false immediately since table doesn't exist
+    // This prevents slow/failing database queries during OAuth signup
     if (this.emailLogsTableExists !== null) {
       return this.emailLogsTableExists;
     }
 
-    try {
-      // Try a simple query to see if table exists
-      const { error } = await supabase
-        .from('email_logs')
-        .select('id')
-        .limit(1);
-
-      this.emailLogsTableExists = !error || error.code !== '42P01'; // 42P01 = relation does not exist
-      console.log(`📧 Email logs table exists: ${this.emailLogsTableExists}`);
-      return this.emailLogsTableExists;
-    } catch (error) {
-      console.log('📧 Email logs table does not exist, email tracking disabled');
-      this.emailLogsTableExists = false;
-      return false;
-    }
+    // Set to false without database query to avoid OAuth timeouts
+    this.emailLogsTableExists = false;
+    console.log('📧 Email logs table check disabled (table does not exist)');
+    return false;
   }
 
   /**
@@ -210,20 +202,33 @@ export class EmailService {
       return { success: true, error: 'Email already sent (duplicate prevented)' };
     }
 
-    // OAuth Metadata Sync: Ensure metadata matches database for OAuth users
+    // OAuth Metadata Sync: Ensure metadata matches database for OAuth users (with timeout protection)
     let finalAccountType = data.accountType;
     try {
       console.log(`🔍 OAuth Sync: Checking metadata for ${userEmail} (${data.accountType})`);
 
-      // Get current user for OAuth detection and metadata update
-      const currentUser = await getCurrentUserForSync();
+      // Add timeout protection to prevent hanging
+      const syncWithTimeout = async () => {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('OAuth metadata sync timeout after 5 seconds')), 5000)
+        );
 
-      // Sync OAuth user metadata (email users are skipped automatically)
-      const correctedAccountType = await syncOAuthUserMetadata(
-        userEmail,
-        data.accountType,
-        currentUser
-      );
+        const syncPromise = (async () => {
+          // Get current user for OAuth detection and metadata update
+          const currentUser = await getCurrentUserForSync();
+
+          // Sync OAuth user metadata (email users are skipped automatically)
+          return await syncOAuthUserMetadata(
+            userEmail,
+            data.accountType,
+            currentUser
+          );
+        })();
+
+        return await Promise.race([syncPromise, timeoutPromise]);
+      };
+
+      const correctedAccountType = await syncWithTimeout();
 
       if (correctedAccountType !== data.accountType) {
         console.log(`✅ OAuth Sync: Account type corrected for welcome email - ${data.accountType} → ${correctedAccountType}`);
@@ -231,7 +236,7 @@ export class EmailService {
       }
 
     } catch (error) {
-      console.warn('⚠️ OAuth Sync: Metadata sync failed, using original account type:', error);
+      console.warn('⚠️ OAuth Sync: Metadata sync failed/timed out, using original account type:', error);
       // Continue with original account type - don't fail email sending
     }
 

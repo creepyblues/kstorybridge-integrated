@@ -448,6 +448,8 @@ supabase.auth.signOut = (options) =>
 
 supabase.auth.getSession = async () => {
   const isCallback = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback');
+  const hasOAuthCode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('code');
+  const isOAuthFlow = isCallback && hasOAuthCode;
 
   const handleSessionResult = (result: GetSessionResponse) => {
     const session = result?.data?.session ?? null;
@@ -458,7 +460,8 @@ supabase.auth.getSession = async () => {
     return result;
   };
 
-  if (!isCallback && isSessionFresh(lastKnownSession)) {
+  // For OAuth flows, bypass aggressive session caching to allow PKCE exchange
+  if (!isOAuthFlow && !isCallback && isSessionFresh(lastKnownSession)) {
     if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
       console.log('⚡ Returning cached session without remote call');
     }
@@ -468,8 +471,9 @@ supabase.auth.getSession = async () => {
     } satisfies GetSessionResponse;
   }
 
-  if (isCallback) {
-    // During OAuth callback let Supabase handle its own session exchange without extra timeouts
+  if (isOAuthFlow) {
+    // During OAuth callback with code, let Supabase handle its own session exchange without timeouts
+    console.log('🔄 OAuth PKCE flow detected - using native Supabase session exchange');
     const result = await originalGetSession();
     return handleSessionResult(result);
   }
@@ -478,16 +482,17 @@ supabase.auth.getSession = async () => {
     console.log('🌐 Cached session unavailable or stale - fetching from Supabase', {
       hasCachedSession: !!lastKnownSession,
       cacheAgeMs: lastSessionUpdatedAt ? Date.now() - lastSessionUpdatedAt : null,
-      path: typeof window !== 'undefined' ? window.location.pathname : 'unknown'
+      path: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+      isOAuthFlow
     });
   }
 
   try {
     // Context-aware timeout: OAuth callbacks need more time for PKCE exchange
-    const timeoutMs = isCallback ? 12000 : 8000;
+    const timeoutMs = isCallback ? 15000 : 8000; // Increased OAuth timeout from 12s to 15s
 
     const result = await withRetry(() => originalGetSession(), {
-      maxRetries: 1,
+      maxRetries: isCallback ? 2 : 1, // More retries for OAuth callbacks
       baseDelay: 200,
       timeoutMs,
       operationName: 'getSession'
@@ -508,8 +513,8 @@ supabase.auth.getSession = async () => {
 
     return resolved;
   } catch (error) {
-    // Be more aggressive about using cached sessions on any error
-    if (lastKnownSession) {
+    // Be more aggressive about using cached sessions on any error (except OAuth flows)
+    if (lastKnownSession && !isOAuthFlow) {
       if (isDev) {
         console.warn('⚠️ getSession failed, returning cached session (aggressive fallback)', error);
       }

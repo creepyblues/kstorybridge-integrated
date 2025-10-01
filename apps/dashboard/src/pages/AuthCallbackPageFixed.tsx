@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 import { getOAuthAccountType, getDashboardPath, getSignupPath } from '@/utils/simpleAccountTypeDetection';
+import { markOAuthCompletion } from '@/utils/oauthFlowDetection';
 import { trackOAuthCallbackError } from '@/services/authErrorTracking';
 
 const STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-auth-token';
@@ -407,17 +408,36 @@ const AuthCallbackPageFixed = () => {
           return;
         }
 
-        // 3. Update user metadata with account type (non-blocking)
+        // 3. Update user metadata with account type (TESTING - with detailed logging)
+        console.log('🔄 TESTING: About to update user metadata with account_type:', finalAccountType);
+        console.log('🔄 TESTING: User ID:', user.id);
+        console.log('🔄 TESTING: User email:', user.email);
+
         try {
-          await supabase.auth.updateUser({
+          const updateResult = await supabase.auth.updateUser({
             data: { account_type: finalAccountType }
           });
-          console.log('✅ User metadata updated');
+
+          console.log('✅ TESTING: Metadata update SUCCESS');
+          console.log('✅ TESTING: Update result:', updateResult);
+
+          // Verify the update worked
+          const { data: verifyUser } = await supabase.auth.getUser();
+          console.log('✅ TESTING: Verified metadata after update:', verifyUser.user?.user_metadata);
+
         } catch (metadataError) {
-          console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
+          console.error('❌ TESTING: Metadata update FAILED:', metadataError);
+          console.error('❌ TESTING: Error details:', {
+            message: metadataError.message,
+            code: metadataError.code,
+            status: metadataError.status
+          });
         }
 
-        // 4. Route based on flow type
+        // 4. Mark OAuth completion for legacy system bypass
+        markOAuthCompletion();
+
+        // 5. Route based on flow type
         if (flow === 'signup') {
           // OAuth signup - redirect to complete profile
           const signupPath = getSignupPath(finalAccountType);

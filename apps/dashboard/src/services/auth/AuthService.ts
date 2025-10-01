@@ -386,7 +386,7 @@ export class AuthService {
           userName: profile.full_name,
           userEmail: user.email!,
           accountType: 'buyer',
-          dashboardUrl: `${window.location.origin}/buyers/home`,
+          dashboardUrl: `${window.location.origin}/buyers/chat`,
           loginUrl: `${window.location.origin}/signin`
         })
       ]);

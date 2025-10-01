@@ -15,7 +15,8 @@ import {
   Code,
   Search,
   Filter,
-  Target
+  Target,
+  Sparkles
 } from "lucide-react";
 
 interface DocumentItem {
@@ -60,6 +61,14 @@ const documents: DocumentItem[] = [
     category: 'development',
     icon: FileText,
     lastUpdated: '2025-01-27'
+  },
+  {
+    filename: 'PRD-2.1-Onboarding-Enhancement-Plan.md',
+    title: 'PRD 2.1: Onboarding Enhancement Plan',
+    description: 'Comprehensive plan for improving user onboarding based on B2B SaaS best practices research.',
+    category: 'development',
+    icon: Sparkles,
+    lastUpdated: '2025-01-29'
   },
   {
     filename: 'AI_CHATBOT_DOCUMENTATION.md',

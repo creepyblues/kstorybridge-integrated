@@ -9,7 +9,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useDatabaseAccountType, getDashboardPath } from "@/hooks/useDatabaseAccountType";
+import { useAccountType, getDashboardPath } from "@/hooks/useAccountType";
 import { supabase, performSupabaseHealthCheck } from "@/integrations/supabase/client";
 import { performSessionHealthCheck, recoverCorruptedSession } from "@/utils/sessionManager";
 
@@ -38,16 +38,14 @@ export function DashboardEntrypoint() {
     return false;
   }, [isOAuthCallback, user]);
 
-  // Use new database-first account type detection
+  // Use streamlined metadata-first account type detection
   const {
     accountType,
     loading: accountTypeLoading,
-    error: accountTypeError,
     source: accountTypeSource,
-    profileExists
-  } = useDatabaseAccountType({
+    confidence
+  } = useAccountType({
     user,
-    enableMetadataFallback: true, // Allow fallback during migration
     debug: true
   });
 
@@ -181,9 +179,9 @@ export function DashboardEntrypoint() {
       // Check account type result
       if (!accountType) {
         console.error('❌ DashboardEntrypoint: No valid account type detected', {
-          error: accountTypeError,
+          confidence,
           source: accountTypeSource,
-          profileExists
+          hasUser: !!user
         });
         setHasRedirected(true);
 
@@ -223,7 +221,6 @@ export function DashboardEntrypoint() {
       console.log('✅ DashboardEntrypoint: Redirecting to dashboard:', {
         accountType,
         path: dashboardPath,
-        profileExists,
         source: accountTypeSource
       });
 
@@ -237,9 +234,8 @@ export function DashboardEntrypoint() {
     authLoading,
     accountTypeLoading,
     accountType,
-    accountTypeError,
+    confidence,
     accountTypeSource,
-    profileExists,
     navigate,
     hasRedirected,
     timeoutTriggered,

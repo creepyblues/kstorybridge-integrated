@@ -21,7 +21,7 @@ export function RootRedirect() {
 
         if (metadataAccountType === 'buyer' || metadataAccountType === 'creator') {
           setAccountType(metadataAccountType);
-          const redirectPath = metadataAccountType === 'creator' ? '/creators/home' : '/buyers/home';
+          const redirectPath = metadataAccountType === 'creator' ? '/creators/home' : '/buyers/chat';
           console.log('🏠 RootRedirect: Redirecting to:', redirectPath);
           navigate(redirectPath, { replace: true });
           return;
@@ -38,9 +38,9 @@ export function RootRedirect() {
           .maybeSingle();
 
         if (buyerProfile) {
-          console.log('✅ RootRedirect: Found buyer profile, redirecting to /buyers/home');
+          console.log('✅ RootRedirect: Found buyer profile, redirecting to /buyers/chat');
           setAccountType('buyer');
-          navigate('/buyers/home', { replace: true });
+          navigate('/buyers/chat', { replace: true });
           return;
         }
 

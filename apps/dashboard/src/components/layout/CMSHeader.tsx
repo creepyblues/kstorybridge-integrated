@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTierAccess } from "@/hooks/useTierAccess";
-import { useAccountType } from "@/utils/simpleAccountTypeService";
+import { useAccountType } from "@/hooks/useAccountType";
 import { trackNavigationClick, trackLogoClick, trackMobileMenuToggle, trackTierBadgeClick } from "@/utils/analytics";
 import { User, Menu, X } from "lucide-react";
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -18,7 +18,7 @@ const getDiscoverItems = (accountType: string) => {
     ];
   } else {
     return [
-      { title: "Home", href: "/buyers/home" },
+      { title: "Chat", href: "/buyers/chat" },
       { title: "Featured", href: "/buyers/featured" },
       { title: "Title Library", href: "/buyers/titles" },
       { title: "Saved Titles", href: "/buyers/saved" },
@@ -89,16 +89,12 @@ export function CMSHeader() {
   const displayTier = (isLocalhost && !useRealDataOnLocalhost) ? mockTier : tier;
   const displayTierLoading = (isLocalhost && !useRealDataOnLocalhost) ? false : tierLoading;
 
-  // Memoize the options object to prevent unnecessary re-renders
-  const accountTypeOptions = useMemo(() => ({
-    includeDatabaseLookup: true,
-    debug: false,
+  // Use streamlined metadata-first account type detection
+  const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType({
     user: (displayUser as unknown as SupabaseUser | null) ?? null
-  }), [displayUser?.id, displayUser?.user_metadata?.account_type]);
+  });
 
-  const { accountType: detectedAccountType, loading: accountTypeLoading } = useAccountType(accountTypeOptions);
-
-  // Get account type for display - use centralized detection for accuracy
+  // Get account type for display with fallback
   const accountType = detectedAccountType || "buyer";
   const displayTitle = accountType === "creator" ? "Creator Dashboard" : "Buyer Dashboard";
   const userEmail = displayUser?.email;
@@ -148,7 +144,7 @@ export function CMSHeader() {
             </button>
             
             <Link
-              to={accountType === "creator" ? "/creators/home" : "/buyers/home"}
+              to={accountType === "creator" ? "/creators/home" : "/buyers/chat"}
               className="flex items-center"
               onClick={() => trackLogoClick('header', accountType as 'buyer' | 'creator')}
               data-track-button="true"

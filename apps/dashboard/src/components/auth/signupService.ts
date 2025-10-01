@@ -3,6 +3,9 @@ import { createBuyerProfileAtomic, createCreatorProfileAtomic } from '@/utils/at
 import { createOAuthBuyerProfile, createOAuthCreatorProfile } from '@/services/oauthProfileService';
 import type { BuyerFormData, CreatorFormData, AccountType } from './types';
 import { isBlockedEmail, normalizeCreatorRole } from './validation';
+import { sendWelcomeEmail } from '@/services/emailService';
+import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
+import { supabase } from '@/integrations/supabase/client';
 
 const resolveDashboardUrl = () => {
   const defaultProdUrl = 'https://dashboard.kstorybridge.com';
@@ -68,10 +71,37 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // Account type is now stored in database, no need for metadata updates
-      console.log('✅ Buyer account_type stored in database profile (no metadata update needed)');
+      // Metadata injection now handled by database trigger (bypasses session timeout issues)
+      console.log('✅ TESTING: Profile created successfully, metadata will be injected by database trigger');
 
-      return { success: true, user };
+      // Return success immediately, send notifications asynchronously in background
+      const userResult = { success: true, user };
+
+      // Send welcome email and Slack notification in background (non-blocking)
+      (async () => {
+        try {
+          await Promise.all([
+            sendWelcomeEmail({
+              userName: buyerData.full_name,
+              userEmail: user.email,
+              accountType: 'buyer',
+              dashboardUrl: `${window.location.origin}/buyers/chat`,
+              loginUrl: `${window.location.origin}/signin`
+            }),
+            notifyBuyerSignup({
+              fullName: buyerData.full_name,
+              email: user.email,
+              company: buyerData.buyer_company,
+              role: buyerData.buyer_role
+            })
+          ]);
+          console.log('✅ Welcome email and Slack notification sent for OAuth buyer (background)');
+        } catch (notificationError) {
+          console.error('⚠️ Failed to send notifications (non-blocking background):', notificationError);
+        }
+      })();
+
+      return userResult;
 
     } else {
       const creatorData = formData as CreatorFormData;
@@ -93,10 +123,38 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // Account type is now stored in database, no need for metadata updates
-      console.log('✅ Creator account_type stored in database profile (no metadata update needed)');
+      // Metadata injection now handled by database trigger (bypasses session timeout issues)
+      console.log('✅ TESTING: Creator profile created successfully, metadata will be injected by database trigger');
 
-      return { success: true, user };
+      // Return success immediately, send notifications asynchronously in background
+      const userResult = { success: true, user };
+
+      // Send welcome email and Slack notification in background (non-blocking)
+      (async () => {
+        try {
+          await Promise.all([
+            sendWelcomeEmail({
+              userName: creatorData.full_name,
+              userEmail: user.email,
+              accountType: 'creator',
+              dashboardUrl: `${window.location.origin}/creators/home`,
+              loginUrl: `${window.location.origin}/signin`
+            }),
+            notifyCreatorSignup({
+              fullName: creatorData.full_name,
+              email: user.email,
+              penName: creatorData.pen_name,
+              role: creatorData.ip_owner_role,
+              company: creatorData.ip_owner_company
+            })
+          ]);
+          console.log('✅ Welcome email and Slack notification sent for OAuth creator (background)');
+        } catch (notificationError) {
+          console.error('⚠️ Failed to send notifications (non-blocking background):', notificationError);
+        }
+      })();
+
+      return userResult;
     }
 
   } catch (error) {
@@ -156,11 +214,22 @@ export const signupBuyer = async (formData: BuyerFormData): Promise<SignupResult
       buyer_role: formData.buyer_role,
       linkedin_url: formData.linkedin_url || null,
       tier: formData.tier || 'basic',
-      requested: false,
-      account_type: 'buyer'
+      requested: false
     });
 
-    // Note: AuthService already handles notifications via createUserProfile
+    // Send Slack notification (welcome email will be sent after email verification)
+    try {
+      await notifyBuyerSignup({
+        fullName: formData.full_name,
+        email: formData.email,
+        company: formData.buyer_company,
+        role: formData.buyer_role
+      });
+      console.log('✅ Slack notification sent for email buyer signup (welcome email will be sent after verification)');
+    } catch (notificationError) {
+      console.error('⚠️ Failed to send notifications (non-blocking):', notificationError);
+    }
+
     return { success: true, user: result.user };
 
   } catch (error) {
@@ -220,11 +289,23 @@ export const signupCreator = async (formData: CreatorFormData): Promise<SignupRe
       ip_owner_role: normalizeCreatorRole(formData.ip_owner_role), // Role is now required
       ip_owner_company: formData.ip_owner_company,
       website_url: formData.website_url,
-      invitation_status: formData.invitation_status || 'invited',
-      account_type: 'creator'
+      invitation_status: formData.invitation_status || 'invited'
     });
 
-    // Note: AuthService already handles notifications via createUserProfile
+    // Send Slack notification (welcome email will be sent after email verification)
+    try {
+      await notifyCreatorSignup({
+        fullName: formData.full_name,
+        email: formData.email,
+        penName: formData.pen_name,
+        role: formData.ip_owner_role,
+        company: formData.ip_owner_company
+      });
+      console.log('✅ Slack notification sent for email creator signup (welcome email will be sent after verification)');
+    } catch (notificationError) {
+      console.error('⚠️ Failed to send notifications (non-blocking):', notificationError);
+    }
+
     return { success: true, user: result.user };
 
   } catch (error) {

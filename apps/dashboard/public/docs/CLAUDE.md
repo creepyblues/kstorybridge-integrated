@@ -712,6 +712,125 @@ import { Surface, Stack, Inline, EmptyState } from '@/components/design-system';
 - TitleDetail.tsx - PRO PLAN tier indicators
 - ProBadge.tsx - Reusable Pro/Suite tier badge component
 
+### Title Card Design Standards (NEW - 2025-01-30)
+
+**IMPORTANT**: All title cards across the dashboard MUST follow the standardized card design for visual consistency.
+
+**Standard Title Card Structure** (as seen in `/buyers/titles` Title Library):
+
+```tsx
+<Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+  <Link to={`/buyers/titles/${title.title_id}`}>
+    <CardContent className="p-0">
+      {/* Image Section - Full width, top of card */}
+      <div className="relative h-48 bg-gradient-to-br from-porcelain-blue-100 to-hanok-teal/10 overflow-hidden">
+        <img
+          src={title.title_image}
+          alt={title.title_name_en || title.title_name_kr}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        {/* Pitch badge overlay */}
+        {title.pitch && (
+          <div className="absolute top-3 right-3">
+            <span className="text-xs font-medium px-2 py-1 rounded-full shadow-lg text-white" style={{backgroundColor: '#FF6B6B'}}>
+              Pitch Available
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Content Section */}
+      <div className="p-4">
+        {/* Title */}
+        <h3 className="font-semibold text-lg text-midnight-ink mb-2 line-clamp-2 group-hover:text-hanok-teal transition-colors">
+          {title.title_name_en || title.title_name_kr}
+        </h3>
+
+        {/* Korean title (if both exist) */}
+        {title.title_name_en && title.title_name_kr && (
+          <p className="text-sm text-midnight-ink-600 mb-2 line-clamp-1">
+            {title.title_name_kr}
+          </p>
+        )}
+
+        {/* Badges - Genre, Format, Tone */}
+        <div className="flex flex-wrap gap-1 mb-3">
+          {/* Genre badges - Light gray */}
+          {title.genre && (
+            Array.isArray(title.genre) ? (
+              title.genre.map((g, idx) => (
+                <span key={idx} className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                  {formatGenre(g)}
+                </span>
+              ))
+            ) : (
+              <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                {formatGenre(title.genre)}
+              </span>
+            )
+          )}
+          {/* Content format badge - Purple */}
+          {title.content_format && (
+            <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+              {formatContentFormat(title.content_format)}
+            </span>
+          )}
+          {/* Tone badge - Emerald green */}
+          {title.tone && (
+            <span className="inline-block bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs">
+              {title.tone}
+            </span>
+          )}
+        </div>
+
+        {/* Synopsis */}
+        {title.synopsis && (
+          <p className="text-sm text-midnight-ink-600 line-clamp-3 leading-relaxed">
+            {title.synopsis}
+          </p>
+        )}
+      </div>
+    </CardContent>
+  </Link>
+</Card>
+```
+
+**Card Design Requirements**:
+- **Container**: Light background with `bg-white/80 backdrop-blur-sm`, no border (`border-0`)
+- **Hover Effects**: Shadow (`hover:shadow-xl`), transform (`hover:-translate-y-1`), image scale (`group-hover:scale-105`)
+- **Image**: Full width at top, fixed height `h-48`, gradient background fallback
+- **Layout**: Vertical card layout (image top, content below)
+- **Content Padding**: `p-4` for content section, `p-0` for CardContent wrapper
+- **Badge Colors**:
+  - Genre: `bg-gray-100 text-gray-700` (light gray)
+  - Content Format: `bg-purple-100 text-purple-800` (purple)
+  - Tone: `bg-emerald-100 text-emerald-800` (emerald green)
+- **Typography**:
+  - Title: `font-semibold text-lg text-midnight-ink` with hover effect `group-hover:text-hanok-teal`
+  - Korean title: `text-sm text-midnight-ink-600`
+  - Synopsis: `text-sm text-midnight-ink-600 line-clamp-3 leading-relaxed`
+
+**✅ DO:**
+- Use vertical card layout (image top, content below)
+- Show all genres as separate badges if multiple exist
+- Use standardized badge colors (gray for genre, purple for format, emerald for tone)
+- Include hover effects for interactivity
+- Show "Pitch Available" badge when pitch exists
+
+**❌ DON'T:**
+- Use horizontal layout (image on side)
+- Show only one genre when multiple exist
+- Use cyan or other badge colors for genres
+- Include stats (views, likes, ratings) on cards
+- Show author/illustrator/writer info on cards
+- Display tags on cards
+
+**Migrated Pages Using Standard Design**:
+- ✅ `/buyers/titles` (TitleList.tsx) - Title Library page
+- ✅ `/buyers/saved` (Favorites.tsx) - Saved Titles page
+
+**Reference Implementation**: See TitleList.tsx lines 736-820 for the authoritative card implementation.
+
 ### Page Layout Standards (UPDATED 2025-01-26 - CENTRALIZED SYSTEM)
 
 **IMPORTANT**: All pages MUST use the PageContainer component for consistent, centrally-controlled padding.

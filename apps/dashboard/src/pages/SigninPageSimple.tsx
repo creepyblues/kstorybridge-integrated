@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Button } from '@kstorybridge/ui';
 import { supabase } from '@/integrations/supabase/client';
+import { sendWelcomeEmail } from '@/services/emailService';
 import { X, Clock } from 'lucide-react';
 
 const SigninPageSimple = () => {
@@ -47,6 +48,54 @@ const SigninPageSimple = () => {
         accountType,
         metadata: user.user_metadata
       });
+
+      // Send welcome email after email verification (for email signups only)
+      if (accountType && user.email) {
+        try {
+          console.log('📧 EMAIL VERIFICATION: Sending welcome email after email verification');
+
+          if (accountType === 'buyer') {
+            // Get buyer profile data for welcome email
+            const { data: buyerProfile } = await supabase
+              .from('user_buyers')
+              .select('full_name')
+              .eq('id', user.id)
+              .maybeSingle();
+
+            if (buyerProfile?.full_name) {
+              await sendWelcomeEmail({
+                userName: buyerProfile.full_name,
+                userEmail: user.email,
+                accountType: 'buyer',
+                dashboardUrl: `${window.location.origin}/buyers/chat`,
+                loginUrl: `${window.location.origin}/signin`
+              });
+              console.log('✅ EMAIL VERIFICATION: Welcome email sent to verified buyer');
+            }
+          } else if (accountType === 'creator') {
+            // Get creator profile data for welcome email
+            const { data: creatorProfile } = await supabase
+              .from('user_creators')
+              .select('full_name')
+              .eq('id', user.id)
+              .maybeSingle();
+
+            if (creatorProfile?.full_name) {
+              await sendWelcomeEmail({
+                userName: creatorProfile.full_name,
+                userEmail: user.email,
+                accountType: 'creator',
+                dashboardUrl: `${window.location.origin}/creators/home`,
+                loginUrl: `${window.location.origin}/signin`
+              });
+              console.log('✅ EMAIL VERIFICATION: Welcome email sent to verified creator');
+            }
+          }
+        } catch (emailError) {
+          console.error('⚠️ EMAIL VERIFICATION: Failed to send welcome email (non-blocking):', emailError);
+          // Don't fail the verification flow for email issues
+        }
+      }
 
       if (accountType === 'buyer') {
         console.log('✅ EMAIL VERIFICATION: Redirecting to buyer signin');

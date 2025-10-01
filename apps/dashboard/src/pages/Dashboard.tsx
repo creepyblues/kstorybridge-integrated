@@ -1,15 +1,13 @@
 
 import { useAuth } from "@/hooks/useAuth";
-import { useDatabaseAccountType } from "@/hooks/useDatabaseAccountType";
+import { useAccountType } from "@/hooks/useAccountType";
 import BuyerDashboard from "./BuyerDashboard";
 import CreatorDashboard from "./CreatorDashboard";
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { accountType, loading } = useDatabaseAccountType({
-    user,
-    enableMetadataFallback: true,
-    debug: false
+  const { accountType, loading } = useAccountType({
+    user
   });
 
   // Show loading while determining account type

@@ -28,7 +28,7 @@ export default function Experiment() {
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Access Denied</h2>
             <p className="text-gray-600 mb-6">This page is only accessible to administrators.</p>
-            <Button onClick={() => navigate("/profile")} variant="outline">
+            <Button onClick={() => navigate("/buyers/profile")} variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Profile
             </Button>
@@ -108,7 +108,7 @@ export default function Experiment() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Button
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate("/buyers/profile")}
                   variant="outline"
                   size="sm"
                   className="border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"

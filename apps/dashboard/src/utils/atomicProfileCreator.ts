@@ -25,7 +25,6 @@ export interface BuyerProfileData {
   linkedin_url?: string | null;
   tier?: 'basic' | 'invited' | 'pro' | 'suite';
   requested?: boolean;
-  account_type?: 'buyer';
 }
 
 export interface CreatorProfileData {
@@ -37,7 +36,6 @@ export interface CreatorProfileData {
   ip_owner_company?: string | null;
   website_url?: string | null;
   invitation_status?: string;
-  account_type?: 'creator';
 }
 
 export interface ProfileCreationResult {
@@ -226,7 +224,6 @@ async function createBuyerProfileOperation(
         ...profileData,
         tier: profileData.tier || 'basic',
         linkedin_url: profileData.linkedin_url || null,
-        account_type: 'buyer' as const,
         created_at: new Date().toISOString()
       };
       
@@ -447,7 +444,6 @@ async function createCreatorProfileOperation(
       const safeProfileData = {
         ...profileData,
         invitation_status: profileData.invitation_status || 'invited',
-        account_type: 'creator' as const,
         created_at: new Date().toISOString()
       };
       

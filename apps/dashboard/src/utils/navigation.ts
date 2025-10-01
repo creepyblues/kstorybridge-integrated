@@ -15,7 +15,7 @@ export const getProfilePath = (accountType: AccountType): string => {
  * Get the correct home path based on account type
  */
 export const getHomePath = (accountType: AccountType): string => {
-  return accountType === 'creator' ? '/creators/home' : '/buyers/home';
+  return accountType === 'creator' ? '/creators/home' : '/buyers/chat';
 };
 
 /**

@@ -13,7 +13,7 @@ import { Users, Sparkles } from "lucide-react";
 import PasswordResetModal from "@/components/PasswordResetModal";
 import { Surface, Stack, Inline } from "@/components/design-system";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { OnboardingModal, OnboardingFlow } from "@/components/onboarding";
+import { OnboardingModal, OnboardingFlowInteractive } from "@/components/onboarding";
 
 // Define types for the actual table structures
 type BuyerProfile = {
@@ -1073,7 +1073,7 @@ export default function Profile() {
         onStart={handleStartOnboarding}
         onSkip={handleSkipOnboarding}
       />
-      <OnboardingFlow
+      <OnboardingFlowInteractive
         open={showOnboardingFlow}
         onComplete={handleCompleteOnboarding}
         onSkip={handleSkipOnboarding}

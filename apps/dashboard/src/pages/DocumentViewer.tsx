@@ -181,10 +181,10 @@ export default function DocumentViewer() {
       const languageLabel = language ? `<span class="text-xs text-gray-500 mb-2 block uppercase font-semibold">${language}</span>` : '';
 
       return `
-        <div class="relative bg-gray-900 rounded-lg p-4 mb-6 overflow-hidden">
+        <div class="code-block-container bg-gray-900 rounded-lg p-4 mb-6 relative">
           ${languageLabel}
-          <pre class="text-sm text-gray-100 overflow-x-auto"><code class="${languageClass}">${escapedCode}</code></pre>
-          <button class="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors" onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`')}\`)">
+          <pre class="code-block-pre text-sm text-gray-100"><code class="${languageClass}">${escapedCode}</code></pre>
+          <button class="copy-button absolute top-2 right-2 text-gray-400 hover:text-white transition-colors" onclick="navigator.clipboard.writeText(${JSON.stringify(code)})">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
             </svg>
@@ -333,8 +333,8 @@ export default function DocumentViewer() {
         let formattedContent = content;
         formattedContent = formattedContent.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>');
         formattedContent = formattedContent.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>');
-        formattedContent = formattedContent.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
-        formattedContent = formattedContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline">$1</a>');
+        formattedContent = formattedContent.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono break-all">$1</code>');
+        formattedContent = formattedContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline break-all">$1</a>');
 
         processedLines.push(`<li class="mb-1">${formattedContent}</li>`);
         continue;
@@ -352,8 +352,8 @@ export default function DocumentViewer() {
         formattedLine = formattedLine.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>');
         formattedLine = formattedLine.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em class="italic">$1</em>');
         formattedLine = formattedLine.replace(/~~(.+?)~~/g, '<del class="line-through">$1</del>');
-        formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
-        formattedLine = formattedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline transition-colors">$1</a>');
+        formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono break-all">$1</code>');
+        formattedLine = formattedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:text-blue-800 underline transition-colors break-all">$1</a>');
 
         processedLines.push(`<p class="mb-4 text-gray-700 leading-relaxed">${formattedLine}</p>`);
       } else {
@@ -428,6 +428,73 @@ export default function DocumentViewer() {
 
   return (
     <PageContainer>
+      <style>{`
+        /* CRITICAL: Code block containment - override all other styles */
+        .markdown-content .code-block-container {
+          max-height: 250px !important;
+          overflow: hidden !important;
+          position: relative !important;
+          max-width: 100% !important;
+          display: block !important;
+          box-sizing: border-box !important;
+        }
+
+        .markdown-content .code-block-pre {
+          max-height: 220px !important;
+          overflow: auto !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          max-width: 100% !important;
+          white-space: pre-wrap !important;
+          word-wrap: break-word !important;
+          word-break: break-all !important;
+          display: block !important;
+          box-sizing: border-box !important;
+        }
+
+        .markdown-content .code-block-pre code {
+          max-width: 100% !important;
+          display: block !important;
+          white-space: pre-wrap !important;
+          word-break: break-all !important;
+          overflow-wrap: break-word !important;
+          box-sizing: border-box !important;
+        }
+
+        .markdown-content .copy-button {
+          z-index: 999 !important;
+          position: absolute !important;
+          top: 8px !important;
+          right: 8px !important;
+        }
+
+        /* Override prose styles specifically */
+        .prose .code-block-container,
+        .prose .code-block-pre,
+        .prose .code-block-pre code {
+          max-height: 250px !important;
+          overflow: auto !important;
+          white-space: pre-wrap !important;
+          word-break: break-all !important;
+        }
+
+        /* Custom scrollbar */
+        .code-block-pre::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .code-block-pre::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 3px;
+        }
+        .code-block-pre::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 3px;
+        }
+        .code-block-pre::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -506,7 +573,14 @@ export default function DocumentViewer() {
                   className="markdown-content prose prose-gray max-w-none"
                   style={{
                     fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
-                    lineHeight: '1.7'
+                    lineHeight: '1.7',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    contain: 'layout style',
+                    isolation: 'isolate',
+                    maxWidth: '100%'
                   }}
                   dangerouslySetInnerHTML={{ __html: formatMarkdown(content) }}
                 />

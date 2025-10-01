@@ -5,6 +5,7 @@ import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { isInOAuthFlow } from '@/utils/oauthFlowDetection';
 import { trackSignupError, trackValidationError, trackProfileCreationError } from '@/services/authErrorTracking';
 
 import type { AccountType, BuyerFormData, CreatorFormData, SignupState } from './types';
@@ -145,19 +146,51 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
             return;
           }
 
-          // Complete OAuth profile with timeout
+          // Complete OAuth profile - improved handling for false timeouts
           console.log('🔄 Starting OAuth profile completion...');
 
-          const profilePromise = completeOAuthProfile(accountType, buyerFormData, user);
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Profile creation timeout after 30 seconds')), 30000)
-          );
-
-          let result;
           try {
-            result = await Promise.race([profilePromise, timeoutPromise]);
+            const result = await completeOAuthProfile(accountType, buyerFormData, user);
+
+            if (!result.success) {
+              console.error('❌ OAuth profile completion failed:', result.error);
+
+              // Track profile creation failure
+              await trackProfileCreationError(
+                new Error(result.error || 'Profile creation failed'),
+                buyerFormData.email || user.email || '',
+                'buyer',
+                {
+                  fullName: buyerFormData.full_name,
+                  company: buyerFormData.buyer_company,
+                  oauthProvider: 'google',
+                  profileExists: false
+                }
+              );
+
+              toast({
+                title: "Profile Creation Failed",
+                description: result.error || "Failed to create buyer profile. Please try signing in or contact support.",
+                variant: "destructive"
+              });
+              return;
+            }
+
+            // Profile creation succeeded - show success immediately
+            console.log('✅ OAuth profile completion succeeded');
+
+            toast({
+              title: "Profile Created!",
+              description: "Welcome to KStoryBridge! Your buyer profile has been set up.",
+              variant: "default"
+            });
+
+            navigate('/buyers/chat');
+            return;
+
           } catch (error) {
-            console.error('❌ OAuth profile completion failed or timed out:', error);
+            // Only catch actual errors, not timeout races
+            console.error('❌ OAuth profile completion error:', error);
 
             // Track profile creation error
             await trackProfileCreationError(
@@ -191,41 +224,6 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
             return;
           }
 
-          if (!result.success) {
-            console.error('❌ OAuth profile completion failed:', result.error);
-
-            // Track profile creation failure
-            await trackProfileCreationError(
-              new Error(result.error || 'Profile creation failed'),
-              buyerFormData.email || user.email || '',
-              'buyer',
-              {
-                fullName: buyerFormData.full_name,
-                company: buyerFormData.buyer_company,
-                oauthProvider: 'google',
-                profileExists: false
-              }
-            );
-
-            toast({
-              title: "Profile Creation Failed",
-              description: result.error || "Failed to create buyer profile. Please try signing in or contact support.",
-              variant: "destructive"
-            });
-            return;
-          }
-
-          console.log('✅ OAuth profile completion succeeded');
-
-          toast({
-            title: "Profile Created!",
-            description: "Welcome to KStoryBridge! Your buyer profile has been set up.",
-            variant: "default"
-          });
-
-          navigate('/buyers/home');
-          return;
-
         } else {
           // Creator OAuth completion
           if (!creatorFormData.full_name || !creatorFormData.pen_name || !creatorFormData.ip_owner_role) {
@@ -243,25 +241,51 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
             return;
           }
 
-          // Complete OAuth profile
-          const result = await completeOAuthProfile(accountType, creatorFormData, user);
-          if (!result.success) {
+          // Complete OAuth creator profile - improved handling for false timeouts
+          console.log('🔄 Starting creator OAuth profile completion...');
+
+          try {
+            const result = await completeOAuthProfile(accountType, creatorFormData, user);
+
+            if (!result.success) {
+              console.error('❌ Creator OAuth profile completion failed:', result.error);
+
+              toast({
+                title: "Profile Creation Failed",
+                description: result.error || "Failed to create creator profile. Please try signing in or contact support.",
+                variant: "destructive"
+              });
+              return;
+            }
+
+            // Profile creation succeeded - show success immediately
+            console.log('✅ Creator OAuth profile completion succeeded');
+
             toast({
-              title: "Profile Creation Failed",
-              description: result.error || "Failed to create profile",
-              variant: "destructive"
+              title: "Profile Created!",
+              description: "Welcome to KStoryBridge! Your creator profile has been set up.",
+              variant: "default"
             });
+
+            navigate('/creators/home');
+            return;
+
+          } catch (error) {
+            // Only catch actual errors, not timeout races
+            console.error('❌ Creator OAuth profile completion error:', error);
+
+            toast({
+              title: "Profile Setup Issue",
+              description: "Your Google account was created successfully! Please use the Sign In button below to complete your profile setup.",
+              variant: "default"
+            });
+
+            // Redirect to signin as fallback
+            const emailParam = encodeURIComponent(user.email || '');
+            console.log('🔄 Redirecting to signin with prefilled email:', user.email);
+            navigate(`/signin?email=${emailParam}&oauth_recovery=true`);
             return;
           }
-
-          toast({
-            title: "Profile Created!",
-            description: "Welcome to KStoryBridge! Your creator profile has been set up.",
-            variant: "default"
-          });
-
-          navigate('/creators/home');
-          return;
         }
       }
 

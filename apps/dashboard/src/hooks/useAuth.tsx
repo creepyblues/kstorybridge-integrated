@@ -5,6 +5,7 @@ import { sendWelcomeEmail } from "@/services/emailService";
 import { initializeSessionFromUrl, getCurrentSession, performSessionHealthCheck } from "@/utils/sessionManager";
 import { setDirectApiAccessToken } from "@/services/directApiService";
 import { pageReloadOptimizer } from "@/utils/pageReloadOptimizer";
+import { chatHistoryService } from "@/services/chatHistoryService";
 
 interface AuthContextType {
   user: User | null;
@@ -77,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userName: buyerProfile.full_name,
           userEmail: user.email!,
           accountType: 'buyer',
-          dashboardUrl: window.location.origin + '/buyers/home',
+          dashboardUrl: window.location.origin + '/buyers/chat',
           loginUrl: window.location.origin + '/signin'
         });
 
@@ -430,6 +431,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem(key);
         }
       });
+
+      // Cleanup chat sessions for this user (invalidate old sessions)
+      if (user?.id) {
+        chatHistoryService.invalidateOldSessions(user.id)
+          .then(count => {
+            if (count > 0) {
+              console.log(`🧹 Invalidated ${count} chat sessions on logout`);
+            }
+          })
+          .catch(error => {
+            console.warn('⚠️ Chat session cleanup failed (non-critical):', error);
+          });
+      }
 
       console.log('🧹 Local auth cleanup completed immediately');
 

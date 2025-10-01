@@ -6,6 +6,7 @@ import { Button, Card, CardContent } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";import { titlesService, type Title } from "@/services/titlesService";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useAccountType } from "@/hooks/useAccountType";
 import { useSessionCache } from "@/hooks/useSessionCache";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
@@ -20,6 +21,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 function TitleListContent() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { accountType } = useAccountType();
   const location = useLocation();
   const {
     getCreatorTitles,
@@ -228,7 +230,7 @@ function TitleListContent() {
           'titles_page',
           resultCount,
           searchSuggestions,
-          user?.user_metadata?.account_type
+          accountType
         );
       } catch (error) {
         console.warn('Failed to track search:', error);
@@ -289,7 +291,7 @@ function TitleListContent() {
     setShowSuggestions(false);
 
     // Track suggestion usage
-    trackContentDiscoveryAction('search', `suggestion: ${suggestion}`, user?.user_metadata?.account_type, {
+    trackContentDiscoveryAction('search', `suggestion: ${suggestion}`, accountType, {
       suggestion_used: suggestion,
       original_query: searchQuery,
       suggestion_position: searchSuggestions.indexOf(suggestion)
@@ -318,7 +320,7 @@ function TitleListContent() {
     }
 
     // Track sort action
-    trackContentDiscoveryAction('sort', `${field} ${newDirection}`, user?.user_metadata?.account_type, {
+    trackContentDiscoveryAction('sort', `${field} ${newDirection}`, accountType, {
       sort_field: field,
       sort_direction: newDirection,
       previous_field: sortField,
@@ -536,7 +538,7 @@ function TitleListContent() {
                 <Button
                   onClick={() => {
                     handleRefresh();
-                    trackContentDiscoveryAction('filter', 'Refresh', user?.user_metadata?.account_type, {
+                    trackContentDiscoveryAction('filter', 'Refresh', accountType, {
                       current_view: viewMode,
                       search_active: searchTerm.length > 0
                     });
@@ -558,7 +560,7 @@ function TitleListContent() {
                 <button
                   onClick={() => {
                     setViewMode('card');
-                    trackContentDiscoveryAction('view_toggle', 'Card View', user?.user_metadata?.account_type, {
+                    trackContentDiscoveryAction('view_toggle', 'Card View', accountType, {
                       from_view: viewMode,
                       to_view: 'card'
                     });
@@ -578,7 +580,7 @@ function TitleListContent() {
                 <button
                   onClick={() => {
                     setViewMode('list');
-                    trackContentDiscoveryAction('view_toggle', 'List View', user?.user_metadata?.account_type, {
+                    trackContentDiscoveryAction('view_toggle', 'List View', accountType, {
                       from_view: viewMode,
                       to_view: 'list'
                     });
@@ -741,7 +743,7 @@ function TitleListContent() {
                             title.title_name_en || title.title_name_kr,
                             'card_click',
                             searchTerm ? 'search' : 'browse',
-                            user?.user_metadata?.account_type
+                            accountType
                           )}
                           data-track-button="true"
                           data-button-id={`title-card-${title.title_id}`}
@@ -898,7 +900,7 @@ function TitleListContent() {
                         title.title_name_en || title.title_name_kr,
                         'title_link',
                         searchTerm ? 'search' : 'browse',
-                        user?.user_metadata?.account_type
+                        accountType
                       )}
                       data-track-button="true"
                       data-button-id={`title-list-${title.title_id}`}

@@ -1,4 +1,5 @@
 import { authService } from './AuthService';
+import { shouldBypassLegacySystems } from '@/utils/oauthFlowDetection';
 import type { Session, User } from '@supabase/supabase-js';
 
 export interface SessionState {
@@ -43,6 +44,26 @@ export class SessionService {
    * Initialize session on startup
    */
   private async initializeSession(): Promise<void> {
+    // Skip SessionService initialization during OAuth callback to prevent timeout conflicts
+    if (shouldBypassLegacySystems()) {
+      console.log('🔄 OAuth flow detected - deferring SessionService initialization');
+      this.updateSessionState({
+        session: null,
+        user: null,
+        loading: false,
+        isAuthenticated: false
+      });
+
+      // Set up auth state change listener but don't fetch session immediately
+      authService.onAuthStateChange((event, session) => {
+        this.handleAuthStateChange(event, session);
+      });
+
+      // Defer actual initialization until OAuth flow completes
+      setTimeout(() => this.reinitializeAfterOAuth(), 5000);
+      return;
+    }
+
     try {
       const [session, user] = await Promise.all([
         authService.getCurrentSession(),
@@ -69,6 +90,36 @@ export class SessionService {
         loading: false,
         isAuthenticated: false
       });
+    }
+  }
+
+  /**
+   * Reinitialize session after OAuth flow completes
+   */
+  private async reinitializeAfterOAuth(): Promise<void> {
+    // Only reinitialize if we still don't have session data and OAuth flow has completed
+    if (this.sessionState.session || shouldBypassLegacySystems()) {
+      return;
+    }
+
+    console.log('🔄 Reinitializing SessionService after OAuth completion');
+
+    try {
+      const [session, user] = await Promise.all([
+        authService.getCurrentSession(),
+        authService.getCurrentUser()
+      ]);
+
+      this.updateSessionState({
+        session,
+        user,
+        loading: false,
+        isAuthenticated: !!user && !!session
+      });
+
+      console.log('✅ SessionService reinitialized successfully');
+    } catch (error) {
+      console.error('SessionService reinitialization failed:', error);
     }
   }
 

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { determineAccountType } from "@/utils/simpleAccountTypeService";
+import { getAccountType } from "@/hooks/useAccountType";
 
 export const debugProfile = async () => {
   console.log("=== Account Profile Debug Utility ===");
@@ -45,12 +45,13 @@ export const debugProfile = async () => {
   // 3. Use centralized account type detection
   try {
     console.log("🔍 Running account type detection...");
-    const accountTypeResult = await determineAccountType({
-      includeDatabaseLookup: true,
-      debug: true
-    });
+    const accountType = getAccountType(user, new URLSearchParams(window.location.search));
 
-    console.log("📊 Account type detection result:", accountTypeResult);
+    console.log("📊 Account type detection result:", {
+      accountType,
+      source: 'metadata_first',
+      confidence: 'high'
+    });
   } catch (error) {
     console.error("❌ Account type detection failed:", error);
   }

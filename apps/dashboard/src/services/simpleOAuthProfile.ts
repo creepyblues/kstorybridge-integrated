@@ -69,6 +69,86 @@ async function waitForValidSession(maxAttempts = 60, initialDelay = 500): Promis
 }
 
 /**
+ * Helper function to call edge function with a session for buyers
+ */
+async function callEdgeFunction(session: any, profileData: any): Promise<SimpleProfileResult | null> {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
+    const response = await fetch(`${supabaseUrl}/functions/v1/create-oauth-profile`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        account_type: 'buyer',
+        user_id: profileData.id,
+        profile_data: profileData
+      })
+    });
+
+    console.log('📡 Edge function called, awaiting response...');
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('❌ Edge function failed:', result);
+      throw new Error(result.error || 'Edge function call failed');
+    }
+
+    console.log('✅ EDGE FUNCTION SUCCESS: Buyer profile created successfully via edge function!');
+    console.log('🎉 OAUTH COMPLETE: Profile creation completed server-side');
+    return {
+      success: true,
+      profile: result.profile,
+      userExists: result.userExists || false
+    };
+  } catch (error) {
+    console.error('❌ Edge function call failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Helper function to call edge function with a session for creators
+ */
+async function callCreatorEdgeFunction(session: any, profileData: any): Promise<SimpleProfileResult | null> {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
+    const response = await fetch(`${supabaseUrl}/functions/v1/create-oauth-profile`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        account_type: 'creator',
+        user_id: profileData.id,
+        profile_data: profileData
+      })
+    });
+
+    console.log('📡 Creator edge function called, awaiting response...');
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('❌ Creator edge function failed:', result);
+      throw new Error(result.error || 'Creator edge function call failed');
+    }
+
+    console.log('✅ EDGE FUNCTION SUCCESS: Creator profile created successfully via edge function!');
+    console.log('🎉 OAUTH COMPLETE: Creator profile creation completed server-side');
+    return {
+      success: true,
+      profile: result.profile,
+      userExists: result.userExists || false
+    };
+  } catch (error) {
+    console.error('❌ Creator edge function call failed:', error);
+    return null;
+  }
+}
+
+/**
  * Simple buyer profile creation for OAuth users
  * Focuses on working around getSession timeouts
  */
@@ -89,50 +169,34 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
     try {
       console.log('🚀 EDGE FUNCTION: Attempting buyer profile creation via edge function');
 
-      // Wait for valid session to get access token
-      console.log('⏳ Waiting for valid session to get access token...');
-      const session = await waitForValidSession();
+      // Get current session directly (OAuth should already be established)
+      console.log('⏳ Getting current session for edge function call...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      if (!session) {
-        console.error('❌ Failed to establish valid session for edge function call');
-        return {
-          success: false,
-          error: 'Session establishment failed. Please try signing in again.'
-        };
+      if (sessionError || !session) {
+        console.warn('⚠️ No current session found, falling back to session polling...');
+        const polledSession = await waitForValidSession();
+
+        if (!polledSession) {
+          console.error('❌ Failed to establish valid session for edge function call');
+          return {
+            success: false,
+            error: 'Session establishment failed. Please try signing in again.'
+          };
+        }
+
+        // Use polled session
+        const edgeResult = await callEdgeFunction(polledSession, profileData);
+        if (edgeResult) return edgeResult;
+      } else {
+        // Use current session directly
+        console.log('✅ Found current session, proceeding with edge function call');
+        const edgeResult = await callEdgeFunction(session, profileData);
+        if (edgeResult) return edgeResult;
       }
 
-      // Call the unified OAuth profile creation edge function
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
-      const response = await fetch(`${supabaseUrl}/functions/v1/create-oauth-profile`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          account_type: 'buyer',
-          user_id: profileData.id,
-          profile_data: profileData
-        })
-      });
-
-      console.log('📡 Edge function called, awaiting response...');
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error('❌ Edge function failed:', result);
-        throw new Error(result.error || 'Edge function call failed');
-      }
-
-      console.log('✅ EDGE FUNCTION SUCCESS: Buyer profile created successfully via edge function!');
-      console.log('🎉 OAUTH COMPLETE: Profile creation completed server-side');
-      return {
-        success: true,
-        profile: result.profile,
-        userExists: result.userExists || false
-      };
     } catch (edgeError) {
-      console.error('❌ Edge function failed, falling back to session polling:', edgeError);
+      console.error('❌ Edge function approach failed:', edgeError);
       // Fall through to session polling approach
     }
 
@@ -232,46 +296,36 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
   try {
     // 🔧 EDGE FUNCTION APPROACH: Use server-side edge function for reliable profile creation
     try {
-      // Wait for valid session to get access token
-      const session = await waitForValidSession();
+      console.log('🚀 EDGE FUNCTION: Attempting creator profile creation via edge function');
 
-      if (!session) {
-        console.error('❌ Failed to establish valid session for edge function call');
-        return {
-          success: false,
-          error: 'Session establishment failed. Please try signing in again.'
-        };
+      // Get current session directly (OAuth should already be established)
+      console.log('⏳ Getting current session for creator edge function call...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        console.warn('⚠️ No current session found, falling back to session polling...');
+        const polledSession = await waitForValidSession();
+
+        if (!polledSession) {
+          console.error('❌ Failed to establish valid session for creator edge function call');
+          return {
+            success: false,
+            error: 'Session establishment failed. Please try signing in again.'
+          };
+        }
+
+        // Use polled session
+        const edgeResult = await callCreatorEdgeFunction(polledSession, profileData);
+        if (edgeResult) return edgeResult;
+      } else {
+        // Use current session directly
+        console.log('✅ Found current session, proceeding with creator edge function call');
+        const edgeResult = await callCreatorEdgeFunction(session, profileData);
+        if (edgeResult) return edgeResult;
       }
 
-      // Call the unified OAuth profile creation edge function
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
-      const response = await fetch(`${supabaseUrl}/functions/v1/create-oauth-profile`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          account_type: 'creator',
-          user_id: profileData.id,
-          profile_data: profileData
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error('❌ Edge function failed:', result);
-        throw new Error(result.error || 'Edge function call failed');
-      }
-
-      return {
-        success: true,
-        profile: result.profile,
-        userExists: result.userExists || false
-      };
     } catch (edgeError) {
-      console.error('❌ Edge function failed, falling back to session polling:', edgeError);
+      console.error('❌ Creator edge function approach failed:', edgeError);
       // Fall through to session polling approach
     }
 

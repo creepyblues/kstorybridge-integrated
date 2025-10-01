@@ -83,9 +83,14 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
   requested?: boolean;
 }): Promise<SimpleProfileResult> {
   try {
+    console.log('🚀 Starting OAuth buyer profile creation for', profileData.email);
+
     // 🔧 EDGE FUNCTION APPROACH: Use server-side edge function for reliable profile creation
     try {
+      console.log('🚀 EDGE FUNCTION: Attempting buyer profile creation via edge function');
+
       // Wait for valid session to get access token
+      console.log('⏳ Waiting for valid session to get access token...');
       const session = await waitForValidSession();
 
       if (!session) {
@@ -111,6 +116,7 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
         })
       });
 
+      console.log('📡 Edge function called, awaiting response...');
       const result = await response.json();
 
       if (!response.ok) {
@@ -118,6 +124,8 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
         throw new Error(result.error || 'Edge function call failed');
       }
 
+      console.log('✅ EDGE FUNCTION SUCCESS: Buyer profile created successfully via edge function!');
+      console.log('🎉 OAUTH COMPLETE: Profile creation completed server-side');
       return {
         success: true,
         profile: result.profile,

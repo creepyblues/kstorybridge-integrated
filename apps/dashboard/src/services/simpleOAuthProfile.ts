@@ -101,17 +101,23 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
       console.log('⚡ Skipping session polling - service role key available');
 
       try {
+        console.log('🔧 SERVICE ROLE: Importing service client module...');
         const { createBuyerProfileWithServiceRole } = await import('@/integrations/supabase/serviceClient');
+
+        console.log('🔧 SERVICE ROLE: Calling createBuyerProfileWithServiceRole...');
         const serviceProfile = await createBuyerProfileWithServiceRole(profileData);
 
-        console.log('✅ Service role profile creation successful');
+        console.log('✅ SERVICE ROLE SUCCESS: Buyer profile created successfully via service role!');
+        console.log('🎉 OAUTH COMPLETE: Profile creation bypassed session polling entirely');
         return {
           success: true,
           profile: serviceProfile,
           userExists: false
         };
       } catch (serviceError) {
-        console.warn('⚠️ Service role creation failed, falling back to session polling:', serviceError);
+        console.error('❌ SERVICE ROLE FAILED: Profile creation via service role failed');
+        console.error('🔧 SERVICE ROLE ERROR:', serviceError);
+        console.warn('⚠️ FALLBACK: Falling back to session polling approach...');
         // Fall through to session polling approach
       }
     }
@@ -232,17 +238,23 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
       console.log('⚡ Skipping session polling - service role key available');
 
       try {
+        console.log('🔧 SERVICE ROLE: Importing service client module for creator...');
         const { createCreatorProfileWithServiceRole } = await import('@/integrations/supabase/serviceClient');
+
+        console.log('🔧 SERVICE ROLE: Calling createCreatorProfileWithServiceRole...');
         const serviceProfile = await createCreatorProfileWithServiceRole(profileData);
 
-        console.log('✅ Service role creator profile creation successful');
+        console.log('✅ SERVICE ROLE SUCCESS: Creator profile created successfully via service role!');
+        console.log('🎉 OAUTH COMPLETE: Creator profile creation bypassed session polling entirely');
         return {
           success: true,
           profile: serviceProfile,
           userExists: false
         };
       } catch (serviceError) {
-        console.warn('⚠️ Service role creator creation failed, falling back to session polling:', serviceError);
+        console.error('❌ SERVICE ROLE FAILED: Creator profile creation via service role failed');
+        console.error('🔧 SERVICE ROLE ERROR:', serviceError);
+        console.warn('⚠️ FALLBACK: Falling back to session polling approach...');
         // Fall through to session polling approach
       }
     }

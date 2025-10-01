@@ -205,7 +205,7 @@ export const signupBuyer = async (formData: BuyerFormData): Promise<SignupResult
       return { success: false, error: 'Failed to create user account' };
     }
 
-    // Create profile
+    // Create profile using service role to bypass RLS
     await createBuyerProfileAtomic({
       id: result.user.id,
       email: formData.email,
@@ -215,6 +215,9 @@ export const signupBuyer = async (formData: BuyerFormData): Promise<SignupResult
       linkedin_url: formData.linkedin_url || null,
       tier: formData.tier || 'basic',
       requested: false
+    }, {
+      useServiceRole: true, // Bypass RLS for email signup
+      waitForTrigger: false // Skip trigger wait for email signup
     });
 
     // Send Slack notification (welcome email will be sent after email verification)

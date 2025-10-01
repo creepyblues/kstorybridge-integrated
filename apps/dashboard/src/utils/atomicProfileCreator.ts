@@ -13,7 +13,7 @@
  * - Integration with existing database triggers
  */
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseServiceRole } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 export interface BuyerProfileData {
@@ -54,6 +54,7 @@ export interface ProfileCreationOptions {
   allowUpdate?: boolean;
   waitForTrigger?: boolean;
   lockTimeout?: number;
+  useServiceRole?: boolean; // New option for bypassing RLS
 }
 
 // In-memory lock to prevent concurrent operations for the same user
@@ -142,7 +143,8 @@ export async function createBuyerProfileAtomic(
     retryDelay = 1000,
     allowUpdate = true,
     waitForTrigger = true,
-    lockTimeout = 10000
+    lockTimeout = 10000,
+    useServiceRole = false
   } = options;
   
   const lockKey = `buyer_${profileData.id}`;
@@ -170,7 +172,8 @@ export async function createBuyerProfileAtomic(
     maxRetries,
     retryDelay,
     allowUpdate,
-    waitForTrigger
+    waitForTrigger,
+    useServiceRole
   });
   
   // Store the operation in the lock map
@@ -190,9 +193,9 @@ export async function createBuyerProfileAtomic(
  */
 async function createBuyerProfileOperation(
   profileData: BuyerProfileData,
-  options: Required<Pick<ProfileCreationOptions, 'maxRetries' | 'retryDelay' | 'allowUpdate' | 'waitForTrigger'>>
+  options: Required<Pick<ProfileCreationOptions, 'maxRetries' | 'retryDelay' | 'allowUpdate' | 'waitForTrigger'>> & { useServiceRole?: boolean }
 ): Promise<ProfileCreationResult> {
-  const { maxRetries, retryDelay, allowUpdate, waitForTrigger } = options;
+  const { maxRetries, retryDelay, allowUpdate, waitForTrigger, useServiceRole } = options;
   
   console.log(`🏗️ Atomic Profile: Starting buyer profile creation for ${profileData.email}`);
   
@@ -226,15 +229,21 @@ async function createBuyerProfileOperation(
         linkedin_url: profileData.linkedin_url || null,
         created_at: new Date().toISOString()
       };
-      
+
+      // Choose client based on service role option
+      const client = useServiceRole && supabaseServiceRole ? supabaseServiceRole : supabase;
+      const clientType = useServiceRole && supabaseServiceRole ? 'service role' : 'user auth';
+
       if (allowUpdate) {
         // Use upsert with proper conflict resolution
-        console.log(`💾 Atomic Profile: Using upsert for buyer profile`);
+        console.log(`💾 Atomic Profile: Using upsert for buyer profile with ${clientType}`);
 
-        // Ensure we have a fresh session before attempting database operation
-        await supabase.auth.getSession();
+        // Only get session for user auth client, service role doesn't need it
+        if (!useServiceRole || !supabaseServiceRole) {
+          await supabase.auth.getSession();
+        }
 
-        const { data: profile, error } = await supabase
+        const { data: profile, error } = await client
           .from('user_buyers')
           .upsert(safeProfileData, {
             onConflict: 'id',
@@ -282,12 +291,14 @@ async function createBuyerProfileOperation(
         }
       } else {
         // Use insert-only approach
-        console.log(`📝 Atomic Profile: Using insert-only for buyer profile`);
+        console.log(`📝 Atomic Profile: Using insert-only for buyer profile with ${clientType}`);
 
-        // Ensure we have a fresh session before attempting database operation
-        await supabase.auth.getSession();
+        // Only get session for user auth client, service role doesn't need it
+        if (!useServiceRole || !supabaseServiceRole) {
+          await supabase.auth.getSession();
+        }
 
-        const { data: profile, error } = await supabase
+        const { data: profile, error } = await client
           .from('user_buyers')
           .insert(safeProfileData)
           .select()

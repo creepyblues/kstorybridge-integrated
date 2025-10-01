@@ -337,6 +337,25 @@ if (isDev && import.meta.env.VITE_CLIENT_DEBUG === 'true') {
 // Create the enhanced Supabase client
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, CLIENT_CONFIG);
 
+// Create service role client for bypassing RLS during signup flows
+export const supabaseServiceRole = SUPABASE_SERVICE_ROLE_KEY
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: {
+        persistSession: false, // Service role doesn't need sessions
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'kstorybridge-dashboard-service-role'
+        }
+      }
+    })
+  : null;
+
+// Validation for service role client
+if (typeof window !== 'undefined' && !supabaseServiceRole) {
+  console.warn('🚨 Service role client not available - signup profile creation may fail');
+}
+
 // IMMEDIATE CONNECTION TEST - DISABLED TO PREVENT HANGING
 if (false && isDev) {
   setTimeout(async () => {

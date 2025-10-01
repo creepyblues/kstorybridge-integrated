@@ -497,6 +497,7 @@ supabase.auth.getSession = async () => {
 
   try {
     // Context-aware timeout: OAuth callbacks need more time for PKCE exchange in production
+    // DEPLOYMENT FIX: Force deployment to activate 25s OAuth timeout (was stuck at 12s in prod)
     const timeoutMs = isCallback ? 25000 : 12000; // Production-optimized: OAuth 25s, regular 12s
 
     const result = await withRetry(() => originalGetSession(), {

@@ -85,7 +85,8 @@ const CLIENT_CONFIG = {
   // Global configuration
   global: {
     headers: {
-      'X-Client-Info': 'kstorybridge-dashboard'
+      'X-Client-Info': 'kstorybridge-dashboard',
+      'Accept': 'application/json'
     }
   },
   

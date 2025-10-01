@@ -172,7 +172,7 @@ export async function withRetry<T>(
     maxDelay = 20000, // Increased from 12000 to 20000 for high-latency production networks
     retryCondition = isNetworkError,
     operationName = 'Supabase operation',
-    timeoutMs = 15000 // Increased from 8000 to 15000 to handle production database latency
+    timeoutMs = 60000 // Increased from 15000 to 60000 to handle production database latency and eliminate timeout failures
   } = options;
 
   let lastError: any;
@@ -630,7 +630,7 @@ supabase.auth.getSession = async () => {
   try {
     // Context-aware timeout: OAuth callbacks AND OAuth completion need more time for session operations
     // PRODUCTION FIX: Increased timeouts to handle real production database latency
-    const timeoutMs = needsExtendedTimeout ? 35000 : 20000; // Production-optimized: OAuth 35s, regular 20s
+    const timeoutMs = needsExtendedTimeout ? 90000 : 60000; // Production-optimized: OAuth 90s, regular 60s
 
     // 🔧 RUNTIME DEBUG: Verify enhanced timeout configuration is working
     console.log('🔧 ENHANCED TIMEOUT CONFIG:', {
@@ -640,7 +640,7 @@ supabase.auth.getSession = async () => {
       timeoutMs,
       pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
       search: typeof window !== 'undefined' ? window.location.search : 'unknown',
-      expectedTimeout: needsExtendedTimeout ? '35 seconds' : '20 seconds'
+      expectedTimeout: needsExtendedTimeout ? '90 seconds' : '60 seconds'
     });
 
     const result = await withRetry(() => originalGetSession(), {

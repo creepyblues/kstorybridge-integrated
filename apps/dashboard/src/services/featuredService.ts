@@ -197,7 +197,7 @@ export const featuredService = {
         {
           maxRetries: 1,
           baseDelay: 1000,
-          timeoutMs: 20000, // Match our new Supabase client timeout settings
+          timeoutMs: 60000, // Match our new Supabase client timeout settings
           operationName: 'getFeaturedTitles',
           retryCondition: isNetworkError
         }
@@ -293,12 +293,12 @@ export const featuredService = {
 
       const fallbackTimeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => {
-          console.warn('⏰ [VERBOSE] Fallback query timeout (20s)');
+          console.warn('⏰ [VERBOSE] Fallback query timeout (60s)');
           reject(new Error('Fallback query timeout'));
-        }, 20000)
+        }, 60000)
       );
 
-      console.log('🎬 [VERBOSE] Executing fallback query with 20s timeout...');
+      console.log('🎬 [VERBOSE] Executing fallback query with 60s timeout...');
       const { data: recentTitles, error } = await Promise.race([
         fallbackQueryPromise,
         fallbackTimeoutPromise

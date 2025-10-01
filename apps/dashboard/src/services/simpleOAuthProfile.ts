@@ -22,7 +22,6 @@ export interface SimpleProfileResult {
  */
 async function waitForValidSession(maxAttempts = 60, initialDelay = 500): Promise<Session | null> {
   const startTime = Date.now();
-  console.log('🔄 Starting session polling with exponential backoff...');
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -30,9 +29,8 @@ async function waitForValidSession(maxAttempts = 60, initialDelay = 500): Promis
 
       if (session && session.user) {
         const elapsedTime = Date.now() - startTime;
-        console.log(`✅ Valid session found on attempt ${attempt} for user: ${session.user.email} (${elapsedTime}ms)`);
 
-        // Log performance metrics for monitoring
+        // Log performance warning if slow
         if (elapsedTime > 5000) {
           console.warn(`⚠️ OAuth session establishment took ${elapsedTime}ms - consider optimizing`);
         }
@@ -40,10 +38,8 @@ async function waitForValidSession(maxAttempts = 60, initialDelay = 500): Promis
         return session;
       }
 
-      if (error) {
-        console.warn(`⚠️ Session check attempt ${attempt} error:`, error.message);
-      } else {
-        console.log(`⏳ Session check attempt ${attempt}: No session yet, waiting...`);
+      if (error && attempt > 5) {
+        console.warn(`⚠️ Session check error:`, error.message);
       }
 
       // Exponential backoff with jitter
@@ -55,7 +51,9 @@ async function waitForValidSession(maxAttempts = 60, initialDelay = 500): Promis
       }
 
     } catch (error) {
-      console.error(`❌ Session polling attempt ${attempt} failed:`, error);
+      if (attempt > 5) {
+        console.error(`❌ Session polling failed:`, error);
+      }
 
       if (attempt < maxAttempts) {
         const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), 5000);
@@ -65,15 +63,7 @@ async function waitForValidSession(maxAttempts = 60, initialDelay = 500): Promis
   }
 
   const totalTime = Date.now() - startTime;
-  console.error(`❌ Failed to establish session after ${maxAttempts} attempts (${totalTime}ms total, ~${Math.round(totalTime / 1000)}s)`);
-
-  // Log failure metrics for monitoring
-  console.error('📊 OAuth Session Failure Metrics:', {
-    totalAttempts: maxAttempts,
-    totalTimeMs: totalTime,
-    avgTimePerAttempt: Math.round(totalTime / maxAttempts),
-    userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'unknown'
-  });
+  console.error(`❌ Failed to establish session after ${maxAttempts} attempts (${Math.round(totalTime / 1000)}s)`);
 
   return null;
 }
@@ -93,14 +83,9 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
   requested?: boolean;
 }): Promise<SimpleProfileResult> {
   try {
-    console.log('🚀 Simple OAuth: Creating buyer profile for', profileData.email);
-
     // 🔧 EDGE FUNCTION APPROACH: Use server-side edge function for reliable profile creation
-    console.log('🚀 EDGE FUNCTION: Attempting buyer profile creation via edge function');
-
     try {
       // Wait for valid session to get access token
-      console.log('⏳ Waiting for valid session to get access token...');
       const session = await waitForValidSession();
 
       if (!session) {
@@ -110,8 +95,6 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
           error: 'Session establishment failed. Please try signing in again.'
         };
       }
-
-      console.log('✅ Valid session established, calling edge function...');
 
       // Call the unified OAuth profile creation edge function
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
@@ -135,22 +118,17 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
         throw new Error(result.error || 'Edge function call failed');
       }
 
-      console.log('✅ EDGE FUNCTION SUCCESS: Buyer profile created successfully via edge function!');
-      console.log('🎉 OAUTH COMPLETE: Profile creation completed server-side');
       return {
         success: true,
         profile: result.profile,
         userExists: result.userExists || false
       };
     } catch (edgeError) {
-      console.error('❌ EDGE FUNCTION FAILED: Profile creation via edge function failed');
-      console.error('🔧 EDGE FUNCTION ERROR:', edgeError);
-      console.warn('⚠️ FALLBACK: Falling back to session polling approach...');
+      console.error('❌ Edge function failed, falling back to session polling:', edgeError);
       // Fall through to session polling approach
     }
 
     // Fallback: Wait for valid session before attempting profile creation
-    console.log('⏳ Waiting for valid session establishment before profile creation...');
     const session = await waitForValidSession();
 
     if (!session) {
@@ -160,8 +138,6 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
         error: 'Session establishment failed. Please try signing in again.'
       };
     }
-
-    console.log('✅ Valid session established, proceeding with profile creation');
 
     // Prepare profile data
     const profileToCreate = {
@@ -177,10 +153,6 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
     };
 
     // Try to create the profile directly
-    console.log('💾 Attempting profile creation...');
-
-    // Skip getSession() since it's timing out - OAuth flow already authenticated
-    console.log('⚡ Bypassing getSession timeout issues - proceeding with OAuth profile creation...');
 
     const { data: newProfile, error: createError } = await supabase
       .from('user_buyers')
@@ -191,8 +163,6 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
     if (createError) {
       // If it's a duplicate key error, the profile might have been created by triggers
       if (createError.code === '23505') {
-        console.log('🔄 Profile creation conflict, checking for existing profile...');
-
         const { data: conflictProfile, error: conflictError } = await supabase
           .from('user_buyers')
           .select('*')
@@ -200,7 +170,6 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
           .single();
 
         if (!conflictError && conflictProfile) {
-          console.log('✅ Found existing profile after conflict');
           return {
             success: true,
             profile: conflictProfile,
@@ -211,11 +180,10 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
 
       // RLS policy violations should now be handled by enhanced OAuth-friendly policies
       if (createError.code === '42501' || createError.message?.includes('row-level security')) {
-        console.error('🚨 RLS policy violation - this should not happen with enhanced OAuth policies');
-        console.error('🔧 Check that OAuth-friendly RLS policies are applied in database');
+        console.error('🚨 RLS policy violation - check OAuth-friendly policies are applied');
         return {
           success: false,
-          error: `Profile creation failed due to permission issue. The enhanced database policies may not be applied yet. Please try again in a few minutes.`
+          error: `Profile creation failed due to permission issue. Please try again.`
         };
       }
 
@@ -226,7 +194,6 @@ export async function createSimpleOAuthBuyerProfile(profileData: {
       };
     }
 
-    console.log('✅ Buyer profile created successfully');
     return {
       success: true,
       profile: newProfile,
@@ -255,14 +222,9 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
   website_url?: string | null;
 }): Promise<SimpleProfileResult> {
   try {
-    console.log('🚀 Simple OAuth: Creating creator profile for', profileData.email);
-
     // 🔧 EDGE FUNCTION APPROACH: Use server-side edge function for reliable profile creation
-    console.log('🚀 EDGE FUNCTION: Attempting creator profile creation via edge function');
-
     try {
       // Wait for valid session to get access token
-      console.log('⏳ Waiting for valid session to get access token...');
       const session = await waitForValidSession();
 
       if (!session) {
@@ -272,8 +234,6 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
           error: 'Session establishment failed. Please try signing in again.'
         };
       }
-
-      console.log('✅ Valid session established, calling edge function...');
 
       // Call the unified OAuth profile creation edge function
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
@@ -297,22 +257,17 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
         throw new Error(result.error || 'Edge function call failed');
       }
 
-      console.log('✅ EDGE FUNCTION SUCCESS: Creator profile created successfully via edge function!');
-      console.log('🎉 OAUTH COMPLETE: Profile creation completed server-side');
       return {
         success: true,
         profile: result.profile,
         userExists: result.userExists || false
       };
     } catch (edgeError) {
-      console.error('❌ EDGE FUNCTION FAILED: Creator profile creation via edge function failed');
-      console.error('🔧 EDGE FUNCTION ERROR:', edgeError);
-      console.warn('⚠️ FALLBACK: Falling back to session polling approach...');
+      console.error('❌ Edge function failed, falling back to session polling:', edgeError);
       // Fall through to session polling approach
     }
 
     // Fallback: Wait for valid session before attempting any operations
-    console.log('⏳ Waiting for valid session establishment before creator profile operations...');
     const session = await waitForValidSession();
 
     if (!session) {
@@ -323,11 +278,7 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
       };
     }
 
-    console.log('✅ Valid session established, proceeding with creator profile operations');
-
     // First, check if profile already exists
-    console.log('🔍 Checking if creator profile already exists...');
-
     try {
       const { data: existingProfile, error: checkError } = await supabase
         .from('user_creators')
@@ -336,15 +287,12 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
         .maybeSingle();
 
       if (!checkError && existingProfile) {
-        console.log('✅ Creator profile already exists, returning existing profile');
         return {
           success: true,
           profile: existingProfile,
           userExists: true
         };
       }
-
-      console.log('📝 No existing profile found, creating new one...');
     } catch (checkException) {
       console.warn('⚠️ Profile check failed, proceeding with creation:', checkException);
     }
@@ -363,8 +311,6 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
     };
 
     // Try to create the profile directly
-    console.log('💾 Attempting creator profile creation...');
-
     const { data: newProfile, error: createError } = await supabase
       .from('user_creators')
       .insert(profileToCreate)
@@ -374,8 +320,6 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
     if (createError) {
       // If it's a duplicate key error, the profile might have been created by triggers
       if (createError.code === '23505') {
-        console.log('🔄 Creator profile creation conflict, checking for existing profile...');
-
         const { data: conflictProfile, error: conflictError } = await supabase
           .from('user_creators')
           .select('*')
@@ -383,7 +327,6 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
           .single();
 
         if (!conflictError && conflictProfile) {
-          console.log('✅ Found existing creator profile after conflict');
           return {
             success: true,
             profile: conflictProfile,
@@ -394,11 +337,10 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
 
       // RLS policy violations should now be handled by enhanced OAuth-friendly policies
       if (createError.code === '42501' || createError.message?.includes('row-level security')) {
-        console.error('🚨 RLS policy violation for creator - this should not happen with enhanced OAuth policies');
-        console.error('🔧 Check that OAuth-friendly RLS policies are applied in database');
+        console.error('🚨 RLS policy violation for creator - check OAuth-friendly policies are applied');
         return {
           success: false,
-          error: `Creator profile creation failed due to permission issue. The enhanced database policies may not be applied yet. Please try again in a few minutes.`
+          error: `Creator profile creation failed due to permission issue. Please try again.`
         };
       }
 
@@ -409,7 +351,6 @@ export async function createSimpleOAuthCreatorProfile(profileData: {
       };
     }
 
-    console.log('✅ Creator profile created successfully');
     return {
       success: true,
       profile: newProfile,

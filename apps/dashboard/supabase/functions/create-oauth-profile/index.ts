@@ -28,8 +28,6 @@ serve(async (req) => {
     // Get request data
     const { account_type, user_id, profile_data } = await req.json()
 
-    console.log('Creating OAuth profile:', { account_type, user_id, email: profile_data?.email })
-
     // Validate required fields
     if (!account_type || !user_id || !profile_data) {
       console.error('Missing required fields for OAuth profile creation')
@@ -80,7 +78,6 @@ serve(async (req) => {
         .single()
 
       if (existingBuyer) {
-        console.log('Buyer profile already exists for user:', user_id)
         return new Response(
           JSON.stringify({
             success: true,
@@ -115,8 +112,6 @@ serve(async (req) => {
         console.error('Error creating buyer profile:', buyerError)
         throw buyerError
       }
-
-      console.log('Buyer profile created successfully:', newBuyerProfile)
 
       return new Response(
         JSON.stringify({
@@ -165,7 +160,6 @@ serve(async (req) => {
         .single()
 
       if (existingCreator) {
-        console.log('Creator profile already exists for user:', user_id)
         return new Response(
           JSON.stringify({
             success: true,
@@ -200,8 +194,6 @@ serve(async (req) => {
         console.error('Error creating creator profile:', creatorError)
         throw creatorError
       }
-
-      console.log('Creator profile created successfully:', newCreatorProfile)
 
       return new Response(
         JSON.stringify({

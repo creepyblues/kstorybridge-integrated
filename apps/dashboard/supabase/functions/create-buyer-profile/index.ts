@@ -37,8 +37,6 @@ serve(async (req) => {
       requested
     } = await req.json()
 
-    console.log('Creating buyer profile for user:', { userId, email, fullName })
-
     // Validate required fields
     if (!userId || !email || !fullName || !buyerCompany || !buyerRole) {
       console.error('Missing required fields for buyer profile creation')
@@ -62,7 +60,6 @@ serve(async (req) => {
       .single()
 
     if (existingProfile) {
-      console.log('Buyer profile already exists for user:', userId)
       return new Response(
         JSON.stringify({
           success: true,
@@ -96,8 +93,6 @@ serve(async (req) => {
       console.error('Error creating buyer profile:', insertError)
       throw insertError
     }
-
-    console.log('Buyer profile created successfully:', newProfile)
 
     return new Response(
       JSON.stringify({

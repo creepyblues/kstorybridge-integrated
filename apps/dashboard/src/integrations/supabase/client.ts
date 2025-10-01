@@ -32,10 +32,20 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 }
 
 // Production environment validation for OAuth flows
-if (typeof window !== 'undefined' && !SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn('🚨 PRODUCTION WARNING: Service role key missing');
-  console.warn('🔧 OAuth profile creation may fail without VITE_SUPABASE_SERVICE_ROLE_KEY');
-  console.warn('📋 Add this environment variable to prevent OAuth signup failures');
+if (typeof window !== 'undefined') {
+  console.log('🔧 SERVICE ROLE DEBUG:', {
+    hasServiceRoleKey: !!SUPABASE_SERVICE_ROLE_KEY,
+    keyLength: SUPABASE_SERVICE_ROLE_KEY ? SUPABASE_SERVICE_ROLE_KEY.length : 0,
+    keyPrefix: SUPABASE_SERVICE_ROLE_KEY ? SUPABASE_SERVICE_ROLE_KEY.substring(0, 8) + '...' : 'none'
+  });
+
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('🚨 PRODUCTION WARNING: Service role key missing');
+    console.warn('🔧 OAuth profile creation may fail without VITE_SUPABASE_SERVICE_ROLE_KEY');
+    console.warn('📋 Add this environment variable to prevent OAuth signup failures');
+  } else {
+    console.log('✅ Service role key detected and available');
+  }
 }
 
 // Enhanced configuration for production reliability
@@ -459,6 +469,18 @@ supabase.auth.getSession = async () => {
   const hasOAuthCode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('code');
   const isOAuthFlow = isCallback && hasOAuthCode;
 
+  // 🔧 CALLBACK DEBUG: Verify callback detection logic
+  if (typeof window !== 'undefined') {
+    console.log('🔧 CALLBACK DETECTION:', {
+      pathname: window.location.pathname,
+      search: window.location.search,
+      isCallback,
+      hasOAuthCode,
+      isOAuthFlow,
+      willUseExtendedTimeout: isCallback
+    });
+  }
+
   const handleSessionResult = (result: GetSessionResponse) => {
     const session = result?.data?.session ?? null;
     if (session) {
@@ -499,6 +521,15 @@ supabase.auth.getSession = async () => {
     // Context-aware timeout: OAuth callbacks need more time for PKCE exchange in production
     // DEPLOYMENT FIX: Force deployment to activate 25s OAuth timeout (was stuck at 12s in prod)
     const timeoutMs = isCallback ? 25000 : 12000; // Production-optimized: OAuth 25s, regular 12s
+
+    // 🔧 RUNTIME DEBUG: Verify timeout configuration is working
+    console.log('🔧 TIMEOUT CONFIG:', {
+      isCallback,
+      timeoutMs,
+      pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+      search: typeof window !== 'undefined' ? window.location.search : 'unknown',
+      expectedTimeout: isCallback ? '25 seconds' : '12 seconds'
+    });
 
     const result = await withRetry(() => originalGetSession(), {
       maxRetries: isCallback ? 2 : 1, // More retries for OAuth callbacks

@@ -534,9 +534,9 @@ class OpenAIService {
     try {
       console.log('📚 ON-DEMAND LOADING: Loading titles for chat response...');
       
-      // Add timeout for titles loading (reduced to 8 seconds for faster feedback)
+      // Add timeout for titles loading (increased to 60 seconds for production reliability)
       const timeoutPromise = new Promise<Title[]>((_, reject) => {
-        setTimeout(() => reject(new Error('Titles loading timeout after 8 seconds')), 8000);
+        setTimeout(() => reject(new Error('Titles loading timeout after 60 seconds')), 60000);
       });
 
       const titlesPromise = titlesService.getAllTitles();
@@ -1255,7 +1255,7 @@ Respond as if you're having a friendly, engaging conversation about Korean enter
       
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+        setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000);
       });
 
       const apiPromise = this.client.chat.completions.create({

@@ -112,7 +112,7 @@ export const featuredService = {
           .limit(1);
 
         const testTimeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Basic table test timeout')), 10000)
+          setTimeout(() => reject(new Error('Basic table test timeout')), 60000)
         );
 
         const { data: testData, error: testError } = await Promise.race([

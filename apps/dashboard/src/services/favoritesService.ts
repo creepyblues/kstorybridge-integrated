@@ -138,7 +138,7 @@ export const favoritesService = {
         .limit(5);
 
       const timeoutPromise = new Promise<any>((_, reject) =>
-        setTimeout(() => reject(new Error('Database query timeout after 5 seconds')), 5000)
+        setTimeout(() => reject(new Error('Database query timeout after 60 seconds')), 60000)
       );
 
       const { data: simpleData, error: simpleError } = await Promise.race([simpleQueryPromise, timeoutPromise]);

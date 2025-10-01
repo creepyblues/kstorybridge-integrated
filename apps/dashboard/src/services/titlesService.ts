@@ -562,9 +562,9 @@ export const titlesService = {
 
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
-          console.warn(`⏰ [TITLE BATCH VERBOSE] Batch query timeout (10s) for ${titleIds.length} titles`);
+          console.warn(`⏰ [TITLE BATCH VERBOSE] Batch query timeout (60s) for ${titleIds.length} titles`);
           reject(new Error('Title batch query timeout'));
-        }, 10000);
+        }, 60000);
       });
 
       console.log(`📚 [TITLE BATCH VERBOSE] Racing batch query against timeout for ${titleIds.length} titles`);

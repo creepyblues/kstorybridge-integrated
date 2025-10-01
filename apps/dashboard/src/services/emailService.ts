@@ -210,7 +210,7 @@ export class EmailService {
       // Add timeout protection to prevent hanging
       const syncWithTimeout = async () => {
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('OAuth metadata sync timeout after 5 seconds')), 5000)
+          setTimeout(() => reject(new Error('OAuth metadata sync timeout after 60 seconds')), 60000)
         );
 
         const syncPromise = (async () => {

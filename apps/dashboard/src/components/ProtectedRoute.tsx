@@ -1,6 +1,7 @@
 
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { performSessionHealthCheck } from "@/utils/sessionManager";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -8,9 +9,54 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, session, signOut } = useAuth();
   const authTimeoutRef = useRef<NodeJS.Timeout>();
+  const sessionCheckRef = useRef<boolean>(false);
 
+  // Navigation-time session validation (user requested: only check during navigation, not on page return)
+  useEffect(() => {
+    const validateSessionOnNavigation = async () => {
+      // Only validate if we have a user and session, and haven't checked recently
+      if (user && session && !sessionCheckRef.current && !loading) {
+        console.log('🔍 PROTECTED ROUTE: Performing navigation-time session validation...');
+        sessionCheckRef.current = true;
+
+        try {
+          const healthCheck = await performSessionHealthCheck();
+
+          if (!healthCheck.healthy) {
+            console.warn('⚠️ PROTECTED ROUTE: Session health check failed:', healthCheck.issues);
+
+            // Check if issues indicate session expiry or authentication problems
+            const hasAuthIssues = healthCheck.issues.some(issue =>
+              issue.includes('expired') ||
+              issue.includes('invalid') ||
+              issue.includes('JWT') ||
+              issue.includes('unauthorized')
+            );
+
+            if (hasAuthIssues) {
+              console.log('🔐 PROTECTED ROUTE: Session expired/invalid, redirecting to login');
+              await signOut();
+              return;
+            }
+          } else {
+            console.log('✅ PROTECTED ROUTE: Session is healthy');
+          }
+        } catch (error) {
+          console.error('❌ PROTECTED ROUTE: Session health check failed:', error);
+          // Don't sign out on health check errors - might be temporary network issues
+        }
+
+        // Reset check flag after 30 seconds to allow re-checking on subsequent navigations
+        setTimeout(() => {
+          sessionCheckRef.current = false;
+        }, 30000);
+      }
+    };
+
+    validateSessionOnNavigation();
+  }, [user, session, loading, signOut]);
 
   useEffect(() => {
     // Check if we have auth tokens in URL indicating auth flow in progress

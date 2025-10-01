@@ -172,7 +172,7 @@ export async function withRetry<T>(
     maxDelay = 20000, // Increased from 12000 to 20000 for high-latency production networks
     retryCondition = isNetworkError,
     operationName = 'Supabase operation',
-    timeoutMs = 60000 // Increased from 15000 to 60000 to handle production database latency and eliminate timeout failures
+    timeoutMs = 120000 // Increased to 120000 to handle production database latency and eliminate timeout failures
   } = options;
 
   let lastError: any;

@@ -80,7 +80,7 @@ export const useTierAccess = (): TierAccess => {
 
         // Add timeout for tier lookup to prevent hanging
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Tier lookup timeout after 60 seconds')), 60000)
+          setTimeout(() => reject(new Error('Tier lookup timeout after 120 seconds')), 120000)
         );
 
         const { data: userBuyer, error: buyerError } = await Promise.race([

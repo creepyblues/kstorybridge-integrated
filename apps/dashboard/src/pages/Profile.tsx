@@ -242,14 +242,30 @@ export default function Profile() {
         }
       }
     } catch (error) {
-      console.error("❌ Database connectivity error loading profile:", error);
+      console.error("❌ Error loading profile:", error);
 
-      // Update connectivity status
+      // Check if this is an authentication error (401/403)
+      const isAuthError = error && typeof error === 'object' && (
+        ('status' in error && (error.status === 401 || error.status === 403)) ||
+        ('message' in error && typeof error.message === 'string' &&
+         (error.message.includes('401') || error.message.includes('403') ||
+          error.message.includes('unauthorized') || error.message.includes('forbidden') ||
+          error.message.includes('JWT') || error.message.includes('session')))
+      );
+
+      if (isAuthError) {
+        console.log("🔐 Authentication error detected, redirecting to login");
+        // Use existing signOut function to handle session expiry and redirect
+        await signOut();
+        return;
+      }
+
+      // Handle as database connectivity error
       const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
       setDbConnectivityStatus({ isConnected: false, error: errorMessage });
       setDbError(errorMessage);
 
-      // NEW POLICY: Show database error to user instead of fallback
+      // Show database error to user for actual connectivity issues
       toast({
         title: "Database Connection Error",
         description: "Unable to load profile. Please check your connection and try again.",

@@ -1042,3 +1042,4 @@ npx supabase db push
 - Established documentation standards for future migrations
 
 **See `/docs/MIGRATION_DOCUMENTATION_STANDARDS.md`** for complete migration documentation guidelines and safety procedures.
+- for oauth callback, the callback URL should not have any parameter.

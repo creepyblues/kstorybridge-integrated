@@ -12,6 +12,7 @@ import { getAccountType, getAccountTypeDisplayInfo } from '@/hooks/useAccountTyp
 import { notifyUserSignin } from '@/utils/slack';
 import { createBuyerProfileAtomic } from '@/utils/atomicProfileCreator';
 import { trackSigninError, trackValidationError } from '@/services/authErrorTracking';
+import { initializeOAuthFlow } from '@/utils/oauthSecurity';
 
 interface SigninFormProps {
   accountType: 'buyer' | 'creator';
@@ -92,15 +93,14 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     });
 
     try {
-      // Account-specific OAuth redirect (clean pattern like signup)
-      const isDev = window.location.hostname === 'localhost';
+      // Clean callback URL without query parameters (OAuth compliance)
+      const redirectUrl = `${window.location.origin}/auth/callback`;
 
-      // Use account-specific callback URL like signup does
-      const redirectUrl = isDev
-        ? `http://localhost:${window.location.port}/auth/callback?account_type=${accountType}&flow=signin`
-        : `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
+      // Generate secure OAuth state parameter for CSRF protection
+      const secureState = initializeOAuthFlow('signin', accountType, 'google');
 
       console.log(`🔄 ${accountType.toUpperCase()} OAuth signin redirect URL:`, redirectUrl);
+      console.log(`🔐 ${accountType.toUpperCase()} OAuth secure state initialized:`, secureState.substring(0, 8) + '...');
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -109,6 +109,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
+            state: secureState
           }
         }
       });

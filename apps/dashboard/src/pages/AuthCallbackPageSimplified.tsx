@@ -5,7 +5,6 @@ import { useToast } from '@/hooks/use-toast';
 import { getOAuthAccountType, getDashboardPath, getSignupPath } from '@/utils/simpleAccountTypeDetection';
 import { markOAuthCompletion } from '@/utils/oauthFlowDetection';
 import { trackOAuthCallbackError } from '@/services/authErrorTracking';
-import { validateOAuthState } from '@/utils/oauthSecurity';
 
 /**
  * Simplified OAuth Callback Handler - SINGLE METHOD APPROACH
@@ -18,7 +17,7 @@ import { validateOAuthState } from '@/utils/oauthSecurity';
  * NO multiple timeouts, polling, fallback chains, or competing session methods.
  * Fail fast with clear errors instead of complex defensive programming.
  */
-const AuthCallbackMinimal = () => {
+const AuthCallbackPageSimplified = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const processedRef = useRef(false);
@@ -34,48 +33,13 @@ const AuthCallbackMinimal = () => {
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
+        const accountType = urlParams.get('account_type');
+        const flow = urlParams.get('flow');
 
-        // Validate OAuth state parameter for CSRF protection
-        const stateParam = urlParams.get('state');
-        let stateAccountType: string | null = null;
-        let stateFlow: string | null = null;
-
-        if (stateParam) {
-          const oauthData = validateOAuthState(stateParam);
-          if (oauthData) {
-            stateAccountType = oauthData.accountType;
-            stateFlow = oauthData.flow;
-            console.log('✅ OAuth state validation successful:', {
-              account_type: stateAccountType,
-              flow: stateFlow,
-              provider: oauthData.provider
-            });
-          } else {
-            console.warn('⚠️ OAuth state validation failed - potential CSRF attack or expired session');
-            // For security, we should be strict about invalid state parameters
-            // but we'll allow fallback to URL parameters for backward compatibility
-          }
-        }
-
-        // Use validated state parameters if available, otherwise fall back to URL parameters
-        const accountType = stateAccountType || urlParams.get('account_type');
-        const flow = stateFlow || urlParams.get('flow');
-
-        // Create a modified URLSearchParams that includes state parameter values
-        // This ensures getOAuthAccountType can find the account type
-        const effectiveUrlParams = new URLSearchParams(urlParams);
-        if (stateAccountType) {
-          effectiveUrlParams.set('account_type', stateAccountType);
-        }
-        if (stateFlow) {
-          effectiveUrlParams.set('flow', stateFlow);
-        }
-
-        console.log('📋 OAuth params (final):', {
+        console.log('📋 OAuth params:', {
           hasCode: !!code,
           accountType,
-          flow,
-          source: stateAccountType ? 'state_parameter' : 'url_parameter'
+          flow
         });
 
         // Validate required code parameter
@@ -145,7 +109,7 @@ const AuthCallbackMinimal = () => {
         console.log('✅ OAuth session established for:', user.email);
 
         // 2. Determine account type - SIMPLE LOGIC
-        const detection = getOAuthAccountType(user, effectiveUrlParams);
+        const detection = getOAuthAccountType(user, urlParams);
         const finalAccountType = detection.accountType;
 
         console.log('🎯 Account type detection:', {
@@ -229,4 +193,4 @@ const AuthCallbackMinimal = () => {
   );
 };
 
-export default AuthCallbackMinimal;
+export default AuthCallbackPageSimplified;

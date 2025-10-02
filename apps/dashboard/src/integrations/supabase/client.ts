@@ -156,6 +156,39 @@ export function isNetworkError(error: any): boolean {
 /**
  * Enhanced retry wrapper with exponential backoff
  */
+// Mobile device detection utility
+const isMobileDevice = (): boolean => {
+  if (typeof window === 'undefined') return false;
+
+  // Check user agent for mobile patterns
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  const mobilePatterns = [
+    'mobile', 'android', 'iphone', 'ipad', 'ipod',
+    'blackberry', 'windows phone', 'opera mini'
+  ];
+
+  return mobilePatterns.some(pattern => userAgent.includes(pattern));
+};
+
+// Operation-specific timeout configurations
+const getOperationTimeouts = (operationName: string, isMobile: boolean) => {
+  const timeouts = {
+    // Auth operations - critical for login flows
+    signInWithPassword: isMobile ? [15000, 30000, 45000] : [30000, 45000, 60000],
+    signInWithOAuth: isMobile ? [15000, 30000, 45000] : [30000, 45000, 60000],
+    signOut: isMobile ? [10000, 20000, 30000] : [20000, 30000, 45000],
+    refreshSession: isMobile ? [10000, 20000, 25000] : [15000, 25000, 35000],
+
+    // Session operations - most frequent, need to be fast
+    getSession: isMobile ? [15000, 30000, 45000] : [30000, 60000, 90000],
+
+    // Database operations - less critical, can be slightly longer
+    'Supabase operation': isMobile ? [20000, 40000, 60000] : [40000, 80000, 120000]
+  };
+
+  return timeouts[operationName] || timeouts['Supabase operation'];
+};
+
 export async function withRetry<T>(
   operation: () => Promise<T>,
   options: {
@@ -165,15 +198,20 @@ export async function withRetry<T>(
     retryCondition?: (error: any) => boolean;
     operationName?: string;
     timeoutMs?: number;
+    useProgressiveTimeout?: boolean;
   } = {}
 ): Promise<T> {
+  const isMobile = isMobileDevice();
+  const operationTimeouts = getOperationTimeouts(options.operationName || 'Supabase operation', isMobile);
+
   const {
     maxRetries = 2, // Keep at 2 to prevent excessive retries
-    baseDelay = 2000, // Increased from 1500 to 2000 for production stability
-    maxDelay = 20000, // Increased from 12000 to 20000 for high-latency production networks
+    baseDelay = isMobile ? 1500 : 2000, // Faster retry for mobile
+    maxDelay = isMobile ? 15000 : 20000, // Shorter max delay for mobile
     retryCondition = isNetworkError,
     operationName = 'Supabase operation',
-    timeoutMs = 120000 // Increased to 120000 to handle production database latency and eliminate timeout failures
+    timeoutMs = operationTimeouts[0], // Use first timeout as default
+    useProgressiveTimeout = true // Enable progressive timeouts by default
   } = options;
 
   let lastError: any;
@@ -186,19 +224,29 @@ export async function withRetry<T>(
   // Only log start for critical operations or when debugging
   const isVerboseLogging = isDev && import.meta.env.VITE_RETRY_DEBUG === 'true';
 
-  if (isVerboseLogging) {
-    console.log(`🔄 Starting ${operationName} with retry logic (max: ${maxRetries})`);
+  if (isVerboseLogging || isMobile) {
+    console.log(`🔄 Starting ${operationName} with ${isMobile ? 'mobile-optimized' : 'desktop'} retry logic`, {
+      isMobile,
+      maxRetries,
+      timeouts: useProgressiveTimeout ? operationTimeouts : [timeoutMs],
+      operationName
+    });
   }
 
   while (attempt <= maxRetries) {
     try {
       const operationStart = Date.now();
 
+      // Use progressive timeout based on attempt number
+      const currentTimeout = useProgressiveTimeout && operationTimeouts[attempt]
+        ? operationTimeouts[attempt]
+        : timeoutMs;
+
       // Add timeout for operations to prevent hanging
       const result = await Promise.race([
         operation(),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`${operationName} timeout after ${timeoutMs / 1000} seconds`)), timeoutMs)
+          setTimeout(() => reject(new Error(`${operationName} timeout after ${currentTimeout / 1000} seconds (attempt ${attempt + 1}/${maxRetries + 1}, ${isMobile ? 'mobile' : 'desktop'})`)), currentTimeout)
         )
       ]);
 
@@ -209,7 +257,7 @@ export async function withRetry<T>(
 
       // Only log retries that succeed after initial failure
       if (attempt > 0) {
-        console.log(`✅ ${operationName} succeeded on retry attempt ${attempt + 1} (${duration}ms)`);
+        console.log(`✅ ${operationName} succeeded on retry attempt ${attempt + 1} (${duration}ms, ${isMobile ? 'mobile' : 'desktop'}, timeout: ${currentTimeout / 1000}s)`);
       }
 
       return result;
@@ -225,7 +273,10 @@ export async function withRetry<T>(
         message: error.message,
         code: error.code,
         status: error.status,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
+        isMobile,
+        timeout: currentTimeout / 1000,
+        deviceType: isMobile ? 'mobile' : 'desktop'
       });
 
       const isRetryable = retryCondition(error);
@@ -551,24 +602,27 @@ const serviceRoleAuthMethods = supabaseServiceRole ? {
 
 type GetSessionResponse = Awaited<ReturnType<typeof originalGetSession>>;
 
-// Wrap critical auth methods with retry logic
-supabase.auth.signInWithPassword = (credentials) => 
+// Wrap critical auth methods with retry logic using mobile-optimized progressive timeouts
+supabase.auth.signInWithPassword = (credentials) =>
   withRetry(() => originalSignInWithPassword(credentials), {
     maxRetries: 2,
     operationName: 'signInWithPassword',
+    useProgressiveTimeout: true,
     retryCondition: (error) => isNetworkError(error) && !error.message?.includes('Invalid login credentials')
   });
 
 supabase.auth.signInWithOAuth = (options) =>
   withRetry(() => originalSignInWithOAuth(options), {
     maxRetries: 2,
-    operationName: 'signInWithOAuth'
+    operationName: 'signInWithOAuth',
+    useProgressiveTimeout: true
   });
 
 supabase.auth.signOut = (options) =>
   withRetry(() => originalSignOut(options), {
     maxRetries: 2,
-    operationName: 'signOut'
+    operationName: 'signOut',
+    useProgressiveTimeout: true
   });
 
 supabase.auth.getSession = async () => {
@@ -647,8 +701,9 @@ supabase.auth.getSession = async () => {
     const result = await withRetry(() => originalGetSession(), {
       maxRetries: needsExtendedTimeout ? 2 : 1, // More retries for OAuth flows (callback + completion)
       baseDelay: 200,
-      timeoutMs,
-      operationName: 'getSession'
+      timeoutMs, // Keep custom timeout for OAuth flows
+      operationName: 'getSession',
+      useProgressiveTimeout: !needsExtendedTimeout // Use progressive for regular, custom for OAuth
     });
 
     const resolved = handleSessionResult(result as GetSessionResponse);
@@ -691,7 +746,7 @@ supabase.auth.refreshSession = (refreshToken) =>
   withRetry(() => originalRefreshSession(refreshToken), {
     maxRetries: 2,
     operationName: 'refreshSession',
-    timeoutMs: 25000 // Increased to 25 seconds for production session refresh operations
+    useProgressiveTimeout: true // Use mobile-optimized progressive timeouts
   });
 
 // CRITICAL: Restore original auth methods to service role client after global overrides

@@ -478,6 +478,21 @@ export default function Chat() {
   // Tier access for Advanced mode restriction
   const { hasMinimumTier } = useTierAccess();
 
+  // Quick fix: Force refresh on first visit to prevent hanging issue
+  useEffect(() => {
+    if (user?.id) {
+      const firstVisitKey = `chat-first-visit-${user.id}`;
+      const hasVisited = sessionStorage.getItem(firstVisitKey);
+
+      if (!hasVisited) {
+        console.log('First visit to chat - refreshing to ensure proper initialization');
+        sessionStorage.setItem(firstVisitKey, 'true');
+        window.location.reload();
+        return;
+      }
+    }
+  }, [user?.id]);
+
   // User change detection - reset chat when user changes (logout/login with different account)
   useEffect(() => {
     if (user?.id) {

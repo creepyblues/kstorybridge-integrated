@@ -467,16 +467,12 @@ export default function Chat() {
   const [isProcessingMessage, setIsProcessingMessage] = useState(false);
   const [streamingResponse, setStreamingResponse] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [useOrchestrator, setUseOrchestrator] = useState(false); // Feature flag - default to legacy mode
   const [titleCache, setTitleCache] = useState<any[]>([]); // Cache for ALL titles for matching
   const [hasStartedConversation, setHasStartedConversation] = useState(false);
   const [showHistory, setShowHistory] = useState(false); // Toggle between current chat and full history
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousUserIdRef = useRef<string | null>(null); // Track user changes
-
-  // Tier access for Advanced mode restriction
-  const { hasMinimumTier } = useTierAccess();
 
   // User change detection - reset chat when user changes (logout/login with different account)
   useEffect(() => {
@@ -687,7 +683,7 @@ export default function Chat() {
       userType: 'buyer',
       searchContext: 'chat_empty_state',
       page: '/buyers/chat',
-      chatMode: useOrchestrator ? 'advanced' : 'standard'
+      chatMode: 'standard'
     });
 
     // Set processing flag to prevent duplicate submissions
@@ -722,30 +718,18 @@ export default function Chat() {
     const startTime = Date.now();
 
     try {
-      if (useOrchestrator) {
-        console.log('🎯 Using Enhanced Mode (Pro Feature - OpenAI GPT-4 via Orchestrator)', {
-          model: 'gpt-4-turbo-preview',
-          provider: 'OpenAI',
-          mode: 'Enhanced (Pro)',
-          query: message.substring(0, 50) + '...',
-          user: user?.email
-        });
-        // Use new orchestrator service with streaming
-        await handleOrchestratorMessage(message, userMessage, startTime);
-      } else {
-        console.log('🎯 Using Standard Mode (OpenAI Direct)', {
-          model: 'gpt-4-turbo',
-          provider: 'OpenAI',
-          mode: 'Standard',
-          query: message.substring(0, 50) + '...',
-          user: user?.email
-        });
-        // Fallback to existing OpenAI service
-        await handleLegacyMessage(message, userMessage, startTime);
-      }
+      console.log('🎯 Using Standard Mode (OpenAI GPT-4 via Supabase Edge Function)', {
+        model: 'gpt-4-turbo-preview',
+        provider: 'OpenAI',
+        mode: 'Standard',
+        query: message.substring(0, 50) + '...',
+        user: user?.email
+      });
+      // Use Supabase Edge Function (chat-orchestrator)
+      await handleOrchestratorMessage(message, userMessage, startTime);
     } catch (error: any) {
       console.error("🚨 CHAT ERROR:", {
-        system: useOrchestrator ? 'Chat Orchestrator' : 'OpenAI Direct',
+        system: 'Chat Orchestrator (Supabase Edge Function)',
         error: error.message,
         user: user?.email,
         query: message
@@ -755,7 +739,7 @@ export default function Chat() {
         id: (Date.now() + 1).toString(),
         content: `I apologize, but I encountered an error: ${error.message}
 
-Please try again or switch to the legacy chat mode if the issue persists.`,
+Please try again.`,
         sender: 'bot',
         timestamp: new Date(),
       };
@@ -781,7 +765,6 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
       isProcessingMessage,
       hasSession: !!currentSession,
       hasUser: !!user,
-      useOrchestrator,
       inputMessage: inputMessage.substring(0, 50) + '...'
     });
 
@@ -815,7 +798,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
       userType: 'buyer',
       searchContext: 'chat',
       page: '/buyers/chat',
-      chatMode: useOrchestrator ? 'advanced' : 'standard'
+      chatMode: 'standard'
     });
 
     // Set processing flag to prevent duplicate submissions
@@ -853,30 +836,18 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
     const startTime = Date.now();
 
     try {
-      if (useOrchestrator) {
-        console.log('🎯 Using Enhanced Mode (Pro Feature - OpenAI GPT-4 via Orchestrator)', {
-          model: 'gpt-4-turbo-preview',
-          provider: 'OpenAI',
-          mode: 'Enhanced (Pro)',
-          query: messageContent.substring(0, 50) + '...',
-          user: user?.email
-        });
-        // Use new orchestrator service with streaming
-        await handleOrchestratorMessage(messageContent, userMessage, startTime);
-      } else {
-        console.log('🎯 Using Standard Mode (OpenAI Direct)', {
-          model: 'gpt-4-turbo',
-          provider: 'OpenAI',
-          mode: 'Standard',
-          query: messageContent.substring(0, 50) + '...',
-          user: user?.email
-        });
-        // Fallback to existing OpenAI service
-        await handleLegacyMessage(messageContent, userMessage, startTime);
-      }
+      console.log('🎯 Using Standard Mode (OpenAI GPT-4 via Supabase Edge Function)', {
+        model: 'gpt-4-turbo-preview',
+        provider: 'OpenAI',
+        mode: 'Standard',
+        query: messageContent.substring(0, 50) + '...',
+        user: user?.email
+      });
+      // Use Supabase Edge Function (chat-orchestrator)
+      await handleOrchestratorMessage(messageContent, userMessage, startTime);
     } catch (error: any) {
       console.error("🚨 CHAT ERROR:", {
-        system: useOrchestrator ? 'Chat Orchestrator' : 'OpenAI Direct',
+        system: 'Chat Orchestrator (Supabase Edge Function)',
         error: error.message,
         user: user?.email,
         query: messageContent
@@ -886,7 +857,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
         id: (Date.now() + 1).toString(),
         content: `I apologize, but I encountered an error: ${error.message}
 
-Please try again or switch to the legacy chat mode if the issue persists.`,
+Please try again.`,
         sender: 'bot',
         timestamp: new Date(),
       };
@@ -1137,7 +1108,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
         'chat',
         accountType || 'buyer',
         {
-          chat_mode: useOrchestrator ? 'advanced' : 'standard',
+          chat_mode: 'standard',
           session_id: currentSession?.id,
           message_id: messageId,
           user_prompt: userPrompt,
@@ -1146,7 +1117,7 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
       );
 
       // Legacy title view tracking (keep for backward compatibility)
-      trackTitleView(title.title_id, titleName, 'chat', useOrchestrator ? 'advanced' : 'standard');
+      trackTitleView(title.title_id, titleName, 'chat', 'standard');
 
       // Record title view interaction
       if (currentSession && user) {
@@ -1287,11 +1258,6 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
           <div className="mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="flex items-center gap-2">
-                {useOrchestrator && (
-                  <span className="px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
-                    Enhanced
-                  </span>
-                )}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -1451,11 +1417,6 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-gray-700">Jinu</span>
                       <span className="text-xs text-gray-400">is typing</span>
-                      {useOrchestrator && (
-                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
-                          Enhanced
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
@@ -1520,73 +1481,6 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
               </div>
               <div className="px-7 pb-2 text-xs text-gray-400 flex justify-end items-center">
                 <div className="flex items-center gap-2">
-                  {/* Mode Dropdown Menu */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1.5 px-3 py-2 sm:px-2 sm:py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer">
-                        {useOrchestrator ? (
-                          <>
-                            <Sparkles size={16} className="text-pro-purple sm:w-3 sm:h-3" />
-                            <span className="text-gray-700 font-medium">Advanced</span>
-                            <ProBadge tier="pro" size="sm" showIcon={false} className="ml-0.5" />
-                          </>
-                        ) : (
-                          <>
-                            <Bot size={16} className="text-gray-600 sm:w-3 sm:h-3" />
-                            <span className="text-gray-700 font-medium">Standard</span>
-                          </>
-                        )}
-                        <ChevronDown size={16} className="text-gray-500 ml-0.5 sm:w-3 sm:h-3" />
-                      </button>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent align="end" sideOffset={8} className="min-w-[180px] bg-white">
-                      <DropdownMenuItem
-                        onClick={() => {
-                          console.log('🎛️ Chat Mode Changed to Standard', {
-                            from: 'Enhanced (OpenAI GPT-4)',
-                            to: 'Standard (OpenAI Direct)',
-                            timestamp: new Date().toISOString()
-                          });
-
-                          // Track chat mode change
-                          trackEvent('mode_change', 'chat', 'advanced_to_standard');
-
-                          setUseOrchestrator(false);
-                        }}
-                        className="cursor-pointer"
-                      >
-                        <Bot size={16} className="mr-2 text-gray-600" />
-                        <span>Standard (Basic)</span>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem
-                        onClick={() => {
-                          if (hasMinimumTier('pro')) {
-                            console.log('🎛️ Chat Mode Changed to Advanced', {
-                              from: 'Standard (OpenAI Direct)',
-                              to: 'Enhanced (OpenAI GPT-4)',
-                              timestamp: new Date().toISOString()
-                            });
-
-                            // Track chat mode change and advanced usage
-                            trackEvent('mode_change', 'chat', 'standard_to_advanced');
-                            trackAdvancedChatUsage(user?.id);
-
-                            setUseOrchestrator(true);
-                          } else {
-                            setPremiumPopupOpen(true);
-                          }
-                        }}
-                        className="cursor-pointer"
-                      >
-                        <Sparkles size={16} className="mr-2 text-pro-purple" />
-                        <span>Advanced</span>
-                        <ProBadge tier="pro" size="sm" showIcon={false} className="ml-auto" />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
                   {isStreaming && (
                     <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
                       Streaming

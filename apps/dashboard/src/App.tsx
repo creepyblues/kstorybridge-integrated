@@ -76,7 +76,7 @@ const SignupPage = lazy(() => import("./pages/SignupPage"));
 const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
 const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
-const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackMinimal"));
+const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackSimple"));
 
 // Payment pages
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));

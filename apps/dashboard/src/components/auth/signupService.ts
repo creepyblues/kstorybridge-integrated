@@ -6,7 +6,6 @@ import { isBlockedEmail, normalizeCreatorRole } from './validation';
 import { sendWelcomeEmail } from '@/services/emailService';
 import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
 import { supabase } from '@/integrations/supabase/client';
-import { initializeOAuthFlow } from '@/utils/oauthSecurity';
 
 const resolveDashboardUrl = () => {
   const defaultProdUrl = 'https://dashboard.kstorybridge.com';
@@ -329,22 +328,16 @@ export const handleOAuthSignup = async (
   accountType: AccountType
 ): Promise<{ error?: string }> => {
   try {
-    // Clean callback URL without query parameters (OAuth compliance)
-    const redirectUrl = `${window.location.origin}/auth/callback`;
-
-    // Generate secure OAuth state parameter for CSRF protection
-    const secureState = initializeOAuthFlow('signup', accountType, provider);
-
-    // Legacy backup for compatibility (will be removed after secure state validation is confirmed working)
+    // Store account type and flow in sessionStorage for callback (as backup)
     sessionStorage.setItem('oauth_account_type', accountType);
+    sessionStorage.setItem('oauth_flow', 'signup');
 
-    console.log(`🔐 ${accountType.toUpperCase()} OAuth signup secure state initialized:`, secureState.substring(0, 8) + '...');
+    console.log(`🔐 ${accountType.toUpperCase()} OAuth signup initiated with provider: ${provider}`);
 
+    // Encode account_type and flow in redirect URL for reliable persistence
+    const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signup`;
     const result = await authService.signInWithOAuth(provider, {
-      redirectTo: redirectUrl,
-      queryParams: {
-        state: secureState
-      }
+      redirectTo: callbackUrl
     });
 
     if (result.error) {

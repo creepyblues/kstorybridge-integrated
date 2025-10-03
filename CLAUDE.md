@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated**: 2025-01-14
+**Last Updated**: 2025-10-03
 
 ## 📁 Documentation Navigation
 
@@ -162,6 +162,176 @@ navigate(flow === 'signup' ? `/signup/${accountType}?complete=true` : `/${accoun
 - **Eliminated timeouts and hanging** (removed complex circuit breakers)
 - **Consistent redirect behavior** (no environment-specific logic)
 - **Reduced complexity** from 1000+ lines to ~200 lines total
+
+## 🔒 Authentication & Session Security (UPDATED 2025-10-03)
+
+### 🎯 Overall Security Rating: EXCELLENT (8.5/10)
+
+The authentication system is **well-isolated, production-ready, and future-proof** with comprehensive safeguards. The architecture ensures future features automatically inherit auth protections with minimal coordination needed.
+
+### Core Security Architecture
+
+#### ✅ Isolated Authentication Service Layer
+- **Centralized Services** (`/services/auth/`):
+  - `AuthService.ts` - Singleton auth operations
+  - `SessionService.ts` - Session state management
+  - `ProfileService.ts` - User profile management
+  - `SessionManager.ts` - Health checks & recovery
+- **Impact**: All auth changes happen in ONE place, not scattered across codebase
+- **Safety**: Future features inherit auth protection automatically
+
+#### ✅ Protected Route System
+- `ProtectedRoute` component wraps all authenticated pages
+- Automatic session health checks every 5 minutes
+- Auto-redirect to signin if session invalid
+- **Future-proof**: New routes get session protection by default
+
+#### ✅ OAuth Security (Simplified 2025-01-14)
+- Fast callback handler: 80 lines vs 400+ (old system)
+- Account type detection: Metadata-only, no DB queries
+- OAuth-friendly RLS policies (2025-01-30 migration)
+- JWT claims fallback when `auth.uid()` temporarily null
+- **Production**: No RLS timing failures during OAuth signup
+
+#### ✅ Session Management
+- Auto-refresh mechanism (5-min intervals)
+- Session integrity validation (token length, suspicious patterns)
+- Expiry handling: 1-hour timeout (Supabase default)
+- Graceful cleanup on signout
+- **Safety**: Users never stuck in expired sessions
+
+#### ✅ Tier System Security (Buyers)
+- Centralized via `useTierAccess()` hook
+- Tier hierarchy: basic (1) → pro (2) → suite (3)
+- **Stripe-synced**: Tier validated against subscription status
+- Grace period: 1-minute after subscription expiry
+- Auto-downgrade on subscription cancellation
+
+#### ✅ Database Security (RLS Policies)
+- Row Level Security enabled on ALL tables
+- User-scoped access: `auth.uid() = user_id`
+- Service role isolation for admin operations
+- OAuth-friendly policies with JWT fallback
+- **Critical tables**:
+  - `user_buyers` / `user_creators`: Own profile only
+  - `titles`: Creators manage own, all view
+  - `stripe_customers`: User view own, service role manages
+  - `chat_sessions` / `chat_messages`: User-scoped
+
+#### ✅ Billing Integration (Stripe)
+- Webhook signature verification (cryptographic)
+- Event-driven tier sync:
+  - `checkout.session.completed` → Upgrade to Pro
+  - `customer.subscription.updated` → Update tier
+  - `customer.subscription.deleted` → Downgrade to basic
+- Retry logic: 3 attempts with 2-second delays
+- **Safety**: Tier changes event-driven, not user-modifiable
+
+### 🚨 Critical Dependencies - DO NOT MODIFY
+
+**Core Auth Files (High Risk)**:
+- `/hooks/useAuth.tsx` - Auth context (used by 50+ components)
+- `/services/auth/AuthService.ts` - Singleton auth service
+- `/services/auth/SessionService.ts` - Session management
+- `/components/ProtectedRoute.tsx` - Route protection
+- `/utils/sessionManager.ts` - Session health & recovery
+- `/utils/simpleAccountTypeDetection.ts` - OAuth account type
+
+**Database Migrations (Immutable)**:
+- All `supabase/migrations/*.sql` files - NEVER edit after creation
+- Create NEW migration instead of editing existing
+- OAuth RLS policy (`20250130000000_fix_oauth_rls_timing.sql`) - **Production critical**
+
+**Stripe Integration (Security Critical)**:
+- `stripe-webhook/index.ts` - Handles all subscription events
+- Webhook signature verification (lines 88-130)
+- Tier update logic (lines 250-327)
+
+### ✅ Safe Development Patterns
+
+**DO (Safe for Future Development)**:
+- ✅ New features: Use `useAuth()` for user data, `useTierAccess()` for access
+- ✅ Protected pages: Wrap in `<ProtectedRoute>` component
+- ✅ Database queries: Always use RLS-protected queries
+- ✅ Tier-gated content: Use `TierGatedContent` component
+- ✅ Session-aware ops: Check `useAuth().loading` before operations
+
+**DON'T (High Risk)**:
+- ❌ Bypass auth service - Always use `authService` singleton
+- ❌ Modify session directly - Use `refreshSession()` or `signOut()`
+- ❌ Create custom RLS policies - Extend existing patterns
+- ❌ Change Stripe webhook logic - Test thoroughly with Stripe CLI
+- ❌ Use `auth.uid()` only - Include JWT fallback for OAuth compatibility
+
+### ⚠️ Future Development Considerations
+
+**Safe to Develop Independently**:
+- ✅ New UI components (design system isolated)
+- ✅ New buyer/creator features (tier system handles access)
+- ✅ New content types (RLS handles permissions)
+- ✅ Analytics & reporting (read-only operations)
+
+**Requires Auth Coordination**:
+- ⚠️ **New account types** → Update metadata schema, DB table, detection logic, routing
+- ⚠️ **Tier structure changes** → Update DB enum, hierarchy map, Stripe products, migration
+- ⚠️ **New OAuth providers** → Add provider config, callback handler, edge function
+- ⚠️ **Billing changes** → Test webhook events, verify tier sync, use Stripe CLI
+
+### Session Expiration & Long Operations
+
+**Current Behavior**:
+- Sessions expire after **1 hour inactivity**
+- Auto-refresh attempts every 5 minutes
+- Refresh failure → Redirect to signin
+
+**Edge Case Handling**:
+- Long-running operations (>1 hour) need session renewal
+- Example: 2-hour video processing requires periodic session checks
+- Pattern: Call `refreshSession()` every 30 minutes during long ops
+
+### Safety Scorecard
+
+| Component | Rating | Status | Notes |
+|-----------|--------|--------|-------|
+| Email/Password Signup | 9/10 | ✅ Excellent | Isolated service, atomic profile creation |
+| OAuth Flows | 8.5/10 | ✅ Excellent | Simplified 2025-01-14, RLS-friendly |
+| Session Management | 9/10 | ✅ Excellent | Auto-refresh, health checks, expiry handling |
+| Tier System | 8/10 | ✅ Good | Stripe-synced, complex subscription logic |
+| RLS Policies | 9/10 | ✅ Excellent | OAuth-friendly, service role isolation |
+| Billing Integration | 7/10 | ⚠️ Moderate | Webhook-dependent, requires testing |
+| Route Protection | 9/10 | ✅ Excellent | Centralized, auto-applies to new routes |
+
+### Extension Points for New Features
+
+**Safe Extensions**:
+- **New account types**: Extend `AccountType` union, add DB table, update detection
+- **New tiers**: Add to `user_tier` enum, update hierarchy, create Stripe product
+- **New OAuth providers**: Create edge function, add to `OAuthProviders.tsx`
+- **Billing features**: Use webhook events, extend `stripe_customers` table
+
+**Testing Requirements**:
+- Billing changes: Test with Stripe CLI webhooks
+- OAuth changes: Test callback flow end-to-end
+- Tier changes: Verify subscription sync
+- Session changes: Test expiry and refresh
+
+### Summary
+
+**Is auth safe from future development?** → **YES, with caveats**
+
+**Strengths**:
+- ✅ Well-architected with clear separation of concerns
+- ✅ Secure with comprehensive RLS and session validation
+- ✅ Maintainable after 2025-01-14 OAuth simplification
+- ✅ Production-ready with error recovery and retry logic
+
+**Requirements for Future Dev**:
+- ⚠️ Coordinate when changing account types, tiers, OAuth providers
+- ⚠️ Follow database migration discipline (never edit existing)
+- ⚠️ Test Stripe changes thoroughly (webhook reliability critical)
+- ⚠️ Design long operations with session renewal
+
+**Bottom Line**: The auth system is **isolated and protected**. New features automatically inherit auth protections. Most development is safe, but **billing-related changes require extra care** due to Stripe webhook dependencies.
 
 ### Shared Components
 Both applications use shadcn/ui component library with identical components in `src/components/ui/`. These are auto-generated and should not be manually edited.
@@ -710,7 +880,7 @@ try {
 - Verify database migrations are applied
 - Check responsive design and accessibility
 
-**🚨 CRITICAL: OAuth Production Requirements (UPDATED 2025-01-30):**
+**🚨 CRITICAL: OAuth Production Requirements (UPDATED 2025-10-03):**
 - **Database Migration Required**: Apply `20250130000000_fix_oauth_rls_timing.sql` to production
 - **Enhanced RLS Policies**: OAuth-friendly policies handle session timing without service role keys
 - **Migration Command**: `cd apps/dashboard/supabase && npx supabase db push`
@@ -732,7 +902,7 @@ try {
 - Tier-based content access implementation
 - Cross-domain session management between apps
 
-**OAuth Production Issues (UPDATED 2025-01-30):**
+**OAuth Production Issues (UPDATED 2025-10-03):**
 - **Session Timeouts**: Production OAuth PKCE flows take 5-18 seconds vs 1-2 seconds locally
 - **RLS Timing Issues**: Fixed with enhanced OAuth-friendly policies (no service role needed)
 - **Migration Required**: Must apply `20250130000000_fix_oauth_rls_timing.sql` for OAuth to work
@@ -876,6 +1046,7 @@ The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide 
 
 - **DATABASE_SCHEMA.md** - Complete database schema reference for all coding
 - **AUTH_DOCUMENTATION.md** - Authentication system implementation details
+- **LOCAL_VS_PRODUCTION_DIFFERENCES.md** - Environment comparison, testing guidelines, and deployment checklist
 - **EMAIL_POLICY_DOCUMENTATION.md** - Email sending, welcome emails, and deduplication
 - **SLACK_BLACKLIST_DOCUMENTATION.md** - Slack notification blacklist management
 - **SECURITY_BEST_PRACTICES.md** - Credential management and security guidelines

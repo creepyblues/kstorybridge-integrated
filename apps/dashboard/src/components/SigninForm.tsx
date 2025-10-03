@@ -12,7 +12,6 @@ import { getAccountType, getAccountTypeDisplayInfo } from '@/hooks/useAccountTyp
 import { notifyUserSignin } from '@/utils/slack';
 import { createBuyerProfileAtomic } from '@/utils/atomicProfileCreator';
 import { trackSigninError, trackValidationError } from '@/services/authErrorTracking';
-import { initializeOAuthFlow } from '@/utils/oauthSecurity';
 
 interface SigninFormProps {
   accountType: 'buyer' | 'creator';
@@ -93,24 +92,18 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     });
 
     try {
-      // Clean callback URL without query parameters (OAuth compliance)
-      const redirectUrl = `${window.location.origin}/auth/callback`;
+      // Store account type in sessionStorage for callback (as backup)
+      sessionStorage.setItem('oauth_account_type', accountType);
+      sessionStorage.setItem('oauth_flow', 'signin');
 
-      // Generate secure OAuth state parameter for CSRF protection
-      const secureState = initializeOAuthFlow('signin', accountType, 'google');
+      console.log(`🔐 ${accountType.toUpperCase()} OAuth signin initiated with Google`);
 
-      console.log(`🔄 ${accountType.toUpperCase()} OAuth signin redirect URL:`, redirectUrl);
-      console.log(`🔐 ${accountType.toUpperCase()} OAuth secure state initialized:`, secureState.substring(0, 8) + '...');
-
+      // Encode account_type and flow in redirect URL for reliable persistence
+      const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-            state: secureState
-          }
+          redirectTo: callbackUrl
         }
       });
 

@@ -130,8 +130,8 @@ serve(async (req) => {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          console.log('🔧 DEBUG: About to call OpenAI GPT-4 API', {
-            model: 'gpt-4-turbo-preview',
+          console.log('🔧 DEBUG: About to call OpenAI API', {
+            model: 'gpt-4o-mini',
             apiProvider: 'OpenAI',
             hasApiKey: !!openaiApiKey,
             apiKeyPrefix: openaiApiKey?.substring(0, 20) + '...',
@@ -146,7 +146,7 @@ serve(async (req) => {
               'Authorization': `Bearer ${openaiApiKey}`
             },
             body: JSON.stringify({
-              model: 'gpt-4-turbo-preview',
+              model: 'gpt-4o-mini',
               max_tokens: 1000,
               temperature: 0.7,
               stream: true,
@@ -163,8 +163,8 @@ serve(async (req) => {
             })
           })
 
-          console.log('🔧 DEBUG: OpenAI GPT-4 API response', {
-            model: 'gpt-4-turbo-preview',
+          console.log('🔧 DEBUG: OpenAI API response', {
+            model: 'gpt-4o-mini',
             apiProvider: 'OpenAI',
             status: response.status,
             statusText: response.statusText,

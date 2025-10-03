@@ -39,21 +39,21 @@ export const ChatEmptyState = ({ onSubmitMessage, isLoading = false, showHistory
       <div className="w-full max-w-2xl px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-midnight-ink mb-4">
-            What type of story are you after today?
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-midnight-ink mb-4">
+            What type of story are you looking for today?
           </h1>
         </div>
 
         {/* Centered Input */}
         <div className="w-full bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
-          <div className="flex items-end gap-2 p-4">
+          <div className="flex items-center gap-2 p-3">
             <textarea
               ref={textareaRef}
               value={inputMessage}
               onChange={handleInputChange}
               onKeyDown={handleKeyPress}
-              placeholder="Describe the story you are looking for..."
-              className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-base placeholder-gray-400"
+              placeholder="Ask anything..."
+              className="flex-1 max-h-32 px-3 py-3 resize-none focus:outline-none text-base placeholder-gray-400"
               rows={1}
               disabled={isLoading}
               style={{
@@ -83,18 +83,6 @@ export const ChatEmptyState = ({ onSubmitMessage, isLoading = false, showHistory
               <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
               <span className="text-sm">Starting conversation...</span>
             </div>
-          </div>
-        )}
-
-        {/* Go back to Chat history link */}
-        {onToggleHistory && (
-          <div className="mt-6">
-            <button
-              onClick={onToggleHistory}
-              className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1 transition-colors"
-            >
-              {showHistory ? '← Back to current chat' : '→ Chat History'}
-            </button>
           </div>
         )}
       </div>

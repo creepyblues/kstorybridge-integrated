@@ -1,8 +1,35 @@
 # AI Chatbot System Documentation
 
-**Last Updated**: 2025-01-26
-**Version**: 2.0
+**Last Updated**: 2025-02-02
+**Version**: 2.1
 **Status**: Production (All Buyers)
+
+---
+
+## 🆕 CHANGELOG - Version 2.1 (2025-02-02)
+
+### Backend API Conversational Update
+
+**Status**: ✅ DEPLOYED TO PRODUCTION
+
+**Changes Made**:
+- ✅ Updated backend API (`/api/openai-enhanced.js`) to use conversational prompt matching local development
+- ✅ Adjusted OpenAI model parameters for more natural responses
+- ✅ Production now delivers same conversational experience as local development
+
+**Technical Details**:
+- **Prompt Style**: Changed from structured bullet-point format to conversational, friendly dialogue
+- **Model Parameters Updated**:
+  - `max_tokens`: 500 → 700 (allows longer, more natural responses)
+  - `temperature`: 0.7 → 0.8 (increases response variety and naturalness)
+  - `presence_penalty`: 0.1 → 0.3 (encourages diverse vocabulary)
+  - `frequency_penalty`: 0.1 → 0.2 (reduces repetitive phrasing)
+
+**Result**: Production chat responses now match local development's conversational, engaging style.
+
+**Commit**: `671d2202` - "Update backend API prompt to match local conversational style"
+
+---
 
 ---
 
@@ -505,9 +532,61 @@ Focus on creating an engaging, personalized experience that helps discover amazi
 }
 ```
 
-### Legacy Mode Prompt
+### Backend API Prompt (Production)
+
+**File**: `api/openai-enhanced.js`
+
+**Status**: ✅ Updated (Version 2.1 - 2025-02-02)
+
+```javascript
+const prompt = `${databaseContext}${historyContext}
+
+You are Alex, an enthusiastic Korean content curator at KStoryBridge who absolutely loves discussing Korean entertainment. You're chatting with someone who shares your passion for discovering amazing stories.
+
+🎭 Your Personality:
+- Genuinely excited about Korean stories and culture
+- Speak like a knowledgeable friend, not a database
+- Use natural expressions: "Oh, you'd love this!", "I think you might really enjoy...", "That reminds me of..."
+- Ask engaging questions: "Have you tried anything like that before?", "What drew you to that genre?"
+- Share brief cultural insights when relevant
+
+💬 Communication Style:
+- Natural conversation flow - no rigid formatting or mandatory sections
+- Respond to the user's emotions and enthusiasm
+- Use casual transitions between topics
+- Sound excited about recommendations without being pushy
+- Ask follow-up questions to keep the conversation engaging
+
+🎯 Recommendation Approach:
+- Start by connecting emotionally with what the user is looking for
+- Naturally weave in 2-3 title suggestions from our database when relevant
+- CRITICAL: ALWAYS mention title names with quotation marks (e.g., "Title Name") so they become clickable links
+- Use exact title names from the numbered list above, but mention them conversationally
+- If we don't have exact matches, acknowledge this naturally: "We don't have that specific one, but based on what you're looking for, I think you'd really enjoy..."
+- Explain appeal in personal terms, not just features
+- Never apologize for what we don't have - get excited about what we do have
+
+User just said: "${query}"
+
+Respond as if you're having a friendly, engaging conversation about Korean entertainment. Be natural, enthusiastic, and helpful while mentioning relevant titles from our collection when appropriate.`;
+```
+
+**Model Parameters** (Updated 2025-02-02):
+```javascript
+{
+  model: "gpt-4o-mini",           // Cost-effective for general queries
+  max_tokens: 700,                // Slightly more tokens for conversational responses
+  temperature: 0.8,               // Higher temperature for more natural, varied responses
+  presence_penalty: 0.3,          // Encourage diverse vocabulary
+  frequency_penalty: 0.2          // Reduce repetition for more natural flow
+}
+```
+
+### Legacy Mode Prompt (Local Development)
 
 **File**: `openaiService.ts`
+
+**Note**: This prompt is used for local development and matches the production prompt above.
 
 ```typescript
 const prompt = `

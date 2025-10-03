@@ -1507,13 +1507,13 @@ Please try again or switch to the legacy chat mode if the issue persists.`,
         <div className="max-w-7xl mx-auto py-4">
           <div className="page-padding-x flex justify-center">
             <div className="w-[90%] bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
-              <div className="flex items-end gap-2 p-3">
+              <div className="flex items-center gap-2 p-2.5">
                 <textarea
                   value={inputMessage}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
-                  placeholder="Describe the story you are looking for..."
-                  className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-sm placeholder-gray-400"
+                  placeholder="Ask anything..."
+                  className="flex-1 max-h-32 px-3 py-3 resize-none focus:outline-none text-sm placeholder-gray-400"
                   rows={1}
                   disabled={isLoading || isLoadingHistory || isProcessingMessage}
                   style={{

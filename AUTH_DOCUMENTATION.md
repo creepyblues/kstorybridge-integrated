@@ -33,7 +33,7 @@ KStoryBridge uses a **dual-user authentication system** with a **split-app archi
 - **Purpose**: Media buyers, producers, executives seeking Korean content
 - **Email Requirement**: Work emails only (personal domains blocked)
 - **Default Tier**: `basic` (changed from `invited` on 2025-08-21)
-- **Routing**: `/buyers/home` (changed from `/buyers/titles` on 2025-09-12)
+- **Routing**: `/buyers/chat` (primary dashboard, `/buyers/home` redirects here)
 
 #### Creators (formerly IP Owners)
 - **Purpose**: Content creators, authors, agents sharing their work

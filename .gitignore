@@ -3,10 +3,8 @@
 .env
 *.env
 !*.env.example
-!*.env.development
-!*.env.production
-!*.env.staging
-!*.env.testing
+# SECURITY: Do NOT whitelist environment files
+# Only .env.example should be in repository
 
 # API Keys and Secrets
 **/api-keys/

@@ -104,6 +104,40 @@ CREATE TABLE public.user_favorites (
 );
 ```
 
+### stripe_customers
+Stripe subscription and payment tracking for Pro tier users
+```sql
+CREATE TABLE public.stripe_customers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid UNIQUE NOT NULL,
+  stripe_customer_id text UNIQUE,
+  stripe_subscription_id text UNIQUE,
+  subscription_status text CHECK (subscription_status IN ('active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'paused', 'trialing', 'unpaid')),
+  current_period_end timestamp with time zone,
+  cancel_at_period_end boolean DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT stripe_customers_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+);
+```
+
+**Field Requirements**:
+- `user_id`: Unique reference to auth.users (one subscription per user)
+- `stripe_customer_id`: Stripe customer ID from Stripe API
+- `stripe_subscription_id`: Stripe subscription ID (for Pro tier)
+- `subscription_status`: Current subscription status
+  - `active` or `trialing` = Pro tier access
+  - `canceled` but before `current_period_end` = keep Pro tier
+  - `canceled` and past `current_period_end` = downgrade to basic
+- `current_period_end`: When current billing period ends (grace period for access)
+- `cancel_at_period_end`: Whether subscription will cancel at period end
+
+**RLS Policies**:
+- Users can view their own subscription data
+- Service role (Stripe webhooks) can manage all records
+
+**Used By**: `useTierAccess.ts` for Pro tier validation
+
 ## Content Management
 
 ### titles

@@ -1,8 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { databaseClient } from '../database/DatabaseClient';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
-import { sendWelcomeEmail } from '@/services/emailService';
-import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
 import { trackAuthError } from '@/services/authErrorTracking';
 
 export interface AuthUser extends User {
@@ -283,57 +281,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Create user profile after signup
-   */
-  async createUserProfile(
-    user: AuthUser,
-    accountType: 'buyer' | 'creator',
-    profileData: ProfileData
-  ): Promise<{ error?: string }> {
-    try {
-      if (accountType === 'buyer' && profileData.buyer) {
-        const { error } = await databaseClient.insert('user_buyers', {
-          id: user.id,
-          email: user.email,
-          ...profileData.buyer
-        });
-
-        if (error) {
-          return { error };
-        }
-
-        // Send notifications
-        await Promise.all([
-          this.sendBuyerNotifications(user, profileData.buyer),
-        ]);
-
-      } else if (accountType === 'creator' && profileData.creator) {
-        const { error } = await databaseClient.insert('user_creators', {
-          id: user.id,
-          email: user.email,
-          ...profileData.creator,
-          invitation_status: profileData.creator.invitation_status || 'invited'
-        });
-
-        if (error) {
-          return { error };
-        }
-
-        // Send notifications
-        await Promise.all([
-          this.sendCreatorNotifications(user, profileData.creator),
-        ]);
-      }
-
-      return {};
-
-    } catch (error) {
-      return {
-        error: error instanceof Error ? error.message : 'Profile creation failed'
-      };
-    }
-  }
 
   /**
    * Check if user profile exists
@@ -372,51 +319,6 @@ export class AuthService {
     return supabase.auth.onAuthStateChange(callback);
   }
 
-  // Private helper methods
-  private async sendBuyerNotifications(user: AuthUser, profile: NonNullable<ProfileData['buyer']>) {
-    try {
-      await Promise.all([
-        notifyBuyerSignup({
-          userName: profile.full_name,
-          userEmail: user.email!,
-          buyerCompany: profile.buyer_company,
-          buyerRole: profile.buyer_role
-        }),
-        sendWelcomeEmail({
-          userName: profile.full_name,
-          userEmail: user.email!,
-          accountType: 'buyer',
-          dashboardUrl: `${window.location.origin}/buyers/chat`,
-          loginUrl: `${window.location.origin}/signin`
-        })
-      ]);
-    } catch (error) {
-      console.error('Failed to send buyer notifications:', error);
-    }
-  }
-
-  private async sendCreatorNotifications(user: AuthUser, profile: NonNullable<ProfileData['creator']>) {
-    try {
-      await Promise.all([
-        notifyCreatorSignup({
-          userName: profile.full_name,
-          userEmail: user.email!,
-          penName: profile.pen_name,
-          ipOwnerRole: profile.ip_owner_role,
-          ipOwnerCompany: profile.ip_owner_company
-        }),
-        sendWelcomeEmail({
-          userName: profile.full_name,
-          userEmail: user.email!,
-          accountType: 'creator',
-          dashboardUrl: `${window.location.origin}/creators/home`,
-          loginUrl: `${window.location.origin}/signin`
-        })
-      ]);
-    } catch (error) {
-      console.error('Failed to send creator notifications:', error);
-    }
-  }
 }
 
 // Export singleton instance

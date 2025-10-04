@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { getDashboardPath, getSignupPath } from '@/utils/simpleAccountTypeDetection';
-import type { AccountType } from '@/utils/simpleAccountTypeDetection';
+import { getDashboardPath, getSignupPath } from '@/utils/oauthUtils';
+import type { AccountType } from '@/utils/oauthUtils';
 
 /**
  * Ultra-Simple OAuth Callback Handler

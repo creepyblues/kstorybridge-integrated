@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { getOAuthAccountType, getDashboardPath, getSignupPath } from '@/utils/simpleAccountTypeDetection';
-import { markOAuthCompletion } from '@/utils/oauthFlowDetection';
+import { getOAuthAccountType, getDashboardPath, getSignupPath } from '@/utils/oauthUtils';
+import { markOAuthCompletion } from '@/utils/oauthUtils';
 import { trackOAuthCallbackError } from '@/services/authErrorTracking';
 
 /**

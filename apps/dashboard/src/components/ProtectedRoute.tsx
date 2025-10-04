@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { performSessionHealthCheck } from "@/utils/sessionManager";
 import { Loader2 } from "lucide-react";
+import { SESSION_CONFIG } from "@/config/sessionConfig";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -48,10 +49,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
           // Don't sign out on health check errors - might be temporary network issues
         }
 
-        // Reset check flag after 30 seconds to allow re-checking on subsequent navigations
+        // Reset check flag to allow re-checking on subsequent navigations
         setTimeout(() => {
           sessionCheckRef.current = false;
-        }, 30000);
+        }, SESSION_CONFIG.PROTECTED_ROUTE_THROTTLE);
       }
     };
 

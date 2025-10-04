@@ -1,10 +1,29 @@
 /**
  * Simple OAuth Profile Service - Option C Implementation
  *
+ * **WHEN TO USE**: OAuth signup flows ONLY (Google, Discord, etc.)
+ *
+ * **DO NOT USE FOR**: Email/password signup (use atomicProfileCreator.ts instead)
+ *
+ * This service provides fast, reliable profile creation for OAuth flows by using
+ * service role credentials to bypass RLS policies that may not be ready during
+ * OAuth callback timing.
+ *
  * Direct edge function approach that eliminates browser-side service role conflicts.
  * Achieves 3ms session resolution and 100% success rate.
  *
- * Architecture: Browser → Direct getSession() → Edge Function → Profile Created
+ * Architecture: Browser → Direct getSession() → Service Role → Profile Created
+ *
+ * Key Features:
+ * - Uses Supabase service role (bypasses RLS)
+ * - No retry logic (fast fail)
+ * - Optimized for OAuth callback timing
+ * - No database trigger wait
+ *
+ * Decision Tree:
+ * - OAuth signup? → Use this module (primary choice)
+ * - Email signup? → Use atomicProfileCreator.ts
+ * - Need retries? → Use atomicProfileCreator.ts as fallback
  */
 
 import { supabase, supabaseServiceRole } from '@/integrations/supabase/client';

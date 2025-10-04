@@ -6,6 +6,7 @@ import { initializeSessionFromUrl, getCurrentSession, performSessionHealthCheck 
 import { setDirectApiAccessToken } from "@/services/directApiService";
 import { pageReloadOptimizer } from "@/utils/pageReloadOptimizer";
 import { chatHistoryService } from "@/services/chatHistoryService";
+import { SESSION_CONFIG } from "@/config/sessionConfig";
 
 interface AuthContextType {
   user: User | null;
@@ -231,12 +232,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!session.user.created_at) return false;
 
             const userCreatedAt = new Date(session.user.created_at);
-            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-            const isRecent = userCreatedAt > fiveMinutesAgo;
+            const newUserThreshold = new Date(Date.now() - SESSION_CONFIG.NEW_USER_WINDOW);
+            const isRecent = userCreatedAt > newUserThreshold;
 
             console.log('🔍 AUTH: New user check:', {
               userCreatedAt: userCreatedAt.toISOString(),
-              fiveMinutesAgo: fiveMinutesAgo.toISOString(),
+              newUserThreshold: newUserThreshold.toISOString(),
               isRecent,
               userEmail: session.user.email
             });
@@ -279,12 +280,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setIsSessionHealthy(healthCheck.healthy);
 
-      if (!healthCheck.healthy && healthCheck.session) {
+      // Update session state if recovery occurred or if session has issues
+      if (healthCheck.recovered && healthCheck.session) {
+        console.log('✅ AUTH: Session auto-recovered, updating with refreshed session');
+        setSession(healthCheck.session);
+        setUser(healthCheck.session.user);
+      } else if (!healthCheck.healthy && healthCheck.session) {
         console.log('🏥 AUTH: Periodic health check found issues, updating session state');
         setSession(healthCheck.session);
         setUser(healthCheck.session.user);
+      } else if (!healthCheck.healthy && !healthCheck.session && healthCheck.recoveryAttempted) {
+        console.log('❌ AUTH: Session recovery failed, user needs to sign in again');
+        // Session recovery failed - calling code can handle signout if needed
       }
-    }, 5 * 60 * 1000); // Check every 5 minutes
+    }, SESSION_CONFIG.HEALTH_CHECK_INTERVAL);
 
     return () => {
       mounted = false;

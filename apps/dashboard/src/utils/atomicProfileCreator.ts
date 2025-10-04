@@ -1,16 +1,27 @@
 /**
  * Atomic Profile Creation Utility
- * 
+ *
+ * **WHEN TO USE**: Email/password signup flows, fallback scenarios, or when retry logic is needed
+ *
+ * **DO NOT USE FOR**: OAuth flows (use simpleOAuthProfile.ts instead)
+ *
  * This module provides race condition-safe profile creation with comprehensive
  * error handling, retry mechanisms, and conflict resolution for concurrent operations.
- * 
+ *
  * Key Features:
  * - Atomic profile creation with proper locking mechanisms
  * - Conflict resolution for simultaneous creation attempts
- * - Retry mechanisms for transient failures
+ * - Retry mechanisms for transient failures (3 attempts with exponential backoff)
  * - Comprehensive error handling and recovery
  * - Support for both buyer and creator profiles
  * - Integration with existing database triggers
+ * - Uses regular Supabase client (RLS policies apply)
+ *
+ * Decision Tree:
+ * - OAuth signup? → Use simpleOAuthProfile.ts (service role, faster)
+ * - Email signup? → Use this module (retry logic, RLS compliance)
+ * - Need retries? → Use this module
+ * - Fallback needed? → Use this module
  */
 
 import { supabase, supabaseServiceRole } from '@/integrations/supabase/client';

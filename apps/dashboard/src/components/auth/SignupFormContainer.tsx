@@ -5,7 +5,7 @@ import { Card, CardContent } from '@kstorybridge/ui';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { isInOAuthFlow } from '@/utils/oauthFlowDetection';
+import { isInOAuthFlow } from '@/utils/oauthUtils';
 import { trackSignupError, trackValidationError, trackProfileCreationError } from '@/services/authErrorTracking';
 
 import type { AccountType, BuyerFormData, CreatorFormData, SignupState } from './types';

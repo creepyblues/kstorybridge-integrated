@@ -1,6 +1,6 @@
 import { authService } from '@/services/auth';
 import { createBuyerProfileAtomic, createCreatorProfileAtomic } from '@/utils/atomicProfileCreator';
-import { createOAuthBuyerProfile, createOAuthCreatorProfile } from '@/services/oauthProfileService';
+import { createSimpleOAuthBuyerProfile, createSimpleOAuthCreatorProfile } from '@/services/simpleOAuthProfile';
 import type { BuyerFormData, CreatorFormData, AccountType } from './types';
 import { isBlockedEmail, normalizeCreatorRole } from './validation';
 import { sendWelcomeEmail } from '@/services/emailService';
@@ -56,16 +56,35 @@ export const completeOAuthProfile = async (
     if (accountType === 'buyer') {
       const buyerData = formData as BuyerFormData;
 
-      // Use OAuth-specific profile creation for better session handling
-      const profileResult = await createOAuthBuyerProfile({
+      // Use simple OAuth profile creation (service role, fast)
+      let profileResult = await createSimpleOAuthBuyerProfile({
         id: user.id,
         email: user.email,
         full_name: buyerData.full_name,
         buyer_company: buyerData.buyer_company,
         buyer_role: buyerData.buyer_role,
         linkedin_url: buyerData.linkedin_url || null,
-        tier: 'basic'
+        tier: 'basic',
+        requested: false
       });
+
+      // Fallback to atomic profile creator if service role fails
+      if (!profileResult.success) {
+        console.log('⚠️ Simple OAuth profile creation failed, falling back to atomic creator');
+        profileResult = await createBuyerProfileAtomic({
+          id: user.id,
+          email: user.email,
+          full_name: buyerData.full_name,
+          buyer_company: buyerData.buyer_company,
+          buyer_role: buyerData.buyer_role,
+          linkedin_url: buyerData.linkedin_url || null,
+          tier: 'basic',
+          requested: false
+        }, {
+          maxRetries: 3,
+          allowUpdate: true
+        });
+      }
 
       if (!profileResult.success) {
         return { success: false, error: profileResult.error };
@@ -107,17 +126,34 @@ export const completeOAuthProfile = async (
       const creatorData = formData as CreatorFormData;
       const normalizedRole = normalizeCreatorRole(creatorData.ip_owner_role);
 
-      // Use OAuth-specific profile creation for better session handling
-      const profileResult = await createOAuthCreatorProfile({
+      // Use simple OAuth profile creation (service role, fast)
+      let profileResult = await createSimpleOAuthCreatorProfile({
         id: user.id,
         email: user.email,
         full_name: creatorData.full_name,
         pen_name: creatorData.pen_name,
-        ip_owner_role: normalizedRole, // Role is now required, no null fallback
+        ip_owner_role: normalizedRole,
         ip_owner_company: creatorData.ip_owner_company || null,
-        website_url: creatorData.website_url || null,
-        invitation_status: 'invited'
+        website_url: creatorData.website_url || null
       });
+
+      // Fallback to atomic profile creator if service role fails
+      if (!profileResult.success) {
+        console.log('⚠️ Simple OAuth creator profile creation failed, falling back to atomic creator');
+        profileResult = await createCreatorProfileAtomic({
+          id: user.id,
+          email: user.email,
+          full_name: creatorData.full_name,
+          pen_name: creatorData.pen_name,
+          ip_owner_role: normalizedRole,
+          ip_owner_company: creatorData.ip_owner_company,
+          website_url: creatorData.website_url,
+          invitation_status: 'invited'
+        }, {
+          maxRetries: 3,
+          allowUpdate: true
+        });
+      }
 
       if (!profileResult.success) {
         return { success: false, error: profileResult.error };

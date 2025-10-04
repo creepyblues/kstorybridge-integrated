@@ -19,13 +19,10 @@ vi.mock('@/hooks/use-toast', () => ({
   })
 }));
 
-vi.mock('@/utils/simpleAccountTypeDetection', () => ({
+vi.mock('@/utils/oauthUtils', () => ({
   getOAuthAccountType: vi.fn(),
   getDashboardPath: vi.fn(),
-  getSignupPath: vi.fn()
-}));
-
-vi.mock('@/utils/oauthFlowDetection', () => ({
+  getSignupPath: vi.fn(),
   markOAuthCompletion: vi.fn()
 }));
 
@@ -54,7 +51,7 @@ describe('OAuth State Parameter Support', () => {
     vi.clearAllMocks();
 
     // Get the mocked functions
-    const { getOAuthAccountType, getDashboardPath, getSignupPath } = await import('@/utils/simpleAccountTypeDetection');
+    const { getOAuthAccountType, getDashboardPath, getSignupPath } = await import('@/utils/oauthUtils');
     const { validateOAuthState } = await import('@/utils/oauthSecurity');
 
     // Set up default mock implementations

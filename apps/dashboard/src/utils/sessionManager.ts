@@ -1,9 +1,9 @@
 /**
  * Robust Session Management Utility
- * 
+ *
  * This module provides comprehensive session management with proper error handling,
  * recovery mechanisms, and validation to prevent common session-related failures.
- * 
+ *
  * Key Features:
  * - Robust URL token validation
  * - Session recovery mechanisms
@@ -14,13 +14,16 @@
 
 import { supabase, withRetry, isNetworkError, performSupabaseHealthCheck } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
+import { SESSION_CONFIG, SESSION_INTEGRITY_CONFIG } from '@/config/sessionConfig';
 
 // Session integrity and corruption detection
+// Note: Using SESSION_INTEGRITY_CONFIG from centralized config for token length, age, and patterns
+// Required fields are still defined here as they're session-structure specific
 const SESSION_INTEGRITY_CHECKS = {
-  minTokenLength: 20,
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  minTokenLength: SESSION_INTEGRITY_CONFIG.MIN_TOKEN_LENGTH,
+  maxAge: SESSION_INTEGRITY_CONFIG.MAX_SESSION_AGE,
   requiredFields: ['access_token', 'user'],
-  suspiciousPatterns: ['undefined', 'null', 'NaN', '{}', '[]']
+  suspiciousPatterns: SESSION_INTEGRITY_CONFIG.SUSPICIOUS_PATTERNS
 };
 
 export interface SessionData {
@@ -109,7 +112,7 @@ export function validateSessionIntegrity(session: Session | null): {
     if (timeUntilExpiry < 0) {
       issues.push(`Session expired ${Math.abs(timeUntilExpiry)} seconds ago`);
       recommendations.push('Refresh session or re-authenticate');
-    } else if (timeUntilExpiry < 300) { // Less than 5 minutes
+    } else if (timeUntilExpiry < SESSION_CONFIG.SESSION_EXPIRY_WARNING) {
       issues.push(`Session expires soon (${timeUntilExpiry} seconds)`);
       recommendations.push('Proactive session refresh recommended');
     }
@@ -466,13 +469,16 @@ function isRetryableError(errorMessage: string): boolean {
 /**
  * Checks if the current session is expired or about to expire
  */
-export function isSessionExpiredOrExpiring(session: Session | null, bufferMinutes = 5): boolean {
+export function isSessionExpiredOrExpiring(
+  session: Session | null,
+  bufferMinutes = SESSION_CONFIG.SESSION_EXPIRY_BUFFER_MINUTES
+): boolean {
   if (!session) return true;
-  
+
   const now = Math.floor(Date.now() / 1000);
   const expiresAt = session.expires_at;
   const bufferSeconds = bufferMinutes * 60;
-  
+
   return (expiresAt - now) <= bufferSeconds;
 }
 
@@ -681,13 +687,41 @@ export async function getCurrentSession(): Promise<Session | null> {
 }
 
 /**
- * Comprehensive session health check with detailed diagnostics
+ * Session recovery metrics tracking
+ */
+interface SessionRecoveryMetrics {
+  totalAttempts: number;
+  successfulRecoveries: number;
+  failedRecoveries: number;
+  lastAttemptTime: number;
+  lastRecoveryReason: string;
+}
+
+const sessionRecoveryMetrics: SessionRecoveryMetrics = {
+  totalAttempts: 0,
+  successfulRecoveries: 0,
+  failedRecoveries: 0,
+  lastAttemptTime: 0,
+  lastRecoveryReason: ''
+};
+
+/**
+ * Get session recovery metrics for monitoring
+ */
+export function getSessionRecoveryMetrics(): Readonly<SessionRecoveryMetrics> {
+  return { ...sessionRecoveryMetrics };
+}
+
+/**
+ * Comprehensive session health check with automatic recovery
  */
 export async function performSessionHealthCheck(): Promise<{
   healthy: boolean;
   session?: Session;
   issues: string[];
   recommendations: string[];
+  recovered?: boolean;
+  recoveryAttempted?: boolean;
   diagnostics: {
     supabaseHealth: any;
     sessionIntegrity: any;
@@ -744,15 +778,19 @@ export async function performSessionHealthCheck(): Promise<{
     }
 
     // Additional health checks
-    
+
     // Check expiration with multiple time windows
-    if (isSessionExpiredOrExpiring(session, 1)) { // 1-minute buffer - critical
+    const criticalMinutes = SESSION_CONFIG.SESSION_EXPIRY_CRITICAL / 60; // Convert seconds to minutes
+    const warningMinutes = SESSION_CONFIG.SESSION_EXPIRY_WARNING / 60;
+    const infoMinutes = SESSION_CONFIG.SESSION_EXPIRY_INFO / 60;
+
+    if (isSessionExpiredOrExpiring(session, criticalMinutes)) {
       issues.push('Session expired or expires within 1 minute (CRITICAL)');
       recommendations.push('Immediate session refresh or re-authentication required');
-    } else if (isSessionExpiredOrExpiring(session, 5)) { // 5-minute buffer - warning
+    } else if (isSessionExpiredOrExpiring(session, warningMinutes)) {
       issues.push('Session expires within 5 minutes (WARNING)');
       recommendations.push('Proactive session refresh recommended');
-    } else if (isSessionExpiredOrExpiring(session, 15)) { // 15-minute buffer - info
+    } else if (isSessionExpiredOrExpiring(session, infoMinutes)) {
       issues.push('Session expires within 15 minutes (INFO)');
       recommendations.push('Consider refreshing session soon');
     }
@@ -787,13 +825,91 @@ export async function performSessionHealthCheck(): Promise<{
     }
 
     const responseTime = Date.now() - startTime;
+    const criticalIssues = issues.filter(issue =>
+      issue.includes('CRITICAL') ||
+      issue.includes('expired') ||
+      issue.includes('corruption')
+    );
     const healthy = issues.filter(issue => !issue.includes('INFO')).length === 0;
-    
+
+    // AUTO-RECOVERY: Attempt to recover if session has critical issues
+    let recoveredSession: Session | undefined = session;
+    let recovered = false;
+    let recoveryAttempted = false;
+
+    if (!healthy && session && criticalIssues.length > 0) {
+      console.log('🔧 Session Manager: Critical issues detected, attempting auto-recovery', {
+        criticalIssues,
+        userId: session.user?.id
+      });
+
+      recoveryAttempted = true;
+      sessionRecoveryMetrics.totalAttempts++;
+      sessionRecoveryMetrics.lastAttemptTime = Date.now();
+      sessionRecoveryMetrics.lastRecoveryReason = criticalIssues.join('; ');
+
+      // Attempt session refresh for expiring/expired sessions
+      if (criticalIssues.some(issue => issue.includes('expired') || issue.includes('expires'))) {
+        console.log('🔄 Session Manager: Attempting session refresh for expiring session');
+        const refreshResult = await refreshSessionIfNeeded(session);
+
+        if (refreshResult.refreshed && refreshResult.session) {
+          console.log('✅ Session Manager: Auto-recovery successful via session refresh');
+          recoveredSession = refreshResult.session;
+          recovered = true;
+          sessionRecoveryMetrics.successfulRecoveries++;
+
+          // Clear issues since recovery succeeded
+          issues.length = 0;
+          issues.push('Session was expiring but auto-recovered (INFO)');
+          recommendations.length = 0;
+          recommendations.push('Session automatically refreshed');
+        } else {
+          console.log('❌ Session Manager: Session refresh failed, recovery unsuccessful');
+          sessionRecoveryMetrics.failedRecoveries++;
+          recommendations.push('Auto-recovery failed - user should sign in again');
+        }
+      }
+
+      // Attempt corruption recovery for corrupted sessions
+      else if (criticalIssues.some(issue => issue.includes('corruption') || issue.includes('invalid'))) {
+        console.log('🔄 Session Manager: Attempting corruption recovery');
+        const recoveryResult = await recoverCorruptedSession();
+
+        if (recoveryResult.recovered) {
+          console.log('✅ Session Manager: Auto-recovery successful via corruption cleanup');
+          // Get fresh session after recovery
+          const { data: { session: freshSession } } = await supabase.auth.getSession();
+          if (freshSession) {
+            recoveredSession = freshSession;
+            recovered = true;
+            sessionRecoveryMetrics.successfulRecoveries++;
+
+            // Clear issues since recovery succeeded
+            issues.length = 0;
+            issues.push('Session corruption detected but auto-recovered (INFO)');
+            recommendations.length = 0;
+            recommendations.push('Session automatically recovered from corruption');
+          } else {
+            sessionRecoveryMetrics.failedRecoveries++;
+          }
+        } else {
+          console.log('❌ Session Manager: Corruption recovery failed');
+          sessionRecoveryMetrics.failedRecoveries++;
+          recommendations.push('Auto-recovery failed - user should sign in again');
+        }
+      }
+    }
+
+    const finalHealthy = recovered || healthy;
+
     const result = {
-      healthy,
-      session,
+      healthy: finalHealthy,
+      session: recoveredSession,
       issues,
       recommendations,
+      recovered,
+      recoveryAttempted,
       diagnostics: {
         supabaseHealth,
         sessionIntegrity,
@@ -803,16 +919,19 @@ export async function performSessionHealthCheck(): Promise<{
         }
       }
     };
-    
-    console.log(`🏥 Session Manager: Health check ${healthy ? 'PASSED' : 'FAILED'}`, {
-      healthy,
-      userId: session.user?.id,
-      email: session.user?.email,
+
+    console.log(`🏥 Session Manager: Health check ${finalHealthy ? 'PASSED' : 'FAILED'}`, {
+      healthy: finalHealthy,
+      userId: recoveredSession?.user?.id,
+      email: recoveredSession?.user?.email,
       accountType,
-      expiresAt: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'unknown',
+      expiresAt: recoveredSession?.expires_at ? new Date(recoveredSession.expires_at * 1000).toISOString() : 'unknown',
       responseTime: `${responseTime}ms`,
       issueCount: issues.length,
-      criticalIssues: issues.filter(i => i.includes('CRITICAL')).length
+      criticalIssues: criticalIssues.length,
+      recovered,
+      recoveryAttempted,
+      recoveryMetrics: getSessionRecoveryMetrics()
     });
 
     return result;

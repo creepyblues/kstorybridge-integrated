@@ -1047,6 +1047,9 @@ The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide 
 - **DATABASE_SCHEMA.md** - Complete database schema reference for all coding
 - **AUTH_DOCUMENTATION.md** - Authentication system implementation details
 - **LOCAL_VS_PRODUCTION_DIFFERENCES.md** - Environment comparison, testing guidelines, and deployment checklist
+- **DEPLOYMENT_STRATEGY.md** - Three-tier deployment architecture, branch configuration, and Vercel setup
+- **VERCEL_SETUP_GUIDE.md** - Step-by-step Vercel configuration for selective v2 deployments
+- **VERCEL_ROOT_DIRECTORY_FIX.md** - Fix monorepo build errors with Root Directory configuration (CRITICAL)
 - **EMAIL_POLICY_DOCUMENTATION.md** - Email sending, welcome emails, and deduplication
 - **SLACK_BLACKLIST_DOCUMENTATION.md** - Slack notification blacklist management
 - **SECURITY_BEST_PRACTICES.md** - Credential management and security guidelines

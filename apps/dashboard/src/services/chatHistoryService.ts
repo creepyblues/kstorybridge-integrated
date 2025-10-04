@@ -639,8 +639,8 @@ class ChatHistoryService {
   // Utility methods
   async getActiveSession(userId: string, sessionType: 'openai' | 'traditional'): Promise<ChatSession | null> {
     try {
-      // Find the most recent session that hasn't been ended
-      const { data: session, error } = await supabase
+      // FIRST LOAD FIX: Add 10-second timeout to prevent hanging on slow queries
+      const queryPromise = supabase
         .from('chat_sessions')
         .select('*')
         .eq('user_id', userId)
@@ -649,6 +649,17 @@ class ChatHistoryService {
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
+
+      // Create timeout promise (10 seconds)
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Session query timeout after 10 seconds')), 10000)
+      );
+
+      // Race the query against the timeout
+      const { data: session, error } = await Promise.race([
+        queryPromise,
+        timeoutPromise
+      ]);
 
       if (error) {
         console.error('Error fetching active session:', error);
@@ -676,8 +687,13 @@ class ChatHistoryService {
       console.log(`[SessionValidation] Session ${session.id} is valid (${sessionAgeHours.toFixed(1)}h old)`);
       return session;
     } catch (error) {
-      console.error('Exception fetching active session:', error);
-      return null;
+      // Timeout or other exception - gracefully return null so caller can create new session
+      if (error instanceof Error && error.message.includes('timeout')) {
+        console.warn('⏰ Session query timed out, will create new session');
+      } else {
+        console.error('Exception fetching active session:', error);
+      }
+      return null; // Graceful failure - caller will create new session
     }
   }
 

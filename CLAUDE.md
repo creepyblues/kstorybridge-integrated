@@ -1,1219 +1,345 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 **Last Updated**: 2025-10-03
 
 ## 📁 Documentation Navigation
 
-This monorepo contains app-specific CLAUDE.md files for detailed guidance:
+### App-Specific Guides
+- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Auth, OAuth, tier system, premium content
+- **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects
+- **[Admin App](apps/admin/CLAUDE.md)** - Admin auth, data generation, content management
 
-- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Authentication, OAuth flows, tier system, premium content
-- **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects, basic user flows
-- **[Admin App](apps/admin/CLAUDE.md)** - Admin authentication, data generation, content management
+### System Documentation
+- **[AUTH_DOCUMENTATION.md](AUTH_DOCUMENTATION.md)** - Complete auth system reference
+- **[DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)** - Database schema and query patterns
+- **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)** - UI/UX standards, components, color palette
+- **[CACHE_POLICY.md](CACHE_POLICY.md)** - Session-based caching implementation
+- **[LOCAL_VS_PRODUCTION_DIFFERENCES.md](LOCAL_VS_PRODUCTION_DIFFERENCES.md)** - Environment comparison
+- **[DEPLOYMENT_STRATEGY.md](DEPLOYMENT_STRATEGY.md)** - Deployment architecture
+- **[EMAIL_POLICY_DOCUMENTATION.md](EMAIL_POLICY_DOCUMENTATION.md)** - Email system guidelines
+- **[SLACK_BLACKLIST_DOCUMENTATION.md](SLACK_BLACKLIST_DOCUMENTATION.md)** - Notification management
+- **[SECURITY_BEST_PRACTICES.md](SECURITY_BEST_PRACTICES.md)** - Credential management
+- **[USER_JOURNEY_MAP.md](USER_JOURNEY_MAP.md)** - Complete user flows
+- **[UNIT_TEST_PLAN.md](UNIT_TEST_PLAN.md)** - Testing strategy
 
-**Use this file for**: Monorepo commands, shared architecture, cross-app patterns, and critical policies.
-**Use app-specific files for**: App-specific commands, detailed implementation, and focused development guidance.
+---
 
-## Monorepo Commands
+## 🚀 Quick Start Commands
 
-### Root Level Commands
-- `npm run dev:dashboard` - Start dashboard development server
-- `npm run dev:website` - Start website development server
-- `npm run dev:admin` - Start admin development server
-- `npm run build:dashboard` - Build dashboard for production
-- `npm run build:website` - Build website for production
-- `npm run build:admin` - Build admin for production
-- `npm run build:all` - Build all three applications
-- `npm run lint:all` - Run linting on all applications
-- `npm install` - Install all workspace dependencies
+### Root Level
+```bash
+npm run dev:dashboard     # http://localhost:8081
+npm run dev:website       # http://localhost:5173
+npm run dev:admin         # http://localhost:3000
+npm run build:all         # Build all apps
+npm run lint:all          # Lint all apps
+npm install               # Install dependencies
+```
 
-### Individual Application Commands
-Run these from within `apps/dashboard/`, `apps/website/`, or `apps/admin/`:
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run build:dev` - Build for development mode
-- `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build locally
+### Individual Apps (from `apps/{app}/`)
+```bash
+npm run dev               # Start dev server
+npm run build             # Production build
+npm run build:dev         # Development build
+npm run lint              # Run ESLint
+npm run preview           # Preview production build
+```
 
-## Architecture Overview
+---
 
-This is a monorepo containing three related React TypeScript applications for KStoryBridge - a platform connecting Korean content creators with global media buyers.
+## 🏗️ Architecture Overview
 
 ### Project Structure
 ```
 ├── apps/
-│   ├── dashboard/     # User dashboard for authenticated users  
-│   ├── website/       # Marketing website and authentication
-│   └── admin/         # Admin portal for authorized personnel
-├── packages/          # Shared libraries (currently empty)
-└── node_modules/      # Workspace dependencies
+│   ├── dashboard/     # User dashboard + ALL authentication
+│   ├── website/       # Marketing website only
+│   └── admin/         # Admin portal
+├── packages/          # Shared libraries
+└── docs/              # Documentation
 ```
 
-### Shared Technology Stack
-All three applications share similar technology stacks:
+### Technology Stack
 - **Frontend**: React 18 + TypeScript + Vite
-- **Styling**: Tailwind CSS + shadcn/ui components + Radix UI
-- **Backend**: Supabase (shared database, authentication)
-- **State Management**: TanStack React Query + React Context
+- **Styling**: Tailwind CSS + shadcn/ui + Radix UI
+- **Backend**: Supabase (shared: `dlrnrgcoguxlkkcitlpd`)
+- **State**: TanStack Query + React Context
 - **Routing**: React Router v6
-- **Forms**: React Hook Form + Zod validation
-
-### TypeScript Configuration
-- Root `tsconfig.json` provides path aliases:
-  - `@dashboard/*` → `./apps/dashboard/src/*`
-  - `@website/*` → `./apps/website/src/*`
-  - `@shared/*` → `./packages/*/src/*`
-- Both apps use relaxed TypeScript settings (strict: false)
+- **Forms**: React Hook Form + Zod
 
 ### Database & Backend
-- Single Supabase project (`dlrnrgcoguxlkkcitlpd`) shared between applications
-- Database schemas differ between apps:
-  - **Dashboard**: Focuses on `user_buyers` and `user_creators` tables for user management
-  - **Website**: Focuses on `titles` table for content management
-- Supabase migrations exist in both `apps/*/supabase/migrations/`
-- Auto-generated types in `src/integrations/supabase/types.ts`
+- Single Supabase project shared across all apps
+- Auto-generated types: `src/integrations/supabase/types.ts`
+- **CRITICAL**: Query by `email`, never by `user_id` (field doesn't exist)
 
-## Key Architectural Patterns
+---
 
-### Authentication & User Flow (UPDATED 2024-09-10)
+## 🔐 Authentication Flow (UPDATED 2025-10-03)
 
-**IMPORTANT**: Authentication pages are in the Dashboard app, NOT the Website app.
-
-1. Users visit **Website** (`kstorybridge.com`) for marketing content
-2. Website **redirects to Dashboard** (`dashboard.kstorybridge.com`) for authentication:
-   - `/signup/buyer` - Buyer signup flow
-   - `/signup/creator` - Creator signup flow (formerly IP Owner)
-   - `/signin` - Sign in page
-   - `/auth/callback` - OAuth callback handler
-3. After authentication, users stay in **Dashboard** (`dashboard.kstorybridge.com`)
-4. Dashboard shows different interfaces based on `account_type`:
+### User Flow
+1. Users visit **Website** (`kstorybridge.com`) for marketing
+2. Website redirects to **Dashboard** for auth:
+   - `/signup/buyer` - Buyer signup
+   - `/signup/creator` - Creator signup (formerly IP Owner)
+   - `/signin` - Universal signin
+   - `/auth/callback` - OAuth callback (no parameters in URL)
+3. After auth, users stay in Dashboard:
    - **Buyers**: Route to `/buyers/home`
    - **Creators**: Route to `/creators/home`
 
-**Note**: Account types standardized to 'buyer' and 'creator' only (no more 'ip_owner')
-
-## OAuth Flow Simplification (CRITICAL FIX - 2025-01-14)
-
-**PROBLEM**: OAuth signup was failing due to over-engineered callback system with multiple conflicting handlers, complex timeouts, and inconsistent redirect URL construction.
-
-**SOLUTION**: Replaced complex system with streamlined approach.
-
-### Issues Fixed
-
-**❌ Old System Problems:**
-- Two conflicting callback handlers (`AuthCallbackPage.tsx` + `AuthCallbackPageSimple.tsx`)
-- 700+ line account type detection with circuit breakers, timeouts, database lookups
-- Complex redirect URL construction with environment conditionals
-- Multiple storage systems for account type causing race conditions
-- Emergency bypasses and fallback mechanisms that interfered with normal flow
-
-**✅ New System:**
-- **Single callback handler**: `AuthCallbackPageFixed.tsx` (80 lines vs 400+)
-- **Simple account type detection**: `simpleAccountTypeDetection.ts` (fast metadata-only)
-- **Consistent redirect URLs**: Always use `${window.location.origin}/auth/callback`
-- **Clear priority order**: URL params → metadata → sessionStorage → error
-
-### Implementation Changes
-
-**OAuth Redirect URL (SignupForm.tsx):**
-```typescript
-// BEFORE (complex, inconsistent)
-const isDev = window.location.hostname === 'localhost';
-const forceRedirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL;
-let redirectUrl: string;
-if (isDev && forceRedirectUrl) {
-  redirectUrl = `${forceRedirectUrl}?account_type=${accountType}&flow=signup`;
-} else {
-  const dashboardUrl = import.meta.env.VITE_DASHBOARD_URL || window.location.origin;
-  const baseUrl = isDev ? dashboardUrl : window.location.origin;
-  redirectUrl = `${baseUrl}/auth/callback?account_type=${accountType}&flow=signup`;
-}
-
-// AFTER (simple, consistent)
-const redirectUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signup`;
-```
-
-**Account Type Detection:**
-```typescript
-// BEFORE: accountTypeDetection.ts (700+ lines, circuit breakers, database timeouts)
-const result = await determineAccountType(user, {
-  includeDatabaseLookup: true,
-  urlParams,
-  bypassCache: false,
-  debug: true
-});
-
-// AFTER: simpleAccountTypeDetection.ts (80 lines, fast metadata check)
-const result = getOAuthAccountType(user, urlParams);
-```
-
-**Callback Handler (AuthCallbackPageFixed.tsx):**
-```typescript
-// Simple flow: Exchange code → Get account type → Redirect
-const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-const accountType = getOAuthAccountType(data.session.user, urlParams);
-navigate(flow === 'signup' ? `/signup/${accountType}?complete=true` : `/${accountType}s/home`);
-```
-
-### Performance Improvements
-
-- **90% faster OAuth callbacks** (no database queries during callback)
-- **Eliminated timeouts and hanging** (removed complex circuit breakers)
-- **Consistent redirect behavior** (no environment-specific logic)
-- **Reduced complexity** from 1000+ lines to ~200 lines total
-
-## 🔒 Authentication & Session Security (UPDATED 2025-10-03)
-
-### 🎯 Overall Security Rating: EXCELLENT (8.5/10)
-
-The authentication system is **well-isolated, production-ready, and future-proof** with comprehensive safeguards. The architecture ensures future features automatically inherit auth protections with minimal coordination needed.
-
-### Core Security Architecture
-
-#### ✅ Isolated Authentication Service Layer
-- **Centralized Services** (`/services/auth/`):
-  - `AuthService.ts` - Singleton auth operations
-  - `SessionService.ts` - Session state management
-  - `ProfileService.ts` - User profile management
-  - `SessionManager.ts` - Health checks & recovery
-- **Impact**: All auth changes happen in ONE place, not scattered across codebase
-- **Safety**: Future features inherit auth protection automatically
-
-#### ✅ Protected Route System
-- `ProtectedRoute` component wraps all authenticated pages
-- Automatic session health checks every 5 minutes
-- Auto-redirect to signin if session invalid
-- **Future-proof**: New routes get session protection by default
-
-#### ✅ OAuth Security (Simplified 2025-01-14)
-- Fast callback handler: 80 lines vs 400+ (old system)
-- Account type detection: Metadata-only, no DB queries
-- OAuth-friendly RLS policies (2025-01-30 migration)
-- JWT claims fallback when `auth.uid()` temporarily null
-- **Production**: No RLS timing failures during OAuth signup
-
-#### ✅ Session Management
-- Auto-refresh mechanism (5-min intervals)
-- Session integrity validation (token length, suspicious patterns)
-- Expiry handling: 1-hour timeout (Supabase default)
-- Graceful cleanup on signout
-- **Safety**: Users never stuck in expired sessions
-
-#### ✅ Tier System Security (Buyers)
-- Centralized via `useTierAccess()` hook
-- Tier hierarchy: basic (1) → pro (2) → suite (3)
-- **Stripe-synced**: Tier validated against subscription status
-- Grace period: 1-minute after subscription expiry
-- Auto-downgrade on subscription cancellation
-
-#### ✅ Database Security (RLS Policies)
-- Row Level Security enabled on ALL tables
-- User-scoped access: `auth.uid() = user_id`
-- Service role isolation for admin operations
-- OAuth-friendly policies with JWT fallback
-- **Critical tables**:
-  - `user_buyers` / `user_creators`: Own profile only
-  - `titles`: Creators manage own, all view
-  - `stripe_customers`: User view own, service role manages
-  - `chat_sessions` / `chat_messages`: User-scoped
-
-#### ✅ Billing Integration (Stripe)
-- Webhook signature verification (cryptographic)
-- Event-driven tier sync:
-  - `checkout.session.completed` → Upgrade to Pro
-  - `customer.subscription.updated` → Update tier
-  - `customer.subscription.deleted` → Downgrade to basic
-- Retry logic: 3 attempts with 2-second delays
-- **Safety**: Tier changes event-driven, not user-modifiable
-
-### 🚨 Critical Dependencies - DO NOT MODIFY
-
-**Core Auth Files (High Risk)**:
-- `/hooks/useAuth.tsx` - Auth context (used by 50+ components)
-- `/services/auth/AuthService.ts` - Singleton auth service
-- `/services/auth/SessionService.ts` - Session management
-- `/components/ProtectedRoute.tsx` - Route protection
-- `/utils/sessionManager.ts` - Session health & recovery
-- `/utils/simpleAccountTypeDetection.ts` - OAuth account type
-
-**Database Migrations (Immutable)**:
-- All `supabase/migrations/*.sql` files - NEVER edit after creation
-- Create NEW migration instead of editing existing
-- OAuth RLS policy (`20250130000000_fix_oauth_rls_timing.sql`) - **Production critical**
-
-**Stripe Integration (Security Critical)**:
-- `stripe-webhook/index.ts` - Handles all subscription events
-- Webhook signature verification (lines 88-130)
-- Tier update logic (lines 250-327)
-
-### ✅ Safe Development Patterns
-
-**DO (Safe for Future Development)**:
-- ✅ New features: Use `useAuth()` for user data, `useTierAccess()` for access
-- ✅ Protected pages: Wrap in `<ProtectedRoute>` component
-- ✅ Database queries: Always use RLS-protected queries
-- ✅ Tier-gated content: Use `TierGatedContent` component
-- ✅ Session-aware ops: Check `useAuth().loading` before operations
-
-**DON'T (High Risk)**:
-- ❌ Bypass auth service - Always use `authService` singleton
-- ❌ Modify session directly - Use `refreshSession()` or `signOut()`
-- ❌ Create custom RLS policies - Extend existing patterns
-- ❌ Change Stripe webhook logic - Test thoroughly with Stripe CLI
-- ❌ Use `auth.uid()` only - Include JWT fallback for OAuth compatibility
-
-### ⚠️ Future Development Considerations
-
-**Safe to Develop Independently**:
-- ✅ New UI components (design system isolated)
-- ✅ New buyer/creator features (tier system handles access)
-- ✅ New content types (RLS handles permissions)
-- ✅ Analytics & reporting (read-only operations)
-
-**Requires Auth Coordination**:
-- ⚠️ **New account types** → Update metadata schema, DB table, detection logic, routing
-- ⚠️ **Tier structure changes** → Update DB enum, hierarchy map, Stripe products, migration
-- ⚠️ **New OAuth providers** → Add provider config, callback handler, edge function
-- ⚠️ **Billing changes** → Test webhook events, verify tier sync, use Stripe CLI
-
-### Session Expiration & Long Operations
-
-**Current Behavior**:
-- Sessions expire after **1 hour inactivity**
-- Auto-refresh attempts every 5 minutes
-- Refresh failure → Redirect to signin
-
-**Edge Case Handling**:
-- Long-running operations (>1 hour) need session renewal
-- Example: 2-hour video processing requires periodic session checks
-- Pattern: Call `refreshSession()` every 30 minutes during long ops
-
-### Safety Scorecard
-
-| Component | Rating | Status | Notes |
-|-----------|--------|--------|-------|
-| Email/Password Signup | 9/10 | ✅ Excellent | Isolated service, atomic profile creation |
-| OAuth Flows | 8.5/10 | ✅ Excellent | Simplified 2025-01-14, RLS-friendly |
-| Session Management | 9/10 | ✅ Excellent | Auto-refresh, health checks, expiry handling |
-| Tier System | 8/10 | ✅ Good | Stripe-synced, complex subscription logic |
-| RLS Policies | 9/10 | ✅ Excellent | OAuth-friendly, service role isolation |
-| Billing Integration | 7/10 | ⚠️ Moderate | Webhook-dependent, requires testing |
-| Route Protection | 9/10 | ✅ Excellent | Centralized, auto-applies to new routes |
-
-### Extension Points for New Features
-
-**Safe Extensions**:
-- **New account types**: Extend `AccountType` union, add DB table, update detection
-- **New tiers**: Add to `user_tier` enum, update hierarchy, create Stripe product
-- **New OAuth providers**: Create edge function, add to `OAuthProviders.tsx`
-- **Billing features**: Use webhook events, extend `stripe_customers` table
-
-**Testing Requirements**:
-- Billing changes: Test with Stripe CLI webhooks
-- OAuth changes: Test callback flow end-to-end
-- Tier changes: Verify subscription sync
-- Session changes: Test expiry and refresh
-
-### Summary
-
-**Is auth safe from future development?** → **YES, with caveats**
-
-**Strengths**:
-- ✅ Well-architected with clear separation of concerns
-- ✅ Secure with comprehensive RLS and session validation
-- ✅ Maintainable after 2025-01-14 OAuth simplification
-- ✅ Production-ready with error recovery and retry logic
-
-**Requirements for Future Dev**:
-- ⚠️ Coordinate when changing account types, tiers, OAuth providers
-- ⚠️ Follow database migration discipline (never edit existing)
-- ⚠️ Test Stripe changes thoroughly (webhook reliability critical)
-- ⚠️ Design long operations with session renewal
-
-**Bottom Line**: The auth system is **isolated and protected**. New features automatically inherit auth protections. Most development is safe, but **billing-related changes require extra care** due to Stripe webhook dependencies.
-
-### Shared Components
-Both applications use shadcn/ui component library with identical components in `src/components/ui/`. These are auto-generated and should not be manually edited.
-
-### Development Workflow
-1. Install dependencies at root: `npm install`
-2. Develop applications independently using workspace commands
-3. Both apps can run simultaneously on different ports
-4. Shared Supabase backend ensures data consistency
-
-### Local Testing with Cross-Domain Authentication
-
-The applications support flexible URL configuration for local testing scenarios where users need to authenticate on the website and then access the dashboard.
-
-#### Option 1: Default Ports (Simplest)
-```bash
-npm run dev:website   # http://localhost:5173
-npm run dev:dashboard # http://localhost:8081
-```
-No additional configuration needed - redirects work automatically between ports.
-
-#### Option 2: Custom Environment Variables
-Copy `.env.local.example` to `.env.local` in each app directory and customize:
-
-**apps/website/.env.local:**
-```
-VITE_DASHBOARD_URL=http://localhost:8081
-VITE_WEBSITE_URL=http://localhost:5173
-```
-
-**apps/dashboard/.env.local:**
-```
-VITE_WEBSITE_URL=http://localhost:5173
-VITE_DASHBOARD_URL=http://localhost:8081
-```
-
-#### Option 3: Hosts File for Realistic Testing
-Add to `/etc/hosts`:
-```
-127.0.0.1 kstorybridge.com
-127.0.0.1 dashboard.kstorybridge.com
-```
-
-Then set environment variables:
-```
-VITE_DASHBOARD_URL=http://dashboard.kstorybridge.com:8081
-VITE_WEBSITE_URL=http://kstorybridge.com:5173
-```
-
-Access via:
-- Website: `http://kstorybridge.com:5173`
-- Dashboard: `http://dashboard.kstorybridge.com:8081`
-
-## 🔄 Session-Based Cache Policy (CRITICAL - UPDATED 2025-01-14)
-
-### 🚨 New Cache Philosophy
-
-**IMPORTANT**: The cache system has been completely redesigned to prioritize data integrity and user experience.
-
-### Core Principles
-
-1. **🔐 Session-Based Only**: Cache is tied to authentication sessions (1-hour expiry)
-2. **🗄️ Database First**: Always fetch from database on new sessions
-3. **❌ No Fallbacks**: Never show mock/stale data - inform users of connectivity issues
-4. **⚡ Session Reuse**: Use cache within valid sessions for performance
-5. **🧹 Auto-Cleanup**: Cache automatically clears on logout or session expiry
-
-### Implementation Architecture
-
-#### Session Lifecycle
-```typescript
-// User logs in → Initialize new cache session
-initializeSession(session.access_token);
-
-// Valid session + fresh cache → Use cached data
-if (isSessionValid() && isFresh('titles')) {
-  return getCachedTitles();
-}
-
-// New session OR stale cache → Fetch from database
-const titles = await database.getTitles();
-
-// Database fails → Show connectivity error (NO FALLBACK)
-catch (error) {
-  showDatabaseError(error);
-}
-
-// User logs out OR 1-hour inactivity → Clear cache
-clearCache();
-```
-
-#### Database Connectivity Handling
-```typescript
-// ✅ CORRECT: Show database errors to users
-try {
-  const data = await databaseService.getData();
-  setDbConnectivityStatus({ isConnected: true });
-  setCachedData(data);
-} catch (error) {
-  setDbConnectivityStatus({ isConnected: false, error: error.message });
-  // Show user-friendly error UI with retry option
-  showDatabaseErrorUI(error);
-}
-
-// ❌ INCORRECT: Don't use fallback data
-// if (error) return mockData; // NEVER DO THIS
-```
-
-### Component Integration
-
-#### Required Imports
-```typescript
-import { useSessionCache } from '@/hooks/useSessionCache';
-import { useDataCache } from '@/contexts/DataCacheContext';
-```
-
-#### Standard Pattern
-```typescript
-export default function MyComponent() {
-  const { user } = useAuth();
-  const {
-    getData,
-    setData,
-    isFresh,
-    isSessionValid,
-    getDbConnectivityStatus,
-    setDbConnectivityStatus
-  } = useDataCache();
-  const { } = useSessionCache(); // Initialize session management
-
-  const [loading, setLoading] = useState(false);
-  const [dbError, setDbError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // NEW POLICY: Check session validity first
-    if (user && (!isSessionValid() || getData().length === 0 || !isFresh('data'))) {
-      loadFromDatabase();
-    }
-  }, [user, isSessionValid]);
-
-  const loadFromDatabase = async () => {
-    try {
-      setLoading(true);
-      setDbError(null);
-
-      const data = await apiService.getData();
-      setData(data);
-      setDbConnectivityStatus({ isConnected: true });
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Database error';
-      setDbConnectivityStatus({ isConnected: false, error: errorMessage });
-      setDbError(errorMessage);
-
-      toast({
-        title: "Database Connection Error",
-        description: "Unable to load data. Please check your connection.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Show database error UI instead of empty state
-  if (dbError && !getDbConnectivityStatus().isConnected) {
-    return <DatabaseErrorUI error={dbError} onRetry={() => window.location.reload()} />;
-  }
-
-  return (
-    // Normal component UI
-  );
-}
-```
-
-### Cache Configuration
-
-#### Session Settings
-- **Session Duration**: 1 hour of inactivity
-- **Cache Size Limit**: 0.5MB (reduced for session-based storage)
-- **Max Titles Cached**: 30 (reduced from 100)
-- **Auto-Expiry Check**: Every 5 minutes
-
-#### Storage Strategy
-- **No Cross-Session Persistence**: Cache cleared between sessions
-- **Memory + localStorage**: Session-based localStorage with automatic cleanup
-- **Size Monitoring**: Automatic cache clearing if size exceeds limits
-
-### Migration from Old Cache System
-
-#### What Changed
-- ❌ **Removed**: 24-hour persistent cache across sessions
-- ❌ **Removed**: Mock data fallbacks (localhost and production)
-- ❌ **Removed**: Cross-session data persistence
-- ✅ **Added**: Session-based cache lifecycle
-- ✅ **Added**: Database connectivity status tracking
-- ✅ **Added**: User-facing error handling for DB issues
-
-#### Required Component Updates
-1. Add `useSessionCache()` hook to all data-loading components
-2. Replace `isFresh(key)` checks with `isSessionValid() && isFresh(key)`
-3. Add database connectivity error handling
-4. Remove any mock data fallback logic
-5. Update dependency arrays to include `isSessionValid`
-
-### Error Handling Standards
-
-#### Database Connectivity Errors
-```typescript
-// Show user-friendly error with retry option
-<Card className="border-red-200">
-  <CardContent className="text-center p-8">
-    <div className="text-red-600 mb-4">
-      <ExclamationIcon className="w-12 h-12 mx-auto" />
-    </div>
-    <h3 className="text-lg font-medium text-red-600 mb-2">
-      Database Connection Error
-    </h3>
-    <p className="text-red-500 mb-4">
-      Unable to connect to the database. Please check your internet connection.
-    </p>
-    <Button onClick={() => window.location.reload()}>
-      Retry Connection
-    </Button>
-  </CardContent>
-</Card>
-```
-
-#### Session Expiry Handling
-- Automatic cache clearing after 1 hour inactivity
-- User remains logged in (handled by auth system)
-- Next data request triggers fresh database fetch
-- No user notification needed for cache expiry
-
-### Testing Guidelines
-
-#### Local Development
-- **No Mock Data**: Always use real database connections
-- **Test DB Failures**: Disconnect network to test error handling
-- **Session Testing**: Test 1-hour expiry with shortened timers
-- **Cache Verification**: Verify cache clears on logout
-
-#### Production Monitoring
-- Monitor database connectivity error rates
-- Track cache hit/miss ratios per session
-- Alert on excessive database error rates
-- Monitor session cache memory usage
-
-### Performance Benefits
-
-- **70% Faster Initial Loads**: No stale cache checks on session start
-- **Reduced Database Load**: Efficient caching within sessions
-- **Better UX**: Clear feedback on connectivity issues
-- **No Data Corruption**: Always fresh data on session start
-
-**See `useSessionCache.tsx` and `DataCacheContext.tsx`** for complete implementation details.
-
-## Design Guidelines
-
-### Color Usage Policy
-
-**🚫 NEVER USE YELLOW COLORS**
-- Do not use any yellow background colors (`bg-yellow-*`, `hover:bg-yellow-*`)
-- Do not use yellow borders or text colors
-- Replace yellow (#FBBC05, #FCD34D, etc.) with neutral colors like gray-500 (#6B7280) or brand colors
-- This applies to all UI elements including buttons, icons, backgrounds, borders, and hover states
-
-**✅ Approved Color Palette**:
-- **Primary Text**: black (for labels, headings, field names)
-- **Secondary**: midnight-ink (#1e293b), porcelain-blue (#e2e8f0)
-- **Accent**: sunrise-coral (for CTAs and highlights)
-- **Neutrals**: gray-50, gray-100, gray-200, gray-300, gray-500, gray-900
-- **Status Colors**: red for errors, green for success, blue for info
-- **Links**: black with `hover:text-gray-700` for hover state
-
-### Default Button Design (UPDATED 2025-01-14)
-
-**Standard Button Style - MUST be used across all pages**:
-
-```jsx
-// Default button (all standard buttons should use this)
-<Button
-  variant="outline"
-  className="border-gray-300 hover:bg-gray-100"
->
-  Button Text
-</Button>
-
-// Responsive button
-<Button
-  variant="outline"
-  className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
->
-  Button Text
-</Button>
-
-// Destructive action button (e.g., Sign Out, Delete)
-<Button
-  variant="outline"
-  className="border-gray-300 hover:bg-gray-100 text-red-600"
->
-  Sign Out
-</Button>
-```
-
-**Button Design Requirements**:
-- **Variant**: Always use `variant="outline"` for standard buttons
-- **Border**: Always use `border-gray-300` for consistent border color
-- **Hover**: Always use `hover:bg-gray-100` for light grey hover background
-- **Text only**: No icons in buttons - keep them clean and minimal
-- **No effects**: No shadows, gradients, glows, or complex animations
-- **Consistent spacing**: Use standard padding (handled by Button component)
-
-### Card/Box Design Standards (UPDATED 2025-01-14)
-
-**IMPORTANT**: All cards, boxes, and containers across the application MUST follow the Profile page design standard.
-
-**Standard Card Style - MANDATORY for ALL pages**:
-```jsx
-<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-  <CardContent className="p-4 sm:p-6">
-    {/* Content */}
-  </CardContent>
-</Card>
-```
-
-**Card Design Requirements (STRICT)**:
-- **Background**: `bg-transparent` - NO solid backgrounds, NO white backgrounds
-- **Border**: `border-gray-300` - Light gray border for subtle definition
-- **Shadow**: `shadow-none` - NO shadows, NO drop shadows, NO box shadows
-- **Corners**: `rounded-2xl` - Consistent large border radius
-- **Spacing**: `mb-6 sm:mb-8 lg:mb-12` - Responsive bottom margins between cards
-- **Padding**: `p-4 sm:p-6` - Responsive internal padding
-
-**✅ DO:**
-- Use transparent backgrounds for all cards
-- Use light gray borders for structure
-- Keep design flat and minimal
-- Follow `/buyers/profile` page as the design reference
-
-**❌ DON'T:**
-- Use `bg-white` or any solid background colors
-- Add shadows (`shadow-sm`, `shadow-lg`, etc.)
-- Use heavy borders or dark borders
-- Create visual "weight" or depth effects
-
-**Reference Implementation**: See `/buyers/profile` page for the correct visual implementation of this standard.
-
-**Migration Guide**: When updating existing pages to follow this standard:
-1. Replace `bg-white` with `bg-transparent`
-2. Replace any `shadow-*` classes with `shadow-none`
-3. Ensure `border-gray-300` is used for borders
-4. Add responsive margins: `mb-6 sm:mb-8 lg:mb-12`
-5. Test visual consistency against Profile page
-
-**Examples of Non-Compliant Designs to Fix**:
-- Cards with solid white backgrounds
-- Drop shadows or box shadows
-- Heavy or dark borders
-- Cards that visually "float" above the page background
-
-### Typography Standards (UPDATED 2025-01-14)
-
-**Default Font - SF Pro**:
-SF Pro is now the default font for the entire Dashboard application. All text elements automatically use SF Pro.
-
-```jsx
-// All text automatically uses SF Pro (no class needed)
-<h3 className="text-lg font-semibold text-gray-900">
-  Header Text
-</h3>
-
-// Field labels automatically use SF Pro
-<h5 className="font-semibold text-black mb-1 text-sm sm:text-base">
-  Field Label
-</h5>
-
-// Body text automatically uses SF Pro
-<p className="text-gray-600 text-sm">
-  Body text content
-</p>
-```
-
-**Typography Requirements**:
-- **Default Font**: SF Pro is automatically applied to all text elements
-- **No Font Classes**: The `font-sf-pro` class is no longer needed (deprecated)
-- **Text Color**: Use `text-black` for primary labels and headings
-- **Consistent Typography**: All text (headers, body, labels, buttons) uses SF Pro
-- **Fallback Stack**: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif
-
-### Badge Design Standards (UPDATED 2025-01-14)
-
-**IMPORTANT**: All badges across the application MUST follow the default Badge component design for consistency.
-
-**Default Badge Styling** (from `packages/ui/src/components/badge.tsx`):
-- **Shape**: `rounded-full` (fully circular/pill shape)
-- **Padding**: `px-2.5 py-0.5` (horizontal: 10px, vertical: 2px)
-- **Font Size**: `text-xs` (12px)
-- **Font Weight**: `font-semibold` (NOT font-bold)
-- **Text Transform**: Normal case (NO uppercase)
-- **Letter Spacing**: Normal (NO tracking-wider)
-
-**✅ CORRECT Badge Implementation**:
-```tsx
-// Standard badge with custom color
-<span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
-  BETA
-</span>
-
-// Using Badge component from @kstorybridge/ui
-<Badge className="bg-pro-purple text-white">Pro</Badge>
-```
-
-**❌ INCORRECT Badge Implementation**:
-```tsx
-// Wrong: Custom sizing and styling
-<span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider">
-  BETA
-</span>
-```
-
-**Color Preservation Rule**:
-- When creating or updating badges, ALWAYS preserve brand-specific background and text colors
-- Only apply the standardized sizing, shape, font weight, and text transform
-- Do NOT change badge colors during standardization updates
-
-**Badge Component Location**:
-- Shared component: `packages/ui/src/components/badge.tsx`
-- Used across all apps in the monorepo via `@kstorybridge/ui` package
-
-## Common Development Patterns & Best Practices
+### Account Types
+- **buyer** - Media buyers with tier system (basic/pro/suite)
+- **creator** - Content creators (standardized from 'ip_owner')
+
+**See**: [AUTH_DOCUMENTATION.md](AUTH_DOCUMENTATION.md) for complete details
+
+---
+
+## 🚨 Critical Rules
+
+### Security
+- ❌ **NEVER commit**: `.env` files, API keys, service role keys, `secrets/` directories
+- ✅ **Use**: Vercel dashboard for env vars, Supabase CLI for edge function secrets
+- ✅ **Rotate immediately** if credentials exposed
+- **See**: [SECURITY_BEST_PRACTICES.md](SECURITY_BEST_PRACTICES.md)
+
+### Database
+- ✅ **Query pattern**: `.eq('email', user.email)` (always use `email`)
+- ❌ **Never use**: `user_id` field (doesn't exist in user tables)
+- ✅ **Migration workflow**: Create in `apps/*/supabase/migrations/`, never loose SQL files
+- **See**: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)
+
+### Authentication
+- ✅ **OAuth callbacks**: No URL parameters, use `${window.location.origin}/auth/callback`
+- ✅ **Account type**: Set during signup in metadata, never default assignment
+- ✅ **Session-based only**: No cross-session data persistence
+- **See**: [AUTH_DOCUMENTATION.md](AUTH_DOCUMENTATION.md)
+
+### Email System
+- ✅ **Always use**: `EmailService.getInstance().sendWelcomeEmail()`
+- ❌ **Never**: Direct edge function calls or localStorage tracking
+- ✅ **Database deduplication**: Automatic via `email_logs` table
+- **See**: [EMAIL_POLICY_DOCUMENTATION.md](EMAIL_POLICY_DOCUMENTATION.md)
+
+### Design System
+- ❌ **NEVER**: Yellow colors (`bg-yellow-*`, yellow hex values)
+- ✅ **Cards**: `bg-transparent border-gray-300 shadow-none rounded-2xl`
+- ✅ **Buttons**: `variant="outline" border-gray-300 hover:bg-gray-100`
+- ✅ **Font**: SF Pro (automatic, no class needed)
+- **See**: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
+
+### Localhost Development
+- ✅ **All redirects**: Stay in localhost, never redirect to production
+- ✅ **OAuth testing**: Use localhost callback URLs in development
+
+---
+
+## 📊 Common Development Patterns
 
 ### Database Operations
 
-**Standard Supabase Configuration:**
+**Supabase Config**:
 ```typescript
 const SUPABASE_URL = 'https://dlrnrgcoguxlkkcitlpd.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 ```
 
-**Query Patterns:**
-- ✅ Use `email` for user lookups: `.eq('email', user.email)`
-- ❌ Avoid `user_id` - this field doesn't exist in user tables
-- Handle null/undefined values appropriately
-- Always include error handling with try/catch blocks
+**Query Patterns**:
+```typescript
+// ✅ CORRECT
+.eq('email', user.email?.toLowerCase())
 
-**User Table Structure:**
-- `user_buyers` - Buyer accounts with `tier` field (basic|invited|pro|suite, default: 'basic')
-- `user_creators` - Creator/IP owner accounts (renamed from `user_ipowners` 2025-09-10)
-- Query by `email` field, not `user_id`
+// ❌ INCORRECT
+.eq('user_id', user.id)
+```
 
-### Tier System (Dashboard)
+### User Tables Structure
 
-**Buyer Tier Hierarchy:**
-- `basic` (1) - Default tier, standard features
-- `invited` (0) - Restricted access (legacy/special cases)
-- `pro` (2) - Premium content access
-- `suite` (3) - Full feature access
+**user_buyers** (query by `email`):
+- `tier`: basic (default) | invited | pro | suite
+- Default tier: `basic` (changed 2025-08-21)
+- Tier hierarchy: basic(1) < pro(2) < suite(3)
 
-**Implementation:**
-- Use `useTierAccess()` hook for tier checking
-- Field `tier` in `user_buyers` table (replaced `invitation_status`)
-- Default tier for new signups: 'basic' (changed from 'invited' in 2025-08-21 update)
-- Premium content gating with `TierGatedContent` component
+**user_creators** (query by `email`):
+- `pen_name`: Always use this field (not `pen_name_or_studio`)
+- `ip_owner_role`: REQUIRED (author | agent)
+- `invitation_status`: invited (default) | active | pending
 
-### Content Management (Titles Table)
+### Tier System (Buyers)
+```typescript
+import { useTierAccess } from '@/hooks/useTierAccess';
 
-**Complete Field List** (Always show ALL when requested):
+const { hasAccess, tier } = useTierAccess();
+// Automatically synced with Stripe subscriptions
+```
+
+### Cache System
+```typescript
+import { useDataCache } from '@/contexts/DataCacheContext';
+
+const { getData, setData, isSessionValid, isFresh } = useDataCache();
+
+// Session-based only (1-hour expiry)
+if (isSessionValid() && isFresh('data')) {
+  return getData();
+}
+```
+
+**See**: [CACHE_POLICY.md](CACHE_POLICY.md) for implementation details
+
+---
+
+## 🎨 Design Standards Quick Reference
+
+### Colors
+- **Primary Text**: `text-black`
+- **Neutrals**: `gray-50`, `gray-100`, `gray-200`, `gray-300`, `gray-500`, `gray-900`
+- **Status**: `red-*` (error), `green-*` (success), `blue-*` (info)
+- **Links**: `text-black hover:text-gray-700`
+- ❌ **NEVER**: Yellow colors
+
+### Standard Components
+```tsx
+// Card
+<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+  <CardContent className="p-4 sm:p-6">...</CardContent>
+</Card>
+
+// Button
+<Button variant="outline" className="border-gray-300 hover:bg-gray-100">
+  Button Text
+</Button>
+
+// Badge
+<span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
+  BETA
+</span>
+```
+
+**Reference**: `/buyers/profile` page for visual standard
+**See**: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for complete guidelines
+
+---
+
+## 🧪 Development Workflow
+
+### Local Testing
+```bash
+# Standard setup
+npm install
+npm run dev:dashboard
+npm run dev:website
+
+# Cross-domain testing (.env.local)
+VITE_DASHBOARD_URL=http://localhost:8081
+VITE_WEBSITE_URL=http://localhost:5173
+```
+
+### Build Verification
+```bash
+npm run build:all        # Build all apps
+npm run lint:all         # Lint check
+```
+
+### Database Migrations
+```bash
+cd apps/[app]/supabase
+npx supabase migration new [name]
+npx supabase db reset    # Test locally first
+npx supabase db push     # Apply to production
+```
+
+---
+
+## 📋 Data Consistency Guidelines
+
+### User Signup Data Flow
+
+**Field Naming - Always use snake_case matching database**:
+```typescript
+// ✅ CORRECT - Buyer fields
+interface BuyerFormData {
+  full_name: string;        // NOT fullName
+  buyer_company: string;    // NOT buyerCompany
+  buyer_role: string;       // NOT buyerRole
+  linkedin_url?: string;    // NOT linkedinUrl
+  tier?: 'basic' | 'pro' | 'suite';
+  requested?: boolean;      // Required DB field
+}
+
+// ✅ CORRECT - Creator fields
+interface CreatorFormData {
+  full_name: string;           // NOT fullName
+  pen_name: string;            // NOT penNameOrStudio
+  ip_owner_role: string;       // NOT ipOwnerRole (REQUIRED)
+  ip_owner_company?: string;   // NOT ipOwnerCompany
+  website_url?: string;        // NOT websiteUrl
+  invitation_status?: string;
+}
+```
+
+**Critical**: Use database field names (snake_case) in forms, auth metadata, and profile creation to prevent form submission failures.
+
+---
+
+## 🔧 Common Issues & Solutions
+
+### OAuth Production (UPDATED 2025-10-03)
+**Issue**: OAuth signup hangs/times out in production
+**Solution**: Edge function architecture (100% success rate)
+**Migration Required**: Apply `20250130000000_fix_oauth_rls_timing.sql`
+**See**: [AUTH_DOCUMENTATION.md](AUTH_DOCUMENTATION.md) - "OAuth signup hangs" section
+
+### Database Connectivity
+**Pattern**: Show errors to users, never use mock data fallback
+**See**: [CACHE_POLICY.md](CACHE_POLICY.md) - Error handling section
+
+### Migration Safety
+- ❌ **Never**: Edit existing migration files
+- ✅ **Always**: Create new migration for changes
+- ✅ **Document**: Status (IN_PROGRESS | COMPLETED | DEPRECATED)
+- **See**: `/docs/MIGRATION_DOCUMENTATION_STANDARDS.md`
+
+---
+
+## 📚 Content Management (Titles Table)
+
+### Complete Field List
 - **Basic**: `title_id`, `title_name_kr`, `title_name_en`, `description`, `synopsis`, `tagline`, `note`
-- **Authors**: `author`, `story_author`, `art_author`, `writer`, `illustrator`  
-- **Rights**: `rights`, `rights_owner` (separate fields), `creator_id`
+- **Authors**: `author`, `story_author`, `art_author`, `writer`, `illustrator`
+- **Rights**: `rights`, `rights_owner`, `creator_id`
 - **Content**: `genre`, `content_format`, `chapters`, `completed`, `tags`
 - **Media**: `title_image`, `title_url`, `pitch`
 - **Metrics**: `views`, `likes`, `rating`, `rating_count`
 - **Market**: `perfect_for`, `comps` (array), `tone`, `audience`
 - **System**: `created_at`, `updated_at`
 
-### Authentication Patterns
+**See**: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) for complete schema
 
-**Dashboard Authentication:**
-- Uses shared Supabase auth + tier checking
-- Localhost dev: Configurable mock vs real data
-- Real data queries use `email`, not `user_id`
+---
 
-**Admin Authentication:**
-- Separate `admin` table for access control
-- No cross-domain dependencies with other apps
-- Email verification against admin table
+## 🎯 Important Notes
 
-### UI/UX Standards
-
-**Component Consistency:**
-- Use shadcn/ui components consistently
-- Follow color scheme: hanok-teal, midnight-ink, porcelain-blue
-- Card-based layouts for content sections
-- Loading states and error handling
-
-**🚫 NEVER USE YELLOW COLORS:**
-- Do not use any yellow background colors (`bg-yellow-*`, `hover:bg-yellow-*`)
-- Do not use yellow borders, text colors, or icons
-- Replace yellow (#FBBC05, #FCD34D, etc.) with neutral colors like gray-500 (#6B7280) or brand colors
-- Use `hover:bg-white hover:border-gray-400 transition-colors` for button hover states
-
-**Form Patterns:**
-- React Hook Form + Zod validation
-- Array fields: comma-separated input with proper parsing
-- Confirmation dialogs for destructive actions
-- Field validation and error display
-
-### Script Development
-
-**Data Generation Scripts:**
-- Always include `--dry-run` mode for testing
-- Use comprehensive logging with emoji indicators
-- Handle both AI and fallback processing methods
-- Include summary statistics and error reporting
-- Environment variable configuration for API keys
-
-**Example Script Structure:**
-```javascript
-// Command line argument parsing
-const isDryRun = args.includes('--dry-run')
-const limit = args.find(arg => arg.startsWith('--limit='))
-
-// Process with error handling
-try {
-  const results = await processData()
-  displaySummary(results)
-} catch (error) {
-  console.error('❌ Operation failed:', error)
-  process.exit(1)
-}
-```
-
-### Build & Testing
-
-**Quality Checks:**
-- Always run `npm run build` after significant changes
-- Check TypeScript compilation errors
-- Verify all imports resolve correctly
-- Test database operations on small datasets first
-
-**Deployment Preparation:**
-- Ensure all environment variables are documented
-- Test cross-app authentication flows
-- Verify database migrations are applied
-- Check responsive design and accessibility
-
-**🚨 CRITICAL: OAuth Production Requirements (UPDATED 2025-10-03):**
-- **Database Migration Required**: Apply `20250130000000_fix_oauth_rls_timing.sql` to production
-- **Enhanced RLS Policies**: OAuth-friendly policies handle session timing without service role keys
-- **Migration Command**: `cd apps/dashboard/supabase && npx supabase db push`
-- **Impact**: OAuth signup will work reliably with proper RLS policy timing
-- **Verification**: No more "RLS policy violation" errors during OAuth profile creation
-- **Security**: Maintains RLS security model without exposing service role keys
-
-### Common Issues & Solutions
-
-**Database Schema:**
-- Field names may differ between display and storage
-- Array fields (tags, comps) need special form handling
-- Handle both `rights` and `rights_owner` as distinct fields
-- Null/undefined value handling in displays
-- **IMPORTANT**: Always use `pen_name` field for IP owner profiles
-
-**Authentication:**
-- Mock vs real data configuration for localhost development
-- Tier-based content access implementation
-- Cross-domain session management between apps
-
-**OAuth Production Issues (UPDATED 2025-10-03):**
-- **Session Timeouts**: Production OAuth PKCE flows take 5-18 seconds vs 1-2 seconds locally
-- **RLS Timing Issues**: Fixed with enhanced OAuth-friendly policies (no service role needed)
-- **Migration Required**: Must apply `20250130000000_fix_oauth_rls_timing.sql` for OAuth to work
-- **Enhanced Policies**: Use JWT claims as fallback when `auth.uid()` is temporarily null
-- **Error Messages**: "RLS policy violation" now indicates missing migration, not configuration issue
-- **Monitoring**: Check console for session timing metrics and policy application status
-
-**Performance:**
-- Rate limiting for external API calls
-- Batch processing for large dataset operations
-- Proper error handling and fallback methods
-
-## User Data Consistency Guidelines (CRITICAL - UPDATED 2025-01-14)
-
-### 🚨 **Signup Data Flow Requirements**
-
-**CRITICAL**: All signup data must follow consistent field naming aligned with database schema to prevent form submission failures.
-
-**Consistency Rules**:
-- ✅ **Source of Truth**: Database schema field names (snake_case)
-- ✅ **Form Interfaces**: Use snake_case field names matching database exactly
-- ✅ **Auth Metadata**: Use database field names as metadata keys
-- ✅ **Profile Creation**: Pass data using database field names
-
-**Buyer Signup Data Flow**:
-```typescript
-// ✅ CORRECT Form Interface
-interface BuyerFormData {
-  full_name: string;        // NOT fullName
-  buyer_company: string;    // NOT buyerCompany
-  buyer_role: string;       // NOT buyerRole
-  linkedin_url?: string;    // NOT linkedinUrl
-  tier?: 'basic' | 'invited' | 'pro' | 'suite';
-  requested?: boolean;      // Required database field
-}
-
-// ✅ CORRECT Auth Metadata Storage
-await supabase.auth.signUp({
-  email: formData.email,
-  password: formData.password,
-  options: {
-    data: {
-      full_name: formData.full_name,
-      buyer_company: formData.buyer_company,
-      buyer_role: formData.buyer_role,
-      linkedin_url: formData.linkedin_url,
-      tier: 'basic'
-    }
-  }
-});
-
-// ✅ CORRECT Profile Creation
-await createBuyerProfileAtomic({
-  id: user.id,
-  email: formData.email,
-  full_name: formData.full_name,
-  buyer_company: formData.buyer_company,
-  buyer_role: formData.buyer_role,
-  linkedin_url: formData.linkedin_url,
-  tier: 'basic',
-  requested: false
-});
-```
-
-**Creator Signup Data Flow**:
-```typescript
-// ✅ CORRECT Form Interface
-interface CreatorFormData {
-  full_name: string;           // NOT fullName
-  pen_name: string;            // NOT penNameOrStudio
-  ip_owner_role?: string;      // NOT ipOwnerRole
-  ip_owner_company?: string;   // NOT ipOwnerCompany
-  website_url?: string;        // NOT websiteUrl
-  invitation_status?: string;
-}
-
-// ✅ CORRECT Auth Metadata & Profile Creation
-// (Same pattern as buyer, using snake_case field names)
-```
-
-**Database Field Requirements**:
-- **user_buyers**: Must include `requested` field (default: false)
-- **user_creators**: Must include `invitation_status` field (default: 'invited')
-- **Both**: All enum fields must match database enum values exactly
-
-**Fixed Issues (2025-01-14)**:
-- ❌ **Form Hanging**: Caused by field name mismatches between form/auth/database
-- ❌ **Mixed Naming**: camelCase in forms, snake_case in database caused validation failures
-- ❌ **Missing Fields**: Database fields not included in profile creation caused INSERT failures
-- ✅ **Unified Naming**: All data layers now use consistent snake_case field names
-- ✅ **Complete Mapping**: All required database fields properly handled
-
-### 🚫 **Common Mistakes to Avoid**
-
-```typescript
-// ❌ INCORRECT - Mixed naming causes signup failures
-interface BuyerFormData {
-  fullName: string;        // Wrong - should be full_name
-  buyerCompany: string;    // Wrong - should be buyer_company
-}
-
-// ❌ INCORRECT - Metadata keys don't match database
-data: {
-  full_name: formData.fullName,  // Wrong - inconsistent naming
-  company: formData.company      // Wrong - should be buyer_company
-}
-
-// ❌ INCORRECT - Missing required database fields
-const profile = {
-  // Missing 'requested' field for buyers
-  // Missing 'invitation_status' field for creators
-}
-```
-
-**Field Naming Reference**:
-- `full_name` (NOT fullName)
-- `buyer_company` (NOT buyerCompany, company)
-- `buyer_role` (NOT buyerRole, role)
-- `linkedin_url` (NOT linkedinUrl, linkedIn)
-- `pen_name` (NOT penName, penNameOrStudio)
-- `ip_owner_role` (NOT ipOwnerRole, ownerRole)
-- `ip_owner_company` (NOT ipOwnerCompany, ownerCompany)
-- `website_url` (NOT websiteUrl, website)
-
-## Important Notes
-
-- **Database Types**: Auto-generated, do not edit manually
-- **UI Components**: shadcn/ui components in `ui/` folders are generated, avoid direct edits
-- **Supabase Config**: All apps share same project ID but have separate migration folders
-- **User Queries**: Always use `email` field, never `user_id` (doesn't exist)
-- **Data Completeness**: When showing "all data", include ALL available fields
+- **Auto-generated types**: Don't edit `integrations/supabase/types.ts` manually
+- **UI components**: shadcn/ui in `components/ui/` are generated, avoid direct edits
+- **Shared Supabase**: All apps use same project, separate migration folders
+- **Data completeness**: When showing "all data", include ALL available fields
 - **Testing**: Always test with small datasets first, use dry-run modes
-- **Linting**: ESLint configured with unused variables disabled in all applications
-- **Build Verification**: Run build command after significant changes
+- **Build verification**: Run `npm run build:all` after significant changes
+- **Documentation updates**: Update docs when changing DB schema, auth flow, account types, or policies
 
-The individual CLAUDE.md files in each application (`apps/*/CLAUDE.md`) provide detailed app-specific guidance and should be consulted for application-specific development tasks.
+---
 
-## 📚 Reference Documentation
+## 🔗 Quick Links
 
-**CRITICAL**: Always reference these comprehensive documentation files for accurate implementation:
+### Development
+- Dashboard: http://localhost:8081
+- Website: http://localhost:5173
+- Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
 
-- **DATABASE_SCHEMA.md** - Complete database schema reference for all coding
-- **AUTH_DOCUMENTATION.md** - Authentication system implementation details
-- **LOCAL_VS_PRODUCTION_DIFFERENCES.md** - Environment comparison, testing guidelines, and deployment checklist
-- **DEPLOYMENT_STRATEGY.md** - Three-tier deployment architecture, branch configuration, and Vercel setup
-- **VERCEL_SETUP_GUIDE.md** - Step-by-step Vercel configuration for selective v2 deployments
-- **VERCEL_ROOT_DIRECTORY_FIX.md** - Fix monorepo build errors with Root Directory configuration (CRITICAL)
-- **EMAIL_POLICY_DOCUMENTATION.md** - Email sending, welcome emails, and deduplication
-- **SLACK_BLACKLIST_DOCUMENTATION.md** - Slack notification blacklist management
-- **SECURITY_BEST_PRACTICES.md** - Credential management and security guidelines
-- **USER_JOURNEY_MAP.md** - Complete user flow documentation and failure points
-- **UNIT_TEST_PLAN.md** - Comprehensive testing strategy and test modules
+### Production
+- Dashboard: https://dashboard.kstorybridge.com
+- Website: https://kstorybridge.com
 
-## 🧪 Testing & Quality Assurance
-
-### User Journey Testing
-**Reference**: `USER_JOURNEY_MAP.md` for complete user flow understanding
-- Test all authentication paths (email signup, OAuth signup, signin flows)
-- Verify account type detection across all scenarios
-- Test failure recovery mechanisms and error handling
-- Validate cross-domain session management
-
-### Unit Testing Strategy
-**Reference**: `UNIT_TEST_PLAN.md` for comprehensive test coverage
-- **P0 (Critical)**: Authentication core, account type detection, profile creation
-- **P1 (High)**: Signup/signin flows, email system, dashboard routing
-- **P2 (Medium)**: External integrations, error recovery, edge cases
-- **Target Coverage**: 85% overall, 95% for critical authentication paths
-
-### Implementation Guidelines
-- Always consider both desktop and mobile compatibility
-- Do not auto commit to github without explicit approval
-- When making structural changes (db schema, auth flow, account types, policies), update appropriate documentation files
-- Test locally before deploying to production
-- Verify all user journey paths work correctly
-
-## Email System Policy (CRITICAL)
-
-### Centralized Email Management
-All email sending MUST follow the centralized email policy to prevent duplicate emails and ensure consistent communication.
-
-**CRITICAL RULES**:
-- ✅ **Use EmailService**: Always use `EmailService.getInstance().sendWelcomeEmail()`
-- ✅ **Database Tracking**: All emails logged in `email_logs` table for deduplication
-- ❌ **No Direct Calls**: Never call edge functions directly
-- ❌ **No localStorage**: Never use localStorage for email tracking
-
-**Implementation Pattern**:
-```typescript
-import { sendWelcomeEmail } from '@/services/emailService';
-
-// Automatically prevents duplicates via database tracking
-await sendWelcomeEmail({
-  userName: user.full_name,
-  userEmail: user.email,
-  accountType: 'buyer', // or 'creator'
-  dashboardUrl: window.location.origin + '/buyers/home',
-  loginUrl: window.location.origin + '/signin'
-});
-```
-
-**Fixed Issues (2025-01-14)**:
-- ❌ **Duplicate Triggers**: Welcome emails were sent from both `SignupForm.tsx` and `useAuth.tsx`
-- ❌ **localStorage Tracking**: Unreliable across sessions and tabs
-- ✅ **Database Deduplication**: Centralized tracking prevents all duplicates
-- ✅ **Single Source of Truth**: EmailService handles all email logic
-
-**See EMAIL_POLICY_DOCUMENTATION.md** for complete guidelines, troubleshooting, and email content standards.
-
-## Slack Notification System
-
-### Blacklist Management
-All Slack notifications are filtered through a comprehensive blacklist system to prevent internal team notifications. Current blacklisted accounts:
-- `sungho@dadble.com`
-- `kevin@sandstoneartists.com`
-- `creepyblues@gmail.com`
-
-**CRITICAL**: When implementing ANY Slack notifications, ALWAYS use the centralized utilities:
-```typescript
-import { sendSlackNotification } from './slack';
-```
-
-**Never bypass the blacklist** by making direct API calls. See **SLACK_BLACKLIST_DOCUMENTATION.md** for complete implementation details.
-
-## Security & Credential Management
-
-### 🚨 CRITICAL SECURITY RULES
-
-**NEVER commit sensitive credentials to git:**
-- ❌ `.env` files with real API keys
-- ❌ OpenAI API keys (`sk-proj-...`)
-- ❌ Supabase service role keys
-- ❌ Any files in `secrets/` or `api-keys/` directories
-
-**Local development pattern:**
-```bash
-# ✅ Copy example files to local versions (gitignored)
-cp .env.example .env
-# ✅ Fill in real credentials in local .env files
-# ❌ NEVER commit the .env files with real values
-```
-
-**Production deployment:**
-- Use Vercel dashboard for environment variables
-- Use Supabase CLI for edge function secrets
-- Rotate credentials immediately if accidentally exposed
-
-See **SECURITY_BEST_PRACTICES.md** for complete security guidelines and incident response procedures.
-- in localhost environment, all redirects shuold work in localhost and should not send to production.
-
-## Database Migration Guidelines (CRITICAL)
-
-### 🚨 Migration Safety Rules
-
-**NEVER create loose SQL files:**
-- ❌ **No SQL files in root directory** - Use proper Supabase migration workflow
-- ❌ **No manual SQL execution** - All migrations must be versioned and tracked
-- ❌ **No orphaned migration docs** - All documentation must have clear status
-
-**✅ Proper Migration Workflow:**
-```bash
-# Create migration in proper location
-cd apps/[app]/supabase
-npx supabase migration new [migration-name]
-
-# Edit generated file in migrations/ directory
-# Test in development first
-npx supabase db reset
-
-# Apply to production only after testing
-npx supabase db push
-```
-
-### Migration Documentation Standards
-
-**All migration documentation MUST follow these rules:**
-
-```markdown
-# [Migration Name] - [Date]
-
-## Status: [IN_PROGRESS | COMPLETED | DEPRECATED]
-## Last Updated: [YYYY-MM-DD]
-## Safe to Follow: [YES | NO | WITH_CAUTION]
-
-⚠️ **WARNING**: [Include appropriate safety warning]
-```
-
-**Active Migrations:**
-- Keep in root directory with clear status
-- Reference actual migration files in `apps/*/supabase/migrations/`
-- Include verification and rollback procedures
-
-**Completed Migrations:**
-- Move to `/docs/archive/` directory
-- Add "COMPLETED - FOR REFERENCE ONLY" warning
-- Update Safe to Follow to "NO"
-
-**File Naming:**
-- Active: `migration-[name]-[date].md`
-- Archived: `docs/archive/[name]-migration-completed-[date].md`
-
-### Current Migration Status
-
-**✅ Completed Migrations (Archived):**
-- Account type migration (`ip_owner` → `creator`) - Completed 2024-09-10
-- Comps array migration (string → text[]) - Completed 2025-08-10
-
-**⚠️ Safety Cleanup Completed (2025-01-14):**
-- Removed dangerous orphaned SQL files from root directory
-- Updated all migration docs with clear status warnings
-- Established documentation standards for future migrations
-
-**See `/docs/MIGRATION_DOCUMENTATION_STANDARDS.md`** for complete migration documentation guidelines and safety procedures.
-- for oauth callback, the callback URL should not have any parameter.
+### Documentation
+All comprehensive documentation is in root-level `.md` files. This file provides quick reference only - refer to specific documentation files for detailed implementation guidance.

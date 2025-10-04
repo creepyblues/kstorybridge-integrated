@@ -182,6 +182,8 @@ sequenceDiagram
 - **Consistent redirect URLs**: Always `${window.location.origin}/auth/callback`
 - **90% faster callbacks**: Eliminated complex circuit breakers and timeouts
 
+**For implementation details, see**: [OAuth Flow Implementation](#oauth-implementation-changes-simplified---2025-01-14)
+
 ### Universal Signin
 
 ```typescript

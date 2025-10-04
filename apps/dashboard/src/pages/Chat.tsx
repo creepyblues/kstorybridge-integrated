@@ -626,6 +626,7 @@ export default function Chat() {
   };
 
   // Lazy load session and history when user sends first message
+  // FIRST LOAD FIX: Added timeout protection to prevent hanging
   const ensureSessionAndLoadHistory = async () => {
     if (!user) return null;
 
@@ -637,9 +638,21 @@ export default function Chat() {
     try {
       setIsLoadingHistory(true);
 
-      // Check for existing active session or create new one
-      let session = await chatHistoryService.getActiveSession(user.id, 'openai');
+      // FIRST LOAD FIX: Wrap session fetch in 12-second timeout
+      const sessionPromise = chatHistoryService.getActiveSession(user.id, 'openai');
+      const sessionTimeout = new Promise<null>((_, reject) =>
+        setTimeout(() => reject(new Error('Session fetch timeout')), 12000)
+      );
 
+      let session: any = null;
+      try {
+        session = await Promise.race([sessionPromise, sessionTimeout]);
+      } catch (timeoutError) {
+        console.warn('⏰ Session fetch timed out, creating new session');
+        session = null; // Will create new session below
+      }
+
+      // Create new session if none found or timeout occurred
       if (!session) {
         session = await chatHistoryService.createSession({
           user_id: user.id,
@@ -651,18 +664,33 @@ export default function Chat() {
       if (session) {
         setCurrentSession(session);
 
-        // Load conversation history
-        const history = await chatHistoryService.getSessionMessagesWithData(session.id);
+        // FIRST LOAD FIX: Try loading history with timeout, but don't block if it fails
+        try {
+          const historyPromise = chatHistoryService.getSessionMessagesWithData(session.id);
+          const historyTimeout = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('History load timeout')), 8000)
+          );
 
-        if (history && history.length > 0) {
-          // Prepend history to messages (before the user's current message)
-          setMessages(prev => [...history, ...prev]);
+          const history = await Promise.race([historyPromise, historyTimeout]);
+
+          if (history && history.length > 0) {
+            // Prepend history to messages (before the user's current message)
+            setMessages(prev => [...history, ...prev]);
+          }
+        } catch (historyError) {
+          console.warn('⏰ History load timed out or failed, continuing with fresh session');
+          // Continue anyway - chat still works without history
         }
       }
 
       return session;
     } catch (error) {
       console.error('Failed to initialize chat session:', error);
+      // Show user-friendly message but allow chat to continue
+      toast({
+        title: "Chat initialized in offline mode",
+        description: "Your messages will be sent, but previous history couldn't be loaded.",
+      });
       return null;
     } finally {
       setIsLoadingHistory(false);

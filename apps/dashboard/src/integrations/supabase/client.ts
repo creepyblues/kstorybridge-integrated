@@ -63,6 +63,10 @@ if (isDev && import.meta.env.VITE_CONFIG_DEBUG === 'true') {
   });
 }
 
+// FIRST LOAD FIX: Define storage keys before CLIENT_CONFIG
+const MAIN_CLIENT_STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-auth-token';
+const SERVICE_ROLE_STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-service-role-token';
+
 // Performance and reliability settings
 const CLIENT_CONFIG = {
   // Auth configuration with enhanced reliability
@@ -73,7 +77,7 @@ const CLIENT_CONFIG = {
     detectSessionInUrl: true,
     flowType: 'pkce' as const,
     // Enhanced session settings
-    storageKey: 'sb-dlrnrgcoguxlkkcitlpd-auth-token',
+    storageKey: MAIN_CLIENT_STORAGE_KEY,
     debug: isDev && import.meta.env.VITE_AUTH_DEBUG === 'true'
   },
   
@@ -397,10 +401,16 @@ if (isDev && import.meta.env.VITE_CLIENT_DEBUG === 'true') {
   });
 }
 
-// Create the enhanced Supabase client
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, CLIENT_CONFIG);
+// Create the enhanced Supabase client with explicit storage key (defined above)
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  ...CLIENT_CONFIG,
+  auth: {
+    ...CLIENT_CONFIG.auth,
+    storageKey: MAIN_CLIENT_STORAGE_KEY
+  }
+});
 
-// Create completely isolated service role client BEFORE applying any global overrides
+// Create completely isolated service role client with separate storage key
 // This ensures it operates independently of user session management
 export const supabaseServiceRole = SUPABASE_SERVICE_ROLE_KEY
   ? createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -408,7 +418,7 @@ export const supabaseServiceRole = SUPABASE_SERVICE_ROLE_KEY
         persistSession: false,      // No session persistence
         autoRefreshToken: false,    // No token refresh
         detectSessionInUrl: false,  // No URL session detection
-        storageKey: undefined,      // No storage key to prevent conflicts
+        storageKey: SERVICE_ROLE_STORAGE_KEY,  // FIRST LOAD FIX: Separate storage key
       },
       db: {
         schema: 'public'
@@ -630,19 +640,21 @@ supabase.auth.getSession = async () => {
 
   try {
     // Context-aware timeout: OAuth callbacks AND OAuth completion need more time for session operations
-    // PRODUCTION FIX: Increased timeouts to handle real production database latency
-    const timeoutMs = needsExtendedTimeout ? 90000 : 60000; // Production-optimized: OAuth 90s, regular 60s
+    // FIRST LOAD FIX: Reduced timeout for regular flows to prevent hanging (60s -> 15s)
+    const timeoutMs = needsExtendedTimeout ? 90000 : 15000; // OAuth 90s, regular 15s (reduced from 60s)
 
     // 🔧 RUNTIME DEBUG: Verify enhanced timeout configuration is working
-    console.log('🔧 ENHANCED TIMEOUT CONFIG:', {
-      isCallback,
-      isOAuthCompletion,
-      needsExtendedTimeout,
-      timeoutMs,
-      pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
-      search: typeof window !== 'undefined' ? window.location.search : 'unknown',
-      expectedTimeout: needsExtendedTimeout ? '90 seconds' : '60 seconds'
-    });
+    if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
+      console.log('🔧 ENHANCED TIMEOUT CONFIG:', {
+        isCallback,
+        isOAuthCompletion,
+        needsExtendedTimeout,
+        timeoutMs,
+        pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+        search: typeof window !== 'undefined' ? window.location.search : 'unknown',
+        expectedTimeout: needsExtendedTimeout ? '90 seconds' : '15 seconds'
+      });
+    }
 
     const result = await withRetry(() => originalGetSession(), {
       maxRetries: needsExtendedTimeout ? 2 : 1, // More retries for OAuth flows (callback + completion)

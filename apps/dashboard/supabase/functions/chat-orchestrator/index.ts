@@ -17,6 +17,11 @@ interface ChatRequest {
   messages: ChatMessage[];
   sessionId?: string;
   userId?: string;
+  // Testing mode parameters
+  model?: string;
+  vectorSearchLimit?: number;
+  systemPrompt?: string;
+  formattingRules?: string;
 }
 
 interface UserProfile {
@@ -71,7 +76,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { messages, sessionId } = await req.json() as ChatRequest
+    const { messages, sessionId, model, vectorSearchLimit, systemPrompt, formattingRules } = await req.json() as ChatRequest
 
     if (!messages || messages.length === 0) {
       return new Response(
@@ -106,11 +111,27 @@ serve(async (req) => {
     let searchResults: VectorSearchResult[] = []
 
     if (needsSearch) {
-      searchResults = await performVectorSearch(supabase, userQuery, user.id)
+      const searchLimit = vectorSearchLimit || 10  // Increased default from 5 to 10
+      const searchThreshold = 0.7  // Can be made configurable via request params
+
+      // Try vector search first
+      searchResults = await performVectorSearch(supabase, userQuery, user.id, searchLimit, searchThreshold)
+
+      // Fallback to keyword search if no results
+      if (searchResults.length === 0) {
+        console.log('⚠️ Vector search returned no results, trying fallback keyword search...');
+        searchResults = await performKeywordSearch(supabase, userQuery, searchLimit)
+
+        if (searchResults.length > 0) {
+          console.log('✅ Fallback keyword search successful:', searchResults.length, 'results');
+        } else {
+          console.log('❌ Both vector and keyword search returned no results');
+        }
+      }
     }
 
-    // Build master prompt with all context
-    const masterPrompt = buildMasterPrompt({
+    // Build master prompt with all context (use custom prompt if provided)
+    const masterPrompt = systemPrompt || buildMasterPrompt({
       userProfile,
       conversationHistory: [...conversationHistory, ...messages],
       searchResults,
@@ -130,13 +151,17 @@ serve(async (req) => {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // Use custom model if provided, otherwise default to gpt-4o-mini
+          const selectedModel = model || 'gpt-4o-mini'
+
           console.log('🔧 DEBUG: About to call OpenAI API', {
-            model: 'gpt-4o-mini',
+            model: selectedModel,
             apiProvider: 'OpenAI',
             hasApiKey: !!openaiApiKey,
             apiKeyPrefix: openaiApiKey?.substring(0, 20) + '...',
             promptLength: masterPrompt.length,
-            searchResultsCount: searchResults.length
+            searchResultsCount: searchResults.length,
+            vectorSearchLimit: vectorSearchLimit || 5
           });
 
           const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -146,7 +171,7 @@ serve(async (req) => {
               'Authorization': `Bearer ${openaiApiKey}`
             },
             body: JSON.stringify({
-              model: 'gpt-4o-mini',
+              model: selectedModel,
               max_tokens: 1000,
               temperature: 0.7,
               stream: true,
@@ -164,7 +189,7 @@ serve(async (req) => {
           })
 
           console.log('🔧 DEBUG: OpenAI API response', {
-            model: 'gpt-4o-mini',
+            model: selectedModel,
             apiProvider: 'OpenAI',
             status: response.status,
             statusText: response.statusText,
@@ -197,7 +222,15 @@ serve(async (req) => {
                 const data = line.slice(6)
 
                 if (data === '[DONE]') {
-                  // Save complete response to database
+                  // Validate response for title hallucinations
+                  const validation = validateAIResponse(fullResponse, searchResults)
+
+                  if (!validation.isValid) {
+                    console.warn('🚨 Hallucinations replaced in response:', validation.hallucinations)
+                    fullResponse = validation.validatedResponse
+                  }
+
+                  // Save complete (validated) response to database
                   await saveResponseToDatabase(supabase, activeSession.id, user.id, userQuery, fullResponse, searchResults)
                   continue
                 }
@@ -359,8 +392,94 @@ function shouldPerformSearch(query: string): boolean {
   return searchKeywords.some(keyword => lowerQuery.includes(keyword))
 }
 
-async function performVectorSearch(supabase: any, query: string, userId: string): Promise<VectorSearchResult[]> {
+/**
+ * Fallback keyword search when vector search returns no results
+ */
+async function performKeywordSearch(
+  supabase: any,
+  query: string,
+  matchCount: number = 10
+): Promise<VectorSearchResult[]> {
   try {
+    console.log('🔍 Performing fallback keyword search:', {
+      query: query.substring(0, 50) + '...',
+      matchCount
+    });
+
+    // Extract keywords from query (remove common words)
+    const stopWords = ['find', 'show', 'me', 'the', 'a', 'an', 'about', 'with', 'like', 'similar'];
+    const keywords = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !stopWords.includes(word))
+      .join(' & '); // PostgreSQL full-text search syntax
+
+    if (!keywords) {
+      console.warn('⚠️ No valid keywords extracted from query');
+      return [];
+    }
+
+    // Search across title names, synopsis, genre, and tags
+    const { data: results } = await supabase
+      .from('titles')
+      .select(`
+        title_id,
+        title_name_en,
+        title_name_kr,
+        synopsis,
+        genre,
+        tone
+      `)
+      .or(`
+        title_name_en.ilike.%${query}%,
+        title_name_kr.ilike.%${query}%,
+        synopsis.ilike.%${query}%
+      `)
+      .limit(matchCount);
+
+    // Add dummy similarity scores based on match quality
+    const scoredResults = (results || []).map(result => {
+      let similarity = 0.5; // Base score for keyword matches
+
+      const titleMatch = [result.title_name_en, result.title_name_kr].some(
+        title => title?.toLowerCase().includes(query.toLowerCase())
+      );
+
+      if (titleMatch) similarity = 0.75; // Higher score for title matches
+
+      return {
+        ...result,
+        similarity
+      };
+    });
+
+    console.log('✅ Keyword Search Results:', {
+      resultCount: scoredResults.length,
+      keywords: keywords.substring(0, 50) + '...'
+    });
+
+    return scoredResults;
+  } catch (error) {
+    console.error('❌ Keyword search error:', error);
+    return [];
+  }
+}
+
+async function performVectorSearch(
+  supabase: any,
+  query: string,
+  userId: string,
+  matchCount: number = 10,  // Increased default from 5 to 10
+  matchThreshold: number = 0.7  // Configurable threshold
+): Promise<VectorSearchResult[]> {
+  try {
+    console.log('🔍 Vector Search Configuration:', {
+      query: query.substring(0, 50) + '...',
+      matchCount,
+      matchThreshold,
+      userId: userId.substring(0, 8) + '...'
+    });
+
     // Generate embedding for the query
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
@@ -377,18 +496,206 @@ async function performVectorSearch(supabase: any, query: string, userId: string)
     const embeddingData = await embeddingResponse.json()
     const embedding = embeddingData.data[0].embedding
 
-    // Perform vector search
+    // Perform vector search with configurable parameters
     const { data: results } = await supabase.rpc('match_titles_by_embedding', {
       query_embedding: embedding,
-      match_threshold: 0.7,
-      match_count: 5
+      match_threshold: matchThreshold,
+      match_count: matchCount
     })
+
+    console.log('✅ Vector Search Results:', {
+      resultCount: results?.length || 0,
+      topScores: results?.slice(0, 3).map((r: any) => r.similarity.toFixed(3)) || []
+    });
 
     return results || []
   } catch (error) {
-    console.error('Vector search error:', error)
+    console.error('❌ Vector search error:', error)
     return []
   }
+}
+
+/**
+ * Weight conversation history - recent messages are more important
+ * Returns formatted conversation with emphasis markers
+ */
+function weightConversationHistory(history: ChatMessage[]): string {
+  if (history.length === 0) {
+    return 'This is the start of our conversation.';
+  }
+
+  // Weight recent messages more heavily
+  const weighted = history.map((msg, index) => {
+    const recencyWeight = index / history.length; // 0 (oldest) to 1 (newest)
+    const isRecent = recencyWeight > 0.7; // Last 30% of conversation
+    const isMostRecent = index >= history.length - 2; // Last 2 messages
+
+    const prefix = isMostRecent ? '**[MOST RECENT]** ' :
+                   isRecent ? '**[RECENT]** ' : '';
+
+    return `${prefix}${msg.role === 'user' ? 'User' : 'Jinu'}: ${msg.content}`;
+  });
+
+  return weighted.join('\n');
+}
+
+/**
+ * Extract recent title recommendations from conversation for follow-up queries
+ */
+function getRecentTitleMentions(history: ChatMessage[]): string[] {
+  const recentMessages = history.slice(-4); // Last 4 messages
+  const titles: string[] = [];
+
+  recentMessages.forEach(msg => {
+    if (msg.role === 'assistant') {
+      // Extract quoted titles from assistant messages
+      const matches = msg.content.match(/"([^"]*)"/g);
+      if (matches) {
+        matches.forEach(match => {
+          const title = match.replace(/"/g, '');
+          if (title.length > 3 && !titles.includes(title)) {
+            titles.push(title);
+          }
+        });
+      }
+    }
+  });
+
+  return titles.slice(0, 5); // Max 5 recent titles
+}
+
+/**
+ * Classify user query intent for specialized prompt handling
+ */
+function classifyQueryIntent(query: string, conversationHistory: ChatMessage[]): string {
+  const lowerQuery = query.toLowerCase();
+
+  // Check for follow-up indicators
+  const followUpIndicators = ['also', 'more like', 'similar', 'another', 'different', 'what about', 'how about', 'tell me more'];
+  const isFollowUp = followUpIndicators.some(indicator => lowerQuery.includes(indicator)) ||
+                     conversationHistory.length >= 2;
+
+  if (isFollowUp && conversationHistory.length >= 2) {
+    return 'follow-up';
+  }
+
+  // Check for comparison queries
+  const comparisonIndicators = ['compare', 'difference between', 'versus', 'vs', 'better than', 'similar to'];
+  if (comparisonIndicators.some(indicator => lowerQuery.includes(indicator))) {
+    return 'comparison';
+  }
+
+  // Check for specific information requests
+  const infoIndicators = ['what is', 'who is', 'tell me about', 'explain', 'describe', 'synopsis', 'plot'];
+  if (infoIndicators.some(indicator => lowerQuery.includes(indicator))) {
+    return 'information';
+  }
+
+  // Check for recommendation requests
+  const recommendationIndicators = ['recommend', 'suggest', 'should i', 'what should', 'good', 'best'];
+  if (recommendationIndicators.some(indicator => lowerQuery.includes(indicator))) {
+    return 'recommendation';
+  }
+
+  // Default: discovery/search
+  return 'discovery';
+}
+
+/**
+ * Get specialized response guidelines based on query intent
+ */
+function getIntentGuidelines(intent: string): string {
+  const guidelines = {
+    'discovery': `
+- Lead with excitement about helping discover new Korean content
+- Ask clarifying questions about preferred genres, tones, or formats
+- Suggest 2-3 titles with diverse characteristics
+- Encourage exploration: "Here are some great options to start with..."`,
+
+    'comparison': `
+- Provide clear, structured comparisons between titles
+- Highlight key differences in genre, tone, pacing, themes
+- Use comparison format: "While [Title A] focuses on X, [Title B] explores Y"
+- Help user decide based on their preferences`,
+
+    'information': `
+- Provide detailed, accurate information from search results
+- Focus on synopsis, themes, and unique selling points
+- Share cultural context or background when relevant
+- Keep responses informative but engaging`,
+
+    'recommendation': `
+- Be confident and specific in recommendations
+- Explain WHY each title matches their request
+- Prioritize titles with highest similarity scores
+- Offer alternatives: "If you enjoy X, you'll love Y because..."`,
+
+    'follow-up': `
+- Reference previous conversation context heavily
+- Build on earlier recommendations
+- Show continuity: "Based on your interest in [previous title]..."
+- Deepen the conversation with more specific suggestions`
+  };
+
+  return guidelines[intent] || guidelines['discovery'];
+}
+
+/**
+ * Validates AI response to catch title hallucinations
+ * Ensures AI only mentions titles that exist in search results
+ */
+function validateAIResponse(response: string, validTitles: VectorSearchResult[]): {
+  validatedResponse: string;
+  hallucinations: string[];
+  isValid: boolean;
+} {
+  if (validTitles.length === 0) {
+    // No search results, no validation needed
+    return { validatedResponse: response, hallucinations: [], isValid: true };
+  }
+
+  // Extract all quoted strings (potential title mentions)
+  const quotedMatches = response.match(/"([^"]*)"/g) || [];
+  const mentionedTitles = quotedMatches.map(q => q.replace(/"/g, ''));
+
+  // Build list of valid title names
+  const validTitleNames = new Set<string>();
+  validTitles.forEach(title => {
+    if (title.title_name_en) validTitleNames.add(title.title_name_en.toLowerCase());
+    if (title.title_name_kr) validTitleNames.add(title.title_name_kr.toLowerCase());
+  });
+
+  // Check for hallucinations
+  const hallucinations: string[] = [];
+  let validatedResponse = response;
+
+  mentionedTitles.forEach(mentioned => {
+    const mentionedLower = mentioned.toLowerCase();
+    const isValid = Array.from(validTitleNames).some(validTitle =>
+      mentionedLower.includes(validTitle) || validTitle.includes(mentionedLower)
+    );
+
+    if (!isValid) {
+      hallucinations.push(mentioned);
+      // Replace hallucinated title with generic term
+      validatedResponse = validatedResponse.replace(
+        `"${mentioned}"`,
+        'a Korean title'
+      );
+    }
+  });
+
+  const isValid = hallucinations.length === 0;
+
+  if (!isValid) {
+    console.warn('⚠️ Title hallucinations detected:', {
+      count: hallucinations.length,
+      hallucinated: hallucinations,
+      validTitles: Array.from(validTitleNames)
+    });
+  }
+
+  return { validatedResponse, hallucinations, isValid };
 }
 
 function buildMasterPrompt(context: {
@@ -399,6 +706,24 @@ function buildMasterPrompt(context: {
 }): string {
   const { userProfile, conversationHistory, searchResults, userQuery } = context
 
+  // Classify query intent for specialized handling
+  const queryIntent = classifyQueryIntent(userQuery, conversationHistory);
+  const intentGuidelines = getIntentGuidelines(queryIntent);
+
+  // Weight conversation history (recent messages more important)
+  const weightedHistory = weightConversationHistory(conversationHistory);
+
+  // Extract recent title mentions for follow-up context
+  const recentTitles = getRecentTitleMentions(conversationHistory);
+  const hasRecentTitles = recentTitles.length > 0;
+
+  console.log('🎯 Query Intent Classified:', {
+    intent: queryIntent,
+    query: userQuery.substring(0, 50) + '...',
+    conversationLength: conversationHistory.length,
+    recentTitles: recentTitles.length
+  });
+
   const tierDescription = {
     'basic': 'exploring Korean content',
     'invited': 'special access member',
@@ -408,16 +733,22 @@ function buildMasterPrompt(context: {
 
   return `CONTEXT: You are Jinu, KStoryBridge's expert Korean content curator. You have deep knowledge of Korean entertainment including manhwa, webtoons, dramas, movies, and novels. You excel at personalized recommendations and engaging conversations about Korean culture and storytelling.
 
+QUERY TYPE: ${queryIntent.toUpperCase()}
+This is a ${queryIntent} query. Tailor your response accordingly.
+
 USER PROFILE:
 - Name: ${userProfile.full_name || 'Fellow Korean content enthusiast'}
 - Status: ${tierDescription}
 - Account: ${userProfile.account_type === 'buyer' ? 'Content Buyer' : 'Content Creator'}
 - Experience Level: ${userProfile.tier === 'basic' ? 'Getting started' : userProfile.tier === 'pro' ? 'Experienced' : 'Expert'}
 
-CONVERSATION CONTEXT:
-${conversationHistory.length > 0 ? conversationHistory.map(msg =>
-  `${msg.role === 'user' ? 'User' : 'Jinu'}: ${msg.content}`
-).join('\n') : 'This is the start of our conversation.'}
+CONVERSATION CONTEXT (Weighted by Recency):
+${weightedHistory}
+
+${hasRecentTitles ? `
+RECENTLY DISCUSSED TITLES (Reference these for follow-ups):
+${recentTitles.map((title, idx) => `${idx + 1}. "${title}"`).join('\n')}
+` : ''}
 
 ${searchResults.length > 0 ? `
 RELEVANT KOREAN CONTENT DISCOVERED:
@@ -443,8 +774,10 @@ RESPONSE GUIDELINES:
 4. **Cultural Context**: Share insights about Korean storytelling trends, cultural elements, or industry highlights
 5. **Personalization**: Tailor recommendations based on user's tier and conversation history
 6. **Structure**: Keep responses conversational but organized, with clear title recommendations
-7. **Follow-ups**: End with 2-3 engaging questions or suggestions to continue the conversation
-8. **Accuracy**: NEVER make up title names. Only mention titles that appear in the search results provided above
+7. **Accuracy**: NEVER make up title names. Only mention titles that appear in the search results provided above
+
+INTENT-SPECIFIC APPROACH (${queryIntent.toUpperCase()}):
+${intentGuidelines}
 
 Focus on creating an engaging, personalized experience that helps discover amazing Korean content!`
 }

@@ -64,7 +64,7 @@ export const trackPremiumFeatureRequest = (featureName: string) => {
 // Track title views
 export const trackTitleView = (titleId: string, titleName: string) => {
   trackEvent('view_title', 'content_engagement', titleName, undefined);
-  
+
   // Also track as ecommerce event with more details
   if (typeof window !== 'undefined' && window.dataLayer) {
     window.dataLayer.push({
@@ -74,6 +74,37 @@ export const trackTitleView = (titleId: string, titleName: string) => {
       'item_category': 'title',
       'app_section': 'dashboard'
     });
+  }
+};
+
+// Track title views specifically from chat (PRD 2.1: Enhanced Chat Analytics)
+export const trackTitleViewFromChat = (
+  titleId: string,
+  titleName: string,
+  chatMode: 'standard' | 'advanced',
+  sessionId?: string,
+  messageId?: string,
+  userPrompt?: string,
+  recommendationScore?: number
+) => {
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'title_view_from_chat',
+      'title_id': titleId,
+      'title_name': titleName,
+      'chat_mode': chatMode,
+      'session_id': sessionId,
+      'message_id': messageId,
+      'user_prompt': userPrompt,
+      'recommendation_score': recommendationScore,
+      'timestamp': new Date().toISOString(),
+      'app_section': 'dashboard',
+      // Conversion funnel tracking
+      'funnel_step': 'title_viewed_from_chat',
+      'funnel_name': 'buyer_engagement'
+    });
+
+    console.log(`👁️ TITLE VIEW FROM CHAT: ${titleName} (Mode: ${chatMode})`);
   }
 };
 

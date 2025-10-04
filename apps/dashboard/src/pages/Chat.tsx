@@ -17,7 +17,7 @@ import ProBadge from "@/components/ProBadge";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import { ChatUpgradePrompt } from "@/components/UpgradePrompt";
-import { trackSearch, trackTitleView, trackAdvancedChatUsage, trackEvent, trackTitleCardClick } from "@/utils/analytics";
+import { trackSearch, trackTitleView, trackTitleViewFromChat, trackAdvancedChatUsage, trackEvent, trackTitleCardClick } from "@/utils/analytics";
 
 interface Message {
   id: string;
@@ -31,6 +31,40 @@ interface Message {
 
 // Simplified conversational message component
 const ConversationalMessage = ({ content, navigate, titleData, allMessages, titleCache }: { content: string, navigate: any, titleData?: any[], allMessages?: Message[], titleCache?: any[] }) => {
+
+  // Levenshtein distance for fuzzy string matching
+  const levenshteinDistance = (str1: string, str2: string): number => {
+    const len1 = str1.length;
+    const len2 = str2.length;
+    const matrix: number[][] = [];
+
+    for (let i = 0; i <= len1; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+      matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= len1; i++) {
+      for (let j = 1; j <= len2; j++) {
+        const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
+        );
+      }
+    }
+
+    return matrix[len1][len2];
+  };
+
+  // Calculate similarity score (0-1, higher is better)
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const distance = levenshteinDistance(str1.toLowerCase(), str2.toLowerCase());
+    const maxLength = Math.max(str1.length, str2.length);
+    return maxLength === 0 ? 1 : 1 - distance / maxLength;
+  };
 
   // Helper function to find title ID by title name from available title data
   const findTitleIdByName = (titleName: string): string | null => {
@@ -155,6 +189,31 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
       if (caseInsensitiveCacheMatch) {
         console.log('✅ Found case-insensitive match in title cache:', caseInsensitiveCacheMatch.title_name_en || caseInsensitiveCacheMatch.title_name_kr);
         return caseInsensitiveCacheMatch.title_id;
+      }
+
+      // FUZZY MATCHING - Final fallback using Levenshtein distance
+      const fuzzyMatches = titleCache
+        .map(title => {
+          const titleEn = title.title_name_en?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+          const titleKr = title.title_name_kr?.replace(/^["""'']+|["""'']+$/g, '"')?.replace(/[.,!?;:]+$/, '')?.trim();
+
+          const similarityEn = titleEn ? calculateSimilarity(cleanedName, titleEn) : 0;
+          const similarityKr = titleKr ? calculateSimilarity(cleanedName, titleKr) : 0;
+          const similarity = Math.max(similarityEn, similarityKr);
+
+          return { title, similarity };
+        })
+        .filter(match => match.similarity >= 0.8)  // 80% similarity threshold
+        .sort((a, b) => b.similarity - a.similarity);
+
+      if (fuzzyMatches.length > 0) {
+        const bestMatch = fuzzyMatches[0];
+        console.log('✅ Found fuzzy match in title cache:', {
+          titleName: bestMatch.title.title_name_en || bestMatch.title.title_name_kr,
+          similarity: (bestMatch.similarity * 100).toFixed(1) + '%',
+          searchTerm: cleanedName
+        });
+        return bestMatch.title.title_id;
       }
     }
 
@@ -473,6 +532,15 @@ export default function Chat() {
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousUserIdRef = useRef<string | null>(null); // Track user changes
+
+  // One-time page reload on first visit
+  useEffect(() => {
+    const hasReloaded = sessionStorage.getItem('chat_page_reloaded');
+    if (!hasReloaded) {
+      sessionStorage.setItem('chat_page_reloaded', 'true');
+      window.location.reload();
+    }
+  }, []);
 
   // User change detection - reset chat when user changes (logout/login with different account)
   useEffect(() => {
@@ -1144,8 +1212,16 @@ Please try again.`,
         }
       );
 
-      // Legacy title view tracking (keep for backward compatibility)
-      trackTitleView(title.title_id, titleName, 'chat', 'standard');
+      // Track title view from chat (GA4 event: title_view_from_chat)
+      trackTitleViewFromChat(
+        title.title_id,
+        titleName,
+        'standard',
+        currentSession?.id,
+        messageId,
+        userPrompt,
+        title.score
+      );
 
       // Record title view interaction
       if (currentSession && user) {

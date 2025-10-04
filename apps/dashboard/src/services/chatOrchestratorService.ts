@@ -18,6 +18,11 @@ interface StreamingChatOptions {
   onChunk?: (text: string) => void;
   onComplete?: (fullResponse: string) => void;
   onError?: (error: string) => void;
+  // Testing mode parameters
+  model?: string;
+  vectorSearchLimit?: number;
+  systemPrompt?: string;
+  formattingRules?: string;
 }
 
 class ChatOrchestratorService {
@@ -36,7 +41,7 @@ class ChatOrchestratorService {
     messages: ChatMessage[],
     options: StreamingChatOptions = {}
   ): Promise<string> {
-    const { sessionId, onChunk, onComplete, onError } = options;
+    const { sessionId, onChunk, onComplete, onError, model, vectorSearchLimit, systemPrompt, formattingRules } = options;
 
     try {
       // Get current session
@@ -52,9 +57,22 @@ class ChatOrchestratorService {
         url: `${this.baseUrl}/chat-orchestrator`,
         messagesCount: messages.length,
         sessionId,
+        model: model || 'default',
+        vectorSearchLimit: vectorSearchLimit || 'default',
         hasToken: !!session.access_token,
         timestamp: new Date().toISOString()
       });
+
+      const requestBody: any = {
+        messages,
+        sessionId
+      };
+
+      // Add testing parameters if provided
+      if (model) requestBody.model = model;
+      if (vectorSearchLimit) requestBody.vectorSearchLimit = vectorSearchLimit;
+      if (systemPrompt) requestBody.systemPrompt = systemPrompt;
+      if (formattingRules) requestBody.formattingRules = formattingRules;
 
       const response = await fetch(`${this.baseUrl}/chat-orchestrator`, {
         method: 'POST',
@@ -62,10 +80,7 @@ class ChatOrchestratorService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({
-          messages,
-          sessionId
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       console.log('📡 Orchestrator Response:', {

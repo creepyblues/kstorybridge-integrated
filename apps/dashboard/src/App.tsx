@@ -51,6 +51,7 @@ const News = lazy(() => import("./pages/News"));
 const SendMessage = lazy(() => import("./pages/SendMessage"));
 const SendMessageTest = lazy(() => import("./pages/SendMessageTest"));
 const Chat = lazy(() => import("./pages/Chat"));
+const ChatTest = lazy(() => import("./pages/ChatTest"));
 const ChatHistory = lazy(() => import("./pages/ChatHistory"));
 const VectorSearchManager = lazy(() => import("./pages/VectorSearchManager"));
 const OpenAITest = lazy(() => import("./pages/OpenAITest"));
@@ -144,6 +145,9 @@ const App = () => (
                 <Route path="/buyers/home" element={<Navigate to="/buyers/chat" replace />} />
                 <Route path="/buyers/chat" element={
                   <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
+                } />
+                <Route path="/buyers/chat-test" element={
+                  <BuyerProtectedLayout><ChatTest /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/featured" element={
                   <BuyerProtectedLayout><BuyerHome /></BuyerProtectedLayout>

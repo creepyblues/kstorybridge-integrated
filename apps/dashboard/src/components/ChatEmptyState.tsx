@@ -39,8 +39,8 @@ export const ChatEmptyState = ({ onSubmitMessage, isLoading = false, showHistory
       <div className="w-full max-w-2xl px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-midnight-ink mb-4">
-            What type of story are you after today?
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-midnight-ink mb-4">
+            What type of story are you looking for today?
           </h1>
         </div>
 
@@ -52,7 +52,7 @@ export const ChatEmptyState = ({ onSubmitMessage, isLoading = false, showHistory
               value={inputMessage}
               onChange={handleInputChange}
               onKeyDown={handleKeyPress}
-              placeholder="Describe the story you are looking for..."
+              placeholder="Ask anything..."
               className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-base placeholder-gray-400"
               rows={1}
               disabled={isLoading}

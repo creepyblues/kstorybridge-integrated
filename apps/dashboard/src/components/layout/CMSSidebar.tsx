@@ -51,12 +51,15 @@ const getSettingsItems = (accountType: string | null, userEmail?: string): MenuI
     ? [
         // { title: "Send msg", href: "/buyers/send-message" }, // Hidden for now - needs database setup
         { title: "Profile", href: "/buyers/profile" },
-        ...(isAdmin ? [{ title: "Upgrade Plan", href: "/buyers/plan" }] : []),
+        ...(isAdmin ? [
+          { title: "Chat Test", href: "/buyers/chat-test", badge: "admin", icon: "🧪" },
+          { title: "Upgrade Plan", href: "/buyers/plan" }
+        ] : []),
       ]
     : []; // No account type determined - return empty array
-  
+
   // Add admin pages for admin users right after Profile
-  if (isAdmin) {
+  if (isAdmin && accountType === "buyer") {
     const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
     baseItems.splice(profileIndex + 1, 0,
       {
@@ -67,7 +70,7 @@ const getSettingsItems = (accountType: string | null, userEmail?: string): MenuI
       }
     );
   }
-  
+
   return baseItems;
 };
 

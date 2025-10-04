@@ -15,6 +15,7 @@ if (import.meta.env.DEV) {
 }
 
 // Keep small, essential components as regular imports
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { BuyerProtectedLayout } from "@/components/BuyerProtectedLayout";
@@ -49,7 +50,6 @@ const BuyersPricing = lazy(() => import("./pages/BuyersPricing"));
 const Contact = lazy(() => import("./pages/Contact"));
 const News = lazy(() => import("./pages/News"));
 const SendMessage = lazy(() => import("./pages/SendMessage"));
-const SendMessageTest = lazy(() => import("./pages/SendMessageTest"));
 const Chat = lazy(() => import("./pages/Chat"));
 const ChatTest = lazy(() => import("./pages/ChatTest"));
 const ChatHistory = lazy(() => import("./pages/ChatHistory"));
@@ -59,7 +59,6 @@ const SearchResults = lazy(() => import("./pages/SearchResults"));
 const ChatbotFeedbackAnalysis = lazy(() => import("./pages/ChatbotFeedbackAnalysis"));
 const SearchAnalytics = lazy(() => import("./pages/SearchAnalytics"));
 const Experiment = lazy(() => import("./pages/Experiment"));
-const SignupDebugPage = lazy(() => import("./pages/SignupDebugPage"));
 
 // Documentation pages
 const Docs = lazy(() => import("./pages/Docs"));
@@ -104,16 +103,17 @@ const TitleNewRedirect = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <OnboardingProvider>
-          <DataCacheProvider>
-            <Toaster />
-            <BrowserRouter>
-              <AnalyticsProvider>
-              <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-              <Suspense fallback={<PageLoader />}>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <OnboardingProvider>
+            <DataCacheProvider>
+              <Toaster />
+              <BrowserRouter>
+                <AnalyticsProvider>
+                <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+                <Suspense fallback={<PageLoader />}>
                 <Routes>
                 {/* Authentication routes - no authentication required */}
                 <Route path="/signin" element={<SigninPage />} />
@@ -125,17 +125,8 @@ const App = () => (
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
-                {/* DEBUG: Test route to verify routing works */}
-                <Route path="/test-signup" element={<div style={{padding: '20px', background: 'white', color: 'black'}}>🎯 TEST ROUTE WORKS! If you can see this, routing is fine. <a href="/signup/buyer" style={{color: 'blue'}}>Try signup/buyer</a></div>} />
-
-                {/* DEBUG: Signup debugger page */}
-                <Route path="/debug-signup" element={<SignupDebugPage />} />
-
                 {/* Legacy auth route - redirect to signin */}
                 <Route path="/auth" element={<SigninPage />} />
-                
-                {/* Test route - no authentication required */}
-                <Route path="/test-send-message" element={<SendMessageTest />} />
                 <Route path="/" element={<DashboardEntrypoint />} />
                 
                 {/* Buyer routes */}
@@ -346,6 +337,7 @@ const App = () => (
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

@@ -1002,6 +1002,25 @@ Please try again.`,
 
     await chatOrchestratorService.sendMessageStream(conversationHistory, {
       sessionId: currentSession?.id,
+      onSearchComplete: (event) => {
+        console.log('🔍 Search complete:', {
+          count: event.resultsCount,
+          avgSimilarity: event.avgSimilarity,
+          topTitles: event.topTitles.map(t => t.title_name_en || t.title_name_kr)
+        });
+        // TODO: Display search results preview in UI
+      },
+      onSuggestionsEarly: (queries) => {
+        console.log('💡 Early suggestions:', queries);
+        // Update bot message with suggestions immediately
+        setMessages(prev => {
+          return prev.map(msg =>
+            msg.id === streamingBotMessage.id
+              ? { ...msg, suggestedQueries: queries }
+              : msg
+          );
+        });
+      },
       onChunk: (text: string) => {
         setStreamingResponse(prev => prev + text);
         // Update the bot message in real-time
@@ -1013,17 +1032,22 @@ Please try again.`,
           );
         });
       },
-      onComplete: (fullResponse: string) => {
+      onComplete: (fullResponse: string, suggestedQueries?: string[]) => {
         console.log('✅ Orchestrator streaming completed:', {
           responseLength: fullResponse.length,
-          responseTime: Date.now() - startTime
+          responseTime: Date.now() - startTime,
+          suggestedQueriesCount: suggestedQueries?.length || 0
         });
 
-        // Final update with complete response
+        // Final update with complete response and suggested queries
         setMessages(prev => {
           return prev.map(msg =>
             msg.id === streamingBotMessage.id
-              ? { ...msg, content: fullResponse }
+              ? {
+                  ...msg,
+                  content: fullResponse,
+                  suggestedQueries: suggestedQueries || []
+                }
               : msg
           );
         });

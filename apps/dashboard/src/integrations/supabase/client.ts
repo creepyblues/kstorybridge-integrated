@@ -494,12 +494,27 @@ const originalRefreshSession = supabase.auth.refreshSession.bind(supabase.auth);
 type GetSessionResponse = Awaited<ReturnType<typeof originalGetSession>>;
 
 // Wrap critical auth methods with retry logic
-supabase.auth.signInWithPassword = (credentials) => 
-  withRetry(() => originalSignInWithPassword(credentials), {
-    maxRetries: 2,
-    operationName: 'signInWithPassword',
-    retryCondition: (error) => isNetworkError(error) && !error.message?.includes('Invalid login credentials')
-  });
+supabase.auth.signInWithPassword = async (credentials) => {
+  const startTime = Date.now();
+  console.log('🔐 AUTH: Starting signInWithPassword', { email: credentials.email });
+
+  try {
+    const result = await withRetry(() => originalSignInWithPassword(credentials), {
+      maxRetries: 2,
+      operationName: 'signInWithPassword',
+      retryCondition: (error) => isNetworkError(error) && !error.message?.includes('Invalid login credentials')
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`✅ AUTH: signInWithPassword completed in ${duration}ms`);
+
+    return result;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error(`❌ AUTH: signInWithPassword failed after ${duration}ms`, error);
+    throw error;
+  }
+};
 
 supabase.auth.signInWithOAuth = (options) =>
   withRetry(() => originalSignInWithOAuth(options), {

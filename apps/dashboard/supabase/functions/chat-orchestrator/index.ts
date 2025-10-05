@@ -40,6 +40,13 @@ interface VectorSearchResult {
   synopsis?: string;
   genre?: string[];
   tone?: string;
+  content_format?: string;
+  comps?: string[];
+  story_author?: string;
+  art_author?: string;
+  perfect_for?: string;
+  audience?: string;
+  age_rating?: string;
   similarity: number;
 }
 
@@ -151,6 +158,63 @@ serve(async (req) => {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // PHASE 1: Send search complete event with previews
+          if (searchResults && searchResults.length > 0) {
+            const avgSimilarity = searchResults.reduce((sum, r) => sum + r.similarity, 0) / searchResults.length;
+
+            controller.enqueue(
+              new TextEncoder().encode(
+                `data: ${JSON.stringify({
+                  type: 'search_complete',
+                  resultsCount: searchResults.length,
+                  avgSimilarity: Math.round(avgSimilarity * 100) / 100,
+                  topTitles: searchResults.slice(0, 3).map(r => ({
+                    title_id: r.title_id,
+                    title_name_en: r.title_name_en,
+                    title_name_kr: r.title_name_kr,
+                    title_image: r.title_image,
+                    genre: r.genre,
+                    tone: r.tone,
+                    similarity: Math.round(r.similarity * 100) / 100
+                  }))
+                })}\n\n`
+              )
+            );
+
+            console.log('✅ Sent search_complete event:', {
+              count: searchResults.length,
+              avgSimilarity: avgSimilarity.toFixed(2),
+              topTitles: searchResults.slice(0, 3).map(r => r.title_name_en || r.title_name_kr)
+            });
+          }
+
+          // PHASE 2: Generate and send suggestions EARLY (before AI streaming)
+          const queryIntent = classifyQueryIntent(userQuery, conversationHistory);
+          const suggestedQueries = generateSuggestedQueries({
+            queryIntent,
+            searchResults,
+            userQuery,
+            conversationHistory
+          });
+
+          // Save for later database storage
+          let savedSuggestedQueries: string[] = suggestedQueries;
+
+          if (suggestedQueries.length > 0) {
+            controller.enqueue(
+              new TextEncoder().encode(
+                `data: ${JSON.stringify({
+                  type: 'suggestions',
+                  suggestedQueries,
+                  generatedAt: 'early'
+                })}\n\n`
+              )
+            );
+
+            console.log('💡 Sent early suggestions:', suggestedQueries);
+          }
+
+          // PHASE 3: Start AI streaming
           // Use custom model if provided, otherwise default to gpt-4o-mini
           const selectedModel = model || 'gpt-4o-mini'
 
@@ -230,8 +294,8 @@ serve(async (req) => {
                     fullResponse = validation.validatedResponse
                   }
 
-                  // Save complete (validated) response to database
-                  await saveResponseToDatabase(supabase, activeSession.id, user.id, userQuery, fullResponse, searchResults)
+                  // Note: Suggestions already sent early, just save to database
+                  await saveResponseToDatabase(supabase, activeSession.id, user.id, userQuery, fullResponse, searchResults, savedSuggestedQueries)
                   continue
                 }
 
@@ -242,8 +306,8 @@ serve(async (req) => {
                     const text = parsed.choices[0].delta.content
                     fullResponse += text
 
-                    // Send text chunk to client
-                    controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`))
+                    // Send text chunk to client with structured format
+                    controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ type: 'text', text })}\n\n`))
                   }
                 } catch (e) {
                   // Ignore parsing errors for non-JSON lines
@@ -698,6 +762,146 @@ function validateAIResponse(response: string, validTitles: VectorSearchResult[])
   return { validatedResponse, hallucinations, isValid };
 }
 
+/**
+ * Generate 3-5 smart follow-up query suggestions based on context
+ * Uses ChatGPT/Claude-style specific, contextual suggestions
+ */
+function generateSuggestedQueries(context: {
+  queryIntent: string;
+  searchResults: VectorSearchResult[];
+  userQuery: string;
+  conversationHistory: ChatMessage[];
+}): string[] {
+  const { queryIntent, searchResults, userQuery } = context;
+  const suggestions: string[] = [];
+
+  // Early return if no search results
+  if (!searchResults || searchResults.length === 0) {
+    return [
+      "Show me top rated Korean titles",
+      "What's trending this month?",
+      "Recommend popular webtoons"
+    ];
+  }
+
+  // Extract rich metadata from search results
+  const titles = searchResults.map(r => r.title_name_en || r.title_name_kr).filter(Boolean);
+  const genres = new Set<string>();
+  const tones = new Set<string>();
+  const formats = new Set<string>();
+  const allComps: string[] = [];
+  const authors = new Set<string>();
+
+  searchResults.forEach(result => {
+    // Genres
+    if (Array.isArray(result.genre)) {
+      result.genre.forEach(g => genres.add(g));
+    } else if (result.genre) {
+      genres.add(result.genre);
+    }
+
+    // Tones
+    if (result.tone) tones.add(result.tone);
+
+    // Formats
+    if (result.content_format) formats.add(result.content_format);
+
+    // Comps
+    if (Array.isArray(result.comps)) {
+      allComps.push(...result.comps.filter(Boolean));
+    }
+
+    // Authors
+    if (result.story_author) authors.add(result.story_author);
+    if (result.art_author) authors.add(result.art_author);
+  });
+
+  const genreArray = Array.from(genres);
+  const toneArray = Array.from(tones);
+  const formatArray = Array.from(formats);
+  const authorArray = Array.from(authors);
+  const uniqueComps = [...new Set(allComps)];
+
+  // TYPE 1: Title-Specific Exploration (Highest Priority)
+  if (titles.length >= 2) {
+    suggestions.push(`Compare "${titles[0]}" to "${titles[1]}"`);
+  }
+  if (titles.length >= 1) {
+    suggestions.push(`Tell me more about "${titles[0]}"`);
+  }
+  if (titles.length >= 3) {
+    suggestions.push(`Which of these ${titles.length} is most like ${userQuery}?`);
+  }
+
+  // TYPE 2: Cross-Genre Hybrid Discovery
+  if (genreArray.length >= 2) {
+    suggestions.push(`Show me ${genreArray[0].toLowerCase()} with ${genreArray[1].toLowerCase()} elements`);
+  } else if (genreArray.length === 1 && toneArray.length > 0) {
+    // Tone variation within same genre
+    const oppositeTone = toneArray[0] === 'tense' ? 'lighter' :
+                        toneArray[0] === 'dark' ? 'uplifting' :
+                        'different';
+    suggestions.push(`${genreArray[0]} titles with ${oppositeTone} tone`);
+  }
+
+  // TYPE 3: Comp-Based Navigation (Using comps field)
+  if (uniqueComps.length > 0) {
+    const firstComp = uniqueComps[0];
+    if (formatArray.length > 0) {
+      suggestions.push(`Titles like "${firstComp}" but in ${formatArray[0].toLowerCase()} format`);
+    } else {
+      suggestions.push(`More stories similar to "${firstComp}"`);
+    }
+  }
+
+  // TYPE 4: Format/Tone Switching
+  if (formatArray.length > 0 && genreArray.length > 0) {
+    // Suggest different format for same genre
+    const alternateFormats = ['webtoon', 'manhwa', 'novel'].filter(f =>
+      !formatArray.has(f)
+    );
+    if (alternateFormats.length > 0) {
+      suggestions.push(`${genreArray[0]} stories in ${alternateFormats[0]} format`);
+    }
+  }
+
+  // TYPE 5: Author/Creator Discovery
+  if (authorArray.length > 0) {
+    const firstAuthor = authorArray[0];
+    suggestions.push(`More from ${firstAuthor}`);
+  }
+
+  // Intent-Specific Enhancements
+  if (queryIntent === 'comparison' && titles.length >= 2) {
+    suggestions.push(`What are the key differences between "${titles[0]}" and "${titles[1]}"?`);
+  }
+
+  if (queryIntent === 'information' && titles.length >= 1) {
+    suggestions.push(`Is there a sequel to "${titles[0]}"?`);
+  }
+
+  // Ensure variety: deduplicate and limit
+  const uniqueSuggestions = [...new Set(suggestions)];
+
+  // If we still don't have enough, add smart fallbacks
+  if (uniqueSuggestions.length < 3) {
+    if (genreArray.length > 0) {
+      uniqueSuggestions.push(`Best ${genreArray[0].toLowerCase()} for beginners`);
+    }
+    uniqueSuggestions.push("What's trending in Korean content right now?");
+  }
+
+  console.log('💡 Generated smart suggestions:', {
+    count: uniqueSuggestions.length,
+    usedTitles: titles.length > 0,
+    usedComps: uniqueComps.length > 0,
+    usedAuthors: authorArray.size > 0,
+    suggestions: uniqueSuggestions
+  });
+
+  return uniqueSuggestions.slice(0, 5); // Max 5 suggestions
+}
+
 function buildMasterPrompt(context: {
   userProfile: UserProfile;
   conversationHistory: ChatMessage[];
@@ -788,11 +992,13 @@ async function saveResponseToDatabase(
   userId: string,
   userQuery: string,
   aiResponse: string,
-  searchResults: VectorSearchResult[]
+  searchResults: VectorSearchResult[],
+  suggestedQueries: string[] = []
 ) {
   try {
     console.log('💾 Saving response to database', {
       searchResultsCount: searchResults.length,
+      suggestedQueriesCount: suggestedQueries.length,
       userId: userId.substring(0, 8) + '...',
       sessionId: sessionId.substring(0, 8) + '...',
       responseLength: aiResponse.length
@@ -854,6 +1060,32 @@ async function saveResponseToDatabase(
         searchResultsLength: searchResults.length,
         hasAiMessage: !!aiMessage
       });
+    }
+
+    // Save suggested queries if any
+    if (suggestedQueries.length > 0 && aiMessage) {
+      console.log('💡 Saving suggested queries', {
+        count: suggestedQueries.length,
+        messageId: aiMessage.id,
+        queries: suggestedQueries
+      });
+
+      const queries = suggestedQueries.map((query, index) => ({
+        message_id: aiMessage.id,
+        session_id: sessionId,
+        suggested_query: query,
+        query_position: index
+      }));
+
+      const { error: queriesError } = await supabase
+        .from('chat_suggested_queries')
+        .insert(queries);
+
+      if (queriesError) {
+        console.error('❌ Error saving suggested queries:', queriesError);
+      } else {
+        console.log('✅ Suggested queries saved successfully:', suggestedQueries.length);
+      }
     }
 
     // Update session messages for context

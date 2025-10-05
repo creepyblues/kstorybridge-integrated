@@ -312,16 +312,17 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
           user_id: data.user.id
         });
 
-        // Prepare for Slack notification
+        // Send Slack notification with correct parameters
         try {
           await notifyUserSignin({
-            userEmail: data.user.email!,
-            userId: data.user.id,
-            authType: 'email',
-            accountType: accountType
+            fullName: data.user.user_metadata?.full_name || data.user.email!.split('@')[0],
+            email: data.user.email!,
+            userType: accountType as 'buyer' | 'creator',
+            signinMethod: 'email',
+            company: data.user.user_metadata?.buyer_company
           });
         } catch (error) {
-          console.error('Error preparing signin notification:', error);
+          console.error('Error sending signin notification:', error);
         }
 
         await handleUserRedirect(data.user);

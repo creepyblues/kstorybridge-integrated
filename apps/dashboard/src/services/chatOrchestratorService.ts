@@ -13,10 +13,27 @@ interface OrchestratorResponse {
   suggestedQueries?: string[];
 }
 
+interface SearchCompleteEvent {
+  type: 'search_complete';
+  resultsCount: number;
+  avgSimilarity: number;
+  topTitles: Array<{
+    title_id: string;
+    title_name_en?: string;
+    title_name_kr?: string;
+    title_image?: string;
+    genre?: string[];
+    tone?: string;
+    similarity: number;
+  }>;
+}
+
 interface StreamingChatOptions {
   sessionId?: string;
   onChunk?: (text: string) => void;
-  onComplete?: (fullResponse: string) => void;
+  onSearchComplete?: (event: SearchCompleteEvent) => void;
+  onSuggestionsEarly?: (queries: string[]) => void;
+  onComplete?: (fullResponse: string, suggestedQueries?: string[]) => void;
   onError?: (error: string) => void;
   // Testing mode parameters
   model?: string;
@@ -41,7 +58,7 @@ class ChatOrchestratorService {
     messages: ChatMessage[],
     options: StreamingChatOptions = {}
   ): Promise<string> {
-    const { sessionId, onChunk, onComplete, onError, model, vectorSearchLimit, systemPrompt, formattingRules } = options;
+    const { sessionId, onChunk, onSearchComplete, onSuggestionsEarly, onComplete, onError, model, vectorSearchLimit, systemPrompt, formattingRules } = options;
 
     try {
       // Get current session
@@ -105,6 +122,7 @@ class ChatOrchestratorService {
       }
 
       let fullResponse = '';
+      let suggestedQueries: string[] = [];
 
       while (true) {
         const { done, value } = await reader.read();
@@ -118,7 +136,7 @@ class ChatOrchestratorService {
             const data = line.slice(6);
 
             if (data === '[DONE]') {
-              onComplete?.(fullResponse);
+              onComplete?.(fullResponse, suggestedQueries);
               return fullResponse;
             }
 
@@ -129,9 +147,34 @@ class ChatOrchestratorService {
                 throw new Error(parsed.error);
               }
 
-              if (parsed.text) {
-                fullResponse += parsed.text;
-                onChunk?.(parsed.text);
+              // Handle different event types
+              switch (parsed.type) {
+                case 'search_complete':
+                  console.log('✅ Search complete:', parsed);
+                  onSearchComplete?.(parsed as SearchCompleteEvent);
+                  break;
+
+                case 'suggestions':
+                  suggestedQueries = parsed.suggestedQueries || [];
+                  console.log('💡 Early suggestions received:', suggestedQueries);
+                  onSuggestionsEarly?.(suggestedQueries);
+                  break;
+
+                case 'text':
+                  fullResponse += parsed.text;
+                  onChunk?.(parsed.text);
+                  break;
+
+                default:
+                  // Legacy format support (no type field)
+                  if (parsed.text) {
+                    fullResponse += parsed.text;
+                    onChunk?.(parsed.text);
+                  }
+                  if (parsed.suggestedQueries) {
+                    suggestedQueries = parsed.suggestedQueries;
+                    console.log('💡 Suggested queries (legacy):', suggestedQueries);
+                  }
               }
             } catch (parseError) {
               // Ignore parsing errors for non-JSON lines
@@ -141,7 +184,7 @@ class ChatOrchestratorService {
         }
       }
 
-      onComplete?.(fullResponse);
+      onComplete?.(fullResponse, suggestedQueries);
       return fullResponse;
 
     } catch (error) {
@@ -234,4 +277,4 @@ class ChatOrchestratorService {
 }
 
 export const chatOrchestratorService = new ChatOrchestratorService();
-export type { ChatMessage, OrchestratorResponse, StreamingChatOptions };
+export type { ChatMessage, OrchestratorResponse, StreamingChatOptions, SearchCompleteEvent };

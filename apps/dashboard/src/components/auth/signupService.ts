@@ -1,6 +1,6 @@
 import { authService } from '@/services/auth';
 import { createBuyerProfileAtomic, createCreatorProfileAtomic } from '@/utils/atomicProfileCreator';
-import { createSimpleOAuthBuyerProfile, createSimpleOAuthCreatorProfile } from '@/services/simpleOAuthProfile';
+import { createOAuthProfileViaEdgeFunction } from '@/services/oauthProfileEdgeFunction';
 import type { BuyerFormData, CreatorFormData, AccountType } from './types';
 import { isBlockedEmail, normalizeCreatorRole } from './validation';
 import { sendWelcomeEmail } from '@/services/emailService';
@@ -56,8 +56,8 @@ export const completeOAuthProfile = async (
     if (accountType === 'buyer') {
       const buyerData = formData as BuyerFormData;
 
-      // Use simple OAuth profile creation (service role, fast)
-      let profileResult = await createSimpleOAuthBuyerProfile({
+      // Use secure edge function for OAuth profile creation
+      let profileResult = await createOAuthProfileViaEdgeFunction('buyer', user.id, {
         id: user.id,
         email: user.email,
         full_name: buyerData.full_name,
@@ -126,8 +126,8 @@ export const completeOAuthProfile = async (
       const creatorData = formData as CreatorFormData;
       const normalizedRole = normalizeCreatorRole(creatorData.ip_owner_role);
 
-      // Use simple OAuth profile creation (service role, fast)
-      let profileResult = await createSimpleOAuthCreatorProfile({
+      // Use secure edge function for OAuth profile creation
+      let profileResult = await createOAuthProfileViaEdgeFunction('creator', user.id, {
         id: user.id,
         email: user.email,
         full_name: creatorData.full_name,

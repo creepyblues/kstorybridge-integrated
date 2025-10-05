@@ -24,7 +24,7 @@
  * - Fallback needed? → Use this module
  */
 
-import { supabase, supabaseServiceRole } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 export interface BuyerProfileData {
@@ -241,18 +241,16 @@ async function createBuyerProfileOperation(
         created_at: new Date().toISOString()
       };
 
-      // Choose client based on service role option
-      const client = useServiceRole && supabaseServiceRole ? supabaseServiceRole : supabase;
-      const clientType = useServiceRole && supabaseServiceRole ? 'service role' : 'user auth';
+      // Always use regular supabase client (service role removed for security)
+      const client = supabase;
+      const clientType = 'user auth';
 
       if (allowUpdate) {
         // Use upsert with proper conflict resolution
         console.log(`💾 Atomic Profile: Using upsert for buyer profile with ${clientType}`);
 
-        // Only get session for user auth client, service role doesn't need it
-        if (!useServiceRole || !supabaseServiceRole) {
-          await supabase.auth.getSession();
-        }
+        // Get session for authentication
+        await supabase.auth.getSession();
 
         const { data: profile, error } = await client
           .from('user_buyers')
@@ -304,10 +302,8 @@ async function createBuyerProfileOperation(
         // Use insert-only approach
         console.log(`📝 Atomic Profile: Using insert-only for buyer profile with ${clientType}`);
 
-        // Only get session for user auth client, service role doesn't need it
-        if (!useServiceRole || !supabaseServiceRole) {
-          await supabase.auth.getSession();
-        }
+        // Get session for authentication
+        await supabase.auth.getSession();
 
         const { data: profile, error } = await client
           .from('user_buyers')

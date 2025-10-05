@@ -16,7 +16,6 @@ import type { Session } from '@supabase/supabase-js';
 // Require explicit Supabase configuration (no production fallbacks)
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   const missingVars = [
@@ -29,23 +28,6 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     console.error(errorMessage);
   }
   throw new Error(errorMessage);
-}
-
-// Production environment validation for OAuth flows
-if (typeof window !== 'undefined') {
-  console.log('🔧 SERVICE ROLE DEBUG:', {
-    hasServiceRoleKey: !!SUPABASE_SERVICE_ROLE_KEY,
-    keyLength: SUPABASE_SERVICE_ROLE_KEY ? SUPABASE_SERVICE_ROLE_KEY.length : 0,
-    keyPrefix: SUPABASE_SERVICE_ROLE_KEY ? SUPABASE_SERVICE_ROLE_KEY.substring(0, 8) + '...' : 'none'
-  });
-
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('🚨 PRODUCTION WARNING: Service role key missing');
-    console.warn('🔧 OAuth profile creation may fail without VITE_SUPABASE_SERVICE_ROLE_KEY');
-    console.warn('📋 Add this environment variable to prevent OAuth signup failures');
-  } else {
-    console.log('✅ Service role key detected and available');
-  }
 }
 
 // Enhanced configuration for production reliability
@@ -63,9 +45,8 @@ if (isDev && import.meta.env.VITE_CONFIG_DEBUG === 'true') {
   });
 }
 
-// FIRST LOAD FIX: Define storage keys before CLIENT_CONFIG
-const MAIN_CLIENT_STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-auth-token';
-const SERVICE_ROLE_STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-service-role-token';
+// Storage key for Supabase auth
+const STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-auth-token';
 
 // Performance and reliability settings
 const CLIENT_CONFIG = {
@@ -77,7 +58,7 @@ const CLIENT_CONFIG = {
     detectSessionInUrl: true,
     flowType: 'pkce' as const,
     // Enhanced session settings
-    storageKey: MAIN_CLIENT_STORAGE_KEY,
+    storageKey: STORAGE_KEY,
     debug: isDev && import.meta.env.VITE_AUTH_DEBUG === 'true'
   },
   
@@ -313,9 +294,9 @@ const bootstrapCachedSession = () => {
   }
 
   try {
-    const raw = window.localStorage.getItem(CLIENT_CONFIG.auth.storageKey);
+    const raw = window.localStorage.getItem(STORAGE_KEY);
     console.log('🧊 [BOOTSTRAP] localStorage check:', {
-      storageKey: CLIENT_CONFIG.auth.storageKey,
+      storageKey: STORAGE_KEY,
       hasData: !!raw,
       dataLength: raw ? raw.length : 0
     });
@@ -402,47 +383,7 @@ if (isDev && import.meta.env.VITE_CLIENT_DEBUG === 'true') {
 }
 
 // Create the enhanced Supabase client with explicit storage key (defined above)
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  ...CLIENT_CONFIG,
-  auth: {
-    ...CLIENT_CONFIG.auth,
-    storageKey: MAIN_CLIENT_STORAGE_KEY
-  }
-});
-
-// Create completely isolated service role client with separate storage key
-// This ensures it operates independently of user session management
-export const supabaseServiceRole = SUPABASE_SERVICE_ROLE_KEY
-  ? createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: {
-        persistSession: false,      // No session persistence
-        autoRefreshToken: false,    // No token refresh
-        detectSessionInUrl: false,  // No URL session detection
-        storageKey: SERVICE_ROLE_STORAGE_KEY,  // FIRST LOAD FIX: Separate storage key
-      },
-      db: {
-        schema: 'public'
-      },
-      global: {
-        headers: {
-          'X-Client-Info': 'kstorybridge-dashboard-service-role'
-        }
-      },
-      // Disable realtime to prevent any session dependencies
-      realtime: {
-        params: {
-          eventsPerSecond: 0
-        }
-      }
-    })
-  : null;
-
-// Validation for service role client
-if (typeof window !== 'undefined' && !supabaseServiceRole) {
-  console.warn('🚨 Service role client not available - signup profile creation may fail');
-} else if (typeof window !== 'undefined' && supabaseServiceRole) {
-  console.log('✅ Service role client created with complete session isolation');
-}
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, CLIENT_CONFIG);
 
 // IMMEDIATE CONNECTION TEST - DISABLED TO PREVENT HANGING
 if (false && isDev) {
@@ -549,15 +490,6 @@ const originalSignInWithOAuth = supabase.auth.signInWithOAuth.bind(supabase.auth
 const originalSignOut = supabase.auth.signOut.bind(supabase.auth);
 const originalGetSession = supabase.auth.getSession.bind(supabase.auth);
 const originalRefreshSession = supabase.auth.refreshSession.bind(supabase.auth);
-
-// Ensure service role client auth methods are preserved (never override them)
-const serviceRoleAuthMethods = supabaseServiceRole ? {
-  signInWithPassword: supabaseServiceRole.auth.signInWithPassword.bind(supabaseServiceRole.auth),
-  signInWithOAuth: supabaseServiceRole.auth.signInWithOAuth.bind(supabaseServiceRole.auth),
-  signOut: supabaseServiceRole.auth.signOut.bind(supabaseServiceRole.auth),
-  getSession: supabaseServiceRole.auth.getSession.bind(supabaseServiceRole.auth),
-  refreshSession: supabaseServiceRole.auth.refreshSession.bind(supabaseServiceRole.auth)
-} : null;
 
 type GetSessionResponse = Awaited<ReturnType<typeof originalGetSession>>;
 
@@ -705,21 +637,6 @@ supabase.auth.refreshSession = (refreshToken) =>
     operationName: 'refreshSession',
     timeoutMs: 25000 // Increased to 25 seconds for production session refresh operations
   });
-
-// CRITICAL: Restore original auth methods to service role client after global overrides
-// This ensures the service role client operates independently of user session management
-if (supabaseServiceRole && serviceRoleAuthMethods) {
-  console.log('🔒 Protecting service role client from global auth overrides');
-
-  // Restore original auth methods to prevent session timeouts
-  supabaseServiceRole.auth.signInWithPassword = serviceRoleAuthMethods.signInWithPassword;
-  supabaseServiceRole.auth.signInWithOAuth = serviceRoleAuthMethods.signInWithOAuth;
-  supabaseServiceRole.auth.signOut = serviceRoleAuthMethods.signOut;
-  supabaseServiceRole.auth.getSession = serviceRoleAuthMethods.getSession;
-  supabaseServiceRole.auth.refreshSession = serviceRoleAuthMethods.refreshSession;
-
-  console.log('✅ Service role client auth methods protected from overrides');
-}
 
 // Performance monitoring (development only)
 if (isDev) {

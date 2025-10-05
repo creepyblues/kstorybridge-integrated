@@ -79,6 +79,14 @@ const documents: DocumentItem[] = [
     lastUpdated: '2025-01-26'
   },
   {
+    filename: 'CHATBOT_IMPROVEMENT_GUIDE.md',
+    title: 'AI Chatbot Quality Improvement Guide',
+    description: 'Complete guide to chatbot improvements, current status (Phase 1 & 2 complete), and roadmap for quality enhancements.',
+    category: 'technical',
+    icon: Target,
+    lastUpdated: '2025-10-05'
+  },
+  {
     filename: 'DATABASE_SCHEMA.md',
     title: 'Database Schema Reference',
     description: 'Complete database structure, table definitions, relationships, and field requirements.',

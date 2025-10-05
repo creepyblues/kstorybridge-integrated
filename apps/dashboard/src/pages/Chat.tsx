@@ -1167,7 +1167,17 @@ Please try again.`,
   };
 
   const handleSuggestedQuery = async (query: string, messageId?: string) => {
-    setInputMessage(query);
+    if (!query.trim() || isLoading || isProcessingMessage || isStreaming || !user) {
+      return;
+    }
+
+    // Track analytics
+    trackSearch(query.trim(), 0, {
+      userType: 'buyer',
+      searchContext: 'chat_suggested_query',
+      page: '/buyers/chat',
+      chatMode: 'standard'
+    });
 
     // Record suggestion click
     if (currentSession && user) {
@@ -1177,7 +1187,7 @@ Please try again.`,
         interaction_type: 'suggestion_click',
         target_id: query,
         target_title: query,
-        metadata: { 
+        metadata: {
           clicked_query: query,
           source_message_id: messageId,
           timestamp: new Date().toISOString()
@@ -1188,6 +1198,75 @@ Please try again.`,
       if (messageId) {
         await chatHistoryService.markQueryAsClicked(messageId, query);
       }
+    }
+
+    // Set conversation as started
+    setHasStartedConversation(true);
+
+    // Set processing flag
+    setIsProcessingMessage(true);
+
+    // Ensure session exists
+    const session = await ensureSessionAndLoadHistory();
+    if (!session && !currentSession) {
+      toast({
+        title: "Session Error",
+        description: "Failed to create chat session. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessingMessage(false);
+      return;
+    }
+
+    // Create user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: query,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+
+    // Reset view
+    if (showAllMessages) {
+      setShowAllMessages(false);
+    }
+
+    const startTime = Date.now();
+
+    try {
+      console.log('🎯 Executing suggested query (auto-run)', {
+        query: query.substring(0, 50) + '...',
+        sourceMessageId: messageId,
+        user: user?.email
+      });
+
+      // Execute query using orchestrator
+      await handleOrchestratorMessage(query, userMessage, startTime);
+    } catch (error: any) {
+      console.error("🚨 Suggested query error:", error);
+
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `I apologize, but I encountered an error: ${error.message}
+
+Please try again.`,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+      toast({
+        title: "Chat Error",
+        description: error.message || "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setIsProcessingMessage(false);
+      setIsStreaming(false);
+      setStreamingResponse('');
     }
   };
 
@@ -1467,7 +1546,7 @@ Please try again.`,
                         <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} titleCache={titleCache} />
                       </div>
                     
-                    {/* Suggested Queries - Cleaner display */}
+                    {/* Suggested Queries - Auto-execute on click */}
                     {message.suggestedQueries && message.suggestedQueries.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         <span className="text-xs text-gray-500">Try:</span>
@@ -1476,7 +1555,8 @@ Please try again.`,
                             <button
                               key={idx}
                               onClick={() => handleSuggestedQuery(query, message.messageId)}
-                              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors"
+                              disabled={isLoading || isProcessingMessage || isStreaming}
+                              className="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-50"
                             >
                               {query}
                             </button>

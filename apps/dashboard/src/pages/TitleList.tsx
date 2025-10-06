@@ -63,7 +63,7 @@ function TitleListContent() {
   // Enhanced search state
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searchType, setSearchType] = useState<'vector' | 'traditional' | 'hybrid'>('traditional');
-  const [vectorSearchAvailable, setVectorSearchAvailable] = useState(false);
+  const [vectorSearchAvailable, setVectorSearchAvailable] = useState(true);
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card'); // Default to card view

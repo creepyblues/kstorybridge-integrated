@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getDashboardPath, getSignupPath } from '@/utils/oauthUtils';
+import { validateOAuthState } from '@/utils/oauthSecurity';
 import type { AccountType } from '@/utils/oauthUtils';
 
 /**
@@ -34,15 +35,28 @@ const AuthCallbackSimple = () => {
       // Read URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      const accountType = urlParams.get('account_type');
-      const flow = urlParams.get('flow');
+      const state = urlParams.get('state');
 
       console.log('📋 OAuth params:', {
         code: !!code,
-        accountType,
-        flow,
+        state: state?.substring(0, 8) + '...',
         fullUrl: window.location.search
       });
+
+      // Validate OAuth state parameter (primary method)
+      let accountType: string | null = null;
+      let flow: string | null = null;
+
+      if (state) {
+        const oauthData = validateOAuthState(state);
+        if (oauthData) {
+          accountType = oauthData.accountType;
+          flow = oauthData.flow;
+          console.log('✅ OAuth state validated:', { accountType, flow, provider: oauthData.provider });
+        } else {
+          console.warn('⚠️ OAuth state validation failed, falling back to sessionStorage');
+        }
+      }
 
       // Validate OAuth code
       if (!code) {
@@ -57,64 +71,36 @@ const AuthCallbackSimple = () => {
       }
 
       try {
-        // 1. Exchange OAuth code for session with race condition protection
+        // 1. Exchange OAuth code for session (simplified - no dual listener race condition)
         console.log('🔄 Exchanging OAuth code for session...');
 
-        // Set up auth state change listener BEFORE exchange
-        // This captures the SIGNED_IN event that we know fires successfully
-        const authPromise = new Promise<{ user: any; session: any }>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Auth event timeout')), 15000);
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session?.user) {
-              clearTimeout(timeout);
-              subscription.unsubscribe();
-              console.log('✅ Auth event captured:', session.user.email);
-              resolve({ user: session.user, session });
-            }
+        if (error || !data.session) {
+          console.error('❌ OAuth code exchange failed:', error);
+          toast({
+            title: "Authentication Error",
+            description: error?.message || 'Failed to exchange OAuth code',
+            variant: "destructive"
           });
-        });
-
-        // Start the exchange (may hang, but auth event will fire)
-        const exchangePromise = supabase.auth.exchangeCodeForSession(code);
-
-        // Race: whichever completes first wins
-        let user, session;
-        try {
-          // Try exchange first with 10-second timeout (OAuth PKCE can take 5-10s in production)
-          // Timeout is defensive - prevents indefinite hangs while allowing normal exchanges to complete
-          const result = await Promise.race([
-            exchangePromise,
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Exchange timeout')), 10000))
-          ]);
-
-          if (result.error || !result.data?.session?.user) {
-            throw new Error('Exchange failed or returned no session');
-          }
-
-          user = result.data.session.user;
-          session = result.data.session;
-          console.log('✅ Exchange promise resolved:', user.email);
-        } catch (exchangeError) {
-          // Exchange exceeded 10s timeout - use reliable auth event fallback (this is expected behavior)
-          console.log('ℹ️ Exchange took longer than 10s, using auth state change event (this is normal)...');
-          console.log('Exchange info:', exchangeError);
-          const result = await authPromise;
-          user = result.user;
-          session = result.session;
+          navigate('/signin?error=oauth_exchange_failed');
+          return;
         }
+
+        const user = data.session.user;
+        const session = data.session;
 
         console.log('✅ OAuth session established for:', user.email);
 
-        // 2. Determine account type (Priority: URL param > metadata > sessionStorage)
+        // 2. Determine account type (Priority: state param > metadata > sessionStorage fallback)
         const finalAccountType = (
-          accountType ||
+          accountType ||  // From validated OAuth state parameter
           user.user_metadata?.account_type ||
           (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null)
         ) as AccountType | null;
 
         console.log('🎯 Account type detection:', {
-          fromUrl: accountType,
+          fromState: accountType,
           fromMetadata: user.user_metadata?.account_type,
           fromStorage: typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null,
           final: finalAccountType
@@ -129,6 +115,16 @@ const AuthCallbackSimple = () => {
 
         console.log('✅ Valid account type:', finalAccountType);
 
+        // 2.5. Update user metadata with account_type for consistency
+        try {
+          await supabase.auth.updateUser({
+            data: { account_type: finalAccountType }
+          });
+          console.log('✅ User metadata updated with account_type:', finalAccountType);
+        } catch (metadataError) {
+          console.warn('⚠️ Failed to update user metadata (non-critical):', metadataError);
+        }
+
         // 3. Clear sessionStorage
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('oauth_account_type');
@@ -136,18 +132,79 @@ const AuthCallbackSimple = () => {
           console.log('🧹 Cleared OAuth session storage');
         }
 
-        // 4. Redirect based on flow type
-        if (flow === 'signup') {
+        // 4. Redirect based on flow type (from state parameter or default to 'signin')
+        const finalFlow = flow || 'signin';
+
+        if (finalFlow === 'signup') {
           // OAuth signup - redirect to complete profile
           const signupPath = getSignupPath(finalAccountType);
           const signupUrl = `${signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
           console.log('📝 OAuth signup - redirecting to:', signupUrl);
           navigate(signupUrl);
         } else {
-          // OAuth signin - redirect to dashboard
-          const dashboardPath = getDashboardPath(finalAccountType);
-          console.log('🏠 OAuth signin - redirecting to:', dashboardPath);
-          navigate(dashboardPath);
+          // OAuth signin - check if profile exists before redirecting to dashboard
+          console.log('🔍 OAuth signin - checking profile existence...');
+
+          let profileExists = false;
+          try {
+            if (finalAccountType === 'buyer') {
+              const { data } = await supabase
+                .from('user_buyers')
+                .select('id')
+                .eq('id', user.id)
+                .maybeSingle();
+              profileExists = !!data;
+            } else if (finalAccountType === 'creator') {
+              const { data } = await supabase
+                .from('user_creators')
+                .select('id')
+                .eq('id', user.id)
+                .maybeSingle();
+              profileExists = !!data;
+            }
+          } catch (error) {
+            console.error('❌ Error checking profile existence:', error);
+            // On error, assume profile doesn't exist for safety
+            profileExists = false;
+          }
+
+          if (profileExists) {
+            // Profile exists - proceed to dashboard
+            const dashboardPath = getDashboardPath(finalAccountType);
+            console.log('✅ Profile found - redirecting to:', dashboardPath);
+
+            // Check if this is the first login in this session
+            const isFirstLogin = !sessionStorage.getItem('dashboard_loaded');
+
+            if (isFirstLogin) {
+              // Mark dashboard as loaded for this session
+              sessionStorage.setItem('dashboard_loaded', 'true');
+              console.log('🔄 First login detected - will reload dashboard after navigation');
+
+              // Navigate first, then reload to ensure fresh state
+              navigate(dashboardPath);
+
+              // Small delay to allow navigation to complete, then reload
+              setTimeout(() => {
+                console.log('🔄 Reloading dashboard for fresh state...');
+                window.location.reload();
+              }, 100);
+            } else {
+              // Normal navigation without reload
+              navigate(dashboardPath);
+            }
+          } else {
+            // No profile found - user needs to signup first
+            console.log('❌ No profile found - redirecting to signup');
+            toast({
+              title: "Account Not Found",
+              description: "Your account doesn't exist. Please sign up first.",
+              variant: "destructive"
+            });
+            setTimeout(() => {
+              navigate(`/signup/${finalAccountType}`);
+            }, 2000);
+          }
         }
 
       } catch (error) {

@@ -92,18 +92,22 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     });
 
     try {
-      // Store account type in sessionStorage for callback (as backup)
+      console.log(`🔐 ${accountType.toUpperCase()} OAuth signin initiated with Google`);
+
+      // Use OAuth state parameter for secure data passing (OAuth 2.0 spec compliant)
+      const { initializeOAuthFlow } = await import('@/utils/oauthSecurity');
+      const state = initializeOAuthFlow('signin', accountType, 'google');
+
+      // Store as backup fallback (state parameter is primary)
       sessionStorage.setItem('oauth_account_type', accountType);
       sessionStorage.setItem('oauth_flow', 'signin');
 
-      console.log(`🔐 ${accountType.toUpperCase()} OAuth signin initiated with Google`);
-
-      // Encode account_type and flow in redirect URL for reliable persistence
-      const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
+      const callbackUrl = `${window.location.origin}/auth/callback`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: callbackUrl
+          redirectTo: callbackUrl,
+          queryParams: { state } // OAuth standard state parameter
         }
       });
 
@@ -192,40 +196,19 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
         console.log(`✅ ${accountType.toUpperCase()} SIGNIN: Redirecting to dashboard:`, displayInfo.dashboardPath);
         navigate(displayInfo.dashboardPath);
       } else {
-        // Handle missing profile
-        if (accountType === 'buyer') {
-          // For buyers, create a profile using atomic creation utility
-          console.log('📝 BUYER SIGNIN: Creating buyer profile with atomic utility');
+        // Handle missing profile - user needs to signup first
+        console.log(`❌ ${accountType.toUpperCase()} SIGNIN: No profile found - user must signup first`);
 
-          const profileResult = await createBuyerProfileAtomic({
-            id: user.id,
-            email: user.email!,
-            full_name: user.user_metadata?.full_name || '',
-            buyer_company: user.user_metadata?.buyer_company || '',
-            buyer_role: user.user_metadata?.buyer_role || '',
-            linkedin_url: user.user_metadata?.linkedin_url || null,
-            tier: 'basic'
-          }, {
-            enableSlack: true,
-            debug: true
-          });
+        toast({
+          title: "Account Not Found",
+          description: "Your account doesn't exist. Please sign up first.",
+          variant: "destructive"
+        });
 
-          if (profileResult.success) {
-            console.log('✅ BUYER SIGNIN: Profile created successfully, redirecting to dashboard');
-            navigate('/buyers/chat');
-          } else {
-            console.error('❌ BUYER SIGNIN: Failed to create profile:', profileResult.error);
-            toast({
-              title: "Profile creation failed",
-              description: "There was an error setting up your account. Please contact support.",
-              variant: "destructive"
-            });
-          }
-        } else {
-          // For creators, redirect to signup completion
-          console.log('📝 CREATOR SIGNIN: No profile found, redirecting to signup completion');
-          navigate(`/signup/creator?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`);
-        }
+        // Redirect to signup page after brief delay
+        setTimeout(() => {
+          navigate(`/signup/${accountType}`);
+        }, 2000);
       }
 
     } catch (error) {

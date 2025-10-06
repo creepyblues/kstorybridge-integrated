@@ -190,9 +190,18 @@ export default function Profile() {
               setFormData(unifiedProfile);
               setDbConnectivityStatus({ isConnected: true });
             } else {
-              // No profile found by ID, try to create one
-              console.log("No buyer profile found by ID, attempting to create one");
-              await createBuyerProfile();
+              // No profile found - user needs to complete signup
+              console.log("❌ No buyer profile found - redirecting to signup");
+              toast({
+                title: "Account Not Found",
+                description: "Your account doesn't exist. Please sign up first.",
+                variant: "destructive"
+              });
+              // Redirect to signup page after a brief delay
+              setTimeout(() => {
+                window.location.href = '/signup/buyer';
+              }, 2000);
+              throw new Error('Profile not found - please complete signup');
             }
           } else {
             throw new Error(`Failed to fetch buyer profile: ${response.status}`);
@@ -229,9 +238,18 @@ export default function Profile() {
               setFormData(unifiedProfile);
               setDbConnectivityStatus({ isConnected: true });
             } else {
-              // No profile found by ID, try to create one
-              console.log("No creator profile found by ID, attempting to create one");
-              await createIPOwnerProfile();
+              // No profile found - user needs to complete signup
+              console.log("❌ No creator profile found - redirecting to signup");
+              toast({
+                title: "Account Not Found",
+                description: "Your account doesn't exist. Please sign up first.",
+                variant: "destructive"
+              });
+              // Redirect to signup page after a brief delay
+              setTimeout(() => {
+                window.location.href = '/signup/creator';
+              }, 2000);
+              throw new Error('Profile not found - please complete signup');
             }
           } else {
             throw new Error(`Failed to fetch creator profile: ${response.status}`);

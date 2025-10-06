@@ -707,6 +707,7 @@ function getIntentGuidelines(intent: string): string {
 /**
  * Validates AI response to catch title hallucinations
  * Ensures AI only mentions titles that exist in search results
+ * Enhanced to catch ALL title patterns (not just quoted)
  */
 function validateAIResponse(response: string, validTitles: VectorSearchResult[]): {
   validatedResponse: string;
@@ -718,34 +719,77 @@ function validateAIResponse(response: string, validTitles: VectorSearchResult[])
     return { validatedResponse: response, hallucinations: [], isValid: true };
   }
 
-  // Extract all quoted strings (potential title mentions)
-  const quotedMatches = response.match(/"([^"]*)"/g) || [];
-  const mentionedTitles = quotedMatches.map(q => q.replace(/"/g, ''));
-
-  // Build list of valid title names
+  // Build list of valid title names (exact matching)
   const validTitleNames = new Set<string>();
   validTitles.forEach(title => {
     if (title.title_name_en) validTitleNames.add(title.title_name_en.toLowerCase());
     if (title.title_name_kr) validTitleNames.add(title.title_name_kr.toLowerCase());
   });
 
+  // Extract potential title mentions using multiple patterns
+  const potentialTitles = new Set<string>();
+
+  // Pattern 1: Quoted strings (existing)
+  const quotedMatches = response.match(/"([^"]*)"/g) || [];
+  quotedMatches.forEach(q => potentialTitles.add(q.replace(/"/g, '')));
+
+  // Pattern 2: Single quotes
+  const singleQuotedMatches = response.match(/'([^']*)'/g) || [];
+  singleQuotedMatches.forEach(q => potentialTitles.add(q.replace(/'/g, '')));
+
+  // Pattern 3: Title-like capitalized phrases (common Korean title patterns)
+  // Matches: "20th Century Girl", "My ID is Gangnam Beauty", "Dear My Friends"
+  const titlePatterns = [
+    /\b([A-Z][a-zA-Z]*(?:\s+[A-Z]?[a-z]+){1,5}(?:\s+(?:Girl|Boy|Beauty|Friends|Love|Story|Dream|Life|Night|Day|World)))\b/g,
+    /\b([0-9]{1,2}(?:st|nd|rd|th)\s+Century\s+[A-Z][a-z]+)\b/g,
+    /\b(My\s+[A-Z][A-Z]+\s+is\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g,
+    /\b(Dear\s+(?:My\s+)?[A-Z][a-z]+)\b/g
+  ];
+
+  titlePatterns.forEach(pattern => {
+    const matches = response.match(pattern) || [];
+    matches.forEach(match => {
+      // Skip if too short or too long
+      if (match.length > 5 && match.length < 50) {
+        potentialTitles.add(match);
+      }
+    });
+  });
+
   // Check for hallucinations
   const hallucinations: string[] = [];
   let validatedResponse = response;
 
-  mentionedTitles.forEach(mentioned => {
-    const mentionedLower = mentioned.toLowerCase();
+  potentialTitles.forEach(mentioned => {
+    const mentionedLower = mentioned.toLowerCase().trim();
+
+    // Skip generic terms
+    const genericTerms = ['korean title', 'korean drama', 'korean webtoon', 'the title', 'this title'];
+    if (genericTerms.some(term => mentionedLower === term)) {
+      return;
+    }
+
+    // Check if mentioned title exists in valid titles
     const isValid = Array.from(validTitleNames).some(validTitle =>
-      mentionedLower.includes(validTitle) || validTitle.includes(mentionedLower)
+      mentionedLower === validTitle ||
+      mentionedLower.includes(validTitle) ||
+      validTitle.includes(mentionedLower)
     );
 
-    if (!isValid) {
+    if (!isValid && mentioned.length > 5) {
       hallucinations.push(mentioned);
-      // Replace hallucinated title with generic term
-      validatedResponse = validatedResponse.replace(
-        `"${mentioned}"`,
-        'a Korean title'
-      );
+      // Replace with clear indicator
+      const replacements = [
+        { pattern: `"${mentioned}"`, replacement: '[removed fictional title]' },
+        { pattern: `'${mentioned}'`, replacement: '[removed fictional title]' },
+        { pattern: mentioned, replacement: '[removed fictional title]' }
+      ];
+
+      replacements.forEach(({ pattern, replacement }) => {
+        if (validatedResponse.includes(pattern)) {
+          validatedResponse = validatedResponse.replace(pattern, replacement);
+        }
+      });
     }
   });
 
@@ -755,7 +799,8 @@ function validateAIResponse(response: string, validTitles: VectorSearchResult[])
     console.warn('⚠️ Title hallucinations detected:', {
       count: hallucinations.length,
       hallucinated: hallucinations,
-      validTitles: Array.from(validTitleNames)
+      validTitleCount: validTitleNames.size,
+      validTitles: Array.from(validTitleNames).slice(0, 5)
     });
   }
 
@@ -973,12 +1018,37 @@ CURRENT QUERY: "${userQuery}"
 
 RESPONSE GUIDELINES:
 1. **Personality**: Be Jinu - passionate, knowledgeable, and genuinely excited about Korean content
-2. **Recommendations**: IMPORTANT - Only recommend ACTUAL titles from the search results above. Never invent or create fictional titles. If search results exist, enthusiastically recommend the most relevant titles using quotes with their EXACT names
-3. **Engagement**: Ask thoughtful follow-up questions about preferences, genres, or specific interests
-4. **Cultural Context**: Share insights about Korean storytelling trends, cultural elements, or industry highlights
-5. **Personalization**: Tailor recommendations based on user's tier and conversation history
-6. **Structure**: Keep responses conversational but organized, with clear title recommendations
-7. **Accuracy**: NEVER make up title names. Only mention titles that appear in the search results provided above
+2. **Engagement**: Ask thoughtful follow-up questions about preferences, genres, or specific interests
+3. **Cultural Context**: Share insights about Korean storytelling trends, cultural elements, or industry highlights
+4. **Personalization**: Tailor recommendations based on user's tier and conversation history
+5. **Structure**: Keep responses conversational but organized, with clear title recommendations
+
+🚨 **CRITICAL ANTI-HALLUCINATION RULES** (NEVER VIOLATE):
+
+**AVAILABLE TITLES**: You have ${searchResults.length} titles in the search results above.
+
+**MANDATORY CONSTRAINTS**:
+- ✅ ONLY recommend titles from the EXACT list provided in search results above
+- ✅ Use EXACT title names as they appear (copy them precisely)
+- ❌ DO NOT use your knowledge of Korean titles/dramas/webtoons
+- ❌ DO NOT mention ANY title not in the search results
+- ❌ DO NOT create fictional examples
+- ❌ DO NOT mention popular titles like "20th Century Girl", "My ID is Gangnam Beauty", "Dear My Friends" unless they appear in search results
+
+**CORRECT EXAMPLES**:
+✅ "Based on the search results, I recommend '${searchResults[0]?.title_name_en || searchResults[0]?.title_name_kr || 'Title Name'}'..."
+✅ "From the ${searchResults.length} titles found, '${searchResults[0]?.title_name_en || 'Title Name'}' matches your interests..."
+✅ "I found ${searchResults.length} great options. Let me highlight '${searchResults[0]?.title_name_en || 'Title Name'}'..."
+
+**WRONG EXAMPLES** (will fail validation):
+❌ "You might like '20th Century Girl'..." (not in search results)
+❌ "Similar to 'My ID is Gangnam Beauty'..." (not in search results)
+❌ "Other popular titles include..." (inventing titles)
+
+**IF NO SEARCH RESULTS** (${searchResults.length} === 0):
+Say: "I couldn't find exact matches in our current catalog. Could you describe what you're looking for more specifically? For example, preferred genre, tone, or themes?"
+
+**VALIDATION**: Every title you mention will be verified against search results. Hallucinations will be replaced with "[removed fictional title]"
 
 INTENT-SPECIFIC APPROACH (${queryIntent.toUpperCase()}):
 ${intentGuidelines}

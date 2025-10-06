@@ -293,6 +293,12 @@ const bootstrapCachedSession = () => {
     return;
   }
 
+  // Skip bootstrap during OAuth callback to avoid false "no data" warnings
+  if (window.location.pathname === '/auth/callback') {
+    console.log('🧊 [BOOTSTRAP] Skipping - OAuth callback in progress');
+    return;
+  }
+
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     console.log('🧊 [BOOTSTRAP] localStorage check:', {

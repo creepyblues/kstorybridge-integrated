@@ -364,16 +364,20 @@ export const handleOAuthSignup = async (
   accountType: AccountType
 ): Promise<{ error?: string }> => {
   try {
-    // Store account type and flow in sessionStorage for callback (as backup)
+    console.log(`🔐 ${accountType.toUpperCase()} OAuth signup initiated with provider: ${provider}`);
+
+    // Use OAuth state parameter for secure data passing (OAuth 2.0 spec compliant)
+    const { initializeOAuthFlow } = await import('@/utils/oauthSecurity');
+    const state = initializeOAuthFlow('signup', accountType, provider);
+
+    // Store as backup fallback (state parameter is primary)
     sessionStorage.setItem('oauth_account_type', accountType);
     sessionStorage.setItem('oauth_flow', 'signup');
 
-    console.log(`🔐 ${accountType.toUpperCase()} OAuth signup initiated with provider: ${provider}`);
-
-    // Encode account_type and flow in redirect URL for reliable persistence
-    const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signup`;
+    const callbackUrl = `${window.location.origin}/auth/callback`;
     const result = await authService.signInWithOAuth(provider, {
-      redirectTo: callbackUrl
+      redirectTo: callbackUrl,
+      queryParams: { state }  // OAuth standard state parameter
     });
 
     if (result.error) {

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, withRetry } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getDashboardPath, getSignupPath } from '@/utils/oauthUtils';
 import type { AccountType } from '@/utils/oauthUtils';
@@ -168,18 +168,32 @@ const AuthCallbackSimple = () => {
           let profileExists = false;
           try {
             if (finalAccountType === 'buyer') {
-              const { data } = await supabase
-                .from('user_buyers')
-                .select('id')
-                .eq('id', user.id)
-                .maybeSingle();
+              const { data } = await withRetry(
+                () => supabase
+                  .from('user_buyers')
+                  .select('id')
+                  .eq('id', user.id)
+                  .maybeSingle(),
+                {
+                  maxRetries: 2,
+                  timeoutMs: 10000, // 10 second timeout for mobile compatibility
+                  operationName: 'check-buyer-profile-existence'
+                }
+              );
               profileExists = !!data;
             } else if (finalAccountType === 'creator') {
-              const { data } = await supabase
-                .from('user_creators')
-                .select('id')
-                .eq('id', user.id)
-                .maybeSingle();
+              const { data } = await withRetry(
+                () => supabase
+                  .from('user_creators')
+                  .select('id')
+                  .eq('id', user.id)
+                  .maybeSingle(),
+                {
+                  maxRetries: 2,
+                  timeoutMs: 10000, // 10 second timeout for mobile compatibility
+                  operationName: 'check-creator-profile-existence'
+                }
+              );
               profileExists = !!data;
             }
           } catch (error) {

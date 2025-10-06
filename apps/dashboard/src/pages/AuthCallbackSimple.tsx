@@ -57,24 +57,52 @@ const AuthCallbackSimple = () => {
       }
 
       try {
-        // 1. Exchange OAuth code for session (simplified - no dual listener race condition)
+        // 1. Exchange OAuth code for session with race condition protection
         console.log('🔄 Exchanging OAuth code for session...');
 
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        // Set up auth state change listener BEFORE exchange
+        // This captures the SIGNED_IN event that we know fires successfully
+        const authPromise = new Promise<{ user: any; session: any }>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Auth event timeout')), 15000);
 
-        if (error || !data.session) {
-          console.error('❌ OAuth code exchange failed:', error);
-          toast({
-            title: "Authentication Error",
-            description: error?.message || 'Failed to exchange OAuth code',
-            variant: "destructive"
+          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+              clearTimeout(timeout);
+              subscription.unsubscribe();
+              console.log('✅ Auth event captured:', session.user.email);
+              resolve({ user: session.user, session });
+            }
           });
-          navigate('/signin?error=oauth_exchange_failed');
-          return;
-        }
+        });
 
-        const user = data.session.user;
-        const session = data.session;
+        // Start the exchange (may hang, but auth event will fire)
+        const exchangePromise = supabase.auth.exchangeCodeForSession(code);
+
+        // Race: whichever completes first wins
+        let user, session;
+        try {
+          // Try exchange first with 10-second timeout (OAuth PKCE can take 5-10s in production)
+          // Timeout is defensive - prevents indefinite hangs while allowing normal exchanges to complete
+          const result = await Promise.race([
+            exchangePromise,
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Exchange timeout')), 10000))
+          ]);
+
+          if (result.error || !result.data?.session?.user) {
+            throw new Error('Exchange failed or returned no session');
+          }
+
+          user = result.data.session.user;
+          session = result.data.session;
+          console.log('✅ Exchange promise resolved:', user.email);
+        } catch (exchangeError) {
+          // Exchange exceeded 10s timeout - use reliable auth event fallback (this is expected behavior)
+          console.log('ℹ️ Exchange took longer than 10s, using auth state change event (this is normal)...');
+          console.log('Exchange info:', exchangeError);
+          const result = await authPromise;
+          user = result.user;
+          session = result.session;
+        }
 
         console.log('✅ OAuth session established for:', user.email);
 

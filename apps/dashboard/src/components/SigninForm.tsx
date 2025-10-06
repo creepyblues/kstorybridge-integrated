@@ -192,19 +192,50 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
         console.log(`✅ ${accountType.toUpperCase()} SIGNIN: Redirecting to dashboard:`, displayInfo.dashboardPath);
         navigate(displayInfo.dashboardPath);
       } else {
-        // Handle missing profile - user needs to signup first
-        console.log(`❌ ${accountType.toUpperCase()} SIGNIN: No profile found - user must signup first`);
+        // Handle missing profile
+        if (accountType === 'buyer') {
+          // For buyers, create a profile using atomic creation utility
+          console.log('📝 BUYER SIGNIN: Creating buyer profile with atomic utility');
 
-        toast({
-          title: "Account Not Found",
-          description: "Your account doesn't exist. Please sign up first.",
-          variant: "destructive"
-        });
+          const profileResult = await createBuyerProfileAtomic({
+            id: user.id,
+            email: user.email!,
+            full_name: user.user_metadata?.full_name || '',
+            buyer_company: user.user_metadata?.buyer_company || '',
+            buyer_role: user.user_metadata?.buyer_role || '',
+            linkedin_url: user.user_metadata?.linkedin_url || null,
+            tier: 'basic'
+          }, {
+            enableSlack: true,
+            debug: true
+          });
 
-        // Redirect to signup page after brief delay
-        setTimeout(() => {
-          navigate(`/signup/${accountType}`);
-        }, 2000);
+          if (profileResult.success) {
+            console.log('✅ BUYER SIGNIN: Profile created successfully, redirecting to dashboard');
+            navigate('/buyers/chat');
+          } else {
+            console.error('❌ BUYER SIGNIN: Failed to create profile:', profileResult.error);
+            toast({
+              title: "Sign in failed",
+              description: "Could not create your profile. Please try signing up first.",
+              variant: "destructive"
+            });
+            setTimeout(() => {
+              navigate('/signup/buyer');
+            }, 2000);
+          }
+        } else {
+          // For creators, show error and redirect to signup
+          console.log(`❌ CREATOR SIGNIN: No profile found - user must signup first`);
+          toast({
+            title: "Account Not Found",
+            description: "Your account doesn't exist. Please sign up first.",
+            variant: "destructive"
+          });
+          setTimeout(() => {
+            navigate('/signup/creator');
+          }, 2000);
+        }
       }
 
     } catch (error) {

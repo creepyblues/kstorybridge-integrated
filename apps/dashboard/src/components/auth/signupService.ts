@@ -91,24 +91,22 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // Update account_type metadata using the existing session (no getSession() call needed)
+      // Return success immediately, send notifications asynchronously in background
+      const userResult = { success: true, user };
+
+      // Start metadata update but don't await (fire-and-forget, non-blocking)
       if (session?.access_token) {
-        try {
-          console.log('🔄 Updating account_type metadata with existing session...');
-          await supabase.auth.updateUser({
-            data: { account_type: 'buyer' }
-          });
+        console.log('🔄 Updating account_type metadata with existing session...');
+        supabase.auth.updateUser({
+          data: { account_type: 'buyer' }
+        }).then(() => {
           console.log('✅ Account type metadata updated successfully');
-        } catch (metadataError) {
+        }).catch((metadataError) => {
           console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
-          // Don't fail the whole operation if metadata update fails
-        }
+        });
       } else {
         console.warn('⚠️ No session available, skipping metadata update');
       }
-
-      // Return success immediately, send notifications asynchronously in background
-      const userResult = { success: true, user };
 
       // Send welcome email and Slack notification in background (non-blocking)
       (async () => {
@@ -173,24 +171,22 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // Update account_type metadata using the existing session (no getSession() call needed)
+      // Return success immediately, send notifications asynchronously in background
+      const userResult = { success: true, user };
+
+      // Start metadata update but don't await (fire-and-forget, non-blocking)
       if (session?.access_token) {
-        try {
-          console.log('🔄 Updating account_type metadata with existing session...');
-          await supabase.auth.updateUser({
-            data: { account_type: 'creator' }
-          });
+        console.log('🔄 Updating account_type metadata with existing session...');
+        supabase.auth.updateUser({
+          data: { account_type: 'creator' }
+        }).then(() => {
           console.log('✅ Account type metadata updated successfully');
-        } catch (metadataError) {
+        }).catch((metadataError) => {
           console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
-          // Don't fail the whole operation if metadata update fails
-        }
+        });
       } else {
         console.warn('⚠️ No session available, skipping metadata update');
       }
-
-      // Return success immediately, send notifications asynchronously in background
-      const userResult = { success: true, user };
 
       // Send welcome email and Slack notification in background (non-blocking)
       (async () => {

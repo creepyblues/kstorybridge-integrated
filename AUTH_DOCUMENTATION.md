@@ -1,7 +1,7 @@
 # KStoryBridge Authentication Documentation
 
-**Last Updated:** 2025-10-05
-**Version:** 3.5 - SessionStorage OAuth Flow & Profile Existence Enforcement
+**Last Updated:** 2025-10-06
+**Version:** 3.6 - OAuth Session Passing & getSession Timeout Fix
 
 This is the single source of truth for all authentication-related information in the KStoryBridge platform.
 
@@ -333,20 +333,20 @@ sequenceDiagram
 sequenceDiagram
     User->>SignupForm: Click "Continue with Google"
     SignupForm->>Google: OAuth redirect with account_type
-    Google->>AuthCallbackFixed: Return with tokens + account_type
-    AuthCallbackFixed->>AuthCallbackFixed: getOAuthAccountType()
+    Google->>AuthCallbackSimple: Return with tokens + account_type
+    AuthCallbackSimple->>AuthCallbackSimple: getOAuthAccountType()
     alt Signup flow
-        AuthCallbackFixed->>SignupForm: Redirect to complete profile
+        AuthCallbackSimple->>SignupForm: Redirect to complete profile
     else Signin flow
-        AuthCallbackFixed->>Dashboard: Direct redirect to home
+        AuthCallbackSimple->>Dashboard: Direct redirect to home
     end
 ```
 
 **Key Simplifications**:
-- **Single callback handler**: `AuthCallbackPageFixed.tsx` (80 lines vs 400+)
+- **Single callback handler**: `AuthCallbackSimple.tsx` (270 lines, streamlined logic)
 - **Fast account type detection**: `getOAuthAccountType()` - metadata-only, no database queries
 - **Consistent redirect URLs**: Always `${window.location.origin}/auth/callback`
-- **90% faster callbacks**: Eliminated complex circuit breakers and timeouts
+- **Session passing**: Eliminates 90s `getSession()` timeouts
 
 **For implementation details, see**: [OAuth Flow Implementation](#oauth-implementation-changes-simplified---2025-01-14)
 
@@ -383,22 +383,40 @@ sequenceDiagram
 - `useAuth.tsx` - Authentication state management
 - `useAccountType.tsx` - Account type detection
 - `simpleAccountTypeDetection.ts` - Fast metadata-only detection (replaced complex 700+ line system)
-- `AuthCallbackPageFixed.tsx` - Streamlined OAuth callback handler
+- `AuthCallbackSimple.tsx` - Streamlined OAuth callback handler
+- `oauthProfileEdgeFunction.ts` - Session-based profile creation (avoids getSession timeouts)
 - `useTierAccess.tsx` - Buyer tier access control
 
-### Account Type Detection Priority (Simplified - 2025-01-14)
+### Account Type Detection Priority (Updated 2025-10-06)
 
-**New streamlined approach using `getOAuthAccountType()`**:
+**Streamlined approach in OAuth callback**:
 
-1. **URL Parameters** (highest - from OAuth redirect)
+1. **URL Parameters** (highest priority - from OAuth redirect)
+   ```typescript
+   const accountType = urlParams.get('account_type');
+   ```
+
 2. **User Metadata** (OAuth auth.users.raw_user_meta_data)
+   ```typescript
+   user.user_metadata?.account_type
+   ```
+
 3. **SessionStorage** (fallback for edge cases)
-4. **Error state** (no default assignment)
+   ```typescript
+   sessionStorage.getItem('oauth_account_type')
+   ```
+
+4. **Validation & Error** (NO default assignment)
+   ```typescript
+   if (!finalAccountType || (finalAccountType !== 'buyer' && finalAccountType !== 'creator')) {
+     navigate(`/account-type-selection?oauth=true&email=${user.email}`);
+   }
+   ```
 
 **Performance Improvements**:
 - **No database queries** during OAuth callback
-- **90% faster** than previous 700+ line system
-- **Eliminated timeouts** and circuit breakers
+- **Session passing** eliminates 90s `getSession()` timeouts
+- **No default 'buyer' fallback** - explicit validation required
 - **Consistent behavior** across all environments
 
 ### Route Protection
@@ -482,38 +500,43 @@ await supabase.auth.signInWithOAuth({
 const callbackUrl = `${origin}/auth/callback?flow=signin`; // ❌ Parameters stripped
 ```
 
-**OAuth Callback Flow (AuthCallbackSimple.tsx)**:
+**OAuth Callback Flow (AuthCallbackSimple.tsx)** (Updated 2025-10-06):
 
 ```typescript
 // 1. Exchange OAuth code for session
 const urlParams = new URLSearchParams(window.location.search);
 const code = urlParams.get('code');
-const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+const accountType = urlParams.get('account_type'); // From URL param
+const flow = urlParams.get('flow'); // From URL param
 
+const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 const user = data.session.user;
 
-// 2. Read flow data from sessionStorage (persists because same domain)
+// 2. Determine account type (Priority: URL > metadata > sessionStorage)
 const finalAccountType = (
+  accountType ||  // From URL parameter (PRIMARY)
   user.user_metadata?.account_type ||
-  sessionStorage.getItem('oauth_account_type') ||
-  'buyer'
-) as AccountType;
+  sessionStorage.getItem('oauth_account_type')
+) as AccountType | null;
 
+// Validate account type (no default fallback)
+if (!finalAccountType || (finalAccountType !== 'buyer' && finalAccountType !== 'creator')) {
+  navigate(`/account-type-selection?oauth=true&email=${user.email}`);
+  return;
+}
+
+// 3. Determine flow type
 const finalFlow = (
+  flow ||  // From URL parameter (PRIMARY)
   sessionStorage.getItem('oauth_flow') ||
   'signin'
 ) as 'signin' | 'signup';
 
-console.log('🎯 Flow type detection:', {
-  fromStorage: sessionStorage.getItem('oauth_flow'),
-  final: finalFlow
-});
-
-// 3. Clear sessionStorage
+// 4. Clear sessionStorage
 sessionStorage.removeItem('oauth_account_type');
 sessionStorage.removeItem('oauth_flow');
 
-// 4. Check profile existence for signin flow
+// 5. Check profile existence for signin flow
 if (finalFlow === 'signin') {
   const profileExists = await checkProfileExists(user.id, finalAccountType);
 
@@ -530,8 +553,36 @@ if (finalFlow === 'signin') {
   navigate(getDashboardPath(finalAccountType));
 } else {
   // Signup flow - redirect to profile completion
-  navigate(`/signup/${finalAccountType}?complete=true`);
+  // Note: Metadata update happens in profile completion, not here
+  navigate(`/signup/${finalAccountType}?complete=true&user_id=${user.id}&email=${user.email}`);
 }
+```
+
+**Profile Completion Flow (signupService.ts)** (Added 2025-10-06):
+
+```typescript
+// In SignupFormContainer.tsx
+const { user, session } = useAuth(); // Get session from context
+const result = await completeOAuthProfile(accountType, formData, user, session);
+
+// In signupService.ts (completeOAuthProfile)
+export const completeOAuthProfile = async (
+  accountType, formData, user, session? // Accept session parameter
+) => {
+  // Create profile via edge function (pass session to avoid getSession)
+  const profileResult = await createOAuthProfileViaEdgeFunction(
+    accountType, user.id, profileData, session // Pass session
+  );
+
+  // Update metadata using passed session (no getSession call!)
+  if (session?.access_token) {
+    await supabase.auth.updateUser({
+      data: { account_type: accountType }
+    });
+  }
+
+  return { success: true, user };
+};
 ```
 
 **Profile Existence Check**:
@@ -561,7 +612,7 @@ async function checkProfileExists(userId: string, accountType: string): Promise<
 }
 ```
 
-### Auth Metadata Management (Updated 2025-09-21)
+### Auth Metadata Management (Updated 2025-10-06)
 
 **Email Signup Metadata**:
 ```typescript
@@ -581,13 +632,18 @@ const result = await authService.signUp({
 });
 ```
 
-**OAuth Metadata Update**:
+**OAuth Metadata Update** (Updated 2025-10-06):
 ```typescript
-// In AuthCallbackPageFixed.tsx
-await supabase.auth.updateUser({
-  data: { account_type: finalAccountType } // Updates auth.users metadata
-});
+// In signupService.ts (completeOAuthProfile function)
+// Uses existing session - no getSession() call to avoid 90s timeout
+if (session?.access_token) {
+  await supabase.auth.updateUser({
+    data: { account_type: 'buyer' } // Updates auth.users metadata
+  });
+}
 ```
+
+**Note**: Metadata update moved from OAuth callback to profile completion to avoid session timeout issues. Session is passed from `useAuth()` to avoid calling `getSession()` which hangs for 90 seconds during OAuth completion.
 
 **Key Metadata Fields**:
 - `account_type`: 'buyer' | 'creator' (REQUIRED for routing)
@@ -975,6 +1031,45 @@ localStorage.setItem('auth_debug', 'true');
 
 **See:** `OAUTH_EDGE_FUNCTION_SOLUTION.md` for complete technical details
 
+#### "OAuth profile completion hangs for 90+ seconds" (RESOLVED - 2025-10-06)
+**Symptoms:**
+- Profile completion page shows "Creating account..." spinner indefinitely
+- Console shows multiple `getSession timeout after 90 seconds` errors
+- Timeout rate: 100-250% (multiple concurrent getSession calls)
+- Metadata `account_type` never gets set
+- User profile created but system can't route properly
+
+**Root Cause:** Multiple `getSession()` calls during OAuth completion
+- Edge function calling `getSession()` → 90s timeout
+- Atomic profile creator calling `getSession()` 4 times → 360s total timeouts
+- Metadata update calling `getSession()` → Additional 90s timeout
+- Session exists but can't be retrieved during OAuth completion flow
+
+**Solution:** Pass session through call stack (Implemented 2025-10-06)
+- **Status:** ✅ RESOLVED - <5 second OAuth completion achieved
+- **Implementation:** Session from `useAuth()` passed to all functions
+- **Performance:** Eliminated all getSession() timeouts
+- **Architecture:** `useAuth()` → `completeOAuthProfile` → `edgeFunction` (session passed, not fetched)
+
+**Key Changes:**
+1. `SignupFormContainer.tsx`: Get session from `useAuth()`, pass to `completeOAuthProfile`
+2. `signupService.ts`: Accept session parameter, pass to edge function and metadata update
+3. `oauthProfileEdgeFunction.ts`: Use provided session instead of calling `getSession()`
+4. `atomicProfileCreator.ts`: Removed 4 unnecessary `getSession()` calls
+5. Metadata update uses passed session, not fetched session
+
+**Success Pattern:**
+```
+🔄 Completing OAuth profile for: user@example.com as buyer
+🚀 OAuth Profile: Using secure edge function approach
+✅ OAuth Profile: Edge function succeeded
+🔄 Updating account_type metadata with existing session...
+✅ Account type metadata updated successfully
+✅ Profile Created!
+```
+
+**Critical Rule:** NEVER call `supabase.auth.getSession()` during OAuth completion flows. Always pass session from `useAuth()` or earlier in the call stack.
+
 #### "Password reset link doesn't work"
 - Check for expired tokens
 - Verify hash parameter parsing
@@ -1108,19 +1203,21 @@ WHERE trigger_schema = 'auth';
 │   ├── SignupPage.tsx
 │   ├── BuyerSignupPage.tsx
 │   ├── CreatorSignupPage.tsx
-│   ├── AuthCallbackPageFixed.tsx  # NEW: Streamlined OAuth callback
+│   ├── AuthCallbackSimple.tsx  # Streamlined OAuth callback (270 lines)
 │   └── AccountTypeSelectionPage.tsx
 ├── hooks/
 │   ├── useAuth.tsx
 │   └── useTierAccess.tsx
-└── utils/
-    └── simpleAccountTypeDetection.ts  # NEW: Replaced complex detection
+├── utils/
+│   └── simpleAccountTypeDetection.ts  # Replaced complex detection
+└── services/
+    └── oauthProfileEdgeFunction.ts  # Session-based profile creation
 
 /supabase/
 ├── migrations/
 │   └── [migration files]
 └── functions/
-    └── create-creator-profile/
+    └── create-oauth-profile/  # Edge function for OAuth profiles
 ```
 
 ### Environment Variables

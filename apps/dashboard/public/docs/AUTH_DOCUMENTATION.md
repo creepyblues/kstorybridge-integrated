@@ -1,91 +1,21 @@
 # KStoryBridge Authentication Documentation
 
 **Last Updated:** 2025-10-06
-**Version:** 4.0 - STABLE (AUTH WORKING) ✅
-**Commit:** e2804417
-**Status:** Production-verified stable release
+**Version:** 3.6 - OAuth Session Passing & getSession Timeout Fix
 
 This is the single source of truth for all authentication-related information in the KStoryBridge platform.
 
 ## Table of Contents
 
-1. [🎯 Stable Release Status](#-stable-release-status)
-2. [⚠️ Critical Authentication Rules](#️-critical-authentication-rules-do-not-violate)
-3. [System Architecture](#system-architecture)
-4. [Database Schema](#database-schema)
-5. [Authentication Flows](#authentication-flows)
-6. [Technical Implementation](#technical-implementation)
-7. [User Journeys](#user-journeys)
-8. [Development & Testing](#development--testing)
-9. [Troubleshooting](#troubleshooting)
-10. [Migration History](#migration-history)
-
----
-
-## 🎯 Stable Release Status
-
-**Version:** 4.0 - AUTH WORKING ✅
-**Git Tag:** `auth-working-v4.0`
-**Commit Hash:** `e2804417`
-**Verification Date:** 2025-10-06
-**Status:** Production-verified stable release
-
-### What This Release Fixes
-
-This is a **verified working version** of the authentication system with all critical OAuth issues resolved:
-
-✅ **OAuth Signup/Signin** - Reliable end-to-end flow
-✅ **Profile Creation** - Edge function architecture prevents timeouts
-✅ **Session Management** - Session passing eliminates getSession() timeouts
-✅ **Metadata Updates** - Fire-and-forget pattern prevents blocking
-✅ **Production Tested** - Confirmed working in live environment
-
-### Key Technical Improvements
-
-1. **Non-Blocking Metadata Updates** (NEW in v4.0)
-   - Changed from blocking `await` to fire-and-forget `.then()/.catch()` pattern
-   - Profile completion returns immediately
-   - Database tables (`user_buyers`/`user_creators`) are source of truth
-
-2. **Session Passing Architecture** (v3.6)
-   - Session from `useAuth()` passed through call stack
-   - Eliminated all `getSession()` timeout errors
-   - OAuth completion in <5 seconds
-
-3. **Edge Function Profile Creation** (v3.0)
-   - Server-side profile creation via Supabase Edge Functions
-   - No browser-side service role credentials
-   - 100% success rate achieved
-
-### Performance Metrics
-
-- **OAuth Signup Time:** <3 seconds (was indefinite hang)
-- **Session Resolution:** 3ms (was 25 seconds)
-- **Success Rate:** 100% (was ~40%)
-- **getSession Timeouts:** 0 (was 4-5 per signup)
-
-### Roll Forward/Rollback Reference
-
-**To use this stable version:**
-```bash
-git checkout auth-working-v4.0
-```
-
-**To compare against this baseline:**
-```bash
-git diff auth-working-v4.0 HEAD
-```
-
-### Files in This Release
-
-**Core Changes:**
-- `apps/dashboard/src/components/auth/signupService.ts` (lines 94-109, 174-189)
-- `apps/dashboard/src/components/auth/SignupFormContainer.tsx` (session passing)
-- `apps/dashboard/src/services/oauthProfileEdgeFunction.ts` (session parameter)
-- `apps/dashboard/src/utils/atomicProfileCreator.ts` (removed getSession calls)
-
-**Documentation:**
-- `apps/dashboard/public/docs/AUTH_DOCUMENTATION.md` (this file)
+1. [⚠️ Critical Authentication Rules](#️-critical-authentication-rules-do-not-violate)
+2. [System Architecture](#system-architecture)
+3. [Database Schema](#database-schema)
+4. [Authentication Flows](#authentication-flows)
+5. [Technical Implementation](#technical-implementation)
+6. [User Journeys](#user-journeys)
+7. [Development & Testing](#development--testing)
+8. [Troubleshooting](#troubleshooting)
+9. [Migration History](#migration-history)
 
 ---
 
@@ -1140,57 +1070,6 @@ localStorage.setItem('auth_debug', 'true');
 
 **Critical Rule:** NEVER call `supabase.auth.getSession()` during OAuth completion flows. Always pass session from `useAuth()` or earlier in the call stack.
 
-#### "OAuth signup hangs at metadata update" (RESOLVED - 2025-10-06)
-**Symptoms:**
-- Profile creation succeeds (✅ Edge function succeeded)
-- Hangs at "🔄 Updating account_type metadata..."
-- Never shows "✅ Account type metadata updated"
-- `await supabase.auth.updateUser()` blocks indefinitely
-- User sees infinite spinner on profile completion page
-
-**Root Cause:** Blocking metadata update during active OAuth flow
-- `updateUser()` hangs even with valid session provided
-- Blocks entire profile completion waiting for non-critical operation
-- Metadata is convenience only, not required for routing
-
-**Solution:** Fire-and-forget metadata update pattern (Implemented 2025-10-06)
-- **Status:** ✅ RESOLVED - Immediate profile completion success (<3 seconds)
-- **Implementation:** Changed from `await` to `.then()/.catch()` pattern
-- **Impact:** Profile creation returns immediately, metadata updates in background
-- **Philosophy:** Database tables are source of truth, metadata is convenience only
-
-**Key Change in signupService.ts (lines 94-109, 174-189):**
-```typescript
-// Return success immediately
-const userResult = { success: true, user };
-
-// Fire-and-forget metadata update (non-blocking)
-if (session?.access_token) {
-  supabase.auth.updateUser({
-    data: { account_type: 'buyer' } // or 'creator'
-  }).then(() => {
-    console.log('✅ Account type metadata updated successfully');
-  }).catch((metadataError) => {
-    console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
-  });
-}
-
-return userResult; // Don't wait for metadata
-```
-
-**Success Pattern:**
-```
-✅ OAuth Profile: Edge function succeeded
-🔄 Updating account_type metadata with existing session...
-✅ Profile Created! (navigates immediately)
-✅ Account type metadata updated successfully (background)
-```
-
-**Critical Rule:** Never `await` metadata updates during OAuth completion. Database tables (`user_buyers`/`user_creators`) are the authoritative source for routing decisions.
-
-**Files Changed:**
-- `signupService.ts` (completeOAuthProfile function, both buyer and creator paths)
-
 #### "Password reset link doesn't work"
 - Check for expired tokens
 - Verify hash parameter parsing
@@ -1226,43 +1105,6 @@ WHERE trigger_schema = 'auth';
 ## Migration History
 
 ### Major Changes
-
-#### 2025-10-06: OAuth Metadata Update Fix - STABLE RELEASE v4.0 ✅
-- **STATUS:** Production-verified stable authentication system
-- **Git Tag:** `auth-working-v4.0` (commit: e2804417)
-- **CRITICAL FIX:** Resolved OAuth signup hanging at metadata update
-- **Root Cause:** Blocking `await supabase.auth.updateUser()` during OAuth completion
-- **Solution:** Fire-and-forget pattern for `account_type` metadata update
-- **Performance:** Profile completion now completes in <3 seconds (was indefinite hang)
-- **Architecture Change:** Metadata updates non-blocking, database tables are source of truth
-- **Files Changed:**
-  - `signupService.ts` (lines 94-109, 174-189): Non-blocking metadata update in both buyer and creator paths
-  - Changed from `await updateUser()` to `.then()/.catch()` pattern
-  - Profile creation returns immediately, metadata updates in background
-- **Verification:** Tested and confirmed working in production environment
-- **Impact:** 100% OAuth signup success rate, no user-facing delays
-- **Philosophy:** `user_buyers` and `user_creators` tables are the authoritative source for routing; metadata is convenience only
-
-**Technical Details:**
-```typescript
-// OLD (blocking, caused hang):
-await supabase.auth.updateUser({ data: { account_type: 'buyer' } });
-return { success: true, user };
-
-// NEW (fire-and-forget, non-blocking):
-const userResult = { success: true, user };
-supabase.auth.updateUser({ data: { account_type: 'buyer' } })
-  .then(() => console.log('✅ Metadata updated'))
-  .catch((err) => console.warn('⚠️ Metadata update failed', err));
-return userResult;
-```
-
-**Session Passing Stack (v3.6 foundation):**
-- `useAuth()` → `SignupFormContainer` → `completeOAuthProfile` → `createOAuthProfileViaEdgeFunction`
-- Session passed through entire call stack, zero `getSession()` calls
-- Eliminated all 90-second timeout errors
-
-**This release marks the completion of the OAuth authentication stability initiative spanning multiple versions (v3.0 → v4.0).**
 
 #### 2025-09-21: Creator Role Requirements & Profile Schema Updates
 - **BREAKING CHANGE**: `ip_owner_role` is now REQUIRED for all creator signups

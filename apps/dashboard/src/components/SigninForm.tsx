@@ -94,11 +94,12 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     try {
       console.log(`🔐 ${accountType.toUpperCase()} OAuth signin initiated with Google`);
 
-      // Store flow data in sessionStorage (persists because same domain)
+      // Store flow data in sessionStorage (as backup)
       sessionStorage.setItem('oauth_account_type', accountType);
       sessionStorage.setItem('oauth_flow', 'signin');
 
-      const callbackUrl = `${window.location.origin}/auth/callback`;
+      // Encode account_type and flow in redirect URL for reliable persistence
+      const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

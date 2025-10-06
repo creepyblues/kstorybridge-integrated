@@ -62,13 +62,37 @@ if (!profileExists) {
 
 ---
 
-#### RULE 2: NEVER Use Custom Parameters in OAuth Callback URL
+#### RULE 2: Pass Data via URL Query Parameters (NOT OAuth State)
 
-❌ **FORBIDDEN** - Custom URL parameters or custom state:
+**The Critical Distinction**:
+- ✅ **URL query parameters in redirectTo** - CORRECT, reliable, standard practice
+- ❌ **OAuth state parameter via queryParams** - WRONG, conflicts with Supabase PKCE
+
+---
+
+✅ **CORRECT** - URL query parameters in redirectTo URL:
 ```typescript
-// URL parameters get stripped by OAuth providers
-const callbackUrl = `${origin}/auth/callback?account_type=${type}&flow=signin`; // ❌ WRONG
+// Store in sessionStorage as backup
+sessionStorage.setItem('oauth_account_type', accountType);
+sessionStorage.setItem('oauth_flow', 'signin');
 
+// Encode account_type and flow in redirect URL for reliable persistence
+const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: callbackUrl  // URL params are part of the redirect URL
+  }
+});
+
+// In callback handler - read from URL params (primary), sessionStorage (backup)
+const urlParams = new URLSearchParams(window.location.search);
+const accountType = urlParams.get('account_type') || sessionStorage.getItem('oauth_account_type');
+const flow = urlParams.get('flow') || sessionStorage.getItem('oauth_flow');
+```
+
+❌ **FORBIDDEN** - OAuth state parameter:
+```typescript
 // Custom state parameter conflicts with Supabase PKCE
 await supabase.auth.signInWithOAuth({
   provider: 'google',
@@ -79,39 +103,37 @@ await supabase.auth.signInWithOAuth({
 });
 ```
 
-✅ **CORRECT** - Use sessionStorage only:
-```typescript
-// Write flow data to sessionStorage (persists because same domain)
-sessionStorage.setItem('oauth_account_type', accountType);
-sessionStorage.setItem('oauth_flow', 'signin');
+---
 
-const callbackUrl = `${window.location.origin}/auth/callback`;
-await supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: {
-    redirectTo: callbackUrl  // No queryParams needed
-  }
-});
+**WHY URL Parameters Work**:
+1. **Survives all redirects**: URL params persist through Google → Supabase → Your App
+2. **No PKCE conflict**: Supabase's internal `state` parameter is separate from your URL params
+3. **Standard practice**: This is how OAuth redirect URLs are designed to work
+4. **Reliable**: Works across domains, browsers, and devices
 
-// In callback handler - read from sessionStorage
-const flow = sessionStorage.getItem('oauth_flow') || 'signin';
-const accountType = sessionStorage.getItem('oauth_account_type') || 'buyer';
+**WHY OAuth State Breaks**:
+1. **Supabase manages PKCE state internally**: Uses `state` param for security
+2. **Custom state overrides PKCE**: Causes `error_code=bad_oauth_state`
+3. **OAuth hangs**: Validation fails, user stuck on callback page
+
+**OAuth Flow Architecture**:
+```
+Your App (staging.kstorybridge.com/auth/callback?account_type=buyer&flow=signin)
+  ↓ signInWithOAuth()
+Supabase (dlrnrgcoguxlkkcitlpd.supabase.co)
+  ↓ (adds internal PKCE state parameter)
+Google OAuth
+  ↓ (redirects with code + Supabase's state + YOUR URL params)
+Supabase (validates its own state ✅)
+  ↓ (redirects back to your app WITH your URL params intact)
+Your App (staging.kstorybridge.com/auth/callback?account_type=buyer&flow=signin&code=xyz)
+  ↓ Read account_type and flow from URL ✅
 ```
 
-**WHY**:
-1. **Supabase manages PKCE state internally**: Custom `state` parameters conflict with Supabase's internal PKCE validation, causing `bad_oauth_state` errors
-2. **SessionStorage persists**: OAuth redirects stay on same domain (`staging.kstorybridge.com` → `staging.kstorybridge.com`), so sessionStorage data survives
-3. **Google OAuth flow**: App → Supabase → Google → Supabase (validates its own state) → App. Custom state breaks Supabase's validation step.
-
-**CRITICAL**:
-- Supabase uses `state` parameter for PKCE security - DO NOT override it
-- Custom state causes: `error_code=bad_oauth_state` and OAuth hangs
-- SessionStorage works because all OAuth redirects are same-domain
-
 **WHERE THIS IS IMPLEMENTED** (as of 2025-10-05):
-- Signin Flow: `apps/dashboard/src/components/SigninForm.tsx` (lines 94-107)
-- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (lines 366-376)
-- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 128-139)
+- Signin Flow: `apps/dashboard/src/components/SigninForm.tsx` (lines 95-108)
+- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (lines 367-377)
+- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 35-46)
 
 ---
 

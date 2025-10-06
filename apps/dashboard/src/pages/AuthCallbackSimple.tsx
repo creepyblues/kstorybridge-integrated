@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getDashboardPath, getSignupPath } from '@/utils/oauthUtils';
-import { validateOAuthState } from '@/utils/oauthSecurity';
 import type { AccountType } from '@/utils/oauthUtils';
 
 /**
@@ -35,28 +34,15 @@ const AuthCallbackSimple = () => {
       // Read URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      const state = urlParams.get('state');
+      const accountType = urlParams.get('account_type');
+      const flow = urlParams.get('flow');
 
       console.log('📋 OAuth params:', {
         code: !!code,
-        state: state?.substring(0, 8) + '...',
+        accountType,
+        flow,
         fullUrl: window.location.search
       });
-
-      // Validate OAuth state parameter (primary method)
-      let accountType: string | null = null;
-      let flow: string | null = null;
-
-      if (state) {
-        const oauthData = validateOAuthState(state);
-        if (oauthData) {
-          accountType = oauthData.accountType;
-          flow = oauthData.flow;
-          console.log('✅ OAuth state validated:', { accountType, flow, provider: oauthData.provider });
-        } else {
-          console.warn('⚠️ OAuth state validation failed, falling back to sessionStorage');
-        }
-      }
 
       // Validate OAuth code
       if (!code) {
@@ -92,15 +78,15 @@ const AuthCallbackSimple = () => {
 
         console.log('✅ OAuth session established for:', user.email);
 
-        // 2. Determine account type (Priority: state param > metadata > sessionStorage fallback)
+        // 2. Determine account type (Priority: URL param > metadata > sessionStorage fallback)
         const finalAccountType = (
-          accountType ||  // From validated OAuth state parameter
+          accountType ||  // From URL query parameter
           user.user_metadata?.account_type ||
           (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null)
         ) as AccountType | null;
 
         console.log('🎯 Account type detection:', {
-          fromState: accountType,
+          fromUrl: accountType,
           fromMetadata: user.user_metadata?.account_type,
           fromStorage: typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null,
           final: finalAccountType
@@ -125,7 +111,7 @@ const AuthCallbackSimple = () => {
           console.warn('⚠️ Failed to update user metadata (non-critical):', metadataError);
         }
 
-        // 3. Determine flow type (Priority: state param > sessionStorage > default 'signin')
+        // 3. Determine flow type (Priority: URL param > sessionStorage > default 'signin')
         const finalFlow = (
           flow ||
           (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_flow') : null) ||
@@ -133,7 +119,7 @@ const AuthCallbackSimple = () => {
         ) as 'signin' | 'signup';
 
         console.log('🎯 Flow type detection:', {
-          fromState: flow,
+          fromUrl: flow,
           fromStorage: typeof window !== 'undefined' ? sessionStorage.getItem('oauth_flow') : null,
           final: finalFlow
         });

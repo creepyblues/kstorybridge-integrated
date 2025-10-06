@@ -129,17 +129,7 @@ const AuthCallbackSimple = () => {
 
         console.log('✅ Valid account type:', finalAccountType);
 
-        // 2.5. Update user metadata with account_type for consistency
-        try {
-          await supabase.auth.updateUser({
-            data: { account_type: finalAccountType }
-          });
-          console.log('✅ User metadata updated with account_type:', finalAccountType);
-        } catch (metadataError) {
-          console.warn('⚠️ Failed to update user metadata (non-critical):', metadataError);
-        }
-
-        // 3. Determine flow type (Priority: URL param > sessionStorage > default 'signin')
+        // 2. Determine flow type (Priority: URL param > sessionStorage > default 'signin')
         const finalFlow = (
           flow ||
           (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_flow') : null) ||

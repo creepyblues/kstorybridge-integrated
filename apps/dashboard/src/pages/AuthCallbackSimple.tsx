@@ -125,15 +125,27 @@ const AuthCallbackSimple = () => {
           console.warn('⚠️ Failed to update user metadata (non-critical):', metadataError);
         }
 
-        // 3. Clear sessionStorage
+        // 3. Determine flow type (Priority: state param > sessionStorage > default 'signin')
+        const finalFlow = (
+          flow ||
+          (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_flow') : null) ||
+          'signin'
+        ) as 'signin' | 'signup';
+
+        console.log('🎯 Flow type detection:', {
+          fromState: flow,
+          fromStorage: typeof window !== 'undefined' ? sessionStorage.getItem('oauth_flow') : null,
+          final: finalFlow
+        });
+
+        // 4. Clear sessionStorage
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('oauth_account_type');
           sessionStorage.removeItem('oauth_flow');
           console.log('🧹 Cleared OAuth session storage');
         }
 
-        // 4. Redirect based on flow type (from state parameter or default to 'signin')
-        const finalFlow = flow || 'signin';
+        // 5. Redirect based on flow type
 
         if (finalFlow === 'signup') {
           // OAuth signup - redirect to complete profile

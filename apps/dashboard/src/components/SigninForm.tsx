@@ -94,11 +94,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
     try {
       console.log(`🔐 ${accountType.toUpperCase()} OAuth signin initiated with Google`);
 
-      // Use OAuth state parameter for secure data passing (OAuth 2.0 spec compliant)
-      const { initializeOAuthFlow } = await import('@/utils/oauthSecurity');
-      const state = initializeOAuthFlow('signin', accountType, 'google');
-
-      // Store as backup fallback (state parameter is primary)
+      // Store flow data in sessionStorage (persists because same domain)
       sessionStorage.setItem('oauth_account_type', accountType);
       sessionStorage.setItem('oauth_flow', 'signin');
 
@@ -106,8 +102,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: callbackUrl,
-          queryParams: { state } // OAuth standard state parameter
+          redirectTo: callbackUrl
         }
       });
 

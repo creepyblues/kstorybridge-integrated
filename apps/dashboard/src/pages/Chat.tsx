@@ -30,7 +30,7 @@ interface Message {
 }
 
 // Simplified conversational message component
-const ConversationalMessage = ({ content, navigate, titleData, allMessages, titleCache }: { content: string, navigate: any, titleData?: any[], allMessages?: Message[], titleCache?: any[] }) => {
+const ConversationalMessage = ({ content, navigate, titleData, allMessages, titleCache, handleSuggestedQuery }: { content: string, navigate: any, titleData?: any[], allMessages?: Message[], titleCache?: any[], handleSuggestedQuery?: (query: string) => void }) => {
 
   // Levenshtein distance for fuzzy string matching
   const levenshteinDistance = (str1: string, str2: string): number => {
@@ -1589,7 +1589,7 @@ Please try again.`,
                         </span>
                       </div>
                       <div className="prose prose-sm max-w-none text-gray-800">
-                        <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} titleCache={titleCache} />
+                        <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} titleCache={titleCache} handleSuggestedQuery={handleSuggestedQuery} />
                       </div>
                     
                     {/* Suggested Queries - Auto-execute on click */}

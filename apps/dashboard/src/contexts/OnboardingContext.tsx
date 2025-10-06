@@ -200,9 +200,22 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
 
   /**
    * Initialize when user changes
+   * Skip during OAuth callback to prevent 5-second delay
    */
   useEffect(() => {
     if (user?.id) {
+      // Skip onboarding check during OAuth callback/completion flows
+      // These are temporary routes - check will happen on destination page
+      if (typeof window !== 'undefined') {
+        const isOAuthCallback = window.location.pathname === '/auth/callback';
+        const isOAuthCompletion = window.location.search.includes('complete=true');
+
+        if (isOAuthCallback || isOAuthCompletion) {
+          console.log('⏭️ ONBOARDING: Skipping during OAuth flow, will check on destination page');
+          return;
+        }
+      }
+
       console.log('👤 ONBOARDING: User detected, initializing:', user.id);
       initializeOnboarding(user.id);
     } else {

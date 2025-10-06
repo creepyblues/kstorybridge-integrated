@@ -14,6 +14,7 @@ module.exports = async function handler(req, res) {
     // CORS headers
     const allowedOrigins = [
       'https://dashboard.kstorybridge.com',
+      'https://staging.kstorybridge.com',
       'http://localhost:8082',
       'http://localhost:8081',
       'http://localhost:3000',

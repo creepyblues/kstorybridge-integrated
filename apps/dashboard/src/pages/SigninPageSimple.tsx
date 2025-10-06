@@ -143,7 +143,7 @@ const SigninPageSimple = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-midnight-ink mb-6">
-            Welcome Back
+            Welcome Back!
           </h2>
         </div>
 

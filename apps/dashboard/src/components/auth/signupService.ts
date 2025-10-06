@@ -48,7 +48,8 @@ export interface SignupResult {
 export const completeOAuthProfile = async (
   accountType: AccountType,
   formData: BuyerFormData | CreatorFormData,
-  user: any
+  user: any,
+  session?: any
 ): Promise<SignupResult> => {
   try {
     console.log('🔄 Completing OAuth profile for:', user.email, 'as', accountType);
@@ -66,7 +67,7 @@ export const completeOAuthProfile = async (
         linkedin_url: buyerData.linkedin_url || null,
         tier: 'basic',
         requested: false
-      });
+      }, session);
 
       // Fallback to atomic profile creator if service role fails
       if (!profileResult.success) {
@@ -90,8 +91,21 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // Metadata injection now handled by database trigger (bypasses session timeout issues)
-      console.log('✅ TESTING: Profile created successfully, metadata will be injected by database trigger');
+      // Update account_type metadata using the existing session (no getSession() call needed)
+      if (session?.access_token) {
+        try {
+          console.log('🔄 Updating account_type metadata with existing session...');
+          await supabase.auth.updateUser({
+            data: { account_type: 'buyer' }
+          });
+          console.log('✅ Account type metadata updated successfully');
+        } catch (metadataError) {
+          console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
+          // Don't fail the whole operation if metadata update fails
+        }
+      } else {
+        console.warn('⚠️ No session available, skipping metadata update');
+      }
 
       // Return success immediately, send notifications asynchronously in background
       const userResult = { success: true, user };
@@ -135,7 +149,7 @@ export const completeOAuthProfile = async (
         ip_owner_role: normalizedRole,
         ip_owner_company: creatorData.ip_owner_company || null,
         website_url: creatorData.website_url || null
-      });
+      }, session);
 
       // Fallback to atomic profile creator if service role fails
       if (!profileResult.success) {
@@ -159,8 +173,21 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // Metadata injection now handled by database trigger (bypasses session timeout issues)
-      console.log('✅ TESTING: Creator profile created successfully, metadata will be injected by database trigger');
+      // Update account_type metadata using the existing session (no getSession() call needed)
+      if (session?.access_token) {
+        try {
+          console.log('🔄 Updating account_type metadata with existing session...');
+          await supabase.auth.updateUser({
+            data: { account_type: 'creator' }
+          });
+          console.log('✅ Account type metadata updated successfully');
+        } catch (metadataError) {
+          console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
+          // Don't fail the whole operation if metadata update fails
+        }
+      } else {
+        console.warn('⚠️ No session available, skipping metadata update');
+      }
 
       // Return success immediately, send notifications asynchronously in background
       const userResult = { success: true, user };

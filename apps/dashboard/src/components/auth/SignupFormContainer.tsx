@@ -64,7 +64,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
 
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
 
   // For OAuth completion, populate form with user data
   useEffect(() => {
@@ -150,7 +150,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
           console.log('🔄 Starting OAuth profile completion...');
 
           try {
-            const result = await completeOAuthProfile(accountType, buyerFormData, user);
+            const result = await completeOAuthProfile(accountType, buyerFormData, user, session);
 
             if (!result.success) {
               console.error('❌ OAuth profile completion failed:', result.error);
@@ -245,7 +245,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
           console.log('🔄 Starting creator OAuth profile completion...');
 
           try {
-            const result = await completeOAuthProfile(accountType, creatorFormData, user);
+            const result = await completeOAuthProfile(accountType, creatorFormData, user, session);
 
             if (!result.success) {
               console.error('❌ Creator OAuth profile completion failed:', result.error);

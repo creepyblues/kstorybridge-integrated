@@ -249,9 +249,6 @@ async function createBuyerProfileOperation(
         // Use upsert with proper conflict resolution
         console.log(`💾 Atomic Profile: Using upsert for buyer profile with ${clientType}`);
 
-        // Get session for authentication
-        await supabase.auth.getSession();
-
         const { data: profile, error } = await client
           .from('user_buyers')
           .upsert(safeProfileData, {
@@ -301,9 +298,6 @@ async function createBuyerProfileOperation(
       } else {
         // Use insert-only approach
         console.log(`📝 Atomic Profile: Using insert-only for buyer profile with ${clientType}`);
-
-        // Get session for authentication
-        await supabase.auth.getSession();
 
         const { data: profile, error } = await client
           .from('user_buyers')
@@ -469,9 +463,6 @@ async function createCreatorProfileOperation(
         // Use upsert with proper conflict resolution
         console.log(`💾 Atomic Profile: Using upsert for creator profile`);
 
-        // Ensure we have a fresh session before attempting database operation
-        await supabase.auth.getSession();
-
         const { data: profile, error } = await supabase
           .from('user_creators')
           .upsert(safeProfileData, {
@@ -520,9 +511,6 @@ async function createCreatorProfileOperation(
       } else {
         // Use insert-only approach
         console.log(`📝 Atomic Profile: Using insert-only for creator profile`);
-
-        // Ensure we have a fresh session before attempting database operation
-        await supabase.auth.getSession();
 
         const { data: profile, error } = await supabase
           .from('user_creators')

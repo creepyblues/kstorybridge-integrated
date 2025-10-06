@@ -34,16 +34,24 @@ export interface EdgeFunctionProfileResult {
  * @param accountType - 'buyer' or 'creator'
  * @param userId - Authenticated user's ID
  * @param profileData - Profile fields matching database schema
+ * @param existingSession - Optional session to use (avoids getSession call that can hang)
  * @returns Profile creation result
  */
 export async function createOAuthProfileViaEdgeFunction(
   accountType: 'buyer' | 'creator',
   userId: string,
-  profileData: any
+  profileData: any,
+  existingSession?: any
 ): Promise<EdgeFunctionProfileResult> {
   try {
-    // Get current session for authentication
-    const { data: { session } } = await supabase.auth.getSession();
+    // Use provided session or get current session
+    let session = existingSession;
+
+    if (!session) {
+      const { data: { session: fetchedSession } } = await supabase.auth.getSession();
+      session = fetchedSession;
+    }
+
     if (!session) {
       throw new Error('No active session');
     }

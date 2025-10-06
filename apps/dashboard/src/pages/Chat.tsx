@@ -396,16 +396,27 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
         case 'quote':
           if (segment.titleId) {
             return (
-              <a
-                key={segmentIdx}
-                href={`/buyers/titles/${segment.titleId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
-                title={`View "${segment.content}" details`}
-              >
-                "{segment.content}"
-              </a>
+              <span key={segmentIdx} className="inline-flex items-center gap-1">
+                <a
+                  href={`/buyers/titles/${segment.titleId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
+                  title={`View "${segment.content}" details`}
+                >
+                  "{segment.content}"
+                </a>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSuggestedQuery(`Tell me more about ${segment.content}`);
+                  }}
+                  className="text-xs text-gray-500 hover:text-hanok-teal transition-colors cursor-pointer underline"
+                  title={`Learn more about "${segment.content}"`}
+                >
+                  learn more
+                </button>
+              </span>
             );
           } else {
             return <span key={segmentIdx} className="font-medium">"{segment.content}"</span>;
@@ -413,16 +424,27 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
         case 'unquoted-title':
           if (segment.titleId) {
             return (
-              <a
-                key={segmentIdx}
-                href={`/buyers/titles/${segment.titleId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
-                title={`View "${segment.content}" details`}
-              >
-                {segment.content}
-              </a>
+              <span key={segmentIdx} className="inline-flex items-center gap-1">
+                <a
+                  href={`/buyers/titles/${segment.titleId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
+                  title={`View "${segment.content}" details`}
+                >
+                  {segment.content}
+                </a>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSuggestedQuery(`Tell me more about ${segment.content}`);
+                  }}
+                  className="text-xs text-gray-500 hover:text-hanok-teal transition-colors cursor-pointer underline"
+                  title={`Learn more about "${segment.content}"`}
+                >
+                  learn more
+                </button>
+              </span>
             );
           } else {
             return <span key={segmentIdx} className="font-medium">{segment.content}</span>;

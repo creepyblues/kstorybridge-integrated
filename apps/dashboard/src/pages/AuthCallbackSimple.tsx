@@ -129,6 +129,26 @@ const AuthCallbackSimple = () => {
 
         console.log('✅ Valid account type:', finalAccountType);
 
+        // Update user metadata (fire-and-forget, non-blocking)
+        const updateMetadata = async () => {
+          try {
+            const { error } = await supabase.auth.updateUser({
+              data: { account_type: finalAccountType }
+            });
+
+            if (!error) {
+              console.log('✅ User metadata updated with account_type:', finalAccountType);
+            } else {
+              console.warn('⚠️ Metadata update returned error:', error);
+            }
+          } catch (metadataError) {
+            console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
+          }
+        };
+
+        // Start metadata update but don't await (non-blocking)
+        updateMetadata();
+
         // 2. Determine flow type (Priority: URL param > sessionStorage > default 'signin')
         const finalFlow = (
           flow ||

@@ -1,7 +1,7 @@
 # KStoryBridge Authentication Documentation
 
 **Last Updated:** 2025-10-05
-**Version:** 3.3 - OAuth State Parameter & Profile Existence Enforcement
+**Version:** 3.5 - SessionStorage OAuth Flow & Profile Existence Enforcement
 
 This is the single source of truth for all authentication-related information in the KStoryBridge platform.
 
@@ -62,48 +62,56 @@ if (!profileExists) {
 
 ---
 
-#### RULE 2: ALWAYS Use OAuth State Parameter (Not URL Query Params)
+#### RULE 2: NEVER Use Custom Parameters in OAuth Callback URL
 
-❌ **FORBIDDEN** - Putting data in callback URL:
+❌ **FORBIDDEN** - Custom URL parameters or custom state:
 ```typescript
-// OAuth providers strip custom query parameters
+// URL parameters get stripped by OAuth providers
 const callbackUrl = `${origin}/auth/callback?account_type=${type}&flow=signin`; // ❌ WRONG
-await supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: { redirectTo: callbackUrl }
-});
-```
 
-✅ **CORRECT** - Use OAuth 2.0 state parameter:
-```typescript
-// State parameter survives OAuth redirect
-import { initializeOAuthFlow } from '@/utils/oauthSecurity';
-
-const state = initializeOAuthFlow('signin', accountType, 'google');
-const callbackUrl = `${window.location.origin}/auth/callback`;
-
+// Custom state parameter conflicts with Supabase PKCE
 await supabase.auth.signInWithOAuth({
   provider: 'google',
   options: {
     redirectTo: callbackUrl,
-    queryParams: { state }  // ✅ OAuth 2.0 standard
+    queryParams: { state: customState }  // ❌ WRONG - Breaks Supabase PKCE
   }
 });
 ```
 
-**WHY**: OAuth providers (Google, Discord, etc.) strip custom query parameters from callback URLs for security reasons. Only the `state` parameter is guaranteed to survive the OAuth redirect flow.
+✅ **CORRECT** - Use sessionStorage only:
+```typescript
+// Write flow data to sessionStorage (persists because same domain)
+sessionStorage.setItem('oauth_account_type', accountType);
+sessionStorage.setItem('oauth_flow', 'signin');
 
-**SECURITY BENEFITS**:
-- ✅ CSRF protection (cryptographically secure 32-char random hex)
-- ✅ Data survives OAuth redirect (OAuth 2.0 spec compliance)
-- ✅ 10-minute auto-expiry prevents replay attacks
-- ✅ Automatic cleanup of expired state data
+const callbackUrl = `${window.location.origin}/auth/callback`;
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: callbackUrl  // No queryParams needed
+  }
+});
+
+// In callback handler - read from sessionStorage
+const flow = sessionStorage.getItem('oauth_flow') || 'signin';
+const accountType = sessionStorage.getItem('oauth_account_type') || 'buyer';
+```
+
+**WHY**:
+1. **Supabase manages PKCE state internally**: Custom `state` parameters conflict with Supabase's internal PKCE validation, causing `bad_oauth_state` errors
+2. **SessionStorage persists**: OAuth redirects stay on same domain (`staging.kstorybridge.com` → `staging.kstorybridge.com`), so sessionStorage data survives
+3. **Google OAuth flow**: App → Supabase → Google → Supabase (validates its own state) → App. Custom state breaks Supabase's validation step.
+
+**CRITICAL**:
+- Supabase uses `state` parameter for PKCE security - DO NOT override it
+- Custom state causes: `error_code=bad_oauth_state` and OAuth hangs
+- SessionStorage works because all OAuth redirects are same-domain
 
 **WHERE THIS IS IMPLEMENTED** (as of 2025-10-05):
-- OAuth State Logic: `apps/dashboard/src/utils/oauthSecurity.ts`
-- Signin Flow: `apps/dashboard/src/components/SigninForm.tsx` (lines 94-112)
-- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (lines 366-381)
-- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 35-59)
+- Signin Flow: `apps/dashboard/src/components/SigninForm.tsx` (lines 94-107)
+- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (lines 366-376)
+- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 128-139)
 
 ---
 
@@ -399,111 +407,95 @@ if (urlParams.has('access_token')) {
 }
 ```
 
-### OAuth Implementation (Updated 2025-10-03)
+### OAuth Implementation (Updated 2025-10-05)
 
-**OAuth State Parameter (OAuth 2.0 Standard)**:
+**SessionStorage Approach (CORRECT)**:
 
-OAuth providers strip custom query parameters from callback URLs for security. We use the OAuth 2.0 **state parameter** to securely pass flow data through the redirect.
+Supabase manages its own PKCE `state` parameter internally. We use **sessionStorage** to pass flow data because OAuth redirects stay on the same domain.
+
+**OAuth Flow Architecture**:
+```
+Your App (staging.kstorybridge.com)
+  ↓ signInWithOAuth()
+Supabase (dlrnrgcoguxlkkcitlpd.supabase.co)
+  ↓ (generates internal PKCE state)
+Google OAuth
+  ↓ (redirects with code + Supabase's state)
+Supabase (validates its own state)
+  ↓ (redirects back to your app)
+Your App (staging.kstorybridge.com/auth/callback)
+  ↓ sessionStorage still available (same domain!)
+```
+
+**Signin/Signup Implementation**:
 
 ```typescript
-// ✅ CORRECT: Use OAuth state parameter (oauthSecurity.ts)
-import { initializeOAuthFlow } from '@/utils/oauthSecurity';
-
-// Initialize OAuth flow with state parameter
-const state = initializeOAuthFlow('signin', accountType, 'google');
+// ✅ CORRECT: Store in sessionStorage (SigninForm.tsx / signupService.ts)
+sessionStorage.setItem('oauth_account_type', accountType);
+sessionStorage.setItem('oauth_flow', 'signin'); // or 'signup'
 
 const callbackUrl = `${window.location.origin}/auth/callback`;
 await supabase.auth.signInWithOAuth({
   provider: 'google',
   options: {
+    redirectTo: callbackUrl
+    // NO queryParams needed - Supabase handles state internally
+  }
+});
+```
+
+**❌ FORBIDDEN Approaches**:
+
+```typescript
+// DON'T: Custom state parameter (conflicts with Supabase PKCE)
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
     redirectTo: callbackUrl,
-    queryParams: { state }  // OAuth 2.0 standard state parameter
+    queryParams: { state: customState }  // ❌ Causes bad_oauth_state error
   }
 });
 
-// ❌ FORBIDDEN: Putting data in callback URL query params
-// OAuth providers WILL STRIP these parameters!
-const redirectUrl = `${window.location.origin}/auth/callback?account_type=buyer&flow=signin`;
-```
-
-**State Parameter Implementation**:
-
-```typescript
-// State generation (32-char hex for CSRF protection)
-function generateSecureState(): string {
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
-// Store flow data with state (10-minute expiry)
-function initializeOAuthFlow(
-  flow: 'signin' | 'signup',
-  accountType: 'buyer' | 'creator',
-  provider: 'google' | 'discord'
-): string {
-  const state = generateSecureState();
-  const data = { flow, accountType, provider, timestamp: Date.now() };
-  sessionStorage.setItem(`oauth_${state}`, JSON.stringify(data));
-  return state;
-}
-
-// Validate state in callback
-function validateOAuthState(receivedState: string): OAuthFlowData | null {
-  if (!/^[a-f0-9]{32}$/.test(receivedState)) return null;
-
-  const stored = sessionStorage.getItem(`oauth_${receivedState}`);
-  if (!stored) return null;
-
-  const data = JSON.parse(stored);
-
-  // Check 10-minute expiry
-  if (Date.now() - data.timestamp > 10 * 60 * 1000) {
-    sessionStorage.removeItem(`oauth_${receivedState}`);
-    return null;
-  }
-
-  return data;
-}
+// DON'T: URL query parameters (get stripped)
+const callbackUrl = `${origin}/auth/callback?flow=signin`; // ❌ Parameters stripped
 ```
 
 **OAuth Callback Flow (AuthCallbackSimple.tsx)**:
 
 ```typescript
-// 1. Read state parameter from OAuth redirect
+// 1. Exchange OAuth code for session
 const urlParams = new URLSearchParams(window.location.search);
 const code = urlParams.get('code');
-const state = urlParams.get('state');
-
-// 2. Validate state and extract flow data
-let accountType: string | null = null;
-let flow: string | null = null;
-
-if (state) {
-  const oauthData = validateOAuthState(state);
-  if (oauthData) {
-    accountType = oauthData.accountType;
-    flow = oauthData.flow;
-    console.log('✅ OAuth state validated:', { accountType, flow });
-  } else {
-    console.warn('⚠️ OAuth state validation failed, falling back to sessionStorage');
-  }
-}
-
-// 3. Exchange OAuth code for session
 const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-// 4. Determine final account type (Priority: state > metadata > sessionStorage)
-const finalAccountType = accountType ||
-  user.user_metadata?.account_type ||
-  sessionStorage.getItem('oauth_account_type');
+const user = data.session.user;
 
-// 5. Check profile existence for signin flow
-if (flow === 'signin') {
+// 2. Read flow data from sessionStorage (persists because same domain)
+const finalAccountType = (
+  user.user_metadata?.account_type ||
+  sessionStorage.getItem('oauth_account_type') ||
+  'buyer'
+) as AccountType;
+
+const finalFlow = (
+  sessionStorage.getItem('oauth_flow') ||
+  'signin'
+) as 'signin' | 'signup';
+
+console.log('🎯 Flow type detection:', {
+  fromStorage: sessionStorage.getItem('oauth_flow'),
+  final: finalFlow
+});
+
+// 3. Clear sessionStorage
+sessionStorage.removeItem('oauth_account_type');
+sessionStorage.removeItem('oauth_flow');
+
+// 4. Check profile existence for signin flow
+if (finalFlow === 'signin') {
   const profileExists = await checkProfileExists(user.id, finalAccountType);
 
   if (!profileExists) {
-    // User exists in auth.users but has no profile - treat as "no account"
     toast({
       title: "Account Not Found",
       description: "Your account doesn't exist. Please sign up first.",
@@ -514,6 +506,9 @@ if (flow === 'signin') {
   }
 
   navigate(getDashboardPath(finalAccountType));
+} else {
+  // Signup flow - redirect to profile completion
+  navigate(`/signup/${finalAccountType}?complete=true`);
 }
 ```
 
@@ -756,10 +751,10 @@ setTimeout(() => {
 #### OAuth Signup
 1. Visit `/signup/buyer`
 2. Click "Continue with Google"
-3. **System generates OAuth state parameter** (contains flow='signup', accountType='buyer')
-4. Authenticate with Google
-5. OAuth redirects to `/auth/callback` with state parameter
-6. **System validates state parameter** and extracts flow data
+3. **System writes to sessionStorage**: `oauth_flow='signup'`, `oauth_account_type='buyer'`
+4. Authenticate with Google → Supabase → Google → Supabase (validates internal PKCE state)
+5. OAuth redirects to `/auth/callback` (same domain - sessionStorage persists!)
+6. **System reads from sessionStorage** to determine flow and account type
 7. Complete profile (company, role)
 8. Access dashboard immediately
 
@@ -775,21 +770,21 @@ setTimeout(() => {
 #### OAuth Signup
 1. Visit `/signup/creator`
 2. Click "Continue with Google"
-3. **System generates OAuth state parameter** (contains flow='signup', accountType='creator')
-4. Authenticate with Google
-5. OAuth redirects to `/auth/callback` with state parameter
-6. **System validates state parameter** and extracts flow data
+3. **System writes to sessionStorage**: `oauth_flow='signup'`, `oauth_account_type='creator'`
+4. Authenticate with Google → Supabase → Google → Supabase (validates internal PKCE state)
+5. OAuth redirects to `/auth/callback` (same domain - sessionStorage persists!)
+6. **System reads from sessionStorage** to determine flow and account type
 7. Complete profile (pen name, **role (REQUIRED)**)
 8. Access pending page
 
-### OAuth User Without Existing Account Journey (UPDATED 2025-10-03)
+### OAuth User Without Existing Account Journey (UPDATED 2025-10-05)
 
 #### First-time OAuth Signin (No Existing Profile)
 1. User attempts to sign in with Google (`/signin` → "Continue with Google")
-2. **System generates OAuth state parameter** (contains flow='signin', accountType from form)
-3. Authenticate with Google
-4. OAuth redirects to `/auth/callback` with state parameter
-5. **System validates state parameter** and extracts accountType
+2. **System writes to sessionStorage**: `oauth_flow='signin'`, `oauth_account_type` from form
+3. Authenticate with Google → Supabase → Google → Supabase (validates internal PKCE state)
+4. OAuth redirects to `/auth/callback` (same domain - sessionStorage persists!)
+5. **System reads from sessionStorage** to determine flow and accountType
 6. **Profile existence check**: Query user_buyers/user_creators by user ID
 7. **Profile not found** → Show error toast: "Your account doesn't exist. Please sign up first."
 8. Redirect to `/signup/{accountType}` after 2 seconds
@@ -808,10 +803,10 @@ setTimeout(() => {
 #### OAuth Signin (Existing Profile)
 1. Visit `/signin`
 2. Click "Continue with Google"
-3. **System generates OAuth state parameter** (contains flow='signin', accountType)
-4. Authenticate with Google
-5. OAuth redirects to `/auth/callback` with state parameter
-6. **System validates state parameter** and extracts flow data
+3. **System writes to sessionStorage**: `oauth_flow='signin'`, `oauth_account_type` from form
+4. Authenticate with Google → Supabase → Google → Supabase (validates internal PKCE state)
+5. OAuth redirects to `/auth/callback` (same domain - sessionStorage persists!)
+6. **System reads from sessionStorage** to determine flow and accountType
 7. Exchange OAuth code for session
 8. **Profile existence check**: Query user_buyers/user_creators by user ID
 9. **Profile found** → Redirect to dashboard (first login: reload for fresh state)
@@ -849,9 +844,10 @@ VITE_AUTH_DEBUG=true  # Enable debug logging
 
 #### OAuth Signup
 - [ ] Google OAuth initiation
-- [ ] **OAuth state parameter generated** (check browser DevTools Network tab)
-- [ ] **State parameter in callback URL** (format: `?code=xxx&state=32-char-hex`)
-- [ ] **State validation success** (check console logs)
+- [ ] **SessionStorage written** (check DevTools: `oauth_flow='signup'`, `oauth_account_type`)
+- [ ] **No bad_oauth_state errors** in console
+- [ ] **Callback URL is same domain** (staging → staging or localhost → localhost)
+- [ ] **SessionStorage persists in callback** (check console: "🎯 Flow type detection")
 - [ ] Profile completion with required fields
 - [ ] Creator role requirement validation
 - [ ] Full name read-only for OAuth completion
@@ -861,9 +857,10 @@ VITE_AUTH_DEBUG=true  # Enable debug logging
 
 #### OAuth Signin
 - [ ] **Existing Account** - Google OAuth signin
-- [ ] **OAuth state parameter generated** with flow='signin'
-- [ ] **State parameter in callback URL** (format: `?code=xxx&state=32-char-hex`)
-- [ ] **State validation success** (check console logs)
+- [ ] **SessionStorage written** (check DevTools: `oauth_flow='signin'`, `oauth_account_type`)
+- [ ] **No bad_oauth_state errors** in console
+- [ ] **Callback URL is same domain** (staging → staging or localhost → localhost)
+- [ ] **SessionStorage persists in callback** (check console: "🎯 Flow type detection")
 - [ ] **Profile existence check** (check console: "🔍 OAuth signin - checking profile existence")
 - [ ] **Profile found** → Redirect to dashboard
 - [ ] **Profile not found** → Error toast "Your account doesn't exist. Please sign up first."
@@ -894,18 +891,9 @@ const creator = await supabase.from('user_creators').select('*').eq('email', ema
 // Check account type
 console.log('Account type:', user.user_metadata?.account_type);
 
-// Check OAuth state in sessionStorage
-Object.keys(sessionStorage)
-  .filter(key => key.startsWith('oauth_'))
-  .forEach(key => {
-    console.log(key, JSON.parse(sessionStorage.getItem(key)));
-  });
-
-// Validate specific OAuth state
-import { validateOAuthState } from '@/utils/oauthSecurity';
-const state = 'your-32-char-hex-state';
-const oauthData = validateOAuthState(state);
-console.log('OAuth data:', oauthData);
+// Check OAuth flow data in sessionStorage
+console.log('OAuth flow:', sessionStorage.getItem('oauth_flow'));
+console.log('OAuth account type:', sessionStorage.getItem('oauth_account_type'));
 
 // Check profile existence
 async function checkProfile(userId, accountType) {

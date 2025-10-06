@@ -1,20 +1,164 @@
 # KStoryBridge Authentication Documentation
 
-**Last Updated:** 2025-01-14
-**Version:** 3.2 - OAuth Flow Simplification & Account Type Detection Streamlined
+**Last Updated:** 2025-10-05
+**Version:** 3.5 - SessionStorage OAuth Flow & Profile Existence Enforcement
 
 This is the single source of truth for all authentication-related information in the KStoryBridge platform.
 
 ## Table of Contents
 
-1. [System Architecture](#system-architecture)
-2. [Database Schema](#database-schema)
-3. [Authentication Flows](#authentication-flows)
-4. [Technical Implementation](#technical-implementation)
-5. [User Journeys](#user-journeys)
-6. [Development & Testing](#development--testing)
-7. [Troubleshooting](#troubleshooting)
-8. [Migration History](#migration-history)
+1. [⚠️ Critical Authentication Rules](#️-critical-authentication-rules-do-not-violate)
+2. [System Architecture](#system-architecture)
+3. [Database Schema](#database-schema)
+4. [Authentication Flows](#authentication-flows)
+5. [Technical Implementation](#technical-implementation)
+6. [User Journeys](#user-journeys)
+7. [Development & Testing](#development--testing)
+8. [Troubleshooting](#troubleshooting)
+9. [Migration History](#migration-history)
+
+---
+
+## ⚠️ Critical Authentication Rules (DO NOT VIOLATE)
+
+**Added:** 2025-10-05
+**Purpose:** Prevent future code changes from breaking authentication
+
+### Profile Existence Check Philosophy
+
+**CORE PRINCIPLE**: Users in `auth.users` without profiles in `user_buyers`/`user_creators` are treated as **"no account"**
+
+#### RULE 1: NEVER Auto-Create Profiles During Signin
+
+❌ **FORBIDDEN** - Auto-creating profiles:
+```typescript
+// DO NOT DO THIS - bypasses signup flow
+if (!profileExists) {
+  await createBuyerProfile(user);  // ❌ WRONG
+  await createCreatorProfile(user); // ❌ WRONG
+  navigate('/dashboard');
+}
+```
+
+✅ **CORRECT** - Show error and redirect to signup:
+```typescript
+// Enforce signup requirement
+if (!profileExists) {
+  toast({
+    title: "Account Not Found",
+    description: "Your account doesn't exist. Please sign up first.",
+    variant: "destructive"
+  });
+  navigate('/signup/buyer');
+}
+```
+
+**WHY**: OAuth signin can create users in `auth.users` even if they haven't completed signup. Auto-creating profiles bypasses the signup flow and creates incomplete accounts with missing required fields.
+
+**WHERE THIS IS ENFORCED** (as of 2025-10-05):
+- `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 169-224)
+- `apps/dashboard/src/components/SigninForm.tsx` (lines 171-211)
+- `apps/dashboard/src/pages/Profile.tsx` (lines 192-205, 240-253)
+
+---
+
+#### RULE 2: NEVER Use Custom Parameters in OAuth Callback URL
+
+❌ **FORBIDDEN** - Custom URL parameters or custom state:
+```typescript
+// URL parameters get stripped by OAuth providers
+const callbackUrl = `${origin}/auth/callback?account_type=${type}&flow=signin`; // ❌ WRONG
+
+// Custom state parameter conflicts with Supabase PKCE
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: callbackUrl,
+    queryParams: { state: customState }  // ❌ WRONG - Breaks Supabase PKCE
+  }
+});
+```
+
+✅ **CORRECT** - Use sessionStorage only:
+```typescript
+// Write flow data to sessionStorage (persists because same domain)
+sessionStorage.setItem('oauth_account_type', accountType);
+sessionStorage.setItem('oauth_flow', 'signin');
+
+const callbackUrl = `${window.location.origin}/auth/callback`;
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: callbackUrl  // No queryParams needed
+  }
+});
+
+// In callback handler - read from sessionStorage
+const flow = sessionStorage.getItem('oauth_flow') || 'signin';
+const accountType = sessionStorage.getItem('oauth_account_type') || 'buyer';
+```
+
+**WHY**:
+1. **Supabase manages PKCE state internally**: Custom `state` parameters conflict with Supabase's internal PKCE validation, causing `bad_oauth_state` errors
+2. **SessionStorage persists**: OAuth redirects stay on same domain (`staging.kstorybridge.com` → `staging.kstorybridge.com`), so sessionStorage data survives
+3. **Google OAuth flow**: App → Supabase → Google → Supabase (validates its own state) → App. Custom state breaks Supabase's validation step.
+
+**CRITICAL**:
+- Supabase uses `state` parameter for PKCE security - DO NOT override it
+- Custom state causes: `error_code=bad_oauth_state` and OAuth hangs
+- SessionStorage works because all OAuth redirects are same-domain
+
+**WHERE THIS IS IMPLEMENTED** (as of 2025-10-05):
+- Signin Flow: `apps/dashboard/src/components/SigninForm.tsx` (lines 94-107)
+- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (lines 366-376)
+- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 128-139)
+
+---
+
+#### RULE 3: Profile Tables Are Source of Truth for "Has Account"
+
+**Two-Table Authentication Model**:
+```
+auth.users = OAuth identity verified (auto-created by Supabase)
+user_buyers / user_creators = Signup completed (profile exists)
+
+Valid Account = EXISTS in auth.users AND EXISTS in profile table
+```
+
+**Profile Check Pattern** (use everywhere access is granted):
+```typescript
+// Example: Check buyer profile existence
+const { data: profile } = await supabase
+  .from('user_buyers')
+  .select('id')
+  .eq('id', user.id)
+  .maybeSingle();
+
+if (!profile) {
+  // User exists in auth.users but hasn't completed signup
+  toast({ description: "Your account doesn't exist. Please sign up first." });
+  navigate('/signup/buyer');
+  return; // Block access
+}
+
+// Profile exists - grant access
+navigate('/buyers/home');
+```
+
+**Why Incomplete Users Exist**:
+- OAuth providers create `auth.users` entry on first signin (Supabase default behavior)
+- This happens BEFORE our profile check
+- These users cannot access the system (blocked by profile checks)
+- They complete signup → profile created → future signins succeed
+
+**Incomplete User Cleanup** (optional, not required):
+```sql
+-- Delete auth.users entries >7 days old with no profile
+DELETE FROM auth.users u
+WHERE u.created_at < NOW() - INTERVAL '7 days'
+AND NOT EXISTS (SELECT 1 FROM user_buyers WHERE id = u.id)
+AND NOT EXISTS (SELECT 1 FROM user_creators WHERE id = u.id);
+```
 
 ---
 
@@ -263,58 +407,136 @@ if (urlParams.has('access_token')) {
 }
 ```
 
-### OAuth Implementation Changes (Simplified - 2025-01-14)
+### OAuth Implementation (Updated 2025-10-05)
 
-**OAuth Redirect URL Construction**:
-```typescript
-// ✅ NEW: Simple, consistent redirect URL construction
-const redirectUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signup`;
+**SessionStorage Approach (CORRECT)**:
 
-// ❌ OLD: Complex environment-specific logic (REMOVED)
-// - Multiple conditional branches for dev/prod
-// - Environment variable overrides
-// - Inconsistent URL construction
+Supabase manages its own PKCE `state` parameter internally. We use **sessionStorage** to pass flow data because OAuth redirects stay on the same domain.
+
+**OAuth Flow Architecture**:
+```
+Your App (staging.kstorybridge.com)
+  ↓ signInWithOAuth()
+Supabase (dlrnrgcoguxlkkcitlpd.supabase.co)
+  ↓ (generates internal PKCE state)
+Google OAuth
+  ↓ (redirects with code + Supabase's state)
+Supabase (validates its own state)
+  ↓ (redirects back to your app)
+Your App (staging.kstorybridge.com/auth/callback)
+  ↓ sessionStorage still available (same domain!)
 ```
 
-**Account Type Detection**:
+**Signin/Signup Implementation**:
+
 ```typescript
-// ✅ NEW: Fast metadata-only detection (80 lines)
-export function getOAuthAccountType(user: User, urlParams: URLSearchParams): string {
-  // 1. Check URL params (highest priority)
-  const urlAccountType = urlParams.get('account_type');
-  if (urlAccountType) return urlAccountType;
+// ✅ CORRECT: Store in sessionStorage (SigninForm.tsx / signupService.ts)
+sessionStorage.setItem('oauth_account_type', accountType);
+sessionStorage.setItem('oauth_flow', 'signin'); // or 'signup'
 
-  // 2. Check user metadata
-  const metadataAccountType = user?.user_metadata?.account_type;
-  if (metadataAccountType) return metadataAccountType;
-
-  // 3. Check sessionStorage (fallback)
-  const sessionAccountType = sessionStorage.getItem('account_type');
-  if (sessionAccountType) return sessionAccountType;
-
-  // 4. Error - no default assignment
-  throw new Error('Account type could not be determined');
-}
-
-// ❌ OLD: Complex system (REMOVED)
-// - 700+ lines with circuit breakers
-// - Database timeouts and lookups
-// - Multiple fallback mechanisms
-// - Race condition handling
+const callbackUrl = `${window.location.origin}/auth/callback`;
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: callbackUrl
+    // NO queryParams needed - Supabase handles state internally
+  }
+});
 ```
 
-**Callback Handler**:
+**❌ FORBIDDEN Approaches**:
+
 ```typescript
-// ✅ NEW: Simple 3-step flow (AuthCallbackPageFixed.tsx - 80 lines total)
+// DON'T: Custom state parameter (conflicts with Supabase PKCE)
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: callbackUrl,
+    queryParams: { state: customState }  // ❌ Causes bad_oauth_state error
+  }
+});
+
+// DON'T: URL query parameters (get stripped)
+const callbackUrl = `${origin}/auth/callback?flow=signin`; // ❌ Parameters stripped
+```
+
+**OAuth Callback Flow (AuthCallbackSimple.tsx)**:
+
+```typescript
+// 1. Exchange OAuth code for session
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
 const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-const accountType = getOAuthAccountType(data.session.user, urlParams);
-navigate(flow === 'signup' ? `/signup/${accountType}?complete=true` : `/${accountType}s/home`);
 
-// ❌ OLD: Complex callback system (REMOVED)
-// - Multiple conflicting handlers
-// - Timeout management
-// - Emergency bypass mechanisms
-// - Complex state tracking
+const user = data.session.user;
+
+// 2. Read flow data from sessionStorage (persists because same domain)
+const finalAccountType = (
+  user.user_metadata?.account_type ||
+  sessionStorage.getItem('oauth_account_type') ||
+  'buyer'
+) as AccountType;
+
+const finalFlow = (
+  sessionStorage.getItem('oauth_flow') ||
+  'signin'
+) as 'signin' | 'signup';
+
+console.log('🎯 Flow type detection:', {
+  fromStorage: sessionStorage.getItem('oauth_flow'),
+  final: finalFlow
+});
+
+// 3. Clear sessionStorage
+sessionStorage.removeItem('oauth_account_type');
+sessionStorage.removeItem('oauth_flow');
+
+// 4. Check profile existence for signin flow
+if (finalFlow === 'signin') {
+  const profileExists = await checkProfileExists(user.id, finalAccountType);
+
+  if (!profileExists) {
+    toast({
+      title: "Account Not Found",
+      description: "Your account doesn't exist. Please sign up first.",
+      variant: "destructive"
+    });
+    navigate(`/signup/${finalAccountType}`);
+    return;
+  }
+
+  navigate(getDashboardPath(finalAccountType));
+} else {
+  // Signup flow - redirect to profile completion
+  navigate(`/signup/${finalAccountType}?complete=true`);
+}
+```
+
+**Profile Existence Check**:
+
+```typescript
+async function checkProfileExists(userId: string, accountType: string): Promise<boolean> {
+  try {
+    if (accountType === 'buyer') {
+      const { data } = await supabase
+        .from('user_buyers')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+      return !!data;
+    } else {
+      const { data } = await supabase
+        .from('user_creators')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+      return !!data;
+    }
+  } catch (error) {
+    console.error('Error checking profile:', error);
+    return false; // Assume no profile on error
+  }
+}
 ```
 
 ### Auth Metadata Management (Updated 2025-09-21)
@@ -390,6 +612,129 @@ if (accountType === 'buyer' && consumerEmailProviders.includes(emailDomain)) {
 }
 ```
 
+### Profile Existence Philosophy (UPDATED 2025-10-03)
+
+**Two-Table Authentication Model**:
+
+KStoryBridge uses a two-table authentication model where **profile existence** is the authoritative check for "has valid account":
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ auth.users (Supabase Auth)                                  │
+│ - Auto-created during OAuth/email signup                    │
+│ - Contains OAuth identity (Google, Discord, etc.)           │
+│ - Stores user_metadata (account_type, full_name, etc.)      │
+│ - NOT the source of truth for "has account"                 │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ├─ MUST have matching profile
+                              │
+        ┌─────────────────────┴─────────────────────┐
+        │                                           │
+        ▼                                           ▼
+┌───────────────────┐                    ┌────────────────────┐
+│ user_buyers       │                    │ user_creators      │
+│ - Profile created │                    │ - Profile created  │
+│   during signup   │                    │   during signup    │
+│ - Source of truth │                    │ - Source of truth  │
+│   for "has buyer  │                    │   for "has creator │
+│   account"        │                    │   account"         │
+└───────────────────┘                    └────────────────────┘
+```
+
+**Why This Model?**
+
+1. **OAuth auto-creates auth.users**: Supabase's `exchangeCodeForSession()` automatically creates an `auth.users` entry when processing OAuth callbacks. This is unavoidable.
+
+2. **Profile creation is intentional**: Users in `user_buyers` or `user_creators` tables have **intentionally completed signup**, not just authenticated with OAuth.
+
+3. **Prevents ghost accounts**: Without this model, OAuth signin attempts would create "ghost" users in `auth.users` who can't access the system.
+
+**Implementation Rule**:
+
+```typescript
+// ✅ CORRECT: Check profile existence
+async function hasValidAccount(userId: string, accountType: string): Promise<boolean> {
+  const table = accountType === 'buyer' ? 'user_buyers' : 'user_creators';
+  const { data } = await supabase
+    .from(table)
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle();
+
+  return !!data; // Profile exists = valid account
+}
+
+// ❌ WRONG: Checking only auth.users
+async function hasValidAccount(userId: string): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  return !!user; // This includes OAuth users who haven't completed signup!
+}
+```
+
+**When Profile Checks Occur**:
+
+1. **OAuth Signin** (`flow='signin'`):
+   - Exchange OAuth code for session
+   - **Check profile existence** before dashboard redirect
+   - No profile → Show error "Your account doesn't exist. Please sign up first."
+   - Has profile → Redirect to dashboard
+
+2. **OAuth Signup** (`flow='signup'`):
+   - Exchange OAuth code for session
+   - Redirect to signup completion page
+   - **Create profile** after form submission
+   - Redirect to dashboard
+
+3. **Email/Password Signin**:
+   - Supabase validates credentials
+   - Profile must exist from previous signup
+   - If profile missing (edge case) → Show same error
+
+**Cleanup Not Required**:
+
+Users in `auth.users` without matching profiles are **harmless** and do **not** need cleanup:
+- They cannot access the dashboard (profile check blocks them)
+- They cannot sign in (same error message)
+- They are effectively "identity records" with no system access
+- Optional cleanup query (for housekeeping only):
+
+```sql
+-- Find auth.users without profiles (optional cleanup)
+SELECT u.id, u.email, u.created_at
+FROM auth.users u
+WHERE NOT EXISTS (SELECT 1 FROM user_buyers WHERE id = u.id)
+AND NOT EXISTS (SELECT 1 FROM user_creators WHERE id = u.id);
+
+-- Delete incomplete users older than 7 days (optional)
+DELETE FROM auth.users u
+WHERE u.created_at < NOW() - INTERVAL '7 days'
+AND NOT EXISTS (SELECT 1 FROM user_buyers WHERE id = u.id)
+AND NOT EXISTS (SELECT 1 FROM user_creators WHERE id = u.id);
+```
+
+**Error Messages**:
+
+All signin flows show the same error message when profile doesn't exist:
+
+```typescript
+toast({
+  title: "Account Not Found",
+  description: "Your account doesn't exist. Please sign up first.",
+  variant: "destructive"
+});
+
+// Redirect to signup after 2 seconds
+setTimeout(() => {
+  navigate(`/signup/${accountType}`);
+}, 2000);
+```
+
+**Files Implementing This Pattern**:
+- `AuthCallbackSimple.tsx` (lines 169-207) - OAuth callback profile check
+- `SigninForm.tsx` (lines 198-208) - Email signin profile check
+- `Profile.tsx` (lines 193-205, 241-253) - Profile page existence validation
+
 ---
 
 ## User Journeys
@@ -406,9 +751,12 @@ if (accountType === 'buyer' && consumerEmailProviders.includes(emailDomain)) {
 #### OAuth Signup
 1. Visit `/signup/buyer`
 2. Click "Continue with Google"
-3. Authenticate with Google
-4. Complete profile (company, role)
-5. Access dashboard immediately
+3. **System writes to sessionStorage**: `oauth_flow='signup'`, `oauth_account_type='buyer'`
+4. Authenticate with Google → Supabase → Google → Supabase (validates internal PKCE state)
+5. OAuth redirects to `/auth/callback` (same domain - sessionStorage persists!)
+6. **System reads from sessionStorage** to determine flow and account type
+7. Complete profile (company, role)
+8. Access dashboard immediately
 
 ### New Creator Journey
 
@@ -422,28 +770,47 @@ if (accountType === 'buyer' && consumerEmailProviders.includes(emailDomain)) {
 #### OAuth Signup
 1. Visit `/signup/creator`
 2. Click "Continue with Google"
-3. Complete profile (pen name, **role (REQUIRED)**)
-4. Access pending page
+3. **System writes to sessionStorage**: `oauth_flow='signup'`, `oauth_account_type='creator'`
+4. Authenticate with Google → Supabase → Google → Supabase (validates internal PKCE state)
+5. OAuth redirects to `/auth/callback` (same domain - sessionStorage persists!)
+6. **System reads from sessionStorage** to determine flow and account type
+7. Complete profile (pen name, **role (REQUIRED)**)
+8. Access pending page
 
-### OAuth User Without Existing Account Journey (NEW)
+### OAuth User Without Existing Account Journey (UPDATED 2025-10-05)
 
-#### First-time OAuth Signin
-1. User attempts to sign in with Google but has no existing KStoryBridge account
-2. OAuth callback detects no account type and no existing profile
-3. User is redirected to `/account-type-selection` page
-4. User sees clear options to choose between Media Buyer or Content Creator
-5. After selection, user is redirected to appropriate signup completion page
-6. Complete profile information (company details for buyers, pen name for creators)
-7. Access appropriate dashboard based on account type
+#### First-time OAuth Signin (No Existing Profile)
+1. User attempts to sign in with Google (`/signin` → "Continue with Google")
+2. **System writes to sessionStorage**: `oauth_flow='signin'`, `oauth_account_type` from form
+3. Authenticate with Google → Supabase → Google → Supabase (validates internal PKCE state)
+4. OAuth redirects to `/auth/callback` (same domain - sessionStorage persists!)
+5. **System reads from sessionStorage** to determine flow and accountType
+6. **Profile existence check**: Query user_buyers/user_creators by user ID
+7. **Profile not found** → Show error toast: "Your account doesn't exist. Please sign up first."
+8. Redirect to `/signup/{accountType}` after 2 seconds
 
-**Note**: This prevents the previous behavior where unknown OAuth users were automatically assigned as buyers.
+**Note**: Users who exist in `auth.users` but not in `user_buyers`/`user_creators` are treated as "no account" - profile existence is the authoritative check.
 
 ### Returning User Journey
 
+#### Email/Password Signin
 1. Visit `/signin`
-2. Enter credentials or use OAuth
-3. System detects account type
-4. Redirect to appropriate dashboard
+2. Enter email and password
+3. System validates credentials
+4. Detect account type from user metadata
+5. Redirect to appropriate dashboard
+
+#### OAuth Signin (Existing Profile)
+1. Visit `/signin`
+2. Click "Continue with Google"
+3. **System writes to sessionStorage**: `oauth_flow='signin'`, `oauth_account_type` from form
+4. Authenticate with Google → Supabase → Google → Supabase (validates internal PKCE state)
+5. OAuth redirects to `/auth/callback` (same domain - sessionStorage persists!)
+6. **System reads from sessionStorage** to determine flow and accountType
+7. Exchange OAuth code for session
+8. **Profile existence check**: Query user_buyers/user_creators by user ID
+9. **Profile found** → Redirect to dashboard (first login: reload for fresh state)
+10. Access appropriate dashboard based on account type
 
 ---
 
@@ -477,6 +844,10 @@ VITE_AUTH_DEBUG=true  # Enable debug logging
 
 #### OAuth Signup
 - [ ] Google OAuth initiation
+- [ ] **SessionStorage written** (check DevTools: `oauth_flow='signup'`, `oauth_account_type`)
+- [ ] **No bad_oauth_state errors** in console
+- [ ] **Callback URL is same domain** (staging → staging or localhost → localhost)
+- [ ] **SessionStorage persists in callback** (check console: "🎯 Flow type detection")
 - [ ] Profile completion with required fields
 - [ ] Creator role requirement validation
 - [ ] Full name read-only for OAuth completion
@@ -484,11 +855,22 @@ VITE_AUTH_DEBUG=true  # Enable debug logging
 - [ ] Session establishment
 - [ ] Account type metadata properly set
 
-#### Signin
-- [ ] Email/password signin
-- [ ] Google OAuth signin
-- [ ] Account type detection
+#### OAuth Signin
+- [ ] **Existing Account** - Google OAuth signin
+- [ ] **SessionStorage written** (check DevTools: `oauth_flow='signin'`, `oauth_account_type`)
+- [ ] **No bad_oauth_state errors** in console
+- [ ] **Callback URL is same domain** (staging → staging or localhost → localhost)
+- [ ] **SessionStorage persists in callback** (check console: "🎯 Flow type detection")
+- [ ] **Profile existence check** (check console: "🔍 OAuth signin - checking profile existence")
+- [ ] **Profile found** → Redirect to dashboard
+- [ ] **Profile not found** → Error toast "Your account doesn't exist. Please sign up first."
+- [ ] **Profile not found** → Redirect to `/signup/{accountType}` after 2 seconds
+
+#### Email/Password Signin
+- [ ] Email/password signin with existing account
+- [ ] Account type detection from metadata
 - [ ] Correct routing based on tier/status
+- [ ] **Profile existence check** for edge cases
 
 #### Cross-Domain
 - [ ] Website → Dashboard redirect
@@ -508,6 +890,18 @@ const creator = await supabase.from('user_creators').select('*').eq('email', ema
 
 // Check account type
 console.log('Account type:', user.user_metadata?.account_type);
+
+// Check OAuth flow data in sessionStorage
+console.log('OAuth flow:', sessionStorage.getItem('oauth_flow'));
+console.log('OAuth account type:', sessionStorage.getItem('oauth_account_type'));
+
+// Check profile existence
+async function checkProfile(userId, accountType) {
+  const table = accountType === 'buyer' ? 'user_buyers' : 'user_creators';
+  const { data } = await supabase.from(table).select('id').eq('id', userId).maybeSingle();
+  console.log(`Profile exists in ${table}:`, !!data);
+  return !!data;
+}
 
 // Enable debug logging
 localStorage.setItem('auth_debug', 'true');

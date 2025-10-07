@@ -14,8 +14,9 @@ export const SESSION_CONFIG = {
   /**
    * Health check interval - how often to verify session integrity
    * Used by: useAuth.tsx periodic health monitoring
+   * Reduced to 10 minutes to decrease load during outages
    */
-  HEALTH_CHECK_INTERVAL: 5 * 60 * 1000, // 5 minutes
+  HEALTH_CHECK_INTERVAL: 10 * 60 * 1000, // 10 minutes (reduced from 5 minutes)
 
   /**
    * Protected route throttle - minimum time between session checks on route navigation

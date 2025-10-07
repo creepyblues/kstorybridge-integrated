@@ -706,6 +706,14 @@ const sessionRecoveryMetrics: SessionRecoveryMetrics = {
 };
 
 /**
+ * Health check throttling to prevent concurrent checks
+ */
+let healthCheckInProgress: Promise<any> | null = null;
+let lastHealthCheckTime = 0;
+let lastHealthCheckResult: any = null;
+const MIN_HEALTH_CHECK_INTERVAL = 30000; // 30 seconds between checks
+
+/**
  * Get session recovery metrics for monitoring
  */
 export function getSessionRecoveryMetrics(): Readonly<SessionRecoveryMetrics> {
@@ -714,6 +722,7 @@ export function getSessionRecoveryMetrics(): Readonly<SessionRecoveryMetrics> {
 
 /**
  * Comprehensive session health check with automatic recovery
+ * Now includes throttling to prevent concurrent checks
  */
 export async function performSessionHealthCheck(): Promise<{
   healthy: boolean;
@@ -731,12 +740,28 @@ export async function performSessionHealthCheck(): Promise<{
     };
   };
 }> {
-  const startTime = Date.now();
-  const issues: string[] = [];
-  const recommendations: string[] = [];
+  // If check already in progress, wait for it
+  if (healthCheckInProgress) {
+    console.log('⏳ Health check already in progress, waiting for completion...');
+    return healthCheckInProgress;
+  }
 
-  try {
-    console.log('🏥 Session Manager: Starting comprehensive health check');
+  // If checked recently, return cached result
+  const timeSinceLastCheck = Date.now() - lastHealthCheckTime;
+  if (timeSinceLastCheck < MIN_HEALTH_CHECK_INTERVAL && lastHealthCheckResult) {
+    console.log(`⚡ Using cached health check result (checked ${Math.round(timeSinceLastCheck / 1000)}s ago)`);
+    return lastHealthCheckResult;
+  }
+
+  // Perform new health check
+  console.log('🏥 Session Manager: Starting new comprehensive health check');
+
+  healthCheckInProgress = (async () => {
+    const startTime = Date.now();
+    const issues: string[] = [];
+    const recommendations: string[] = [];
+
+    try {
     
     // Check Supabase connectivity first
     const supabaseHealth = await performSupabaseHealthCheck();
@@ -920,40 +945,58 @@ export async function performSessionHealthCheck(): Promise<{
       }
     };
 
-    console.log(`🏥 Session Manager: Health check ${finalHealthy ? 'PASSED' : 'FAILED'}`, {
-      healthy: finalHealthy,
-      userId: recoveredSession?.user?.id,
-      email: recoveredSession?.user?.email,
-      accountType,
-      expiresAt: recoveredSession?.expires_at ? new Date(recoveredSession.expires_at * 1000).toISOString() : 'unknown',
-      responseTime: `${responseTime}ms`,
-      issueCount: issues.length,
-      criticalIssues: criticalIssues.length,
-      recovered,
-      recoveryAttempted,
-      recoveryMetrics: getSessionRecoveryMetrics()
-    });
+      console.log(`🏥 Session Manager: Health check ${finalHealthy ? 'PASSED' : 'FAILED'}`, {
+        healthy: finalHealthy,
+        userId: recoveredSession?.user?.id,
+        email: recoveredSession?.user?.email,
+        accountType,
+        expiresAt: recoveredSession?.expires_at ? new Date(recoveredSession.expires_at * 1000).toISOString() : 'unknown',
+        responseTime: `${responseTime}ms`,
+        issueCount: issues.length,
+        criticalIssues: criticalIssues.length,
+        recovered,
+        recoveryAttempted,
+        recoveryMetrics: getSessionRecoveryMetrics()
+      });
 
-    return result;
-  } catch (error) {
-    const responseTime = Date.now() - startTime;
-    issues.push(`Health check exception: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    recommendations.push('System error occurred, check logs and attempt session recovery');
-    
-    console.error('❌ Session Manager: Health check failed with exception:', error);
-    
-    return {
-      healthy: false,
-      issues,
-      recommendations,
-      diagnostics: {
-        supabaseHealth: { healthy: false, error: 'Health check failed' },
-        sessionIntegrity: null,
-        performanceMetrics: {
-          responseTime,
-          networkConnectivity: 'failed'
+      // Cache the result
+      lastHealthCheckResult = result;
+      lastHealthCheckTime = Date.now();
+
+      return result;
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+      issues.push(`Health check exception: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      recommendations.push('System error occurred, check logs and attempt session recovery');
+
+      console.error('❌ Session Manager: Health check failed with exception:', error);
+
+      const result = {
+        healthy: false,
+        issues,
+        recommendations,
+        diagnostics: {
+          supabaseHealth: { healthy: false, error: 'Health check failed' },
+          sessionIntegrity: null,
+          performanceMetrics: {
+            responseTime,
+            networkConnectivity: 'failed' as 'ok' | 'slow' | 'failed'
+          }
         }
-      }
-    };
+      };
+
+      // Cache even failed results to prevent rapid retries
+      lastHealthCheckResult = result;
+      lastHealthCheckTime = Date.now();
+
+      return result;
+    }
+  })();
+
+  try {
+    const result = await healthCheckInProgress;
+    return result;
+  } finally {
+    healthCheckInProgress = null;
   }
 }

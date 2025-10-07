@@ -153,7 +153,7 @@ export async function withRetry<T>(
   } = {}
 ): Promise<T> {
   const {
-    maxRetries = 2, // Keep at 2 to prevent excessive retries
+    maxRetries = 1, // Reduced to 1 retry (2 attempts total) to prevent timeout cascades during outages
     baseDelay = 2000, // Increased from 1500 to 2000 for production stability
     maxDelay = 20000, // Increased from 12000 to 20000 for high-latency production networks
     retryCondition = isNetworkError,
@@ -593,8 +593,8 @@ supabase.auth.getSession = async () => {
 
   try {
     // Context-aware timeout: OAuth callbacks AND OAuth completion need more time for session operations
-    // FIRST LOAD FIX: Reduced timeout for regular flows to prevent hanging (60s -> 15s)
-    const timeoutMs = needsExtendedTimeout ? 90000 : 15000; // OAuth 90s, regular 15s (reduced from 60s)
+    // TIMEOUT FIX: Further reduced regular timeout for faster failure during outages (15s -> 5s)
+    const timeoutMs = needsExtendedTimeout ? 90000 : 5000; // OAuth 90s, regular 5s (faster failure)
 
     // 🔧 RUNTIME DEBUG: Verify enhanced timeout configuration is working
     if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
@@ -610,7 +610,7 @@ supabase.auth.getSession = async () => {
     }
 
     const result = await withRetry(() => originalGetSession(), {
-      maxRetries: needsExtendedTimeout ? 2 : 1, // More retries for OAuth flows (callback + completion)
+      maxRetries: needsExtendedTimeout ? 2 : 0, // OAuth: 3 attempts, regular: 1 attempt (reduced to prevent cascades)
       baseDelay: 200,
       timeoutMs,
       operationName: 'getSession'
@@ -656,7 +656,7 @@ supabase.auth.refreshSession = (refreshToken) =>
   withRetry(() => originalRefreshSession(refreshToken), {
     maxRetries: 2,
     operationName: 'refreshSession',
-    timeoutMs: 25000 // Increased to 25 seconds for production session refresh operations
+    timeoutMs: 8000 // Reduced to 8 seconds for faster failure during outages
   });
 
 // Performance monitoring (development only)

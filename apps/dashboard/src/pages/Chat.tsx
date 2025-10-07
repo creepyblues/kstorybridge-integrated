@@ -652,6 +652,7 @@ export default function Chat() {
 
   // Check if user is authorized - allow all buyers
   const { accountType, loading: accountTypeLoading } = useAccountType();
+  const { tier } = useTierAccess();
   const isAuthorized = accountType === 'buyer';
 
   // Determine if we should show empty state - always show on page load until user sends first message or views history
@@ -1109,15 +1110,8 @@ Please try again.`,
         // TODO: Display search results preview in UI
       },
       onSuggestionsEarly: (queries) => {
-        console.log('💡 Early suggestions:', queries);
-        // Update bot message with suggestions immediately
-        setMessages(prev => {
-          return prev.map(msg =>
-            msg.id === streamingBotMessage.id
-              ? { ...msg, suggestedQueries: queries }
-              : msg
-          );
-        });
+        console.log('💡 Early suggestions received (will display after completion):', queries);
+        // Don't update message yet - suggestions will be added in onComplete
       },
       onChunk: (text: string) => {
         setStreamingResponse(prev => prev + text);
@@ -1421,7 +1415,8 @@ Please try again.`,
         currentSession?.id,
         messageId,
         userPrompt,
-        title.score
+        title.score,
+        tier || undefined
       );
 
       // Record title view interaction
@@ -1784,12 +1779,15 @@ Please try again.`,
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                   placeholder="Describe the story you are looking for..."
-                  className="flex-1 max-h-32 px-1 py-2 resize-none focus:outline-none text-sm placeholder-gray-400"
+                  className="flex-1 max-h-32 px-1 resize-none focus:outline-none text-sm placeholder-gray-400 bg-white disabled:opacity-100"
                   rows={1}
                   disabled={isLoading || isLoadingHistory || isProcessingMessage}
                   style={{
                     minHeight: '44px',
-                    overflowY: 'hidden'
+                    paddingTop: '12px',
+                    paddingBottom: '12px',
+                    overflowY: 'hidden',
+                    lineHeight: '20px'
                   }}
                 />
                 <button

@@ -1015,7 +1015,7 @@ export default function Profile() {
                     </p>
                   </div>
                 </div>
-                {(profile.email === 'sungho@dadble.com' || profile.email === 'kevin@sandstoneartists.com') ? (
+                {(profile.email?.toLowerCase() === 'sungho@dadble.com' || profile.email?.toLowerCase() === 'kevin@sandstoneartists.com') ? (
                   <Link
                     to="/buyers/plan"
                     onClick={() => {
@@ -1063,14 +1063,25 @@ export default function Profile() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 {/* Take Tour Button */}
-                <Button
-                  onClick={() => setShowOnboardingModal(true)}
-                  variant="outline"
-                  className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Take Tour
-                </Button>
+                {(profile.email?.toLowerCase() === 'sungho@dadble.com' || profile.email?.toLowerCase() === 'kevin@sandstoneartists.com') ? (
+                  <Button
+                    onClick={() => setShowOnboardingModal(true)}
+                    variant="outline"
+                    className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Take Tour
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed opacity-60"
+                    disabled
+                  >
+                    <Sparkles className="w-4 h-4 mr-2 opacity-50" />
+                    Take Tour
+                  </Button>
+                )}
 
                 {/* Change Password Button */}
                 <Button

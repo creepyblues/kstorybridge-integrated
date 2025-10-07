@@ -9,6 +9,10 @@ const BuyersPricing = () => {
   const { tier, loading } = useTierAccess();
   const { user } = useAuth();
 
+  // Whitelist of emails allowed to upgrade
+  const ALLOWED_UPGRADE_EMAILS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+  const isUpgradeAllowed = ALLOWED_UPGRADE_EMAILS.includes(user?.email?.toLowerCase() || '');
+
   // Map tiers to their corresponding plan names
   const tierToPlan: Record<string, string> = {
     basic: 'free', // Basic tier (free plan)
@@ -225,8 +229,13 @@ const BuyersPricing = () => {
                       </Dialog>
                     ) : plan.id === 'pro' ? (
                       <UpgradeToProButton
-                        className="w-full py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 text-white !bg-[#4C9C9B] !border-[#4C9C9B]"
-                        style={{ backgroundColor: '#4C9C9B !important', borderColor: '#4C9C9B !important' }}
+                        className={`w-full py-4 rounded-2xl font-bold text-lg shadow-xl transition-all duration-300 border-2 ${
+                          isUpgradeAllowed
+                            ? 'hover:shadow-2xl transform hover:scale-105 text-white !bg-[#4C9C9B] !border-[#4C9C9B]'
+                            : 'bg-gray-300 border-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                        style={isUpgradeAllowed ? { backgroundColor: '#4C9C9B !important', borderColor: '#4C9C9B !important' } : {}}
+                        disabled={!isUpgradeAllowed}
                         onClick={handleUpgradeToProClick}
                       >
                         <span className="flex items-center justify-center gap-2">

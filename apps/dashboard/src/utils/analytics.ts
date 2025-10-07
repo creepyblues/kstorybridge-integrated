@@ -85,7 +85,8 @@ export const trackTitleViewFromChat = (
   sessionId?: string,
   messageId?: string,
   userPrompt?: string,
-  recommendationScore?: number
+  recommendationScore?: number,
+  userTier?: string
 ) => {
   if (typeof window !== 'undefined' && window.dataLayer) {
     window.dataLayer.push({
@@ -93,6 +94,7 @@ export const trackTitleViewFromChat = (
       'title_id': titleId,
       'title_name': titleName,
       'chat_mode': chatMode,
+      'user_tier': userTier,
       'session_id': sessionId,
       'message_id': messageId,
       'user_prompt': userPrompt,
@@ -104,7 +106,7 @@ export const trackTitleViewFromChat = (
       'funnel_name': 'buyer_engagement'
     });
 
-    console.log(`👁️ TITLE VIEW FROM CHAT: ${titleName} (Mode: ${chatMode})`);
+    console.log(`👁️ TITLE VIEW FROM CHAT: ${titleName} (Mode: ${chatMode}, Tier: ${userTier || 'unknown'})`);
   }
 };
 

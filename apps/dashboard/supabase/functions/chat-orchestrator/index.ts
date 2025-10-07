@@ -185,44 +185,7 @@ serve(async (req) => {
             });
           }
 
-          // PHASE 2: Generate and send suggestions EARLY (before AI streaming)
-          const queryIntent = classifyQueryIntent(userQuery, conversationHistory);
-
-          // Suppress suggestions for focused title information requests
-          const skipSuggestions = queryIntent === 'information';
-
-          let suggestedQueries: string[] = [];
-          let savedSuggestedQueries: string[] = [];
-
-          if (!skipSuggestions) {
-            suggestedQueries = generateSuggestedQueries({
-              queryIntent,
-              searchResults,
-              userQuery,
-              conversationHistory
-            });
-
-            // Save for later database storage
-            savedSuggestedQueries = suggestedQueries;
-
-            if (suggestedQueries.length > 0) {
-              controller.enqueue(
-                new TextEncoder().encode(
-                  `data: ${JSON.stringify({
-                    type: 'suggestions',
-                    suggestedQueries,
-                    generatedAt: 'early'
-                  })}\n\n`
-                )
-              );
-
-              console.log('💡 Sent early suggestions:', suggestedQueries);
-            }
-          } else {
-            console.log('🔇 Suppressing suggestions for information query (single title focus)');
-          }
-
-          // PHASE 3: Start AI streaming
+          // PHASE 2: Start AI streaming
           // Use custom model if provided, otherwise default to gpt-4o-mini
           const selectedModel = model || 'gpt-4o-mini'
 
@@ -281,6 +244,7 @@ serve(async (req) => {
           }
 
           let fullResponse = ''
+          let suggestedQueries: string[] = []
 
           while (true) {
             const { done, value } = await reader.read()
@@ -302,8 +266,40 @@ serve(async (req) => {
                     fullResponse = validation.validatedResponse
                   }
 
-                  // Note: Suggestions already sent early, just save to database
-                  await saveResponseToDatabase(supabase, activeSession.id, user.id, userQuery, fullResponse, searchResults, savedSuggestedQueries)
+                  // Generate suggestions AFTER AI response is complete
+                  const queryIntent = classifyQueryIntent(userQuery, conversationHistory);
+
+                  // Suppress suggestions for focused title information requests
+                  const skipSuggestions = queryIntent === 'information';
+
+                  if (!skipSuggestions) {
+                    suggestedQueries = generateSuggestedQueries({
+                      queryIntent,
+                      searchResults,
+                      userQuery,
+                      conversationHistory
+                    });
+
+                    // Send suggestions AFTER full response but BEFORE [DONE]
+                    if (suggestedQueries.length > 0) {
+                      controller.enqueue(
+                        new TextEncoder().encode(
+                          `data: ${JSON.stringify({
+                            type: 'suggestions',
+                            suggestedQueries,
+                            generatedAt: 'after_completion'
+                          })}\n\n`
+                        )
+                      );
+
+                      console.log('💡 Sent suggestions after completion:', suggestedQueries);
+                    }
+                  } else {
+                    console.log('🔇 Suppressing suggestions for information query (single title focus)');
+                  }
+
+                  // Save response and suggestions to database
+                  await saveResponseToDatabase(supabase, activeSession.id, user.id, userQuery, fullResponse, searchResults, suggestedQueries)
                   continue
                 }
 
@@ -716,36 +712,67 @@ But here's the thing - 'popular' can mean very different things! Are you drawn t
 5. ❌ DO NOT make up content or invent details
 6. ✅ Focus EXCLUSIVELY on the single requested title
 7. ✅ Use ONLY database fields for this specific title
-8. ✅ MUST follow the structure below EXACTLY
+8. ✅ MUST follow the conditional structure below
 9. ✅ End response with title detail page link
 
-**REQUIRED STRUCTURE** (follow EXACTLY):
+🚨 **CONDITIONAL DISPLAY RULES** (Show section ONLY if data exists):
+
+**Story Synopsis**:
+- Show this section ONLY if synopsis field has actual content
+- Skip entirely if "Not available" or empty
+
+**Genre & Tone**:
+- Show this section ONLY if at least ONE field (genre, tone, content_format) has data
+- Omit individual lines where value is "Not specified" or empty
+- Skip entire section if all three fields are empty/not specified
+
+**What Makes It Unique**:
+- Show this section ONLY if perfect_for OR audience has actual content (not "Not specified")
+- Skip entirely if both fields are "Not specified" or empty
+
+**Perfect For**:
+- Show this section ONLY if perfect_for field has actual content
+- Skip entirely if "Not specified" or empty
+
+**Comparable Titles**:
+- Show this section ONLY if comps array has items
+- Skip entirely if "Not available" or empty
+
+**Additional Details**:
+- Show this section ONLY if at least ONE field has data
+- Omit individual lines where value is "Not specified" or "N/A"
+- Skip entire section if all fields are empty/not specified
+
+**CRITICAL**: If a section has no data, COMPLETELY OMIT IT from the response. Do not show section headers with "[Not specified]" placeholders.
+
+**REQUIRED STRUCTURE** (conditionally include sections):
 
 **About "{title_name_en or title_name_kr}"**
-[2-sentence hook using synopsis + perfect_for fields ONLY]
+[2-sentence hook using available fields]
 
+[ONLY IF synopsis exists]
 **Story Synopsis**
-[Copy FULL synopsis field. If "Not available": "[Synopsis not available]"]
+[Copy FULL synopsis field]
 
+[ONLY IF at least one of genre/tone/content_format exists]
 **Genre & Tone**
-- Genre: [EXACT genre field]
-- Tone: [EXACT tone field]
-- Content Format: [EXACT content_format field]
+[Show only fields that have data, omit lines with "Not specified"]
 
+[ONLY IF perfect_for OR audience has data]
 **What Makes It Unique**
-[Use perfect_for + audience fields. If both "Not specified": "[Not specified]"]
+[Use perfect_for + audience fields that have data]
 
+[ONLY IF perfect_for exists]
 **Perfect For**
-[EXACT perfect_for field. If "Not specified": "[Not specified]"]
+[EXACT perfect_for field]
 
+[ONLY IF comps array has items]
 **Comparable Titles**
-[List EXACT comps from database as bullets. If "Not available": "[Not specified]"]
+[List EXACT comps from database as bullets]
 
+[ONLY IF at least one field has data]
 **Additional Details**
-- Story Author: [EXACT story_author]
-- Art Author: [EXACT art_author]
-- Audience: [EXACT audience]
-- Age Rating: [EXACT age_rating]
+[Show only fields with actual values, skip "Not specified" or "N/A" fields]
 
 **[View Full Details →](/buyers/titles/TITLE_ID_PLACEHOLDER)**
 
@@ -1016,6 +1043,177 @@ function getStageBasedFallbacks(
 }
 
 /**
+ * Extract query themes and user preferences for context-aware suggestions
+ * Analyzes user query to understand specific interests beyond metadata
+ */
+function extractQueryThemes(userQuery: string): {
+  characterTraits: string[];
+  plotElements: string[];
+  tonePreferences: string[];
+  settingDetails: string[];
+  formatPreferences: string[];
+  genreThemes: string[];
+} {
+  const lowerQuery = userQuery.toLowerCase();
+
+  const themes = {
+    characterTraits: [] as string[],
+    plotElements: [] as string[],
+    tonePreferences: [] as string[],
+    settingDetails: [] as string[],
+    formatPreferences: [] as string[],
+    genreThemes: [] as string[]
+  };
+
+  // Character trait patterns
+  const characterPatterns = [
+    { pattern: /strong (female |male )?lead/i, trait: 'strong lead' },
+    { pattern: /complex (protagonist|villain|character)/i, trait: 'complex character' },
+    { pattern: /(badass|powerful|capable) (protagonist|lead|hero)/i, trait: 'powerful protagonist' },
+    { pattern: /(underdog|weak to strong)/i, trait: 'underdog story' },
+    { pattern: /morally (gray|grey|ambiguous)/i, trait: 'morally complex' },
+    { pattern: /(anti-hero|antihero)/i, trait: 'anti-hero' }
+  ];
+
+  // Plot element patterns
+  const plotPatterns = [
+    { pattern: /revenge/i, element: 'revenge' },
+    { pattern: /redemption/i, element: 'redemption' },
+    { pattern: /love triangle/i, element: 'love triangle' },
+    { pattern: /time (travel|loop)/i, element: 'time manipulation' },
+    { pattern: /reincarnation/i, element: 'reincarnation' },
+    { pattern: /(mystery|whodunit)/i, element: 'mystery' },
+    { pattern: /betrayal/i, element: 'betrayal' }
+  ];
+
+  // Tone patterns
+  const tonePatterns = [
+    { pattern: /dark|gritty|intense/i, tone: 'dark' },
+    { pattern: /wholesome|heartwarming|uplifting/i, tone: 'wholesome' },
+    { pattern: /emotional|tearjerker|moving/i, tone: 'emotional' },
+    { pattern: /comedic|funny|lighthearted/i, tone: 'comedic' },
+    { pattern: /suspenseful|tense|thrilling/i, tone: 'suspenseful' }
+  ];
+
+  // Setting patterns
+  const settingPatterns = [
+    { pattern: /historical|period/i, setting: 'historical' },
+    { pattern: /modern|contemporary/i, setting: 'modern' },
+    { pattern: /office|workplace/i, setting: 'workplace' },
+    { pattern: /school|university|college/i, setting: 'school' },
+    { pattern: /fantasy world/i, setting: 'fantasy world' }
+  ];
+
+  // Genre/Theme patterns (for genre-specific queries)
+  const genrePatterns = [
+    { pattern: /ghost|supernatural|paranormal|spirit/i, genre: 'supernatural' },
+    { pattern: /horror|scary|creepy|terrifying/i, genre: 'horror' },
+    { pattern: /fantasy|magic|magical/i, genre: 'fantasy' },
+    { pattern: /sci-fi|science fiction|dystopian|cyberpunk/i, genre: 'sci-fi' },
+    { pattern: /slice of life|everyday|daily life/i, genre: 'slice of life' },
+    { pattern: /zombie|apocalypse|post-apocalyptic/i, genre: 'apocalyptic' }
+  ];
+
+  // Extract matches
+  characterPatterns.forEach(({ pattern, trait }) => {
+    if (pattern.test(userQuery)) themes.characterTraits.push(trait);
+  });
+
+  plotPatterns.forEach(({ pattern, element }) => {
+    if (pattern.test(userQuery)) themes.plotElements.push(element);
+  });
+
+  tonePatterns.forEach(({ pattern, tone }) => {
+    if (pattern.test(userQuery)) themes.tonePreferences.push(tone);
+  });
+
+  settingPatterns.forEach(({ pattern, setting }) => {
+    if (pattern.test(userQuery)) themes.settingDetails.push(setting);
+  });
+
+  genrePatterns.forEach(({ pattern, genre }) => {
+    if (pattern.test(userQuery)) themes.genreThemes.push(genre);
+  });
+
+  // Format preferences
+  if (/completed|finished/i.test(userQuery)) themes.formatPreferences.push('completed');
+  if (/short|quick read|under \d+ chapter/i.test(userQuery)) themes.formatPreferences.push('short series');
+  if (/ongoing|current/i.test(userQuery)) themes.formatPreferences.push('ongoing');
+
+  console.log('🎯 Extracted query themes:', {
+    query: userQuery.substring(0, 50) + '...',
+    themes,
+    hasThemes: Object.values(themes).some(arr => arr.length > 0)
+  });
+
+  return themes;
+}
+
+/**
+ * Mix suggestions from different types using round-robin to ensure diversity
+ * Limits each type to max 2 suggestions in final output to prevent repetition
+ */
+function mixDiverseSuggestions(
+  type0: string[],
+  type2: string[],
+  type3: string[],
+  type5: string[],
+  typeIntent: string[],
+  maxTotal: number = 5
+): string[] {
+  const mixed: string[] = [];
+  const sources = [
+    { type: 'context-aware', suggestions: type0, maxPick: 2 },
+    { type: 'genre-vibe', suggestions: type2, maxPick: 2 },
+    { type: 'comp-based', suggestions: type3, maxPick: 1 },
+    { type: 'author', suggestions: type5, maxPick: 1 },
+    { type: 'intent', suggestions: typeIntent, maxPick: 1 }
+  ];
+
+  // Track how many we've taken from each source
+  const picked = new Map<string, number>();
+  sources.forEach(s => picked.set(s.type, 0));
+
+  // Round-robin: take 1 from each source in rotation
+  let round = 0;
+  while (mixed.length < maxTotal && round < 10) { // max 10 rounds to prevent infinite loop
+    let addedThisRound = false;
+
+    for (const source of sources) {
+      if (mixed.length >= maxTotal) break;
+
+      const currentPicked = picked.get(source.type) || 0;
+      const availableIndex = currentPicked;
+
+      // Check if we can still pick from this source
+      if (currentPicked < source.maxPick && availableIndex < source.suggestions.length) {
+        const suggestion = source.suggestions[availableIndex];
+        if (!mixed.includes(suggestion)) { // Avoid duplicates
+          mixed.push(suggestion);
+          picked.set(source.type, currentPicked + 1);
+          addedThisRound = true;
+        }
+      }
+    }
+
+    // If we didn't add anything this round, we're done
+    if (!addedThisRound) break;
+    round++;
+  }
+
+  console.log('🎨 Diversity mixing:', {
+    type0Count: picked.get('context-aware'),
+    type2Count: picked.get('genre-vibe'),
+    type3Count: picked.get('comp-based'),
+    type5Count: picked.get('author'),
+    intentCount: picked.get('intent'),
+    totalMixed: mixed.length
+  });
+
+  return mixed;
+}
+
+/**
  * Generate 3-5 smart follow-up query suggestions based on context
  * Uses ChatGPT/Claude-style specific, contextual suggestions
  */
@@ -1026,7 +1224,6 @@ function generateSuggestedQueries(context: {
   conversationHistory: ChatMessage[];
 }): string[] {
   const { queryIntent, searchResults, userQuery, conversationHistory } = context;
-  const suggestions: string[] = [];
 
   // Early return if no search results
   if (!searchResults || searchResults.length === 0) {
@@ -1075,80 +1272,226 @@ function generateSuggestedQueries(context: {
   const authorArray = Array.from(authors);
   const uniqueComps = [...new Set(allComps)];
 
-  // TYPE 1: Title-Specific Exploration (Highest Priority)
-  if (titles.length >= 2) {
-    suggestions.push(`Compare "${titles[0]}" to "${titles[1]}"`);
-  }
-  if (titles.length >= 1) {
-    suggestions.push(`Tell me more about "${titles[0]}"`);
-  }
-  if (titles.length >= 3) {
-    suggestions.push(`Which of these ${titles.length} is most like ${userQuery}?`);
+  // TYPE 0: CONTEXT-AWARE SUGGESTIONS (Highest Priority - NEW)
+  // Extract user's specific interests from their query
+  const queryThemes = extractQueryThemes(userQuery);
+  const contextAwareSuggestions: string[] = [];
+
+  // Only generate if we found meaningful themes
+  const hasThemes = Object.values(queryThemes).some(arr => arr.length > 0);
+
+  if (hasThemes && searchResults.length > 0) {
+    // Character-focused refinements
+    if (queryThemes.characterTraits.length > 0) {
+      const trait = queryThemes.characterTraits[0];
+      if (genreArray.length > 0) {
+        contextAwareSuggestions.push(`${genreArray[0]} where the ${trait} drives the plot`);
+      }
+      // Variation: opposite trait or alternative perspective
+      if (trait.includes('strong')) {
+        contextAwareSuggestions.push(`Stories with vulnerable protagonists instead`);
+      } else if (trait.includes('underdog')) {
+        contextAwareSuggestions.push(`Already powerful protagonists vs. underdog stories`);
+      } else if (trait.includes('anti-hero')) {
+        contextAwareSuggestions.push(`Traditional heroes vs. anti-heroes`);
+      }
+    }
+
+    // Plot-focused refinements
+    if (queryThemes.plotElements.length > 0) {
+      const element = queryThemes.plotElements[0];
+      if (genreArray.length > 0) {
+        contextAwareSuggestions.push(`${genreArray[0]} with ${element} but happy ending`);
+      }
+      // Combine plot element with tone
+      if (toneArray.length > 0) {
+        contextAwareSuggestions.push(`${element} stories with ${toneArray[0]} tone`);
+      }
+      // Plot variations
+      if (element === 'revenge') {
+        contextAwareSuggestions.push(`Revenge stories with redemption arcs`);
+      } else if (element === 'time manipulation') {
+        contextAwareSuggestions.push(`Time travel with romance vs. pure plot focus`);
+      }
+    }
+
+    // Tone-focused refinements
+    if (queryThemes.tonePreferences.length > 0 && genreArray.length > 0) {
+      const tone = queryThemes.tonePreferences[0];
+      // Suggest varying intensity
+      const toneVariations = {
+        'dark': 'darker and more intense',
+        'wholesome': 'even more heartwarming',
+        'emotional': 'less emotional but still moving',
+        'comedic': 'more serious with light moments',
+        'suspenseful': 'slower burn suspense'
+      };
+      const variation = toneVariations[tone as keyof typeof toneVariations] || 'different tone';
+      contextAwareSuggestions.push(`${genreArray[0]} that's ${variation}`);
+    }
+
+    // Setting-focused refinements
+    if (queryThemes.settingDetails.length > 0 && genreArray.length > 0) {
+      const setting = queryThemes.settingDetails[0];
+      contextAwareSuggestions.push(`${genreArray[0]} in ${setting} setting with modern twist`);
+    }
+
+    // Genre-focused refinements (NEW - for genre-specific queries like "ghost story")
+    if (queryThemes.genreThemes.length > 0) {
+      const genreTheme = queryThemes.genreThemes[0];
+
+      // Suggest intensity variations and sub-genres
+      if (genreTheme === 'horror') {
+        contextAwareSuggestions.push(`Psychological horror vs. supernatural horror`);
+        if (toneArray.length > 0 && genreArray.length > 0) {
+          contextAwareSuggestions.push(`${genreArray[0]} horror with ${toneArray[0]} tone`);
+        } else if (genreArray.length > 0) {
+          contextAwareSuggestions.push(`${genreArray[0]} with horror elements`);
+        }
+      } else if (genreTheme === 'supernatural') {
+        contextAwareSuggestions.push(`Supernatural with mystery elements vs. pure horror`);
+        contextAwareSuggestions.push(`Ghost stories with emotional depth`);
+        if (genreArray.length > 0) {
+          contextAwareSuggestions.push(`${genreArray[0]} with supernatural twists`);
+        }
+      } else if (genreTheme === 'fantasy') {
+        contextAwareSuggestions.push(`High fantasy vs. urban fantasy`);
+        contextAwareSuggestions.push(`Fantasy with romance vs. action-focused`);
+      } else if (genreTheme === 'sci-fi') {
+        contextAwareSuggestions.push(`Hard sci-fi vs. soft sci-fi`);
+        contextAwareSuggestions.push(`Dystopian themes vs. space exploration`);
+      } else if (genreTheme === 'apocalyptic') {
+        contextAwareSuggestions.push(`Zombie apocalypse vs. other survival scenarios`);
+        contextAwareSuggestions.push(`Post-apocalyptic with hope vs. bleak endings`);
+      }
+    }
+
+    // Format-focused refinements
+    if (queryThemes.formatPreferences.length > 0) {
+      const pref = queryThemes.formatPreferences[0];
+      if (titles.length > 0) {
+        contextAwareSuggestions.push(`Is "${titles[0]}" ${pref}?`);
+      }
+      // Check if 'short series' is in any of the preferences
+      if (queryThemes.formatPreferences.includes('short series') && genreArray.length > 0) {
+        contextAwareSuggestions.push(`Quick ${genreArray[0]} reads under 30 chapters`);
+      }
+    }
+
+    // Multi-criteria combinations (when user has multiple specific preferences)
+    if (queryThemes.characterTraits.length > 0 && queryThemes.plotElements.length > 0) {
+      contextAwareSuggestions.push(
+        `${queryThemes.characterTraits[0]} in ${queryThemes.plotElements[0]} story`
+      );
+    }
+    if (queryThemes.characterTraits.length > 0 && queryThemes.settingDetails.length > 0) {
+      contextAwareSuggestions.push(
+        `${queryThemes.characterTraits[0]} in ${queryThemes.settingDetails[0]} setting`
+      );
+    }
+
+    console.log('🎯 Context-aware suggestions generated:', {
+      queryThemes,
+      suggestionsCount: contextAwareSuggestions.length,
+      suggestions: contextAwareSuggestions
+    });
   }
 
-  // TYPE 2: Cross-Genre Hybrid Discovery
-  if (genreArray.length >= 2) {
-    suggestions.push(`Show me ${genreArray[0].toLowerCase()} with ${genreArray[1].toLowerCase()} elements`);
-  } else if (genreArray.length === 1 && toneArray.length > 0) {
-    // Tone variation within same genre
-    const oppositeTone = toneArray[0] === 'tense' ? 'lighter' :
-                        toneArray[0] === 'dark' ? 'uplifting' :
-                        'different';
-    suggestions.push(`${genreArray[0]} titles with ${oppositeTone} tone`);
+  // Collect suggestions into type-specific arrays for diversity mixing
+  const type0_contextAware: string[] = [...contextAwareSuggestions];
+  const type2_genreVibe: string[] = [];
+  const type3_compBased: string[] = [];
+  const type5_author: string[] = [];
+  const typeIntent_specific: string[] = [];
+
+  // TYPE 2: Cross-Genre Hybrid & Vibe Exploration (ENHANCED)
+  if (genreArray.length >= 1) {
+    const mainGenre = genreArray[0];
+
+    // Tone + Genre combinations
+    if (toneArray.length > 0) {
+      const mainTone = toneArray[0];
+      type2_genreVibe.push(`${mainGenre} with ${mainTone} tone`);
+      type2_genreVibe.push(`More ${mainTone} ${mainGenre.toLowerCase()} stories`);
+
+      // Opposite tone variation
+      const oppositeTone = mainTone === 'dark' ? 'uplifting' :
+                          mainTone === 'wholesome' ? 'darker' :
+                          mainTone === 'emotional' ? 'lighter' :
+                          mainTone === 'suspenseful' ? 'relaxed' :
+                          mainTone === 'tense' ? 'lighter' : 'different';
+      type2_genreVibe.push(`${mainGenre} with ${oppositeTone} tone instead`);
+    }
+
+    // Cross-genre if multiple genres available
+    if (genreArray.length >= 2) {
+      type2_genreVibe.push(`${genreArray[0]} meets ${genreArray[1]}`);
+      type2_genreVibe.push(`${genreArray[0]} with ${genreArray[1]} elements`);
+    }
+
+    // Vibe-based variations (if no tone specified)
+    if (toneArray.length === 0) {
+      type2_genreVibe.push(`${mainGenre} with complex characters`);
+      type2_genreVibe.push(`${mainGenre} with unexpected twists`);
+      type2_genreVibe.push(`${mainGenre} with strong character development`);
+    }
   }
 
   // TYPE 3: Comp-Based Navigation (Using comps field)
   if (uniqueComps.length > 0) {
     const firstComp = uniqueComps[0];
     if (formatArray.length > 0) {
-      suggestions.push(`Titles like "${firstComp}" but in ${formatArray[0].toLowerCase()} format`);
+      type3_compBased.push(`Titles like "${firstComp}" but in ${formatArray[0].toLowerCase()} format`);
     } else {
-      suggestions.push(`More stories similar to "${firstComp}"`);
-    }
-  }
-
-  // TYPE 4: Format/Tone Switching
-  if (formatArray.length > 0 && genreArray.length > 0) {
-    // Suggest different format for same genre
-    const alternateFormats = ['webtoon', 'manhwa', 'novel'].filter(f =>
-      !formatArray.includes(f)
-    );
-    if (alternateFormats.length > 0) {
-      suggestions.push(`${genreArray[0]} stories in ${alternateFormats[0]} format`);
+      type3_compBased.push(`More stories similar to "${firstComp}"`);
     }
   }
 
   // TYPE 5: Author/Creator Discovery
   if (authorArray.length > 0) {
     const firstAuthor = authorArray[0];
-    suggestions.push(`More from ${firstAuthor}`);
+    type5_author.push(`More from ${firstAuthor}`);
   }
 
   // Intent-Specific Enhancements
   if (queryIntent === 'comparison' && titles.length >= 2) {
-    suggestions.push(`What are the key differences between "${titles[0]}" and "${titles[1]}"?`);
+    typeIntent_specific.push(`What are the key differences between "${titles[0]}" and "${titles[1]}"?`);
   }
 
   if (queryIntent === 'information' && titles.length >= 1) {
-    suggestions.push(`Is there a sequel to "${titles[0]}"?`);
+    typeIntent_specific.push(`Is there a sequel to "${titles[0]}"?`);
   }
 
-  // Ensure variety: deduplicate and limit
-  const uniqueSuggestions = [...new Set(suggestions)];
+  // Mix suggestions from different types for diversity
+  let diverseSuggestions = mixDiverseSuggestions(
+    type0_contextAware,
+    type2_genreVibe,
+    type3_compBased,
+    type5_author,
+    typeIntent_specific,
+    5
+  );
 
   // If we still don't have enough, add smart fallbacks
-  if (uniqueSuggestions.length < 3) {
+  if (diverseSuggestions.length < 3) {
     if (genreArray.length > 0) {
-      uniqueSuggestions.push(`Best ${genreArray[0].toLowerCase()} for beginners`);
+      diverseSuggestions.push(`Best ${genreArray[0].toLowerCase()} for beginners`);
     }
-    uniqueSuggestions.push("What's trending in Korean content right now?");
+    if (diverseSuggestions.length < 3) {
+      diverseSuggestions.push("What's trending in Korean content right now?");
+    }
   }
 
-  console.log('💡 Generated smart suggestions:', {
+  // Final deduplication
+  const uniqueSuggestions = [...new Set(diverseSuggestions)];
+
+  console.log('💡 Generated diverse suggestions:', {
     count: uniqueSuggestions.length,
-    usedTitles: titles.length > 0,
-    usedComps: uniqueComps.length > 0,
-    usedAuthors: authorArray.length > 0,
+    type0Available: type0_contextAware.length,
+    type2Available: type2_genreVibe.length,
+    type3Available: type3_compBased.length,
+    type5Available: type5_author.length,
+    intentAvailable: typeIntent_specific.length,
     suggestions: uniqueSuggestions
   });
 

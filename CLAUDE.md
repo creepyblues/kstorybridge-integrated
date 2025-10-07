@@ -398,4 +398,4 @@ interface CreatorFormData {
 
 ### Documentation
 All comprehensive documentation is in root-level `.md` files. This file provides quick reference only - refer to specific documentation files for detailed implementation guidance.
-- never use parameters in oauth callback URL
+- never use parameters in oauth callback URL 

@@ -46,18 +46,18 @@ export const ChatEmptyState = ({ onSubmitMessage, isLoading = false, showHistory
 
         {/* Centered Input */}
         <div className="w-full bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
-          <div className="flex items-end gap-2 p-4">
+          <div className="flex items-center gap-2 p-2">
             <textarea
               ref={textareaRef}
               value={inputMessage}
               onChange={handleInputChange}
               onKeyDown={handleKeyPress}
               placeholder="Ask anything..."
-              className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-base placeholder-gray-400"
+              className="flex-1 max-h-32 px-1 py-1 resize-none focus:outline-none text-base placeholder-gray-400"
               rows={1}
               disabled={isLoading}
               style={{
-                minHeight: '48px',
+                minHeight: '32px',
                 overflowY: 'hidden'
               }}
               autoFocus
@@ -83,18 +83,6 @@ export const ChatEmptyState = ({ onSubmitMessage, isLoading = false, showHistory
               <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
               <span className="text-sm">Starting conversation...</span>
             </div>
-          </div>
-        )}
-
-        {/* Go back to Chat history link */}
-        {onToggleHistory && (
-          <div className="mt-6">
-            <button
-              onClick={onToggleHistory}
-              className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1 transition-colors"
-            >
-              {showHistory ? '← Back to current chat' : '→ Chat History'}
-            </button>
           </div>
         )}
       </div>

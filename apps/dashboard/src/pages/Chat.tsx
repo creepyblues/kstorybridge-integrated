@@ -449,18 +449,72 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
           } else {
             return <span key={segmentIdx} className="font-medium">{segment.content}</span>;
           }
+        case 'markdown-link':
+          return (
+            <a
+              key={segmentIdx}
+              href={segment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-pro-purple text-white rounded-lg hover:bg-pro-purple-600 transition-colors font-medium text-sm"
+            >
+              {segment.linkText}
+              <span className="text-xs">→</span>
+            </a>
+          );
         default:
           return segment.content;
       }
     });
   };
 
-  // Helper function to process text (remove all asterisks, just return as clean text)
-  const processText = (text: string): Array<{type: string, content: string}> => {
-    return [{
-      type: 'text',
-      content: text.replace(/\*/g, '') // Remove all asterisks
-    }];
+  // Helper function to process text (remove asterisks and parse markdown links)
+  const processText = (text: string): Array<{type: string, content: string, url?: string, linkText?: string}> => {
+    const segments: Array<{type: string, content: string, url?: string, linkText?: string}> = [];
+
+    // Markdown link pattern: [text](url)
+    const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = markdownLinkRegex.exec(text)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        const beforeText = text.slice(lastIndex, match.index);
+        segments.push({
+          type: 'text',
+          content: beforeText.replace(/\*/g, '')
+        });
+      }
+
+      // Add the markdown link
+      segments.push({
+        type: 'markdown-link',
+        content: match[0], // Full match for fallback
+        linkText: match[1], // [text]
+        url: match[2]       // (url)
+      });
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      segments.push({
+        type: 'text',
+        content: text.slice(lastIndex).replace(/\*/g, '')
+      });
+    }
+
+    // If no links found, return original logic
+    if (segments.length === 0) {
+      return [{
+        type: 'text',
+        content: text.replace(/\*/g, '')
+      }];
+    }
+
+    return segments;
   };
 
   const renderTitleCard = (title: any, onTitleCardClick: (title: any) => void) => {
@@ -848,7 +902,7 @@ export default function Chat() {
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages([userMessage]); // Clear history - start fresh from empty state
 
     // Reset to truncated view when starting new conversation
     if (showAllMessages) {
@@ -1724,13 +1778,13 @@ Please try again.`,
         <div className="max-w-7xl mx-auto py-4">
           <div className="page-padding-x flex justify-center">
             <div className="w-[90%] bg-white rounded-xl shadow-sm border border-gray-300 overflow-hidden">
-              <div className="flex items-end gap-2 p-3">
+              <div className="flex items-center gap-2 p-3">
                 <textarea
                   value={inputMessage}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                   placeholder="Describe the story you are looking for..."
-                  className="flex-1 max-h-32 px-4 py-3 resize-none focus:outline-none text-sm placeholder-gray-400"
+                  className="flex-1 max-h-32 px-1 py-2 resize-none focus:outline-none text-sm placeholder-gray-400"
                   rows={1}
                   disabled={isLoading || isLoadingHistory || isProcessingMessage}
                   style={{
@@ -1749,15 +1803,6 @@ Please try again.`,
                 >
                   <Send size={18} />
                 </button>
-              </div>
-              <div className="px-7 pb-2 text-xs text-gray-400 flex justify-end items-center">
-                <div className="flex items-center gap-2">
-                  {isStreaming && (
-                    <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                      Streaming
-                    </span>
-                  )}
-                </div>
               </div>
             </div>
           </div>

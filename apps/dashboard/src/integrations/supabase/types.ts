@@ -1020,11 +1020,21 @@ export type Database = {
           query_embedding: string
         }
         Returns: {
-          description: string
-          similarity: number
           title_id: string
           title_name_en: string
           title_name_kr: string
+          description: string
+          similarity: number
+          synopsis: string
+          genre: string[]
+          tone: string
+          content_format: string
+          perfect_for: string
+          audience: string
+          age_rating: string
+          story_author: string
+          art_author: string
+          comps: string[]
         }[]
       }
       process_title_for_vector_search: {

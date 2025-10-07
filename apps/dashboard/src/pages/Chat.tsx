@@ -411,7 +411,7 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
                     e.preventDefault();
                     handleSuggestedQuery(`Tell me more about ${segment.content}`);
                   }}
-                  className="text-xs text-gray-500 hover:text-hanok-teal transition-colors cursor-pointer underline"
+                  className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] rounded-lg transition-colors font-medium"
                   title={`Learn more about "${segment.content}"`}
                 >
                   learn more
@@ -439,7 +439,7 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
                     e.preventDefault();
                     handleSuggestedQuery(`Tell me more about ${segment.content}`);
                   }}
-                  className="text-xs text-gray-500 hover:text-hanok-teal transition-colors cursor-pointer underline"
+                  className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] rounded-lg transition-colors font-medium"
                   title={`Learn more about "${segment.content}"`}
                 >
                   learn more
@@ -552,6 +552,7 @@ export default function Chat() {
   const [hasStartedConversation, setHasStartedConversation] = useState(false);
   const [showHistory, setShowHistory] = useState(false); // Toggle between current chat and full history
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
+  const [hasLoadedHistory, setHasLoadedHistory] = useState(false); // Track if history has been loaded from database
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousUserIdRef = useRef<string | null>(null); // Track user changes
 
@@ -574,6 +575,7 @@ export default function Chat() {
         setCurrentSession(null);
         setHasStartedConversation(false);
         setShowHistory(false);
+        setHasLoadedHistory(false);
         setInputMessage('');
       }
 
@@ -587,6 +589,7 @@ export default function Chat() {
         setCurrentSession(null);
         setHasStartedConversation(false);
         setShowHistory(false);
+        setHasLoadedHistory(false);
         setInputMessage('');
         previousUserIdRef.current = null;
       }
@@ -661,9 +664,12 @@ export default function Chat() {
   // Load history when user clicks "Go back to Chat history"
   useEffect(() => {
     const loadHistoryWhenRequested = async () => {
-      if (showHistory && messages.length === 0 && user && !currentSession) {
+      if (showHistory && messages.length === 0 && user) {
         // User wants to see history but no messages loaded yet
-        await ensureSessionAndLoadHistory();
+        const session = await ensureSession();
+        if (session) {
+          await loadChatHistory();
+        }
       }
     };
 
@@ -715,9 +721,8 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Lazy load session and history when user sends first message
-  // FIRST LOAD FIX: Added timeout protection to prevent hanging
-  const ensureSessionAndLoadHistory = async () => {
+  // Ensure session exists (without loading history)
+  const ensureSession = async () => {
     if (!user) return null;
 
     // If we already have a session, return it
@@ -726,9 +731,7 @@ export default function Chat() {
     }
 
     try {
-      setIsLoadingHistory(true);
-
-      // FIRST LOAD FIX: Wrap session fetch in 12-second timeout
+      // Wrap session fetch in 12-second timeout
       const sessionPromise = chatHistoryService.getActiveSession(user.id, 'openai');
       const sessionTimeout = new Promise<null>((_, reject) =>
         setTimeout(() => reject(new Error('Session fetch timeout')), 12000)
@@ -753,35 +756,54 @@ export default function Chat() {
 
       if (session) {
         setCurrentSession(session);
-
-        // FIRST LOAD FIX: Try loading history with timeout, but don't block if it fails
-        try {
-          const historyPromise = chatHistoryService.getSessionMessagesWithData(session.id);
-          const historyTimeout = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('History load timeout')), 8000)
-          );
-
-          const history = await Promise.race([historyPromise, historyTimeout]);
-
-          if (history && history.length > 0) {
-            // Prepend history to messages (before the user's current message)
-            setMessages(prev => [...history, ...prev]);
-          }
-        } catch (historyError) {
-          console.warn('⏰ History load timed out or failed, continuing with fresh session');
-          // Continue anyway - chat still works without history
-        }
       }
 
       return session;
     } catch (error) {
       console.error('Failed to initialize chat session:', error);
-      // Show user-friendly message but allow chat to continue
       toast({
         title: "Chat initialized in offline mode",
-        description: "Your messages will be sent, but previous history couldn't be loaded.",
+        description: "Your messages will be sent, but history couldn't be loaded.",
       });
       return null;
+    }
+  };
+
+  // Load chat history on-demand (called when user clicks "Load older messages")
+  const loadChatHistory = async () => {
+    if (!user || !currentSession || hasLoadedHistory) {
+      return; // Don't load if already loaded or no session
+    }
+
+    try {
+      setIsLoadingHistory(true);
+
+      // Load history with timeout protection
+      const historyPromise = chatHistoryService.getSessionMessagesWithData(currentSession.id);
+      const historyTimeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('History load timeout')), 8000)
+      );
+
+      const history = await Promise.race([historyPromise, historyTimeout]);
+
+      if (history && history.length > 0) {
+        // Prepend history to messages
+        setMessages(prev => [...history, ...prev]);
+        setHasLoadedHistory(true);
+        setShowAllMessages(true); // Auto-expand after loading
+      } else {
+        toast({
+          title: "No history found",
+          description: "There are no previous messages in this chat session.",
+        });
+      }
+    } catch (historyError) {
+      console.error('⏰ History load failed:', historyError);
+      toast({
+        title: "Failed to load history",
+        description: "Unable to load previous messages. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoadingHistory(false);
     }
@@ -807,8 +829,8 @@ export default function Chat() {
     // Set processing flag to prevent duplicate submissions
     setIsProcessingMessage(true);
 
-    // Lazy load session and history before sending message
-    const session = await ensureSessionAndLoadHistory();
+    // Ensure session exists before sending message (history loaded on-demand later)
+    const session = await ensureSession();
     if (!session && !currentSession) {
       toast({
         title: "Session Error",
@@ -922,8 +944,8 @@ Please try again.`,
     // Set processing flag to prevent duplicate submissions
     setIsProcessingMessage(true);
 
-    // Lazy load session and history before sending message
-    const session = await ensureSessionAndLoadHistory();
+    // Ensure session exists before sending message (history loaded on-demand later)
+    const session = await ensureSession();
     if (!session && !currentSession) {
       toast({
         title: "Session Error",
@@ -1252,8 +1274,8 @@ Please try again.`,
     // Set processing flag
     setIsProcessingMessage(true);
 
-    // Ensure session exists
-    const session = await ensureSessionAndLoadHistory();
+    // Ensure session exists (history loaded on-demand later)
+    const session = await ensureSession();
     if (!session && !currentSession) {
       toast({
         title: "Session Error",
@@ -1495,6 +1517,7 @@ Please try again.`,
                   setInputMessage('');
                   setHasStartedConversation(false);
                   setShowAllMessages(false);
+                  setHasLoadedHistory(false);
                 }}
                 variant="outline"
                 className="border-gray-300 hover:bg-gray-100"
@@ -1538,17 +1561,35 @@ Please try again.`,
               </div>
             )}
             
-            {/* Show older messages button if messages are truncated */}
+            {/* Show/Load older messages button */}
             {!isLoadingHistory && getHiddenMessagesCount() > 0 && !showAllMessages && (
               <div className="flex justify-center py-4">
                 <button
-                  onClick={() => setShowAllMessages(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm rounded-lg transition-colors"
+                  onClick={() => {
+                    if (hasLoadedHistory) {
+                      // History already loaded, just expand the view
+                      setShowAllMessages(true);
+                    } else {
+                      // Load history from database
+                      loadChatHistory();
+                    }
+                  }}
+                  disabled={isLoadingHistory}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span>Show {getHiddenMessagesCount()} older messages</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                  </svg>
+                  {isLoadingHistory ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Loading history...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{hasLoadedHistory ? 'Show' : 'Load'} {getHiddenMessagesCount()} older messages</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </>
+                  )}
                 </button>
               </div>
             )}

@@ -113,27 +113,24 @@ serve(async (req) => {
     // Get user's latest query
     const userQuery = messages[messages.length - 1]?.content || ''
 
-    // Determine if this requires a search
-    const needsSearch = shouldPerformSearch(userQuery)
+    // Always run vector search for all queries
     let searchResults: VectorSearchResult[] = []
 
-    if (needsSearch) {
-      const searchLimit = vectorSearchLimit || 10  // Increased default from 5 to 10
-      const searchThreshold = 0.7  // Can be made configurable via request params
+    const searchLimit = vectorSearchLimit || 10  // Increased default from 5 to 10
+    const searchThreshold = 0.7  // Can be made configurable via request params
 
-      // Try vector search first
-      searchResults = await performVectorSearch(supabase, userQuery, user.id, searchLimit, searchThreshold)
+    // Try vector search first
+    searchResults = await performVectorSearch(supabase, userQuery, user.id, searchLimit, searchThreshold)
 
-      // Fallback to keyword search if no results
-      if (searchResults.length === 0) {
-        console.log('⚠️ Vector search returned no results, trying fallback keyword search...');
-        searchResults = await performKeywordSearch(supabase, userQuery, searchLimit)
+    // Fallback to keyword search if no results
+    if (searchResults.length === 0) {
+      console.log('⚠️ Vector search returned no results, trying fallback keyword search...');
+      searchResults = await performKeywordSearch(supabase, userQuery, searchLimit)
 
-        if (searchResults.length > 0) {
-          console.log('✅ Fallback keyword search successful:', searchResults.length, 'results');
-        } else {
-          console.log('❌ Both vector and keyword search returned no results');
-        }
+      if (searchResults.length > 0) {
+        console.log('✅ Fallback keyword search successful:', searchResults.length, 'results');
+      } else {
+        console.log('❌ Both vector and keyword search returned no results');
       }
     }
 
@@ -190,28 +187,39 @@ serve(async (req) => {
 
           // PHASE 2: Generate and send suggestions EARLY (before AI streaming)
           const queryIntent = classifyQueryIntent(userQuery, conversationHistory);
-          const suggestedQueries = generateSuggestedQueries({
-            queryIntent,
-            searchResults,
-            userQuery,
-            conversationHistory
-          });
 
-          // Save for later database storage
-          let savedSuggestedQueries: string[] = suggestedQueries;
+          // Suppress suggestions for focused title information requests
+          const skipSuggestions = queryIntent === 'information';
 
-          if (suggestedQueries.length > 0) {
-            controller.enqueue(
-              new TextEncoder().encode(
-                `data: ${JSON.stringify({
-                  type: 'suggestions',
-                  suggestedQueries,
-                  generatedAt: 'early'
-                })}\n\n`
-              )
-            );
+          let suggestedQueries: string[] = [];
+          let savedSuggestedQueries: string[] = [];
 
-            console.log('💡 Sent early suggestions:', suggestedQueries);
+          if (!skipSuggestions) {
+            suggestedQueries = generateSuggestedQueries({
+              queryIntent,
+              searchResults,
+              userQuery,
+              conversationHistory
+            });
+
+            // Save for later database storage
+            savedSuggestedQueries = suggestedQueries;
+
+            if (suggestedQueries.length > 0) {
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `data: ${JSON.stringify({
+                    type: 'suggestions',
+                    suggestedQueries,
+                    generatedAt: 'early'
+                  })}\n\n`
+                )
+              );
+
+              console.log('💡 Sent early suggestions:', suggestedQueries);
+            }
+          } else {
+            console.log('🔇 Suppressing suggestions for information query (single title focus)');
           }
 
           // PHASE 3: Start AI streaming
@@ -634,28 +642,34 @@ function getRecentTitleMentions(history: ChatMessage[]): string[] {
 function classifyQueryIntent(query: string, conversationHistory: ChatMessage[]): string {
   const lowerQuery = query.toLowerCase();
 
-  // Check for follow-up indicators
-  const followUpIndicators = ['also', 'more like', 'similar', 'another', 'different', 'what about', 'how about', 'tell me more'];
+  // PRIORITY 1: Comparison queries (most specific)
+  const comparisonIndicators = ['compare', 'difference between', 'versus', 'vs', 'better than'];
+  if (comparisonIndicators.some(indicator => lowerQuery.includes(indicator))) {
+    return 'comparison';
+  }
+
+  // PRIORITY 2: Specific title information requests (higher priority than follow-up)
+  // Pattern: "tell me (more) about [something]", "learn more about", "details about"
+  const specificTitlePattern = /(tell me|learn|details?|more) (more )?(about|on) /;
+  const infoIndicators = ['what is', 'who is', 'explain', 'describe', 'synopsis', 'plot'];
+
+  if (specificTitlePattern.test(lowerQuery) || infoIndicators.some(ind => lowerQuery.includes(ind))) {
+    return 'information';
+  }
+
+  // PRIORITY 3: Follow-up indicators (AFTER specific info check)
+  // "tell me more" alone (without "about") stays as follow-up
+  const followUpIndicators = ['also', 'more like', 'similar', 'another', 'different', 'what about', 'how about'];
+  const isGenericTellMeMore = lowerQuery.trim() === 'tell me more' || lowerQuery.trim() === 'learn more';
   const isFollowUp = followUpIndicators.some(indicator => lowerQuery.includes(indicator)) ||
+                     isGenericTellMeMore ||
                      conversationHistory.length >= 2;
 
   if (isFollowUp && conversationHistory.length >= 2) {
     return 'follow-up';
   }
 
-  // Check for comparison queries
-  const comparisonIndicators = ['compare', 'difference between', 'versus', 'vs', 'better than', 'similar to'];
-  if (comparisonIndicators.some(indicator => lowerQuery.includes(indicator))) {
-    return 'comparison';
-  }
-
-  // Check for specific information requests
-  const infoIndicators = ['what is', 'who is', 'tell me about', 'explain', 'describe', 'synopsis', 'plot'];
-  if (infoIndicators.some(indicator => lowerQuery.includes(indicator))) {
-    return 'information';
-  }
-
-  // Check for recommendation requests
+  // PRIORITY 4: Recommendation requests
   const recommendationIndicators = ['recommend', 'suggest', 'should i', 'what should', 'good', 'best'];
   if (recommendationIndicators.some(indicator => lowerQuery.includes(indicator))) {
     return 'recommendation';
@@ -671,10 +685,19 @@ function classifyQueryIntent(query: string, conversationHistory: ChatMessage[]):
 function getIntentGuidelines(intent: string): string {
   const guidelines = {
     'discovery': `
-- Lead with excitement about helping discover new Korean content
-- Ask clarifying questions about preferred genres, tones, or formats
-- Suggest 2-3 titles with diverse characteristics
-- Encourage exploration: "Here are some great options to start with..."`,
+**For generic/broad searches (popular webtoons, trending, etc.):**
+- ✅ Be conversational and exploratory, not prescriptive
+- ✅ Share 2-3 titles with BRIEF highlights (not full details)
+- ✅ Frame as "here's what's catching attention" rather than "you should read"
+- ✅ Ask follow-up questions about their preferences
+- ✅ Include cultural context or trends
+- ✅ Always end with 3 clickable follow-up suggestions to narrow down preferences
+
+Example approach:
+"Right now in Korean content, there's a lot of buzz around [mention 2-3 titles with brief hooks].
+
+But here's the thing - 'popular' can mean very different things! Are you drawn to:
+[3 specific follow-up questions as clickable suggestions based on the titles shown]"`,
 
     'comparison': `
 - Provide clear, structured comparisons between titles
@@ -683,10 +706,50 @@ function getIntentGuidelines(intent: string): string {
 - Help user decide based on their preferences`,
 
     'information': `
-- Provide detailed, accurate information from search results
-- Focus on synopsis, themes, and unique selling points
-- Share cultural context or background when relevant
-- Keep responses informative but engaging`,
+**"Tell me about [Title]" - SINGLE TITLE EXCLUSIVE FOCUS:**
+
+🚨 **MANDATORY RULES**:
+1. ❌ DO NOT mention ANY other title besides the one user asked about
+2. ❌ DO NOT add "Related Recommendations", "Similar Titles", or "You might also like" sections
+3. ❌ DO NOT compare to other titles or reference other works
+4. ❌ DO NOT write generic AI-generated descriptions
+5. ❌ DO NOT make up content or invent details
+6. ✅ Focus EXCLUSIVELY on the single requested title
+7. ✅ Use ONLY database fields for this specific title
+8. ✅ MUST follow the structure below EXACTLY
+9. ✅ End response with title detail page link
+
+**REQUIRED STRUCTURE** (follow EXACTLY):
+
+**About "{title_name_en or title_name_kr}"**
+[2-sentence hook using synopsis + perfect_for fields ONLY]
+
+**Story Synopsis**
+[Copy FULL synopsis field. If "Not available": "[Synopsis not available]"]
+
+**Genre & Tone**
+- Genre: [EXACT genre field]
+- Tone: [EXACT tone field]
+- Content Format: [EXACT content_format field]
+
+**What Makes It Unique**
+[Use perfect_for + audience fields. If both "Not specified": "[Not specified]"]
+
+**Perfect For**
+[EXACT perfect_for field. If "Not specified": "[Not specified]"]
+
+**Comparable Titles**
+[List EXACT comps from database as bullets. If "Not available": "[Not specified]"]
+
+**Additional Details**
+- Story Author: [EXACT story_author]
+- Art Author: [EXACT art_author]
+- Audience: [EXACT audience]
+- Age Rating: [EXACT age_rating]
+
+**[View Full Details →](/buyers/titles/TITLE_ID_PLACEHOLDER)**
+
+**END OF RESPONSE** - Do not add anything after the link.`,
 
     'recommendation': `
 - Be confident and specific in recommendations
@@ -695,10 +758,19 @@ function getIntentGuidelines(intent: string): string {
 - Offer alternatives: "If you enjoy X, you'll love Y because..."`,
 
     'follow-up': `
-- Reference previous conversation context heavily
-- Build on earlier recommendations
-- Show continuity: "Based on your interest in [previous title]..."
-- Deepen the conversation with more specific suggestions`
+**Follow-up responses MUST deeply integrate prior context:**
+- ✅ Explicitly reference user's previous messages: "You mentioned [specific detail]..."
+- ✅ Build on earlier title recommendations: "Following up on [title] we discussed..."
+- ✅ Notice preference patterns: "I'm noticing you're drawn to [pattern]..."
+- ✅ Connect dots between interactions: "This relates to what you said about [earlier point]"
+- ✅ Progress the conversation: Move from broad → specific
+- ❌ DO NOT restart or ignore earlier context
+- ❌ DO NOT repeat what was already covered
+
+Format:
+1. Acknowledge prior context (1 sentence)
+2. Build on it with new recommendations
+3. Deepen exploration with specific follow-ups`
   };
 
   return guidelines[intent] || guidelines['discovery'];
@@ -808,6 +880,142 @@ function validateAIResponse(response: string, validTitles: VectorSearchResult[])
 }
 
 /**
+ * Filter out duplicate suggestions based on conversation history
+ * Prevents suggesting queries user has already asked
+ */
+function filterDuplicateSuggestions(suggestions: string[], conversationHistory: ChatMessage[]): string[] {
+  // Extract all previous user queries
+  const previousQueries = conversationHistory
+    .filter(msg => msg.role === 'user')
+    .map(msg => msg.content.toLowerCase().trim());
+
+  if (previousQueries.length === 0) {
+    return suggestions; // No history, return all suggestions
+  }
+
+  // Filter out suggestions that match previous queries (fuzzy match)
+  return suggestions.filter(suggestion => {
+    const suggestionLower = suggestion.toLowerCase().trim();
+
+    // Check for exact or near-exact matches
+    const isDuplicate = previousQueries.some(prevQuery => {
+      // Exact match
+      if (suggestionLower === prevQuery) return true;
+
+      // Contains match (suggestion contains previous query or vice versa)
+      if (suggestionLower.includes(prevQuery) || prevQuery.includes(suggestionLower)) return true;
+
+      // Pattern match: "Tell me more about X" patterns
+      const tellMePattern = /tell me (?:more )?about\s+"?([^"]+)"?/i;
+      const sugMatch = suggestion.match(tellMePattern);
+      const prevMatch = prevQuery.match(tellMePattern);
+
+      if (sugMatch && prevMatch) {
+        // Both are "tell me about" queries - check if same title
+        const sugTitle = sugMatch[1].toLowerCase().trim();
+        const prevTitle = prevMatch[1].toLowerCase().trim();
+        if (sugTitle === prevTitle) return true;
+      }
+
+      return false;
+    });
+
+    return !isDuplicate;
+  });
+}
+
+/**
+ * Validate suggestion format to prevent malformed templates
+ * Fixes bug: "Which of these N is most like [complex query]?"
+ */
+function validateSuggestionFormat(suggestion: string, userQuery: string): boolean {
+  // Reject if suggestion contains the user's full query (indicates template bug)
+  if (suggestion.toLowerCase().includes(userQuery.toLowerCase())) {
+    // Exception: "Tell me more about X" is valid
+    if (suggestion.toLowerCase().startsWith('tell me more about')) {
+      return true;
+    }
+    return false;
+  }
+
+  // Reject if suggestion is too short or too long
+  if (suggestion.length < 10 || suggestion.length > 150) {
+    return false;
+  }
+
+  // Reject if suggestion has malformed question patterns
+  const malformedPatterns = [
+    /which of these \d+ is most like tell me/i,  // Bug pattern
+    /which of these \d+ is most like compare/i,   // Bug pattern
+    /more like more like/i,                        // Duplicate words
+  ];
+
+  if (malformedPatterns.some(pattern => pattern.test(suggestion))) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Detect conversation stage for adaptive suggestions
+ */
+function getConversationStage(conversationHistory: ChatMessage[]): 'initial' | 'exploring' | 'deepdive' {
+  const messageCount = conversationHistory.filter(
+    msg => msg.role === 'user' || msg.role === 'assistant'
+  ).length;
+
+  if (messageCount <= 2) return 'initial';
+  if (messageCount <= 5) return 'exploring';
+  return 'deepdive';
+}
+
+/**
+ * Get stage-based fallback suggestions
+ */
+function getStageBasedFallbacks(
+  stage: 'initial' | 'exploring' | 'deepdive',
+  searchResults: VectorSearchResult[]
+): string[] {
+  const fallbacks: string[] = [];
+  const hasResults = searchResults.length > 0;
+
+  if (stage === 'initial') {
+    // Early exploration
+    fallbacks.push("What genres interest you most?");
+    fallbacks.push("Do you prefer character-driven or plot-heavy stories?");
+    if (hasResults) {
+      const genres = new Set(searchResults.flatMap(r => Array.isArray(r.genre) ? r.genre : [r.genre]).filter(Boolean));
+      if (genres.size > 0) {
+        const genreArray = Array.from(genres);
+        fallbacks.push(`Are you looking for ${genreArray[0].toLowerCase()} specifically?`);
+      }
+    }
+  } else if (stage === 'exploring') {
+    // Narrowing down
+    if (hasResults && searchResults.length > 1) {
+      const titles = searchResults.map(r => r.title_name_en || r.title_name_kr).filter(Boolean);
+      if (titles.length >= 2) {
+        fallbacks.push(`Compare "${titles[0]}" to "${titles[1]}"`);
+      }
+    }
+    fallbacks.push("What specific themes or elements are you looking for?");
+  } else {
+    // Deep dive
+    if (hasResults) {
+      const authors = new Set(searchResults.map(r => r.story_author).filter(Boolean));
+      if (authors.size > 0) {
+        const authorArray = Array.from(authors);
+        fallbacks.push(`More works from ${authorArray[0]}`);
+      }
+    }
+    fallbacks.push("Any particular storytelling style you prefer?");
+  }
+
+  return fallbacks;
+}
+
+/**
  * Generate 3-5 smart follow-up query suggestions based on context
  * Uses ChatGPT/Claude-style specific, contextual suggestions
  */
@@ -817,7 +1025,7 @@ function generateSuggestedQueries(context: {
   userQuery: string;
   conversationHistory: ChatMessage[];
 }): string[] {
-  const { queryIntent, searchResults, userQuery } = context;
+  const { queryIntent, searchResults, userQuery, conversationHistory } = context;
   const suggestions: string[] = [];
 
   // Early return if no search results
@@ -903,7 +1111,7 @@ function generateSuggestedQueries(context: {
   if (formatArray.length > 0 && genreArray.length > 0) {
     // Suggest different format for same genre
     const alternateFormats = ['webtoon', 'manhwa', 'novel'].filter(f =>
-      !formatArray.has(f)
+      !formatArray.includes(f)
     );
     if (alternateFormats.length > 0) {
       suggestions.push(`${genreArray[0]} stories in ${alternateFormats[0]} format`);
@@ -940,10 +1148,69 @@ function generateSuggestedQueries(context: {
     count: uniqueSuggestions.length,
     usedTitles: titles.length > 0,
     usedComps: uniqueComps.length > 0,
-    usedAuthors: authorArray.size > 0,
+    usedAuthors: authorArray.length > 0,
     suggestions: uniqueSuggestions
   });
 
+  // ENHANCEMENT: Context-aware post-processing (feature flag controlled)
+  const useContextAware = Deno.env.get('ENABLE_SMART_SUGGESTIONS') === 'true';
+
+  if (useContextAware) {
+    try {
+      console.log('🧠 Applying context-aware enhancements...');
+
+      // Step 1: Filter duplicates based on conversation history
+      const deduplicated = filterDuplicateSuggestions(uniqueSuggestions, conversationHistory);
+
+      console.log('🔄 Deduplication:', {
+        before: uniqueSuggestions.length,
+        after: deduplicated.length,
+        removed: uniqueSuggestions.length - deduplicated.length
+      });
+
+      // Step 2: Validate each suggestion format
+      const validated = deduplicated.filter(s => validateSuggestionFormat(s, userQuery));
+
+      console.log('✅ Validation:', {
+        before: deduplicated.length,
+        after: validated.length,
+        removed: deduplicated.length - validated.length
+      });
+
+      // Step 3: Add stage-appropriate fallbacks if needed
+      if (validated.length < 3) {
+        const stage = getConversationStage(conversationHistory);
+        const fallbacks = getStageBasedFallbacks(stage, searchResults);
+
+        console.log('🎯 Adding fallbacks:', {
+          stage,
+          currentCount: validated.length,
+          fallbacksAvailable: fallbacks.length
+        });
+
+        // Add fallbacks until we have 3-5 suggestions
+        for (const fallback of fallbacks) {
+          if (validated.length >= 5) break;
+          if (!validated.includes(fallback)) {
+            validated.push(fallback);
+          }
+        }
+      }
+
+      console.log('✨ Enhanced suggestions:', {
+        final: validated.slice(0, 5),
+        enhancementsApplied: true
+      });
+
+      return validated.slice(0, 5); // Max 5 suggestions
+    } catch (error) {
+      console.error('⚠️ Enhancement error, falling back to original:', error);
+      // Fallback to original logic on any error
+      return uniqueSuggestions.slice(0, 5);
+    }
+  }
+
+  // Original logic (default when feature flag is off)
   return uniqueSuggestions.slice(0, 5); // Max 5 suggestions
 }
 
@@ -966,11 +1233,47 @@ function buildMasterPrompt(context: {
   const recentTitles = getRecentTitleMentions(conversationHistory);
   const hasRecentTitles = recentTitles.length > 0;
 
+  // For information queries, extract title_id from first search result for link
+  const titleIdForLink = (queryIntent === 'information' && searchResults.length > 0)
+    ? searchResults[0].title_id
+    : '';
+
   console.log('🎯 Query Intent Classified:', {
     intent: queryIntent,
     query: userQuery.substring(0, 50) + '...',
     conversationLength: conversationHistory.length,
-    recentTitles: recentTitles.length
+    recentTitles: recentTitles.length,
+    titleIdForLink: titleIdForLink || 'N/A'
+  });
+
+  // Detect if this is a fresh conversation start
+  // Consider it fresh if:
+  // 1. Very short current conversation (<=3 messages)
+  // 2. OR explicitly asking for new recommendations ("looking for", "recommend", etc.)
+  // 3. BUT NOT if it's a specific follow-up ("tell me more", "learn more")
+  const currentConversationLength = conversationHistory.filter(msg =>
+    msg.role === 'user' || msg.role === 'assistant'
+  ).length;
+
+  const freshStartIndicators = [
+    'looking for', 'recommend', 'suggest', 'find me', 'show me',
+    'i want', 'i need', 'help me find', 'what about', 'how about'
+  ];
+
+  const isSpecificFollowUp = userQuery.toLowerCase().includes('tell me more') ||
+                            userQuery.toLowerCase().includes('learn more') ||
+                            userQuery.toLowerCase().includes('compare');
+
+  const isFreshStart = !isSpecificFollowUp && (
+    currentConversationLength <= 3 ||
+    freshStartIndicators.some(indicator => userQuery.toLowerCase().includes(indicator))
+  );
+
+  console.log('🆕 Fresh Start Detection:', {
+    isFreshStart,
+    currentConversationLength,
+    isSpecificFollowUp,
+    query: userQuery.substring(0, 50) + '...'
   });
 
   const tierDescription = {
@@ -980,10 +1283,16 @@ function buildMasterPrompt(context: {
     'suite': 'full platform access with exclusive content'
   }[userProfile.tier || 'basic'] || 'Korean content explorer'
 
-  return `CONTEXT: You are Jinu, KStoryBridge's expert Korean content curator. You have deep knowledge of Korean entertainment including manhwa, webtoons, dramas, movies, and novels. You excel at personalized recommendations and engaging conversations about Korean culture and storytelling.
+  return `CONTEXT: You are Jinu, KStoryBridge's creative content consultant and idea partner. You don't just recommend titles - you collaborate with users to explore storytelling possibilities, bounce ideas, and discover Korean content that resonates with their specific vision. You're curious, insightful, and help users articulate what they're looking for even when they're not sure themselves. You have deep knowledge of Korean entertainment including manhwa, webtoons, dramas, movies, and novels.
 
 QUERY TYPE: ${queryIntent.toUpperCase()}
 This is a ${queryIntent} query. Tailor your response accordingly.
+
+🚨 **FORMATTING REQUIREMENTS (MANDATORY - NEVER VIOLATE)**:
+1. ❌ NEVER use ### markdown headings (e.g., "### About", "### Related")
+2. ✅ ALWAYS use **bold text** for section headers (e.g., "**About [Title]**", "**Related Recommendations**")
+3. ❌ NEVER start with greetings like "안녕하세요", "Hello [name]", "Hi there"
+4. ✅ ALWAYS start directly with your answer or recommendation
 
 USER PROFILE:
 - Name: ${userProfile.full_name || 'Fellow Korean content enthusiast'}
@@ -1000,28 +1309,90 @@ ${recentTitles.map((title, idx) => `${idx + 1}. "${title}"`).join('\n')}
 ` : ''}
 
 ${searchResults.length > 0 ? `
-RELEVANT KOREAN CONTENT DISCOVERED:
+RELEVANT KOREAN CONTENT DISCOVERED (Complete Database Records):
 ${searchResults.map((result, idx) => {
   const title = result.title_name_en || result.title_name_kr
-  const genres = Array.isArray(result.genre) ? result.genre.join(', ') : result.genre || 'Mixed Genre'
+  const genres = Array.isArray(result.genre) ? result.genre.join(', ') : result.genre || 'Not specified'
+  const comps = Array.isArray(result.comps) ? result.comps.join(', ') : result.comps || 'Not available'
   const matchScore = (result.similarity * 100).toFixed(0)
 
   return `${idx + 1}. "${title}" (${matchScore}% match)
+   DATABASE FIELDS (Use these EXACT values in responses):
+   • Title (EN): ${result.title_name_en || 'Not available'}
+   • Title (KR): ${result.title_name_kr || 'Not available'}
    • Genre: ${genres}
-   • Tone: ${result.tone || 'Varied'}
-   • Synopsis: ${result.synopsis?.substring(0, 120) || 'Compelling Korean storytelling'}${result.synopsis?.length > 120 ? '...' : ''}`
+   • Tone: ${result.tone || 'Not specified'}
+   • Content Format: ${result.content_format || 'Not specified'}
+   • Synopsis: ${result.synopsis || 'Not available'}
+   • Perfect For: ${result.perfect_for || 'Not specified'}
+   • Audience: ${result.audience || 'Not specified'}
+   • Age Rating: ${result.age_rating || 'Not specified'}
+   • Story Author: ${result.story_author || 'Not specified'}
+   • Art Author: ${result.art_author || 'Not specified'}
+   • Comparable Titles (Comps): ${comps}`
 }).join('\n\n')}
 
-SEARCH INSIGHTS: Found ${searchResults.length} titles matching the user's interests with high relevance scores.` : ''}
+SEARCH INSIGHTS: Found ${searchResults.length} titles with complete database information. Use ONLY the fields provided above.` : ''}
 
 CURRENT QUERY: "${userQuery}"
 
+🎬 **CONVERSATION STAGE**:
+${isFreshStart ? `
+**THIS IS A FRESH CONVERSATION START**
+- ❌ DO NOT provide direct answers or title recommendations yet
+- ❌ DO NOT mention specific titles or give recommendations
+- ✅ Write ONLY a brief 1-2 sentence warm intro
+- ✅ Immediately follow with "Try:" and 3 exploratory questions
+
+**REQUIRED FORMAT** (follow this EXACTLY):
+[Brief warm intro about helping discover the perfect Korean story - 1-2 sentences max]
+
+Try:
+- [Question 1: About genre/tone preferences] (e.g., "What genres are you most interested in? Drama, thriller, romance?")
+- [Question 2: About storytelling style] (e.g., "Do you prefer character-driven or plot-heavy stories?")
+- [Question 3: About references or criteria] (e.g., "Any specific themes or story elements you're looking for?")
+
+**Example Output**:
+"I'd love to help you discover the perfect Korean story! Let's narrow down what you're looking for.
+
+Try:
+- What genres interest you most? Drama, thriller, romance, or something else?
+- Do you prefer character-driven narratives or fast-paced, plot-heavy stories?
+- Are you looking for completed series or ongoing webtoons?"
+` : `
+**ONGOING CONVERSATION**
+- ✅ Build on previous context and preferences
+- ✅ Provide specific recommendations with reasoning
+- ✅ Reference earlier discussion points
+`}
+
 RESPONSE GUIDELINES:
-1. **Personality**: Be Jinu - passionate, knowledgeable, and genuinely excited about Korean content
-2. **Engagement**: Ask thoughtful follow-up questions about preferences, genres, or specific interests
-3. **Cultural Context**: Share insights about Korean storytelling trends, cultural elements, or industry highlights
-4. **Personalization**: Tailor recommendations based on user's tier and conversation history
-5. **Structure**: Keep responses conversational but organized, with clear title recommendations
+1. **Be Conversational, Not Transactional**
+   - Talk WITH users, not AT them
+   - Use phrases like "I'm curious...", "Tell me more about...", "What if..."
+   - Avoid robotic lists - weave information into natural dialogue
+
+2. **Creative Collaboration**
+   - Act as a creative partner exploring possibilities together
+   - Ask "what if" questions that open new directions
+   - Help users refine vague ideas into specific preferences
+   - Bounce ideas: "Based on that, have you considered..."
+
+3. **Progressive Discovery**
+   - First interaction: Explore preferences with questions
+   - Follow-ups: Build on context, narrow down, provide specifics
+   - "Tell me more": Deliver comprehensive structured information
+   - Generic searches: Overview + curiosity-driven follow-ups
+
+4. **Enthusiasm + Expertise**
+   - Be genuinely excited about Korean storytelling
+   - Share insights about trends, cultural elements, creative patterns
+   - Explain WHY titles work, not just WHAT they are
+
+5. **Context Awareness**
+   - Always reference earlier conversation points
+   - Notice patterns in user preferences
+   - Build continuity: "You mentioned earlier..." "Following up on..."
 
 🚨 **CRITICAL ANTI-HALLUCINATION RULES** (NEVER VIOLATE):
 
@@ -1046,12 +1417,15 @@ RESPONSE GUIDELINES:
 ❌ "Other popular titles include..." (inventing titles)
 
 **IF NO SEARCH RESULTS** (${searchResults.length} === 0):
-Say: "I couldn't find exact matches in our current catalog. Could you describe what you're looking for more specifically? For example, preferred genre, tone, or themes?"
+- ❌ DO NOT put the user's search term in quotes (causes false title linking)
+- ❌ DO NOT repeat back their exact search query in quotes
+- ✅ Acknowledge the search generally and ask for clarification
+- ✅ Example: "I couldn't find matches for that query in our current catalog. Could you describe what you're looking for more specifically? For example, preferred genre, tone, or themes?"
 
 **VALIDATION**: Every title you mention will be verified against search results. Hallucinations will be replaced with "[removed fictional title]"
 
 INTENT-SPECIFIC APPROACH (${queryIntent.toUpperCase()}):
-${intentGuidelines}
+${intentGuidelines.replace('TITLE_ID_PLACEHOLDER', titleIdForLink || 'TITLE_ID_NOT_AVAILABLE')}
 
 Focus on creating an engaging, personalized experience that helps discover amazing Korean content!`
 }

@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Shield, AlertTriangle, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Shield, AlertTriangle, Loader2, Crown, X } from 'lucide-react';
 import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
+import { trackUpgradeButtonClick } from '@/utils/analytics';
 
 // Configure PDF.js worker - use local worker file to avoid CORS issues
 pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
@@ -12,9 +13,11 @@ console.log('📄 PDF.js: Using local worker file');
 interface SecurePDFViewerProps {
   pdfUrl: string;
   title?: string;
+  userTier?: 'basic' | 'pro' | 'suite' | null;
+  maxPagesForBasic?: number;
 }
 
-export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps) {
+export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBasic = 5 }: SecurePDFViewerProps) {
   const { user } = useAuth();
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -25,6 +28,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   const [pdfData, setPdfData] = useState<string | null>(null);
   const [authValidated, setAuthValidated] = useState<boolean>(false);
   const [sessionExpired, setSessionExpired] = useState<boolean>(false);
+  const [showUpgradePopup, setShowUpgradePopup] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
 
@@ -463,7 +467,28 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   };
 
   const goToPrevPage = () => setPageNumber(prev => Math.max(1, prev - 1));
-  const goToNextPage = () => setPageNumber(prev => Math.min(numPages, prev + 1));
+
+  const goToNextPage = () => {
+    const nextPage = pageNumber + 1;
+
+    // If no tier provided, allow full access (creator/admin use case)
+    if (!userTier) {
+      setPageNumber(Math.min(numPages, nextPage));
+      return;
+    }
+
+    // Check tier restrictions
+    const isPremiumUser = userTier === 'pro' || userTier === 'suite';
+    const maxAllowedPage = isPremiumUser ? numPages : maxPagesForBasic;
+
+    if (nextPage > maxAllowedPage) {
+      setShowUpgradePopup(true);
+      trackUpgradeButtonClick('pitch_deck_viewer', userTier, 'page_limit_reached');
+      return;
+    }
+
+    setPageNumber(nextPage);
+  };
   const zoomIn = () => setScale(prev => {
     const currentScale = typeof prev === 'number' ? prev : 1;
     return Math.min(3, currentScale + 0.2);
@@ -571,6 +596,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
             </Button>
             <span className="text-sm text-gray-600 px-2">
               Page {pageNumber} of {numPages}
+              {userTier === 'basic' && numPages > maxPagesForBasic && ' (Limited)'}
             </span>
             <Button
               variant="outline"
@@ -680,6 +706,39 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
         </div>
 
       </div>
+
+      {/* Upgrade Popup Modal */}
+      {showUpgradePopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowUpgradePopup(false)} />
+          <div className="relative bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <button
+              onClick={() => setShowUpgradePopup(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-pro-purple-100 rounded-full flex items-center justify-center mb-4">
+                <Crown className="h-6 w-6 text-pro-purple" />
+              </div>
+              <h2 className="text-xl font-semibold text-slate-900 mb-2">This is a premium feature</h2>
+              <p className="text-slate-600 mb-6">
+                Upgrade to Pro to view the complete pitch deck
+              </p>
+              <Button
+                className="w-full bg-pro-purple hover:bg-pro-purple-600 text-white"
+                onClick={() => {
+                  trackUpgradeButtonClick('pitch_deck_viewer', userTier || 'basic', 'upgrade_button_clicked');
+                  window.location.href = '/buyers/plan';
+                }}
+              >
+                Upgrade to Pro
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

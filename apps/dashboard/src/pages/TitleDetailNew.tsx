@@ -46,61 +46,7 @@ function TitleDetailNewContent() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState<boolean>(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   const [currentPdfUrl, setCurrentPdfUrl] = useState<string>("");
-  
-  // Sample PDF URL from Supabase storage (properly encoded)
-  const SAMPLE_PDF_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/Werewolves%20Going%20Crazy%20Over%20Me-Sample.pdf";
-
-  // Enhanced tracking handlers for premium features
-  const handleViewSampleClick = () => {
-    const titleName = title?.title_name_en || title?.title_name_kr || 'Unknown Title';
-
-    // Track premium feature access
-    trackPremiumFeatureAccess(
-      'view_sample',
-      title?.title_id,
-      titleName,
-      tier,
-      {
-        source_page: 'title_detail',
-        sample_pdf_url: SAMPLE_PDF_URL,
-        popup_trigger: 'upgrade_modal'
-      }
-    );
-
-    // Continue with original functionality
-    setCurrentPdfUrl(SAMPLE_PDF_URL);
-    setShowUpgradeModal(false);
-    setTimeout(() => setIsPdfModalOpen(true), 10);
-  };
-
-  const handleUpgradePlanClick = () => {
-    const titleName = title?.title_name_en || title?.title_name_kr || 'Unknown Title';
-
-    // Track premium feature access
-    trackPremiumFeatureAccess(
-      'upgrade_plan',
-      title?.title_id,
-      titleName,
-      tier,
-      {
-        source_page: 'title_detail',
-        popup_trigger: 'upgrade_modal'
-      }
-    );
-
-    // Track tier upgrade intent
-    trackTierUpgrade('pro', tier, 'title_detail', {
-      source_title_id: title?.title_id,
-      source_title_name: titleName,
-      upgrade_trigger: 'view_pitch_attempt'
-    });
-
-    // Continue with original functionality
-    setShowUpgradeModal(false);
-    navigate('/buyers/plan');
-  };
   
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const [premiumFeatureName, setPremiumFeatureName] = useState("");
@@ -662,35 +608,17 @@ function TitleDetailNewContent() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                     <span className="text-slate-600 text-sm sm:text-base text-center sm:text-left">View the Pitch Deck</span>
                     <Button
-                      onClick={async () => {
-                        // PRD 2.1: Track pitch view attempt
+                      onClick={() => {
+                        // Track pitch view attempt
                         trackPitchView(
                           titleId,
                           title.title_name_en || title.title_name_kr || 'Unknown Title',
                           tier
                         );
 
-                        if (canAccessPremiumContent) {
-                          setCurrentPdfUrl(title.pitch || "");
-                          setTimeout(() => setIsPdfModalOpen(true), 10);
-                        } else {
-                          // PRD 2.1: Trigger conversion email for basic users trying to view premium content
-                          if (tier === 'basic' && user?.email && user?.user_metadata?.full_name) {
-                            try {
-                              await triggerPremiumContentEmail(
-                                user.id,
-                                user.email,
-                                user.user_metadata.full_name,
-                                tier,
-                                title.title_name_en || title.title_name_kr || 'Title'
-                              );
-                            } catch (error) {
-                              console.warn('Failed to trigger premium content email:', error);
-                            }
-                          }
-
-                          setShowUpgradeModal(true);
-                        }
+                        // Always open pitch deck directly
+                        setCurrentPdfUrl(title.pitch || "");
+                        setTimeout(() => setIsPdfModalOpen(true), 10);
                       }}
                       className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors w-full sm:w-auto"
                     >
@@ -795,40 +723,11 @@ function TitleDetailNewContent() {
             </Button>
 
             <div className="h-full">
-              <SecurePDFViewer pdfUrl={currentPdfUrl} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Upgrade Modal */}
-      {showUpgradeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowUpgradeModal(false)} />
-          <div className="relative bg-white rounded-xl p-6 max-w-md w-full">
-            <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-pro-purple-100 rounded-full flex items-center justify-center mb-4">
-                <Crown className="h-6 w-6 text-pro-purple" />
-              </div>
-              <h2 className="text-xl font-semibold text-slate-900 mb-2">Premium Feature</h2>
-              <p className="text-slate-600 mb-6">
-                Upgrade to Pro or Suite plan to access premium content.
-              </p>
-              <div className="space-y-3">
-                <Button
-                  className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white"
-                  onClick={handleViewSampleClick}
-                >
-                  View Sample
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleUpgradePlanClick}
-                >
-                  Upgrade Plan
-                </Button>
-              </div>
+              <SecurePDFViewer
+                pdfUrl={currentPdfUrl}
+                userTier={tier}
+                maxPagesForBasic={5}
+              />
             </div>
           </div>
         </div>

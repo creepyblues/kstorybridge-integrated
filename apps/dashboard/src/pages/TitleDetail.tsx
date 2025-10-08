@@ -50,11 +50,7 @@ function TitleDetailContent() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState<boolean>(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   const [currentPdfUrl, setCurrentPdfUrl] = useState<string>("");
-  
-  // Sample PDF URL from Supabase storage (properly encoded)
-  const SAMPLE_PDF_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/Werewolves%20Going%20Crazy%20Over%20Me-Sample.pdf";
   
   // Ensure modal renders properly with slight delay
   useEffect(() => {
@@ -454,16 +450,11 @@ function TitleDetailContent() {
                                 ? "border-gray-300 hover:bg-gray-100 px-4 py-2 text-sm font-bold transition-colors"
                                 : "border-gray-300 hover:bg-gray-100 text-gray-600 px-4 py-2 text-sm font-medium transition-colors"}
                               onClick={() => {
-                                console.log('🔍 View Pitch clicked:', { canAccessPremiumContent, tier });
-                                if (canAccessPremiumContent) {
-                                  console.log('📄 Opening PDF modal');
-                                  setCurrentPdfUrl(title.pitch || "");
-                                  // Small delay to ensure proper state update
-                                  setTimeout(() => setIsPdfModalOpen(true), 10);
-                                } else {
-                                  console.log('⬆️ Showing upgrade modal');
-                                  setShowUpgradeModal(true);
-                                }
+                                console.log('🔍 View Pitch clicked:', { tier });
+                                console.log('📄 Opening PDF modal');
+                                setCurrentPdfUrl(title.pitch || "");
+                                // Small delay to ensure proper state update
+                                setTimeout(() => setIsPdfModalOpen(true), 10);
                               }}
                             >
                               {canAccessPremiumContent ? (
@@ -535,8 +526,10 @@ function TitleDetailContent() {
                                         maxWidth: '1000px',
                                         minWidth: '600px'
                                       }}>
-                                        <SecurePDFViewer 
+                                        <SecurePDFViewer
                                           pdfUrl={currentPdfUrl}
+                                          userTier={tier}
+                                          maxPagesForBasic={5}
                                         />
                                       </div>
                                     </div>
@@ -839,50 +832,6 @@ function TitleDetailContent() {
         }
       />
       
-      {/* Upgrade Modal for View Pitch */}
-      {showUpgradeModal === true && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowUpgradeModal(false)} />
-          <div className="relative bg-white rounded-2xl p-6 max-w-[400px] w-full mx-4">
-            <div className="flex items-center justify-center mb-4">
-              <div className="p-3 bg-gradient-to-br from-pro-purple-100 to-pro-purple-200 rounded-full">
-                <Crown className="h-8 w-8 text-pro-purple" />
-              </div>
-            </div>
-            <h2 className="text-xl font-bold text-center text-midnight-ink mb-4">
-              Premium Feature
-            </h2>
-            <p className="text-center text-base text-gray-600 mb-6">
-              Pitch Deck is a premium feature and available only to Pro or Suite Plan users
-            </p>
-            <div className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full border-gray-300 hover:bg-gray-100 font-semibold py-3"
-                onClick={() => {
-                  console.log('View Sample Pitch clicked from upgrade modal');
-                  setCurrentPdfUrl(SAMPLE_PDF_URL);
-                  setShowUpgradeModal(false);
-                  setTimeout(() => setIsPdfModalOpen(true), 10);
-                }}
-              >
-                View Sample Pitch
-              </Button>
-              <Button
-                className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white font-semibold py-3"
-                onClick={() => {
-                  console.log('Upgrade button clicked, navigating to pricing');
-                  setShowUpgradeModal(false);
-                  navigate('/buyers/plan');
-                }}
-              >
-                Upgrade Your Plan
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       </Stack>
     </PageContainer>
   );

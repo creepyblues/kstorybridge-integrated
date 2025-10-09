@@ -1015,42 +1015,31 @@ export default function Profile() {
                     </p>
                   </div>
                 </div>
-                {(profile.email?.toLowerCase() === 'sungho@dadble.com' || profile.email?.toLowerCase() === 'kevin@sandstoneartists.com') ? (
-                  <Link
-                    to="/buyers/plan"
-                    onClick={() => {
-                      // Track adjust plan button click
-                      trackButtonClick({
-                        buttonId: 'profile-adjust-plan-btn',
-                        buttonText: 'Adjust plan',
-                        buttonCategory: 'navigation',
-                        pageSection: 'main_content',
-                        userType: profile.account_type as 'buyer' | 'creator',
-                        currentPage: '/buyers/profile',
-                        additionalContext: {
-                          user_tier: profile.tier,
-                          navigation_destination: '/buyers/plan',
-                          admin_user: true
-                        }
-                      });
-                    }}
-                  >
-                    <Button
-                      variant="outline"
-                      className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
-                    >
-                      Adjust plan
-                    </Button>
-                  </Link>
-                ) : (
+                <Link
+                  to="/buyers/plan"
+                  onClick={() => {
+                    // Track adjust plan button click
+                    trackButtonClick({
+                      buttonId: 'profile-adjust-plan-btn',
+                      buttonText: 'Adjust plan',
+                      buttonCategory: 'navigation',
+                      pageSection: 'main_content',
+                      userType: profile.account_type as 'buyer' | 'creator',
+                      currentPage: '/buyers/profile',
+                      additionalContext: {
+                        user_tier: profile.tier,
+                        navigation_destination: '/buyers/plan'
+                      }
+                    });
+                  }}
+                >
                   <Button
                     variant="outline"
-                    className="w-full sm:w-auto border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
-                    disabled
+                    className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
                   >
                     Adjust plan
                   </Button>
-                )}
+                </Link>
               </div>
           </Surface>
         )}

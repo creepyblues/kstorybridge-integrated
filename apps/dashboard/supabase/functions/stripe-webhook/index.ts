@@ -140,6 +140,36 @@ const handler = async (request: Request): Promise<Response> => {
     livemode: receivedEvent.livemode
   })
 
+  // IDEMPOTENCY CHECK: Prevent duplicate event processing
+  console.log('🔍 Checking for duplicate event:', receivedEvent.id)
+
+  const { data: existingEvent, error: checkError } = await supabase
+    .from('webhook_events')
+    .select('id, processed_at')
+    .eq('stripe_event_id', receivedEvent.id)
+    .single()
+
+  if (existingEvent) {
+    console.log('✅ Event already processed at:', existingEvent.processed_at)
+    console.log('📊 Duplicate event prevented:', {
+      eventId: receivedEvent.id,
+      eventType: receivedEvent.type,
+      originalProcessing: existingEvent.processed_at,
+      timeSinceOriginal: `${Math.round((new Date().getTime() - new Date(existingEvent.processed_at).getTime()) / 1000)}s ago`
+    })
+    return new Response(JSON.stringify({ received: true, duplicate: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+
+  if (checkError && checkError.code !== 'PGRST116') {
+    // PGRST116 = no rows found (expected for new events)
+    console.error('❌ Error checking for duplicate event:', checkError)
+    console.log('⚠️ Continuing with event processing despite check error (fail-open)')
+    // Continue processing anyway - don't block legitimate webhooks due to check failures
+  }
+
   try {
     switch (receivedEvent.type) {
       case 'checkout.session.completed': {
@@ -537,13 +567,43 @@ const handler = async (request: Request): Promise<Response> => {
     )
   }
 
+  // RECORD EVENT: Mark event as successfully processed
+  try {
+    console.log('📝 Recording successfully processed event:', receivedEvent.id)
+
+    const { error: recordError } = await supabase
+      .from('webhook_events')
+      .insert({
+        stripe_event_id: receivedEvent.id,
+        processed_at: new Date().toISOString()
+      })
+
+    if (recordError) {
+      console.error('⚠️ Failed to record event (non-critical):', {
+        error: recordError,
+        eventId: receivedEvent.id,
+        eventType: receivedEvent.type
+      })
+      // Don't fail webhook - event was processed successfully
+      // Recording is for idempotency protection on future retries
+    } else {
+      console.log('✅ Event recorded successfully:', receivedEvent.id)
+    }
+  } catch (recordException) {
+    console.error('⚠️ Exception recording event (non-critical):', recordException)
+    // Don't fail webhook - event was processed successfully
+  }
+
   return new Response(JSON.stringify({ received: true }), { status: 200 })
 }
 
 // Serve the handler with explicit configuration to bypass auth middleware
 // This is critical for webhooks which don't use JWT authentication
-serve(handler, {
-  onError: (error) => {
+// Using Deno.serve to support auth configuration
+Deno.serve(async (req) => {
+  try {
+    return await handler(req)
+  } catch (error) {
     console.error('🚨 Webhook handler error:', error)
     return new Response(
       JSON.stringify({

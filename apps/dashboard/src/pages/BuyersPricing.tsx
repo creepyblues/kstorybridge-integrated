@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Button, Card, CardContent, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
+import { Button, Card, CardContent, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
 import { useTierAccess } from '@/hooks/useTierAccess';
 import UpgradeToProButton from '@/components/UpgradeToProButton';
 import { trackTierUpgrade, trackTierDowngrade, trackButtonClick } from '@/utils/analytics';
@@ -8,10 +8,6 @@ import { useAuth } from '@/hooks/useAuth';
 const BuyersPricing = () => {
   const { tier, loading } = useTierAccess();
   const { user } = useAuth();
-
-  // Whitelist of emails allowed to upgrade
-  const ALLOWED_UPGRADE_EMAILS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
-  const isUpgradeAllowed = ALLOWED_UPGRADE_EMAILS.includes(user?.email?.toLowerCase() || '');
 
   // Map tiers to their corresponding plan names
   const tierToPlan: Record<string, string> = {
@@ -210,32 +206,29 @@ const BuyersPricing = () => {
                             className="w-full bg-slate-400 hover:bg-slate-500 text-white py-3 rounded-2xl font-medium transition-colors duration-300"
                             onClick={handleDowngradeClick}
                           >
-                            Downgrade Plan
+                            Downgrade
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="bg-white border-gray-300">
                           <DialogHeader>
-                            <DialogTitle>Contact Us</DialogTitle>
+                            <DialogTitle className="text-gray-900">Request Downgrade</DialogTitle>
+                            <DialogDescription className="text-gray-700 text-sm leading-relaxed">
+                              Please contact support@kstorybridge.com to request a downgrade.
+                            </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">
-                            <p>To discuss plan changes, please contact our team.</p>
-                            <Link to="/contact">
-                              <Button className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white">
-                                Contact Us
+                            <a href="mailto:support@kstorybridge.com?subject=Request to Downgrade Plan">
+                              <Button className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white font-medium">
+                                Email Support
                               </Button>
-                            </Link>
+                            </a>
                           </div>
                         </DialogContent>
                       </Dialog>
                     ) : plan.id === 'pro' ? (
                       <UpgradeToProButton
-                        className={`w-full py-4 rounded-2xl font-bold text-lg shadow-xl transition-all duration-300 border-2 ${
-                          isUpgradeAllowed
-                            ? 'hover:shadow-2xl transform hover:scale-105 text-white !bg-[#4C9C9B] !border-[#4C9C9B]'
-                            : 'bg-gray-300 border-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
-                        style={isUpgradeAllowed ? { backgroundColor: '#4C9C9B !important', borderColor: '#4C9C9B !important' } : {}}
-                        disabled={!isUpgradeAllowed}
+                        className="w-full py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 text-white !bg-[#4C9C9B] !border-[#4C9C9B]"
+                        style={{ backgroundColor: '#4C9C9B !important', borderColor: '#4C9C9B !important' }}
                         onClick={handleUpgradeToProClick}
                       >
                         <span className="flex items-center justify-center gap-2">

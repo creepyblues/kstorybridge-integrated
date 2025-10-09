@@ -16,7 +16,6 @@ const PaymentSuccess = () => {
 
   const [isVerified, setIsVerified] = useState(false);
   const [isUpdatingTier, setIsUpdatingTier] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
 
@@ -71,17 +70,6 @@ const PaymentSuccess = () => {
         .select('*')
         .eq('user_id', user.id)
         .single();
-
-      const debugData = {
-        userBuyer,
-        stripeCustomer,
-        buyerError,
-        stripeError,
-        timestamp: new Date().toISOString()
-      };
-
-      setDebugInfo(debugData);
-      console.log('🔍 PaymentSuccess Debug Data:', debugData);
 
       // More lenient tier checking - give webhook time to process
       const hasActiveSubscription = stripeCustomer?.subscription_status === 'active' ||
@@ -214,18 +202,6 @@ const PaymentSuccess = () => {
 
           {/* Content Section */}
           <div className="p-8 space-y-8">
-            {/* Debug Information (only show if there are issues) */}
-            {debugInfo && tier !== 'pro' && (
-              <details className="bg-gray-50 border border-gray-300 rounded-lg p-4">
-                <summary className="text-sm font-medium text-gray-700 cursor-pointer">
-                  Debug Information (Click to expand)
-                </summary>
-                <pre className="mt-3 text-xs bg-gray-100 p-3 rounded overflow-auto max-h-48">
-                  {JSON.stringify(debugInfo, null, 2)}
-                </pre>
-              </details>
-            )}
-
             {/* Pro Features */}
             <div className="space-y-4">
               <h2 className="text-2xl font-bold text-midnight-ink">

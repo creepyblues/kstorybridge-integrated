@@ -14,6 +14,7 @@ import { useDataCache } from "@/contexts/DataCacheContext";
 import SecurePDFViewer from "@/components/SecurePDFViewer";
 import { directApiService } from "@/services/directApiService";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
+import PitchDeckThumbnail from "@/components/PitchDeckThumbnail";
 import PremiumColumn from "@/components/PremiumColumn";
 import OptimizedTierGatedContent from "@/components/OptimizedTierGatedContent";
 import { TierProvider } from "@/contexts/TierContext";
@@ -605,6 +606,27 @@ function TitleDetailNewContent() {
                 {/* Pitch Deck */}
                 <div className="pt-4">
                   <h5 className="font-bold text-slate-700 mb-3">Pitch Deck</h5>
+
+                  {/* Thumbnail Preview (only if pitch exists) */}
+                  {title.pitch && title.pitch.trim() !== '' && (
+                    <PitchDeckThumbnail
+                      pdfUrl={title.pitch}
+                      onClick={() => {
+                        // Track pitch view attempt
+                        trackPitchView(
+                          titleId,
+                          title.title_name_en || title.title_name_kr || 'Unknown Title',
+                          tier
+                        );
+                        // Open pitch deck viewer
+                        setCurrentPdfUrl(title.pitch);
+                        setTimeout(() => setIsPdfModalOpen(true), 10);
+                      }}
+                      className="mb-4"
+                      alt={`${title.title_name_en || title.title_name_kr} pitch deck preview`}
+                    />
+                  )}
+
                   <div className="flex justify-start">
                     <Button
                       onClick={() => {

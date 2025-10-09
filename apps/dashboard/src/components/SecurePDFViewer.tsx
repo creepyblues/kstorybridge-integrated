@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page, pdfjs } from '@/lib/pdfConfig'; // Use centralized config
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Shield, AlertTriangle, Loader2, Crown, X } from 'lucide-react';
 import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../hooks/useAuth';
 import { trackUpgradeButtonClick } from '@/utils/analytics';
 
-// Configure PDF.js worker - use local worker file to avoid CORS issues
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
-console.log('📄 PDF.js: Using local worker file');
+// PDF.js worker is now configured in centralized config (/src/lib/pdfConfig.ts)
+console.log('📄 SecurePDFViewer: Using centralized PDF.js worker configuration');
 
 interface SecurePDFViewerProps {
   pdfUrl: string;

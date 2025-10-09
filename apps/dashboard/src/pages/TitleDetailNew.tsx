@@ -605,8 +605,7 @@ function TitleDetailNewContent() {
                 {/* Pitch Deck */}
                 <div className="pt-4">
                   <h5 className="font-bold text-slate-700 mb-3">Pitch Deck</h5>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                    <span className="text-slate-600 text-sm sm:text-base text-center sm:text-left">View the Pitch Deck</span>
+                  <div className="flex justify-start">
                     <Button
                       onClick={() => {
                         // Track pitch view attempt
@@ -616,13 +615,20 @@ function TitleDetailNewContent() {
                           tier
                         );
 
-                        // Always open pitch deck directly
-                        setCurrentPdfUrl(title.pitch || "");
-                        setTimeout(() => setIsPdfModalOpen(true), 10);
+                        // Check if pitch deck is available
+                        if (!title.pitch || title.pitch.trim() === '') {
+                          // Show pitch deck request popup
+                          setPremiumFeatureName("Pitch deck not available");
+                          setPremiumPopupOpen(true);
+                        } else {
+                          // Open pitch deck viewer
+                          setCurrentPdfUrl(title.pitch);
+                          setTimeout(() => setIsPdfModalOpen(true), 10);
+                        }
                       }}
-                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors w-full sm:w-auto"
+                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors"
                     >
-                      View
+                      → View Pitch Deck
                     </Button>
                   </div>
                 </div>
@@ -741,7 +747,7 @@ function TitleDetailNewContent() {
         titleId={title?.title_id}
         titleName={title?.title_name_en || title?.title_name_kr}
         requestType={
-          premiumFeatureName === "Request a pitch deck" ? "pitch" :
+          premiumFeatureName === "Request a pitch deck" || premiumFeatureName === "Pitch deck not available" ? "pitch" :
           premiumFeatureName === "Contact Creator" ? "contact" :
           undefined
         }

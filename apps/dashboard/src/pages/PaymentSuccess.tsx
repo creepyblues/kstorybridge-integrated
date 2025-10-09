@@ -214,56 +214,6 @@ const PaymentSuccess = () => {
 
           {/* Content Section */}
           <div className="p-8 space-y-8">
-            {/* Tier Confirmation */}
-            {tier === 'pro' ? (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-500 p-2 rounded-full">
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-green-800">
-                      Pro Tier Activated! ✅
-                    </h3>
-                    <p className="text-green-600 text-sm">
-                      Your account has been upgraded and all Pro features are now available
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-6">
-                <div className="flex items-center gap-3">
-                  <div className="bg-yellow-500 p-2 rounded-full">
-                    <AlertTriangle className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-yellow-800">
-                      Account Update in Progress...
-                    </h3>
-                    <p className="text-yellow-700 text-sm mb-3">
-                      Your payment was successful! We're updating your account to Pro tier.
-                      {retryCount > 0 && ` (Attempt ${retryCount}/${maxRetries})`}
-                    </p>
-                    <Button
-                      onClick={checkAndUpdateTier}
-                      disabled={isUpdatingTier}
-                      variant="outline"
-                      size="sm"
-                      className="border-yellow-500 text-yellow-700 hover:bg-yellow-100"
-                    >
-                      {isUpdatingTier ? (
-                        <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-                      ) : (
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                      )}
-                      Refresh Status
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Debug Information (only show if there are issues) */}
             {debugInfo && tier !== 'pro' && (
               <details className="bg-gray-50 border border-gray-300 rounded-lg p-4">
@@ -288,8 +238,7 @@ const PaymentSuccess = () => {
                       <Crown className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-purple-800">Pitch Deck Access</h4>
-                      <p className="text-purple-600 text-sm">View detailed pitch decks for all titles</p>
+                      <h4 className="font-semibold text-purple-800">Access All Pitch Decks</h4>
                     </div>
                   </div>
                 </div>
@@ -300,8 +249,7 @@ const PaymentSuccess = () => {
                       <ArrowRight className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-800">Contact Rights Owners</h4>
-                      <p className="text-blue-600 text-sm">Direct contact with content creators</p>
+                      <h4 className="font-semibold text-blue-800">Direct Access to Rights Holders</h4>
                     </div>
                   </div>
                 </div>
@@ -312,8 +260,7 @@ const PaymentSuccess = () => {
                       <Sparkles className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-emerald-800">AI Chat Enhanced</h4>
-                      <p className="text-emerald-600 text-sm">Personalized recommendations and insights</p>
+                      <h4 className="font-semibold text-emerald-800">Advanced AI Assistant Model</h4>
                     </div>
                   </div>
                 </div>
@@ -324,8 +271,7 @@ const PaymentSuccess = () => {
                       <CheckCircle className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-orange-800">Premium Content</h4>
-                      <p className="text-orange-600 text-sm">Full access to all title information</p>
+                      <h4 className="font-semibold text-orange-800">Priority Support</h4>
                     </div>
                   </div>
                 </div>
@@ -333,29 +279,13 @@ const PaymentSuccess = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/buyers/titles" className="flex-1">
-                <Button className="w-full bg-gradient-to-r from-hanok-teal to-emerald-600 hover:from-hanok-teal/90 hover:to-emerald-700 text-white py-4 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300">
-                  Explore Pro Content
+            <div className="flex justify-center">
+              <Link to="/">
+                <Button className="bg-gradient-to-r from-hanok-teal to-emerald-600 hover:from-hanok-teal/90 hover:to-emerald-700 text-white py-4 px-8 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                  Go back to Dashboard
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-
-              <Link to="/buyers/plan" className="flex-1">
-                <Button
-                  variant="outline"
-                  className="w-full border-2 border-hanok-teal text-hanok-teal hover:bg-hanok-teal hover:text-white py-4 rounded-2xl font-semibold text-lg transition-all duration-300"
-                >
-                  Manage Subscription
-                </Button>
-              </Link>
-            </div>
-
-            {/* Support */}
-            <div className="text-center text-gray-600">
-              <p>
-                Need help? <Link to="/contact" className="text-hanok-teal hover:underline">Contact our support team</Link>
-              </p>
             </div>
           </div>
         </CardContent>

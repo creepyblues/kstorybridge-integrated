@@ -137,6 +137,24 @@ export default function PremiumFeaturePopup({
                 console.warn('Failed to send Slack notification:', slackError);
                 // Don't fail the request if Slack notification fails
               }
+
+              // Send email notification to support@kstorybridge.com for pitch requests
+              if (requestType === 'pitch') {
+                try {
+                  const { EmailService } = await import('@/services/emailService');
+                  const emailService = EmailService.getInstance();
+                  await emailService.sendPitchDeckRequestEmail({
+                    requestorEmail: user.email || '',
+                    requestorName: user.user_metadata?.full_name || user.email || '',
+                    titleName: titleName,
+                    titleId: titleId,
+                    requestDate: new Date().toLocaleString()
+                  });
+                } catch (emailError) {
+                  console.warn('Failed to send email notification:', emailError);
+                  // Don't fail the request if email fails
+                }
+              }
             }
           }
         } catch (dbError) {
@@ -194,19 +212,13 @@ export default function PremiumFeaturePopup({
       }
 
       setRequested(true);
-      
+
       // Track the premium feature request via analytics
       try {
         trackPremiumFeatureRequest(featureName);
       } catch (analyticsError) {
         console.warn('Analytics tracking failed:', analyticsError);
       }
-      
-      // Show success message for 2 seconds, then close
-      setTimeout(() => {
-        onClose();
-        setRequested(false);
-      }, 2000);
 
     } catch (error) {
       console.error('Unexpected error submitting request:', error);
@@ -242,18 +254,28 @@ export default function PremiumFeaturePopup({
           >
             {/* Header */}
             <div className="text-center pb-4 p-6">
-              <div className="flex justify-center mb-4">
-                <div className="relative">
-                  <Crown className="h-16 w-16 text-sunrise-coral animate-pulse" />
-                  <Sparkles className="h-6 w-6 text-hanok-teal absolute -top-1 -right-1 animate-bounce" />
+              {featureName !== "Pitch deck not available" && (
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <Crown className="h-16 w-16 text-sunrise-coral animate-pulse" />
+                    <Sparkles className="h-6 w-6 text-hanok-teal absolute -top-1 -right-1 animate-bounce" />
+                  </div>
                 </div>
-              </div>
-              <h2 className="text-2xl font-bold text-midnight-ink mb-2">
-                Premium Feature
-              </h2>
-              <p className="text-gray-600">
-                This feature is for premium members only.
-              </p>
+              )}
+              {featureName === "Pitch deck not available" ? (
+                <p className="text-gray-700 text-base leading-relaxed pt-6">
+                  Pitch deck is not available for this title yet. If you want to ask for a pitch deck, click Request below.
+                </p>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold text-midnight-ink mb-2">
+                    Premium Feature
+                  </h2>
+                  <p className="text-gray-600">
+                    This feature is for premium members only.
+                  </p>
+                </>
+              )}
             </div>
             
             {/* Content */}
@@ -261,46 +283,79 @@ export default function PremiumFeaturePopup({
               {!requested ? (
                 <>
                   <div className="space-y-4">
-                    <Button
-                      id="premium-popup-upgrade-btn"
-                      onClick={handleUpgradeClick}
-                      className="w-full bg-gradient-to-r from-hanok-teal to-emerald-600 hover:from-hanok-teal/90 hover:to-emerald-700 text-white px-8 py-4 text-lg rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
-                    >
-                      {/* Shine effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+                    {featureName === "Pitch deck not available" ? (
+                      <Button
+                        id="premium-popup-request-btn"
+                        onClick={handleRequest}
+                        disabled={loading}
+                        className="w-full bg-gradient-to-r from-hanok-teal to-emerald-600 hover:from-hanok-teal/90 hover:to-emerald-700 text-white px-8 py-4 text-lg rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {loading ? "Submitting..." : "Request"}
+                      </Button>
+                    ) : (
+                      <Button
+                        id="premium-popup-upgrade-btn"
+                        onClick={handleUpgradeClick}
+                        className="w-full bg-gradient-to-r from-hanok-teal to-emerald-600 hover:from-hanok-teal/90 hover:to-emerald-700 text-white px-8 py-4 text-lg rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group"
+                      >
+                        {/* Shine effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
 
-                      {/* Text */}
-                      <span className="relative z-10">🚀 Upgrade to Pro</span>
-                    </Button>
+                        {/* Text */}
+                        <span className="relative z-10">🚀 Upgrade to Pro</span>
+                      </Button>
+                    )}
                   </div>
                 </>
               ) : (
                 <div className="space-y-4 py-4">
-                  <div className="flex justify-center">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                      <Crown className="h-8 w-8 text-green-600" />
+                  {featureName !== "Pitch deck not available" && (
+                    <div className="flex justify-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                        <Crown className="h-8 w-8 text-green-600" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="space-y-2">
                     <h3 className="text-xl font-bold text-midnight-ink">
-                      Thank you for your request!
+                      {featureName === "Pitch deck not available"
+                        ? "Request Submitted!"
+                        : "Thank you for your request!"
+                      }
                     </h3>
                     <p className="text-midnight-ink-600">
-                      We'll notify you when this premium feature becomes available.
+                      {featureName === "Pitch deck not available"
+                        ? "Thanks for your request, we'll let you know as soon as the pitch deck becomes available"
+                        : "We'll notify you when this premium feature becomes available."
+                      }
                     </p>
                   </div>
+
+                  {/* Close Button */}
+                  <Button
+                    onClick={() => {
+                      onClose();
+                      setRequested(false);
+                    }}
+                    variant="outline"
+                    className="w-full border-gray-300 hover:bg-gray-100"
+                  >
+                    Close
+                  </Button>
                 </div>
               )}
             </div>
-            
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-colors duration-200 z-10"
-              aria-label="Close modal"
-            >
-              <X className="h-5 w-5" />
-            </button>
+
+            {/* X Close Button - Hidden in success state */}
+            {!requested && (
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-colors duration-200 z-10"
+                aria-label="Close modal"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </div>
       )}

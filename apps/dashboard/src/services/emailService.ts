@@ -306,6 +306,35 @@ export class EmailService {
     });
   }
 
+  /**
+   * Send pitch deck request notification to support team
+   */
+  async sendPitchDeckRequestEmail(data: {
+    requestorEmail: string;
+    requestorName: string;
+    titleName: string;
+    titleId: string;
+    requestDate: string;
+  }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const emailBody = `
+Pitch Deck Request
+
+Requestor: ${data.requestorName} (${data.requestorEmail})
+Title: ${data.titleName}
+Title ID: ${data.titleId}
+Date: ${data.requestDate}
+
+Dashboard Link: https://dashboard.kstorybridge.com/buyers/titles/${data.titleId}
+    `.trim();
+
+    return this.sendEmail({
+      to: 'support@kstorybridge.com',
+      subject: `Pitch Deck Request: ${data.titleName}`,
+      text: emailBody,
+      from: 'KStoryBridge <noreply@kstorybridge.com>'
+    });
+  }
+
   // PRD 2.1: Automated email triggers for engagement and conversion
 
   /**

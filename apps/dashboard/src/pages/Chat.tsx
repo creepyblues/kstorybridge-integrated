@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";import { Send, Bot, User, Loader2, ArrowLeft, Sparkles, Brain, ChevronDown } from "lucide-react";
@@ -10,6 +10,7 @@ import { chatHistoryService, type ChatSession } from "@/services/chatHistoryServ
 import { chatOrchestratorService, type ChatMessage as OrchestratorMessage } from "@/services/chatOrchestratorService";
 import { ChatbotFeedback } from "@/components/ChatbotFeedback";
 import { TitleFeedback } from "@/components/TitleFeedback";
+import { ChatPitchPreview } from "@/components/ChatPitchPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ChatEmptyState } from "@/components/ChatEmptyState";
@@ -27,6 +28,12 @@ interface Message {
   titles?: any[];
   suggestedQueries?: string[];
   messageId?: string; // Database message ID for tracking
+}
+
+interface PitchData {
+  titleId: string;
+  titleName: string;
+  pitchUrl: string;
 }
 
 // Simplified conversational message component
@@ -607,6 +614,7 @@ export default function Chat() {
   const [showHistory, setShowHistory] = useState(false); // Toggle between current chat and full history
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false); // Track if history has been loaded from database
+  const [titlePitchData, setTitlePitchData] = useState<Map<string, PitchData>>(new Map());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousUserIdRef = useRef<string | null>(null); // Track user changes
 
@@ -1523,6 +1531,108 @@ Please try again.`,
     );
   };
 
+  // ===== PITCH DECK PREVIEW HELPER FUNCTIONS =====
+
+  /**
+   * Check if a query is an "information" request (e.g., "Tell me more about X")
+   */
+  const isInformationQuery = (query: string): boolean => {
+    if (!query) return false;
+    const lowerQuery = query.toLowerCase();
+
+    // Pattern: "tell me (more) about [something]", "learn more about", "details about"
+    const specificTitlePattern = /(tell me|learn|details?|more) (more )?(about|on) /;
+    const infoIndicators = ['what is', 'who is', 'explain', 'describe'];
+
+    return specificTitlePattern.test(lowerQuery) || infoIndicators.some(ind => lowerQuery.includes(ind));
+  };
+
+  /**
+   * Extract title name from query (e.g., "Tell me more about First Love" → "First Love")
+   */
+  const extractTitleName = (query: string): string | null => {
+    if (!query) return null;
+
+    const patterns = [
+      /(?:tell me|learn|details?|more)\s+(?:more\s+)?(?:about|on)\s+["']?([^"'?.!]+)["']?/i,
+      /(?:what is|who is|explain|describe)\s+["']?([^"'?.!]+)["']?/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = query.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+
+    return null;
+  };
+
+  /**
+   * Fetch pitch data for a specific title
+   */
+  const fetchPitchForTitle = useCallback(async (titleName: string) => {
+    if (!titleName || !user) return;
+
+    // Check if already fetched
+    if (titlePitchData.has(titleName)) {
+      return;
+    }
+
+    try {
+      // Query database for title with pitch
+      const { data: title, error } = await supabase
+        .from('titles')
+        .select('title_id, title_name_en, title_name_kr, pitch')
+        .or(`title_name_en.ilike.%${titleName}%,title_name_kr.ilike.%${titleName}%`)
+        .limit(1)
+        .single();
+
+      if (error || !title || !title.pitch || !title.pitch.trim()) {
+        // No pitch available for this title
+        return;
+      }
+
+      // Store pitch data
+      setTitlePitchData(prev => {
+        const newMap = new Map(prev);
+        newMap.set(titleName, {
+          titleId: title.title_id,
+          titleName: title.title_name_en || title.title_name_kr || titleName,
+          pitchUrl: title.pitch,
+        });
+        return newMap;
+      });
+    } catch (error) {
+      console.error('Error fetching pitch for title:', titleName, error);
+    }
+  }, [user, titlePitchData]);
+
+  // Passive detection: Check for "Tell me more about X" queries and fetch pitch
+  useEffect(() => {
+    if (messages.length < 2) return;
+
+    // Wait until streaming is complete before showing pitch preview
+    if (isStreaming) return;
+
+    const lastMessage = messages[messages.length - 1];
+    const secondLastMessage = messages[messages.length - 2];
+
+    // Only process if last message is from bot and second-last is from user
+    if (lastMessage.sender === 'bot' && secondLastMessage.sender === 'user') {
+      const userQuery = secondLastMessage.content;
+
+      if (isInformationQuery(userQuery)) {
+        const titleName = extractTitleName(userQuery);
+        if (titleName) {
+          fetchPitchForTitle(titleName);
+        }
+      }
+    }
+  }, [messages, user, fetchPitchForTitle, isStreaming]);
+
+  // ===== END PITCH DECK PREVIEW HELPER FUNCTIONS =====
+
   // Show loading while account type is being determined
   if (accountTypeLoading) {
     return (
@@ -1681,7 +1791,32 @@ Please try again.`,
                       <div className="prose prose-sm max-w-none text-gray-800">
                         <ConversationalMessage content={message.content} navigate={navigate} titleData={message.titles} allMessages={messages} titleCache={titleCache} handleSuggestedQuery={handleSuggestedQuery} />
                       </div>
-                    
+
+                      {/* Pitch Deck Preview - Show if available for this response */}
+                      {(() => {
+                        // Find the preceding user message
+                        const userMessage = messagesArray.slice(0, index).reverse().find(m => m.sender === 'user');
+                        if (!userMessage) return null;
+
+                        const userQuery = userMessage.content;
+                        if (!isInformationQuery(userQuery)) return null;
+
+                        const titleName = extractTitleName(userQuery);
+                        if (!titleName) return null;
+
+                        const pitchData = titlePitchData.get(titleName);
+                        if (!pitchData) return null;
+
+                        return (
+                          <ChatPitchPreview
+                            titleId={pitchData.titleId}
+                            titleName={pitchData.titleName}
+                            pitchUrl={pitchData.pitchUrl}
+                            userTier={tier}
+                          />
+                        );
+                      })()}
+
                     {/* Suggested Queries - Auto-execute on click */}
                     {message.suggestedQueries && message.suggestedQueries.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">

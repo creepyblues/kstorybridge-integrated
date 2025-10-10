@@ -1,5 +1,6 @@
 // Jest/Vitest setup file for all tests
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Mock window.matchMedia for tests that use responsive components
 Object.defineProperty(window, 'matchMedia', {
@@ -18,9 +19,9 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock IntersectionObserver
 class MockIntersectionObserver {
-  observe = jest.fn();
-  disconnect = jest.fn();
-  unobserve = jest.fn();
+  observe = vi.fn();
+  disconnect = vi.fn();
+  unobserve = vi.fn();
 }
 
 Object.defineProperty(window, 'IntersectionObserver', {
@@ -31,9 +32,9 @@ Object.defineProperty(window, 'IntersectionObserver', {
 
 // Mock ResizeObserver
 class MockResizeObserver {
-  observe = jest.fn();
-  disconnect = jest.fn();
-  unobserve = jest.fn();
+  observe = vi.fn();
+  disconnect = vi.fn();
+  unobserve = vi.fn();
 }
 
 Object.defineProperty(window, 'ResizeObserver', {

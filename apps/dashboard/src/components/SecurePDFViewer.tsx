@@ -31,6 +31,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
   const [showUpgradePopup, setShowUpgradePopup] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   const isAuthenticated = !!user;
 
@@ -450,6 +451,19 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
     };
   }, []);
 
+  // Track fullscreen state changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     console.log('📄 REACT-PDF: Document loaded successfully, pages:', numPages);
     setNumPages(numPages);
@@ -497,6 +511,20 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
     const currentScale = typeof prev === 'number' ? prev : 1;
     return Math.max(0.3, currentScale - 0.2);
   });
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  };
+
   const fitToPage = () => {
     // Fit entire page in view
     setScale("page");
@@ -649,7 +677,12 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
             <Button variant="outline" size="sm" onClick={zoomIn}>
               <ZoomIn className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={fitToPage} title="Fit Entire Page">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleFullscreen}
+              title={isFullscreen ? "Exit Fullscreen" : "Fullscreen Mode"}
+            >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
               </svg>
@@ -699,6 +732,32 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
               CONFIDENTIAL
             </div>
           </div>
+
+          {/* Overlay Navigation Buttons */}
+          {pdfData && (
+            <>
+              {/* Previous Page Button - Left Middle */}
+              <button
+                onClick={goToPrevPage}
+                disabled={pageNumber <= 1}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/20 hover:bg-black/40 text-white transition-all duration-200 flex items-center justify-center disabled:opacity-0 disabled:pointer-events-none hover:scale-110"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+
+              {/* Next Page Button - Right Middle */}
+              <button
+                onClick={goToNextPage}
+                disabled={pageNumber >= numPages}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/20 hover:bg-black/40 text-white transition-all duration-200 flex items-center justify-center disabled:opacity-0 disabled:pointer-events-none hover:scale-110"
+                aria-label="Next page"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
+
           {pdfData && (
             <div className="pdf-container flex justify-center items-center w-full h-full">
               <Document

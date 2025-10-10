@@ -453,6 +453,7 @@ Sign-off: _________
 
 - **Implementation Plan**: `WEBHOOK_IDEMPOTENCY_SIMPLIFIED.md`
 - **Production Readiness**: `PAYMENT_SYSTEM_PRODUCTION_READINESS.md`
+- **Error Handling Fix (Issue #2)**: `WEBHOOK_ERROR_HANDLING_DEPLOYMENT.md`
 - **Unit Tests**: `src/__tests__/webhooks/idempotency.test.ts`
 - **Migration File**: `supabase/migrations/20251009000000_create_webhook_events.sql`
 - **Webhook Handler**: `supabase/functions/stripe-webhook/index.ts`

@@ -259,7 +259,10 @@ const handler = async (request: Request): Promise<Response> => {
 
         if (stripeCustomerError) {
           console.error('❌ Failed to update stripe_customers:', stripeCustomerError)
-          // Don't fail the webhook completely, continue with tier update
+          return new Response(
+            JSON.stringify({ error: 'Failed to update subscription data', details: stripeCustomerError }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          )
         } else {
           console.log('✅ Stripe customer record updated successfully')
 
@@ -349,7 +352,10 @@ const handler = async (request: Request): Promise<Response> => {
 
           if (tierError) {
             console.error('❌ Failed to update user tier after all retries:', tierError)
-            // Continue processing but log the failure for investigation
+            return new Response(
+              JSON.stringify({ error: 'Failed to update user tier after retries', details: tierError }),
+              { status: 500, headers: { 'Content-Type': 'application/json' } }
+            )
           }
         } else {
           console.warn('⚠️ Subscription status is not active or trialing:', subscription.status)
@@ -394,6 +400,10 @@ const handler = async (request: Request): Promise<Response> => {
 
         if (updateStripeError) {
           console.error('❌ Failed to update stripe_customers:', updateStripeError)
+          return new Response(
+            JSON.stringify({ error: 'Failed to update subscription status', details: updateStripeError }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          )
         } else {
           console.log('✅ Stripe customer record updated for subscription:', subscription.id)
 
@@ -424,6 +434,10 @@ const handler = async (request: Request): Promise<Response> => {
 
         if (tierError) {
           console.error('Failed to update user tier:', tierError)
+          return new Response(
+            JSON.stringify({ error: 'Failed to update user tier', details: tierError }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          )
         } else {
           console.log(`✅ User ${userId} tier updated to ${newTier}`)
         }
@@ -442,13 +456,21 @@ const handler = async (request: Request): Promise<Response> => {
         }
 
         // Update stripe_customers table
-        await supabase
+        const { error: updateError } = await supabase
           .from('stripe_customers')
           .update({
             subscription_status: 'canceled',
             cancel_at_period_end: false,
           })
           .eq('stripe_subscription_id', subscription.id)
+
+        if (updateError) {
+          console.error('❌ Failed to update stripe_customers on deletion:', updateError)
+          return new Response(
+            JSON.stringify({ error: 'Failed to update subscription status on deletion', details: updateError }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          )
+        }
 
         // Downgrade user to basic tier
         const { error: tierError } = await supabase
@@ -458,6 +480,10 @@ const handler = async (request: Request): Promise<Response> => {
 
         if (tierError) {
           console.error('Failed to downgrade user tier:', tierError)
+          return new Response(
+            JSON.stringify({ error: 'Failed to downgrade user tier', details: tierError }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          )
         } else {
           console.log(`✅ User ${userId} downgraded to basic tier`)
         }
@@ -517,6 +543,10 @@ const handler = async (request: Request): Promise<Response> => {
 
           if (stripeCustomerError) {
             console.error('❌ Failed to update stripe_customers from invoice:', stripeCustomerError)
+            return new Response(
+              JSON.stringify({ error: 'Failed to update subscription from invoice', details: stripeCustomerError }),
+              { status: 500, headers: { 'Content-Type': 'application/json' } }
+            )
           }
 
           // Ensure user has Pro tier when payment succeeds
@@ -529,6 +559,10 @@ const handler = async (request: Request): Promise<Response> => {
             console.log(`✅ Invoice payment processed - User ${userId} tier updated to Pro`)
           } else {
             console.error(`❌ Failed to update user tier from invoice payment:`, tierError)
+            return new Response(
+              JSON.stringify({ error: 'Failed to update user tier from invoice', details: tierError }),
+              { status: 500, headers: { 'Content-Type': 'application/json' } }
+            )
           }
         } else {
           if (!userId) {

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Button, Card, CardContent, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
+import { useState } from 'react';
+import { Button, Card, CardContent } from '@kstorybridge/ui';
 import { useTierAccess } from '@/hooks/useTierAccess';
 import UpgradeToProButton from '@/components/UpgradeToProButton';
 import { trackTierUpgrade, trackTierDowngrade, trackButtonClick } from '@/utils/analytics';
@@ -8,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 const BuyersPricing = () => {
   const { tier, loading } = useTierAccess();
   const { user } = useAuth();
+  const [showDowngradeModal, setShowDowngradeModal] = useState(false);
 
   // Map tiers to their corresponding plan names
   const tierToPlan: Record<string, string> = {
@@ -70,6 +72,9 @@ const BuyersPricing = () => {
         plan_comparison: 'tier_downgrade'
       }
     });
+
+    // Show the modal
+    setShowDowngradeModal(true);
   };
 
   const currentPlan = tier ? tierToPlan[tier] || 'free' : 'free';
@@ -138,17 +143,16 @@ const BuyersPricing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink mb-4 sm:mb-6">
-            Flexible Plans for Your Needs
-          </h2>
-        </div>
+    <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-3 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink mb-4 sm:mb-6">
+          Flexible Plans for Your Needs
+        </h2>
+      </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* Pricing Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {plans.map((plan) => (
             <Card 
               key={plan.id}
@@ -200,31 +204,12 @@ const BuyersPricing = () => {
                         Current Plan
                       </Button>
                     ) : tierHierarchy[tier || 'basic'] > tierHierarchy[plan.tierLevel] ? (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            className="w-full bg-slate-400 hover:bg-slate-500 text-white py-3 rounded-2xl font-medium transition-colors duration-300"
-                            onClick={handleDowngradeClick}
-                          >
-                            Downgrade
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-white border-gray-300">
-                          <DialogHeader>
-                            <DialogTitle className="text-gray-900">Request Downgrade</DialogTitle>
-                            <DialogDescription className="text-gray-700 text-sm leading-relaxed">
-                              Please contact support@kstorybridge.com to request a downgrade.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <a href="mailto:support@kstorybridge.com?subject=Request to Downgrade Plan">
-                              <Button className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white font-medium">
-                                Email Support
-                              </Button>
-                            </a>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                      <Button
+                        className="w-full bg-slate-400 hover:bg-slate-500 text-white py-3 rounded-2xl font-medium transition-colors duration-300"
+                        onClick={handleDowngradeClick}
+                      >
+                        Downgrade
+                      </Button>
                     ) : plan.id === 'pro' ? (
                       <UpgradeToProButton
                         className="w-full py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 text-white !bg-[#4C9C9B] !border-[#4C9C9B]"
@@ -266,9 +251,54 @@ const BuyersPricing = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
-
       </div>
+
+      {/* Custom Downgrade Modal */}
+      {showDowngradeModal && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          onClick={() => setShowDowngradeModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4"
+            style={{
+              backgroundColor: '#ffffff',
+              color: '#1f2937'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              className="text-xl font-semibold mb-4 text-gray-900"
+              style={{ color: '#111827' }}
+            >
+              Request Downgrade
+            </h2>
+            <p
+              className="text-gray-700 text-sm mb-6 leading-relaxed"
+              style={{ color: '#374151' }}
+            >
+              Please contact support@kstorybridge.com to request a downgrade.
+            </p>
+            <div className="flex gap-3">
+              <a
+                href="mailto:support@kstorybridge.com?subject=Request to Downgrade Plan"
+                className="flex-1"
+              >
+                <Button className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white font-medium">
+                  Email Support
+                </Button>
+              </a>
+              <Button
+                onClick={() => setShowDowngradeModal(false)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

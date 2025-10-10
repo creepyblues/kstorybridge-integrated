@@ -744,6 +744,126 @@ const handler = async (request: Request): Promise<Response> => {
         break
       }
 
+      case 'charge.refunded': {
+        const charge = receivedEvent.data.object as Stripe.Charge
+
+        console.log('💸 Processing refund event:', {
+          chargeId: charge.id,
+          amount: charge.amount,
+          amountRefunded: charge.amount_refunded,
+          refunded: charge.refunded,
+          customerId: charge.customer
+        })
+
+        // Get subscription associated with this charge
+        let subscription = null
+        let userId = null
+
+        if (charge.invoice) {
+          try {
+            const invoice = await stripe.invoices.retrieve(charge.invoice as string)
+            if (invoice.subscription) {
+              subscription = await stripe.subscriptions.retrieve(invoice.subscription as string)
+              userId = subscription.metadata?.user_id || subscription.metadata?.supabase_user_id
+            }
+          } catch (invoiceError) {
+            console.warn('⚠️ Could not retrieve invoice/subscription for refund:', invoiceError)
+          }
+        }
+
+        if (!userId) {
+          console.warn('⚠️ No user_id found for refund, skipping tier downgrade')
+          // Still log the refund for audit purposes
+          break
+        }
+
+        // Determine if this is a full or partial refund
+        const isFullRefund = charge.amount === charge.amount_refunded
+        const refundPercentage = ((charge.amount_refunded / charge.amount) * 100).toFixed(1)
+
+        console.log('💸 Refund analysis:', {
+          userId,
+          isFullRefund,
+          refundPercentage: `${refundPercentage}%`,
+          chargeAmount: charge.amount / 100,
+          refundedAmount: charge.amount_refunded / 100
+        })
+
+        if (isFullRefund) {
+          console.log('💸 Full refund detected, downgrading user to basic tier...')
+
+          // Update stripe_customers table
+          const { error: stripeCustomerError } = await supabase
+            .from('stripe_customers')
+            .update({
+              subscription_status: 'canceled',
+              cancel_at_period_end: true,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', userId)
+
+          if (stripeCustomerError) {
+            console.error('❌ Failed to update stripe_customers on refund:', stripeCustomerError)
+          }
+
+          // Downgrade user to basic tier
+          const { error: tierError } = await supabase
+            .from('user_buyers')
+            .update({ tier: 'basic' })
+            .eq('id', userId)
+
+          if (tierError) {
+            console.error('❌ Failed to downgrade user tier on refund:', tierError)
+
+            // Send failure notification
+            await sendTransactionNotifications(
+              supabase,
+              userId,
+              subscription?.id || 'unknown',
+              charge.amount_refunded / 100,
+              false, // tierUpdateSuccess = false
+              `Refund processed but tier downgrade failed: ${tierError.message}`
+            )
+
+            return new Response(
+              JSON.stringify({ error: 'Failed to downgrade user tier on refund', details: tierError }),
+              { status: 500, headers: { 'Content-Type': 'application/json' } }
+            )
+          } else {
+            console.log(`✅ User ${userId} downgraded to basic tier due to full refund`)
+
+            // Send success notification
+            await sendTransactionNotifications(
+              supabase,
+              userId,
+              subscription?.id || 'unknown',
+              charge.amount_refunded / 100,
+              true, // tierUpdateSuccess = true
+              'Full refund issued - user downgraded to basic tier'
+            )
+          }
+        } else {
+          console.log(`ℹ️ Partial refund (${refundPercentage}%) - NOT downgrading user tier`)
+
+          // Log partial refund for audit trail but don't downgrade
+          try {
+            await sendTransactionNotifications(
+              supabase,
+              userId,
+              subscription?.id || 'unknown',
+              charge.amount_refunded / 100,
+              true, // Not actually a tier update, but notification succeeded
+              `Partial refund issued (${refundPercentage}%) - subscription remains active`
+            )
+          } catch (notificationError) {
+            console.warn('⚠️ Failed to send partial refund notification:', notificationError)
+          }
+        }
+
+        console.log(`✅ Refund processed: ${charge.id}`)
+        break
+      }
+
       default:
         console.log(`🤷‍♀️ Unhandled event type: ${receivedEvent.type}`)
     }

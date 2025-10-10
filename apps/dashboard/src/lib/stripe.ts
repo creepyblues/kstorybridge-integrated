@@ -6,7 +6,8 @@ const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 // Validate the Stripe key before loading
 if (!stripeKey) {
   console.error('❌ STRIPE ERROR: VITE_STRIPE_PUBLISHABLE_KEY is not set in environment variables');
-  console.error('💡 Please add VITE_STRIPE_PUBLISHABLE_KEY to your .env.local file');
+  console.error('💡 LOCAL: Add VITE_STRIPE_PUBLISHABLE_KEY to your .env.local file');
+  console.error('💡 STAGING/PRODUCTION: Add VITE_STRIPE_PUBLISHABLE_KEY in Vercel Dashboard → Environment Variables');
 }
 
 if (stripeKey && !stripeKey.startsWith('pk_')) {

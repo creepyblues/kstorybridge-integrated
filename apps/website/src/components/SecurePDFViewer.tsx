@@ -22,6 +22,7 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
   const [scale, setScale] = useState<number>(1.0);
   const [rotation, setRotation] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [pdfData, setPdfData] = useState<string | null>(null);
   const [authValidated, setAuthValidated] = useState<boolean>(false);
@@ -387,7 +388,41 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
     return (
       <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
-          <p className="text-gray-600">Loading PDF...</p>
+          <div className="flex flex-col items-center gap-4">
+            {/* Circular Progress Indicator */}
+            <div className="relative w-20 h-20">
+              <svg className="transform -rotate-90 w-20 h-20">
+                {/* Background circle */}
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="32"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  fill="none"
+                  className="text-gray-200"
+                />
+                {/* Progress circle */}
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="32"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  fill="none"
+                  strokeDasharray={`${2 * Math.PI * 32}`}
+                  strokeDashoffset={`${2 * Math.PI * 32 * (1 - loadingProgress / 100)}`}
+                  className="text-blue-600 transition-all duration-300"
+                  strokeLinecap="round"
+                />
+              </svg>
+              {/* Percentage text */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-lg font-semibold text-gray-700">{loadingProgress}%</span>
+              </div>
+            </div>
+            <p className="text-gray-600">Loading PDF...</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -512,7 +547,46 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
               file={pdfData}
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
-              loading={<div className="p-8 text-center">Loading PDF...</div>}
+              onLoadProgress={({ loaded, total }) => {
+                const progress = total > 0 ? Math.round((loaded / total) * 100) : 0;
+                setLoadingProgress(progress);
+              }}
+              loading={
+                <div className="p-8 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    {/* Circular Progress Indicator */}
+                    <div className="relative w-16 h-16">
+                      <svg className="transform -rotate-90 w-16 h-16">
+                        <circle
+                          cx="32"
+                          cy="32"
+                          r="28"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          fill="none"
+                          className="text-gray-200"
+                        />
+                        <circle
+                          cx="32"
+                          cy="32"
+                          r="28"
+                          stroke="currentColor"
+                          strokeWidth="5"
+                          fill="none"
+                          strokeDasharray={`${2 * Math.PI * 28}`}
+                          strokeDashoffset={`${2 * Math.PI * 28 * (1 - loadingProgress / 100)}`}
+                          className="text-blue-600 transition-all duration-300"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-sm font-semibold text-gray-700">{loadingProgress}%</span>
+                      </div>
+                    </div>
+                    <span className="text-gray-600">Rendering PDF...</span>
+                  </div>
+                </div>
+              }
               options={{
                 // Disable PDF.js built-in UI controls
                 disableCreateObjectURL: false,

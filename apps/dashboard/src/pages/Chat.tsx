@@ -1713,13 +1713,7 @@ Please try again.`,
                 </div>
               </div>
             )}
-            
-            {!isLoadingHistory && messages.length === 0 && (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-gray-500 text-sm">Start a conversation to discover Korean content!</p>
-              </div>
-            )}
-            
+
             {/* Show/Load older messages button */}
             {!isLoadingHistory && getHiddenMessagesCount() > 0 && !showAllMessages && (
               <div className="flex justify-center py-4">

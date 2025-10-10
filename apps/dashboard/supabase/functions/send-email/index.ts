@@ -24,6 +24,16 @@ interface WelcomeTemplateData {
   loginUrl?: string;
 }
 
+interface TransactionTemplateData {
+  userEmail: string;
+  userName: string;
+  plan: string;
+  price: number;
+  tierUpdateSuccess: boolean;
+  errorDetails?: string;
+  timestamp: string;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -431,6 +441,212 @@ The KStoryBridge Team
 ---
 © 2025 KStoryBridge. All rights reserved.
 You're receiving this email because you created an account with us.
+`
+
+      return { html, text }
+    },
+
+    transaction_notification: (data: TransactionTemplateData) => {
+      const { userEmail, userName, plan, price, tierUpdateSuccess, errorDetails, timestamp } = data
+
+      const statusBadge = tierUpdateSuccess
+        ? '<span style="background-color: #10b981; color: white; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600;">SUCCESS</span>'
+        : '<span style="background-color: #ef4444; color: white; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600;">FAILED</span>'
+
+      const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Notification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9fafb;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+            background: linear-gradient(135deg, #4C9C9B 0%, #3a7a79 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 24px;
+        }
+        .info-box {
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #6b7280;
+        }
+        .info-value {
+            color: #111827;
+            font-weight: 500;
+        }
+        .price {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4C9C9B;
+            margin: 16px 0;
+        }
+        .error-box {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 16px;
+            margin: 24px 0;
+            border-radius: 8px;
+        }
+        .error-title {
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 8px;
+        }
+        .error-details {
+            color: #991b1b;
+            font-size: 14px;
+        }
+        .footer {
+            background-color: #4C9C9B;
+            color: white;
+            padding: 32px 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">💳 Payment Notification</div>
+            <div>KStoryBridge Transaction Alert</div>
+        </div>
+
+        <div class="content">
+            <h1 class="greeting">New Payment Received</h1>
+
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">Customer Name:</span>
+                    <span class="info-value">${userName}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Customer Email:</span>
+                    <span class="info-value">${userEmail}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Plan Purchased:</span>
+                    <span class="info-value">${plan}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Amount Paid:</span>
+                    <span class="info-value price">$${price.toFixed(2)}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tier Update Status:</span>
+                    <span class="info-value">${statusBadge}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Transaction Time:</span>
+                    <span class="info-value">${new Date(timestamp).toLocaleString('en-US', {
+                      dateStyle: 'medium',
+                      timeStyle: 'long',
+                      timeZone: 'America/Los_Angeles'
+                    })}</span>
+                </div>
+            </div>
+
+            ${!tierUpdateSuccess && errorDetails ? `
+            <div class="error-box">
+                <div class="error-title">⚠️ Tier Update Failed</div>
+                <div class="error-details">${errorDetails}</div>
+                <div style="margin-top: 12px; color: #991b1b; font-size: 14px;">
+                    <strong>Action Required:</strong> Please manually update the user's tier in the dashboard or check the webhook logs.
+                </div>
+            </div>
+            ` : ''}
+
+            ${tierUpdateSuccess ? `
+            <p style="color: #059669; font-weight: 600; margin: 24px 0;">
+                ✅ User tier has been successfully updated in the database.
+            </p>
+            ` : ''}
+        </div>
+
+        <div class="footer">
+            <div>This is an automated notification from KStoryBridge payment system.</div>
+            <div style="margin-top: 16px; opacity: 0.8;">
+                View transaction details in <a href="https://dashboard.stripe.com" style="color: white; text-decoration: underline;">Stripe Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
+
+      const text = `
+PAYMENT NOTIFICATION - KStoryBridge
+
+New payment received:
+
+Customer Name: ${userName}
+Customer Email: ${userEmail}
+Plan Purchased: ${plan}
+Amount Paid: $${price.toFixed(2)}
+Tier Update Status: ${tierUpdateSuccess ? 'SUCCESS' : 'FAILED'}
+Transaction Time: ${new Date(timestamp).toLocaleString('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'long',
+  timeZone: 'America/Los_Angeles'
+})}
+
+${!tierUpdateSuccess && errorDetails ? `
+⚠️ TIER UPDATE FAILED
+Error Details: ${errorDetails}
+
+Action Required: Please manually update the user's tier in the dashboard or check the webhook logs.
+` : ''}
+
+${tierUpdateSuccess ? '✅ User tier has been successfully updated in the database.' : ''}
+
+---
+This is an automated notification from KStoryBridge payment system.
+View transaction details in Stripe Dashboard: https://dashboard.stripe.com
 `
 
       return { html, text }

@@ -9,6 +9,81 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider()
 
+/**
+ * Send transaction notifications (Slack only) when payment completes
+ * Non-blocking - errors won't fail the webhook
+ */
+async function sendTransactionNotifications(
+  supabase: any,
+  userId: string,
+  subscriptionId: string,
+  price: number,
+  tierUpdateSuccess: boolean,
+  errorDetails?: string
+): Promise<void> {
+  try {
+    console.log('📱 Sending transaction notification for:', { userId, subscriptionId, price, tierUpdateSuccess })
+
+    // Get user details from database
+    const { data: userData, error: userError } = await supabase
+      .from('user_buyers')
+      .select('full_name, email')
+      .eq('id', userId)
+      .single()
+
+    if (userError || !userData) {
+      console.error('⚠️ Could not fetch user data for notification:', userError)
+      return // Don't fail webhook if notification can't be sent
+    }
+
+    // Determine plan name (simplified for now - can be enhanced later)
+    const planName = 'Pro Plan'
+
+    // Send Slack notification
+    try {
+      console.log('📱 Sending Slack notification...')
+      const slackResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/slack-webhook-proxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+        },
+        body: JSON.stringify({
+          event: 'Payment Processed',
+          userType: 'buyer',
+          fullName: userData.full_name || 'User',
+          email: userData.email,
+          additionalInfo: {
+            plan: planName,
+            price: `$${price.toFixed(2)}`,
+            tierUpdateSuccess: tierUpdateSuccess ? 'SUCCESS' : 'FAILED',
+            errorDetails: errorDetails || undefined,
+            subscriptionId,
+            timestamp: new Date().toLocaleString('en-US', {
+              dateStyle: 'medium',
+              timeStyle: 'long',
+              timeZone: 'America/Los_Angeles'
+            })
+          }
+        })
+      })
+
+      if (slackResponse.ok) {
+        console.log('✅ Slack notification sent successfully')
+      } else {
+        console.warn('⚠️ Slack notification failed:', await slackResponse.text())
+      }
+    } catch (slackError) {
+      console.error('⚠️ Error sending Slack notification:', slackError)
+    }
+
+    console.log('✅ Transaction notification processing complete')
+  } catch (error) {
+    // Never fail the webhook due to notification errors
+    console.error('⚠️ Error in sendTransactionNotifications (non-critical):', error)
+  }
+}
+
 // CRITICAL: Configure function to bypass Supabase auth middleware
 // Webhooks use signature verification, not JWT tokens
 const handler = async (request: Request): Promise<Response> => {
@@ -352,11 +427,38 @@ const handler = async (request: Request): Promise<Response> => {
 
           if (tierError) {
             console.error('❌ Failed to update user tier after all retries:', tierError)
+
+            // Send failure notifications
+            const priceAmount = subscription.items?.data[0]?.price?.unit_amount
+              ? subscription.items.data[0].price.unit_amount / 100
+              : 0
+            await sendTransactionNotifications(
+              supabase,
+              userId,
+              subscription.id,
+              priceAmount,
+              false, // tierUpdateSuccess = false
+              `Failed to update tier after ${maxRetries} retries: ${tierError.message}`
+            )
+
             return new Response(
               JSON.stringify({ error: 'Failed to update user tier after retries', details: tierError }),
               { status: 500, headers: { 'Content-Type': 'application/json' } }
             )
           }
+
+          // Send success notifications after tier update
+          const priceAmount = subscription.items?.data[0]?.price?.unit_amount
+            ? subscription.items.data[0].price.unit_amount / 100
+            : 0
+          await sendTransactionNotifications(
+            supabase,
+            userId,
+            subscription.id,
+            priceAmount,
+            true, // tierUpdateSuccess = true
+            undefined
+          )
         } else {
           console.warn('⚠️ Subscription status is not active or trialing:', subscription.status)
           console.log('ℹ️ Valid statuses for Pro tier: active, trialing')
@@ -434,12 +536,41 @@ const handler = async (request: Request): Promise<Response> => {
 
         if (tierError) {
           console.error('Failed to update user tier:', tierError)
+
+          // Send failure notifications
+          const priceAmount = subscription.items?.data[0]?.price?.unit_amount
+            ? subscription.items.data[0].price.unit_amount / 100
+            : 0
+          await sendTransactionNotifications(
+            supabase,
+            userId,
+            subscription.id,
+            priceAmount,
+            false, // tierUpdateSuccess = false
+            `Subscription update - tier update failed: ${tierError.message}`
+          )
+
           return new Response(
             JSON.stringify({ error: 'Failed to update user tier', details: tierError }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
           )
         } else {
           console.log(`✅ User ${userId} tier updated to ${newTier}`)
+
+          // Send success notifications (only for upgrades to pro)
+          if (newTier === 'pro') {
+            const priceAmount = subscription.items?.data[0]?.price?.unit_amount
+              ? subscription.items.data[0].price.unit_amount / 100
+              : 0
+            await sendTransactionNotifications(
+              supabase,
+              userId,
+              subscription.id,
+              priceAmount,
+              true, // tierUpdateSuccess = true
+              undefined
+            )
+          }
         }
 
         console.log(`✅ Subscription updated: ${subscription.id}`)
@@ -557,8 +688,31 @@ const handler = async (request: Request): Promise<Response> => {
 
           if (!tierError) {
             console.log(`✅ Invoice payment processed - User ${userId} tier updated to Pro`)
+
+            // Send success notifications
+            const priceAmount = invoice.amount_paid ? invoice.amount_paid / 100 : 0
+            await sendTransactionNotifications(
+              supabase,
+              userId,
+              subscription.id,
+              priceAmount,
+              true, // tierUpdateSuccess = true
+              undefined
+            )
           } else {
             console.error(`❌ Failed to update user tier from invoice payment:`, tierError)
+
+            // Send failure notifications
+            const priceAmount = invoice.amount_paid ? invoice.amount_paid / 100 : 0
+            await sendTransactionNotifications(
+              supabase,
+              userId,
+              subscription.id,
+              priceAmount,
+              false, // tierUpdateSuccess = false
+              `Invoice payment - tier update failed: ${tierError.message}`
+            )
+
             return new Response(
               JSON.stringify({ error: 'Failed to update user tier from invoice', details: tierError }),
               { status: 500, headers: { 'Content-Type': 'application/json' } }

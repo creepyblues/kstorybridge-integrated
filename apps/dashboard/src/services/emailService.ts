@@ -73,6 +73,16 @@ interface ConversionEmailData {
   };
 }
 
+interface TransactionEmailData {
+  userEmail: string;
+  userName: string;
+  plan: string;
+  price: number;
+  tierUpdateSuccess: boolean;
+  errorDetails?: string;
+  timestamp: string;
+}
+
 /**
  * Core email sending service using Supabase Edge Function with centralized tracking
  */
@@ -304,6 +314,38 @@ export class EmailService {
       html: this.getTierUpgradeHTML(userName, newTier),
       text: this.getTierUpgradeText(userName, newTier)
     });
+  }
+
+  /**
+   * Send transaction notification to admin when Stripe payment completes
+   */
+  async sendTransactionNotification(data: TransactionEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const emailType = 'transaction_notification';
+
+    const subject = data.tierUpdateSuccess
+      ? `✅ Payment Processed - ${data.plan}`
+      : `⚠️ Payment Processed (Tier Update Failed) - ${data.plan}`;
+
+    console.log(`📧 Sending transaction notification for ${data.userEmail} (${data.plan})`);
+
+    const result = await this.sendEmail({
+      to: 'sungho@dadble.com', // Admin email
+      subject,
+      template: 'transaction_notification',
+      templateData: data,
+      from: 'KStoryBridge Payments <payments@kstorybridge.com>'
+    });
+
+    // Log the attempt (won't fail if table doesn't exist)
+    await this.logEmailAttempt(
+      'sungho@dadble.com',
+      emailType,
+      result.success ? 'sent' : 'failed',
+      result.messageId,
+      result.error
+    );
+
+    return result;
   }
 
   /**
@@ -628,6 +670,7 @@ export const sendVerificationReminder = (email: string, userName: string) => ema
 export const sendPasswordResetConfirmation = (email: string, userName: string) => emailService.sendPasswordResetConfirmation(email, userName);
 export const sendTierUpgradeEmail = (email: string, userName: string, newTier: string) => emailService.sendTierUpgradeEmail(email, userName, newTier);
 export const sendEventEmail = (eventData: EmailEventData) => emailService.sendEventEmail(eventData);
+export const sendTransactionNotification = (data: TransactionEmailData) => emailService.sendTransactionNotification(data);
 
 // PRD 2.1: New automated email triggers
 export const sendOnboardingCompletionEmail = (data: OnboardingEmailData) => emailService.sendOnboardingCompletionEmail(data);
@@ -640,7 +683,8 @@ export type {
   EmailEventData,
   OnboardingEmailData,
   EngagementEmailData,
-  ConversionEmailData
+  ConversionEmailData,
+  TransactionEmailData
 };
 
 /**

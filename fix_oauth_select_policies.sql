@@ -1,8 +1,11 @@
 -- Fix OAuth Login Timeout - Remove Conflicting SELECT Policies
 -- Date: 2025-10-10
+-- Status: ✅ DEPLOYED - Policies successfully removed
+-- Deployment Date: 2025-10-10
 -- Issue: OAuth signin fails with 10-second timeout due to multiple SELECT policies with AND logic
 -- Root Cause: 3 SELECT policies exist, 2 without JWT fallback block OAuth when auth.uid() is null
 -- Solution: Remove redundant SELECT policies, keep only OAuth-friendly one
+-- Result: Only 1 SELECT policy remains ("OAuth-friendly buyer profile select")
 
 -- ============================================================================
 -- STEP 1: Verify Current State (Run this first to confirm the problem)

@@ -1,8 +1,19 @@
--- Manual Application of RLS Policy Fix for OAuth Login Timeout
+-- ⚠️ SUPERSEDED - DO NOT USE THIS FILE
+-- This approach was INCORRECT - OAuth-friendly policy already existed!
+--
+-- CORRECT FIX: See fix_oauth_select_policies.sql
+--
+-- Original Approach (WRONG): Add OAuth-friendly SELECT policy
+-- Actual Problem: OAuth-friendly policy existed but was blocked by 2 other policies
+-- Correct Solution: Remove the 2 conflicting policies (not add another one)
+--
+-- Manual Application of RLS Policy Fix for OAuth Login Timeout (OBSOLETE)
 -- Issue: OAuth signin fails with 10-second timeout when checking buyer profile existence
--- Solution: Add JWT claims fallback to SELECT policy
+-- Original Solution: Add JWT claims fallback to SELECT policy
+-- Actual Solution: Remove conflicting policies without JWT fallback
 -- Date: 2025-10-10
 -- Migration: 20251006000000_fix_user_buyers_select_oauth_rls.sql
+-- Status: ❌ SUPERSEDED BY fix_oauth_select_policies.sql
 
 -- Drop existing SELECT policies that might block OAuth
 DROP POLICY IF EXISTS "Users can view own buyer profile" ON public.user_buyers;

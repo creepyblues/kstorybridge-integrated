@@ -4,7 +4,11 @@
 **Root Cause**: Multiple SELECT policies with AND logic blocking OAuth queries
 **Fix**: Remove 2 redundant SELECT policies, keep only OAuth-friendly one
 **Date**: 2025-10-10
-**Estimated Time**: <5 minutes
+**Status**: ✅ **RESOLVED** - Fix deployed and verified working
+**Deployment Time**: 2025-10-10
+**Test Time**: 2025-10-10
+**Test Result**: ✅ PASSED - OAuth login successful in <5 seconds
+**Actual Fix Duration**: <5 minutes
 
 ---
 
@@ -20,13 +24,20 @@
 
 ---
 
-## 📋 Pre-Deployment Checklist
+## 📋 Deployment Checklist
 
 - [x] Audit completed - Root cause confirmed
 - [x] SQL script created - `fix_oauth_select_policies.sql`
 - [x] Security validated - No privilege escalation possible
 - [x] Rollback plan prepared - Can restore old policies if needed
-- [ ] Ready to deploy
+- [x] SQL fix deployed - 2 conflicting policies removed
+- [x] Policy state verified - Only 1 SELECT policy remains
+- [x] OAuth login tested - ✅ **PASSED** with sungho101@gmail.com (2025-10-10)
+  - Result: Login successful in <5 seconds
+  - No timeout errors
+  - No "Account Not Found" errors
+- [ ] Email login tested - Regression test recommended
+- [ ] Production monitoring - 24-hour watch period ongoing
 
 ---
 

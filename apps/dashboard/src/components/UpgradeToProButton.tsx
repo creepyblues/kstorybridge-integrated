@@ -53,14 +53,17 @@ const UpgradeToProButton = ({ children, className, disabled = false, style, onCl
         const stripe = (await import('@/lib/stripe')).default;
         const stripeInstance = await stripe;
 
-        if (stripeInstance) {
-          const { error: stripeError } = await stripeInstance.redirectToCheckout({
-            sessionId: data.sessionId,
-          });
+        if (!stripeInstance) {
+          console.error('Stripe instance is null - check VITE_STRIPE_PUBLISHABLE_KEY environment variable');
+          throw new Error('Stripe is not properly configured. Please contact support at support@kstorybridge.com');
+        }
 
-          if (stripeError) {
-            throw new Error(stripeError.message);
-          }
+        const { error: stripeError } = await stripeInstance.redirectToCheckout({
+          sessionId: data.sessionId,
+        });
+
+        if (stripeError) {
+          throw new Error(stripeError.message);
         }
       }
     } catch (error) {

@@ -1,13 +1,70 @@
 // Direct API service using fetch instead of Supabase JS library
 // This bypasses the hanging Supabase JS client configuration issues
 
+import { supabase } from '@/integrations/supabase/client';
+
 const SUPABASE_URL = 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA';
 
 let sessionAccessToken: string | null = null;
 
+// Session expiration handling
+let sessionValidationInProgress: Promise<boolean> | null = null;
+let sessionExpiredHandled = false; // Prevent multiple redirects per page load
+
 export function setDirectApiAccessToken(token: string | null) {
   sessionAccessToken = token;
+}
+
+/**
+ * Verifies if the session is truly expired by checking multiple times
+ * Prevents false positives and handles race conditions
+ */
+async function verifySessionExpired(): Promise<boolean> {
+  // Prevent concurrent validation checks
+  if (sessionValidationInProgress) {
+    console.log('🔄 Session validation already in progress, waiting for result...');
+    return sessionValidationInProgress;
+  }
+
+  // Prevent handling same expiration multiple times
+  if (sessionExpiredHandled) {
+    console.log('⚠️ Session expiration already handled, skipping');
+    return true;
+  }
+
+  const validation = async (): Promise<boolean> => {
+    console.log('🔍 Verifying session expiration with 2 checks...');
+
+    // Check session validity twice with small delay
+    for (let i = 0; i < 2; i++) {
+      try {
+        const { data } = await supabase.auth.getSession();
+
+        if (data?.session) {
+          console.log(`✅ Session valid on check ${i + 1}/2`);
+          return false; // Session is valid
+        }
+
+        // Wait 200ms before next check (avoid false positives)
+        if (i < 1) {
+          await new Promise(r => setTimeout(r, 200));
+        }
+      } catch (error) {
+        console.warn(`⚠️ Session check ${i + 1} failed:`, error);
+        // Continue to next check
+      }
+    }
+
+    console.log('❌ Session definitely expired after 2 checks');
+    sessionExpiredHandled = true; // Set flag to prevent multiple redirects
+    return true; // Definitely expired
+  };
+
+  sessionValidationInProgress = validation();
+  const result = await sessionValidationInProgress;
+  sessionValidationInProgress = null;
+  return result;
 }
 
 // Helper function to make direct API calls
@@ -40,6 +97,49 @@ async function makeDirectApiCall(endpoint: string, options: RequestInit = {}) {
     headers: mergedHeaders,
     ...restOptions
   });
+
+  // Handle JWT expiration (401 Unauthorized)
+  if (response.status === 401) {
+    const errorText = await response.text();
+
+    // Only handle if it's JWT expired (not other 401 auth errors)
+    if (errorText.includes('JWT expired') || errorText.includes('PGRST301')) {
+      console.log('🔐 JWT expired detected, verifying session...');
+
+      const isExpired = await verifySessionExpired();
+
+      if (isExpired) {
+        console.log('🚪 Session confirmed expired, forcing logout...');
+
+        try {
+          // Dynamically import toast to avoid circular dependencies
+          const { toast } = await import('@/hooks/use-toast');
+          toast({
+            title: 'Session Expired',
+            description: 'Signing you out for security...',
+            variant: 'destructive'
+          });
+
+          // Wait for user to see the toast
+          await new Promise(r => setTimeout(r, 1500));
+
+          // Force logout (will redirect via useAuth)
+          await supabase.auth.signOut();
+        } catch (toastError) {
+          console.warn('⚠️ Could not show toast, proceeding with logout:', toastError);
+          // Still logout even if toast fails
+          await supabase.auth.signOut();
+        }
+
+        throw new Error('Session expired - please sign in again');
+      } else {
+        console.log('✅ Session still valid, treating as temporary auth error');
+      }
+    }
+
+    // If not JWT expired or session still valid, throw normal error
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();

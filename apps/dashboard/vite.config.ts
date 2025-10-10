@@ -90,9 +90,9 @@ export default defineConfig(({ mode }) => ({
           
           // Charts and data visualization (if used)
           charts: ['recharts'],
-          
+
           // PDF viewing
-          pdf: ['react-pdf', 'pdfjs-dist']
+          pdf: ['react-pdf']
         }
       }
     },

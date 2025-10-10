@@ -166,6 +166,32 @@ export const notifyPitchRequest = async (requestData: {
   });
 };
 
+// Convenience function for contact creator notifications
+export const notifyContactCreator = async (requestData: {
+  userFullName: string;
+  userEmail: string;
+  titleName: string;
+  titleId: string;
+  message: string;
+  company?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'Contact Creator Request',
+    userType: 'buyer', // Assuming contact requests come from buyers
+    fullName: requestData.userFullName,
+    email: requestData.userEmail,
+    company: requestData.company,
+    additionalInfo: {
+      titleName: requestData.titleName,
+      titleId: requestData.titleId,
+      message: requestData.message.length > 200
+        ? `${requestData.message.substring(0, 200)}...`
+        : requestData.message,
+      dashboardUrl: `https://dashboard.kstorybridge.com/buyers/titles/${requestData.titleId}`,
+    }
+  });
+};
+
 // Convenience functions for common events (existing ones for compatibility)
 export const notifyBuyerSignup = async (userData: {
   fullName: string;

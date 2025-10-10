@@ -6,7 +6,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { trackPremiumFeatureRequest, trackEvent, trackTierUpgrade, trackPremiumPopupInteraction } from "@/utils/analytics";
 import { sendAdminNotification } from "@/utils/emailService";
-import { notifyPitchRequest } from "@/utils/slack";
+import { notifyPitchRequest, notifyContactCreator } from "@/utils/slack";
+import { useTierAccess } from "@/hooks/useTierAccess";
+import { EmailService } from "@/services/emailService";
 // import { testRequestTable, debugAuthAndRLS } from "@/utils/debugRequest"; // Debug imports - can be removed
 import { useEffect } from "react";
 
@@ -19,9 +21,9 @@ interface PremiumFeaturePopupProps {
   titleName?: string;
 }
 
-export default function PremiumFeaturePopup({ 
-  isOpen, 
-  onClose, 
+export default function PremiumFeaturePopup({
+  isOpen,
+  onClose,
   featureName,
   titleId,
   requestType,
@@ -29,8 +31,11 @@ export default function PremiumFeaturePopup({
 }: PremiumFeaturePopupProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { tier, canAccessPremiumContent } = useTierAccess();
   const [loading, setLoading] = useState(false);
   const [requested, setRequested] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [messageSent, setMessageSent] = useState(false);
   
   // Debug props received
   useEffect(() => {
@@ -71,6 +76,77 @@ export default function PremiumFeaturePopup({
 
     // Navigate to pricing page
     window.location.href = '/buyers/plan';
+  };
+
+  // Handle send contact message for Pro+ users
+  const handleSendMessage = async () => {
+    if (!user || !titleId || !titleName) {
+      console.error('❌ Missing required data for contact message');
+      return;
+    }
+
+    // Validate message
+    if (!contactMessage.trim()) {
+      toast({
+        title: "Message Required",
+        description: "Please enter a message before sending.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (contactMessage.length > 500) {
+      toast({
+        title: "Message Too Long",
+        description: "Please keep your message under 500 characters.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Send email notification
+      const emailService = EmailService.getInstance();
+      const emailResult = await emailService.sendContactCreatorMessage({
+        requestorEmail: user.email || '',
+        requestorName: user.user_metadata?.full_name || user.email || '',
+        titleName: titleName,
+        titleId: titleId,
+        message: contactMessage,
+        requestDate: new Date().toLocaleString()
+      });
+
+      // Send Slack notification
+      await notifyContactCreator({
+        userFullName: user.user_metadata?.full_name || user.email || 'Unknown User',
+        userEmail: user.email || 'unknown@email.com',
+        titleName: titleName,
+        titleId: titleId,
+        message: contactMessage,
+        company: user.user_metadata?.buyer_company || undefined
+      });
+
+      if (emailResult.success) {
+        setMessageSent(true);
+        toast({
+          title: "Message Sent!",
+          description: "The rights holder will receive your message shortly."
+        });
+      } else {
+        throw new Error(emailResult.error || 'Failed to send message');
+      }
+    } catch (error) {
+      console.error('❌ Error sending contact message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRequest = async () => {
@@ -280,10 +356,41 @@ export default function PremiumFeaturePopup({
             
             {/* Content */}
             <div className="text-center space-y-6 px-6 pb-6">
-              {!requested ? (
+              {!requested && !messageSent ? (
                 <>
                   <div className="space-y-4">
-                    {featureName === "Pitch deck not available" ? (
+                    {/* Contact Creator form for Pro+ users */}
+                    {featureName === "Contact Creator" && canAccessPremiumContent ? (
+                      <div className="space-y-4 text-left">
+                        <div>
+                          <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700 mb-2">
+                            Message to Rights Holder
+                          </label>
+                          <textarea
+                            id="contact-message"
+                            rows={4}
+                            value={contactMessage}
+                            onChange={(e) => setContactMessage(e.target.value)}
+                            placeholder="Enter your message here..."
+                            maxLength={500}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hanok-teal focus:border-transparent resize-none"
+                          />
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-xs text-gray-500">
+                              {contactMessage.length} / 500
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          id="premium-popup-send-message-btn"
+                          onClick={handleSendMessage}
+                          disabled={loading || !contactMessage.trim() || contactMessage.length > 500}
+                          className="w-full bg-gradient-to-r from-hanok-teal to-emerald-600 hover:from-hanok-teal/90 hover:to-emerald-700 text-white px-8 py-4 text-lg rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {loading ? "Sending..." : "Send Message"}
+                        </Button>
+                      </div>
+                    ) : featureName === "Pitch deck not available" ? (
                       <Button
                         id="premium-popup-request-btn"
                         onClick={handleRequest}
@@ -318,13 +425,17 @@ export default function PremiumFeaturePopup({
                   )}
                   <div className="space-y-2">
                     <h3 className="text-xl font-bold text-midnight-ink">
-                      {featureName === "Pitch deck not available"
+                      {messageSent
+                        ? "Message Sent!"
+                        : featureName === "Pitch deck not available"
                         ? "Request Submitted!"
                         : "Thank you for your request!"
                       }
                     </h3>
                     <p className="text-midnight-ink-600">
-                      {featureName === "Pitch deck not available"
+                      {messageSent
+                        ? "The rights holder will receive your message shortly."
+                        : featureName === "Pitch deck not available"
                         ? "Thanks for your request, we'll let you know as soon as the pitch deck becomes available"
                         : "We'll notify you when this premium feature becomes available."
                       }
@@ -336,6 +447,8 @@ export default function PremiumFeaturePopup({
                     onClick={() => {
                       onClose();
                       setRequested(false);
+                      setMessageSent(false);
+                      setContactMessage("");
                     }}
                     variant="outline"
                     className="w-full border-gray-300 hover:bg-gray-100"
@@ -347,9 +460,12 @@ export default function PremiumFeaturePopup({
             </div>
 
             {/* X Close Button - Hidden in success state */}
-            {!requested && (
+            {!requested && !messageSent && (
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  setContactMessage("");
+                }}
                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-colors duration-200 z-10"
                 aria-label="Close modal"
               >

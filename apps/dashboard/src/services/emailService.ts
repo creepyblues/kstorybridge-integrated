@@ -377,6 +377,39 @@ Dashboard Link: https://dashboard.kstorybridge.com/buyers/titles/${data.titleId}
     });
   }
 
+  /**
+   * Send contact creator message to support team
+   */
+  async sendContactCreatorMessage(data: {
+    requestorEmail: string;
+    requestorName: string;
+    titleName: string;
+    titleId: string;
+    message: string;
+    requestDate: string;
+  }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const emailBody = `
+Contact Creator Request
+
+From: ${data.requestorName} (${data.requestorEmail})
+Title: ${data.titleName}
+Title ID: ${data.titleId}
+Date: ${data.requestDate}
+
+Message:
+${data.message}
+
+Dashboard Link: https://dashboard.kstorybridge.com/buyers/titles/${data.titleId}
+    `.trim();
+
+    return this.sendEmail({
+      to: 'support@kstorybridge.com',
+      subject: `Contact Request: ${data.titleName}`,
+      text: emailBody,
+      from: 'KStoryBridge <noreply@kstorybridge.com>'
+    });
+  }
+
   // PRD 2.1: Automated email triggers for engagement and conversion
 
   /**

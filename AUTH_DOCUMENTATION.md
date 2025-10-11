@@ -1,7 +1,7 @@
 # KStoryBridge Authentication Documentation
 
-**Last Updated:** 2025-10-06
-**Version:** 3.6 - OAuth Session Passing & getSession Timeout Fix
+**Last Updated:** 2025-10-11
+**Version:** 3.7 - Email Signup Edge Function Migration
 
 This is the single source of truth for all authentication-related information in the KStoryBridge platform.
 
@@ -313,19 +313,27 @@ The trigger automatically creates the appropriate profile based on `account_type
 
 ## Authentication Flows
 
-### Email/Password Signup
+### Email/Password Signup (Updated 2025-10-11)
 
 ```mermaid
 sequenceDiagram
     User->>SignupForm: Fill form
     SignupForm->>Supabase: auth.signUp() with metadata
     Supabase->>Database: Create auth.users record
-    Database->>Database: Trigger creates profile
+    SignupForm->>EdgeFunction: Call /create-buyer-profile or /create-creator-profile
+    EdgeFunction->>Database: Use service role to create profile (bypasses RLS)
+    EdgeFunction->>SignupForm: Profile created successfully
     Supabase->>Email: Send verification
     Email->>User: Click verification link
     User->>SigninPage: Sign in
     SigninPage->>Dashboard: Redirect based on type
 ```
+
+**Key Changes (2025-10-11)**:
+- Email signup now uses edge functions for profile creation (consistent with OAuth)
+- Edge function uses server-side service role to bypass RLS policies
+- No more RLS 401 errors during signup (auth.uid() is NULL before email verification)
+- Consistent architecture: Both OAuth and email signups use edge functions
 
 ### OAuth Signup (Simplified Flow - 2025-01-14)
 
@@ -384,7 +392,9 @@ sequenceDiagram
 - `useAccountType.tsx` - Account type detection
 - `simpleAccountTypeDetection.ts` - Fast metadata-only detection (replaced complex 700+ line system)
 - `AuthCallbackSimple.tsx` - Streamlined OAuth callback handler
-- `oauthProfileEdgeFunction.ts` - Session-based profile creation (avoids getSession timeouts)
+- `oauthProfileEdgeFunction.ts` - OAuth profile creation via edge functions
+- `emailSignupEdgeFunction.ts` - Email signup profile creation via edge functions (Added 2025-10-11)
+- `atomicProfileCreator.ts` - Retry/fallback logic ONLY (not for primary signup flows)
 - `useTierAccess.tsx` - Buyer tier access control
 
 ### Account Type Detection Priority (Updated 2025-10-06)
@@ -651,6 +661,33 @@ if (session?.access_token) {
 - `pen_name`: Creator's pen name/studio name
 - `ip_owner_role`: 'author' | 'agent' (REQUIRED for creators)
 - `invitation_status`: 'invited' | 'active' | 'pending'
+
+### Profile Creation Architecture (Updated 2025-10-11)
+
+**Unified Edge Function Approach**:
+
+All signup flows now use edge functions for profile creation to ensure consistent, secure, RLS-compliant operations:
+
+```
+OAuth Signup:   Browser → oauthProfileEdgeFunction.ts → /create-oauth-profile → Service Role → Profile ✅
+Email Signup:   Browser → emailSignupEdgeFunction.ts → /create-buyer-profile → Service Role → Profile ✅
+                                                       → /create-creator-profile → Service Role → Profile ✅
+```
+
+**Why Edge Functions?**:
+- **OAuth**: User has session token but needs service role for RLS bypass
+- **Email**: User has NO session (verification pending), service role required
+- **Consistent**: Same pattern across all signup types
+- **Secure**: Service role operations only on server, never in browser
+
+**Decision Tree**:
+- OAuth signup? → Use `oauthProfileEdgeFunction.ts`
+- Email signup? → Use `emailSignupEdgeFunction.ts`
+- Need retry/fallback? → Use `atomicProfileCreator.ts` (requires authenticated session)
+
+**Legacy Approach (Deprecated)**:
+- ❌ `atomicProfileCreator.ts` for signup flows (RLS errors, no session)
+- ❌ Browser-side service role client (security risk, conflicts)
 
 ### Profile Management (Updated 2025-09-21)
 
@@ -1105,6 +1142,17 @@ WHERE trigger_schema = 'auth';
 ## Migration History
 
 ### Major Changes
+
+#### 2025-10-11: Email Signup Edge Function Migration
+- **CRITICAL FIX**: Email signup now uses edge functions for profile creation
+- **Problem Fixed**: RLS 401 errors during email signup (auth.uid() NULL before verification)
+- **Architecture Change**: Consistent edge function pattern for both OAuth and email signups
+- **New Service**: `emailSignupEdgeFunction.ts` with `createBuyerViaEdgeFunction()` and `createCreatorViaEdgeFunction()`
+- **Updated**: `signupService.ts` - Both `signupBuyer()` and `signupCreator()` now use edge functions
+- **Deprecated**: `atomicProfileCreator.ts` for signup flows - now only for retry/fallback scenarios
+- **Security**: Service role operations only on server, never in browser
+- **Testing**: Added 10 unit tests for email signup flows (100% passing)
+- **Impact**: Email signup profile creation now works consistently across all environments
 
 #### 2025-09-21: Creator Role Requirements & Profile Schema Updates
 - **BREAKING CHANGE**: `ip_owner_role` is now REQUIRED for all creator signups

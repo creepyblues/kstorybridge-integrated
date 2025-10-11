@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 
 type UserTier = 'basic' | 'pro' | 'suite';
 
@@ -14,6 +15,10 @@ interface TierAccess {
   canAccessPremiumContent: boolean;
   canAccessSuiteFeatures: boolean;
   refreshTier: () => Promise<void>;
+}
+
+interface UseTierAccessOptions {
+  session?: Session | null; // Optional session to avoid getSession() calls during OAuth
 }
 
 const tierHierarchy: Record<UserTier, number> = {
@@ -68,8 +73,11 @@ function setCachedTier(userId: string, tier: UserTier): void {
   }
 }
 
-export const useTierAccess = (): TierAccess => {
-  const { user } = useAuth();
+export const useTierAccess = (options?: UseTierAccessOptions): TierAccess => {
+  const { user, session: authSession } = useAuth();
+  const providedSession = options?.session;
+  // Use provided session if available, otherwise fall back to auth session
+  const session = providedSession !== undefined ? providedSession : authSession;
   const [tier, setTier] = useState<UserTier | null>(null);
   const [loading, setLoading] = useState(true);
 

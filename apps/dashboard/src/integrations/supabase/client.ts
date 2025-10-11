@@ -537,7 +537,21 @@ supabase.auth.signOut = (options) =>
 supabase.auth.getSession = async () => {
   const isCallback = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback');
   const hasOAuthCode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('code');
-  const isOAuthCompletion = typeof window !== 'undefined' && window.location.search.includes('complete=true');
+
+  // Check for recent OAuth flow completion via sessionStorage (persists after redirect)
+  const isRecentOAuthFlow = () => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const lastOAuthTime = sessionStorage.getItem('oauth_completed_at');
+      if (!lastOAuthTime) return false;
+      const timeSinceOAuth = Date.now() - parseInt(lastOAuthTime);
+      return timeSinceOAuth < 30000; // 30 seconds window
+    } catch {
+      return false;
+    }
+  };
+
+  const isOAuthCompletion = (typeof window !== 'undefined' && window.location.search.includes('complete=true')) || isRecentOAuthFlow();
   const needsExtendedTimeout = isCallback || isOAuthCompletion;
   const isOAuthFlow = isCallback && hasOAuthCode;
 
@@ -593,8 +607,8 @@ supabase.auth.getSession = async () => {
 
   try {
     // Context-aware timeout: OAuth callbacks AND OAuth completion need more time for session operations
-    // TIMEOUT FIX: Further reduced regular timeout for faster failure during outages (15s -> 5s)
-    const timeoutMs = needsExtendedTimeout ? 90000 : 5000; // OAuth 90s, regular 5s (faster failure)
+    // TIMEOUT FIX: Balanced timeout for regular flows (10s) to prevent false timeouts while still failing fast during outages
+    const timeoutMs = needsExtendedTimeout ? 90000 : 10000; // OAuth 90s, regular 10s
 
     // 🔧 RUNTIME DEBUG: Verify enhanced timeout configuration is working
     if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {
@@ -605,7 +619,7 @@ supabase.auth.getSession = async () => {
         timeoutMs,
         pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
         search: typeof window !== 'undefined' ? window.location.search : 'unknown',
-        expectedTimeout: needsExtendedTimeout ? '90 seconds' : '15 seconds'
+        expectedTimeout: needsExtendedTimeout ? '90 seconds' : '10 seconds'
       });
     }
 

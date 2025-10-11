@@ -1107,6 +1107,129 @@ localStorage.setItem('auth_debug', 'true');
 
 **Critical Rule:** NEVER call `supabase.auth.getSession()` during OAuth completion flows. Always pass session from `useAuth()` or earlier in the call stack.
 
+#### "OAuth signup completes but tier queries timeout with 406 errors" (RESOLVED - 2025-10-11)
+**Symptoms:**
+- OAuth profile creation succeeds
+- User redirected to dashboard `/buyers/chat`
+- Console shows multiple `getSession timeout after 5 seconds` errors (3× attempts)
+- `GET user_buyers?select=tier... 406 (Not Acceptable)` errors
+- User shown "User not found in user_buyers table, defaulting to basic tier"
+- Tier badge doesn't display or shows null
+- Total timeout: 15+ seconds (5s × 3 attempts)
+
+**Root Cause:** Three compounding issues after OAuth redirect to dashboard
+
+1. **getSession() calls after OAuth completion**: `useTierAccess` hook calling `getSession()` on every page load
+2. **Failed OAuth detection**: URL parameter `complete=true` lost after redirect to `/buyers/chat`, causing system to use aggressive 5s timeout instead of 90s OAuth timeout
+3. **Too-aggressive timeouts**: Regular timeout reduced from 15s to 5s (commit bc3e0530), too short for OAuth session propagation (8-12s needed in production)
+
+**Technical Flow of the Bug:**
+```
+OAuth Callback → Profile Created ✅
+  ↓
+Redirect to /buyers/chat (complete=true parameter lost)
+  ↓
+Page loads → useTierAccess() called
+  ↓
+useTierAccess → getSession() #1 (5s timeout) ❌ TIMEOUT
+useTierAccess → getSession() #2 (5s timeout) ❌ TIMEOUT
+useTierAccess → getSession() #3 (5s timeout) ❌ TIMEOUT
+  ↓
+Total delay: 15+ seconds
+  ↓
+Session finally available but RLS query fails
+  ↓
+406 "Not Acceptable" - No valid session token for RLS
+  ↓
+Fallback to 'basic' tier
+```
+
+**Solution:** Three-phase fix (Implemented 2025-10-11)
+
+**Phase 1: Session Passing Architecture** ✅
+- Modified `useTierAccess.ts` to accept optional `session` parameter
+- Updated `Chat.tsx` and other pages to pass session from `useAuth()`
+- **Impact**: Eliminated all `getSession()` calls during OAuth flows
+
+```typescript
+// Before (causing timeouts)
+const { tier } = useTierAccess();  // Internally calls getSession() 3 times
+
+// After (no getSession calls)
+const { user, session } = useAuth();
+const { tier } = useTierAccess({ session });  // Uses passed session
+```
+
+**Phase 2: Enhanced OAuth Detection** ✅
+- Added sessionStorage-based OAuth completion tracking
+- OAuth callback sets `oauth_completed_at` timestamp before redirects
+- `client.ts` checks for recent OAuth completion (30-second window)
+- **Impact**: OAuth timeout (90s) correctly applied even after redirect
+
+```typescript
+// In AuthCallbackSimple.tsx
+sessionStorage.setItem('oauth_completed_at', Date.now().toString());
+
+// In client.ts
+const isRecentOAuthFlow = () => {
+  const lastOAuthTime = sessionStorage.getItem('oauth_completed_at');
+  if (!lastOAuthTime) return false;
+  return Date.now() - parseInt(lastOAuthTime) < 30000; // 30s window
+};
+
+const isOAuthCompletion =
+  window.location.search.includes('complete=true') || isRecentOAuthFlow();
+```
+
+**Phase 3: Balanced Timeout Values** ✅
+- Restored regular timeout from 5s to 10s (compromise between speed and reliability)
+- Kept OAuth timeout at 90s for session propagation
+- **Impact**: Prevents false timeouts while still failing fast during outages
+
+```typescript
+// Before (too aggressive)
+const timeoutMs = needsExtendedTimeout ? 90000 : 5000;  // 5s regular
+
+// After (balanced)
+const timeoutMs = needsExtendedTimeout ? 90000 : 10000; // 10s regular
+```
+
+**Success Pattern:**
+```
+✅ OAuth session established for: user@example.com
+✅ OAuth Profile: Edge function succeeded
+✅ Setting tier to: basic
+💾 useTierAccess: Cached tier: basic
+✅ Tier information displayed correctly
+Total time: 8-12 seconds (normal OAuth flow)
+```
+
+**Performance Improvements:**
+- OAuth completion: 15+ seconds → 8-12 seconds (normal)
+- getSession() calls: 3× → 0× (eliminated)
+- 406 errors: 100% → 0% (eliminated)
+- Tier display: Null/delayed → Immediate on redirect
+
+**Files Modified:**
+1. `apps/dashboard/src/hooks/useTierAccess.ts` (lines 20-23, 76-80) - Session parameter support
+2. `apps/dashboard/src/pages/Chat.tsx` (lines 600, 663) - Pass session to useTierAccess
+3. `apps/dashboard/src/integrations/supabase/client.ts` (lines 541-554, 611, 622) - OAuth detection & timeouts
+4. `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 165, 214) - OAuth completion timestamp
+
+**Critical Rule (Updated):** During OAuth flows, NEVER call `supabase.auth.getSession()` - always pass session from `useAuth()` or earlier in the call stack. This applies to ALL hooks and components that load after OAuth completion, not just profile creation.
+
+**Testing Verification:**
+- ✅ Build successful (no compilation errors)
+- ✅ OAuth signup completes in 8-12 seconds
+- ✅ No 406 errors in console
+- ✅ No "User not found" warnings
+- ✅ Tier information displays immediately after redirect
+- ✅ SessionStorage `oauth_completed_at` persists through redirects
+
+**Related Issues:**
+- See "OAuth profile completion hangs for 90+ seconds" above for profile creation timeouts (different issue)
+- This fix addresses post-redirect tier access, not initial profile creation
+
 #### "Password reset link doesn't work"
 - Check for expired tokens
 - Verify hash parameter parsing

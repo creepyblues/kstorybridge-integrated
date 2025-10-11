@@ -597,7 +597,7 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
 };
 
 export default function Chat() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -660,7 +660,7 @@ export default function Chat() {
 
   // Check if user is authorized - allow all buyers
   const { accountType, loading: accountTypeLoading } = useAccountType();
-  const { tier } = useTierAccess();
+  const { tier } = useTierAccess({ session });
   const isAuthorized = accountType === 'buyer';
 
   // Determine if we should show empty state - always show on page load until user sends first message or views history

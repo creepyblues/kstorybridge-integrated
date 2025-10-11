@@ -160,6 +160,9 @@ const AuthCallbackSimple = () => {
           const signupPath = getSignupPath(finalAccountType);
           const signupUrl = `${signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
           console.log('📝 OAuth signup - redirecting to:', signupUrl);
+
+          // Mark OAuth completion time for extended timeout detection
+          sessionStorage.setItem('oauth_completed_at', Date.now().toString());
           navigate(signupUrl);
         } else {
           // OAuth signin - check if profile exists before redirecting to dashboard
@@ -206,6 +209,9 @@ const AuthCallbackSimple = () => {
             // Profile exists - proceed to dashboard
             const dashboardPath = getDashboardPath(finalAccountType);
             console.log('✅ Profile found - redirecting to:', dashboardPath);
+
+            // Mark OAuth completion time for extended timeout detection
+            sessionStorage.setItem('oauth_completed_at', Date.now().toString());
 
             // Check if this is the first login in this session
             const isFirstLogin = !sessionStorage.getItem('dashboard_loaded');

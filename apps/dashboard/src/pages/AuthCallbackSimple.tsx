@@ -174,91 +174,23 @@ const AuthCallbackSimple = () => {
           const signupPath = getSignupPath(finalAccountType);
           const signupUrl = `${signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
           console.log('📝 OAuth signup - redirecting to:', signupUrl);
-
-          // Mark OAuth completion time for extended timeout detection
-          sessionStorage.setItem('oauth_completed_at', Date.now().toString());
           navigate(signupUrl);
         } else {
-          // OAuth signin - check if profile exists before redirecting to dashboard
-          console.log('🔍 OAuth signin - checking profile existence...');
+          // OAuth signin - redirect to dashboard immediately (no profile check here)
+          // Profile check will happen on dashboard load to avoid infinite getSession() loops
+          console.log('✅ OAuth signin - setting up dashboard redirect with profile check');
 
-          let profileExists = false;
-          try {
-            if (finalAccountType === 'buyer') {
-              const { data } = await withRetry(
-                () => supabase
-                  .from('user_buyers')
-                  .select('id')
-                  .eq('id', user.id)
-                  .maybeSingle(),
-                {
-                  maxRetries: 2,
-                  timeoutMs: 10000, // 10 second timeout for mobile compatibility
-                  operationName: 'check-buyer-profile-existence'
-                }
-              );
-              profileExists = !!data;
-            } else if (finalAccountType === 'creator') {
-              const { data } = await withRetry(
-                () => supabase
-                  .from('user_creators')
-                  .select('id')
-                  .eq('id', user.id)
-                  .maybeSingle(),
-                {
-                  maxRetries: 2,
-                  timeoutMs: 10000, // 10 second timeout for mobile compatibility
-                  operationName: 'check-creator-profile-existence'
-                }
-              );
-              profileExists = !!data;
-            }
-          } catch (error) {
-            console.error('❌ Error checking profile existence:', error);
-            // On error, assume profile doesn't exist for safety
-            profileExists = false;
-          }
+          // Store OAuth signin state for dashboard to verify profile existence
+          sessionStorage.setItem('oauth_signin_pending', 'true');
+          sessionStorage.setItem('oauth_signin_account_type', finalAccountType);
+          sessionStorage.setItem('oauth_signin_user_id', user.id);
+          sessionStorage.setItem('oauth_signin_email', user.email);
 
-          if (profileExists) {
-            // Profile exists - proceed to dashboard
-            const dashboardPath = getDashboardPath(finalAccountType);
-            console.log('✅ Profile found - redirecting to:', dashboardPath);
+          const dashboardPath = getDashboardPath(finalAccountType);
+          console.log('🔄 Redirecting to dashboard:', dashboardPath);
 
-            // Mark OAuth completion time for extended timeout detection
-            sessionStorage.setItem('oauth_completed_at', Date.now().toString());
-
-            // Check if this is the first login in this session
-            const isFirstLogin = !sessionStorage.getItem('dashboard_loaded');
-
-            if (isFirstLogin) {
-              // Mark dashboard as loaded for this session
-              sessionStorage.setItem('dashboard_loaded', 'true');
-              console.log('🔄 First login detected - will reload dashboard after navigation');
-
-              // Navigate first, then reload to ensure fresh state
-              navigate(dashboardPath);
-
-              // Small delay to allow navigation to complete, then reload
-              setTimeout(() => {
-                console.log('🔄 Reloading dashboard for fresh state...');
-                window.location.reload();
-              }, 100);
-            } else {
-              // Normal navigation without reload
-              navigate(dashboardPath);
-            }
-          } else {
-            // No profile found - user needs to signup first
-            console.log('❌ No profile found - redirecting to signup');
-            toast({
-              title: "Account Not Found",
-              description: "Your account doesn't exist. Please sign up first.",
-              variant: "destructive"
-            });
-            setTimeout(() => {
-              navigate(`/signup/${finalAccountType}`);
-            }, 2000);
-          }
+          // Navigate to dashboard - profile check will happen there
+          navigate(dashboardPath);
         }
 
       } catch (error) {

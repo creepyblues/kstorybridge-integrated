@@ -7,7 +7,6 @@
 ### App-Specific Guides
 - **[Dashboard App](apps/dashboard/CLAUDE.md)** - Auth, OAuth, tier system, premium content
 - **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects
-- **[Admin App](apps/admin/CLAUDE.md)** - Admin auth, data generation, content management
 
 ### System Documentation
 - **[AUTH_DOCUMENTATION.md](AUTH_DOCUMENTATION.md)** - Complete auth system reference
@@ -34,7 +33,6 @@
 ```bash
 npm run dev:dashboard     # http://localhost:8081
 npm run dev:website       # http://localhost:5173
-npm run dev:admin         # http://localhost:3000
 npm run build:all         # Build all apps
 npm run lint:all          # Lint all apps
 npm install               # Install dependencies
@@ -57,8 +55,7 @@ npm run preview           # Preview production build
 ```
 ├── apps/
 │   ├── dashboard/     # User dashboard + ALL authentication
-│   ├── website/       # Marketing website only
-│   └── admin/         # Admin portal
+│   └── website/       # Marketing website only
 ├── packages/          # Shared libraries
 └── docs/              # Documentation
 ```

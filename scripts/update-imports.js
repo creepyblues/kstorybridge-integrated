@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
 
 console.log('🔄 Updating UI component imports to use @kstorybridge/ui...\n');
 
-const appsToUpdate = ['apps/dashboard', 'apps/website', 'apps/admin'];
+const appsToUpdate = ['apps/dashboard', 'apps/website'];
 
 // Common UI components to replace
 const componentsToReplace = [

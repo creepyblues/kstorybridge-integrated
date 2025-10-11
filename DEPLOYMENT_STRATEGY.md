@@ -10,9 +10,9 @@ KStoryBridge uses a three-tier deployment strategy with separate environments fo
 
 | Environment | Git Branch | Domain | Apps Deployed |
 |-------------|------------|--------|---------------|
-| **Development** | (local) | localhost:8081 | All (manual) |
+| **Development** | (local) | localhost:8081 | Dashboard, Website |
 | **Staging** | v2 | staging.kstorybridge.com | Dashboard only |
-| **Production** | main | dashboard.kstorybridge.com | Dashboard, Website, Admin |
+| **Production** | main | dashboard.kstorybridge.com | Dashboard, Website |
 
 ## Branch Deployment Rules
 
@@ -23,14 +23,12 @@ KStoryBridge uses a three-tier deployment strategy with separate environments fo
 
 **Deployments Disabled:**
 - ❌ **kstorybridge-dashboard** - Skip v2 branch (only build main)
-- ❌ **kstorybridge-integrated-admin** - Skip v2 branch (only build main)
 - ❌ **kstorybridge-website** - Skip v2 branch (only build main)
 
 ### main Branch → Production (all apps)
 
 **Deployments Enabled:**
 - ✅ **kstorybridge-dashboard** - Dashboard app (production)
-- ✅ **kstorybridge-integrated-admin** - Admin portal
 - ✅ **kstorybridge-website** - Marketing website
 
 ## Vercel Configuration Instructions
@@ -42,7 +40,6 @@ When pushing to the v2 branch, Vercel currently triggers deployments for **all p
 ```
 v2 push → dashboard-staging ✅ (desired)
          → kstorybridge-dashboard ❌ (duplicate, unwanted)
-         → kstorybridge-integrated-admin ❌ (unwanted)
          → kstorybridge-website ❌ (unwanted)
 ```
 
@@ -70,7 +67,6 @@ Could not resolve entry module "index.html"
 |----------------|------------------------|
 | dashboard-staging | `apps/dashboard` |
 | kstorybridge-dashboard | `apps/dashboard` |
-| kstorybridge-integrated-admin | `apps/admin` |
 | kstorybridge-website | `apps/website` |
 
 **How to Configure**:
@@ -85,7 +81,6 @@ Could not resolve entry module "index.html"
 kstorybridge-v2/
 ├── apps/
 │   ├── dashboard/   ← index.html is here
-│   ├── admin/       ← index.html is here
 │   └── website/     ← index.html is here
 └── (root - NO index.html here)
 ```
@@ -130,19 +125,7 @@ kstorybridge-v2/
 
 ---
 
-### 3. Configure kstorybridge-integrated-admin (Skip v2, build main only)
-
-**Vercel Dashboard:**
-1. Go to: kstorybridge-integrated-admin project → Settings → Git
-2. **Ignored Build Step**: Enter this command:
-   ```bash
-   if [ "$VERCEL_GIT_COMMIT_REF" = "v2" ]; then exit 0; else exit 1; fi
-   ```
-3. **Production Branch**: `main`
-
----
-
-### 4. Configure kstorybridge-website (Skip v2, build main only)
+### 3. Configure kstorybridge-website (Skip v2, build main only)
 
 **Vercel Dashboard:**
 1. Go to: kstorybridge-website project → Settings → Git
@@ -210,8 +193,7 @@ git push origin main
 **Result:**
 - ✅ All projects build and deploy to production domains
 - Dashboard → dashboard.kstorybridge.com
-- Admin → admin.kstorybridge.com (if configured)
-- Website → kstorybridge.com (if configured)
+- Website → kstorybridge.com
 
 ## Testing Checklist
 
@@ -227,7 +209,7 @@ git push origin v2
 
 **Expected Result:**
 - ✅ Only dashboard-staging deployment triggered
-- ❌ No deployments for dashboard, admin, or website
+- ❌ No deployments for dashboard or website
 
 **Verify in Vercel Dashboard:**
 - Check Deployments tab for each project
@@ -243,7 +225,7 @@ git push origin main
 ```
 
 **Expected Result:**
-- ✅ All production projects deploy (dashboard, admin, website)
+- ✅ All production projects deploy (dashboard, website)
 - ❌ dashboard-staging shows no new deployment
 
 ### Test 3: Staging Site Functionality
@@ -358,7 +340,6 @@ Supabase Edge Functions are shared across all environments:
 
 ⏳ **Pending (Manual Vercel Dashboard Configuration):**
 - Configure Ignored Build Step for kstorybridge-dashboard
-- Configure Ignored Build Step for kstorybridge-integrated-admin
 - Configure Ignored Build Step for kstorybridge-website
 - Add staging redirect URL to Supabase OAuth configuration
 

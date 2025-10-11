@@ -69,8 +69,7 @@ const checks = {
     name: 'Duplicate File Removal',
     items: [
       '!apps/dashboard/src/components/ui',
-      '!apps/website/src/components/ui',
-      '!apps/admin/src/components/ui'
+      '!apps/website/src/components/ui'
     ]
   }
 };

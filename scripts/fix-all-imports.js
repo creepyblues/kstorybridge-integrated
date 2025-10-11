@@ -177,8 +177,7 @@ function processDirectory(dir, pattern = /\.(tsx?|jsx?)$/) {
 // Process all apps
 const appsToProcess = [
   'apps/dashboard/src',
-  'apps/website/src', 
-  'apps/admin/src'
+  'apps/website/src'
 ];
 
 let totalResults = { files: 0, components: 0 };

@@ -1,6 +1,7 @@
 import { authService } from '@/services/auth';
 import { createBuyerProfileAtomic, createCreatorProfileAtomic } from '@/utils/atomicProfileCreator';
 import { createOAuthProfileViaEdgeFunction } from '@/services/oauthProfileEdgeFunction';
+import { createBuyerViaEdgeFunction, createCreatorViaEdgeFunction } from '@/services/emailSignupEdgeFunction';
 import type { BuyerFormData, CreatorFormData, AccountType } from './types';
 import { isBlockedEmail, normalizeCreatorRole } from './validation';
 import { sendWelcomeEmail } from '@/services/emailService';
@@ -264,8 +265,9 @@ export const signupBuyer = async (formData: BuyerFormData): Promise<SignupResult
       return { success: false, error: 'Failed to create user account' };
     }
 
-    // Create profile using service role to bypass RLS
-    await createBuyerProfileAtomic({
+    // Create profile using edge function (bypasses RLS with server-side service role)
+    console.log('📝 Email signup: Creating buyer profile via edge function');
+    const profileResult = await createBuyerViaEdgeFunction({
       id: result.user.id,
       email: formData.email,
       full_name: formData.full_name,
@@ -274,10 +276,17 @@ export const signupBuyer = async (formData: BuyerFormData): Promise<SignupResult
       linkedin_url: formData.linkedin_url || null,
       tier: formData.tier || 'basic',
       requested: false
-    }, {
-      useServiceRole: true, // Bypass RLS for email signup
-      waitForTrigger: false // Skip trigger wait for email signup
     });
+
+    if (!profileResult.success) {
+      console.error('❌ Email signup: Profile creation failed:', profileResult.error);
+      return {
+        success: false,
+        error: `Failed to create buyer profile: ${profileResult.error || 'Unknown error'}`
+      };
+    }
+
+    console.log('✅ Email signup: Buyer profile created successfully');
 
     // Send Slack notification (welcome email will be sent after email verification)
     try {
@@ -342,8 +351,9 @@ export const signupCreator = async (formData: CreatorFormData): Promise<SignupRe
       return { success: false, error: 'Failed to create user account' };
     }
 
-    // Create profile
-    await createCreatorProfileAtomic({
+    // Create profile using edge function (bypasses RLS with server-side service role)
+    console.log('📝 Email signup: Creating creator profile via edge function');
+    const profileResult = await createCreatorViaEdgeFunction({
       id: result.user.id,
       email: formData.email,
       full_name: formData.full_name,
@@ -353,6 +363,16 @@ export const signupCreator = async (formData: CreatorFormData): Promise<SignupRe
       website_url: formData.website_url,
       invitation_status: formData.invitation_status || 'invited'
     });
+
+    if (!profileResult.success) {
+      console.error('❌ Email signup: Creator profile creation failed:', profileResult.error);
+      return {
+        success: false,
+        error: `Failed to create creator profile: ${profileResult.error || 'Unknown error'}`
+      };
+    }
+
+    console.log('✅ Email signup: Creator profile created successfully');
 
     // Send Slack notification (welcome email will be sent after email verification)
     try {

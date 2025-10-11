@@ -1,12 +1,18 @@
 /**
  * Atomic Profile Creation Utility
  *
- * **WHEN TO USE**: Email/password signup flows, fallback scenarios, or when retry logic is needed
+ * **WHEN TO USE**: Retry/fallback scenarios ONLY
  *
- * **DO NOT USE FOR**: OAuth flows (use simpleOAuthProfile.ts instead)
+ * **DO NOT USE FOR**:
+ * - OAuth flows (use oauthProfileEdgeFunction.ts instead)
+ * - Email signup flows (use emailSignupEdgeFunction.ts instead)
  *
  * This module provides race condition-safe profile creation with comprehensive
  * error handling, retry mechanisms, and conflict resolution for concurrent operations.
+ *
+ * **IMPORTANT**: Primary signup flows (email and OAuth) should use edge functions
+ * which have server-side service role access. This utility is for edge cases and
+ * fallback scenarios only.
  *
  * Key Features:
  * - Atomic profile creation with proper locking mechanisms
@@ -18,10 +24,10 @@
  * - Uses regular Supabase client (RLS policies apply)
  *
  * Decision Tree:
- * - OAuth signup? → Use simpleOAuthProfile.ts (service role, faster)
- * - Email signup? → Use this module (retry logic, RLS compliance)
- * - Need retries? → Use this module
- * - Fallback needed? → Use this module
+ * - OAuth signup? → Use oauthProfileEdgeFunction.ts (server-side service role)
+ * - Email signup? → Use emailSignupEdgeFunction.ts (server-side service role)
+ * - Need retries after edge function failure? → Use this module (fallback)
+ * - Profile update/sync? → Use this module (retry logic)
  */
 
 import { supabase } from '@/integrations/supabase/client';
@@ -65,7 +71,6 @@ export interface ProfileCreationOptions {
   allowUpdate?: boolean;
   waitForTrigger?: boolean;
   lockTimeout?: number;
-  useServiceRole?: boolean; // New option for bypassing RLS
 }
 
 // In-memory lock to prevent concurrent operations for the same user
@@ -154,8 +159,7 @@ export async function createBuyerProfileAtomic(
     retryDelay = 1000,
     allowUpdate = true,
     waitForTrigger = true,
-    lockTimeout = 10000,
-    useServiceRole = false
+    lockTimeout = 10000
   } = options;
   
   const lockKey = `buyer_${profileData.id}`;
@@ -183,8 +187,7 @@ export async function createBuyerProfileAtomic(
     maxRetries,
     retryDelay,
     allowUpdate,
-    waitForTrigger,
-    useServiceRole
+    waitForTrigger
   });
   
   // Store the operation in the lock map
@@ -204,9 +207,9 @@ export async function createBuyerProfileAtomic(
  */
 async function createBuyerProfileOperation(
   profileData: BuyerProfileData,
-  options: Required<Pick<ProfileCreationOptions, 'maxRetries' | 'retryDelay' | 'allowUpdate' | 'waitForTrigger'>> & { useServiceRole?: boolean }
+  options: Required<Pick<ProfileCreationOptions, 'maxRetries' | 'retryDelay' | 'allowUpdate' | 'waitForTrigger'>>
 ): Promise<ProfileCreationResult> {
-  const { maxRetries, retryDelay, allowUpdate, waitForTrigger, useServiceRole } = options;
+  const { maxRetries, retryDelay, allowUpdate, waitForTrigger } = options;
   
   console.log(`🏗️ Atomic Profile: Starting buyer profile creation for ${profileData.email}`);
   
@@ -241,7 +244,8 @@ async function createBuyerProfileOperation(
         created_at: new Date().toISOString()
       };
 
-      // Always use regular supabase client (service role removed for security)
+      // Uses regular supabase client (requires authenticated session)
+      // For signup flows, use edge functions instead (emailSignupEdgeFunction.ts or oauthProfileEdgeFunction.ts)
       const client = supabase;
       const clientType = 'user auth';
 

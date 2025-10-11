@@ -139,6 +139,7 @@ export class AuthService {
     options?: {
       redirectTo?: string;
       queryParams?: Record<string, string>;
+      state?: string; // OAuth state parameter for passing data
     }
   ): Promise<{ error?: string }> {
     try {

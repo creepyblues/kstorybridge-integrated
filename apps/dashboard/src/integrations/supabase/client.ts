@@ -285,6 +285,9 @@ let lastKnownSession: Session | null = null;
 let lastSessionUpdatedAt = 0;
 const SESSION_CACHE_MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes - increased from 20 to reduce getSession calls further
 
+// Track if we've already processed the OAuth code to prevent re-processing
+let oauthCodeProcessed = false;
+
 const bootstrapCachedSession = () => {
   console.log('🧊 [BOOTSTRAP] Starting session bootstrap from localStorage');
 
@@ -553,7 +556,8 @@ supabase.auth.getSession = async () => {
 
   const isOAuthCompletion = (typeof window !== 'undefined' && window.location.search.includes('complete=true')) || isRecentOAuthFlow();
   const needsExtendedTimeout = isCallback || isOAuthCompletion;
-  const isOAuthFlow = isCallback && hasOAuthCode;
+  // Prevent re-processing OAuth code after first exchange to avoid infinite loop
+  const isOAuthFlow = isCallback && hasOAuthCode && !oauthCodeProcessed;
 
   // 🔧 CALLBACK DEBUG: Verify enhanced callback detection logic
   if (typeof window !== 'undefined') {
@@ -593,6 +597,9 @@ supabase.auth.getSession = async () => {
     // During OAuth callback with code, let Supabase handle its own session exchange without timeouts
     console.log('🔄 OAuth PKCE flow detected - using native Supabase session exchange');
     const result = await originalGetSession();
+    // Mark OAuth code as processed to prevent re-entering this path on subsequent getSession() calls
+    oauthCodeProcessed = true;
+    console.log('✅ OAuth code processed - subsequent calls will use timeout-protected path');
     return handleSessionResult(result);
   }
 

@@ -65,6 +65,72 @@ The application uses Supabase with migrations in `supabase/migrations/`. Check t
 
 **Routing**: All routes are defined in `App.tsx`. The app uses client-side routing with React Router.
 
+## Preview Pages System (NEW - 2025-10-13)
+
+The website app now supports **Preview Pages** for safe testing of page redesigns before production deployment.
+
+### Quick Start
+
+**View Active Preview**:
+- Preview URL: `http://localhost:5173/buyers-preview`
+- Production URL: `http://localhost:5173/buyers` (compare side-by-side)
+- Strategy Doc: [BUYERS_PAGE_OVERHAUL.md](../../apps/dashboard/public/docs/BUYERS_PAGE_OVERHAUL.md)
+
+**Key Features**:
+- ✅ Separate route pattern: `/*-preview`
+- ✅ Development-only (blocked in production via `import.meta.env.DEV`)
+- ✅ Visual "PREVIEW MODE" banner with link to production
+- ✅ Uses actual design system components
+- ✅ Fully interactive testing environment
+
+### Creating New Preview Pages
+
+1. **Create Component**: `/src/pages/[PageName]Preview.tsx`
+2. **Add Import**: Add lazy import to `App.tsx`
+3. **Add Route**: Wrap route in `{import.meta.env.DEV && <Route ... />}`
+4. **Include Banner**: Copy preview banner from `BuyersPagePreview.tsx`
+5. **Test**: Visit `http://localhost:5173/[page-name]-preview`
+
+### Complete Documentation
+
+See **[PREVIEW_PAGES.md](./PREVIEW_PAGES.md)** for:
+- Detailed implementation guide
+- Naming conventions
+- Best practices
+- Testing workflow
+- Troubleshooting
+
+### Active Preview Pages
+
+| Page | Preview Route | Production Route | Status | Created |
+|------|--------------|------------------|--------|---------|
+| Buyers | `/buyers-preview` | `/buyers` | Active | 2025-10-13 |
+| Creators | `/creators-preview` | `/creators` | Active | 2025-10-14 |
+
+### Safety Features
+
+**Production Protection**:
+- Preview routes only exist when `import.meta.env.DEV === true`
+- Build process automatically excludes preview pages from production
+- No environment variables needed (automatic via Vite)
+
+**Visual Distinction**:
+- Yellow "PREVIEW MODE" banner (sticky top)
+- Link to production page for comparison
+- Timestamp showing when preview was created
+
+### Example Usage
+
+```tsx
+// In App.tsx
+const BuyersPagePreview = lazy(() => import("./pages/BuyersPagePreview"));
+
+// Route (development-only)
+{import.meta.env.DEV && <Route path="/buyers-preview" element={<BuyersPagePreview />} />}
+```
+
+**Important**: Never remove the `import.meta.env.DEV &&` check or preview pages will deploy to production.
+
 ## Design Guidelines
 
 > 🎨 **Color Guidelines**: See [Root CLAUDE.md Design Guidelines](../../CLAUDE.md#design-guidelines) for comprehensive color usage policy and approved palette.

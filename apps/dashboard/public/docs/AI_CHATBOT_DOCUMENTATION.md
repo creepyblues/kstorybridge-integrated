@@ -1,8 +1,8 @@
 # AI Chatbot System Documentation
 
 **Last Updated**: 2025-10-13
-**Version**: 2.1
-**Status**: Production (All Buyers) - NEW: Hollywood Showrunner Personality
+**Version**: 2.3 - Phase 3: Smart Suggestion System
+**Status**: Production (All Buyers) - NEW: Response-Aware Suggestions
 
 ---
 
@@ -987,6 +987,302 @@ When testing a new model configuration:
 
 For complete model configuration details, see:
 - **[MODEL_CONFIGURATION_GUIDE.md](./MODEL_CONFIGURATION_GUIDE.md)** - Comprehensive model comparison and migration guide
+
+---
+
+## 🎯 PHASE 3: SMART SUGGESTION SYSTEM (DEPLOYED 2025-10-13)
+
+### Overview
+
+Phase 3 implements **response-aware suggestions** to eliminate duplicate and irrelevant chatbot suggestions. The system now analyzes AI responses to intelligently suppress or complement suggestion chips.
+
+### Problem Statement
+
+**Before Phase 3**:
+- Duplicate suggestions appeared from two sources:
+  1. AI response text with "Try:" sections
+  2. System-generated suggestion chips at the end of responses
+- Both systems generated questions independently, causing repetition
+- Suggestions didn't consider what the AI actually said
+
+**Example Issue**:
+```
+User: "bromance"
+
+AI Response:
+"Let me help you discover the perfect Korean story!
+
+Try:
+- What genres interest you most?
+- Do you prefer character-driven stories?
+- Any specific themes in mind?"
+
+Suggestion Chips:
+[What genres do you like?]
+[Character-driven or plot-heavy?]
+[Specific themes?]
+```
+
+**Result**: User sees nearly identical questions twice (AI text + chips)
+
+### Solution Architecture
+
+#### 1. Response Analyzer (`analyzeAIResponse`)
+
+Detects when AI has already provided suggestions by analyzing:
+
+```typescript
+function analyzeAIResponse(response: string): {
+  hasTrySection: boolean;      // Detected "Try:" format
+  hasQuestions: boolean;        // Has 2+ questions
+  questionCount: number;        // Total question marks
+  titlesDiscussed: string[];   // Quoted title names
+  themesDiscussed: string[];   // Genre/tone keywords
+  hasBulletList: boolean;      // Bullet or numbered lists
+}
+```
+
+**Detection Patterns**:
+- **"Try:" sections**: Regex `/try:/i`
+- **Bullet lists**: Patterns like `- `, `• `, `1. `
+- **Questions**: Count of `?` characters
+- **Titles**: Quoted strings `"Title Name"`
+- **Themes**: Keywords (romance, action, thriller, dark, etc.)
+
+**Implementation**: `chat-orchestrator/index.ts` lines 1085-1153
+
+#### 2. Smart Suppression Logic
+
+Prevents system chips from appearing when AI already provided suggestions:
+
+```typescript
+const skipSuggestions =
+  queryIntent === 'information' ||                          // Skip for "Tell me about X"
+  (conversationStage === 'initial' && responseAnalysis.hasTrySection) ||  // Skip if AI has "Try:"
+  (responseAnalysis.hasQuestions && responseAnalysis.questionCount >= 3) || // Skip if AI asked 3+ questions
+  (responseAnalysis.hasBulletList && responseAnalysis.questionCount >= 2); // Skip if AI has structured list
+```
+
+**Suppression Rules**:
+1. **Information queries** (`"Tell me about [Title]"`) → Always suppress (single title focus)
+2. **Initial + "Try:" section** → Suppress chips (AI already exploring)
+3. **3+ questions** → Suppress chips (AI asking too many already)
+4. **Bullet list + 2+ questions** → Suppress chips (structured suggestions present)
+
+**Implementation**: `chat-orchestrator/index.ts` lines 345-385
+
+#### 3. Response-Aware Suggestions
+
+Generates contextual chips that **complement** (not duplicate) AI response:
+
+```typescript
+// Build on titles AI mentioned
+if (responseAnalysis.titlesDiscussed.length > 0) {
+  const discussedTitle = responseAnalysis.titlesDiscussed[0];
+
+  // Suggest alternative titles NOT discussed
+  const undiscussedTitles = searchResults.filter(r =>
+    !responseAnalysis.titlesDiscussed.includes(r.title_name_en)
+  );
+
+  if (undiscussedTitles.length > 0) {
+    responseAwareSuggestions.push(`How does "${undiscussedTitles[0].title_name_en}" compare?`);
+  }
+}
+
+// Build on themes AI mentioned
+if (responseAnalysis.themesDiscussed.length >= 2) {
+  const theme1 = responseAnalysis.themesDiscussed[0];
+  const theme2 = responseAnalysis.themesDiscussed[1];
+  responseAwareSuggestions.push(`${theme1} vs ${theme2} - which do you prefer?`);
+}
+
+// Provide specific examples when AI asked broad questions
+if (responseAnalysis.hasQuestions) {
+  const title1 = searchResults[0].title_name_en;
+  const title2 = searchResults[1].title_name_en;
+  responseAwareSuggestions.push(`For example: "${title1}" or "${title2}"`);
+}
+```
+
+**Suggestion Strategies**:
+- **Alternative Titles**: Suggest titles NOT mentioned by AI
+- **Theme Variations**: Build on themes AI discussed (contrasts, combinations)
+- **Specific Examples**: When AI asks broad questions, provide concrete title examples
+- **Deeper Exploration**: Suggest diving deeper into titles AI mentioned
+
+**Implementation**: `chat-orchestrator/index.ts` lines 1402-1473
+
+#### 4. Priority Suggestion Mixing
+
+Response-aware suggestions get **highest priority** in final mix:
+
+```typescript
+// Priority hierarchy:
+// 1. Response-aware suggestions (max 3) - Based on actual AI output
+// 2. Context-aware suggestions (max 2) - Based on user query themes
+// 3. Genre-vibe suggestions (max 2) - Cross-genre combinations
+// 4. Comp-based suggestions (max 1) - From comps field
+// 5. Author suggestions (max 1) - More from author
+// 6. Intent-specific (max 1) - Based on query intent
+
+const typeM1_responseAware: string[] = [...responseAwareSuggestions];  // Highest priority
+
+diverseSuggestions.push(...typeM1_responseAware.slice(0, 3)); // Add first
+```
+
+**Implementation**: `chat-orchestrator/index.ts` lines 1638-1756
+
+#### 5. Natural Conversation Prompt
+
+Simplified AI prompt to make suggestions feel more natural:
+
+**Before**:
+```
+**REQUIRED FORMAT** (follow this EXACTLY):
+[Brief warm intro]
+
+Try:
+- [Question 1: Genre preferences]
+- [Question 2: Storytelling style]
+- [Question 3: Themes]
+```
+
+**After**:
+```
+**NATURAL CONVERSATION APPROACH**:
+Instead of formal "Try:" lists, weave questions naturally into your response.
+
+Example:
+"I'd love to help you discover the perfect Korean story! To narrow things down,
+I'm curious—what kind of emotional experience are you looking for? Are you drawn
+more to intense, plot-driven thrillers, or character journeys with slow-burn
+development? And do you have any specific themes in mind?"
+
+**Key Principles**:
+- Ask questions in paragraph form, not bullet lists
+- Make questions feel like natural conversation
+- Focus on preferences, not just metadata
+```
+
+**Implementation**: `chat-orchestrator/index.ts` lines 1943-1966
+
+### Testing Scenarios
+
+#### Scenario 1: Broad Query (Suppression Test)
+```
+User: "bromance"
+
+Expected Behavior:
+- AI: Asks natural questions in paragraph form
+- Chips: SUPPRESSED (AI already exploring preferences)
+
+Reason: conversationStage='initial' + responseAnalysis.hasTrySection=false + responseAnalysis.hasQuestions=true
+```
+
+#### Scenario 2: Information Query (Suppression Test)
+```
+User: "Tell me about The Dilettante"
+
+Expected Behavior:
+- AI: Provides detailed title information
+- Chips: SUPPRESSED (information intent)
+
+Reason: queryIntent='information'
+```
+
+#### Scenario 3: Follow-up Query (Response-Aware Test)
+```
+User: "romance stories"
+AI: Recommends "First Love" and "Secret Romance"
+
+User: "Tell me more"
+
+Expected Behavior:
+- AI: Provides details about mentioned titles
+- Chips: COMPLEMENTARY suggestions
+  - "How does 'My Heart' compare?" (alternative title)
+  - "More romance + thriller stories" (theme variation)
+  - "Slow-burn vs fast-paced romance" (contrast)
+
+Reason: Response-aware suggestions build on AI's discussed titles
+```
+
+#### Scenario 4: Theme Query (Response-Aware Test)
+```
+User: "dark thriller with revenge"
+
+Expected Behavior:
+- AI: Discusses 2-3 dark revenge thrillers
+- Chips: COMPLEMENTARY suggestions
+  - "Revenge stories with redemption arcs" (variation)
+  - "Lighter thriller vs dark intense" (contrast)
+  - "More from [author AI mentioned]" (author exploration)
+
+Reason: Response-aware suggestions extend conversation naturally
+```
+
+### Performance Metrics
+
+**Expected Improvements**:
+- **Duplicate Rate**: 100% → 0% (eliminate all AI/chip duplicates)
+- **Relevance Score**: 70% → 90%+ (chips complement AI response)
+- **Suppression Rate**: ~40-50% of queries (information + initial broad queries)
+- **User Confusion**: Significant reduction (one coherent suggestion system)
+
+**Monitoring**:
+```typescript
+// Edge function logs to monitor:
+console.log('🔇 Suppressing suggestions:', {
+  reason: 'AI provided Try section',
+  conversationStage,
+  responseAnalysis
+});
+
+console.log('🧠 Generating response-aware suggestions:', {
+  titlesDiscussed: responseAnalysis.titlesDiscussed.length,
+  themesDiscussed: responseAnalysis.themesDiscussed.length
+});
+
+console.log('💡 Generated diverse suggestions:', {
+  responseAwareAvailable: typeM1_responseAware.length,
+  suggestions: uniqueSuggestions
+});
+```
+
+### Code Locations
+
+**All changes in**: `/apps/dashboard/supabase/functions/chat-orchestrator/index.ts`
+
+| Feature | Function/Section | Lines |
+|---------|-----------------|-------|
+| Response Analyzer | `analyzeAIResponse()` | 1085-1153 |
+| Suppression Logic | Streaming response handler | 340-385 |
+| Response-Aware Generation | `generateSuggestedQueries()` | 1402-1473 |
+| Priority Mixing | Suggestion mixing logic | 1638-1756 |
+| Natural Prompt | `buildMasterPrompt()` | 1943-1966 |
+
+### Benefits
+
+**User Experience**:
+- ✅ No more duplicate questions (AI + chips saying same thing)
+- ✅ Suggestions feel contextual and helpful (not random)
+- ✅ Natural conversation flow (paragraph questions, not bullet lists)
+- ✅ One coherent suggestion system (not competing sources)
+
+**Technical**:
+- ✅ Response-aware suggestion generation
+- ✅ Intelligent suppression prevents duplicates
+- ✅ Priority-based mixing ensures best suggestions show first
+- ✅ Extensible architecture for future improvements
+
+### Future Enhancements
+
+**Potential Phase 4**:
+- Track which suggestions users click (feedback loop)
+- Personalize suggestion types based on user behavior
+- A/B test different suppression thresholds
+- Multi-turn conversation memory (reference suggestions from 3+ turns ago)
 
 ---
 

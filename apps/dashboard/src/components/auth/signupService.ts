@@ -413,15 +413,13 @@ export const handleOAuthSignup = async (
     sessionStorage.setItem('oauth_account_type', accountType);
     sessionStorage.setItem('oauth_flow', 'signup');
 
-    // Use OAuth state parameter (no custom query parameters in callback URL)
-    const oauthState = JSON.stringify({
-      account_type: accountType,
-      flow: 'signup'
-    });
+    // ✅ CORRECT: Use URL query parameters in redirectTo URL (per AUTH_DOCUMENTATION.md)
+    // URL params persist through all redirects: Google → Supabase → Your App
+    // Does NOT conflict with Supabase PKCE state parameter
+    const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signup`;
 
     const result = await authService.signInWithOAuth(provider, {
-      redirectTo: `${window.location.origin}/auth/callback`, // Clean URL, no parameters
-      state: oauthState // Pass data via OAuth state parameter
+      redirectTo: callbackUrl // URL parameters included in redirect URL
     });
 
     if (result.error) {

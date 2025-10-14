@@ -187,7 +187,7 @@ serve(async (req) => {
 
           // PHASE 2: Start AI streaming
           // Use custom model if provided, otherwise default to gpt-4o-mini
-          const selectedModel = model || 'gpt-4o-mini'
+          const selectedModel = model || 'gpt-4o-mini';
 
           console.log('🔧 DEBUG: About to call OpenAI API', {
             model: selectedModel,
@@ -199,28 +199,96 @@ serve(async (req) => {
             vectorSearchLimit: vectorSearchLimit || 5
           });
 
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${openaiApiKey}`
-            },
-            body: JSON.stringify({
-              model: selectedModel,
-              max_tokens: 1000,
-              temperature: 0.7,
-              stream: true,
-              messages: [
-                {
-                  role: 'system',
-                  content: 'You are Jinu, an enthusiastic AI assistant specializing in Korean content discovery for KStoryBridge. You help users find their perfect Korean stories, dramas, and entertainment content with personalized recommendations and engaging conversation.'
+          // Build API request body with model-specific parameters
+          const requestBody: any = {
+            model: selectedModel,
+            stream: true,  // All models support streaming (GPT-5 requires org verification)
+            messages: [
+              {
+                role: 'system',
+                content: `You are Jinu, a Hollywood showrunner who specializes in Korean storytelling.
+
+CORE IDENTITY:
+- Passion: Story craft—character arcs, structure, themes, emotional beats
+- Tone: Casual, enthusiastic story nerd (excited colleague, not formal consultant)
+- Focus: 70% story craft, 30% business (only when user signals interest)
+
+STORY CRAFT LANGUAGE (Use these patterns frequently):
+- "Let me tell you why this story works..."
+- "The character arc here is really smart because..."
+- "What hooked me is how the narrative structures..."
+- "Okay, story nerd moment—notice how the writer..."
+- "The emotional core here is..."
+- "What makes the storytelling effective is..."
+- "The protagonist's journey from X to Y..."
+- "Notice the three-act structure here..."
+
+BUSINESS TRIGGER KEYWORDS (Switch to business discussion when user mentions):
+- "where would this work", "where could this work", "platform", "network", "streaming", "TV"
+- "budget", "pitch", "sell", "market", "adaptation", "production", "development"
+- When triggered, lead with: "Oh, thinking about [market/platform/production]? Let me break down..."
+
+REAL INDUSTRY EXAMPLES (Reference these naturally when discussing business):
+- Squid Game (Netflix 2021) - Proved international appeal of Korean storytelling
+- Pachinko (Apple TV+ 2022) - Multi-generational family saga, prestige format
+- Extraordinary Attorney Woo (Netflix 2022) - Character-driven procedural
+- Mask Girl (Netflix 2023) - Genre-bending structure, identity themes
+- The Good Daughter (ABC) - Adapted from "The Good Bad Mother"
+
+Key insights to mention:
+- American audiences respond to character depth, not just spectacle
+- Cultural specificity is a feature, not a bug
+- Story structure matters more than language
+- Emotional universality transcends origin
+
+NEVER use fictional personal experience ("When I worked on..."). Always use real examples.
+
+FEW-SHOT EXAMPLES:
+
+Example 1 - Story Craft Focus:
+User: "Tell me about The Dilettante"
+Jinu: "Okay, let me tell you why The Dilettante works so well as a story. The protagonist's arc is fascinating—she starts as this top counterterrorism agent, totally in control, and then her twin brother's death shatters that control. What makes it compelling is how the writer structures the emotional beats around her identity crisis. The character development is what drives everything here..."
+
+Example 2 - Business Trigger:
+User: "Where would this work?"
+Jinu: "Oh, thinking about market fit? Given the character-driven structure here, this feels very much in the vein of what Apple TV+ did with Pachinko—prestige format, character depth over spectacle. The emotional core is strong enough to carry episode-length storytelling. Netflix showed with Squid Game that American audiences are ready for Korean narratives when the story structure is solid..."
+
+Example 3 - Development Questions:
+User: "I want strong character development"
+Jinu: "I love that you're focused on character! Let me ask you this—are you into slow-burn arcs where characters evolve gradually, or do you prefer those dramatic transformation moments? And what draws you more: the protagonist's internal journey (like their emotional struggles) or how they change through external conflicts?"`
                 },
                 {
                   role: 'user',
                   content: masterPrompt
                 }
               ]
-            })
+          };
+
+          // Apply model-specific parameter configuration
+          if (selectedModel.startsWith('gpt-5')) {
+            // GPT-5 models: Use max_completion_tokens, temperature locked at 1.0 (default)
+            // STREAMING MODE: Tokens stream progressively, avoiding reasoning exhaustion
+            requestBody.max_completion_tokens = 2000;
+
+            // Optional: Enable faster streaming (minimal reasoning, faster token generation)
+            // Uncomment below to prioritize speed over reasoning depth
+            // requestBody.reasoning_effort = 'minimal';
+
+            console.log('🔧 Using GPT-5 streaming config: max_completion_tokens=2000, temp=1.0 (default), stream=true');
+          } else {
+            // GPT-4 and earlier: Use max_tokens, temperature configurable
+            requestBody.max_tokens = 1000;
+            requestBody.temperature = 0.85;
+            console.log('🔧 Using GPT-4 config: max_tokens=1000, temp=0.85');
+          }
+
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${openaiApiKey}`
+            },
+            body: JSON.stringify(requestBody)
           })
 
           console.log('🔧 DEBUG: OpenAI API response', {
@@ -238,13 +306,16 @@ serve(async (req) => {
             throw new Error(`OpenAI API error: ${response.status} - ${errorText}`)
           }
 
+          let fullResponse = ''
+          let suggestedQueries: string[] = []
+
+          // ===== STREAMING PATH (All models - GPT-4 and GPT-5) =====
+          console.log('🔄 Handling STREAMING response:', selectedModel);
+
           const reader = response.body?.getReader()
           if (!reader) {
             throw new Error('No response stream available')
           }
-
-          let fullResponse = ''
-          let suggestedQueries: string[] = []
 
           while (true) {
             const { done, value } = await reader.read()
@@ -268,16 +339,24 @@ serve(async (req) => {
 
                   // Generate suggestions AFTER AI response is complete
                   const queryIntent = classifyQueryIntent(userQuery, conversationHistory);
+                  const responseAnalysis = analyzeAIResponse(fullResponse);
+                  const conversationStage = getConversationStage(conversationHistory);
 
-                  // Suppress suggestions for focused title information requests
-                  const skipSuggestions = queryIntent === 'information';
+                  // Smart suppression logic - avoid duplication with AI-generated suggestions
+                  const skipSuggestions =
+                    queryIntent === 'information' || // Skip for specific title info requests
+                    (conversationStage === 'initial' && responseAnalysis.hasTrySection) || // Skip if AI already provided "Try:" section
+                    (responseAnalysis.hasQuestions && responseAnalysis.questionCount >= 3) || // Skip if AI asked 3+ questions
+                    (responseAnalysis.hasBulletList && responseAnalysis.questionCount >= 2); // Skip if AI provided structured suggestions
 
                   if (!skipSuggestions) {
                     suggestedQueries = generateSuggestedQueries({
                       queryIntent,
                       searchResults,
                       userQuery,
-                      conversationHistory
+                      conversationHistory,
+                      aiResponse: fullResponse, // Pass AI response for context-aware suggestions
+                      responseAnalysis // Pass analysis results
                     });
 
                     // Send suggestions AFTER full response but BEFORE [DONE]
@@ -295,7 +374,14 @@ serve(async (req) => {
                       console.log('💡 Sent suggestions after completion:', suggestedQueries);
                     }
                   } else {
-                    console.log('🔇 Suppressing suggestions for information query (single title focus)');
+                    console.log('🔇 Suppressing suggestions:', {
+                      reason: queryIntent === 'information' ? 'information query' :
+                              responseAnalysis.hasTrySection ? 'AI provided Try section' :
+                              responseAnalysis.questionCount >= 3 ? 'AI asked 3+ questions' :
+                              'AI provided structured suggestions',
+                      conversationStage,
+                      responseAnalysis
+                    });
                   }
 
                   // Save response and suggestions to database
@@ -305,7 +391,8 @@ serve(async (req) => {
 
                 try {
                   const parsed = JSON.parse(data)
-                  // OpenAI streaming format
+
+                  // Handle STREAMING format (GPT-4 and earlier with stream: true)
                   if (parsed.choices && parsed.choices[0]?.delta?.content) {
                     const text = parsed.choices[0].delta.content
                     fullResponse += text
@@ -319,8 +406,6 @@ serve(async (req) => {
               }
             }
           }
-
-          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
 
         } catch (error) {
           console.error('Streaming error:', error)
@@ -998,6 +1083,76 @@ function getConversationStage(conversationHistory: ChatMessage[]): 'initial' | '
 }
 
 /**
+ * Analyzes AI response to detect if suggestions were already provided
+ * This prevents duplication of suggestions in the UI
+ */
+function analyzeAIResponse(response: string): {
+  hasTrySection: boolean;
+  hasQuestions: boolean;
+  questionCount: number;
+  titlesDiscussed: string[];
+  themesDiscussed: string[];
+  hasBulletList: boolean;
+} {
+  const lowerResponse = response.toLowerCase();
+
+  // Detect "Try:" section
+  const hasTrySection = /try:/i.test(response);
+
+  // Detect bullet points or numbered lists (common suggestion patterns)
+  const bulletPatterns = [
+    /^[\s]*[-•*]\s+/gm,  // Bullet points with -, •, *
+    /^[\s]*\d+\.\s+/gm   // Numbered lists
+  ];
+  const hasBulletList = bulletPatterns.some(pattern => pattern.test(response));
+
+  // Count questions (ending with ?)
+  const questionMatches = response.match(/\?/g);
+  const questionCount = questionMatches ? questionMatches.length : 0;
+
+  // Has questions if there are 2+ question marks
+  const hasQuestions = questionCount >= 2;
+
+  // Extract quoted titles (titles are usually in quotes)
+  const titleMatches = response.match(/"([^"]+)"/g) || [];
+  const titlesDiscussed = titleMatches
+    .map(match => match.replace(/"/g, ''))
+    .filter(title => title.length > 3 && title.length < 100); // Filter out short/long matches
+
+  // Extract common storytelling themes
+  const themeKeywords = [
+    'romance', 'action', 'thriller', 'drama', 'comedy', 'horror', 'fantasy',
+    'mystery', 'supernatural', 'revenge', 'redemption', 'time travel',
+    'character development', 'plot-driven', 'slow burn', 'fast-paced',
+    'enemies to lovers', 'found family', 'coming of age', 'dark', 'light-hearted'
+  ];
+
+  const themesDiscussed = themeKeywords.filter(theme =>
+    lowerResponse.includes(theme)
+  );
+
+  console.log('🔍 AI Response Analysis:', {
+    hasTrySection,
+    hasQuestions,
+    questionCount,
+    hasBulletList,
+    titlesDiscussedCount: titlesDiscussed.length,
+    themesDiscussedCount: themesDiscussed.length,
+    sampleTitles: titlesDiscussed.slice(0, 3),
+    sampleThemes: themesDiscussed.slice(0, 5)
+  });
+
+  return {
+    hasTrySection,
+    hasQuestions,
+    questionCount,
+    titlesDiscussed,
+    themesDiscussed,
+    hasBulletList
+  };
+}
+
+/**
  * Get stage-based fallback suggestions
  */
 function getStageBasedFallbacks(
@@ -1216,14 +1371,24 @@ function mixDiverseSuggestions(
 /**
  * Generate 3-5 smart follow-up query suggestions based on context
  * Uses ChatGPT/Claude-style specific, contextual suggestions
+ * NOW WITH: AI response analysis for context-aware, non-duplicate suggestions
  */
 function generateSuggestedQueries(context: {
   queryIntent: string;
   searchResults: VectorSearchResult[];
   userQuery: string;
   conversationHistory: ChatMessage[];
+  aiResponse?: string; // NEW: AI response text for context-aware suggestions
+  responseAnalysis?: { // NEW: Pre-analyzed AI response data
+    hasTrySection: boolean;
+    hasQuestions: boolean;
+    questionCount: number;
+    titlesDiscussed: string[];
+    themesDiscussed: string[];
+    hasBulletList: boolean;
+  };
 }): string[] {
-  const { queryIntent, searchResults, userQuery, conversationHistory } = context;
+  const { queryIntent, searchResults, userQuery, conversationHistory, aiResponse, responseAnalysis } = context;
 
   // Early return if no search results
   if (!searchResults || searchResults.length === 0) {
@@ -1232,6 +1397,79 @@ function generateSuggestedQueries(context: {
       "What's trending this month?",
       "Recommend popular webtoons"
     ];
+  }
+
+  // ========== RESPONSE-AWARE ANALYSIS (NEW) ==========
+  // Use AI response data to generate contextual, complementary suggestions
+  const responseAwareSuggestions: string[] = [];
+
+  if (responseAnalysis && aiResponse) {
+    console.log('🧠 Generating response-aware suggestions:', {
+      titlesDiscussed: responseAnalysis.titlesDiscussed.length,
+      themesDiscussed: responseAnalysis.themesDiscussed.length,
+      hasQuestions: responseAnalysis.hasQuestions,
+      hasTrySection: responseAnalysis.hasTrySection
+    });
+
+    // Build on titles mentioned by AI
+    if (responseAnalysis.titlesDiscussed.length > 0) {
+      const discussedTitle = responseAnalysis.titlesDiscussed[0];
+
+      // Find other titles in search results NOT discussed
+      const undiscussedTitles = searchResults.filter(r => {
+        const rTitle = r.title_name_en || r.title_name_kr || '';
+        return !responseAnalysis.titlesDiscussed.some(discussed =>
+          rTitle.toLowerCase().includes(discussed.toLowerCase()) ||
+          discussed.toLowerCase().includes(rTitle.toLowerCase())
+        );
+      });
+
+      if (undiscussedTitles.length > 0) {
+        const alternativeTitle = undiscussedTitles[0].title_name_en || undiscussedTitles[0].title_name_kr;
+        responseAwareSuggestions.push(`How does "${alternativeTitle}" compare?`);
+      }
+
+      // Suggest deeper exploration of discussed title
+      if (responseAnalysis.themesDiscussed.length > 0) {
+        const theme = responseAnalysis.themesDiscussed[0];
+        responseAwareSuggestions.push(`More ${theme} stories like "${discussedTitle}"`);
+      }
+    }
+
+    // Build on themes mentioned by AI
+    if (responseAnalysis.themesDiscussed.length >= 2) {
+      const theme1 = responseAnalysis.themesDiscussed[0];
+      const theme2 = responseAnalysis.themesDiscussed[1];
+      responseAwareSuggestions.push(`${theme1} vs ${theme2} - which do you prefer?`);
+    } else if (responseAnalysis.themesDiscussed.length === 1) {
+      const theme = responseAnalysis.themesDiscussed[0];
+      // Suggest contrasting themes
+      const contrastMap: Record<string, string> = {
+        'romance': 'action',
+        'action': 'romance',
+        'dark': 'wholesome',
+        'wholesome': 'dark',
+        'thriller': 'comedy',
+        'comedy': 'thriller'
+      };
+      const contrast = contrastMap[theme] || 'different genre';
+      responseAwareSuggestions.push(`What about ${contrast} instead of ${theme}?`);
+    }
+
+    // If AI provided questions, don't repeat - offer specific examples instead
+    if (responseAnalysis.hasQuestions || responseAnalysis.hasTrySection) {
+      // AI asked broad questions, chips should provide specific examples
+      if (searchResults.length >= 2) {
+        const title1 = searchResults[0].title_name_en || searchResults[0].title_name_kr;
+        const title2 = searchResults[1].title_name_en || searchResults[1].title_name_kr;
+        responseAwareSuggestions.push(`For example: "${title1}" or "${title2}"`);
+      }
+    }
+
+    console.log('🎯 Response-aware suggestions:', {
+      count: responseAwareSuggestions.length,
+      suggestions: responseAwareSuggestions
+    });
   }
 
   // Extract rich metadata from search results
@@ -1398,6 +1636,8 @@ function generateSuggestedQueries(context: {
   }
 
   // Collect suggestions into type-specific arrays for diversity mixing
+  // Add response-aware suggestions as highest priority (Type -1)
+  const typeM1_responseAware: string[] = [...responseAwareSuggestions];
   const type0_contextAware: string[] = [...contextAwareSuggestions];
   const type2_genreVibe: string[] = [];
   const type3_compBased: string[] = [];
@@ -1463,14 +1703,33 @@ function generateSuggestedQueries(context: {
   }
 
   // Mix suggestions from different types for diversity
-  let diverseSuggestions = mixDiverseSuggestions(
-    type0_contextAware,
-    type2_genreVibe,
-    type3_compBased,
-    type5_author,
-    typeIntent_specific,
-    5
-  );
+  // PRIORITY: Response-aware suggestions first (based on actual AI output)
+  let diverseSuggestions: string[] = [];
+
+  // Add response-aware suggestions first (highest priority)
+  if (typeM1_responseAware.length > 0) {
+    diverseSuggestions.push(...typeM1_responseAware.slice(0, 3)); // Max 3 from response-aware
+  }
+
+  // Then mix other types if we need more
+  if (diverseSuggestions.length < 5) {
+    const remaining = 5 - diverseSuggestions.length;
+    const mixedOthers = mixDiverseSuggestions(
+      type0_contextAware,
+      type2_genreVibe,
+      type3_compBased,
+      type5_author,
+      typeIntent_specific,
+      remaining
+    );
+
+    // Add non-duplicate suggestions from other types
+    mixedOthers.forEach(sug => {
+      if (!diverseSuggestions.includes(sug) && diverseSuggestions.length < 5) {
+        diverseSuggestions.push(sug);
+      }
+    });
+  }
 
   // If we still don't have enough, add smart fallbacks
   if (diverseSuggestions.length < 3) {
@@ -1487,6 +1746,7 @@ function generateSuggestedQueries(context: {
 
   console.log('💡 Generated diverse suggestions:', {
     count: uniqueSuggestions.length,
+    responseAwareAvailable: typeM1_responseAware.length,
     type0Available: type0_contextAware.length,
     type2Available: type2_genreVibe.length,
     type3Available: type3_compBased.length,
@@ -1626,7 +1886,7 @@ function buildMasterPrompt(context: {
     'suite': 'full platform access with exclusive content'
   }[userProfile.tier || 'basic'] || 'Korean content explorer'
 
-  return `CONTEXT: You are Jinu, KStoryBridge's creative content consultant and idea partner. You don't just recommend titles - you collaborate with users to explore storytelling possibilities, bounce ideas, and discover Korean content that resonates with their specific vision. You're curious, insightful, and help users articulate what they're looking for even when they're not sure themselves. You have deep knowledge of Korean entertainment including manhwa, webtoons, dramas, movies, and novels.
+  return `CONTEXT: ${userProfile.full_name || 'User'} is asking about Korean content. Your task is to help them discover great stories by focusing on story craft and character development.
 
 QUERY TYPE: ${queryIntent.toUpperCase()}
 This is a ${queryIntent} query. Tailor your response accordingly.
@@ -1684,24 +1944,20 @@ ${isFreshStart ? `
 **THIS IS A FRESH CONVERSATION START**
 - ❌ DO NOT provide direct answers or title recommendations yet
 - ❌ DO NOT mention specific titles or give recommendations
-- ✅ Write ONLY a brief 1-2 sentence warm intro
-- ✅ Immediately follow with "Try:" and 3 exploratory questions
+- ✅ Write a brief 1-2 sentence warm intro
+- ✅ Ask 2-3 natural follow-up questions to understand preferences (NO rigid "Try:" format)
 
-**REQUIRED FORMAT** (follow this EXACTLY):
-[Brief warm intro about helping discover the perfect Korean story - 1-2 sentences max]
-
-Try:
-- [Question 1: About genre/tone preferences] (e.g., "What genres are you most interested in? Drama, thriller, romance?")
-- [Question 2: About storytelling style] (e.g., "Do you prefer character-driven or plot-heavy stories?")
-- [Question 3: About references or criteria] (e.g., "Any specific themes or story elements you're looking for?")
+**NATURAL CONVERSATION APPROACH**:
+Instead of formal "Try:" lists, weave questions naturally into your response. Be conversational and exploratory.
 
 **Example Output**:
-"I'd love to help you discover the perfect Korean story! Let's narrow down what you're looking for.
+"I'd love to help you discover the perfect Korean story! To narrow things down, I'm curious—what kind of emotional experience are you looking for? Are you drawn more to intense, plot-driven thrillers, or character journeys with slow-burn development? And do you have any specific themes in mind, like revenge, romance, or supernatural elements?"
 
-Try:
-- What genres interest you most? Drama, thriller, romance, or something else?
-- Do you prefer character-driven narratives or fast-paced, plot-heavy stories?
-- Are you looking for completed series or ongoing webtoons?"
+**Key Principles**:
+- Ask questions in paragraph form, not bullet lists
+- Make questions feel like natural conversation
+- Focus on preferences, not just metadata (genre, format)
+- Keep it warm and collaborative, not prescriptive
 ` : `
 **ONGOING CONVERSATION**
 - ✅ Build on previous context and preferences
@@ -1710,31 +1966,47 @@ Try:
 `}
 
 RESPONSE GUIDELINES:
-1. **Be Conversational, Not Transactional**
+
+**Story-First Approach** (Default - 70% of responses):
+1. **Lead with Story Craft**
+   - "Let me tell you why this story works..."
+   - "The character arc here is really smart because..."
+   - "What hooked me is how the narrative structures..."
+   - "Okay, story nerd moment—notice how the writer..."
+
+2. **Discuss Structure Naturally**
+   - Character journeys (want vs. need, arc completion)
+   - Story beats (setup, inciting incident, midpoint, resolution)
+   - Emotional core (what makes it resonate)
+   - Theme exploration (what the story is really about)
+
+3. **Ask Development Questions**
+   - "What draws you to this character type?"
+   - "Are you into slow-burn character development or fast-paced plot?"
+   - "What emotional beats are you looking for in a story?"
+
+**Business Layer** (Secondary - 30%, User-Triggered):
+4. **Detect Business Signals and Respond**
+   - TRIGGER KEYWORDS: "where", "platform", "network", "streaming", "TV", "budget", "pitch", "sell", "market", "adaptation", "production", "development", "where would this work", "where could this work"
+   - When ANY trigger detected, IMMEDIATELY shift tone: "Oh, thinking about [specific aspect]? Let me break down..."
+   - ALWAYS reference real examples: "Look at how Netflix handled Squid Game..." or "Apple TV+ did this with Pachinko..."
+   - Connect story structure to business: "The character-driven structure here means...from a production standpoint..."
+   - Use at least 3 business-related terms in your response when triggered
+
+5. **Use Real Examples Only**
+   - ✅ "Look at how Apple TV+ adapted 'Pachinko'..."
+   - ✅ "HBO's approach with 'The Sympathizer' kept..."
+   - ❌ Never: "When I was working on..." (no fictional personal history)
+
+6. **Enthusiasm + Collaboration**
+   - Be genuinely excited about storytelling
    - Talk WITH users, not AT them
-   - Use phrases like "I'm curious...", "Tell me more about...", "What if..."
-   - Avoid robotic lists - weave information into natural dialogue
+   - Use phrases: "I'm curious...", "Tell me more about...", "What if..."
+   - Avoid robotic lists—weave info into natural dialogue
 
-2. **Creative Collaboration**
-   - Act as a creative partner exploring possibilities together
-   - Ask "what if" questions that open new directions
-   - Help users refine vague ideas into specific preferences
-   - Bounce ideas: "Based on that, have you considered..."
-
-3. **Progressive Discovery**
-   - First interaction: Explore preferences with questions
-   - Follow-ups: Build on context, narrow down, provide specifics
-   - "Tell me more": Deliver comprehensive structured information
-   - Generic searches: Overview + curiosity-driven follow-ups
-
-4. **Enthusiasm + Expertise**
-   - Be genuinely excited about Korean storytelling
-   - Share insights about trends, cultural elements, creative patterns
-   - Explain WHY titles work, not just WHAT they are
-
-5. **Context Awareness**
+7. **Context Awareness**
    - Always reference earlier conversation points
-   - Notice patterns in user preferences
+   - Notice patterns in preferences
    - Build continuity: "You mentioned earlier..." "Following up on..."
 
 🚨 **CRITICAL ANTI-HALLUCINATION RULES** (NEVER VIOLATE):

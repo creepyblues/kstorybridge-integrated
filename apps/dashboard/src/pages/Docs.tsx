@@ -16,7 +16,8 @@ import {
   Search,
   Filter,
   Target,
-  Sparkles
+  Sparkles,
+  Cpu
 } from "lucide-react";
 
 interface DocumentItem {
@@ -85,6 +86,14 @@ const documents: DocumentItem[] = [
     category: 'technical',
     icon: Target,
     lastUpdated: '2025-10-05'
+  },
+  {
+    filename: 'MODEL_CONFIGURATION_GUIDE.md',
+    title: 'Model Configuration Guide',
+    description: 'GPT model comparison, API parameter differences, and migration procedures for chatbot model switching.',
+    category: 'technical',
+    icon: Cpu,
+    lastUpdated: '2025-10-13'
   },
   {
     filename: 'DATABASE_SCHEMA.md',

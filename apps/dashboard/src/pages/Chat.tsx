@@ -1768,8 +1768,8 @@ Please try again.`,
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 pt-1">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-green-600 to-green-700">
                         <Sparkles size={14} className="text-white" />
                       </div>
@@ -1857,7 +1857,7 @@ Please try again.`,
             {isLoading && !isStreaming && (
               <div className="group">
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0 pt-1">
+                  <div className="flex-shrink-0">
                     <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center">
                       <Sparkles size={14} className="text-white" />
                     </div>

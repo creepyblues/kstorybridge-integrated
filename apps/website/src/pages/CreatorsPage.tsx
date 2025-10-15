@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
 import Footer from '../components/Footer';
+import CreatorComingSoonDialog from '../components/CreatorComingSoonDialog';
 import {
   Globe,
   Shield,
@@ -18,6 +20,8 @@ import {
 } from 'lucide-react';
 
 const CreatorsPage = () => {
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
       {/* Navigation */}
@@ -50,7 +54,7 @@ const CreatorsPage = () => {
                 id="creators-hero-join-btn"
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
+                onClick={() => setShowComingSoon(true)}
               >
                 Join the Platform
               </Button>
@@ -194,7 +198,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
+                onClick={() => setShowComingSoon(true)}
               >
                 See Who's Waiting
               </Button>
@@ -368,7 +372,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
+                onClick={() => setShowComingSoon(true)}
               >
                 Get Your Pitch Developed
               </Button>
@@ -512,7 +516,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
+                onClick={() => setShowComingSoon(true)}
               >
                 Get Started
               </Button>
@@ -539,7 +543,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 mb-6"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
+                onClick={() => setShowComingSoon(true)}
               >
                 Create Your Profile
               </Button>
@@ -562,6 +566,11 @@ const CreatorsPage = () => {
       </main>
 
       <Footer />
+
+      <CreatorComingSoonDialog
+        open={showComingSoon}
+        onOpenChange={setShowComingSoon}
+      />
     </div>
   );
 };

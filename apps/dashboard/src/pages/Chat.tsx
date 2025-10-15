@@ -658,6 +658,34 @@ export default function Chat() {
     }
   }, [user?.id]);
 
+  // Handle session errors - auto-logout on expired session
+  const handleSessionError = (error: Error) => {
+    // Only trigger for exact "No active session" error
+    if (error.message === 'No active session' && user) {
+      console.log('🚪 Chat: Session expired during usage, triggering auto-logout');
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired. Please sign in again.",
+        variant: "destructive",
+      });
+      signOut(); // Uses existing auth logout flow
+    } else {
+      // All other errors show normal error message
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `I apologize, but I encountered an error: ${error.message}\n\nPlease try again.`,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      toast({
+        title: "Chat Error",
+        description: error.message || "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Check if user is authorized - allow all buyers
   const { accountType, loading: accountTypeLoading } = useAccountType();
   const { tier } = useTierAccess({ session });
@@ -938,21 +966,7 @@ export default function Chat() {
         query: message
       });
 
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `I apologize, but I encountered an error: ${error.message}
-
-Please try again.`,
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-      toast({
-        title: "Chat Error",
-        description: error.message || "Failed to get AI response. Please try again.",
-        variant: "destructive",
-      });
+      handleSessionError(error);
     } finally {
       setIsLoading(false);
       setIsProcessingMessage(false);
@@ -1056,21 +1070,7 @@ Please try again.`,
         query: messageContent
       });
 
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `I apologize, but I encountered an error: ${error.message}
-
-Please try again.`,
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-      toast({
-        title: "Chat Error",
-        description: error.message || "Failed to get AI response. Please try again.",
-        variant: "destructive",
-      });
+      handleSessionError(error);
     } finally {
       setIsLoading(false);
       setIsProcessingMessage(false);
@@ -1158,17 +1158,7 @@ Please try again.`,
       onError: (error: string) => {
         console.error('❌ Orchestrator streaming error:', error);
 
-        // Update message with error
-        setMessages(prev => {
-          return prev.map(msg =>
-            msg.id === streamingBotMessage.id
-              ? {
-                  ...msg,
-                  content: `I apologize, but I encountered an error: ${error}\n\nPlease try again or switch to legacy mode.`
-                }
-              : msg
-          );
-        });
+        handleSessionError(new Error(error));
 
         setIsStreaming(false);
         setStreamingResponse('');
@@ -1768,8 +1758,8 @@ Please try again.`,
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 pt-1">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-green-600 to-green-700">
                         <Sparkles size={14} className="text-white" />
                       </div>
@@ -1857,7 +1847,7 @@ Please try again.`,
             {isLoading && !isStreaming && (
               <div className="group">
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0 pt-1">
+                  <div className="flex-shrink-0">
                     <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center">
                       <Sparkles size={14} className="text-white" />
                     </div>

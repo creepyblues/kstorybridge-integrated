@@ -12,12 +12,15 @@ import { getAccountType, getAccountTypeDisplayInfo } from '@/hooks/useAccountTyp
 import { notifyUserSignin } from '@/utils/slack';
 import { createBuyerProfileAtomic } from '@/utils/atomicProfileCreator';
 import { trackSigninError, trackValidationError } from '@/services/authErrorTracking';
+import { Clock } from 'lucide-react';
 
 interface SigninFormProps {
   accountType: 'buyer' | 'creator';
+  hideOtherAccountTypeLink?: boolean;
+  disabled?: boolean;
 }
 
-const SigninForm = ({ accountType }: SigninFormProps) => {
+const SigninForm = ({ accountType, hideOtherAccountTypeLink = false, disabled = false }: SigninFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isResendingVerification, setIsResendingVerification] = useState(false);
@@ -98,17 +101,15 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
       sessionStorage.setItem('oauth_account_type', accountType);
       sessionStorage.setItem('oauth_flow', 'signin');
 
-      // Use OAuth state parameter (no custom query parameters in callback URL)
-      const oauthState = JSON.stringify({
-        account_type: accountType,
-        flow: 'signin'
-      });
+      // ✅ CORRECT: Use URL query parameters in redirectTo URL (per AUTH_DOCUMENTATION.md)
+      // URL params persist through all redirects: Google → Supabase → Your App
+      // Does NOT conflict with Supabase PKCE state parameter
+      const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`, // Clean URL, no parameters
-          state: oauthState // Pass data via OAuth state parameter
+          redirectTo: callbackUrl // URL parameters included in redirect URL
         }
       });
 
@@ -389,7 +390,7 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
   const otherAccountTypeDisplayName = accountType === 'buyer' ? 'Creator' : 'Buyer';
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-md mx-auto relative">
       <Card className="shadow-xl border-0">
         <CardContent className="p-8">
           <div className="text-center mb-8">
@@ -528,18 +529,37 @@ const SigninForm = ({ accountType }: SigninFormProps) => {
               </Link>
             </div>
 
-            <div className="text-sm text-gray-600">
-              Looking for {otherAccountTypeDisplayName} signin?{' '}
-              <Link
-                to={`/signin/${otherAccountType}`}
-                className="text-hanok-teal hover:text-hanok-teal/80 font-medium"
-              >
-                {otherAccountTypeDisplayName} Sign In
-              </Link>
-            </div>
+            {!hideOtherAccountTypeLink && (
+              <div className="text-sm text-gray-600">
+                Looking for {otherAccountTypeDisplayName} signin?{' '}
+                <Link
+                  to={`/signin/${otherAccountType}`}
+                  className="text-hanok-teal hover:text-hanok-teal/80 font-medium"
+                >
+                  {otherAccountTypeDisplayName} Sign In
+                </Link>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Coming Soon Overlay - Only shown when disabled */}
+      {disabled && (
+        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+          <div className="text-center px-6 py-8">
+            <div className="flex justify-center mb-6">
+              <Clock className="h-16 w-16 text-hanok-teal animate-pulse" />
+            </div>
+            <h2 className="text-2xl font-bold text-midnight-ink mb-3">
+              {accountTypeDisplayName} Access Coming Soon
+            </h2>
+            <p className="text-midnight-ink-600 text-lg leading-relaxed max-w-sm">
+              We're working hard to bring you an amazing {accountType} experience
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

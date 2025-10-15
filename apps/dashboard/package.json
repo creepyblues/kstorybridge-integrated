@@ -27,7 +27,13 @@
     "docs:copy": "node scripts/copy-docs.js",
     "docs:watch": "node scripts/copy-docs.js --watch",
     "prebuild": "npm run docs:copy",
-    "predev": "npm run docs:copy"
+    "predev": "npm run docs:copy",
+    "test:auth": "node test-auth-flows.js",
+    "test:auth:verbose": "node test-auth-flows.js --verbose",
+    "test:auth:cleanup": "node test-auth-flows.js --verbose --cleanup",
+    "test:db": "node test-database-verification.js",
+    "test:edge": "node test-edge-functions.js",
+    "test:all": "npm run test:auth && npm run test:db && npm run test:edge"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -67,6 +73,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.2.1",
     "embla-carousel-react": "^8.3.0",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",

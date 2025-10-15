@@ -8,9 +8,15 @@ import SessionTracker from "./components/SessionTracker";
 
 // Lazy load page components for code splitting
 const HomePage = lazy(() => import("./pages/HomePage"));
+const HomePageOld = lazy(() => import("./pages/HomePageOld"));
 const HomePageNew = lazy(() => import("./pages/HomePageNew"));
 const CreatorsPage = lazy(() => import("./pages/CreatorsPage"));
 const BuyersPage = lazy(() => import("./pages/BuyersPage"));
+const BuyersPagePreview = lazy(() => import("./pages/BuyersPagePreview"));
+const CreatorsPagePreview = lazy(() => import("./pages/CreatorsPagePreview"));
+const HomePagePreview1 = lazy(() => import("./pages/HomePagePreview1"));
+const HomePagePreview2 = lazy(() => import("./pages/HomePagePreview2"));
+const HomePagePreview3 = lazy(() => import("./pages/HomePagePreview3"));
 const BuyersOnboardingPage = lazy(() => import("./pages/BuyersOnboardingPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -36,9 +42,16 @@ const App = () => (
         <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/home-old" element={<HomePageOld />} />
           <Route path="/new-design" element={<HomePageNew />} />
           <Route path="/creators" element={<CreatorsPage />} />
           <Route path="/buyers" element={<BuyersPage />} />
+          {/* PREVIEW ROUTES - Only available in development */}
+          {import.meta.env.DEV && <Route path="/buyers-preview" element={<BuyersPagePreview />} />}
+          {import.meta.env.DEV && <Route path="/creators-preview" element={<CreatorsPagePreview />} />}
+          {import.meta.env.DEV && <Route path="/home-preview1" element={<HomePagePreview1 />} />}
+          {import.meta.env.DEV && <Route path="/home-preview2" element={<HomePagePreview2 />} />}
+          {import.meta.env.DEV && <Route path="/home-preview3" element={<HomePagePreview3 />} />}
           <Route path="/buyers/onboarding" element={<BuyersOnboardingPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />

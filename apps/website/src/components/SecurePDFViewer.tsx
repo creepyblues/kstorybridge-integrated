@@ -180,13 +180,42 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           throw new Error('Invalid file type. Only PDF files are allowed.');
         }
 
-        const blob = await response.blob();
-        
+        // Get total file size for progress calculation
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+        // Read response body as stream
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error('Response body stream not available');
+        }
+
+        const chunks: Uint8Array[] = [];
+        let receivedLength = 0;
+
+        // Read chunks and track progress
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          chunks.push(value);
+          receivedLength += value.length;
+
+          // Update progress (network download progress)
+          if (total > 0) {
+            const progress = Math.round((receivedLength / total) * 100);
+            setLoadingProgress(progress);
+          }
+        }
+
+        // Create blob from chunks
+        const blob = new Blob(chunks, { type: 'application/pdf' });
+
         // Additional security: verify blob size (prevent extremely large files)
         if (blob.size > 50 * 1024 * 1024) { // 50MB limit
           throw new Error('File too large. Maximum file size is 50MB.');
         }
-        
+
         const dataUrl = URL.createObjectURL(blob);
         setPdfData(dataUrl);
       } catch (err) {
@@ -389,37 +418,18 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
       <Card className="bg-white border-gray-200 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
           <div className="flex flex-col items-center gap-4">
-            {/* Circular Progress Indicator */}
-            <div className="relative w-20 h-20">
-              <svg className="transform -rotate-90 w-20 h-20">
-                {/* Background circle */}
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="32"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  fill="none"
-                  className="text-gray-200"
+            {/* Linear Progress Bar */}
+            <div className="w-full max-w-xs">
+              {/* Progress bar container */}
+              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                {/* Progress bar fill */}
+                <div
+                  className="bg-blue-600 h-full rounded-full"
+                  style={{ width: `${loadingProgress}%` }}
                 />
-                {/* Progress circle */}
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="32"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  fill="none"
-                  strokeDasharray={`${2 * Math.PI * 32}`}
-                  strokeDashoffset={`${2 * Math.PI * 32 * (1 - loadingProgress / 100)}`}
-                  className="text-blue-600 transition-all duration-300"
-                  strokeLinecap="round"
-                />
-              </svg>
-              {/* Percentage text */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-lg font-semibold text-gray-700">{loadingProgress}%</span>
               </div>
+              {/* Percentage text below bar */}
+              <p className="text-sm text-gray-600 mt-2">{loadingProgress}%</p>
             </div>
             <p className="text-gray-600">Loading PDF...</p>
           </div>
@@ -554,34 +564,18 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
               loading={
                 <div className="p-8 text-center">
                   <div className="flex flex-col items-center gap-4">
-                    {/* Circular Progress Indicator */}
-                    <div className="relative w-16 h-16">
-                      <svg className="transform -rotate-90 w-16 h-16">
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="28"
-                          stroke="currentColor"
-                          strokeWidth="5"
-                          fill="none"
-                          className="text-gray-200"
+                    {/* Linear Progress Bar */}
+                    <div className="w-full max-w-xs">
+                      {/* Progress bar container */}
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                        {/* Progress bar fill */}
+                        <div
+                          className="bg-blue-600 h-full rounded-full"
+                          style={{ width: `${loadingProgress}%` }}
                         />
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="28"
-                          stroke="currentColor"
-                          strokeWidth="5"
-                          fill="none"
-                          strokeDasharray={`${2 * Math.PI * 28}`}
-                          strokeDashoffset={`${2 * Math.PI * 28 * (1 - loadingProgress / 100)}`}
-                          className="text-blue-600 transition-all duration-300"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-sm font-semibold text-gray-700">{loadingProgress}%</span>
                       </div>
+                      {/* Percentage text below bar */}
+                      <p className="text-sm text-gray-600 mt-2">{loadingProgress}%</p>
                     </div>
                     <span className="text-gray-600">Rendering PDF...</span>
                   </div>

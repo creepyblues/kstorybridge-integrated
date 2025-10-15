@@ -16,7 +16,10 @@ import {
   Search,
   Filter,
   Target,
-  Sparkles
+  Sparkles,
+  Cpu,
+  Layout,
+  MessageSquare
 } from "lucide-react";
 
 interface DocumentItem {
@@ -71,6 +74,14 @@ const documents: DocumentItem[] = [
     lastUpdated: '2025-01-29'
   },
   {
+    filename: 'BUYERS_PAGE_OVERHAUL.md',
+    title: '/buyers Page Overhaul - Visual Strategy Guide',
+    description: 'Complete visual redesign strategy with mermaid diagrams: AI-first messaging, clear rights chain, expert support showcase, and conversion optimization.',
+    category: 'core',
+    icon: Layout,
+    lastUpdated: '2025-10-13'
+  },
+  {
     filename: 'AI_CHATBOT_DOCUMENTATION.md',
     title: 'AI Chatbot System Documentation',
     description: 'Architecture, data structures, search pipelines, and improvement areas for the AI chatbot system.',
@@ -85,6 +96,22 @@ const documents: DocumentItem[] = [
     category: 'technical',
     icon: Target,
     lastUpdated: '2025-10-05'
+  },
+  {
+    filename: 'MODEL_CONFIGURATION_GUIDE.md',
+    title: 'Model Configuration Guide',
+    description: 'GPT model comparison, API parameter differences, and migration procedures for chatbot model switching.',
+    category: 'technical',
+    icon: Cpu,
+    lastUpdated: '2025-10-13'
+  },
+  {
+    filename: 'CHATBOT_SAMPLE_DIALOGUES.md',
+    title: 'AI Chatbot Sample Dialogues',
+    description: '10 scenarios showcasing how AI helps buyers discover and evaluate Korean content for adaptation.',
+    category: 'technical',
+    icon: MessageSquare,
+    lastUpdated: '2025-10-14'
   },
   {
     filename: 'DATABASE_SCHEMA.md',

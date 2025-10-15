@@ -70,7 +70,7 @@ class ChatOrchestratorService {
       console.log('🔄 Orchestrator Request:', {
         service: 'ChatOrchestratorService',
         method: 'sendMessageStream',
-        targetAPI: 'OpenAI GPT-4 (via Supabase Edge Function)',
+        targetAPI: 'OpenAI GPT-5-mini (via Supabase Edge Function)',
         url: `${this.baseUrl}/chat-orchestrator`,
         messagesCount: messages.length,
         sessionId,
@@ -102,7 +102,7 @@ class ChatOrchestratorService {
 
       console.log('📡 Orchestrator Response:', {
         service: 'ChatOrchestratorService',
-        sourceAPI: 'OpenAI GPT-4 (via Supabase Edge Function)',
+        sourceAPI: 'OpenAI GPT-5-mini (via Supabase Edge Function)',
         status: response.status,
         statusText: response.statusText,
         ok: response.ok,

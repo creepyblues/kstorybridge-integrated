@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
+import FeaturedTitlesCarousel from '../components/FeaturedTitlesCarousel';
 import Footer from '../components/Footer';
 import {
   Bot,
@@ -10,19 +12,20 @@ import {
   TrendingUp,
   CheckCircle2,
   ArrowRight,
-  Globe
+  Globe,
+  Zap
 } from 'lucide-react';
 
 /**
- * HOMEPAGE - "AI-FIRST" DESIGN
+ * HOMEPAGE PREVIEW 2 - "AI-FIRST" DESIGN
  *
  * Visual Concept: Lead with Jinu AI Assistant as the hero
  * Appeal: Technology differentiator, modern and innovative
  *
- * Updated: 2025-10-14
+ * Created: 2025-10-14
  */
 
-const HomePage = () => {
+const HomePagePreview2 = () => {
   // Load Beehiiv script for newsletter
   useEffect(() => {
     const script = document.createElement('script');
@@ -39,6 +42,22 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+
+      {/* Preview Banner */}
+      <div className="bg-yellow-50 border-b-2 border-yellow-400 py-3 px-4 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <span className="text-yellow-800 font-semibold">PREVIEW MODE - Option 2: "AI-First"</span>
+            <span className="text-xs text-yellow-600">Technology-led design with AI hero</span>
+          </div>
+          <Link
+            to="/"
+            className="text-sm text-yellow-700 hover:text-yellow-900 underline"
+          >
+            Compare with production homepage →
+          </Link>
+        </div>
+      </div>
 
       {/* Navigation */}
       <UniversalHeader />
@@ -64,7 +83,7 @@ const HomePage = () => {
                 </div>
 
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-6 leading-tight">
-                  The AI Assistant That Connects Korean Stories with Hollywood
+                  The AI That Connects Korean Stories with Hollywood
                 </h2>
 
                 <p className="text-lg text-midnight-ink-600 mb-8 leading-relaxed">
@@ -148,7 +167,7 @@ const HomePage = () => {
               </div>
 
               <div>
-                <div className="text-3xl sm:text-4xl font-bold text-hanok-teal mb-2">200+</div>
+                <div className="text-3xl sm:text-4xl font-bold text-hanok-teal mb-2">1000+</div>
                 <p className="text-sm text-midnight-ink-600">Korean Titles</p>
               </div>
 
@@ -204,8 +223,8 @@ const HomePage = () => {
               {/* Pillar 2: Rights Verified */}
               <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow">
                 <CardContent className="p-10 text-center">
-                  <div className="w-20 h-20 bg-hanok-teal/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Shield className="h-10 w-10 text-hanok-teal" />
+                  <div className="w-20 h-20 bg-sunrise-coral/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Shield className="h-10 w-10 text-sunrise-coral" />
                   </div>
                   <h3 className="text-2xl font-bold text-midnight-ink mb-4">
                     Rights Verified
@@ -213,7 +232,7 @@ const HomePage = () => {
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
                     Clean chain of title with verified ownership documentation. Direct access to rights holders with deal authority.
                   </p>
-                  <p className="text-sm text-hanok-teal font-semibold">
+                  <p className="text-sm text-sunrise-coral font-semibold">
                     Zero ownership surprises
                   </p>
                 </CardContent>
@@ -222,8 +241,8 @@ const HomePage = () => {
               {/* Pillar 3: Expert Support */}
               <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow">
                 <CardContent className="p-10 text-center">
-                  <div className="w-20 h-20 bg-hanok-teal/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Users className="h-10 w-10 text-hanok-teal" />
+                  <div className="w-20 h-20 bg-porcelain-blue-600/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Users className="h-10 w-10 text-porcelain-blue-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-midnight-ink mb-4">
                     Expert Support
@@ -231,7 +250,7 @@ const HomePage = () => {
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
                     Hollywood veterans guide every deal with cultural bridging, pitch development, and negotiation expertise.
                   </p>
-                  <p className="text-sm text-hanok-teal font-semibold">
+                  <p className="text-sm text-porcelain-blue-600 font-semibold">
                     Close deals faster
                   </p>
                 </CardContent>
@@ -338,7 +357,25 @@ const HomePage = () => {
         </section>
 
         {/* ========================================
-            SECTION 5: NEWSLETTER
+            SECTION 5: FEATURED TITLES
+            ======================================== */}
+        <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-4">
+                Featured Titles
+              </h2>
+              <p className="text-lg text-midnight-ink-600">
+                Discover verified Korean content ready for adaptation
+              </p>
+            </div>
+
+            <FeaturedTitlesCarousel />
+          </div>
+        </section>
+
+        {/* ========================================
+            SECTION 6: NEWSLETTER
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -371,4 +408,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default HomePagePreview2;

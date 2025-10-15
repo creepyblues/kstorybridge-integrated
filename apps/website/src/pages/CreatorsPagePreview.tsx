@@ -17,9 +17,51 @@ import {
   Target
 } from 'lucide-react';
 
-const CreatorsPage = () => {
+/**
+ * CREATORS PAGE PREVIEW
+ *
+ * This is a PREVIEW/TEST page for the redesigned /creators page.
+ * DO NOT deploy to production without removing the preview banner.
+ *
+ * Design Strategy: Access-first messaging with expert pitch development and deal support
+ * Target Audience: Webtoon artists + Web novel authors
+ * Core Pain Points: Being ignored, language barriers, pitch knowledge gaps, legal fears
+ *
+ * Sections:
+ * 1. Hero (aspirational messaging)
+ * 2. ACCESS Showcase (NEW - Priority #1, 30% focus)
+ * 3. Three Guarantees Grid (3 pillars)
+ * 4. EXPERT Deep Dive (NEW - Priority #2, 30% focus)
+ * 5. Before/After Comparison
+ * 6. Three Steps (simplified journey)
+ * 7. Final CTA (signup + newsletter)
+ *
+ * Created: 2025-10-14
+ */
+
+const CreatorsPagePreview = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+
+      {/* ========================================
+          PREVIEW BANNER - REMOVE BEFORE PRODUCTION
+          ======================================== */}
+      <div className="bg-yellow-50 border-b-2 border-yellow-400 py-3 px-4 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 bg-yellow-400 text-yellow-900 font-bold text-sm rounded">
+              PREVIEW MODE
+            </span>
+            <span className="text-yellow-900 text-sm">
+              Testing redesigned /creators page. <Link to="/creators" className="underline hover:text-yellow-700">View current page</Link>
+            </span>
+          </div>
+          <span className="text-yellow-700 text-xs">
+            Preview created: 2025-10-14
+          </span>
+        </div>
+      </div>
+
       {/* Navigation */}
       <UniversalHeader />
 
@@ -38,7 +80,7 @@ const CreatorsPage = () => {
 
               {/* Hollywood access hook */}
               <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 mb-4 leading-relaxed max-w-3xl mx-auto">
-                Pitch directly to Hollywood IP scouts, writers, and producers
+                Pitch directly to Netflix, Disney, Sony Pictures, and 50+ Hollywood studios
               </p>
 
               <p className="text-base sm:text-lg text-midnight-ink-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto">
@@ -146,7 +188,7 @@ const CreatorsPage = () => {
                         Direct to Decision-Makers
                       </h3>
                       <p className="text-midnight-ink-600">
-                        Your work reaches executives who actually greenlight projects
+                        Your work reaches executives who actually greenlight projects, not junior scouts
                       </p>
                     </div>
                   </div>
@@ -179,7 +221,7 @@ const CreatorsPage = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        No Gatekeepers
+                        No Middle-Men, No Gatekeepers
                       </h3>
                       <p className="text-midnight-ink-600">
                         You pitch directly. They respond directly. No one filters your voice.
@@ -192,8 +234,7 @@ const CreatorsPage = () => {
 
             <div className="text-center mt-12">
               <Button
-                size="lg"
-                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
+                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
               >
                 See Who's Waiting
@@ -212,6 +253,9 @@ const CreatorsPage = () => {
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
                 Everything You Need to Succeed Globally
               </h2>
+              <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
+                Three guarantees that set you up for success
+              </p>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
@@ -227,7 +271,7 @@ const CreatorsPage = () => {
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    Hollywood Connections
+                    ACCESS: Hollywood Connections
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed">
                     Pitch to Netflix, Disney, Sony Pictures, and 50+ major platforms
@@ -247,7 +291,7 @@ const CreatorsPage = () => {
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    Hollywood Veterans Develop Your Pitch
+                    EXPERT: Hollywood Veterans Develop Your Pitch
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed">
                     Professional pitch decks developed by Hollywood showrunners
@@ -267,7 +311,7 @@ const CreatorsPage = () => {
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    Expert Deal Support
+                    EASY DEAL: Contract Protection & Deal Support
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed">
                     Fair deals, legal protection, negotiation support every step
@@ -305,6 +349,12 @@ const CreatorsPage = () => {
                   </p>
                 </CardContent>
               </Card>
+            </div>
+
+            <div className="mb-12">
+              <p className="text-center text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto mb-8">
+                Even brilliant Korean stories get passed over because of pitch translation issues. It's not about your story—it's about how Hollywood reads it.
+              </p>
             </div>
 
             {/* 3 Process Cards */}
@@ -366,8 +416,7 @@ const CreatorsPage = () => {
 
             <div className="text-center mt-12">
               <Button
-                size="lg"
-                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
               >
                 Get Your Pitch Developed
@@ -383,7 +432,7 @@ const CreatorsPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                Why Creators Choose KStoryBridge
+                Why Korean Creators Choose KStoryBridge
               </h2>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
                 The traditional route vs. the KStoryBridge path
@@ -511,7 +560,7 @@ const CreatorsPage = () => {
             <div className="text-center mt-12">
               <Button
                 size="lg"
-                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
               >
                 Get Started
@@ -538,7 +587,7 @@ const CreatorsPage = () => {
 
               <Button
                 size="lg"
-                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 mb-6"
+                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 mb-6"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/creator`}
               >
                 Create Your Profile
@@ -556,6 +605,27 @@ const CreatorsPage = () => {
               </p>
             </div>
 
+            {/* Newsletter Section */}
+            <div className="max-w-4xl mx-auto">
+              <iframe
+                src="https://subscribe-forms.beehiiv.com/44fe1ec1-b67e-4431-9ed2-84a8bb05dbbc"
+                className="beehiiv-embed"
+                data-test-id="beehiiv-embed"
+                frameBorder="0"
+                scrolling="no"
+                style={{
+                  width: '1014px',
+                  height: '288px',
+                  margin: '0 auto',
+                  borderRadius: '0px',
+                  backgroundColor: 'transparent',
+                  boxShadow: '0 0 #0000',
+                  maxWidth: '100%',
+                  display: 'block'
+                }}
+              />
+            </div>
+
           </div>
         </section>
 
@@ -566,4 +636,4 @@ const CreatorsPage = () => {
   );
 };
 
-export default CreatorsPage;
+export default CreatorsPagePreview;

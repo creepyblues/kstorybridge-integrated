@@ -1,8 +1,8 @@
 # AI Chatbot System Documentation
 
-**Last Updated**: 2025-01-26
-**Version**: 2.0
-**Status**: Production (All Buyers)
+**Last Updated**: 2025-10-13
+**Version**: 2.3 - Phase 3: Smart Suggestion System
+**Status**: Production (All Buyers) - NEW: Response-Aware Suggestions
 
 ---
 
@@ -441,9 +441,11 @@ class UnifiedTitleScorer {
 
 ## 💬 PROMPT ENGINEERING
 
-### Orchestrator Mode Master Prompt
+### Orchestrator Mode Master Prompt (UPDATED 2025-10-13)
 
 **File**: `supabase/functions/chat-orchestrator/index.ts`
+
+**NEW PERSONALITY**: Jinu is now a **Hollywood showrunner** focused on story craft (70%) with business awareness (30%, user-triggered). Uses real industry examples like Squid Game, Pachinko, and Apple TV+ adaptations—never fictional personal experience.
 
 ```typescript
 function buildMasterPrompt(context: {
@@ -461,10 +463,36 @@ function buildMasterPrompt(context: {
     'suite': 'full platform access with exclusive content'
   }[userProfile.tier || 'basic'] || 'Korean content explorer';
 
-  return `CONTEXT: You are Jinu, KStoryBridge's expert Korean content curator. You have deep knowledge of Korean entertainment including manhwa, webtoons, dramas, movies, and novels. You excel at personalized recommendations and engaging conversations about Korean culture and storytelling.
+  return `CONTEXT: You are Jinu, a Hollywood showrunner who specializes in Korean storytelling. Your passion is story craft—character development, narrative structure, emotional arcs, and what makes a story resonate. You love dissecting how Korean narratives work and discussing adaptation possibilities.
+
+PRIMARY FOCUS (70%):
+- Story structure and character arcs
+- Narrative themes and emotional beats
+- What makes the storytelling effective
+- Development questions (protagonist journey, stakes, episode structure)
+
+SECONDARY FOCUS (30% - User-Triggered):
+- Platform/network fit (when user asks "where would this work?")
+- Market positioning (when user signals business interest)
+- Real industry examples (never fictional personal experiences)
+
+TONE: Casual, enthusiastic story nerd. Think excited colleague, not formal consultant.
+
+REAL KOREAN IP ADAPTATIONS YOU REFERENCE:
+• Squid Game (Netflix 2021) - Proved international appeal of Korean storytelling
+• Pachinko (Apple TV+ 2022) - Multi-generational family saga, prestige format
+• Extraordinary Attorney Woo (Netflix 2022) - Character-driven procedural
+• Mask Girl (Netflix 2023) - Genre-bending structure, identity themes
+• The Good Daughter (ABC) - Adapted from "The Good Bad Mother"
+
+WHAT THESE SHOW:
+✅ American audiences respond to character depth
+✅ Cultural specificity is a feature, not a bug
+✅ Structure matters more than language
+✅ Emotional universality transcends origin
 
 USER PROFILE:
-- Name: ${userProfile.full_name || 'Fellow Korean content enthusiast'}
+- Name: ${userProfile.full_name || 'Fellow story enthusiast'}
 - Status: ${tierDescription}
 - Account: ${userProfile.account_type === 'buyer' ? 'Content Buyer' : 'Content Creator'}
 - Experience Level: ${userProfile.tier === 'basic' ? 'Getting started' : userProfile.tier === 'pro' ? 'Experienced' : 'Expert'}
@@ -492,18 +520,65 @@ SEARCH INSIGHTS: Found ${searchResults.length} titles matching the user's intere
 CURRENT QUERY: "${userQuery}"
 
 RESPONSE GUIDELINES:
-1. **Personality**: Be Jinu - passionate, knowledgeable, and genuinely excited about Korean content
-2. **Recommendations**: IMPORTANT - Only recommend ACTUAL titles from the search results above. Never invent or create fictional titles. If search results exist, enthusiastically recommend the most relevant titles using quotes with their EXACT names
-3. **Engagement**: Ask thoughtful follow-up questions about preferences, genres, or specific interests
-4. **Cultural Context**: Share insights about Korean storytelling trends, cultural elements, or industry highlights
-5. **Personalization**: Tailor recommendations based on user's tier and conversation history
-6. **Structure**: Keep responses conversational but organized, with clear title recommendations
-7. **Follow-ups**: End with 2-3 engaging questions or suggestions to continue the conversation
-8. **Accuracy**: NEVER make up title names. Only mention titles that appear in the search results provided above
 
-Focus on creating an engaging, personalized experience that helps discover amazing Korean content!`;
+**Story-First Approach** (Default - 70% of responses):
+1. **Lead with Story Craft**
+   - "Let me tell you why this story works..."
+   - "The character arc here is really smart because..."
+   - "What hooked me is how the narrative structures..."
+   - "Okay, story nerd moment—notice how the writer..."
+
+2. **Discuss Structure Naturally**
+   - Character journeys (want vs. need, arc completion)
+   - Story beats (setup, inciting incident, midpoint, resolution)
+   - Emotional core (what makes it resonate)
+   - Theme exploration (what the story is really about)
+
+3. **Ask Development Questions**
+   - "What draws you to this character type?"
+   - "Are you into slow-burn character development or fast-paced plot?"
+   - "What emotional beats are you looking for in a story?"
+
+**Business Layer** (Secondary - 30%, User-Triggered):
+4. **Wait for Business Signals**
+   - User mentions: "where could this work?", "budget", "pitch", "sell", "network", "platform"
+   - Then shift: "Oh, thinking about market fit? Given the structure..."
+   - Reference real examples: "Netflix's 'Squid Game' showed us that..."
+   - Stay practical: "Story-wise it's character-driven, which means production can focus on..."
+
+5. **Use Real Examples Only**
+   - ✅ "Look at how Apple TV+ adapted 'Pachinko'..."
+   - ✅ "HBO's approach with 'The Sympathizer' kept..."
+   - ❌ Never: "When I was working on..." (no fictional personal history)
+
+6. **Enthusiasm + Collaboration**
+   - Be genuinely excited about storytelling
+   - Talk WITH users, not AT them
+   - Use phrases: "I'm curious...", "Tell me more about...", "What if..."
+   - Avoid robotic lists—weave info into natural dialogue
+
+7. **Context Awareness**
+   - Always reference earlier conversation points
+   - Notice patterns in preferences
+   - Build continuity: "You mentioned earlier..." "Following up on..."
+
+8. **Accuracy (CRITICAL)**
+   - ONLY recommend titles from search results above
+   - Use EXACT title names with quotes
+   - NEVER invent fictional titles
+   - If no matches, acknowledge gracefully and recommend from available catalog
+
+Focus on creating an engaging conversation about story craft while helping discover amazing Korean content!`;
 }
 ```
+
+**Key Changes from v2.0**:
+- ✅ Shifted from "Korean content curator" to "Hollywood showrunner"
+- ✅ Added 70% story craft / 30% business split
+- ✅ Included real Korean IP adaptation examples (Squid Game, Pachinko, etc.)
+- ✅ Emphasizes casual "story nerd" tone over formal consultant
+- ✅ Business discussion is now reactive to user signals
+- ✅ Removed fictional personal experience, uses only real industry examples
 
 ### Legacy Mode Prompt
 
@@ -690,6 +765,524 @@ class UnifiedCacheManager {
 - Titles database (5 min)
 - Query embeddings (5 min)
 - Search results (5 min)
+
+---
+
+## 🔧 MODEL CONFIGURATION HISTORY
+
+### Current Configuration (v2.2)
+
+**Model**: GPT-5-mini
+**Deployed**: 2025-10-13
+**Status**: Active (Testing Phase)
+
+**API Configuration**:
+```typescript
+{
+  model: 'gpt-5-mini',
+  max_completion_tokens: 1000,  // ⚠️ New parameter (not max_tokens)
+  // temperature: NOT SET        // 🔒 Locked at 1.0 (cannot configure)
+  stream: true
+}
+```
+
+**Key Differences from Previous Versions**:
+- ⚠️ **Token Parameter Change**: Must use `max_completion_tokens` instead of `max_tokens`
+- 🚫 **Temperature Locked**: Cannot configure temperature (defaults to 1.0)
+- ✅ **Latest Model**: Access to GPT-5 capabilities
+
+**Trade-offs**:
+- ✅ Latest OpenAI model with improved capabilities
+- ⚠️ Higher creativity (temp 1.0) may increase hallucination risk
+- ⚠️ Loss of temperature fine-tuning control
+- ❓ Personality test results pending
+
+**Implementation**:
+```typescript
+// Conditional logic in chat-orchestrator/index.ts (Lines 202-220)
+if (selectedModel.startsWith('gpt-5')) {
+  requestBody.max_completion_tokens = 1000;
+  console.log('🔧 Using GPT-5 config: max_completion_tokens=1000, temp=1.0 (default)');
+} else {
+  requestBody.max_tokens = 1000;
+  requestBody.temperature = 0.85;
+  console.log('🔧 Using GPT-4 config: max_tokens=1000, temp=0.85');
+}
+```
+
+---
+
+### Previous Configuration (v2.1)
+
+**Model**: GPT-4o-mini
+**Active Period**: 2024-12-XX to 2025-10-13
+**Status**: Deprecated (Proven Baseline)
+
+**API Configuration**:
+```typescript
+{
+  model: 'gpt-4o-mini',
+  max_tokens: 1000,
+  temperature: 0.85,
+  stream: true
+}
+```
+
+**Performance**:
+- ✅ Personality test pass rate: 85%+
+- ✅ Stable and predictable responses
+- ✅ Configurable temperature for fine-tuning
+- ✅ Cost-effective ($0.15 per 1M input tokens)
+
+**Reason for Deprecation**: Testing newer GPT-5-mini model capabilities
+
+---
+
+### Original Configuration (v2.0)
+
+**Model**: GPT-4o-mini
+**Active Period**: 2024-11-XX to 2024-12-XX
+**Status**: Deprecated
+
+**API Configuration**:
+```typescript
+{
+  model: 'gpt-4o-mini',
+  max_tokens: 1000,
+  temperature: 0.7,  // Lower than current
+  stream: true
+}
+```
+
+**Reason for Change**: Temperature 0.7 was too conservative, increased to 0.85 for more natural responses
+
+---
+
+### Model Switching Procedure
+
+**To switch models**, update Line 190 in `chat-orchestrator/index.ts`:
+
+```typescript
+// Current (GPT-5-mini)
+const selectedModel = model || 'gpt-5-mini';
+
+// Switch to GPT-4o-mini (rollback)
+const selectedModel = model || 'gpt-4o-mini';
+
+// Switch to GPT-4o (premium)
+const selectedModel = model || 'gpt-4o';
+```
+
+Then deploy:
+```bash
+npx supabase functions deploy chat-orchestrator
+```
+
+**Automatic Configuration**: The conditional logic handles API parameter differences automatically based on model name prefix.
+
+---
+
+### API Parameter Compatibility Matrix
+
+| Model | max_tokens | max_completion_tokens | temperature | Streaming |
+|-------|------------|-----------------------|-------------|-----------|
+| GPT-4o-mini | ✅ Supported | ⚠️ Optional | ✅ 0.0 - 2.0 | ✅ Yes |
+| GPT-4o | ✅ Supported | ⚠️ Optional | ✅ 0.0 - 2.0 | ✅ Yes |
+| GPT-5-mini | 🚫 Not supported | ✅ **Required** | 🚫 **Locked at 1.0** | ✅ Yes |
+
+**Key Migration Rules**:
+- When upgrading to GPT-5: Change `max_tokens` → `max_completion_tokens`
+- When upgrading to GPT-5: Remove `temperature` parameter (cannot configure)
+- When downgrading from GPT-5: Change `max_completion_tokens` → `max_tokens`
+- When downgrading from GPT-5: Add `temperature: 0.85` back
+
+---
+
+### Cost Comparison
+
+| Model | Input Cost (per 1M tokens) | Output Cost (per 1M tokens) | Monthly Cost (10K queries) |
+|-------|---------------------------|----------------------------|---------------------------|
+| **GPT-4o-mini** | $0.150 | $0.600 | ~$4.50 |
+| **GPT-4o** | $5.00 | $15.00 | ~$125 |
+| **GPT-5-mini** | ~$0.150 (est.) | ~$0.600 (est.) | ~$4.50 |
+
+---
+
+### Testing Checklist for Model Changes
+
+When testing a new model configuration:
+
+1. **Code Changes**:
+   - [ ] Update model in `chat-orchestrator/index.ts` Line 190
+   - [ ] Verify conditional logic applies correct parameters
+   - [ ] Run build check (`npm run build`)
+   - [ ] Run lint check (`npm run lint`)
+
+2. **Deployment**:
+   - [ ] Deploy edge function: `npx supabase functions deploy chat-orchestrator`
+   - [ ] Verify deployment success in Supabase dashboard
+
+3. **Functional Testing**:
+   - [ ] Browser test: http://localhost:8081/buyers/chat
+   - [ ] Test query: "Tell me about The Dilettante"
+   - [ ] Verify: Response loads without API errors
+   - [ ] Check: Story craft focus in response
+
+4. **Automated Testing**:
+   - [ ] Run personality test suite: `SUPABASE_AUTH_TOKEN="token" node test-story-craft-personality.js`
+   - [ ] Target: 85%+ pass rate (5/6 or 6/6 tests)
+   - [ ] Run Phase 1-2 tests: `SUPABASE_AUTH_TOKEN="token" node test-chatbot-improvements.js`
+
+5. **Production Monitoring**:
+   - [ ] Check edge function logs for errors
+   - [ ] Monitor hallucination rate (target: <5%)
+   - [ ] Track response times (target: <4 seconds)
+   - [ ] Gather user feedback on response quality
+
+---
+
+### Known Issues & Workarounds
+
+#### GPT-5 Temperature Restriction
+
+**Issue**: GPT-5 models do not support custom temperature values
+
+**Error Message**:
+```json
+{
+  "error": "Unsupported parameter: 'temperature' does not support 0.85 with this model. Only the default (1) value is supported."
+}
+```
+
+**Workaround**: Omit temperature parameter entirely, allowing it to default to 1.0
+
+**Implementation**: Conditional logic in `chat-orchestrator/index.ts` (Lines 202-220)
+
+**Impact**:
+- ⚠️ Higher creativity may increase response variety
+- ⚠️ Potential increase in hallucination risk
+- ⚠️ Less control over response consistency
+- ✅ Mitigated by strong anti-hallucination validation layer
+
+#### GPT-5 Token Parameter Change
+
+**Issue**: `max_tokens` parameter rejected by GPT-5 models
+
+**Error Message**:
+```json
+{
+  "error": "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead."
+}
+```
+
+**Workaround**: Use `max_completion_tokens` for GPT-5, keep `max_tokens` for GPT-4
+
+**Implementation**: Conditional logic automatically applies correct parameter
+
+**Status**: ✅ Resolved
+
+---
+
+### Reference Documentation
+
+For complete model configuration details, see:
+- **[MODEL_CONFIGURATION_GUIDE.md](./MODEL_CONFIGURATION_GUIDE.md)** - Comprehensive model comparison and migration guide
+
+---
+
+## 🎯 PHASE 3: SMART SUGGESTION SYSTEM (DEPLOYED 2025-10-13)
+
+### Overview
+
+Phase 3 implements **response-aware suggestions** to eliminate duplicate and irrelevant chatbot suggestions. The system now analyzes AI responses to intelligently suppress or complement suggestion chips.
+
+### Problem Statement
+
+**Before Phase 3**:
+- Duplicate suggestions appeared from two sources:
+  1. AI response text with "Try:" sections
+  2. System-generated suggestion chips at the end of responses
+- Both systems generated questions independently, causing repetition
+- Suggestions didn't consider what the AI actually said
+
+**Example Issue**:
+```
+User: "bromance"
+
+AI Response:
+"Let me help you discover the perfect Korean story!
+
+Try:
+- What genres interest you most?
+- Do you prefer character-driven stories?
+- Any specific themes in mind?"
+
+Suggestion Chips:
+[What genres do you like?]
+[Character-driven or plot-heavy?]
+[Specific themes?]
+```
+
+**Result**: User sees nearly identical questions twice (AI text + chips)
+
+### Solution Architecture
+
+#### 1. Response Analyzer (`analyzeAIResponse`)
+
+Detects when AI has already provided suggestions by analyzing:
+
+```typescript
+function analyzeAIResponse(response: string): {
+  hasTrySection: boolean;      // Detected "Try:" format
+  hasQuestions: boolean;        // Has 2+ questions
+  questionCount: number;        // Total question marks
+  titlesDiscussed: string[];   // Quoted title names
+  themesDiscussed: string[];   // Genre/tone keywords
+  hasBulletList: boolean;      // Bullet or numbered lists
+}
+```
+
+**Detection Patterns**:
+- **"Try:" sections**: Regex `/try:/i`
+- **Bullet lists**: Patterns like `- `, `• `, `1. `
+- **Questions**: Count of `?` characters
+- **Titles**: Quoted strings `"Title Name"`
+- **Themes**: Keywords (romance, action, thriller, dark, etc.)
+
+**Implementation**: `chat-orchestrator/index.ts` lines 1085-1153
+
+#### 2. Smart Suppression Logic
+
+Prevents system chips from appearing when AI already provided suggestions:
+
+```typescript
+const skipSuggestions =
+  queryIntent === 'information' ||                          // Skip for "Tell me about X"
+  (conversationStage === 'initial' && responseAnalysis.hasTrySection) ||  // Skip if AI has "Try:"
+  (responseAnalysis.hasQuestions && responseAnalysis.questionCount >= 3) || // Skip if AI asked 3+ questions
+  (responseAnalysis.hasBulletList && responseAnalysis.questionCount >= 2); // Skip if AI has structured list
+```
+
+**Suppression Rules**:
+1. **Information queries** (`"Tell me about [Title]"`) → Always suppress (single title focus)
+2. **Initial + "Try:" section** → Suppress chips (AI already exploring)
+3. **3+ questions** → Suppress chips (AI asking too many already)
+4. **Bullet list + 2+ questions** → Suppress chips (structured suggestions present)
+
+**Implementation**: `chat-orchestrator/index.ts` lines 345-385
+
+#### 3. Response-Aware Suggestions
+
+Generates contextual chips that **complement** (not duplicate) AI response:
+
+```typescript
+// Build on titles AI mentioned
+if (responseAnalysis.titlesDiscussed.length > 0) {
+  const discussedTitle = responseAnalysis.titlesDiscussed[0];
+
+  // Suggest alternative titles NOT discussed
+  const undiscussedTitles = searchResults.filter(r =>
+    !responseAnalysis.titlesDiscussed.includes(r.title_name_en)
+  );
+
+  if (undiscussedTitles.length > 0) {
+    responseAwareSuggestions.push(`How does "${undiscussedTitles[0].title_name_en}" compare?`);
+  }
+}
+
+// Build on themes AI mentioned
+if (responseAnalysis.themesDiscussed.length >= 2) {
+  const theme1 = responseAnalysis.themesDiscussed[0];
+  const theme2 = responseAnalysis.themesDiscussed[1];
+  responseAwareSuggestions.push(`${theme1} vs ${theme2} - which do you prefer?`);
+}
+
+// Provide specific examples when AI asked broad questions
+if (responseAnalysis.hasQuestions) {
+  const title1 = searchResults[0].title_name_en;
+  const title2 = searchResults[1].title_name_en;
+  responseAwareSuggestions.push(`For example: "${title1}" or "${title2}"`);
+}
+```
+
+**Suggestion Strategies**:
+- **Alternative Titles**: Suggest titles NOT mentioned by AI
+- **Theme Variations**: Build on themes AI discussed (contrasts, combinations)
+- **Specific Examples**: When AI asks broad questions, provide concrete title examples
+- **Deeper Exploration**: Suggest diving deeper into titles AI mentioned
+
+**Implementation**: `chat-orchestrator/index.ts` lines 1402-1473
+
+#### 4. Priority Suggestion Mixing
+
+Response-aware suggestions get **highest priority** in final mix:
+
+```typescript
+// Priority hierarchy:
+// 1. Response-aware suggestions (max 3) - Based on actual AI output
+// 2. Context-aware suggestions (max 2) - Based on user query themes
+// 3. Genre-vibe suggestions (max 2) - Cross-genre combinations
+// 4. Comp-based suggestions (max 1) - From comps field
+// 5. Author suggestions (max 1) - More from author
+// 6. Intent-specific (max 1) - Based on query intent
+
+const typeM1_responseAware: string[] = [...responseAwareSuggestions];  // Highest priority
+
+diverseSuggestions.push(...typeM1_responseAware.slice(0, 3)); // Add first
+```
+
+**Implementation**: `chat-orchestrator/index.ts` lines 1638-1756
+
+#### 5. Natural Conversation Prompt
+
+Simplified AI prompt to make suggestions feel more natural:
+
+**Before**:
+```
+**REQUIRED FORMAT** (follow this EXACTLY):
+[Brief warm intro]
+
+Try:
+- [Question 1: Genre preferences]
+- [Question 2: Storytelling style]
+- [Question 3: Themes]
+```
+
+**After**:
+```
+**NATURAL CONVERSATION APPROACH**:
+Instead of formal "Try:" lists, weave questions naturally into your response.
+
+Example:
+"I'd love to help you discover the perfect Korean story! To narrow things down,
+I'm curious—what kind of emotional experience are you looking for? Are you drawn
+more to intense, plot-driven thrillers, or character journeys with slow-burn
+development? And do you have any specific themes in mind?"
+
+**Key Principles**:
+- Ask questions in paragraph form, not bullet lists
+- Make questions feel like natural conversation
+- Focus on preferences, not just metadata
+```
+
+**Implementation**: `chat-orchestrator/index.ts` lines 1943-1966
+
+### Testing Scenarios
+
+#### Scenario 1: Broad Query (Suppression Test)
+```
+User: "bromance"
+
+Expected Behavior:
+- AI: Asks natural questions in paragraph form
+- Chips: SUPPRESSED (AI already exploring preferences)
+
+Reason: conversationStage='initial' + responseAnalysis.hasTrySection=false + responseAnalysis.hasQuestions=true
+```
+
+#### Scenario 2: Information Query (Suppression Test)
+```
+User: "Tell me about The Dilettante"
+
+Expected Behavior:
+- AI: Provides detailed title information
+- Chips: SUPPRESSED (information intent)
+
+Reason: queryIntent='information'
+```
+
+#### Scenario 3: Follow-up Query (Response-Aware Test)
+```
+User: "romance stories"
+AI: Recommends "First Love" and "Secret Romance"
+
+User: "Tell me more"
+
+Expected Behavior:
+- AI: Provides details about mentioned titles
+- Chips: COMPLEMENTARY suggestions
+  - "How does 'My Heart' compare?" (alternative title)
+  - "More romance + thriller stories" (theme variation)
+  - "Slow-burn vs fast-paced romance" (contrast)
+
+Reason: Response-aware suggestions build on AI's discussed titles
+```
+
+#### Scenario 4: Theme Query (Response-Aware Test)
+```
+User: "dark thriller with revenge"
+
+Expected Behavior:
+- AI: Discusses 2-3 dark revenge thrillers
+- Chips: COMPLEMENTARY suggestions
+  - "Revenge stories with redemption arcs" (variation)
+  - "Lighter thriller vs dark intense" (contrast)
+  - "More from [author AI mentioned]" (author exploration)
+
+Reason: Response-aware suggestions extend conversation naturally
+```
+
+### Performance Metrics
+
+**Expected Improvements**:
+- **Duplicate Rate**: 100% → 0% (eliminate all AI/chip duplicates)
+- **Relevance Score**: 70% → 90%+ (chips complement AI response)
+- **Suppression Rate**: ~40-50% of queries (information + initial broad queries)
+- **User Confusion**: Significant reduction (one coherent suggestion system)
+
+**Monitoring**:
+```typescript
+// Edge function logs to monitor:
+console.log('🔇 Suppressing suggestions:', {
+  reason: 'AI provided Try section',
+  conversationStage,
+  responseAnalysis
+});
+
+console.log('🧠 Generating response-aware suggestions:', {
+  titlesDiscussed: responseAnalysis.titlesDiscussed.length,
+  themesDiscussed: responseAnalysis.themesDiscussed.length
+});
+
+console.log('💡 Generated diverse suggestions:', {
+  responseAwareAvailable: typeM1_responseAware.length,
+  suggestions: uniqueSuggestions
+});
+```
+
+### Code Locations
+
+**All changes in**: `/apps/dashboard/supabase/functions/chat-orchestrator/index.ts`
+
+| Feature | Function/Section | Lines |
+|---------|-----------------|-------|
+| Response Analyzer | `analyzeAIResponse()` | 1085-1153 |
+| Suppression Logic | Streaming response handler | 340-385 |
+| Response-Aware Generation | `generateSuggestedQueries()` | 1402-1473 |
+| Priority Mixing | Suggestion mixing logic | 1638-1756 |
+| Natural Prompt | `buildMasterPrompt()` | 1943-1966 |
+
+### Benefits
+
+**User Experience**:
+- ✅ No more duplicate questions (AI + chips saying same thing)
+- ✅ Suggestions feel contextual and helpful (not random)
+- ✅ Natural conversation flow (paragraph questions, not bullet lists)
+- ✅ One coherent suggestion system (not competing sources)
+
+**Technical**:
+- ✅ Response-aware suggestion generation
+- ✅ Intelligent suppression prevents duplicates
+- ✅ Priority-based mixing ensures best suggestions show first
+- ✅ Extensible architecture for future improvements
+
+### Future Enhancements
+
+**Potential Phase 4**:
+- Track which suggestions users click (feedback loop)
+- Personalize suggestion types based on user behavior
+- A/B test different suppression thresholds
+- Multi-turn conversation memory (reference suggestions from 3+ turns ago)
 
 ---
 

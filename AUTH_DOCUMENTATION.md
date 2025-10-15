@@ -1,7 +1,8 @@
 # KStoryBridge Authentication Documentation
 
 **Last Updated:** 2025-10-11
-**Version:** 3.7 - Email Signup Edge Function Migration
+**Version:** 3.8 - OAuth URL Parameter Fix (CRITICAL)
+**Working Auth Commit:** `26f6fef0eb6a6cd15177e1d218eca3db4a1028d5` (WORKING VER - 2025-10-11)
 
 This is the single source of truth for all authentication-related information in the KStoryBridge platform.
 
@@ -130,10 +131,12 @@ Your App (staging.kstorybridge.com/auth/callback?account_type=buyer&flow=signin&
   ↓ Read account_type and flow from URL ✅
 ```
 
-**WHERE THIS IS IMPLEMENTED** (as of 2025-10-05):
-- Signin Flow: `apps/dashboard/src/components/SigninForm.tsx` (lines 95-108)
-- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (lines 367-377)
-- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 35-46)
+**WHERE THIS IS IMPLEMENTED** (as of 2025-10-11 - CRITICAL FIX):
+- Signin Flow: `apps/dashboard/src/components/SigninForm.tsx` (line 104: `const callbackUrl = ...?account_type=${accountType}&flow=signin`)
+- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (line 419: `const callbackUrl = ...?account_type=${accountType}&flow=signup`)
+- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 37-39: reads from URL parameters)
+
+**CRITICAL CHANGE (2025-10-11)**: Fixed OAuth implementation that was incorrectly using custom state parameter. Now correctly uses URL query parameters in redirectTo URL as documented above.
 
 ---
 
@@ -1265,6 +1268,38 @@ WHERE trigger_schema = 'auth';
 ## Migration History
 
 ### Major Changes
+
+#### 2025-10-11: OAuth URL Parameter Fix (CRITICAL SECURITY FIX)
+- **CRITICAL BUG FIX**: OAuth implementation was using forbidden `state` parameter approach
+- **Problem**: Custom OAuth state parameter conflicted with Supabase PKCE, causing `bad_oauth_state` errors
+- **Impact**: OAuth flows could hang, timeout, or fail completely in production
+- **Root Cause**: Code was using `state` parameter via `queryParams` instead of URL query parameters in `redirectTo`
+- **Solution**: Changed to URL parameter approach in `redirectTo` URL (correct standard practice)
+- **Files Fixed**:
+  - `SigninForm.tsx:104` - Changed from state parameter to URL params (`?account_type=...&flow=...`)
+  - `signupService.ts:419` - Changed from state parameter to URL params
+  - `AuthCallbackSimple.tsx:38` - Updated to read account_type and flow from URL params (not state)
+- **Architecture**: `redirectTo: ${origin}/auth/callback?account_type=${type}&flow=${flow}` (URL params persist through all redirects)
+- **Testing**: 5 comprehensive test scripts created (`test-auth-flows.js`, `test-database-verification.js`, `test-edge-functions.js`)
+- **Verification**: Build successful, ready for testing
+- **Documentation**: AUTH_DOCUMENTATION.md already had correct approach documented, code now matches docs
+
+**Technical Details:**
+```typescript
+// OLD (WRONG - Caused bad_oauth_state errors)
+const oauthState = JSON.stringify({ account_type, flow });
+options: { redirectTo: url, state: oauthState } // ❌ Conflicts with Supabase PKCE
+
+// NEW (CORRECT - Follows OAuth standards)
+const callbackUrl = `${url}/auth/callback?account_type=${accountType}&flow=${flow}`;
+options: { redirectTo: callbackUrl } // ✅ URL params persist reliably
+```
+
+**Impact:**
+- Eliminates `bad_oauth_state` errors
+- OAuth flows now follow standard practice
+- Code matches existing documentation
+- Consistent with Google OAuth redirect URL patterns
 
 #### 2025-10-11: Email Signup Edge Function Migration
 - **CRITICAL FIX**: Email signup now uses edge functions for profile creation

@@ -345,7 +345,7 @@ const CreatorsPagePreview = () => {
               <Card className="bg-gradient-to-br from-hanok-teal/5 to-porcelain-blue-50 border-hanok-teal/20 shadow-none rounded-2xl">
                 <CardContent className="p-6 sm:p-8">
                   <p className="text-lg text-midnight-ink-600 leading-relaxed text-center">
-                    <span className="font-semibold text-midnight-ink">Korean storytelling has unique strengths. Hollywood has specific expectations.</span> We bridge the gap so your vision shines through.
+                    <span className="font-semibold text-midnight-ink">Korean storytelling has unique strengths. Hollywood has specific expectations.</span><br />We bridge the gap so your vision shines through.
                   </p>
                 </CardContent>
               </Card>
@@ -406,37 +406,8 @@ const CreatorsPagePreview = () => {
                         Veteran Guidance
                       </h3>
                       <p className="text-midnight-ink-600">
-                        20+ year Hollywood showrunners review your pitch deck before buyers see it
+                        Direct support from Hollywood producer with 20+ years of development experience
                       </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Credentials Section */}
-            <div className="max-w-4xl mx-auto">
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-                <CardContent className="p-8">
-                  <h3 className="text-xl font-bold text-midnight-ink mb-6 text-center">Our pitch team includes:</h3>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-hanok-teal/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Star className="h-8 w-8 text-hanok-teal" />
-                      </div>
-                      <p className="text-midnight-ink-600 font-medium">Former Netflix development executives</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-hanok-teal/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Star className="h-8 w-8 text-hanok-teal" />
-                      </div>
-                      <p className="text-midnight-ink-600 font-medium">Emmy-nominated showrunners</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-hanok-teal/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Star className="h-8 w-8 text-hanok-teal" />
-                      </div>
-                      <p className="text-midnight-ink-600 font-medium">Korean-American cultural consultants</p>
                     </div>
                   </div>
                 </CardContent>
@@ -464,7 +435,7 @@ const CreatorsPagePreview = () => {
                 Why Korean Creators Choose KStoryBridge
               </h2>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                The traditional route vs. the direct path
+                The traditional route vs. the KStoryBridge path
               </p>
             </div>
 
@@ -490,10 +461,6 @@ const CreatorsPagePreview = () => {
                     <li className="flex items-start gap-2">
                       <span className="text-red-600 mt-0.5">•</span>
                       <span>Weeks of research to find the right contact → Still invisible</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>Sign with agency → Give up 15-20% + creative control</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -528,16 +495,6 @@ const CreatorsPagePreview = () => {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Trust Signals */}
-            <div className="text-center mt-12">
-              <p className="text-2xl font-bold text-midnight-ink mb-2">
-                100+ Verified and Vetted Titles
-              </p>
-              <p className="text-midnight-ink-600">
-                Join Korean creators already pitching to Hollywood through KStoryBridge
-              </p>
-            </div>
           </div>
         </section>
 
@@ -559,14 +516,14 @@ const CreatorsPagePreview = () => {
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {/* Step 1: Join & Showcase */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-sunrise-coral text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
+                <div className="w-16 h-16 bg-hanok-teal text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
                   01
                 </div>
                 <h3 className="text-xl font-bold text-midnight-ink mb-4">Join & Showcase</h3>
                 <p className="text-midnight-ink-600 leading-relaxed mb-3">
                   Create your profile, upload your webtoon/novel, tell us your vision
                 </p>
-                <p className="text-sm text-sunrise-coral font-semibold">
+                <p className="text-sm text-hanok-teal font-semibold">
                   5-minute setup
                 </p>
               </div>

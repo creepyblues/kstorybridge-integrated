@@ -87,7 +87,7 @@ const BuyersPagePreview = () => {
                 id="buyers-hero-try-ai-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/chat`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
               >
                 Try AI Assistant →
               </Button>
@@ -204,7 +204,7 @@ const BuyersPagePreview = () => {
                     <Button
                       size="sm"
                       className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
-                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/chat`}
+                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
                     >
                       Chat with Jinu
                     </Button>
@@ -253,8 +253,8 @@ const BuyersPagePreview = () => {
               {/* Pillar 2: Rights Chain */}
               <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow">
                 <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-sunrise-coral/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Shield className="h-8 w-8 text-sunrise-coral" />
+                  <div className="w-16 h-16 bg-[#4C9C9B]/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Shield className="h-8 w-8 text-[#4C9C9B]" />
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
                     Verified Rights Chain
@@ -262,7 +262,7 @@ const BuyersPagePreview = () => {
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
                     No more surprises. Every title has clear ownership documentation and direct access to rights holders.
                   </p>
-                  <p className="text-sm text-sunrise-coral font-semibold">
+                  <p className="text-sm text-[#4C9C9B] font-semibold">
                     Zero ownership surprises
                   </p>
                 </CardContent>
@@ -415,21 +415,6 @@ const BuyersPagePreview = () => {
               </Card>
             </div>
 
-            {/* Trust Signals */}
-            <div className="text-center mt-12">
-              <p className="text-2xl font-bold text-midnight-ink mb-2">
-                100+ Verified Rights Holders
-              </p>
-              <p className="text-midnight-ink-600">
-                All with documented ownership and deal authority
-              </p>
-              <Button
-                className="mt-6 bg-sunrise-coral hover:bg-sunrise-coral-600 text-white"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/titles`}
-              >
-                See Verified Titles
-              </Button>
-            </div>
           </div>
         </section>
 
@@ -462,7 +447,7 @@ const BuyersPagePreview = () => {
 
               {/* Step 2: Verify */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-sunrise-coral text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
+                <div className="w-16 h-16 bg-[#4C9C9B] text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
                   02
                 </div>
                 <h3 className="text-xl font-bold text-midnight-ink mb-4">Verify Rights</h3>
@@ -519,7 +504,7 @@ const BuyersPagePreview = () => {
                 id="buyers-catalog-join-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
               >
                 Join to View Full Catalog
               </Button>
@@ -534,115 +519,6 @@ const BuyersPagePreview = () => {
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {/* Pricing */}
-            <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                Flexible Plans for Your Needs
-              </h2>
-              <p className="text-xl text-midnight-ink-600 leading-relaxed max-w-2xl mx-auto">
-                One successful acquisition pays for 10 years of Pro membership
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-              {/* Free Tier */}
-              <Card className="border-0 shadow-lg rounded-3xl hover:shadow-xl transition-all duration-300 bg-white overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="bg-slate-100 p-6 rounded-t-3xl">
-                    <div className="text-sm text-slate-600 font-medium mb-2">For content scouts</div>
-                    <h3 className="text-4xl font-bold text-midnight-ink mb-4">Free</h3>
-                    <p className="text-slate-600 text-sm mb-6">Browse and discover Korean titles with AI assistance.</p>
-
-                    <div className="mb-6">
-                      <div className="text-3xl font-bold text-midnight-ink">$0</div>
-                      <div className="text-slate-500 text-sm">/month</div>
-                    </div>
-
-                    <Button
-                      id="buyers-pricing-free-btn"
-                      className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-2xl font-medium transition-colors duration-300"
-                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
-                    >
-                      Get started
-                    </Button>
-                  </div>
-
-                  <div className="p-6 bg-white">
-                    <h4 className="font-bold text-midnight-ink mb-4">What's included:</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-600 text-sm">AI discovery with Jinu</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-600 text-sm">Browse limited catalog</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-600 text-sm">Basic title information</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Pro Tier */}
-              <Card className="border-2 border-hanok-teal shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 bg-white overflow-hidden relative">
-                <div className="absolute top-4 right-4">
-                  <span className="px-3 py-1 bg-hanok-teal text-white text-xs font-bold rounded-full">
-                    RECOMMENDED
-                  </span>
-                </div>
-                <CardContent className="p-0">
-                  <div className="bg-hanok-teal/10 p-6 rounded-t-3xl">
-                    <div className="text-sm text-hanok-teal font-medium mb-2">For active buyers</div>
-                    <h3 className="text-4xl font-bold text-midnight-ink mb-4">Pro</h3>
-                    <p className="text-midnight-ink-600 text-sm mb-6">Everything you need to discover, verify, and close deals.</p>
-
-                    <div className="mb-6">
-                      <div className="text-3xl font-bold text-midnight-ink">$250</div>
-                      <div className="text-midnight-ink-500 text-sm">/month</div>
-                    </div>
-
-                    <Button
-                      id="buyers-pricing-pro-btn"
-                      className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white py-3 rounded-2xl font-medium transition-colors duration-300"
-                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
-                    >
-                      Get started
-                    </Button>
-                  </div>
-
-                  <div className="p-6 bg-white">
-                    <h4 className="font-bold text-midnight-ink mb-4">Everything in Free, plus:</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-600 text-sm">Full catalog access</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-600 text-sm">Exclusive premium titles</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-600 text-sm">Verified rights documentation</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-600 text-sm">Direct rights holder contact</span>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-slate-600 text-sm font-semibold text-hanok-teal">Expert deal support</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* Final CTA Section */}
             <div className="text-center bg-gradient-to-br from-hanok-teal/10 to-porcelain-blue-100 rounded-3xl p-8 sm:p-12 max-w-4xl mx-auto">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-4">
@@ -652,22 +528,13 @@ const BuyersPagePreview = () => {
                 Join hundreds of buyers discovering Korean hits with AI-powered search, verified rights, and expert support
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup`}
-                >
-                  Try Free
-                </Button>
-                <Button
-                  size="lg"
-                  className="bg-porcelain-blue-600 hover:bg-porcelain-blue-700 text-white px-8 py-6 text-lg rounded-full font-medium"
-                  onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/contact`}
-                >
-                  Talk to Our Team
-                </Button>
-              </div>
+              <Button
+                size="lg"
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+              >
+                Try Free
+              </Button>
 
               <p className="mt-6 text-sm text-midnight-ink-400">
                 No credit card required • Upgrade anytime • Cancel anytime

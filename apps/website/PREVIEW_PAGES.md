@@ -1,6 +1,6 @@
 # Preview Pages System
 
-**Last Updated**: 2025-10-13
+**Last Updated**: 2025-10-14
 **Purpose**: Safe testing environment for page redesigns before production deployment
 
 ---
@@ -277,6 +277,268 @@ const ComparisonView = () => {
 ```
 
 Access at: `/compare/buyers`
+
+---
+
+## Preview Page Architecture Reference
+
+### BuyersPagePreview.tsx Structure
+
+**Design Strategy**: AI-first messaging with verified rights chain and expert support
+**Primary Color**: `hanok-teal` (#4C9C9B)
+**Created**: 2025-10-13
+**Target Audience**: Hollywood studios, streaming platforms, media buyers
+
+**7-Section Layout:**
+
+1. **Hero Section** - AI-first headline
+   - H1: "Find Your Next Hit with AI Assistant"
+   - Subheadline: 3-pillar value prop (AI + rights + expert)
+   - CTA: "Try AI Assistant →" (hanok-teal)
+
+2. **AI Assistant Showcase** (Priority #1 - 30% focus)
+   - Icon: Bot (hanok-teal)
+   - Features: 3 cards (Recommend cleared rights, Story craft intelligence, Deep details)
+   - Visual demo: Chat interface mockup
+   - CTA: "Chat with Jinu"
+
+3. **Value Props Grid** - Three Pillars
+   - AI-Powered Discovery (hanok-teal icon)
+   - Verified Rights Chain (sunrise-coral icon)
+   - Expert Deal Support (porcelain-blue icon)
+
+4. **Rights Deep Dive** (Priority #2 - 25% focus)
+   - Icon: Shield (sunrise-coral)
+   - Visual: 4-step rights chain diagram
+   - Before/After comparison (red-50 vs green-50 cards)
+   - Trust signal: "100+ Verified Rights Holders"
+
+5. **Streamlined Process** - 3 Steps
+   - Step colors: hanok-teal (01), sunrise-coral (02), porcelain-blue (03)
+   - Numbered badges with rounded-2xl styling
+
+6. **Catalog Preview**
+   - FeaturedTitlesCarousel component
+   - CTA: "Join to View Full Catalog"
+
+7. **Pricing + Final CTA**
+   - 2-column grid: Free vs Pro
+   - Pro: hanok-teal accent, "RECOMMENDED" badge
+   - Final CTA gradient: hanok-teal/10 to porcelain-blue-100
+
+---
+
+### CreatorsPagePreview.tsx Structure
+
+**Design Strategy**: Access-first messaging with Hollywood connections and pitch support
+**Primary Color**: `sunrise-coral` (#E07856)
+**Created**: 2025-10-14
+**Target Audience**: Webtoon artists, web novel authors
+
+**7-Section Layout:**
+
+1. **Hero Section** - Aspirational messaging
+   - H1: "Your Story Deserves the Global Stage" (sunrise-coral accent)
+   - Subheadline: Direct pitch to Hollywood studios
+   - CTA: "Join the Platform" (sunrise-coral)
+
+2. **ACCESS Showcase** (Priority #1 - 30% focus)
+   - Icon: Globe (sunrise-coral)
+   - **Studio Logo Grid**: 7 logos + 1 stat card (8 items, 2-col mobile → 4-col desktop)
+     - Logos from Supabase: `logo_netflix`, `logo_disney_studios`, `logo_sony_pictures`, etc.
+     - Fallback chain: .png → .jpg → .svg → .webp → text
+     - "50+" stat card integrated with same styling
+   - 3 feature cards below logos
+
+3. **Three Guarantees Grid**
+   - ACCESS: Hollywood Connections (sunrise-coral)
+   - EXPERT: Hollywood Veterans (hanok-teal)
+   - EASY DEAL: Contract Protection (porcelain-blue-600)
+
+4. **EXPERT Deep Dive** (Priority #2 - 30% focus)
+   - Icon: Star (hanok-teal)
+   - Challenge intro card with line break pattern
+   - 3 process cards: Cultural Translation, Professional Pitch Decks, Veteran Guidance
+   - Updated text: "Direct support from Hollywood producer with 20+ years"
+
+5. **Before/After Comparison**
+   - Subtitle: "The traditional route vs. the KStoryBridge path"
+   - Traditional Route: 4 bullet points (red-50 card)
+   - KStoryBridge: 5 bullet points (green-50 card)
+   - **No trust signals section** (removed for cleaner design)
+
+6. **Three Steps**
+   - Step colors: **ALL hanok-teal** (01, 02, 03) - consistent branding
+   - Step 1: "5-minute setup" (hanok-teal text)
+
+7. **Final CTA + Newsletter**
+   - CTA gradient: sunrise-coral/10 to hanok-teal/10
+   - Primary button: sunrise-coral
+   - Beehiiv newsletter embed
+
+---
+
+## Common Design Patterns
+
+### Color Palette by Page
+
+| Page | Primary Color | Secondary | Accent | Step Numbers |
+|------|--------------|-----------|--------|--------------|
+| Buyers | hanok-teal (#4C9C9B) | sunrise-coral | porcelain-blue-600 | Mixed (teal/coral/blue) |
+| Creators | sunrise-coral (#E07856) | hanok-teal | porcelain-blue-600 | All hanok-teal |
+
+### Card Styling Standard
+```tsx
+<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+  <CardContent className="p-6">
+    {/* Icon + Content */}
+  </CardContent>
+</Card>
+```
+
+### Icon Box Pattern
+```tsx
+<div className="flex-shrink-0 w-12 h-12 bg-{color}/10 rounded-lg flex items-center justify-center">
+  <Icon className="h-6 w-6 text-{color}" />
+</div>
+```
+
+### Logo Grid Pattern (Creators)
+```tsx
+{/* 7 studio logos */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
+  {studios.map((studio) => (
+    <div className="bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md p-6">
+      <img
+        src={`${SUPABASE_URL}/storage/v1/object/public/images/${studio.logo}.png`}
+        className="w-full h-auto object-contain max-h-16"
+        onError={/* fallback chain */}
+      />
+    </div>
+  ))}
+
+  {/* Stat card integrated with same styling */}
+  <div className="bg-white border border-gray-200 shadow-sm rounded-xl p-6">
+    <div className="text-2xl sm:text-3xl font-bold text-{color} mb-1">50+</div>
+    <p className="text-xs leading-tight">Hollywood studios</p>
+  </div>
+</div>
+```
+
+### Before/After Comparison Pattern
+```tsx
+<div className="grid md:grid-cols-2 gap-8">
+  {/* Traditional */}
+  <Card className="bg-red-50 border-red-200 shadow-none rounded-2xl">
+    <h3 className="text-red-800">❌ Traditional Route</h3>
+    {/* bullet points */}
+  </Card>
+
+  {/* KStoryBridge */}
+  <Card className="bg-green-50 border-green-200 shadow-none rounded-2xl">
+    <h3 className="text-green-800">✅ KStoryBridge</h3>
+    {/* CheckCircle2 icons + bullet points */}
+  </Card>
+</div>
+```
+
+### Step Number Badges
+```tsx
+<div className="w-16 h-16 bg-{color} text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
+  01
+</div>
+```
+
+### Image Integration (Supabase Storage)
+```tsx
+// Pattern
+src={`https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/${filename}.png`}
+
+// Filename examples
+- logo_netflix
+- logo_disney_studios
+- logo_sony_pictures
+- logo_crunchyroll
+- logo_amazon_studios
+- logo_warner_bros
+- logo_paramount
+
+// Fallback chain in onError handler
+.png → .jpg → .svg → .webp → text fallback
+```
+
+---
+
+## Responsive Design Guidelines
+
+### Grid Breakpoints
+- **Logos**: `grid-cols-2 md:grid-cols-4` (mobile: 2-col, desktop: 4-col)
+- **Features**: `lg:grid-cols-3` (mobile: 1-col, desktop: 3-col)
+- **Steps**: `md:grid-cols-3` (mobile: 1-col, tablet+: 3-col)
+- **Pricing**: `lg:grid-cols-2` (mobile: 1-col, desktop: 2-col)
+
+### Typography Scale
+```tsx
+// Headings
+h1: "text-3xl sm:text-4xl lg:text-5xl xl:text-6xl"
+h2: "text-2xl sm:text-3xl lg:text-4xl xl:text-5xl"
+h3: "text-xl"
+
+// Body
+p: "text-lg sm:text-xl" (subheadlines)
+p: "text-base sm:text-lg" (body)
+small: "text-sm" or "text-xs"
+```
+
+### Spacing
+```tsx
+// Section padding
+py-12 sm:py-16 lg:py-20
+
+// Section margin bottom
+mb-8 sm:mb-12 lg:mb-16
+
+// Card padding
+p-6 (standard)
+p-8 (pillar cards)
+```
+
+---
+
+## Future Development Guidelines
+
+### Adding New Preview Pages
+
+1. **Choose Primary Color** based on audience:
+   - Buyers → hanok-teal
+   - Creators → sunrise-coral
+   - General/Mixed → porcelain-blue
+
+2. **Follow 7-Section Pattern**:
+   - Hero with clear value prop
+   - Priority #1 section (30% focus)
+   - Three Pillars/Guarantees grid
+   - Priority #2 section (25% focus)
+   - Before/After or Social Proof
+   - 3-Step Process
+   - Final CTA + optional newsletter
+
+3. **Maintain Consistency**:
+   - Use standard Card components
+   - Follow icon box pattern
+   - Keep color palette limited (primary + 2 accents max)
+   - Use lucide-react icons
+
+4. **Test Responsive**:
+   - Mobile (375px)
+   - Tablet (768px)
+   - Desktop (1024px+)
+
+5. **Image Assets**:
+   - Store in Supabase `/images/` bucket
+   - Use descriptive filenames (logo_company_name)
+   - Implement fallback chain
+   - Max height: 64px for logos
 
 ---
 

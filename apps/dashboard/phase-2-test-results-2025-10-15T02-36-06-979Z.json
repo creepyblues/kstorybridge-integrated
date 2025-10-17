@@ -1,0 +1,592 @@
+{
+  "metadata": {
+    "testDate": "2025-10-15T02:36:06.979Z",
+    "totalQueries": 15,
+    "flagStates": [
+      "false (ORIGINAL)",
+      "true (ENHANCED)"
+    ]
+  },
+  "originalResults": [
+    {
+      "testId": 1,
+      "query": "I'm looking for character-driven Korean content with strong emotional arcs",
+      "intent": "discovery",
+      "description": "Discovery query with specific story craft elements",
+      "response": "You mentioned you're looking for character-driven Korean content with strong emotional arcs, which is such a rich area to explore! Based on that, I'm curious—do you gravitate more toward stories that delve into complex family relationships, or are you interested in narratives that focus on personal identity and individual struggles? Additionally, do you prefer a blend of emotional highs and lows, or are you looking for something that leans more heavily into the darker themes? Your insights will really help me find titles that resonate with you!",
+      "suggestedQueries": [
+        "What about wholesome instead of dark?",
+        "For example: \"The Dilettante\" or \"findingme\"",
+        "THRILLER that's less emotional but still moving",
+        "THRILLER with EXCITING tone",
+        "Titles like \"Out of Sight\" but in webtoon format"
+      ],
+      "responseTime": 8108,
+      "timestamp": "2025-10-15T02:28:59.593Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 2,
+      "query": "Show me action titles",
+      "intent": "discovery",
+      "description": "Simple discovery query by genre",
+      "response": "You mentioned you're looking for action titles, which is such an exciting direction to explore! To narrow it down and really find what resonates with you, I'm curious—do you prefer action stories that are heavily plot-driven with intense sequences, or do you enjoy those that delve into the characters' personal journeys alongside the action? Additionally, are there specific themes, like camaraderie, revenge, or moral dilemmas, that you find particularly engaging in an action context? Your insights will help me suggest titles that align perfectly with your taste!",
+      "suggestedQueries": [
+        "action vs revenge - which do you prefer?",
+        "For example: \"The Superheroes of Class F\" or \"Rewriting My Tragic Ending\"",
+        "ACTION with ACERBIC tone",
+        "Titles like \"The Boys\" but in webtoon format",
+        "More from Manta Comics"
+      ],
+      "responseTime": 7992,
+      "timestamp": "2025-10-15T02:29:09.588Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 3,
+      "query": "romantic webtoon",
+      "intent": "discovery",
+      "description": "Short discovery query (2 words)",
+      "response": "You mentioned you're looking for character-driven Korean content with strong emotional arcs. Based on that, I want to highlight a couple of engaging webtoons that dive into romance while exploring deep character dynamics.\n\n**4 Week Lovers** is an excellent choice! Let me tell you why this story works. It revolves around the fake-dating trope between Dojun and Jaehee, but what hooks me is how the narrative explores their unresolved past over a four-week window. The character arc here is really smart because it captures the tension of rekindled connections and unresolved feelings, leading to deeper emotional revelations.\n\nAnother webtoon to consider is **The Fantastical After-School Writing Club**. What makes it exciting is the unique premise where Taeyeon and Yongjin start off as archenemies. Their gradual transformation from rivalry to romance as they navigate absurd challenges together is really engaging. The emotional core here is their growth through shared experiences, which not only adds depth but also injects humor into the mix.\n\nGiven that you’re drawn to strong emotional arcs, I'm curious—do you prefer stories that feature internal struggles of the characters or those that highlight the dynamics between them? Do either of these titles resonate with what you're looking for?",
+      "suggestedQueries": [
+        "What about action instead of romance?",
+        "For example: \"4 Week Lovers\" or \"The Fantastical After-School Writing Club\"",
+        "LGBTQ+ with ROM-COM tone",
+        "Titles like \"Heartstopper\" but in webtoon format",
+        "More from Maroron"
+      ],
+      "responseTime": 9093,
+      "timestamp": "2025-10-15T02:29:20.683Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 4,
+      "query": "I want something dark and psychological",
+      "intent": "discovery",
+      "description": "Discovery by tone and theme",
+      "response": "You mentioned wanting something dark and psychological, which opens the door to some gripping narratives! I’d love to help you uncover stories that not only provide thrilling plots but also delve into the complex emotional landscapes of their characters. \n\nTo refine the search, are you leaning more toward psychological thrillers that revolve around individual characters’ internal struggles, or do you prefer those that explore high-stakes dynamics between multiple characters? Also, what kind of themes resonate with you—are you more drawn to revenge, existential dread, or perhaps the consequences of obsession? Your insights will really help pinpoint the perfect titles for you!",
+      "suggestedQueries": [
+        "thriller vs revenge - which do you prefer?",
+        "For example: \"Rewriting My Tragic Ending\" or \"The Secret of Umbra\"",
+        "ROMANCE that's darker and more intense",
+        "ROMANCE with DRAMATIC tone",
+        "Titles like \"Anastasia\" but in webtoon format"
+      ],
+      "responseTime": 5739,
+      "timestamp": "2025-10-15T02:29:28.424Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 5,
+      "query": "Find me stories about family dynamics",
+      "intent": "discovery",
+      "description": "Discovery by theme/subject",
+      "response": "I see you're still interested in exploring stories about family dynamics! This theme often leads to rich character exploration and emotional depth, which can really resonate with audiences. To help narrow it down even further, I'm curious—are you looking for something that balances humor with heartfelt moments, or do you prefer a more serious tone that delves into complex emotional conflicts? Additionally, do you have any specific family relationships in mind—like parent-child, sibling dynamics, or perhaps the challenges of multi-generational households? Your insights will definitely guide us to some great titles!",
+      "suggestedQueries": [
+        "For example: \"Getting Along Just Fine\" or \"The Dilettante\"",
+        "COMEDY with BITTERSWEET tone",
+        "Titles like \"Better Things\" but in webtoon format",
+        "More from Sanho Park & Garden",
+        "More BITTERSWEET comedy stories"
+      ],
+      "responseTime": 8060,
+      "timestamp": "2025-10-15T02:29:38.486Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 6,
+      "query": "Tell me about First Love",
+      "intent": "information",
+      "description": "Information query about specific title",
+      "response": "**About \"First Love\"**  \nThis story explores the bittersweet memories and emotional complexities of first love, delving into the challenges of reconciling youthful feelings with adult realities.\n\n**Story Synopsis**  \n[Not available]\n\n**Genre & Tone**  \n- Genre: Romance  \n- Tone: Romantic  \n\n**What Makes It Unique**  \n[Not specified]\n\n**Perfect For**  \n[Not specified]\n\n**Comparable Titles**  \n[Not available]\n\n**Additional Details**  \n[Not specified]\n\n**[View Full Details →](/buyers/titles/4ed02130-53a7-4696-b5d0-6747f3c4f032)**",
+      "suggestedQueries": [],
+      "responseTime": 7061,
+      "timestamp": "2025-10-15T02:29:47.548Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 7,
+      "query": "What's the story about Bride of the Water God?",
+      "intent": "information",
+      "description": "Information query with 'what's the story' pattern",
+      "response": "Following up on your interest in stories that delve into family dynamics, I want to highlight a couple of webtoons that might resonate with you.\n\n**Bongchon Bride** is a fascinating story that combines humor with drama while exploring the complexities of relationships. What hooked me is the unique premise where Soongap is saved by Bongchun, who treats him like a beloved bride after buying him for a hefty price. The character dynamics are rich, and the emotional core revolves around identity and the unexpected bonds formed in dire circumstances. The character arc here is really smart because it challenges traditional notions of love and family, blending comedy with deeper emotional stakes.\n\nAnother title to consider is **The Devil and His Sacrifice**. This webtoon presents a gripping tale of a captive princess and a murderous prince, exploring themes of sacrifice, power, and love against a backdrop of familial conflict. The narrative structure is engaging, as the characters navigate their grim fates while grappling with their desires and responsibilities. The emotional beats are well-crafted, making their journey feel both epic and intimate.\n\nI'm curious about your thoughts on these titles! Do you prefer stories that blend humor with serious themes, or are you more inclined towards intense emotional conflicts?",
+      "suggestedQueries": [
+        "drama vs comedy - which do you prefer?",
+        "PERIOD with EXCITING tone",
+        "Titles like \"Pretty Woman\" but in webtoon format",
+        "More from Sohn Gaepi",
+        "More EXCITING period stories"
+      ],
+      "responseTime": 7597,
+      "timestamp": "2025-10-15T02:29:57.146Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 8,
+      "query": "First Love",
+      "intent": "information",
+      "description": "Single title name (minimal query)",
+      "response": "You mentioned wanting to explore more about \"First Love,\" which brings to mind some great options that tap into the emotional complexities of relationships. One recommendation that aligns beautifully with that theme is **love&wish**. \n\nLet me tell you why this story works so well. It follows Son Da-eun, a 17-year-old girl who believes in fate as she navigates her feelings after moving to Seoul. The character arc here is really smart because it delves into the innocent yet tumultuous world of first love, highlighting how her initial excitement transforms when confronted with deeper realities—like the fact that the charming boy she’s interested in, Kim Seung-hyu, has a darker side. \n\nThe emotional core is what makes **love&wish** resonate, as it captures the essence of youthful aspirations juxtaposed with the harsh lessons of growing up, revealing the complexities behind first love. It's a classic school romance that beautifully showcases both friendships and romantic entanglements, which could provide a fresh take if you’re reflecting on your experiences with first loves.\n\nAnother title that might pique your interest is **We were all someone's first love.** The protagonist, Choi Dasol, experiences the bittersweet ache of unrequited feelings as he longs for Seo-gyeol, who doesn’t remember him. The narrative structure here makes it relatable, as it encapsulates that universal feeling of nostalgia and longing that accompanies first love.\n\nI’m curious—do either of these titles resonate with what you’re looking for in terms of emotional beats and character dynamics? What aspects of first love stories are most compelling to you—nostalgia, betrayal, or perhaps the innocence of youthful romance?",
+      "suggestedQueries": [
+        "romance vs dark - which do you prefer?",
+        "For example: \"love&wish\" or \"4 Week Lovers\"",
+        "Romance with romantic tone",
+        "Titles like \"Heartstopper\" but in webtoon format",
+        "More from 이네"
+      ],
+      "responseTime": 10762,
+      "timestamp": "2025-10-15T02:30:09.910Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 9,
+      "query": "What's the difference between Korean romance webtoons and Korean thriller webtoons?",
+      "intent": "comparison",
+      "description": "Genre comparison query",
+      "response": "Korean romance webtoons and Korean thriller webtoons offer distinctly different storytelling experiences, and their differences are rooted in themes, character dynamics, and emotional engagement.\n\n**Korean Romance Webtoons**  \nLet me tell you why these stories resonate! Romance webtoons often focus on character relationships and emotional journeys. For example, in **Love Boutique**, the narrative dives into the complexities of first love and the transition between past and present emotions. The character arc here is really smart because it uses the backdrop of love to explore personal growth and the tension between obsession and new beginnings. The emotional core is built on relatable themes of youthful romance and personal discovery, making it an engaging read.\n\n**Korean Thriller Webtoons**  \nIn contrast, thrillers like **The Dilettante** emphasize suspense and high-stakes scenarios. This webtoon follows Hana Lee, a top counterterrorism agent, whose world unravels after her brother’s death. What hooked me is how the narrative structures around her quest for truth lead to intense emotional beats and moral dilemmas. The character dynamics in thrillers often revolve around more complex interactions that challenge trust and loyalty, which keeps the audience on edge.\n\n**Key Differences**  \nWhile romance webtoons typically explore emotional growth through interpersonal relationships, thrillers focus on tension and suspense through high-stakes conflicts and darker themes. The pacing in romance tends to allow for slower character developments and emotional beats, while thrillers often accelerate towards twists and revelations, creating a quicker, more adrenaline-fueled experience.\n\nGiven your interest in darker, psychological aspects, have you considered how the emotional arcs in these genres might resonate with your preferences? What aspects of character relationships are most compelling to you in romance compared to the tension in thrillers?",
+      "suggestedQueries": [
+        "romance vs action - which do you prefer?",
+        "For example: \"The Dilettante\" or \"Will You Marry Me\"",
+        "THRILLER with EXCITING tone",
+        "Titles like \"Out of Sight\" but in webtoon format",
+        "More from Jin Soye"
+      ],
+      "responseTime": 12696,
+      "timestamp": "2025-10-15T02:30:24.608Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 10,
+      "query": "How does First Love compare to other romance titles?",
+      "intent": "comparison",
+      "description": "Title comparison query",
+      "response": "Let me break down how **First Love** compares to other notable romance titles in the same realm. \n\n**First Love** dives deep into the bittersweet nature of youthful love, capturing the protagonist's internal struggles and emotional transitions as they navigate their feelings. What makes this story resonate is its exploration of nostalgia and longing, which are central themes in many romance narratives.\n\nNow, comparing it with **Love Boutique**, we see some intriguing differences. While **First Love** focuses on the personal growth and emotional complexity of first love, **Love Boutique** tackles the conflict between past and present relationships. The character arc in **Love Boutique** is particularly sharp because it juxtaposes the allure of new love against the obsessive nature of old flames, making for a rich exploration of how past experiences shape our present relationships.\n\n**My Master, My Prince** offers a different flavor by blending romance with elements of fate and societal constraints. Here, the protagonist's love story unfolds against a backdrop of class differences, which adds layers to the character dynamics. The excitement in this title stems from the forbidden nature of their love, contrasting with the more introspective approach of **First Love**.\n\nOn the other hand, **Under the Oak Tree** presents an epic romance filled with fairy-tale elements and a slow-burn character development journey. It’s about overcoming personal insecurities and the journey towards true acceptance and love, unlike the immediate emotional experiences in **First Love**.\n\nOverall, if you’re leaning towards stories that explore the nuances of emotional growth and longing, **First Love** stands strong. However, if you're interested in themes of societal challenges or the interplay of past and present in relationships, titles like **Love Boutique** or **My Master, My Prince** might appeal more to you.\n\nWhat specific elements do you enjoy most in romance stories—are you drawn to the emotional evolution, the setting, or the character dynamics?",
+      "suggestedQueries": [
+        "romance vs character development - which do you prefer?",
+        "LGBTQ+ with ROM-COM tone",
+        "Titles like \"Heartstopper\" but in webtoon format",
+        "More from Maroron",
+        "What are the key differences between \"4 Week Lovers\" and \"My Master, My Prince\"?"
+      ],
+      "responseTime": 10595,
+      "timestamp": "2025-10-15T02:30:37.206Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 11,
+      "query": "I need something for Netflix that can work as a limited series",
+      "intent": "recommendation",
+      "description": "Recommendation with business context",
+      "response": "You mentioned you need something for Netflix that can work as a limited series, which is a great direction to explore! I’m excited to dive into some titles that could fit your interests.\n\nTo help narrow it down, are you leaning more towards character-driven stories, or do you prefer something that’s more plot-focused with intense thrillers? Also, do you have any specific themes in mind—like romance, family dynamics, or perhaps something with a supernatural twist? Understanding your preferences will help me recommend the perfect fit!",
+      "suggestedQueries": [
+        "romance vs thriller - which do you prefer?",
+        "For example: \"The Dilettante\" or \"Getting Along Just Fine\"",
+        "THRILLER with EXCITING tone",
+        "Titles like \"Out of Sight\" but in webtoon format",
+        "More from Jin Soye"
+      ],
+      "responseTime": 5967,
+      "timestamp": "2025-10-15T02:30:45.173Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 12,
+      "query": "What would you recommend for a female 25-34 audience?",
+      "intent": "recommendation",
+      "description": "Recommendation by target audience",
+      "response": "You mentioned wanting recommendations for a female 25-34 audience, which is such an exciting demographic to explore! Given the emotional depth and character-driven storytelling that resonate well with this age group, I'm curious—are you looking for something light-hearted and comedic, or perhaps more dramatic and reflective? Also, do you have any particular themes in mind, like personal growth, romance, or workplace dynamics? Understanding your preferences will help me suggest the perfect titles!",
+      "suggestedQueries": [
+        "romance vs drama - which do you prefer?",
+        "For example: \"Happiness Starts at Home\" or \"My Super-Granny\"",
+        "COMEDY with SOAPY tone",
+        "Titles like \"Harlem\" but in webtoon format",
+        "More from Koyo Choi & Bakseonuu"
+      ],
+      "responseTime": 5832,
+      "timestamp": "2025-10-15T02:30:53.006Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 13,
+      "query": "I'm developing for Apple TV+, what fits their brand?",
+      "intent": "recommendation",
+      "description": "Platform-specific recommendation",
+      "response": "You mentioned developing for Apple TV+, which opens up some exciting possibilities! Based on what resonates with that brand, I recommend looking at **Getting Along Just Fine** and **Goodbye, Dieting!** for their strong character-driven narratives and relatable emotional journeys.\n\n**Getting Along Just Fine** works beautifully as a limited series because it presents a bittersweet comedy about a single mother and her unique teenage daughter. The character arcs here are compelling as they navigate the ups and downs of their unconventional family life, allowing for profound moments of growth and connection. This aligns well with Apple TV+'s focus on heartfelt storytelling that highlights personal relationships.\n\nOn the other hand, **Goodbye, Dieting!** delves into heavier themes surrounding body image issues and self-acceptance. It tells an intimate, cheerful tale of growth that many viewers in the adult 18-34 demographic can relate to. The emotional core here is powerful, addressing societal pressures in a way that is both relevant and impactful, making it a strong fit for the platform's voice.\n\nWhat draws you to the Apple TV+ brand specifically? Are you leaning more towards lighter comedies or something with a deeper emotional resonance for this demographic? Understanding that will help narrow down potential fits even further!",
+      "suggestedQueries": [
+        "What about thriller instead of comedy?",
+        "For example: \"Getting Along Just Fine\" or \"You Get Me Going\"",
+        "COMEDY with BITTERSWEET tone",
+        "Titles like \"Better Things\" but in webtoon format",
+        "More from Sanho Park & Garden"
+      ],
+      "responseTime": 9371,
+      "timestamp": "2025-10-15T02:31:04.378Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 14,
+      "query": "Tell me more",
+      "intent": "follow-up",
+      "description": "Generic follow-up (tests context handling)",
+      "response": "You mentioned earlier that you're developing for Apple TV+ and looking for something that fits their brand for a female 25-34 audience. Based on that focus, I have some recommendations that could align perfectly!\n\n**Let's Get You Better** is a romantic thriller that weaves suspense with emotional depth. The story centers around Boni Min, who is plagued by health issues, and the mysterious guy who enters her life with medicine and a complex charm. What hooked me is how the narrative balances romantic tension with thrilling elements, making it a captivating fit for the adult demographic. The character arc here is really smart because we see Boni evolve as she navigates her feelings and health challenges, which could resonate well with the Apple TV+ audience seeking relatable stories.\n\nAnother strong choice could be **Getting Along Just Fine**, which offers a bittersweet comedy about a single mother and her unique teenage daughter. This series captures the quirks of family life in a heartfelt way, showcasing character growth and emotional connections. Its relatable premise and charming character dynamics align well with Apple TV+'s focus on character-driven narratives.\n\nBoth options highlight character exploration and emotional beats, key elements that resonate with the target audience you mentioned. \n\nWhat kind of themes are you leaning towards for this project—are you more interested in lighter stories or something that dives deeper into personal struggles? And how do you see these narratives fitting into the broader emotional landscape for your intended audience?",
+      "suggestedQueries": [
+        "thriller vs comedy - which do you prefer?",
+        "For example: \"You Get Me Going\" or \"Call Me Master\"",
+        "LGBTQ+ with PLAYFUL tone",
+        "Titles like \"An LGBTQ+ version of A Business Proposal\" but in webtoon format",
+        "More from MOSCARETO"
+      ],
+      "responseTime": 8980,
+      "timestamp": "2025-10-15T02:31:15.361Z",
+      "flagState": "false"
+    },
+    {
+      "testId": 15,
+      "query": "What else is similar?",
+      "intent": "follow-up",
+      "description": "Similarity-based follow-up",
+      "response": "You mentioned wanting more recommendations similar to the emotional depth and character-driven storytelling we've discussed. Based on that, let me highlight a couple of titles that could resonate well with the 25-34 female audience.\n\n**Flash Behavior** tells the story of Yuli, a unique protagonist who can communicate with intelligent creatures from outer space known as Eaters. This series balances romance and thrilling elements, making Yuli’s journey about saving humanity both exciting and emotionally engaging. The character arc here is really smart because it explores themes of identity and connection amid external chaos, which could strongly resonate with viewers.\n\nAnother intriguing title is **Restoring Art and Love**, where Sunah, the daughter of a wealthy family, attempts to revitalize her mother's struggling art museum. The character dynamics between her and the art conservator Inho reveal a compelling love story enriched by their conflicting perspectives on art and restoration. This conflict serves as a powerful metaphor for personal growth and transformation, making it an excellent character-driven narrative.\n\nBoth of these options not only feature strong character arcs but also delve into themes of personal growth and emotional challenges. Are you leaning more towards the adventurous, high-stakes stories like **Flash Behavior**, or do you prefer the more grounded, intimate exploration found in **Restoring Art and Love**? Understanding which direction excites you more can help refine further recommendations!",
+      "suggestedQueries": [
+        "What about action instead of romance?",
+        "NONFICTION with FUN tone",
+        "Titles like \"Bill Nye\" but in webtoon format",
+        "More from Ohoo, Mooseon",
+        "More FUN nonfiction stories"
+      ],
+      "responseTime": 9367,
+      "timestamp": "2025-10-15T02:31:26.730Z",
+      "flagState": "false"
+    }
+  ],
+  "enhancedResults": [
+    {
+      "testId": 1,
+      "query": "I'm looking for character-driven Korean content with strong emotional arcs",
+      "intent": "discovery",
+      "description": "Discovery query with specific story craft elements",
+      "response": "You mentioned that you're looking for character-driven Korean content with strong emotional arcs, which is such an exciting area to explore! One direction you might consider is whether you prefer narratives that lean more into thrillers, like suspenseful character journeys, or are you drawn to more emotional, intimate explorations that focus on personal growth and relationships?\n\nAdditionally, do you want stories that tackle specific themes, such as romance, identity, or perhaps even family dynamics? Understanding your preferences in these areas can really help pinpoint the most fitting titles for your vision!",
+      "suggestedQueries": [
+        "romance vs thriller - which do you prefer?",
+        "For example: \"The Dilettante\" or \"findingme\"",
+        "THRILLER that's less emotional but still moving",
+        "THRILLER with EXCITING tone",
+        "Titles like \"Out of Sight\" but in webtoon format"
+      ],
+      "responseTime": 6328,
+      "timestamp": "2025-10-15T02:33:36.888Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 2,
+      "query": "Show me action titles",
+      "intent": "discovery",
+      "description": "Simple discovery query by genre",
+      "response": "You mentioned wanting action titles with strong character arcs and emotional depth, which is such an exciting direction! Let’s dive deeper into what that means for you. Are you looking for stories that feature action-packed sequences but also prioritize personal growth and emotional stakes? Or are you more interested in character-driven narratives that incorporate action as a backdrop for their journeys? \n\nAdditionally, do you have any themes in mind, such as revenge, justice, or perhaps a mix of fantasy and reality? This will help me suggest the most fitting titles that align with your vision!",
+      "suggestedQueries": [],
+      "responseTime": 5716,
+      "timestamp": "2025-10-15T02:33:44.606Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 3,
+      "query": "romantic webtoon",
+      "intent": "discovery",
+      "description": "Short discovery query (2 words)",
+      "response": "You mentioned wanting action titles with strong character arcs and emotional depth, and it sounds like you're also interested in romantic webtoons! Based on those themes, I have some fantastic recommendations that blend romance and character-driven narratives.\n\n**4 Week Lovers** is a charming rom-com that features Dojun, a college student who gets involved in a fake dating scenario with his old high school friend Jaehee. What hooked me is how the narrative explores unresolved past tensions while building genuine emotional connections between the characters. The character arc here is really smart because it allows for growth amidst the comedic premise, making it relatable for the 18-34 audience.\n\nAnother title to consider is **The Fantastical After-School Writing Club**, which offers a unique twist on romance. The story follows Taeyeon, who finds herself teaching with her college nemesis, Yongjin, and they get pulled into a quirky narrative written by children. This setup creates hilarious situations along with opportunities for character development and emotional depth, especially as their rivalry turns into a burgeoning romance.\n\nFollowing up on your interest in romantic themes, how do you feel about stories that mix humor and emotional stakes, like **4 Week Lovers**? Or are you more inclined toward something that leans into fantasy and adventure, like **The Fantastical After-School Writing Club**? Understanding your preferences can help refine further recommendations!",
+      "suggestedQueries": [
+        "romance vs action - which do you prefer?",
+        "For example: \"4 Week Lovers\" or \"The Fantastical After-School Writing Club\"",
+        "LGBTQ+ with ROM-COM tone",
+        "Titles like \"Heartstopper\" but in webtoon format",
+        "More from Maroron"
+      ],
+      "responseTime": 9449,
+      "timestamp": "2025-10-15T02:33:56.056Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 4,
+      "query": "I want something dark and psychological",
+      "intent": "discovery",
+      "description": "Discovery by tone and theme",
+      "response": "You mentioned wanting something dark and psychological, which is such a fascinating area to explore in storytelling! One direction to consider is how deep you want the psychological elements to go—are you looking for something that delves into mental health and trauma, or are you more intrigued by mystery and suspense? \n\nAdditionally, do you prefer stories that focus on individual character struggles, or are you interested in narratives that involve larger societal themes as well? Understanding these nuances can help me point you toward the best fit for your interests!",
+      "suggestedQueries": [
+        "mystery vs dark - which do you prefer?",
+        "For example: \"Rewriting My Tragic Ending\" or \"The Secret of Umbra\"",
+        "ROMANCE that's darker and more intense",
+        "ROMANCE with DRAMATIC tone",
+        "Titles like \"Anastasia\" but in webtoon format"
+      ],
+      "responseTime": 4913,
+      "timestamp": "2025-10-15T02:34:02.970Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 5,
+      "query": "Find me stories about family dynamics",
+      "intent": "discovery",
+      "description": "Discovery by theme/subject",
+      "response": "You mentioned wanting stories about family dynamics, which opens up some rich storytelling possibilities! Let's explore what resonates most with you. Are you looking for narratives that delve into the complexities and conflicts within family relationships, or are you more interested in lighter, comedic takes on family life? Additionally, do you have specific emotional themes in mind, such as reconciliation, generational differences, or even the humorous quirks of family interactions? Understanding this can help me guide you to the perfect titles!",
+      "suggestedQueries": [
+        "What about romance instead of action?",
+        "For example: \"Getting Along Just Fine\" or \"The Dilettante\"",
+        "COMEDY with BITTERSWEET tone",
+        "Titles like \"Better Things\" but in webtoon format",
+        "More from Sanho Park & Garden"
+      ],
+      "responseTime": 6640,
+      "timestamp": "2025-10-15T02:34:11.611Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 6,
+      "query": "Tell me about First Love",
+      "intent": "information",
+      "description": "Information query about specific title",
+      "response": "**About \"First Love\"**  \nThis title delves into the bittersweet complexities of first love and the nostalgia that comes with it, making it relatable and poignant for many readers. \n\n**Story Synopsis**  \nChoi Dasol is a tall, handsome boy with piercings. He has had a long-standing crush on Seo-gyeol, whom he met in elementary school. However, Seo-gyeol doesn't remember Dasol.\n\n**Genre & Tone**  \n- Genre: School, romance  \n- Tone: romantic  \n\n**[View Full Details →](/buyers/titles/4ed02130-53a7-4696-b5d0-6747f3c4f032)**",
+      "suggestedQueries": [],
+      "responseTime": 7809,
+      "timestamp": "2025-10-15T02:34:21.422Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 7,
+      "query": "What's the story about Bride of the Water God?",
+      "intent": "information",
+      "description": "Information query with 'what's the story' pattern",
+      "response": "You mentioned wanting stories about family dynamics, which can beautifully intertwine with deeper emotional themes. Since you're exploring darker psychological elements and character-driven narratives, I have a couple of intriguing suggestions that resonate with both family dynamics and those darker tones.\n\n**About \"The Devil and His Sacrifice\"**  \nThis title provides a rich tapestry of complex relationships as it delves into the life of a captive princess who faces the grim reality of becoming a living sacrifice. The character arc here is really smart because it centers on her struggle against fate and the dynamics with a savage prince who is also navigating his own tumultuous familial ties. What hooked me is how the narrative structures their deadly dance amidst a backdrop of brutal family loyalty and ambition, creating high stakes and emotional depth.\n\n**About \"Bongchon Bride\"**  \nThis webtoon has an exciting tone and explores the unexpected family dynamics between Soongap and Bongchun. Soongap is initially a victim of circumstance but is saved by Bongchun, who’s portrayed as a gentle giant. The character arc here is fascinating because it flips traditional roles and sets up a unique dynamic where family expectations collide with individual desires. What makes it compelling is the way it explores themes of belonging and love in the midst of chaotic family situations.\n\nI'm curious, do you lean more towards stories that emphasize the outer conflicts with family (like societal expectations or obligations), or do you prefer narratives focusing on internal family struggles and secrets? This can help narrow down the best fits for your interests!",
+      "suggestedQueries": [
+        "How does \"Mokrin\" compare?",
+        "More dark stories like \"The Devil and His Sacrifice\"",
+        "What about wholesome instead of dark?",
+        "PERIOD with EXCITING tone",
+        "Titles like \"Pretty Woman\" but in webtoon format"
+      ],
+      "responseTime": 9139,
+      "timestamp": "2025-10-15T02:34:32.562Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 8,
+      "query": "First Love",
+      "intent": "information",
+      "description": "Single title name (minimal query)",
+      "response": "Following up on your interest in darker psychological themes and family dynamics, I found some intriguing titles that blend these elements beautifully.\n\n**About \"love&wish\"**  \nThis story dives into the complexities of young love while touching on deeper emotional layers. Son Da-eun, a 17-year-old girl, moves to Seoul with her sisters and becomes entangled in a relationship with Kim Seung-hyu. What makes this story stand out is how it navigates the innocence of first love against the backdrop of personal revelations—especially when it’s revealed that Seung-hyu, initially perceived as a victim, is actually the bully. The character arc here is really smart because it explores themes of trust, betrayal, and the often murky waters of adolescent relationships.\n\n**About \"Bittersweet Con Panna\"**  \nThis title features a romantic tension that stems from group dynamics, as graduate student Songah grapples with her feelings for her girlfriend while dealing with the reappearance of a childhood friend. The emotional core here is rich as it navigates love triangles and the complexities of modern relationships, especially within the context of competition and self-identity. The character growth is layered, making you invest in their journeys.\n\nI’m curious—are you leaning more towards stories that emphasize the raw emotional conflicts found in personal relationships, or do you prefer narratives that also touch on societal themes? This can help pinpoint the best titles for your exploration!",
+      "suggestedQueries": [
+        "How does \"4 Week Lovers\" compare?",
+        "More dark stories like \"love&wish\"",
+        "What about wholesome instead of dark?",
+        "Romance with romantic tone",
+        "Titles like \"Heartstopper\" but in webtoon format"
+      ],
+      "responseTime": 8795,
+      "timestamp": "2025-10-15T02:34:43.359Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 9,
+      "query": "What's the difference between Korean romance webtoons and Korean thriller webtoons?",
+      "intent": "comparison",
+      "description": "Genre comparison query",
+      "response": "To understand the differences between Korean romance webtoons and Korean thriller webtoons, let's break down the core elements of each genre.\n\n**Korean Romance Webtoons**  \nThese stories typically center on emotional connections, relationships, and character development. They explore themes such as love, personal growth, and the complexities of human interactions. The pacing is often slower, allowing for deep dives into character arcs and emotional beats. Stories like \"Will You Marry Me\" exemplify this genre, featuring charming, light-hearted romance that focuses on individual feelings and relational dynamics. The character arcs here are really engaging as they navigate misunderstandings and emotional growth.\n\n**Korean Thriller Webtoons**  \nIn contrast, thriller webtoons like \"The Dilettante\" dive into suspense, tension, and often darker psychological themes. They focus on high stakes and plot twists that keep the audience guessing. The character journeys here often revolve around external conflicts and moral dilemmas, with intense pacing that drives the narrative forward. The character arc here is really smart because it intertwines personal loss with gripping action, resulting in a compelling story that invites viewers to unravel mysteries alongside the protagonist.\n\n**Comparative Summary**  \nWhile romance webtoons emphasize emotional depth and character interactions, creating a slower build-up to relationships, thriller webtoons focus on suspense and action, maintaining a quicker pace to keep the audience engaged in the unfolding mystery. \n\nGiven your interest in darker psychological elements, \"The Dilettante\" might resonate with you, as it weaves together family dynamics and personal struggles within a thrilling narrative. Meanwhile, if you're looking for something lighter and more character-driven, romance stories like \"Will You Marry Me\" would be a great pick.\n\nI'm curious, what aspects of these genres are you most drawn to? Is it the character development, the emotional stakes, or perhaps the pacing that captures your interest?",
+      "suggestedQueries": [
+        "How does \"4 Week Lovers\" compare?",
+        "More romance stories like \"Will You Marry Me\"",
+        "romance vs action - which do you prefer?",
+        "THRILLER with EXCITING tone",
+        "Titles like \"Out of Sight\" but in webtoon format"
+      ],
+      "responseTime": 11670,
+      "timestamp": "2025-10-15T02:34:57.031Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 10,
+      "query": "How does First Love compare to other romance titles?",
+      "intent": "comparison",
+      "description": "Title comparison query",
+      "response": "Let me tell you why \"First Love\" stands out compared to other romance titles like \"love&wish\" and \"Bittersweet Con Panna.\" \n\n**Comparison with \"love&wish\"**  \n\"First Love\" captures the innocence and nostalgia of young love through the protagonist's emotional journey, particularly focusing on unreciprocated feelings. The character arc here is engaging because it emphasizes personal growth amidst romantic longing. In contrast, \"love&wish\" dives deeper into the complexities of trust and betrayal, especially with the twist of the supposed victim being a bully. What hooked me about \"love&wish\" is how it explores the murky waters of adolescent relationships, making its emotional core heavier as it navigates deeper themes. \n\n**Comparison with \"Bittersweet Con Panna\"**  \nOn the other hand, \"Bittersweet Con Panna\" plays with the dynamics of love triangles and the challenges of modern relationships. The pacing is relatively fast, with plenty of comedic beats, while \"First Love\" allows for a more gradual exploration of emotions. The character arcs in \"Bittersweet Con Panna\" are layered, focusing on competition and self-identity, which adds a different flavor to the romance narrative. \n\nIn summary, while \"First Love\" leans into the sweet nostalgia and heartache of first love, \"love&wish\" dives into complex moral dilemmas, and \"Bittersweet Con Panna\" offers a lighter, comedic exploration of love dynamics. \n\nI'm curious, are you more drawn to the emotional depth found in \"First Love,\" or do you prefer the intricate twists of \"love&wish\" and the lighter tones of \"Bittersweet Con Panna\"?",
+      "suggestedQueries": [
+        "How does \"4 Week Lovers\" compare?",
+        "More romance stories like \"Bittersweet Con Panna.\"",
+        "What about action instead of romance?",
+        "LGBTQ+ with ROM-COM tone",
+        "Titles like \"Heartstopper\" but in webtoon format"
+      ],
+      "responseTime": 14528,
+      "timestamp": "2025-10-15T02:35:13.560Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 11,
+      "query": "I need something for Netflix that can work as a limited series",
+      "intent": "recommendation",
+      "description": "Recommendation with business context",
+      "response": "You mentioned wanting something for Netflix that can work as a limited series, which opens up some exciting possibilities! I'm curious—are you leaning more toward narratives that dive into character-driven journeys, or are you looking for something with a fast-paced, plot-driven structure? Also, are there specific themes or emotional tones you're particularly interested in, like romance, suspense, or personal struggles? This will help us find the perfect match!",
+      "suggestedQueries": [
+        "What about action instead of romance?",
+        "THRILLER with EXCITING tone",
+        "Titles like \"Out of Sight\" but in webtoon format",
+        "More from Jin Soye",
+        "More EXCITING thriller stories"
+      ],
+      "responseTime": 5673,
+      "timestamp": "2025-10-15T02:35:21.234Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 12,
+      "query": "What would you recommend for a female 25-34 audience?",
+      "intent": "recommendation",
+      "description": "Recommendation by target audience",
+      "response": "I'm excited to explore content that resonates with the female 25-34 audience, especially considering the rich storytelling elements we've discussed before! Since you're interested in narratives that might blend romance, comedy, or deeper emotional layers, I'm curious—what kind of themes are you particularly interested in? Do you prefer stories with a strong comedic tone, or are you leaning more towards something with emotional or romantic depth? And how important is character development for you in these narratives? Let's dive in!",
+      "suggestedQueries": [],
+      "responseTime": 7573,
+      "timestamp": "2025-10-15T02:35:30.808Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 13,
+      "query": "I'm developing for Apple TV+, what fits their brand?",
+      "intent": "recommendation",
+      "description": "Platform-specific recommendation",
+      "response": "You mentioned you're developing for Apple TV+, which opens up an exciting arena for character-driven narratives. Based on that interest, I found a couple of titles that could fit their brand perfectly.\n\n**About \"Getting Along Just Fine\"**  \nThis webtoon beautifully balances comedy and emotional depth, centering on a single mother navigating life while translating thriller novels alongside her unique teenage daughter. What makes this story resonate is the bittersweet tone—it’s heartfelt and humorous while exploring themes of family, acceptance, and personal growth. The character arcs here are engaging because each member of the family is on their own journey, making it ripe for episodic exploration, which aligns well with Apple TV+'s focus on character-driven content.\n\n**About \"Goodbye, Dieting!\"**  \nThis story dives into the struggles of body image and self-acceptance, bringing a dramedy tone that resonates deeply with contemporary issues. The protagonist's journey toward loving herself while dealing with societal pressures creates an emotional core that can engage viewers. The character arc is relatable and speaks volumes about personal growth, which fits well with Apple TV+’s brand of intimate storytelling.\n\nGiven that these stories lean into character development and emotional journeys, they could resonate with Apple TV+’s audience. I'm curious, do you lean more toward stories that encapsulate family dynamics or narratives focused on personal growth? Identifying this could help refine our focus even further!",
+      "suggestedQueries": [
+        "How does \"You Get Me Going\" compare?",
+        "More thriller stories like \"Getting Along Just Fine\"",
+        "thriller vs comedy - which do you prefer?",
+        "COMEDY with BITTERSWEET tone",
+        "Titles like \"Better Things\" but in webtoon format"
+      ],
+      "responseTime": 9275,
+      "timestamp": "2025-10-15T02:35:42.085Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 14,
+      "query": "Tell me more",
+      "intent": "follow-up",
+      "description": "Generic follow-up (tests context handling)",
+      "response": "Building on our discussion about developing for Apple TV+, I think there are a couple of webtoons that could really resonate with the brand's focus on character-driven narratives and emotional depth.\n\n**About \"Getting Along Just Fine\"**  \nLet me tell you why this story works so well for a limited series format. It beautifully balances comedy and emotional depth, centering on a single mother who translates thriller novels while navigating her unique relationship with her teenage daughter. What hooked me is the way it explores themes of family and acceptance, all while maintaining a bittersweet tone. The character arcs here are engaging, allowing for a rich episodic exploration, which aligns perfectly with Apple TV+'s emphasis on storytelling that feels authentic and relatable.\n\n**About \"Goodbye, Dieting!\"**  \nAnother strong contender is \"Goodbye, Dieting!\" This webtoon dives into contemporary issues surrounding body image and self-acceptance, presenting them through a dramedy tone that resonates with modern audiences. The protagonist's journey is full of emotional beats that could carry an episodic format, making it ripe for deeper character explorations and nuanced storytelling.\n\nFollowing up on what you mentioned about targeting a female 25-34 audience, these titles both offer strong relatable characters and emotional journeys that are likely to resonate well with that demographic. \n\nI'm curious, do you lean more toward the humor and heart of \"Getting Along Just Fine\" or the more serious themes in \"Goodbye, Dieting!\"? Understanding what excites you more could help tailor your project even further!",
+      "suggestedQueries": [
+        "How does \"You Get Me Going\" compare?",
+        "More thriller stories like \"Getting Along Just Fine\"",
+        "thriller vs comedy - which do you prefer?",
+        "LGBTQ+ with PLAYFUL tone",
+        "Titles like \"An LGBTQ+ version of A Business Proposal\" but in webtoon format"
+      ],
+      "responseTime": 8810,
+      "timestamp": "2025-10-15T02:35:52.896Z",
+      "flagState": "true"
+    },
+    {
+      "testId": 15,
+      "query": "What else is similar?",
+      "intent": "follow-up",
+      "description": "Similarity-based follow-up",
+      "response": "Following up on our conversation about titles that could resonate with Apple TV+ and your interest in character-driven narratives, I think you'll find a couple more webtoons that align with those themes.\n\n**About \"Flash Behavior\"**  \nLet me tell you why this story works as a compelling drama. It's a unique blend of romance and sci-fi, where the protagonist, Yuli, can communicate with intelligent creatures from outer space. What hooked me is how the narrative structures the stakes around communication and misunderstanding, which taps into universal themes of connection. The character arc here is really smart because Yuli evolves from being an outsider to someone who bridges the gap between two worlds, all while navigating her own romantic interests. This can appeal to a wide audience as it explores not just romance but also deeper existential questions.\n\n**About \"The Dilettante\"**  \nThis thriller is another title that stands out. The protagonist, Hana, is a top counterterrorism agent who embarks on a personal quest following her brother's death. What makes this gripping is the emotional core of her journey—she's driven by love and loss, which adds layers to her character. The structure builds tension through her investigation and the complex relationships she develops along the way. This title fits well for a limited series format, given its potential for character development and suspenseful storytelling.\n\nI'm curious, do you lean more towards the sci-fi elements in \"Flash Behavior\" or the intense emotional journey in \"The Dilettante\"? Understanding what excites you more could help refine our focus even further!",
+      "suggestedQueries": [
+        "How does \"Science Tikitaka\" compare?",
+        "More romance stories like \"Flash Behavior\"",
+        "romance vs thriller - which do you prefer?",
+        "NONFICTION with FUN tone",
+        "Titles like \"Bill Nye\" but in webtoon format"
+      ],
+      "responseTime": 10079,
+      "timestamp": "2025-10-15T02:36:04.977Z",
+      "flagState": "true"
+    }
+  ],
+  "testQueries": [
+    {
+      "id": 1,
+      "query": "I'm looking for character-driven Korean content with strong emotional arcs",
+      "intent": "discovery",
+      "description": "Discovery query with specific story craft elements"
+    },
+    {
+      "id": 2,
+      "query": "Show me action titles",
+      "intent": "discovery",
+      "description": "Simple discovery query by genre"
+    },
+    {
+      "id": 3,
+      "query": "romantic webtoon",
+      "intent": "discovery",
+      "description": "Short discovery query (2 words)"
+    },
+    {
+      "id": 4,
+      "query": "I want something dark and psychological",
+      "intent": "discovery",
+      "description": "Discovery by tone and theme"
+    },
+    {
+      "id": 5,
+      "query": "Find me stories about family dynamics",
+      "intent": "discovery",
+      "description": "Discovery by theme/subject"
+    },
+    {
+      "id": 6,
+      "query": "Tell me about First Love",
+      "intent": "information",
+      "description": "Information query about specific title"
+    },
+    {
+      "id": 7,
+      "query": "What's the story about Bride of the Water God?",
+      "intent": "information",
+      "description": "Information query with 'what's the story' pattern"
+    },
+    {
+      "id": 8,
+      "query": "First Love",
+      "intent": "information",
+      "description": "Single title name (minimal query)"
+    },
+    {
+      "id": 9,
+      "query": "What's the difference between Korean romance webtoons and Korean thriller webtoons?",
+      "intent": "comparison",
+      "description": "Genre comparison query"
+    },
+    {
+      "id": 10,
+      "query": "How does First Love compare to other romance titles?",
+      "intent": "comparison",
+      "description": "Title comparison query"
+    },
+    {
+      "id": 11,
+      "query": "I need something for Netflix that can work as a limited series",
+      "intent": "recommendation",
+      "description": "Recommendation with business context"
+    },
+    {
+      "id": 12,
+      "query": "What would you recommend for a female 25-34 audience?",
+      "intent": "recommendation",
+      "description": "Recommendation by target audience"
+    },
+    {
+      "id": 13,
+      "query": "I'm developing for Apple TV+, what fits their brand?",
+      "intent": "recommendation",
+      "description": "Platform-specific recommendation"
+    },
+    {
+      "id": 14,
+      "query": "Tell me more",
+      "intent": "follow-up",
+      "description": "Generic follow-up (tests context handling)"
+    },
+    {
+      "id": 15,
+      "query": "What else is similar?",
+      "intent": "follow-up",
+      "description": "Similarity-based follow-up"
+    }
+  ]
+}

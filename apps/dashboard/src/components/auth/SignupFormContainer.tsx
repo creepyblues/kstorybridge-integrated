@@ -572,6 +572,14 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
             </div>
           )}
 
+          {!isOAuthCompletion && (
+            <div className="flex items-center mb-6">
+              <div className="flex-1 border-t border-gray-300"></div>
+              <span className="px-4 text-sm text-gray-500">or</span>
+              <div className="flex-1 border-t border-gray-300"></div>
+            </div>
+          )}
+
           <form
             onSubmit={(e) => {
               e.preventDefault();

@@ -73,6 +73,9 @@ export async function notifySessionStart() {
     // Get current URL
     const currentUrl = window.location.href;
 
+    // TEMPORARILY PAUSED: User Session Started notifications
+    // Uncomment the block below to re-enable session start notifications
+    /*
     // Send notification using centralized Slack utility (includes blacklist filtering)
     try {
       await sendSlackNotification({
@@ -100,6 +103,22 @@ export async function notifySessionStart() {
     } catch (error) {
       console.error('Failed to send session notification:', error);
     }
+    */
+
+    // Session tracking still happens, just notifications are paused
+    console.log('📊 Session started (notifications paused):', {
+      url: currentUrl,
+      isLoggedIn: !!user,
+      deviceType: getDeviceType(),
+      browser: getBrowserInfo()
+    });
+
+    // Still mark session as processed to avoid duplicate processing
+    const sessionData: SessionData = {
+      url: currentUrl,
+      timestamp: Date.now()
+    };
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
   } catch (error) {
     // Don't throw - we don't want notification failures to affect the app
     console.error('Error sending session notification:', error);

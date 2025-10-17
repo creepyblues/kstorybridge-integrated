@@ -303,7 +303,7 @@ const BuyersPage = () => {
 
             {/* Visual Rights Chain Diagram */}
             <div className="max-w-5xl mx-auto mb-12">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-evenly gap-6">
+              <div className="flex flex-col md:flex-row items-center justify-evenly gap-6">
                 {/* Step 1 */}
                 <div className="flex-1 text-center max-w-[200px] w-full">
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">

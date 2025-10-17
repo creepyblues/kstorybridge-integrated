@@ -16,16 +16,10 @@ export const OAuthProviders: React.FC<OAuthProvidersProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      <div className="flex items-center mb-6">
-        <div className="flex-1 border-t border-gray-300"></div>
-        <span className="px-4 text-sm text-gray-500">or</span>
-        <div className="flex-1 border-t border-gray-300"></div>
-      </div>
-
       <Button
         onClick={onGoogleSignup}
         disabled={isGoogleLoading}
-        className="w-full h-14 mb-6 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm text-base"
+        className="w-full h-14 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm text-base"
       >
         {isGoogleLoading ? (
           <div className="flex items-center">

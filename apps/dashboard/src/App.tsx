@@ -59,6 +59,7 @@ const SearchResults = lazy(() => import("./pages/SearchResults"));
 const ChatbotFeedbackAnalysis = lazy(() => import("./pages/ChatbotFeedbackAnalysis"));
 const SearchAnalytics = lazy(() => import("./pages/SearchAnalytics"));
 const Experiment = lazy(() => import("./pages/Experiment"));
+const PitchExtractionTest = lazy(() => import("./pages/admin/PitchExtractionTest"));
 
 // Documentation pages
 const Docs = lazy(() => import("./pages/Docs"));
@@ -292,6 +293,11 @@ const App = () => (
                 {/* Experiment page - admin only */}
                 <Route path="/experiment" element={
                   <ProtectedLayout><Experiment /></ProtectedLayout>
+                } />
+
+                {/* Pitch Extraction Test - admin only */}
+                <Route path="/pitch-extraction-test" element={
+                  <ProtectedLayout><PitchExtractionTest /></ProtectedLayout>
                 } />
 
                 {/* Documentation routes - accessible to all authenticated users */}

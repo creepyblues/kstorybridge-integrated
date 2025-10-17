@@ -256,7 +256,15 @@ const HomePage = () => {
             <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
 
               {/* Are You a Creator? */}
-              <Card className="bg-gradient-to-br from-sunrise-coral/10 to-sunrise-coral/5 border-sunrise-coral/20 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-shadow">
+              <Card
+                className="shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-shadow"
+                style={{
+                  background: 'linear-gradient(to bottom right, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05))',
+                  borderColor: 'rgba(255, 107, 107, 0.2)',
+                  borderWidth: '1px',
+                  borderStyle: 'solid'
+                }}
+              >
                 <CardContent className="p-10">
                   <div className="text-center mb-6">
                     <div className="w-16 h-16 bg-sunrise-coral/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -295,7 +303,15 @@ const HomePage = () => {
               </Card>
 
               {/* Are You a Buyer? */}
-              <Card className="bg-gradient-to-br from-hanok-teal/10 to-hanok-teal/5 border-hanok-teal/20 shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-shadow">
+              <Card
+                className="shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-shadow"
+                style={{
+                  background: 'linear-gradient(to bottom right, rgba(76, 156, 155, 0.1), rgba(76, 156, 155, 0.05))',
+                  borderColor: 'rgba(76, 156, 155, 0.2)',
+                  borderWidth: '1px',
+                  borderStyle: 'solid'
+                }}
+              >
                 <CardContent className="p-10">
                   <div className="text-center mb-6">
                     <div className="w-16 h-16 bg-hanok-teal/20 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -67,6 +67,12 @@ const getSettingsItems = (accountType: string | null, userEmail?: string): MenuI
         href: "/experiment",
         badge: "admin",
         icon: "⚡"
+      },
+      {
+        title: "Pitch Extraction",
+        href: "/pitch-extraction-test",
+        badge: "admin",
+        icon: "🧪"
       }
     );
   }

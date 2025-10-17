@@ -1,0 +1,8 @@
+# PDF Extraction Libraries
+# Using PyPDF2 as primary (lightweight, fast)
+# pdfplumber as fallback (better for complex PDFs with tables/images)
+PyPDF2==3.0.1
+pdfplumber==0.11.0
+
+# Additional dependencies for pdfplumber
+Pillow==10.2.0

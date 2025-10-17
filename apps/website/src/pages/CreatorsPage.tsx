@@ -302,7 +302,15 @@ const CreatorsPage = () => {
 
             {/* Challenge intro */}
             <div className="max-w-4xl mx-auto mb-12">
-              <Card className="bg-gradient-to-br from-hanok-teal/5 to-porcelain-blue-50 border-hanok-teal/20 shadow-none rounded-2xl">
+              <Card
+                className="shadow-none rounded-2xl"
+                style={{
+                  background: 'linear-gradient(to bottom right, rgba(76, 156, 155, 0.05), rgba(195, 227, 226, 1))',
+                  borderColor: 'rgba(76, 156, 155, 0.2)',
+                  borderWidth: '1px',
+                  borderStyle: 'solid'
+                }}
+              >
                 <CardContent className="p-6 sm:p-8">
                   <p className="text-lg text-midnight-ink-600 leading-relaxed text-center">
                     <span className="font-semibold text-midnight-ink">Korean storytelling has unique strengths. Hollywood has specific expectations.</span><br />We bridge the gap so your vision shines through.

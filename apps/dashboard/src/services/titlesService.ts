@@ -55,7 +55,8 @@ const mockTitles: Title[] = [
     age_rating: "18+",
     genre: ["LGBTQ+"],
     genre_kr: null,
-    keywords: ["contemporary", "supernatural", "horror", "LGBTQ+", "webtoon", "visual storytelling", "episodic structure", "cliffhangers", "visual effects potential", "character designs"]
+    keywords: ["contemporary", "supernatural", "horror", "LGBTQ+", "webtoon", "visual storytelling", "episodic structure", "cliffhangers", "visual effects potential", "character designs"],
+    verified: false
   },
   {
     title_id: "0cfbbe46-e4b3-4d29-925a-a5e9e88bcdab", // Devil at the Crossroads - FEATURED
@@ -96,7 +97,8 @@ const mockTitles: Title[] = [
     age_rating: "18+",
     genre: ["LGBTQ+"],
     genre_kr: null,
-    keywords: ["supernatural", "adventure", "quirky", "comedy", "LGBTQ+", "webtoon", "visual storytelling", "episodic structure", "cliffhangers", "visual effects potential", "character designs"]
+    keywords: ["supernatural", "adventure", "quirky", "comedy", "LGBTQ+", "webtoon", "visual storytelling", "episodic structure", "cliffhangers", "visual effects potential", "character designs"],
+    verified: false
   },
   {
     title_id: "1813044e-306f-4479-87cb-bb212b502e1f", // Werewolves Going Crazy Over Me - FEATURED
@@ -137,7 +139,8 @@ const mockTitles: Title[] = [
     age_rating: "18+",
     genre: ["SUPERNATURAL"],
     genre_kr: null,
-    keywords: ["supernatural", "medical", "drama", "werewolves", "webtoon", "visual storytelling", "episodic structure", "cliffhangers", "visual effects potential", "character designs"]
+    keywords: ["supernatural", "medical", "drama", "werewolves", "webtoon", "visual storytelling", "episodic structure", "cliffhangers", "visual effects potential", "character designs"],
+    verified: false
   },
   {
     title_id: "3cce946a-e45b-4c36-84b4-fc45b5ccec0e",
@@ -178,7 +181,8 @@ const mockTitles: Title[] = [
     age_rating: "전체이용가",
     genre: ["Dailylife", "romance", "familycomedy", "healing"],
     genre_kr: ["일상", "로맨스", "가족코미디", "힐링"],
-    keywords: ["family", "love", "comedy", "food", "siblings", "romance", "healing"]
+    keywords: ["family", "love", "comedy", "food", "siblings", "romance", "healing"],
+    verified: false
   },
   {
     title_id: "ee251fb4-4cd0-4e79-bf9f-0b372c5b0c92",
@@ -219,7 +223,8 @@ const mockTitles: Title[] = [
     age_rating: "전체이용가",
     genre: ["Dailylife", "romance", "drama", "growth", "story"],
     genre_kr: ["일상", "로맨스", "드라마", "성장", "스토리"],
-    keywords: ["college", "romance", "second chances", "healing", "growth", "relationships", "drama"]
+    keywords: ["college", "romance", "second chances", "healing", "growth", "relationships", "drama"],
+    verified: false
   },
   {
     title_id: "81e5096e-e76d-4b2f-acf9-4119e706a9e7",
@@ -260,7 +265,8 @@ const mockTitles: Title[] = [
     age_rating: "전체이용가",
     genre: ["Boy", "Drama"],
     genre_kr: ["소년", "드라마"],
-    keywords: ["sports", "perseverance", "disability", "skateboarding", "coming-of-age", "inspiration"]
+    keywords: ["sports", "perseverance", "disability", "skateboarding", "coming-of-age", "inspiration"],
+    verified: false
   }
 ] as Title[];
 

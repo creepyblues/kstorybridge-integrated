@@ -60,7 +60,7 @@ serve(async (req) => {
       )
     }
 
-    console.log(`📄 Starting pitch extraction for title: ${title_id}, test_mode: ${test_mode} [v6-upsert-fix]`)
+    console.log(`📄 Starting pitch extraction for title: ${title_id}, test_mode: ${test_mode} [v7-comprehensive-extraction]`)
 
     // Step 1: Verify title exists and has pitch URL
     const { data: title, error: titleError } = await supabase
@@ -169,21 +169,137 @@ This is a placeholder for the actual pitch deck content. In production:
       )
     }
 
-    const analysisPrompt = `Analyze this pitch deck text and extract structured information.
+    const analysisPrompt = `You are an expert pitch deck analyzer specializing in Korean IP (webtoons, web novels, manhwa) for film/TV adaptation. Analyze the pitch deck text comprehensively and extract ALL available information into structured JSON format.
 
-Return ONLY valid JSON (no markdown, no code blocks) in this exact format:
+Return ONLY valid JSON (no markdown code blocks, no explanations) in this exact structure:
+
 {
-  "summary": "2-3 sentence executive summary of the story",
-  "highlights": ["key highlight 1", "key highlight 2", "key highlight 3"],
-  "comparable_titles": ["comparable title 1", "comparable title 2"],
-  "target_audience": "description of target demographic",
-  "production": {
-    "budget": "budget if mentioned or null",
-    "timeline": "timeline if mentioned or null",
-    "format": "series/feature/limited series/etc or null"
+  "story_world": {
+    "setting": "Primary location/world (e.g., Modern Seoul, Historical Joseon, Fantasy realm)",
+    "time_period": "When story takes place",
+    "world_building": ["unique world element 1", "element 2", "element 3"]
   },
-  "selling_points": ["unique selling point 1", "unique selling point 2"]
+
+  "characters": [
+    {
+      "name": "Character name (if mentioned)",
+      "role": "protagonist/antagonist/supporting",
+      "archetype": "Character type (e.g., cold male lead, tsundere, chaebol heir, strong female lead)",
+      "description": "2-3 sentence character description",
+      "key_traits": ["trait 1", "trait 2"],
+      "relationships": ["relationship dynamics with other characters"]
+    }
+  ],
+
+  "themes_and_tone": {
+    "primary_themes": ["main theme 1", "theme 2", "theme 3"],
+    "emotional_tone": "Overall emotional feel (e.g., dark and suspenseful, heartwarming, bittersweet)",
+    "visual_style": "Visual/artistic direction mentioned (e.g., noir, pastel romantic, gritty realistic)",
+    "mood_keywords": ["mood descriptor 1", "descriptor 2", "descriptor 3"]
+  },
+
+  "story_elements": {
+    "logline": "One-sentence compelling hook",
+    "plot_summary": "4-5 sentence detailed synopsis",
+    "key_plot_points": ["major story beat 1", "beat 2", "beat 3"],
+    "genre_blend": ["primary genre", "secondary genre"],
+    "narrative_structure": "How story is told (linear/flashback-heavy/multi-timeline/episodic)"
+  },
+
+  "market_positioning": {
+    "target_audience": {
+      "age_range": "Target age demographic",
+      "gender_skew": "Primary audience gender",
+      "psychographics": "Audience interests/preferences"
+    },
+    "comparable_titles": [
+      {
+        "title": "Comparable work name",
+        "platform": "Where it aired/published",
+        "similarity": "Why it's comparable"
+      }
+    ],
+    "platform_fit": ["Streaming platform 1", "Platform 2"],
+    "territory_potential": ["Geographic market 1", "market 2"]
+  },
+
+  "production_details": {
+    "format": "8-episode series/16-episode series/feature film/limited series",
+    "estimated_episodes": "Number if mentioned, else null",
+    "budget_range": "Budget if mentioned, else null",
+    "timeline": "Production timeline if mentioned, else null",
+    "adaptation_type": "webtoon adaptation/novel adaptation/original/etc"
+  },
+
+  "source_material": {
+    "original_platform": "Naver Webtoon/Kakao Page/RIDI/Wattpad/Manta Comics/etc or null",
+    "metrics": {
+      "views": "Number if shown, else null",
+      "likes": "Number if shown, else null",
+      "chapters": "Total chapters/episodes if shown, else null",
+      "rating": "User rating if mentioned, else null"
+    },
+    "serialization_status": "completed/ongoing/null",
+    "awards_recognition": ["Award 1", "recognition 2"]
+  },
+
+  "korean_cultural_elements": [
+    "Specific Korean cultural reference 1 (e.g., hanok architecture, Korean food, historical periods, K-pop, chaebol culture, Korean language elements)",
+    "Cultural element 2",
+    "Element 3"
+  ],
+
+  "ip_value": {
+    "franchise_potential": "high/medium/low",
+    "merchandising_opportunities": ["potential category 1", "category 2"],
+    "cross_media_potential": ["games", "merchandise", "sequels", "spin-offs"],
+    "unique_selling_points": [
+      "USP 1 - what makes this IP unique and marketable",
+      "USP 2",
+      "USP 3",
+      "USP 4",
+      "USP 5"
+    ]
+  },
+
+  "creative_team": {
+    "author_writer": "Name if mentioned, else null",
+    "illustrator_artist": "Name if mentioned, else null",
+    "credentials": ["Previous work 1", "award/recognition 2"],
+    "studio_publisher": "Publishing house or production studio, else null"
+  },
+
+  "rights_availability": {
+    "available_rights": ["adaptation rights", "distribution", "merchandising"],
+    "territories_available": ["Region 1", "Region 2"],
+    "exclusivity_notes": "Any exclusivity information mentioned"
+  },
+
+  "content_classification": {
+    "maturity_rating": "all ages/teen (13+)/mature (18+)",
+    "content_warnings": ["violence", "sexual content", "dark themes", "substance use"],
+    "complexity_score": 7,
+    "accessibility_notes": "Any mentioned accessibility features"
+  },
+
+  "additional_highlights": [
+    "Any other notable information not captured above",
+    "Marketing angles mentioned",
+    "Special features or bonuses"
+  ]
 }
+
+INSTRUCTIONS:
+- Extract EVERY piece of information you can find in the deck
+- If a field has no information in the deck, use null or empty array []
+- For arrays, include ALL items found (don't limit to 2-3)
+- Pay special attention to Korean cultural context
+- Extract exact numbers when shown (views, likes, chapters, budget)
+- Capture all character details if character profiles are shown
+- Note visual/artistic style descriptions
+- Include all comparable titles mentioned
+- complexity_score: Rate 1-10 based on story sophistication (1=very simple, 10=very complex)
+- Be thorough - pitch decks often have 15-20 slides of detailed info
 
 Pitch deck text:
 ${extractedText}`
@@ -201,7 +317,7 @@ ${extractedText}`
         messages: [
           {
             role: 'system',
-            content: 'You are a pitch deck analyzer. Return ONLY valid JSON, no markdown formatting.'
+            content: 'You are an expert pitch deck analyzer specializing in Korean IP (webtoons, web novels, manhwa) for film/TV adaptation. You understand Korean cultural context, webtoon industry conventions, and K-drama/K-content adaptation markets. Return ONLY valid JSON, no markdown formatting.'
           },
           {
             role: 'user',
@@ -209,7 +325,8 @@ ${extractedText}`
           }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.3
+        temperature: 0.3,
+        max_tokens: 4096
       })
     })
 
@@ -238,32 +355,97 @@ ${extractedText}`
 
     console.log(`💰 API Cost: $${cost.toFixed(4)} (${inputTokens} input + ${outputTokens} output tokens)`)
 
+    // Helper function to calculate processing confidence based on populated fields
+    function calculateConfidence(analysis: any): number {
+      let score = 0
+      if (analysis.characters?.length > 0) score += 0.15
+      if (analysis.story_elements?.plot_summary) score += 0.15
+      if (analysis.themes_and_tone?.primary_themes?.length > 0) score += 0.15
+      if (analysis.market_positioning?.comparable_titles?.length > 0) score += 0.15
+      if (analysis.source_material?.metrics?.views || analysis.source_material?.metrics?.chapters) score += 0.10
+      if (analysis.korean_cultural_elements?.length > 0) score += 0.10
+      if (analysis.ip_value?.unique_selling_points?.length > 0) score += 0.10
+      if (analysis.content_classification?.complexity_score) score += 0.10
+      return Math.min(score, 1.0)
+    }
+
     // Step 5: Save to title_content_analysis (if not test mode)
     let savedToDb = false
     if (!test_mode) {
       console.log(`💾 Saving to database...`)
 
+      // Combine themes and mood keywords for semantic tags
+      const semanticTags = [
+        ...(analysis.themes_and_tone?.primary_themes || []),
+        ...(analysis.themes_and_tone?.mood_keywords || []),
+        ...(analysis.story_elements?.genre_blend || [])
+      ]
+
+      // Extract character archetypes
+      const characterTypes = (analysis.characters || [])
+        .map((char: any) => char.archetype)
+        .filter((archetype: string) => archetype && archetype !== 'null')
+
+      // Build comprehensive keyword density from selling points and themes
+      const allKeywords = [
+        ...(analysis.ip_value?.unique_selling_points || []),
+        ...(analysis.themes_and_tone?.primary_themes || [])
+      ]
+      const keywordDensity = allKeywords.reduce((acc: any, keyword: string, idx: number) => ({
+        ...acc,
+        [keyword]: 1.0 - (idx * 0.05)  // Gentler decay for more keywords
+      }), {})
+
       const { error: upsertError } = await supabase
         .from('title_content_analysis')
         .upsert({
           title_id: title_id,
-          semantic_tags: analysis.highlights || [],
+
+          // Semantic analysis
+          semantic_tags: semanticTags,
           mood_analysis: {
-            pitch_summary: analysis.summary || '',
-            production_budget: analysis.production?.budget,
-            production_timeline: analysis.production?.timeline,
-            production_format: analysis.production?.format
+            pitch_summary: analysis.story_elements?.plot_summary || '',
+            logline: analysis.story_elements?.logline || '',
+            emotional_tone: analysis.themes_and_tone?.emotional_tone || '',
+            visual_style: analysis.themes_and_tone?.visual_style || '',
+            narrative_structure: analysis.story_elements?.narrative_structure || '',
+            production_budget: analysis.production_details?.budget_range,
+            production_timeline: analysis.production_details?.timeline,
+            production_format: analysis.production_details?.format,
+            franchise_potential: analysis.ip_value?.franchise_potential,
+            source_platform: analysis.source_material?.original_platform,
+            source_views: analysis.source_material?.metrics?.views,
+            source_chapters: analysis.source_material?.metrics?.chapters
           },
-          plot_elements: analysis.comparable_titles || [],
+          character_types: characterTypes,
+          plot_elements: analysis.story_elements?.key_plot_points || [],
+          cultural_elements: analysis.korean_cultural_elements || [],
+
+          // Content metrics
+          complexity_score: analysis.content_classification?.complexity_score || null,
+          content_quality_score: null, // Not extracted from pitch decks
+          reading_time_minutes: null, // Not applicable for pitch decks
+
+          // Audience analysis
           target_demographics: {
-            description: analysis.target_audience || '',
+            ...analysis.market_positioning?.target_audience,
+            comparable_titles: analysis.market_positioning?.comparable_titles || [],
+            platform_fit: analysis.market_positioning?.platform_fit || [],
+            territory_potential: analysis.market_positioning?.territory_potential || [],
             source: 'pitch_deck'
           },
-          keyword_density: (analysis.selling_points || []).reduce((acc: any, point: string, idx: number) => ({
-            ...acc,
-            [point]: 1.0 - (idx * 0.1)
-          }), {}),
-          search_boost_factor: 1.2, // 20% boost for titles with extracted pitch data
+          content_warnings: analysis.content_classification?.content_warnings || [],
+          accessibility_features: [], // Not typically in pitch decks
+
+          // Search optimization
+          keyword_density: keywordDensity,
+          search_boost_factor: 1.5, // 50% boost for titles with extracted pitch data
+
+          // Processing metadata
+          analysis_version: '2.0', // Enhanced extraction version
+          processed_by: 'openai-gpt-4o',
+          processing_confidence: calculateConfidence(analysis),
+
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'title_id'  // Update existing record if title_id already exists

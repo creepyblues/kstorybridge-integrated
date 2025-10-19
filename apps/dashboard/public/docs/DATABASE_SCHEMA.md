@@ -215,6 +215,7 @@ CREATE TABLE public.titles (
   synopsis_embedding USER-DEFINED,
   content_embedding USER-DEFINED,
   priority USER-DEFINED NOT NULL DEFAULT '2'::priority,
+  verified boolean DEFAULT false,
   CONSTRAINT titles_pkey PRIMARY KEY (title_id),
   CONSTRAINT titles_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES auth.users(id)
 );
@@ -276,6 +277,7 @@ CREATE TABLE public.titles (
 
 **System**:
 - `priority`: Content priority level
+- `verified`: Boolean flag indicating official/verified content (default: false)
 - `created_at`: Record creation timestamp
 - `updated_at`: Last update timestamp
 

@@ -5,6 +5,8 @@ import { Button } from '@kstorybridge/ui';
 import { ChevronLeft, ChevronRight, Mic } from 'lucide-react';
 import { directApiService } from '@/services/directApiService';
 import type { FeaturedWithTitle } from '@/services/featuredService';
+import PitchBadge from '@/components/PitchBadge';
+import { VerifiedBadge } from '@/components/VerifiedBadge';
 
 interface FeaturedTitlesCarouselProps {
   className?: string;
@@ -196,15 +198,21 @@ const FeaturedTitlesCarousel = ({
                             </div>
                           </div>
                         )}
-                        
+
                         {/* Badges */}
-                        <div className="absolute top-4 left-4 flex flex-col gap-2">
-                          {title.pitch && title.pitch.trim() && (
-                            <div className="px-3 py-1.5 rounded-full shadow-lg text-white text-sm font-medium" style={{backgroundColor: '#FF6B6B'}}>
-                              Pitch Available
-                            </div>
-                          )}
-                        </div>
+                        {/* Top-left: Verified badge */}
+                        {title.verified && (
+                          <div className="absolute top-3 left-3">
+                            <VerifiedBadge size="sm" />
+                          </div>
+                        )}
+
+                        {/* Bottom-right: Pitch badge */}
+                        {title.pitch && title.pitch.trim() && (
+                          <div className="absolute bottom-3 right-3">
+                            <PitchBadge size="sm" />
+                          </div>
+                        )}
                       </div>
 
                       {/* Right Section - Title Details */}

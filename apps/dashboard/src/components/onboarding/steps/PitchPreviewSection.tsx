@@ -41,7 +41,7 @@ export default function PitchPreviewSection({ onComplete }: PitchPreviewSectionP
             <p className="text-sm text-midnight-ink-600">Sample Pitch Deck Available</p>
           </div>
           <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-500 text-white">
-            Pitch Available
+            Pitch
           </span>
         </div>
 

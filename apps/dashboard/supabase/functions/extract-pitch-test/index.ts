@@ -401,7 +401,10 @@ ${extractedText}`
         .upsert({
           title_id: title_id,
 
-          // Semantic analysis
+          // ✅ NEW: Store complete GPT-4 analysis in JSONB (100% data preservation)
+          pitch_analysis: analysis,
+
+          // Semantic analysis (legacy field mapping - kept for backward compatibility)
           semantic_tags: semanticTags,
           mood_analysis: {
             pitch_summary: analysis.story_elements?.plot_summary || '',

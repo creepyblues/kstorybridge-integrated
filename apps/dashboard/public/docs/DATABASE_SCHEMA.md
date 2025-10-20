@@ -1,6 +1,6 @@
 # Database Schema Reference
 
-**Last Updated**: 2025-10-06
+**Last Updated**: 2025-10-18
 
 **WARNING**: This schema is for context only and is not meant to be run directly. Table order and constraints may not be valid for execution.
 
@@ -276,8 +276,17 @@ CREATE TABLE public.titles (
 - `embedding_updated_at`: Last embedding update
 
 **System**:
-- `priority`: Content priority level
+- `priority`: Content priority level (enum: '1' = high, '2' = medium, '3' = low)
 - `verified`: Boolean flag indicating official/verified content (default: false)
+  - **Purpose**: Marks titles as officially verified/authenticated content
+  - **Default**: false for all new titles
+  - **UI Display**: Shows VerifiedBadge component (image overlay) on title cards
+  - **Badge Location**: Top-left corner overlay on title images
+  - **Component**: `VerifiedBadge` from `@/components/VerifiedBadge`
+  - **Badge Image**: Stored in Supabase Storage (`images/verified.png`)
+  - **Size Variants**: sm (card overlays), default, lg
+  - **Migration**: See `20251016000000_add_verified_column_to_titles.sql`
+  - **Usage**: Displayed on TitleList, Favorites, SearchResults, FeaturedTitlesCarousel pages
 - `created_at`: Record creation timestamp
 - `updated_at`: Last update timestamp
 
@@ -687,6 +696,27 @@ const { data, error } = await supabase.rpc('match_titles_by_embedding', {
 });
 ```
 
+### Verified Titles Query
+
+```typescript
+// Query only verified/official titles
+const { data, error } = await supabase
+  .from('titles')
+  .select('*')
+  .eq('verified', true);
+
+// Query with priority and verified filters
+const { data, error } = await supabase
+  .from('titles')
+  .select('*')
+  .eq('verified', true)
+  .eq('priority', '1')  // High priority verified titles
+  .order('created_at', { ascending: false });
+
+// Check if title is verified (frontend conditional rendering)
+{title.verified && <VerifiedBadge size="sm" />}
+```
+
 ---
 
 ## Account Types
@@ -711,3 +741,6 @@ These account types determine:
 4. **Account types**: Only `'buyer'` and `'creator'` are valid account types
 5. **Session tracking**: Chat sessions track both user_id and user_email for analytics
 6. **Foreign keys**: Most user-related tables reference `auth.users(id)` directly
+7. **Priority system**: Priority enum values are strings ('1', '2', '3') where '1' = high, '2' = medium, '3' = low
+8. **Verified content**: The `verified` column defaults to false; requires manual update to mark titles as officially verified
+9. **Content curation**: Use `priority` and `verified` together for curated title displays (e.g., `verified=true` AND `priority='1'` for featured official content)

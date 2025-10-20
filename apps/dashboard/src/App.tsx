@@ -31,7 +31,6 @@ const Home = lazy(() => import("./pages/Home"));
 const BuyerHome = lazy(() => import("./pages/BuyerHome"));
 const CreatorHome = lazy(() => import("./pages/CreatorHome"));
 const TitleList = lazy(() => import("./pages/TitleList"));
-const TitleDetail = lazy(() => import("./pages/TitleDetail"));
 const TitleDetailNew = lazy(() => import("./pages/TitleDetailNew"));
 const CreatorAddTitlePage = lazy(() => import("./pages/CreatorAddTitlePage"));
 const CreatorEditTitlePage = lazy(() => import("./pages/CreatorEditTitlePage"));

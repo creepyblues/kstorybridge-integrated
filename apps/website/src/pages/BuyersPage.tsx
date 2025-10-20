@@ -189,7 +189,7 @@ const BuyersPage = () => {
                       <div className="bg-hanok-teal/10 rounded-lg p-3 text-sm text-midnight-ink">
                         <p className="font-semibold mb-2">Great choice! Let me tell you why these stories work...</p>
                         <p className="text-xs text-midnight-ink-600">
-                          I found 10 perfect matches. "First Love" features a protagonist with incredible character development...
+                          I found some delightful titles that really blend those elements well! "You Get Me Going" is a standout choice! It features Youngwon, whose overbearing nature leads to humorous clashes with Hyunwoo, who is his polar opposite. Their relationship takes an unexpected turn during a business trip, where the playful banter not only drives the comedy but also deepens their character arcs. What I love here is how the humor is rooted in their evolving dynamics, making it a fun and engaging read.
                         </p>
                       </div>
                     </div>

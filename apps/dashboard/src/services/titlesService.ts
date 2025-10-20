@@ -477,7 +477,7 @@ export const titlesService = {
     try {
       console.log(`📚 [TITLE DETAIL VERBOSE] Starting getTitleById query for: ${titleId}`);
 
-      // Add timeout protection for the query
+      // Query 1: Get the title data with timeout protection
       const queryPromise = supabase
         .from("titles")
         .select("*")
@@ -520,6 +520,23 @@ export const titlesService = {
         }
 
         throw error;
+      }
+
+      // Query 2: Try to get pitch analysis (may not exist for all titles)
+      console.log(`📊 [TITLE DETAIL VERBOSE] Attempting to fetch pitch analysis for: ${titleId}`);
+      const { data: analysisData, error: analysisError } = await supabase
+        .from("title_content_analysis")
+        .select("pitch_analysis")
+        .eq("title_id", titleId)
+        .single();
+
+      if (analysisError) {
+        // Not an error if pitch analysis doesn't exist - most titles won't have it
+        console.log(`📊 [TITLE DETAIL VERBOSE] No pitch analysis found for ${titleId} (this is normal)`);
+      } else if (analysisData?.pitch_analysis) {
+        // Attach pitch_analysis to the title object if it exists
+        data.pitch_analysis = analysisData.pitch_analysis;
+        console.log(`📊 [TITLE DETAIL VERBOSE] Pitch analysis data included for ${titleId}`);
       }
 
       console.log(`✅ [TITLE DETAIL VERBOSE] Successfully loaded title: ${titleId}`);

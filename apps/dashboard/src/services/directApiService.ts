@@ -242,12 +242,33 @@ export const directApiService = {
   async getTitleById(titleId: string) {
     console.log('🔧 DIRECT API SERVICE: Fetching title by ID:', titleId);
     try {
+      // Query 1: Get the title data
       const data = await makeDirectApiCall(`titles?select=*&title_id=eq.${titleId}&limit=1`);
       if (data.length === 0) {
         throw new Error('Title not found');
       }
-      console.log('✅ DIRECT API SERVICE: Successfully fetched title:', data[0].title_name_en || data[0].title_name_kr);
-      return data[0];
+
+      const title = data[0];
+
+      // Query 2: Try to get pitch analysis (may not exist for all titles)
+      console.log('📊 DIRECT API SERVICE: Attempting to fetch pitch analysis for:', titleId);
+      try {
+        const analysisData = await makeDirectApiCall(`title_content_analysis?select=pitch_analysis&title_id=eq.${titleId}&limit=1`);
+
+        if (analysisData.length > 0 && analysisData[0].pitch_analysis) {
+          // Attach pitch_analysis to the title object if it exists
+          title.pitch_analysis = analysisData[0].pitch_analysis;
+          console.log('📊 DIRECT API SERVICE: Pitch analysis data included');
+        } else {
+          console.log('📊 DIRECT API SERVICE: No pitch analysis found (this is normal)');
+        }
+      } catch (analysisError) {
+        // Not an error if pitch analysis doesn't exist - most titles won't have it
+        console.log('📊 DIRECT API SERVICE: No pitch analysis found for this title (this is normal)');
+      }
+
+      console.log('✅ DIRECT API SERVICE: Successfully fetched title:', title.title_name_en || title.title_name_kr);
+      return title;
     } catch (error) {
       console.error('❌ DIRECT API SERVICE: Failed to fetch title by ID:', error);
       throw error;

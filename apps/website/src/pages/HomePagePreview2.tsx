@@ -126,7 +126,7 @@ const HomePagePreview2 = () => {
                       <div className="bg-hanok-teal/10 rounded-lg p-4 text-sm text-midnight-ink">
                         <p className="font-semibold mb-2">Perfect! I found 10 titles that match your criteria...</p>
                         <p className="text-xs text-midnight-ink-600 mb-3">
-                          "Business Proposal" has a similar rom-com DNA with a powerful female lead navigating workplace romance. The story combines humor with cultural depth, making it ideal for adaptation.
+                          I've found some delightful recommendations that capture that playful spirit! "You Get Me Going" is a fantastic choice! It features Youngwon, who is quite the character with his overbearing nature leading to amusing clashes with his work counterpart, Hyunwoo. Their dynamic kicks off with a business trip that turns into a romantic adventure, laced with humor and unexpected moments of connection. What hooked me is how the story balances playful banter with deeper emotional undertones, making it a great fit for fans of light-hearted comedy!
                         </p>
                         <div className="flex items-center gap-2 text-xs">
                           <CheckCircle2 className="h-4 w-4 text-green-600" />

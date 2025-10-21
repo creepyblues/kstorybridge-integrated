@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kstorybridge/ui";
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogPortal, DialogOverlay } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";
 import { trackAuthAction, trackUserJourneyStep, trackButtonClick } from "@/utils/analytics";
 
@@ -9,7 +9,7 @@ import { useSessionCache } from "@/hooks/useSessionCache";
 import { useDataCache } from "@/contexts/DataCacheContext";
 import { directApiService } from "@/services/directApiService";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Sparkles } from "lucide-react";
+import { Users, PlayCircle } from "lucide-react";
 import PasswordResetModal from "@/components/PasswordResetModal";
 import { Surface, Stack, Inline } from "@/components/design-system";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -98,6 +98,7 @@ export default function Profile() {
   const [subscriptionData, setSubscriptionData] = useState<any>(null);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showOnboardingFlow, setShowOnboardingFlow] = useState(false);
+  const [showVideoDialog, setShowVideoDialog] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     if (!user) {
@@ -1051,15 +1052,15 @@ export default function Profile() {
                 <h3 className="text-lg font-semibold text-gray-900">Account Actions</h3>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                {/* Take Tour Button */}
+                {/* How KStoryBridge works? Button */}
                 {(profile.email?.toLowerCase() === 'sungho@dadble.com' || profile.email?.toLowerCase() === 'kevin@sandstoneartists.com') ? (
                   <Button
-                    onClick={() => setShowOnboardingModal(true)}
+                    onClick={() => setShowVideoDialog(true)}
                     variant="outline"
                     className="w-full sm:w-auto border-gray-300 hover:bg-gray-100"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Take Tour
+                    <PlayCircle className="w-4 h-4 mr-2" />
+                    How KStoryBridge works?
                   </Button>
                 ) : (
                   <Button
@@ -1067,8 +1068,8 @@ export default function Profile() {
                     className="w-full sm:w-auto border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed opacity-60"
                     disabled
                   >
-                    <Sparkles className="w-4 h-4 mr-2 opacity-50" />
-                    Take Tour
+                    <PlayCircle className="w-4 h-4 mr-2 opacity-50" />
+                    How KStoryBridge works?
                   </Button>
                 )}
 
@@ -1112,6 +1113,42 @@ export default function Profile() {
         onComplete={handleCompleteOnboarding}
         onSkip={handleSkipOnboarding}
       />
+
+      {/* YouTube Video Dialog */}
+      <Dialog open={showVideoDialog} onOpenChange={setShowVideoDialog} modal={true}>
+        <DialogContent
+          className="max-w-4xl bg-white border-2 border-gray-300"
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'white',
+            zIndex: 100,
+            maxWidth: '56rem',
+            width: '90vw'
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">How KStoryBridge Works</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Watch this video to learn how KStoryBridge helps you discover and acquire Korean content.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="w-full mt-4" style={{ height: '450px' }}>
+            <iframe
+              className="w-full h-full rounded-lg"
+              src="https://www.youtube.com/embed/BJS2m-MfOFg"
+              title="How KStoryBridge Works"
+              width="100%"
+              height="450"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }

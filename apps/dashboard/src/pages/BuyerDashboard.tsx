@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Search, 
+import {
+  Search,
   Grid,
   Heart,
   Compass,
@@ -14,6 +14,7 @@ import { TitleCard } from "@/components/dashboard/TitleCard";
 import { SearchAndFilter } from "@/components/dashboard/SearchAndFilter";
 import { FeaturedSection } from "@/components/dashboard/FeaturedSection";
 import { titlesService, type Title } from "@/services/titlesService";
+import { useAuth } from "@/hooks/useAuth";
 
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
@@ -108,6 +109,7 @@ const mockTitles = [
 
 export default function BuyerDashboard() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { getTitles, setTitles, isFresh, refreshData } = useDataCache();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({});

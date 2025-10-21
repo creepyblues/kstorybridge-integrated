@@ -27,14 +27,16 @@ import {
  *
  * Sections:
  * 1. Hero (AI-first messaging)
- * 2. AI Assistant Showcase (Priority #1)
- * 3. Value Props Grid (3 pillars)
- * 4. Rights Deep Dive (Priority #2)
- * 5. Streamlined Process (3 steps)
- * 6. Catalog Preview
- * 7. Final CTA (simplified)
+ * 2. Video Showcase
+ * 3. AI Assistant Showcase (Priority #1)
+ * 4. Value Props Grid (3 pillars)
+ * 5. Rights Deep Dive (Priority #2)
+ * 6. Streamlined Process (3 steps)
+ * 7. Catalog Preview
+ * 8. Final CTA (simplified)
+ * 9. Newsletter
  *
- * Updated: 2025-10-14
+ * Updated: 2025-10-20
  */
 
 const BuyersPage = () => {
@@ -94,7 +96,27 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 2: AI ASSISTANT SHOWCASE (NEW)
+            SECTION 2: VIDEO SHOWCASE
+            ======================================== */}
+        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-5xl mx-auto">
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full rounded-2xl shadow-lg"
+                  src="https://www.youtube.com/embed/BJS2m-MfOFg"
+                  title="KStoryBridge Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================
+            SECTION 3: AI ASSISTANT SHOWCASE (NEW)
             Priority #1 - 30% page focus
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -211,7 +233,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 3: VALUE PROPS GRID (NEW)
+            SECTION 4: VALUE PROPS GRID (NEW)
             3 Core Pillars
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-50">
@@ -284,7 +306,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 4: RIGHTS DEEP DIVE (NEW)
+            SECTION 5: RIGHTS DEEP DIVE (NEW)
             Priority #2 - 25% page focus
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -413,7 +435,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 5: STREAMLINED PROCESS
+            SECTION 6: STREAMLINED PROCESS
             Simplified to 3 steps
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -475,7 +497,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 6: CATALOG PREVIEW
+            SECTION 7: CATALOG PREVIEW
             Keep existing with minor updates
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-100">
@@ -507,7 +529,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 7: PRICING + FINAL CTA
+            SECTION 8: PRICING + FINAL CTA
             Combined and simplified
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -539,7 +561,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 8: NEWSLETTER
+            SECTION 9: NEWSLETTER
             KStoryBridge Newsletter signup
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-50">

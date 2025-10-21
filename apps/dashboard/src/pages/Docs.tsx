@@ -114,6 +114,14 @@ const documents: DocumentItem[] = [
     lastUpdated: '2025-10-14'
   },
   {
+    filename: 'PITCH_DECK_ANALYTICS_REFERENCE.md',
+    title: 'Pitch Deck Analytics - Technical Reference',
+    description: 'Complete system architecture, database queries, integration patterns, security, error recovery, and performance benchmarks for the automated pitch deck extraction system.',
+    category: 'technical',
+    icon: Database,
+    lastUpdated: '2025-01-30'
+  },
+  {
     filename: 'DATABASE_SCHEMA.md',
     title: 'Database Schema Reference',
     description: 'Complete database structure, table definitions, relationships, and field requirements.',

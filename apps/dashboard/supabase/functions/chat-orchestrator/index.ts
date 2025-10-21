@@ -48,6 +48,71 @@ interface VectorSearchResult {
   audience?: string;
   age_rating?: string;
   similarity: number;
+
+  // Pitch analytics fields (added 2025-01-30)
+  pitch_analysis?: {
+    characters?: Array<{
+      name: string;
+      role: string;
+      archetype: string;
+      description: string;
+      relationships?: string;
+    }>;
+    story_elements?: {
+      logline?: string;
+      plot_summary?: string;
+      narrative_structure?: string;
+      central_conflict?: string;
+    };
+    themes_and_tone?: {
+      primary_themes?: string[];
+      mood?: string;
+      emotional_beats?: string[];
+    };
+    market_positioning?: {
+      comparable_titles?: Array<{
+        title: string;
+        platform: string;
+        context: string;
+      }>;
+      target_demographics?: string[];
+      market_differentiation?: string;
+    };
+    source_material?: {
+      metrics?: {
+        views?: number;
+        chapters?: number;
+        platform?: string;
+      };
+      serialization_status?: string;
+    };
+    korean_cultural_elements?: string[];
+    ip_value?: {
+      unique_selling_points?: string[];
+      franchise_potential?: string;
+      adaptation_opportunities?: string[];
+      merchandising_potential?: string;
+    };
+    production_details?: {
+      visual_style_notes?: string;
+      production_complexity?: string;
+      technical_requirements?: string[];
+      estimated_budget_level?: string;
+    };
+    content_classification?: {
+      age_rating?: string;
+      content_warnings?: string[];
+      complexity_score?: string;
+      maturity_level?: string;
+    };
+    creative_team?: {
+      creator_name?: string;
+      previous_works?: string[];
+      creative_background?: string;
+      artistic_style?: string;
+    };
+  };
+  processing_confidence?: number;
 }
 
 // ========== FEATURE FLAGS FOR SAFE ROLLOUT ==========
@@ -94,13 +159,25 @@ const ENABLE_EXPLORATION_MODE = Deno.env.get('ENABLE_EXPLORATION_MODE') === 'tru
  */
 const ENABLE_CONDITIONAL_INFO = Deno.env.get('ENABLE_CONDITIONAL_INFO') === 'true';
 
+/**
+ * Pitch Analytics Integration (Added 2025-01-30)
+ * Controls: Whether to include pitch deck analytics in chatbot responses
+ * Risk: MEDIUM - increases token cost (+100%), response time (+1s), prompt complexity
+ * Benefits: Enables 60+ enhanced query types (characters, themes, market, cultural, IP value)
+ * Rollback: Set to 'false' to exclude pitch context immediately
+ * Quality Filter: Only includes pitch data with processing_confidence >= 0.70
+ * Token Limit: 800 tokens max per title to prevent cost explosion
+ */
+const ENABLE_PITCH_CONTEXT = Deno.env.get('ENABLE_PITCH_CONTEXT') === 'true';
+
 // Log feature flag status at startup
 console.log('🚩 Feature Flags Initialized:', {
   USE_FORMAL_BASELINE,
   ENABLE_NEW_PERSONALITY,
   ENABLE_EXPLORATION_MODE,
   ENABLE_CONDITIONAL_INFO,
-  deployment: 'Phase 2 Testing - Three-way A/B test mode'
+  ENABLE_PITCH_CONTEXT,
+  deployment: 'Phase 2 Testing - Three-way A/B test mode + Pitch Analytics'
 });
 
 // ========== END FEATURE FLAGS ==========
@@ -372,6 +449,18 @@ serve(async (req) => {
 
     // Try vector search first
     searchResults = await performVectorSearch(supabase, userQuery, user.id, searchLimit, searchThreshold)
+
+    // Log pitch analytics usage (added 2025-01-30)
+    const pitchEnabledCount = ENABLE_PITCH_CONTEXT
+      ? searchResults.filter(r => r.processing_confidence && r.processing_confidence >= 0.70).length
+      : 0;
+
+    console.log('📊 Pitch Analytics Status:', {
+      featureEnabled: ENABLE_PITCH_CONTEXT,
+      totalResults: searchResults.length,
+      withPitchData: pitchEnabledCount,
+      coveragePercent: searchResults.length > 0 ? ((pitchEnabledCount / searchResults.length) * 100).toFixed(0) + '%' : '0%'
+    });
 
     // Fallback to keyword search if no results
     if (searchResults.length === 0) {
@@ -868,6 +957,98 @@ async function performVectorSearch(
     console.error('❌ Vector search error:', error)
     return []
   }
+}
+
+/**
+ * Format pitch analytics data for GPT context (Added 2025-01-30)
+ * Quality filter: Only include if processing_confidence >= 0.70
+ * Token efficiency: Limit arrays to 3 items, truncate long strings, max 800 tokens per title
+ * @param result Vector search result with optional pitch_analysis
+ * @returns Formatted pitch context string or empty string if unavailable/low quality
+ */
+function formatPitchAnalytics(result: VectorSearchResult): string {
+  // Quality checks: feature flag, pitch data exists, confidence threshold
+  if (!ENABLE_PITCH_CONTEXT || !result.pitch_analysis || !result.processing_confidence || result.processing_confidence < 0.70) {
+    return ''; // No pitch data, low quality, or feature disabled
+  }
+
+  const pitch = result.pitch_analysis;
+  let formatted = `\n📊 Detailed Analysis (Confidence: ${(result.processing_confidence * 100).toFixed(0)}%):`;
+  let tokenCount = 0; // Track tokens to avoid explosion
+  const MAX_TOKENS = 800; // Limit per title
+
+  // 1. CHARACTERS (limit to 3 for token efficiency)
+  if (pitch.characters && pitch.characters.length > 0 && tokenCount < MAX_TOKENS) {
+    const chars = pitch.characters.slice(0, 3).map(c => {
+      const desc = c.description?.slice(0, 100) || 'No description';
+      return `${c.name} (${c.archetype || c.role}): ${desc}`;
+    }).join('; ');
+    formatted += `\n- Characters: ${chars}`;
+    tokenCount += chars.length / 4; // Rough token estimate (4 chars = 1 token)
+  }
+
+  // 2. STORY ELEMENTS
+  if (pitch.story_elements && tokenCount < MAX_TOKENS) {
+    if (pitch.story_elements.logline) {
+      const logline = pitch.story_elements.logline.slice(0, 150);
+      formatted += `\n- Logline: ${logline}`;
+      tokenCount += logline.length / 4;
+    }
+    if (pitch.story_elements.central_conflict) {
+      const conflict = pitch.story_elements.central_conflict.slice(0, 100);
+      formatted += `\n- Conflict: ${conflict}`;
+      tokenCount += conflict.length / 4;
+    }
+  }
+
+  // 3. THEMES (concise)
+  if (pitch.themes_and_tone?.primary_themes && tokenCount < MAX_TOKENS) {
+    const themes = pitch.themes_and_tone.primary_themes.slice(0, 4).join(', ');
+    formatted += `\n- Themes: ${themes}`;
+    tokenCount += themes.length / 4;
+  }
+
+  // 4. MARKET POSITIONING (limit to 3 comps)
+  if (pitch.market_positioning?.comparable_titles && tokenCount < MAX_TOKENS) {
+    const comps = pitch.market_positioning.comparable_titles
+      .slice(0, 3)
+      .map(c => `${c.title} (${c.platform})`)
+      .join(', ');
+    formatted += `\n- Similar to: ${comps}`;
+    tokenCount += comps.length / 4;
+  }
+
+  // 5. SOURCE METRICS (concise)
+  if (pitch.source_material?.metrics && tokenCount < MAX_TOKENS) {
+    const metrics = pitch.source_material.metrics;
+    const parts = [];
+    if (metrics.views) parts.push(`${(metrics.views / 1000000).toFixed(1)}M views`);
+    if (metrics.chapters) parts.push(`${metrics.chapters} chapters`);
+    if (metrics.platform) parts.push(metrics.platform);
+    if (parts.length > 0) {
+      formatted += `\n- Source: ${parts.join(', ')}`;
+      tokenCount += parts.join(', ').length / 4;
+    }
+  }
+
+  // 6. KOREAN CULTURAL ELEMENTS (limit to 3)
+  if (pitch.korean_cultural_elements && pitch.korean_cultural_elements.length > 0 && tokenCount < MAX_TOKENS) {
+    const cultural = pitch.korean_cultural_elements.slice(0, 3).join(', ');
+    formatted += `\n- Korean Elements: ${cultural}`;
+    tokenCount += cultural.length / 4;
+  }
+
+  // 7. IP VALUE (unique selling points only, limit to 3)
+  if (pitch.ip_value?.unique_selling_points && tokenCount < MAX_TOKENS) {
+    const usps = pitch.ip_value.unique_selling_points.slice(0, 3).join('; ');
+    formatted += `\n- Unique Strengths: ${usps}`;
+    tokenCount += usps.length / 4;
+  }
+
+  // Log token estimate for monitoring
+  console.log(`📊 Pitch context formatted: ${tokenCount.toFixed(0)} tokens (max: ${MAX_TOKENS})`);
+
+  return formatted;
 }
 
 /**
@@ -2134,7 +2315,7 @@ ${searchResults.map((result, idx) => {
    • Age Rating: ${result.age_rating || 'Not specified'}
    • Story Author: ${result.story_author || 'Not specified'}
    • Art Author: ${result.art_author || 'Not specified'}
-   • Comparable Titles (Comps): ${comps}`
+   • Comparable Titles (Comps): ${comps}${formatPitchAnalytics(result)}`
 }).join('\n\n')}
 
 SEARCH INSIGHTS: Found ${searchResults.length} titles with complete database information. Use ONLY the fields provided above.` : ''}

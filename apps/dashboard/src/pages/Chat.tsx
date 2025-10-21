@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ChatEmptyState } from "@/components/ChatEmptyState";
 import ProBadge from "@/components/ProBadge";
+import { PitchBadge } from "@/components/PitchBadge";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import PremiumFeaturePopup from "@/components/PremiumFeaturePopup";
 import { ChatUpgradePrompt } from "@/components/UpgradePrompt";
@@ -549,9 +550,7 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
               {title.title_name_en || title.title_name_kr}
             </h4>
             {title.pitch && title.pitch.trim() && (
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 text-white" style={{backgroundColor: '#FF6B6B'}}>
-                Pitch
-              </span>
+              <PitchBadge size="sm" className="flex-shrink-0" />
             )}
           </div>
           
@@ -1462,9 +1461,7 @@ Please try again.`,
                   {title.title_name_en || title.title_name_kr}
                 </h4>
                 {title.pitch && title.pitch.trim() && (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 text-white" style={{backgroundColor: '#FF6B6B'}}>
-                    Pitch
-                  </span>
+                  <PitchBadge size="sm" className="flex-shrink-0" />
                 )}
               </div>
               

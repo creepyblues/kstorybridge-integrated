@@ -24,6 +24,8 @@ import { EmptyState } from "@/components/design-system";
 import { FavoritesUpgradePrompt } from "@/components/UpgradePrompt";
 import { triggerMultipleSavesEmail } from "@/services/emailService";
 import { useTierAccess } from "@/hooks/useTierAccess";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { PitchBadge } from "@/components/PitchBadge";
 
 type FavoriteWithTitle = {
   id: string;
@@ -397,11 +399,19 @@ export default function Favorites() {
                           </div>
                         </div>
                       )}
-                      {title.pitch && title.pitch.trim() && (
+
+                      {/* Badge overlays */}
+                      {/* Top-left: Verified badge */}
+                      {title.verified && (
                         <div className="absolute top-3 left-3">
-                          <span className="text-xs font-medium px-2 py-1 rounded-full shadow-lg text-white" style={{backgroundColor: '#FF6B6B'}}>
-                            Pitch Available
-                          </span>
+                          <VerifiedBadge size="sm" />
+                        </div>
+                      )}
+
+                      {/* Bottom-right: Pitch badge */}
+                      {title.pitch && title.pitch.trim() && (
+                        <div className="absolute bottom-3 right-3">
+                          <PitchBadge size="sm" />
                         </div>
                       )}
                     </div>

@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Eye, Heart, Star, ExternalLink, Crown, FileText, X, Lock, Building2, Users, Target, TrendingUp, Calendar, BookOpen } from "lucide-react";
-import { Button, Badge, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@kstorybridge/ui";
+import { Button, Badge, Card, CardContent, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";
-import { Surface, Stack } from '@/components/design-system';
+import { Stack } from '@/components/design-system';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { titlesService, type Title } from "@/services/titlesService";
+import { type PitchAnalysis } from "@/types/pitchAnalysis";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionCache } from "@/hooks/useSessionCache";
@@ -51,6 +52,7 @@ function TitleDetailNewContent() {
   
   const [premiumPopupOpen, setPremiumPopupOpen] = useState(false);
   const [premiumFeatureName, setPremiumFeatureName] = useState("");
+  const [pitchAnalysis, setPitchAnalysis] = useState<PitchAnalysis | null>(null);
 
   useEffect(() => {
     if (titleId) {
@@ -58,6 +60,10 @@ function TitleDetailNewContent() {
       // NEW POLICY: Check session validity and cache freshness
       if (cachedTitle && isSessionValid() && isFresh(`titleDetail:${titleId}`)) {
         setTitle(cachedTitle);
+        // Extract pitch_analysis from cached data
+        if ((cachedTitle as any).pitch_analysis) {
+          setPitchAnalysis((cachedTitle as any).pitch_analysis);
+        }
         setLoading(false);
       } else {
         loadTitle(titleId);
@@ -81,6 +87,13 @@ function TitleDetailNewContent() {
       setTitle(data);
       setTitleDetail(id, data);
       setDbConnectivityStatus({ isConnected: true });
+
+      // Extract pitch_analysis if available
+      if ((data as any).pitch_analysis) {
+        setPitchAnalysis((data as any).pitch_analysis);
+        console.log('📊 Pitch analysis data loaded');
+        console.log('🔍 FULL PITCH ANALYSIS OBJECT:', JSON.stringify((data as any).pitch_analysis, null, 2));
+      }
 
       console.log('✅ Successfully loaded title detail from database');
     } catch (error) {
@@ -435,12 +448,12 @@ function TitleDetailNewContent() {
       </div>
 
       {/* Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
-        {/* Left Column - Business Critical Info (2/5) */}
-        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Left Column - Business Critical Info */}
+        <div className="space-y-4 sm:space-y-6">
           
           {/* Key Business Info Panel */}
-          <Surface variant="card" padding="md" spacing="md" as="section">
+          <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
             <Stack gap="sm">
               <h3 className="text-xl font-semibold text-slate-900">
                 Business Information
@@ -538,10 +551,10 @@ function TitleDetailNewContent() {
               </div>
               </div>
             </Stack>
-          </Surface>
+          </div>
 
           {/* Format & Genre */}
-          <Surface variant="card" padding="md" spacing="md" as="section">
+          <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
             <Stack gap="sm">
               <h3 className="text-xl font-semibold text-slate-900">Content Details</h3>
               <div className="space-y-4">
@@ -574,15 +587,86 @@ function TitleDetailNewContent() {
                 )}
               </div>
             </Stack>
-          </Surface>
+          </div>
+
+          {/* Keywords Card */}
+          {(title.keywords || title.tags) && (title.keywords || title.tags).length > 0 && (
+            <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+              <Stack gap="sm">
+                <h3 className="text-xl font-semibold text-slate-900">Keywords</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(title.keywords || title.tags).map((tag, idx) => (
+                    <Badge key={idx} className="bg-slate-50 text-slate-600 border border-slate-200 font-medium px-2.5 py-1 rounded-full text-xs hover:bg-slate-100 transition-colors">
+                      {tag.toUpperCase()}
+                    </Badge>
+                  ))}
+                </div>
+              </Stack>
+            </div>
+          )}
 
         </div>
 
-        {/* Right Column - Content Overview (3/5) */}
-        <div className="lg:col-span-3 space-y-6">
+        {/* Right Column - Content Overview */}
+        <div className="space-y-6">
 
-          {/* Synopsis - Compact with expand option */}
-          <Surface variant="card" padding="md" spacing="md" as="section">
+          {/* Pitch Deck Card */}
+          <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+            <Stack gap="sm">
+              <h3 className="text-xl font-semibold text-slate-900">Pitch Deck</h3>
+
+              {/* Thumbnail Preview (only if pitch exists) */}
+              {title.pitch && title.pitch.trim() !== '' && (
+                <PitchDeckThumbnail
+                  pdfUrl={title.pitch}
+                  onClick={() => {
+                    trackPitchView(
+                      titleId,
+                      title.title_name_en || title.title_name_kr || 'Unknown Title',
+                      tier
+                    );
+                    setCurrentPdfUrl(title.pitch);
+                    setTimeout(() => setIsPdfModalOpen(true), 10);
+                  }}
+                  className="mb-4"
+                  alt={`${title.title_name_en || title.title_name_kr} pitch deck preview`}
+                />
+              )}
+
+              {/* Only show button if NO pitch deck exists */}
+              {(!title.pitch || title.pitch.trim() === '') && (
+                <div className="flex justify-start">
+                  <Button
+                    onClick={() => {
+                      trackPitchView(
+                        titleId,
+                        title.title_name_en || title.title_name_kr || 'Unknown Title',
+                        tier
+                      );
+                      setPremiumFeatureName("Pitch deck not available");
+                      setPremiumPopupOpen(true);
+                    }}
+                    className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors"
+                  >
+                    → Request Pitch Deck
+                  </Button>
+                </div>
+              )}
+
+              {/* PRD 2.1: Premium content upgrade prompt for basic users */}
+              <div className="pt-4">
+                <PremiumContentUpgradePrompt
+                  variant="callout"
+                  size="sm"
+                  titleName={title.title_name_en || title.title_name_kr}
+                  dismissible={true}
+                />
+              </div>
+            </Stack>
+          </div>
+
+          {/* Synopsis */}
+          <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
             <Stack gap="sm">
               <h3 className="text-xl font-semibold text-slate-900">Synopsis</h3>
               <div className="space-y-4">
@@ -602,91 +686,15 @@ function TitleDetailNewContent() {
                     </p>
                   </div>
                 )}
-
-                {/* Pitch Deck */}
-                <div className="pt-4">
-                  <h5 className="font-bold text-slate-700 mb-3">Pitch Deck</h5>
-
-                  {/* Thumbnail Preview (only if pitch exists) */}
-                  {title.pitch && title.pitch.trim() !== '' && (
-                    <PitchDeckThumbnail
-                      pdfUrl={title.pitch}
-                      onClick={() => {
-                        // Track pitch view attempt
-                        trackPitchView(
-                          titleId,
-                          title.title_name_en || title.title_name_kr || 'Unknown Title',
-                          tier
-                        );
-                        // Open pitch deck viewer
-                        setCurrentPdfUrl(title.pitch);
-                        setTimeout(() => setIsPdfModalOpen(true), 10);
-                      }}
-                      className="mb-4"
-                      alt={`${title.title_name_en || title.title_name_kr} pitch deck preview`}
-                    />
-                  )}
-
-                  <div className="flex justify-start">
-                    <Button
-                      onClick={() => {
-                        // Track pitch view attempt
-                        trackPitchView(
-                          titleId,
-                          title.title_name_en || title.title_name_kr || 'Unknown Title',
-                          tier
-                        );
-
-                        // Check if pitch deck is available
-                        if (!title.pitch || title.pitch.trim() === '') {
-                          // Show pitch deck request popup
-                          setPremiumFeatureName("Pitch deck not available");
-                          setPremiumPopupOpen(true);
-                        } else {
-                          // Open pitch deck viewer
-                          setCurrentPdfUrl(title.pitch);
-                          setTimeout(() => setIsPdfModalOpen(true), 10);
-                        }
-                      }}
-                      className="bg-pro-purple hover:bg-pro-purple-600 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors"
-                    >
-                      → View Pitch Deck
-                    </Button>
-                  </div>
-                </div>
-
-                {/* PRD 2.1: Premium content upgrade prompt for basic users */}
-                <div className="pt-4">
-                  <PremiumContentUpgradePrompt
-                    variant="callout"
-                    size="sm"
-                    titleName={title.title_name_en || title.title_name_kr}
-                    dismissible={true}
-                  />
-                </div>
-
-                {/* Keywords */}
-                {(title.keywords || title.tags) && (title.keywords || title.tags).length > 0 && (
-                  <div className="pt-4">
-                    <h5 className="font-bold text-slate-700 mb-3">Keywords</h5>
-                    <div className="flex flex-wrap gap-2">
-                      {(title.keywords || title.tags).map((tag, idx) => (
-                        <Badge key={idx} className="bg-slate-50 text-slate-600 border border-slate-200 font-medium px-2.5 py-1 rounded-full text-xs hover:bg-slate-100 transition-colors">
-                          {tag.toUpperCase()}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </Stack>
-          </Surface>
+          </div>
 
           {/* Additional Details */}
           {title.note && (
-            <Surface variant="card" padding="md" spacing="md" as="section">
+            <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
               <Stack gap="sm">
-                <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <h3 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
                   <FileText className="h-5 w-5 text-hanok-teal" />
                   Additional Notes
                 </h3>
@@ -696,14 +704,14 @@ function TitleDetailNewContent() {
                   </p>
                 </div>
               </Stack>
-            </Surface>
+            </div>
           )}
 
           {/* Extended Author Information */}
           {(title.author || title.writer || title.illustrator) && (
-            <Surface variant="card" padding="md" spacing="md" as="section">
+            <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
               <Stack gap="sm">
-                <h3 className="text-lg font-semibold text-slate-900">Creator Details</h3>
+                <h3 className="text-xl font-semibold text-slate-900">Creator Details</h3>
                 <div className="space-y-3">
                   {title.author && (
                     <div className="flex justify-between items-center py-2 border-b border-slate-100 last:border-b-0">
@@ -725,10 +733,307 @@ function TitleDetailNewContent() {
                   )}
                 </div>
               </Stack>
-            </Surface>
+            </div>
           )}
         </div>
       </div>
+
+      {/* KStoryBridge Analysis Section - Full Width */}
+      {pitchAnalysis && (
+        <div className="mt-8 sm:mt-10 lg:mt-12">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">KStoryBridge Analysis</h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+
+            {/* Story World Card */}
+            {pitchAnalysis.story_world && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Story World</h3>
+                  <div className="space-y-3 text-slate-700">
+                    {pitchAnalysis.story_world.setting && (
+                      <div><span className="font-semibold">Setting:</span> {pitchAnalysis.story_world.setting}</div>
+                    )}
+                    {pitchAnalysis.story_world.time_period && (
+                      <div><span className="font-semibold">Time Period:</span> {pitchAnalysis.story_world.time_period}</div>
+                    )}
+                    {pitchAnalysis.story_world.world_building && pitchAnalysis.story_world.world_building.length > 0 && (
+                      <div>
+                        <span className="font-semibold">World Building:</span>
+                        <ul className="list-disc ml-5 mt-2">
+                          {pitchAnalysis.story_world.world_building.map((item, idx) => (
+                            <li key={idx}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+            {/* Characters Card */}
+            {pitchAnalysis.characters && pitchAnalysis.characters.length > 0 && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Characters</h3>
+                  <div className="space-y-4">
+                    {pitchAnalysis.characters.map((char, idx) => (
+                      <div key={idx} className="p-4 bg-slate-50 rounded-lg">
+                        <div className="font-semibold text-slate-900 mb-2">{char.name}</div>
+                        <div className="text-sm space-y-1 text-slate-700">
+                          {char.role && <div><span className="font-semibold">Role:</span> {char.role}</div>}
+                          {char.archetype && <div><span className="font-semibold">Archetype:</span> {char.archetype}</div>}
+                          {char.description && <div className="mt-2">{char.description}</div>}
+                          {char.key_traits && char.key_traits.length > 0 && (
+                            <div className="mt-2">
+                              <span className="font-semibold">Key Traits:</span> {char.key_traits.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+            {/* Themes & Tone Card */}
+            {pitchAnalysis.themes_and_tone && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Themes & Tone</h3>
+                  <div className="space-y-3 text-slate-700">
+                    {pitchAnalysis.themes_and_tone.primary_themes && pitchAnalysis.themes_and_tone.primary_themes.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Primary Themes:</span> {pitchAnalysis.themes_and_tone.primary_themes.join(', ')}
+                      </div>
+                    )}
+                    {pitchAnalysis.themes_and_tone.emotional_tone && (
+                      <div><span className="font-semibold">Emotional Tone:</span> {pitchAnalysis.themes_and_tone.emotional_tone}</div>
+                    )}
+                    {pitchAnalysis.themes_and_tone.visual_style && (
+                      <div><span className="font-semibold">Visual Style:</span> {pitchAnalysis.themes_and_tone.visual_style}</div>
+                    )}
+                    {pitchAnalysis.themes_and_tone.mood_keywords && pitchAnalysis.themes_and_tone.mood_keywords.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Mood Keywords:</span>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {pitchAnalysis.themes_and_tone.mood_keywords.map((keyword, idx) => (
+                            <Badge key={idx} className="bg-slate-100 text-slate-700">{keyword}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+            {/* Story Elements Card */}
+            {pitchAnalysis.story_elements && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Story Elements</h3>
+                  <div className="space-y-3 text-slate-700">
+                    {pitchAnalysis.story_elements.logline && (
+                      <div className="p-4 bg-hanok-teal/5 border-l-4 border-hanok-teal rounded-r-lg">
+                        <span className="font-semibold">Logline:</span> {pitchAnalysis.story_elements.logline}
+                      </div>
+                    )}
+                    {pitchAnalysis.story_elements.plot_summary && (
+                      <div><span className="font-semibold">Plot Summary:</span> {pitchAnalysis.story_elements.plot_summary}</div>
+                    )}
+                    {pitchAnalysis.story_elements.genre_blend && pitchAnalysis.story_elements.genre_blend.length > 0 && (
+                      <div><span className="font-semibold">Genre Blend:</span> {pitchAnalysis.story_elements.genre_blend.join(', ')}</div>
+                    )}
+                    {pitchAnalysis.story_elements.narrative_structure && (
+                      <div><span className="font-semibold">Narrative Structure:</span> {pitchAnalysis.story_elements.narrative_structure}</div>
+                    )}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+            {/* Market Positioning Card */}
+            {pitchAnalysis.market_positioning && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Market Positioning</h3>
+                  <div className="space-y-3 text-slate-700">
+                    {pitchAnalysis.market_positioning.target_audience && (
+                      <div>
+                        <span className="font-semibold">Target Audience:</span>
+                        <div className="ml-4 mt-2 space-y-1">
+                          {pitchAnalysis.market_positioning.target_audience.age_range && (
+                            <div>Age Range: {pitchAnalysis.market_positioning.target_audience.age_range}</div>
+                          )}
+                          {pitchAnalysis.market_positioning.target_audience.psychographics && (
+                            <div>Psychographics: {pitchAnalysis.market_positioning.target_audience.psychographics}</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {pitchAnalysis.market_positioning.comparable_titles && pitchAnalysis.market_positioning.comparable_titles.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Comparable Titles:</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                          {pitchAnalysis.market_positioning.comparable_titles.map((comp, idx) => (
+                            <div key={idx} className="p-2 bg-slate-50 rounded">
+                              <div className="font-medium">{comp.title}</div>
+                              <div className="text-sm text-slate-600">{comp.platform}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {pitchAnalysis.market_positioning.platform_fit && pitchAnalysis.market_positioning.platform_fit.length > 0 && (
+                      <div><span className="font-semibold">Platform Fit:</span> {pitchAnalysis.market_positioning.platform_fit.join(', ')}</div>
+                    )}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+            {/* Korean Cultural Elements Card */}
+            {pitchAnalysis.korean_cultural_elements && pitchAnalysis.korean_cultural_elements.length > 0 && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Korean Cultural Elements</h3>
+                  <ul className="list-disc ml-5 space-y-1 text-slate-700">
+                    {pitchAnalysis.korean_cultural_elements.map((element, idx) => (
+                      <li key={idx}>{element}</li>
+                    ))}
+                  </ul>
+                </Stack>
+              </div>
+            )}
+
+            {/* IP Value Card */}
+            {pitchAnalysis.ip_value && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">IP Value</h3>
+                  <div className="space-y-3 text-slate-700">
+                    {pitchAnalysis.ip_value.franchise_potential && (
+                      <div><span className="font-semibold">Franchise Potential:</span> {pitchAnalysis.ip_value.franchise_potential}</div>
+                    )}
+                    {pitchAnalysis.ip_value.cross_media_potential && pitchAnalysis.ip_value.cross_media_potential.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Cross-Media Potential:</span>
+                        <ul className="list-disc ml-5 mt-2">
+                          {pitchAnalysis.ip_value.cross_media_potential.map((item, idx) => (
+                            <li key={idx}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {pitchAnalysis.ip_value.merchandising_opportunities && pitchAnalysis.ip_value.merchandising_opportunities.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Merchandising Opportunities:</span>
+                        <ul className="list-disc ml-5 mt-2">
+                          {pitchAnalysis.ip_value.merchandising_opportunities.map((item, idx) => (
+                            <li key={idx}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {pitchAnalysis.ip_value.unique_selling_points && pitchAnalysis.ip_value.unique_selling_points.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Unique Selling Points:</span>
+                        <ul className="list-disc ml-5 mt-2">
+                          {pitchAnalysis.ip_value.unique_selling_points.map((usp, idx) => (
+                            <li key={idx}>{usp}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+            {/* Production Details Card */}
+            {pitchAnalysis.production_details && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Production Details</h3>
+                  <div className="space-y-3 text-slate-700">
+                    {pitchAnalysis.production_details.format && (
+                      <div><span className="font-semibold">Format:</span> {pitchAnalysis.production_details.format}</div>
+                    )}
+                    {pitchAnalysis.production_details.adaptation_type && (
+                      <div><span className="font-semibold">Adaptation Type:</span> {pitchAnalysis.production_details.adaptation_type}</div>
+                    )}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+            {/* Source Material Card */}
+            {pitchAnalysis.source_material && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Source Material</h3>
+                  <div className="space-y-3 text-slate-700">
+                    {pitchAnalysis.source_material.original_platform && (
+                      <div><span className="font-semibold">Platform:</span> {pitchAnalysis.source_material.original_platform}</div>
+                    )}
+                    {pitchAnalysis.source_material.metrics && (
+                      <div>
+                        <span className="font-semibold">Metrics:</span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
+                          {pitchAnalysis.source_material.metrics.views && (
+                            <div className="p-2 bg-slate-50 rounded">
+                              <div className="text-sm text-slate-600">Views</div>
+                              <div className="font-medium">{pitchAnalysis.source_material.metrics.views}</div>
+                            </div>
+                          )}
+                          {pitchAnalysis.source_material.metrics.chapters && (
+                            <div className="p-2 bg-slate-50 rounded">
+                              <div className="text-sm text-slate-600">Chapters</div>
+                              <div className="font-medium">{pitchAnalysis.source_material.metrics.chapters}</div>
+                            </div>
+                          )}
+                          {pitchAnalysis.source_material.metrics.rating && (
+                            <div className="p-2 bg-slate-50 rounded">
+                              <div className="text-sm text-slate-600">Rating</div>
+                              <div className="font-medium">{pitchAnalysis.source_material.metrics.rating}</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+            {/* Content Classification Card */}
+            {pitchAnalysis.content_classification && (
+              <div className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl p-4 sm:p-6">
+                <Stack gap="sm">
+                  <h3 className="text-xl font-semibold text-slate-900">Content Classification</h3>
+                  <div className="space-y-3 text-slate-700">
+                    {pitchAnalysis.content_classification.maturity_rating && (
+                      <div><span className="font-semibold">Maturity Rating:</span> {pitchAnalysis.content_classification.maturity_rating}</div>
+                    )}
+                    {pitchAnalysis.content_classification.content_warnings && pitchAnalysis.content_classification.content_warnings.length > 0 && (
+                      <div>
+                        <span className="font-semibold">Content Warnings:</span> {pitchAnalysis.content_classification.content_warnings.join(', ')}
+                      </div>
+                    )}
+                    {pitchAnalysis.content_classification.complexity_score !== undefined && (
+                      <div><span className="font-semibold">Complexity Score:</span> {pitchAnalysis.content_classification.complexity_score}/10</div>
+                    )}
+                  </div>
+                </Stack>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
 
       {/* PDF Modal */}
       {isPdfModalOpen && (

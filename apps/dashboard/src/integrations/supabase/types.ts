@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin: {
@@ -549,6 +574,7 @@ export type Database = {
           title_url: string | null
           tone: string | null
           updated_at: string
+          verified: boolean | null
           views: number | null
         }
         Insert: {
@@ -598,6 +624,7 @@ export type Database = {
           title_url?: string | null
           tone?: string | null
           updated_at?: string
+          verified?: boolean | null
           views?: number | null
         }
         Update: {
@@ -647,6 +674,7 @@ export type Database = {
           title_url?: string | null
           tone?: string | null
           updated_at?: string
+          verified?: boolean | null
           views?: number | null
         }
         Relationships: []
@@ -761,6 +789,45 @@ export type Database = {
           },
         ]
       }
+      user_onboarding: {
+        Row: {
+          created_at: string | null
+          current_step: number | null
+          id: string
+          onboarding_completed: boolean | null
+          onboarding_completed_at: string | null
+          onboarding_started_at: string | null
+          skipped: boolean | null
+          updated_at: string | null
+          user_email: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
+          onboarding_started_at?: string | null
+          skipped?: boolean | null
+          updated_at?: string | null
+          user_email: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
+          onboarding_started_at?: string | null
+          skipped?: boolean | null
+          updated_at?: string | null
+          user_email?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       vector_search_analytics: {
         Row: {
           click_position: number | null
@@ -809,6 +876,27 @@ export type Database = {
           session_id?: string
           user_id?: string | null
           user_satisfaction_score?: number | null
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          created_at: string | null
+          id: string
+          processed_at: string | null
+          stripe_event_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          processed_at?: string | null
+          stripe_event_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          processed_at?: string | null
+          stripe_event_id?: string
         }
         Relationships: []
       }
@@ -893,6 +981,10 @@ export type Database = {
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
+      }
+      cleanup_old_webhook_events: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       create_missing_creator_profiles: {
         Args: Record<PropertyKey, never>
@@ -1020,21 +1112,21 @@ export type Database = {
           query_embedding: string
         }
         Returns: {
+          age_rating: string
+          art_author: string
+          audience: string
+          comps: string[]
+          content_format: string
+          description: string
+          genre: string[]
+          perfect_for: string
+          similarity: number
+          story_author: string
+          synopsis: string
           title_id: string
           title_name_en: string
           title_name_kr: string
-          description: string
-          similarity: number
-          synopsis: string
-          genre: string[]
           tone: string
-          content_format: string
-          perfect_for: string
-          audience: string
-          age_rating: string
-          story_author: string
-          art_author: string
-          comps: string[]
         }[]
       }
       process_title_for_vector_search: {
@@ -1239,6 +1331,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       account_type: ["creator", "buyer"],

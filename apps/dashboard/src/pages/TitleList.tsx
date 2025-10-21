@@ -17,6 +17,8 @@ import { useDataCache } from "@/contexts/DataCacheContext";
 import { trackSearch, trackContentDiscoveryAction, trackTitleCardClick, trackSearchWithContext } from "@/utils/analytics";
 import { directApiService } from "@/services/directApiService";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { PitchBadge } from "@/components/PitchBadge";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 
 function TitleListContent() {
   const { toast } = useToast();
@@ -764,11 +766,19 @@ function TitleListContent() {
                                   </div>
                                 </div>
                               )}
+
+                              {/* Badge overlays */}
+                              {/* Top-left: Verified badge */}
+                              {title.verified && (
+                                <div className="absolute top-3 left-3">
+                                  <VerifiedBadge size="sm" />
+                                </div>
+                              )}
+
+                              {/* Bottom-right: Pitch badge */}
                               {title.pitch && title.pitch.trim() && (
-                                <div className="absolute top-3 right-3">
-                                  <span className="text-xs font-medium px-2 py-1 rounded-full shadow-lg text-white" style={{backgroundColor: '#FF6B6B'}}>
-                                    Pitch Available
-                                  </span>
+                                <div className="absolute bottom-3 right-3">
+                                  <PitchBadge size="sm" />
                                 </div>
                               )}
                             </div>
@@ -932,9 +942,7 @@ function TitleListContent() {
                         <div className="col-span-3">
                           {title.pitch && (
                             <div className="mb-1">
-                              <span className="text-xs font-medium px-2 py-0.5 rounded-full text-white" style={{backgroundColor: '#FF6B6B'}}>
-                                Pitch
-                              </span>
+                              <PitchBadge size="sm" />
                             </div>
                           )}
                           <div className="font-medium text-gray-800 line-clamp-1 text-sm">
@@ -1032,9 +1040,7 @@ function TitleListContent() {
                           <div className="flex-1 min-w-0">
                             <div className="mb-2">
                               {title.pitch && (
-                                <span className="text-xs font-medium px-2 py-0.5 rounded-lg mr-2 text-white" style={{backgroundColor: '#FF6B6B'}}>
-                                  Pitch
-                                </span>
+                                <PitchBadge size="sm" className="mr-2" />
                               )}
                               <h3 className="font-semibold text-gray-800 text-sm sm:text-base line-clamp-2">
                                 {title.title_name_en || title.title_name_kr}

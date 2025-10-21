@@ -354,19 +354,38 @@ const SigninForm = ({ accountType, hideOtherAccountTypeLink = false, disabled = 
   const handleResendVerification = async () => {
     setIsResendingVerification(true);
 
+    // Add detailed logging for debugging production email issues
+    console.log('🔄 [EMAIL DEBUG] Starting resend verification');
+    console.log('🔄 [EMAIL DEBUG] Email to resend:', unverifiedEmail);
+    console.log('🔄 [EMAIL DEBUG] Current time:', new Date().toISOString());
+
     try {
-      const { error } = await supabase.auth.resend({
+      const { data, error } = await supabase.auth.resend({
         type: 'signup',
         email: unverifiedEmail,
       });
 
+      // Log the full response
+      console.log('📧 [EMAIL DEBUG] Supabase resend response:', {
+        data,
+        error,
+        hasError: !!error,
+        errorMessage: error?.message,
+        errorStatus: error?.status,
+        errorCode: (error as any)?.code
+      });
+
       if (error) {
+        console.error('❌ [EMAIL DEBUG] Resend failed with error:', error);
+
         toast({
           title: "Resend failed",
-          description: error.message,
+          description: `${error.message} (Code: ${(error as any)?.code || 'unknown'}, Status: ${error.status || 'unknown'})`,
           variant: "destructive"
         });
       } else {
+        console.log('✅ [EMAIL DEBUG] Resend successful, data:', data);
+
         toast({
           title: "Verification email sent",
           description: "Please check your email for the verification link.",
@@ -375,13 +394,16 @@ const SigninForm = ({ accountType, hideOtherAccountTypeLink = false, disabled = 
         setShowEmailVerificationAlert(false);
       }
     } catch (error) {
+      console.error('❌ [EMAIL DEBUG] Exception during resend:', error);
+
       toast({
         title: "Resend failed",
-        description: "There was an error sending the verification email.",
+        description: `Exception: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive"
       });
     } finally {
       setIsResendingVerification(false);
+      console.log('🔄 [EMAIL DEBUG] Resend process complete');
     }
   };
 

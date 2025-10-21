@@ -12,6 +12,8 @@ import { TierProvider } from "@/contexts/TierContext";
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { enhancedTitleSearchService, type SearchResult } from "@/services/enhancedTitleSearchService";
 import { trackSearch } from "@/utils/analytics";
+import { PitchBadge } from "@/components/PitchBadge";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 
 function SearchResultsContent() {
   const { toast } = useToast();
@@ -544,11 +546,19 @@ function SearchResultsContent() {
                           </div>
                         </div>
                       )}
+
+                      {/* Badge overlays */}
+                      {/* Top-left: Verified badge */}
+                      {title.verified && (
+                        <div className="absolute top-3 left-3">
+                          <VerifiedBadge size="sm" />
+                        </div>
+                      )}
+
+                      {/* Bottom-right: Pitch badge */}
                       {title.pitch && title.pitch.trim() && (
-                        <div className="absolute top-3 right-3">
-                          <span className="text-xs font-medium px-2 py-1 rounded-full shadow-lg text-white" style={{backgroundColor: '#FF6B6B'}}>
-                            Pitch Available
-                          </span>
+                        <div className="absolute bottom-3 right-3">
+                          <PitchBadge size="sm" />
                         </div>
                       )}
                     </div>

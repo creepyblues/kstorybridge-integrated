@@ -49,20 +49,39 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        """Extract text from uploaded PDF"""
+        """Extract text from uploaded PDF or download from signed URL"""
         try:
-            # Read PDF bytes from request body
             content_length = int(self.headers.get('Content-Length', 0))
             if content_length == 0:
-                self._send_error(400, "No PDF data received")
+                self._send_error(400, "No data received")
                 return
-
-            pdf_bytes = self.rfile.read(content_length)
 
             # Check if PDF libraries are available
             if PDF_LIBRARY is None:
                 self._send_error(500, "PDF extraction libraries not installed")
                 return
+
+            # Check content type to determine if this is JSON (with URL) or PDF bytes
+            content_type = self.headers.get('Content-Type', '')
+
+            if 'application/json' in content_type:
+                # New approach: Signed URL
+                request_body = self.rfile.read(content_length).decode('utf-8')
+                request_data = json.loads(request_body)
+
+                pdf_url = request_data.get('pdf_url')
+                if not pdf_url:
+                    self._send_error(400, "Missing 'pdf_url' in JSON request")
+                    return
+
+                # Download PDF from signed URL
+                pdf_bytes = self._download_pdf_from_url(pdf_url)
+                if pdf_bytes is None:
+                    self._send_error(500, "Failed to download PDF from URL")
+                    return
+            else:
+                # Legacy approach: PDF bytes directly in request body
+                pdf_bytes = self.rfile.read(content_length)
 
             # Extract text using available library
             if PDF_LIBRARY == "PyPDF2":
@@ -73,16 +92,27 @@ class handler(BaseHTTPRequestHandler):
                 self._send_error(500, "No PDF library available")
                 return
 
-            # Return extracted text
+            # Return extracted text with PDF size
             self._send_success({
                 "success": True,
                 "text": extracted_text,
                 "text_length": len(extracted_text),
+                "pdf_size": len(pdf_bytes),
                 "library_used": PDF_LIBRARY
             })
 
         except Exception as e:
             self._send_error(500, f"Extraction failed: {str(e)}")
+
+    def _download_pdf_from_url(self, url):
+        """Download PDF from signed URL (no size limits)"""
+        try:
+            import urllib.request
+            with urllib.request.urlopen(url, timeout=30) as response:
+                return response.read()
+        except Exception as e:
+            print(f"Error downloading PDF: {str(e)}", file=sys.stderr)
+            return None
 
     def _extract_with_pypdf2(self, pdf_bytes):
         """Extract text using PyPDF2"""

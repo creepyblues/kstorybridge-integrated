@@ -82,41 +82,44 @@ serve(async (req) => {
     console.log(`✅ Title found: ${title.title_name_en || title.title_name_kr}`)
     console.log(`📎 Pitch URL: ${title.pitch}`)
 
-    // Step 2: Download PDF from storage
+    // Step 2: Create signed URL for PDF access (no size limits)
     const pdfPath = `${title_id}/pitch.pdf`
-    console.log(`⬇️ Downloading PDF from: pitch-pdfs/${pdfPath}`)
+    console.log(`🔗 Creating signed URL for: pitch-pdfs/${pdfPath}`)
 
-    const { data: pdfBlob, error: downloadError } = await supabase.storage
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from('pitch-pdfs')
-      .download(pdfPath)
+      .createSignedUrl(pdfPath, 300) // 5-minute expiry
 
-    if (downloadError || !pdfBlob) {
-      console.error('❌ PDF download error:', downloadError)
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      console.error('❌ Signed URL creation error:', signedUrlError)
       return new Response(
         JSON.stringify({
           success: false,
-          error: `Failed to download PDF: ${downloadError?.message || 'Unknown error'}`
+          error: `Failed to create signed URL: ${signedUrlError?.message || 'Unknown error'}`
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`✅ PDF downloaded, size: ${pdfBlob.size} bytes`)
+    console.log(`✅ Signed URL created (valid for 5 minutes)`)
 
-    // Step 3: Extract text from PDF using Python microservice
+    // Step 3: Extract text from PDF using Python microservice with signed URL
     const pdfExtractorUrl = Deno.env.get('PDF_EXTRACTOR_URL')
     let extractedText = ''
+    let pdfSize = 0
 
     if (pdfExtractorUrl) {
       try {
-        console.log(`📤 Sending PDF to Python extractor service...`)
+        console.log(`📤 Sending signed URL to Python extractor service...`)
 
         const extractResponse = await fetch(pdfExtractorUrl, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/pdf'
+            'Content-Type': 'application/json'
           },
-          body: pdfBlob
+          body: JSON.stringify({
+            pdf_url: signedUrlData.signedUrl
+          })
         })
 
         if (extractResponse.ok) {
@@ -124,23 +127,26 @@ serve(async (req) => {
 
           if (extractData.success && extractData.text) {
             extractedText = extractData.text
-            console.log(`✅ Text extracted: ${extractedText.length} characters (using ${extractData.library_used})`)
+            pdfSize = extractData.pdf_size || 0
+            console.log(`✅ Text extracted: ${extractedText.length} characters from ${(pdfSize / 1024 / 1024).toFixed(2)} MB PDF (using ${extractData.library_used})`)
           } else {
             console.warn(`⚠️ Python extractor returned no text, using fallback`)
-            extractedText = generateFallbackText(title, pdfBlob.size)
+            extractedText = generateFallbackText(title, pdfSize)
           }
         } else {
           console.error(`❌ Python extractor HTTP error: ${extractResponse.status}`)
-          extractedText = generateFallbackText(title, pdfBlob.size)
+          const errorText = await extractResponse.text()
+          console.error(`❌ Error details: ${errorText}`)
+          extractedText = generateFallbackText(title, 0)
         }
       } catch (extractError) {
         console.error(`❌ Python extractor failed:`, extractError)
         console.log(`⚠️ Falling back to placeholder extraction`)
-        extractedText = generateFallbackText(title, pdfBlob.size)
+        extractedText = generateFallbackText(title, 0)
       }
     } else {
       console.warn(`⚠️ PDF_EXTRACTOR_URL not configured, using fallback`)
-      extractedText = generateFallbackText(title, pdfBlob.size)
+      extractedText = generateFallbackText(title, 0)
     }
 
     // Fallback text generator function

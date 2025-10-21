@@ -9,6 +9,8 @@ interface Title {
   title_name_en: string | null;
   title_name_kr: string | null;
   pitch: string | null;
+  pdf_size?: number; // File size in bytes
+  has_analysis?: boolean; // Indicates if pitch_analysis exists in database
 }
 
 interface ExtractionResult {
@@ -32,6 +34,42 @@ export default function PitchExtractionTest() {
   const [totalCost, setTotalCost] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  // Validate if pitch_analysis JSON contains meaningful data (not just structure)
+  function hasValidAnalysis(pitchAnalysis: any): boolean {
+    if (!pitchAnalysis || typeof pitchAnalysis !== 'object') {
+      return false;
+    }
+
+    // Check key sections for non-empty, meaningful data
+    const hasCharacters = Array.isArray(pitchAnalysis.characters) &&
+                          pitchAnalysis.characters.length > 0;
+
+    const hasStoryElements = (pitchAnalysis.story_elements?.logline &&
+                              pitchAnalysis.story_elements.logline !== null) ||
+                             (pitchAnalysis.story_elements?.plot_summary &&
+                              pitchAnalysis.story_elements.plot_summary !== null);
+
+    const hasThemes = Array.isArray(pitchAnalysis.themes_and_tone?.primary_themes) &&
+                      pitchAnalysis.themes_and_tone.primary_themes.length > 0;
+
+    const hasMarketPositioning = Array.isArray(pitchAnalysis.market_positioning?.comparable_titles) &&
+                                 pitchAnalysis.market_positioning.comparable_titles.length > 0;
+
+    const hasSellingPoints = Array.isArray(pitchAnalysis.ip_value?.unique_selling_points) &&
+                             pitchAnalysis.ip_value.unique_selling_points.length > 0;
+
+    // Title is considered "analyzed" if it has at least 2 of these sections with real data
+    const validSections = [
+      hasCharacters,
+      hasStoryElements,
+      hasThemes,
+      hasMarketPositioning,
+      hasSellingPoints
+    ].filter(Boolean).length;
+
+    return validSections >= 2;
+  }
+
   // Load titles with pitch decks
   useEffect(() => {
     loadTitlesWithPitch();
@@ -39,6 +77,7 @@ export default function PitchExtractionTest() {
 
   async function loadTitlesWithPitch() {
     try {
+      // Step 1: Load titles with pitch URLs
       const { data, error } = await supabase
         .from('titles')
         .select('title_id, title_name_en, title_name_kr, pitch')
@@ -47,8 +86,55 @@ export default function PitchExtractionTest() {
 
       if (error) throw error;
 
-      setTitles(data || []);
-      console.log(`📋 Loaded ${data?.length || 0} titles with pitch decks`);
+      // Step 2: Check which titles have analysis data
+      const { data: analysisData, error: analysisError } = await supabase
+        .from('title_content_analysis')
+        .select('title_id, pitch_analysis')
+        .in('title_id', (data || []).map(t => t.title_id));
+
+      if (analysisError) {
+        console.warn('⚠️ Failed to load analysis data:', analysisError);
+      }
+
+      // Create a map of title_id -> has_analysis with content validation
+      const analysisMap = new Map(
+        (analysisData || []).map(a => [
+          a.title_id,
+          hasValidAnalysis(a.pitch_analysis)
+        ])
+      );
+
+      const validCount = Array.from(analysisMap.values()).filter(Boolean).length;
+      console.log(`📊 Analysis status: ${validCount} titles with valid data out of ${analysisMap.size} checked`);
+
+      // Step 3: Fetch file sizes and add analysis status
+      const titlesWithData = await Promise.all(
+        (data || []).map(async (title) => {
+          try {
+            const { data: fileList, error: fileError } = await supabase.storage
+              .from('pitch-pdfs')
+              .list(title.title_id, {
+                search: 'pitch.pdf'
+              });
+
+            return {
+              ...title,
+              pdf_size: fileList && fileList.length > 0 ? fileList[0].metadata?.size || 0 : 0,
+              has_analysis: analysisMap.get(title.title_id) || false
+            };
+          } catch (err) {
+            console.warn(`⚠️ Failed to get data for ${title.title_id}:`, err);
+            return {
+              ...title,
+              has_analysis: analysisMap.get(title.title_id) || false
+            };
+          }
+        })
+      );
+
+      setTitles(titlesWithData);
+      const analyzedCount = titlesWithData.filter(t => t.has_analysis).length;
+      console.log(`📋 Loaded ${titlesWithData.length} titles with pitch decks (${analyzedCount} analyzed)`);
     } catch (err) {
       console.error('Error loading titles:', err);
       setError('Failed to load titles');
@@ -97,6 +183,15 @@ export default function PitchExtractionTest() {
 
   const displayName = selectedTitle?.title_name_en || selectedTitle?.title_name_kr || 'Unknown Title';
 
+  // Format file size in human-readable format
+  function formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+  }
+
   return (
     <PageContainer>
       <div className="max-w-7xl mx-auto">
@@ -109,6 +204,18 @@ export default function PitchExtractionTest() {
           <p className="text-gray-600">
             Test pitch deck extraction on a single title before scaling to all titles.
           </p>
+          {titles.length > 0 && (
+            <p className="text-sm text-gray-500 mt-2">
+              <span className="font-medium text-green-600">
+                {titles.filter(t => t.has_analysis).length} analyzed
+              </span>
+              {' / '}
+              <span className="font-medium text-gray-700">
+                {titles.length} total
+              </span>
+              {' titles with pitch decks'}
+            </p>
+          )}
         </div>
 
         {/* Step 1: Select Title */}
@@ -122,7 +229,7 @@ export default function PitchExtractionTest() {
             </div>
 
             <select
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
               onChange={(e) => {
                 const title = titles.find(t => t.title_id === e.target.value);
                 setSelectedTitle(title || null);
@@ -134,17 +241,38 @@ export default function PitchExtractionTest() {
               <option value="">Choose a title with pitch deck...</option>
               {titles.map(title => (
                 <option key={title.title_id} value={title.title_id}>
+                  {title.has_analysis ? '✓ ' : '✗ '}
                   {title.title_name_en || title.title_name_kr}
+                  {title.pdf_size ? ` (${formatFileSize(title.pdf_size)})` : ''}
                 </option>
               ))}
             </select>
 
             {selectedTitle && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm font-medium text-gray-700 mb-1">Pitch Deck URL:</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray-700">Pitch Deck URL:</p>
+                  <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                    selectedTitle.has_analysis
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {selectedTitle.has_analysis ? '✓ Analysis Exists' : '✗ No Analysis'}
+                  </span>
+                </div>
                 <code className="text-xs text-gray-600 break-all block bg-white p-2 rounded border border-gray-200">
                   {selectedTitle.pitch}
                 </code>
+                {selectedTitle.pdf_size && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    File Size: <span className="font-medium text-gray-700">{formatFileSize(selectedTitle.pdf_size)}</span>
+                    {selectedTitle.pdf_size > 5 * 1024 * 1024 && (
+                      <span className="ml-2 text-orange-600 font-medium">
+                        ⚠️ Large file (may take longer to process)
+                      </span>
+                    )}
+                  </p>
+                )}
               </div>
             )}
           </CardContent>

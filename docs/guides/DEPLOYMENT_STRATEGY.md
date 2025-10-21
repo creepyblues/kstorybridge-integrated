@@ -1,6 +1,6 @@
 # Deployment Strategy - KStoryBridge Monorepo
 
-**Last Updated**: 2025-10-03
+**Last Updated**: 2025-10-21
 
 ## Three-Tier Environment Architecture
 
@@ -15,6 +15,17 @@ KStoryBridge uses a three-tier deployment strategy with separate environments fo
 | **Production** | main | dashboard.kstorybridge.com | Dashboard, Website |
 
 ## Branch Deployment Rules
+
+### Development Workflow (UPDATED 2025-10-21)
+
+**Primary Working Directory**: `/Users/sungholee/code/kstorybridge`
+- Work exclusively on `v2` branch for all development
+- Test in staging environment before merging to `main`
+- Merge `v2` → `main` only when staging is stable
+
+**Archive Directories** (reference only):
+- `/Users/sungholee/code/kstorybridge-v2/` - Independent archive of v2 state
+- `/Users/sungholee/code/kstorybridge-monorepo/` - Independent archive of main state
 
 ### v2 Branch → Staging (dashboard-staging only)
 

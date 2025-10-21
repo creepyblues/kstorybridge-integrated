@@ -2,6 +2,28 @@
 
 **Last Updated**: 2025-10-21
 
+## 🔄 Development Workflow (UPDATED 2025-10-21)
+
+**Git Branch Strategy**:
+- **`v2` branch**: Staging/development branch (deploy to staging environment)
+- **`main` branch**: Production branch (deploy to production only when stable)
+
+**Workflow**:
+1. Work on `v2` branch for all development
+2. Test changes in staging environment (dashboard-staging-*.vercel.app)
+3. When stable, merge `v2` → `main` for production deployment
+4. Never commit directly to `main` (except for hotfixes)
+
+**Local Setup**:
+```bash
+cd /Users/sungholee/code/kstorybridge  # Primary working directory
+git checkout v2                         # Default development branch
+```
+
+**Archive Directories** (for reference only):
+- `/Users/sungholee/code/kstorybridge-v2/` - Archive of v2 branch state
+- `/Users/sungholee/code/kstorybridge-monorepo/` - Archive of main branch state
+
 ## 📁 Documentation Navigation
 
 > 🗂️ **[Master Documentation Index](docs/INDEX.md)** - Complete documentation catalog

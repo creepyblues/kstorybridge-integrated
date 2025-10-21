@@ -158,11 +158,6 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
                     </p>
                   </div>
                 )}
-                
-                {/* Featured Badge */}
-                <div className="absolute top-2 right-2 bg-sunrise-coral text-white text-xs px-2 py-1 rounded-full font-medium">
-                  Featured
-                </div>
               </div>
               
               <CardContent className="p-4 flex-1 flex flex-col">

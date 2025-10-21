@@ -1,27 +1,47 @@
-# Pitch Deck Extraction System - Complete Guide
+# Pitch Deck Extraction System - Usage Guide
 
 **Version**: 2.0 (Enhanced Comprehensive Extraction)
-**Last Updated**: 2025-01-19
+**Last Updated**: 2025-01-30
 **Status**: ✅ Production Ready
+
+> 📘 **For Technical Details**: See [PITCH_DECK_ANALYTICS_REFERENCE.md](PITCH_DECK_ANALYTICS_REFERENCE.md) for:
+> - Complete system architecture and data flow
+> - Database query examples and JSONB queries
+> - Integration patterns (chatbot, search, filtering)
+> - Security architecture and signed URLs
+> - Error recovery procedures
+> - Performance benchmarks and optimization
 
 ---
 
 ## 📋 Table of Contents
 
 1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [What Gets Extracted](#what-gets-extracted)
-4. [Database Schema](#database-schema)
-5. [How to Use](#how-to-use)
-6. [Cost Analysis](#cost-analysis)
-7. [Troubleshooting](#troubleshooting)
-8. [API Reference](#api-reference)
+2. [Quick Reference](#quick-reference)
+3. [Architecture](#architecture)
+4. [What Gets Extracted](#what-gets-extracted)
+5. [Database Schema](#database-schema)
+6. [How to Use](#how-to-use)
+7. [Cost Analysis](#cost-analysis)
+8. [Troubleshooting](#troubleshooting)
+9. [API Reference](#api-reference)
 
 ---
 
 ## Overview
 
 The Pitch Deck Extraction System automatically analyzes Korean IP pitch decks (PDF format) and extracts comprehensive structured data for use in search, recommendations, and content discovery.
+
+### What This Guide Covers
+
+- **How to use the admin UI** to extract pitch decks
+- **Basic troubleshooting** for common issues
+- **Cost estimation** for batch extractions
+- **Quick reference** for everyday use
+
+### For Advanced Topics, See:
+
+- **[Technical Reference](PITCH_DECK_ANALYTICS_REFERENCE.md)** - System architecture, database queries, integration patterns
 
 ### Key Features
 
@@ -36,6 +56,51 @@ The Pitch Deck Extraction System automatically analyzes Korean IP pitch decks (P
 
 - **v1.0** (Original): Simple extraction - 6 fields, ~15% of deck content
 - **v2.0** (Enhanced): Comprehensive extraction - 50+ fields, ~70-85% of deck content
+
+---
+
+## Quick Reference
+
+### Admin UI Access
+```
+https://dashboard.kstorybridge.com/admin/pitch-extraction-test
+```
+
+### Typical Workflow
+1. Select title with pitch deck
+2. Click "Test Extract (Preview Only)"
+3. Wait 10-15 seconds
+4. Review confidence score (target: >70%)
+5. Check cost (~$0.15-0.20)
+6. Click "Extract & Save to Database"
+
+### Key Metrics
+- **Extraction Time**: 10-20 seconds per title
+- **Cost Range**: $0.15-0.20 per title
+- **Confidence Target**: >70% for quality
+- **Data Coverage**: 70-85% of pitch deck content
+
+### Analysis Status Check
+**UI Status Badges**:
+- ✓ Analyzed (green): 2+ key sections with data
+- ✗ Not Analyzed (gray): <2 sections or empty
+
+**Key Sections Validated**:
+1. Characters (array with items)
+2. Story Elements (logline or plot summary)
+3. Themes (primary_themes array)
+4. Market Positioning (comparable_titles)
+5. Selling Points (unique_selling_points)
+
+### Quick Troubleshooting
+| Issue | Quick Fix |
+|-------|-----------|
+| Low confidence (<30%) | Check PDF has selectable text |
+| High cost (>$0.25) | Normal for long PDFs (>20 pages) |
+| Extraction hangs | Wait up to 60 seconds for large PDFs |
+| Database save fails | Check edge function logs for details |
+
+**For detailed troubleshooting**: See [Error Recovery](PITCH_DECK_ANALYTICS_REFERENCE.md#error-recovery) in Technical Reference
 
 ---
 
@@ -548,23 +613,36 @@ https://supabase.com/dashboard/project/dlrnrgcoguxlkkcitlpd/functions
 
 ## Related Documentation
 
+### Core Documentation
+- **[Technical Reference](PITCH_DECK_ANALYTICS_REFERENCE.md)** - Complete system architecture, database queries, integration patterns, error recovery
 - **[Changelog](PITCH_DECK_EXTRACTION_CHANGELOG.md)** - Version history and improvements
-- **[Python PDF Extractor](../../python-pdf-extractor/README.md)** - Microservice documentation
-- **[Database Schema](DATABASE_SCHEMA.md)** - Complete database reference
+
+### Component Documentation
+- **[Python PDF Extractor](../../python-pdf-extractor/README.md)** - Microservice for PDF text extraction
+- **[Database Schema](DATABASE_SCHEMA.md)** - Complete database schema reference
 - **[CLAUDE.md](CLAUDE.md)** - Project instructions for AI assistant
+
+### Advanced Topics (in Technical Reference)
+- **Database Queries** - SQL examples for querying pitch analysis data
+- **Integration Patterns** - How chatbot, search, and filtering use pitch data
+- **Security Architecture** - Signed URL system and access control
+- **Error Recovery** - Step-by-step recovery procedures for all common issues
+- **Performance Benchmarks** - Timing, cost, and optimization guidelines
 
 ---
 
 ## Support
 
 For issues or questions:
-1. Check [Troubleshooting](#troubleshooting) section
-2. Review edge function logs in Supabase dashboard
-3. Test with "Preview Only" mode to isolate issues
-4. Contact development team with error logs and title_id
+1. **Quick Issues**: Check [Quick Troubleshooting](#quick-troubleshooting) table above
+2. **Common Issues**: See [Troubleshooting](#troubleshooting) section
+3. **Complex Issues**: See [Error Recovery](PITCH_DECK_ANALYTICS_REFERENCE.md#error-recovery) in Technical Reference
+4. **Edge Function Logs**: https://supabase.com/dashboard/project/dlrnrgcoguxlkkcitlpd/functions
+5. **Test Mode**: Use "Preview Only" to isolate issues before saving
+6. **Support Contact**: Development team with error logs + title_id
 
 ---
 
-**Last Updated**: 2025-01-19
+**Last Updated**: 2025-01-30
 **Version**: 2.0 Enhanced Extraction
 **Maintained By**: Dashboard Development Team

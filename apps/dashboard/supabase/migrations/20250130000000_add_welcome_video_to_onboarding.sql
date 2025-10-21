@@ -1,7 +1,8 @@
 -- Migration: Add welcome video tracking to user_onboarding table
 -- Purpose: Track if user has seen the "How KStoryBridge Works" video on first login
 -- Created: 2025-01-30
--- Status: SAFE - Additive only, no breaking changes
+-- Status: DEPRECATED - Feature removed 2025-10-21, column unused but kept for simplicity
+-- Note: This migration was applied to production. The column exists but is no longer used.
 
 -- Add has_seen_welcome_video column to track video viewing
 ALTER TABLE public.user_onboarding

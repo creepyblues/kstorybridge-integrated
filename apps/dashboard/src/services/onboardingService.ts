@@ -256,4 +256,76 @@ export class OnboardingService {
 
     return shouldShow;
   }
+
+  /**
+   * Check if user should see the welcome video
+   * Returns true if user is new and hasn't seen the welcome video yet
+   */
+  static async shouldShowWelcomeVideo(userId: string): Promise<boolean> {
+    try {
+      const status = await this.checkOnboardingStatus(userId);
+
+      // Show video if:
+      // 1. No status exists (brand new user) - create onboarding record
+      // 2. Status exists but has_seen_welcome_video is false
+      if (!status) {
+        console.log('🎥 WELCOME VIDEO: New user, will show video:', userId);
+        return true;
+      }
+
+      // TypeScript: has_seen_welcome_video might not exist yet (migration pending)
+      // Default to false if undefined
+      const hasSeenVideo = (status as any).has_seen_welcome_video ?? false;
+      const shouldShow = !hasSeenVideo;
+
+      console.log('🎥 WELCOME VIDEO:', {
+        userId,
+        shouldShow,
+        hasSeenVideo
+      });
+
+      return shouldShow;
+    } catch (error) {
+      console.error('❌ WELCOME VIDEO: Error checking status:', error);
+      // Default to not showing video on error (safer)
+      return false;
+    }
+  }
+
+  /**
+   * Mark welcome video as seen for a user
+   */
+  static async markWelcomeVideoAsSeen(userId: string, userEmail: string): Promise<boolean> {
+    try {
+      // Check if onboarding status exists
+      let status = await this.checkOnboardingStatus(userId);
+
+      // If no status exists, create onboarding record first
+      if (!status) {
+        console.log('🎥 WELCOME VIDEO: Creating onboarding record for user:', userId);
+        status = await this.startOnboarding(userId, userEmail);
+        if (!status) {
+          console.error('❌ WELCOME VIDEO: Failed to create onboarding record');
+          return false;
+        }
+      }
+
+      // Update has_seen_welcome_video to true
+      const { error } = await supabase
+        .from('user_onboarding')
+        .update({ has_seen_welcome_video: true })
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('❌ WELCOME VIDEO: Error marking video as seen:', error);
+        return false;
+      }
+
+      console.log('✅ WELCOME VIDEO: Marked as seen for user:', userId);
+      return true;
+    } catch (error) {
+      console.error('❌ WELCOME VIDEO: Failed to mark video as seen:', error);
+      return false;
+    }
+  }
 }

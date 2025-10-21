@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Search, 
+import {
+  Search,
   Grid,
   Heart,
   Compass,
@@ -14,6 +14,9 @@ import { TitleCard } from "@/components/dashboard/TitleCard";
 import { SearchAndFilter } from "@/components/dashboard/SearchAndFilter";
 import { FeaturedSection } from "@/components/dashboard/FeaturedSection";
 import { titlesService, type Title } from "@/services/titlesService";
+import WelcomeVideoDialog from "@/components/WelcomeVideoDialog";
+import { OnboardingService } from "@/services/onboardingService";
+import { useAuth } from "@/hooks/useAuth";
 
 import { enhancedSearch, getTitleSearchFields } from "@/utils/searchUtils";
 import { useDataCache } from "@/contexts/DataCacheContext";
@@ -108,15 +111,45 @@ const mockTitles = [
 
 export default function BuyerDashboard() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { getTitles, setTitles, isFresh, refreshData } = useDataCache();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({});
   const [favorites, setFavorites] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("discover");
   const [loading, setLoading] = useState(false);
+  const [showWelcomeVideo, setShowWelcomeVideo] = useState(false);
 
   // Get data from cache
   const titles = getTitles();
+
+  // Check if user should see welcome video (first-time user)
+  useEffect(() => {
+    const checkWelcomeVideo = async () => {
+      // Only check if user is authenticated
+      if (!user?.id || !user?.email) {
+        console.log('🎥 WELCOME VIDEO: Skipping check - user not authenticated yet');
+        return;
+      }
+
+      console.log('🎥 WELCOME VIDEO: Checking if user should see welcome video...');
+
+      try {
+        const shouldShow = await OnboardingService.shouldShowWelcomeVideo(user.id);
+        if (shouldShow) {
+          console.log('🎥 WELCOME VIDEO: Showing video to first-time user');
+          setShowWelcomeVideo(true);
+        } else {
+          console.log('🎥 WELCOME VIDEO: User has already seen video');
+        }
+      } catch (error) {
+        console.error('❌ WELCOME VIDEO: Error checking status:', error);
+        // Don't show video on error (safer)
+      }
+    };
+
+    checkWelcomeVideo();
+  }, [user?.id, user?.email]); // Only run when user auth is complete
 
   useEffect(() => {
     // Only load data if cache is empty or stale
@@ -351,5 +384,15 @@ export default function BuyerDashboard() {
           </div>
         </div>
     </div>
+
+      {/* Welcome Video Dialog - Shows on first login */}
+      {user && (
+        <WelcomeVideoDialog
+          open={showWelcomeVideo}
+          onClose={() => setShowWelcomeVideo(false)}
+          userId={user.id}
+          userEmail={user.email || ''}
+        />
+      )}
   );
 }

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccountType } from "@/hooks/useAccountType";
 import { useTierAccess } from "@/hooks/useTierAccess";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { trackNavigationClick, trackLogoClick, trackMobileMenuToggle, trackTierBadgeClick } from "@/utils/analytics";
 import { User, Menu, X } from "lucide-react";
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -39,9 +40,7 @@ const getDiscoverItems = (accountType: string | null): MenuItem[] => {
   }
 };
 
-const getSettingsItems = (accountType: string | null, userEmail?: string): MenuItem[] => {
-  const isAdmin = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
-
+const getSettingsItems = (accountType: string | null, isAdmin: boolean): MenuItem[] => {
   const baseItems = accountType === "creator"
     ? [
         { title: "Profile", href: "/creators/profile" },
@@ -51,31 +50,12 @@ const getSettingsItems = (accountType: string | null, userEmail?: string): MenuI
     ? [
         // { title: "Send msg", href: "/buyers/send-message" }, // Hidden for now - needs database setup
         { title: "Profile", href: "/buyers/profile" },
+        { title: "Upgrade Plan", href: "/buyers/plan" },
         ...(isAdmin ? [
-          { title: "Chat Test", href: "/buyers/chat-test", badge: "admin", icon: "🧪" },
-          { title: "Upgrade Plan", href: "/buyers/plan" }
+          { title: "Admin", href: "/admin", badge: "admin", icon: "🔐" }
         ] : []),
       ]
     : []; // No account type determined - return empty array
-
-  // Add admin pages for admin users right after Profile
-  if (isAdmin && accountType === "buyer") {
-    const profileIndex = baseItems.findIndex(item => item.title === 'Profile');
-    baseItems.splice(profileIndex + 1, 0,
-      {
-        title: "Experiment",
-        href: "/experiment",
-        badge: "admin",
-        icon: "⚡"
-      },
-      {
-        title: "Pitch Extraction",
-        href: "/pitch-extraction-test",
-        badge: "admin",
-        icon: "🧪"
-      }
-    );
-  }
 
   return baseItems;
 };
@@ -83,6 +63,7 @@ const getSettingsItems = (accountType: string | null, userEmail?: string): MenuI
 export function CMSSidebar() {
   const { user } = useAuth();
   const { tier, loading: tierLoading } = useTierAccess();
+  const { isAdmin } = useAdminAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -110,7 +91,7 @@ export function CMSSidebar() {
   });
   const userEmail = displayUser?.email;
   const discoverItems = getDiscoverItems(accountType);
-  const settingsItems = getSettingsItems(accountType, userEmail);
+  const settingsItems = getSettingsItems(accountType, isAdmin);
 
   // Get tier display info for buyers
   const getTierDisplay = (tier: string | null) => {

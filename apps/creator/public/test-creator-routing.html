@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Creator Routing</title>
+</head>
+<body>
+    <h1>Creator Routing Test</h1>
+    <p>This page will help test creator routing by navigating to creator pages and checking for redirects.</p>
+    
+    <button onclick="testCreatorHome()">Test /creators/home</button>
+    <button onclick="testCreatorTitles()">Test /creators/titles</button>
+    <button onclick="testBuyerHome()">Test /buyers/home</button>
+    
+    <div id="logs"></div>
+    
+    <script>
+        function log(message) {
+            const logs = document.getElementById('logs');
+            logs.innerHTML += '<p>' + new Date().toLocaleTimeString() + ': ' + message + '</p>';
+            console.log(message);
+        }
+        
+        function testCreatorHome() {
+            log('Testing navigation to /creators/home');
+            window.location.href = '/creators/home';
+        }
+        
+        function testCreatorTitles() {
+            log('Testing navigation to /creators/titles');
+            window.location.href = '/creators/titles';
+        }
+        
+        function testBuyerHome() {
+            log('Testing navigation to /buyers/home');
+            window.location.href = '/buyers/home';
+        }
+        
+        // Log current page
+        log('Current page: ' + window.location.pathname);
+        log('Referrer: ' + document.referrer);
+    </script>
+</body>
+</html>

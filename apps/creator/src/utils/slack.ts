@@ -1,0 +1,280 @@
+/**
+ * Utility functions for sending Slack notifications
+ */
+
+// Email addresses and domains to exclude from Slack notifications
+const EXCLUDED_EMAILS = [
+  'kevin@sandstoneartists.com',
+  'sungho@dadble.com',
+  'creepyblues@gmail.com'
+];
+
+const EXCLUDED_DOMAINS = [
+  'dadble.com',
+  'kstorybridge.com'
+];
+
+/**
+ * Check if an email should be excluded from Slack notifications
+ */
+const shouldExcludeEmail = (email: string): boolean => {
+  if (!email) return false;
+  
+  const emailLower = email.toLowerCase();
+  
+  // Check exact email matches
+  if (EXCLUDED_EMAILS.some(excluded => excluded.toLowerCase() === emailLower)) {
+    console.log(`🚫 Skipping Slack notification for excluded email: ${email}`);
+    return true;
+  }
+  
+  // Check domain matches  
+  const domain = emailLower.split('@')[1];
+  if (domain && EXCLUDED_DOMAINS.includes(domain)) {
+    console.log(`🚫 Skipping Slack notification for excluded domain: ${domain}`);
+    return true;
+  }
+  
+  return false;
+};
+
+export interface SlackNotificationData {
+  event: string;
+  userType: 'buyer' | 'creator';
+  fullName: string;
+  email: string;
+  company?: string;
+  additionalInfo?: Record<string, unknown>;
+}
+
+export const sendSlackNotification = async (data: SlackNotificationData): Promise<void> => {
+  // Check if email should be excluded from notifications
+  if (data.email && shouldExcludeEmail(data.email)) {
+    return;
+  }
+
+  // Use Supabase Edge Function to proxy the Slack webhook request
+  // This avoids CORS issues when making requests directly from the browser
+  const SUPABASE_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA";
+  
+  const proxyUrl = `${SUPABASE_URL}/functions/v1/slack-webhook-proxy`;
+  
+  console.log('🔍 Debug: Using Slack proxy endpoint');
+  console.log('🔍 Debug: Notification data:', data);
+  
+  try {
+    console.log('🔍 Debug: Sending to proxy endpoint:', proxyUrl);
+    
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify(data),
+    });
+    
+    console.log('🔍 Debug: Proxy response status:', response.status);
+    console.log('🔍 Debug: Proxy response ok:', response.ok);
+    
+    if (!response.ok) {
+      const responseText = await response.text();
+      console.error('❌ Failed to send Slack notification via proxy:', response.status, response.statusText);
+      console.error('❌ Response body:', responseText);
+    } else {
+      const result = await response.json();
+      console.log('✅ Slack notification sent successfully via proxy!', result);
+    }
+  } catch (error) {
+    console.error('❌ Error sending Slack notification via proxy:', error);
+  }
+};
+
+
+// Test function for debugging
+export const testSlackNotification = async () => {
+  console.log('🧪 Testing Slack notification...');
+  await sendSlackNotification({
+    event: 'Test Notification',
+    userType: 'buyer',
+    fullName: 'Test User',
+    email: 'test@example.com',
+    company: 'Test Company',
+    additionalInfo: {
+      note: 'This is a test message from KStoryBridge Dashboard'
+    }
+  });
+};
+
+// Make it available globally for browser console testing
+if (typeof window !== 'undefined') {
+  (window as typeof window & { testSlackNotification: typeof testSlackNotification }).testSlackNotification = testSlackNotification;
+}
+
+// Convenience function for auth failure notifications
+export const notifyAuthFailure = async (failureData: {
+  userEmail?: string;
+  userFullName?: string;
+  failureType: string;
+  errorMessage: string;
+  stage?: string;
+  accountType?: 'buyer' | 'creator';
+  oauthProvider?: string;
+  additionalContext?: Record<string, unknown>;
+}) => {
+  // Use a generic email if not provided to ensure notification goes through
+  const email = failureData.userEmail || 'auth.failure@kstorybridge.com';
+
+  await sendSlackNotification({
+    event: `Auth Failure: ${failureData.failureType}`,
+    userType: failureData.accountType || 'buyer',
+    fullName: failureData.userFullName || 'Unknown User',
+    email: email,
+    additionalInfo: {
+      errorMessage: failureData.errorMessage,
+      stage: failureData.stage,
+      oauthProvider: failureData.oauthProvider,
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      ...failureData.additionalContext
+    }
+  });
+};
+
+// Convenience function for pitch request notifications
+export const notifyPitchRequest = async (requestData: {
+  userFullName: string;
+  userEmail: string;
+  titleName: string;
+  titleId: string;
+  requestType: string;
+  company?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'Pitch Document Requested',
+    userType: 'buyer', // Assuming pitch requests come from buyers
+    fullName: requestData.userFullName,
+    email: requestData.userEmail,
+    company: requestData.company,
+    additionalInfo: {
+      titleName: requestData.titleName,
+      titleId: requestData.titleId,
+      requestType: requestData.requestType,
+      dashboardUrl: `https://dashboard.kstorybridge.com/buyers/titles/${requestData.titleId}`,
+    }
+  });
+};
+
+// Convenience function for contact creator notifications
+export const notifyContactCreator = async (requestData: {
+  userFullName: string;
+  userEmail: string;
+  titleName: string;
+  titleId: string;
+  message: string;
+  company?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'Contact Creator Request',
+    userType: 'buyer', // Assuming contact requests come from buyers
+    fullName: requestData.userFullName,
+    email: requestData.userEmail,
+    company: requestData.company,
+    additionalInfo: {
+      titleName: requestData.titleName,
+      titleId: requestData.titleId,
+      message: requestData.message.length > 200
+        ? `${requestData.message.substring(0, 200)}...`
+        : requestData.message,
+      dashboardUrl: `https://dashboard.kstorybridge.com/buyers/titles/${requestData.titleId}`,
+    }
+  });
+};
+
+// Convenience functions for common events (existing ones for compatibility)
+export const notifyBuyerSignup = async (userData: {
+  fullName: string;
+  email: string;  
+  company?: string;
+  role?: string;
+  linkedinUrl?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'New Buyer Signup',
+    userType: 'buyer',
+    fullName: userData.fullName,
+    email: userData.email,
+    company: userData.company,
+    additionalInfo: {
+      role: userData.role,
+      linkedinUrl: userData.linkedinUrl,
+    }
+  });
+};
+
+export const notifyCreatorSignup = async (userData: {
+  fullName: string;
+  email: string;
+  penName?: string;
+  company?: string;
+  role?: string;
+  websiteUrl?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'New Creator Signup',
+    userType: 'creator',
+    fullName: userData.fullName,
+    email: userData.email,
+    company: userData.company,
+    additionalInfo: {
+      penName: userData.penName,
+      role: userData.role,
+      websiteUrl: userData.websiteUrl,
+    }
+  });
+};
+
+// Convenience function for user feedback messages
+export const notifyUserFeedback = async (feedbackData: {
+  userFullName: string;
+  userEmail: string;
+  userId: string;
+  message: string;
+  userType: 'buyer' | 'creator';
+  company?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'User Feedback Received',
+    userType: feedbackData.userType,
+    fullName: feedbackData.userFullName,
+    email: feedbackData.userEmail,
+    company: feedbackData.company,
+    additionalInfo: {
+      userId: feedbackData.userId,
+      message: feedbackData.message,
+      timestamp: new Date().toISOString(),
+    }
+  });
+};
+
+// Convenience function for user signin notifications
+export const notifyUserSignin = async (userData: {
+  fullName: string;
+  email: string;
+  userType: 'buyer' | 'creator';
+  signinMethod: 'email' | 'oauth';
+  company?: string;
+}) => {
+  await sendSlackNotification({
+    event: 'User Login',
+    userType: userData.userType,
+    fullName: userData.fullName,
+    email: userData.email,
+    company: userData.company,
+    additionalInfo: {
+      signinMethod: userData.signinMethod,
+      timestamp: new Date().toISOString(),
+    }
+  });
+};

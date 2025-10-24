@@ -1,95 +1,92 @@
 /**
- * Unified Account Type Detection Hook - Metadata-First Approach
+ * Unified Account Type Detection Hook - Database-First Approach
  *
- * This hook replaces the complex multi-layered account type detection system
- * with a simplified, metadata-first approach that is:
- * - 90% faster (no database queries)
- * - More reliable (works offline)
- * - Simpler to maintain (single source of truth)
- * - Backwards compatible with all existing flows
+ * This hook uses the database as the single source of truth for account type detection:
+ * - Queries user_buyers and user_creators tables
+ * - Eliminates metadata race conditions
+ * - No default fallback to 'buyer' (prevents wrong redirects)
+ * - URL context used only for routing hints during auth flows
  */
 
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export type AccountType = 'buyer' | 'creator';
 
 export interface AccountTypeResult {
   accountType: AccountType | null;
   loading: boolean;
-  source: 'metadata' | 'url_params' | 'storage' | 'default' | 'unknown';
-  confidence: 'high' | 'medium' | 'low';
+  source: 'database_buyer' | 'database_creator' | 'url_context' | 'unknown';
+  confidence: 'high' | 'low';
 }
 
 export interface UseAccountTypeOptions {
   user?: User | null;
-  urlParams?: URLSearchParams;
-  defaultAccountType?: AccountType;
+  urlContext?: 'buyer' | 'creator' | null; // Hint from URL path, not authoritative
   debug?: boolean;
 }
 
 /**
- * Detect account type with metadata-first priority
+ * Detect account type from database tables (single source of truth)
  */
-function detectAccountType(
-  user: User | null,
-  urlParams?: URLSearchParams,
-  defaultAccountType?: AccountType
-): Omit<AccountTypeResult, 'loading'> {
-  // 1. Check URL parameters first (highest priority for OAuth flows)
-  if (urlParams) {
-    const urlAccountType = urlParams.get('account_type');
-    if (urlAccountType === 'buyer' || urlAccountType === 'creator') {
+async function detectAccountTypeFromDatabase(
+  userId: string
+): Promise<Omit<AccountTypeResult, 'loading'>> {
+  try {
+    // Check user_buyers table
+    const { data: buyerProfile, error: buyerError } = await supabase
+      .from('user_buyers')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (buyerError) {
+      console.error('[useAccountType] Error querying user_buyers:', buyerError);
+    }
+
+    if (buyerProfile) {
       return {
-        accountType: urlAccountType,
-        source: 'url_params',
+        accountType: 'buyer',
+        source: 'database_buyer',
         confidence: 'high'
       };
     }
-  }
 
-  // 2. Check user metadata (primary source of truth)
-  if (user?.user_metadata?.account_type) {
-    const metadataType = user.user_metadata.account_type;
-    if (metadataType === 'buyer' || metadataType === 'creator') {
+    // Check user_creators table
+    const { data: creatorProfile, error: creatorError} = await supabase
+      .from('user_creators')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (creatorError) {
+      console.error('[useAccountType] Error querying user_creators:', creatorError);
+    }
+
+    if (creatorProfile) {
       return {
-        accountType: metadataType,
-        source: 'metadata',
+        accountType: 'creator',
+        source: 'database_creator',
         confidence: 'high'
       };
     }
-  }
 
-  // 3. Check sessionStorage as temporary fallback (OAuth bridge)
-  if (typeof window !== 'undefined') {
-    const storedType = sessionStorage.getItem('oauth_account_type');
-    if (storedType === 'buyer' || storedType === 'creator') {
-      // Clear after use
-      sessionStorage.removeItem('oauth_account_type');
-      return {
-        accountType: storedType,
-        source: 'storage',
-        confidence: 'medium'
-      };
-    }
-  }
-
-  // 4. Default fallback
-  if (defaultAccountType) {
+    // No profile found in either table
     return {
-      accountType: defaultAccountType,
-      source: 'default',
+      accountType: null,
+      source: 'unknown',
+      confidence: 'low'
+    };
+  } catch (error) {
+    console.error('[useAccountType] Database query failed:', error);
+    return {
+      accountType: null,
+      source: 'unknown',
       confidence: 'low'
     };
   }
-
-  // 5. No account type found
-  return {
-    accountType: null,
-    source: 'unknown',
-    confidence: 'low'
-  };
 }
 
 /**
@@ -99,52 +96,58 @@ export function useAccountType(options: UseAccountTypeOptions = {}): AccountType
   const { user: authUser } = useAuth();
   const {
     user = authUser,
-    urlParams,
-    defaultAccountType = 'buyer',
+    urlContext = null,
     debug = false
   } = options;
 
   const [result, setResult] = useState<AccountTypeResult>({
-    accountType: null,
+    accountType: urlContext, // Optimistic value from URL context while loading
     loading: true,
-    source: 'unknown',
+    source: 'url_context',
     confidence: 'low'
   });
 
   useEffect(() => {
+    if (!user?.id) {
+      setResult({
+        accountType: null,
+        loading: false,
+        source: 'unknown',
+        confidence: 'low'
+      });
+      return;
+    }
+
     if (debug) {
       console.log('[useAccountType] Starting detection', {
         hasUser: !!user,
+        userId: user.id,
         userEmail: user?.email,
-        hasMetadata: !!user?.user_metadata,
-        metadataAccountType: user?.user_metadata?.account_type
+        urlContext
       });
     }
 
-    const detection = detectAccountType(user, urlParams, defaultAccountType);
+    // Query database for actual account type
+    detectAccountTypeFromDatabase(user.id).then((detection) => {
+      if (debug) {
+        console.log('[useAccountType] Detection result:', detection);
+      }
 
-    if (debug) {
-      console.log('[useAccountType] Detection result:', detection);
-    }
-
-    setResult({
-      ...detection,
-      loading: false
+      setResult({
+        ...detection,
+        loading: false
+      });
     });
-  }, [user?.id, user?.user_metadata?.account_type, urlParams, defaultAccountType, debug]);
+  }, [user?.id, debug, urlContext]);
 
   return result;
 }
 
 /**
- * Utility function for one-off account type detection
+ * Utility function for one-off account type detection (async)
  */
-export function getAccountType(
-  user: User | null,
-  urlParams?: URLSearchParams,
-  defaultAccountType?: AccountType
-): AccountType | null {
-  const result = detectAccountType(user, urlParams, defaultAccountType);
+export async function getAccountType(userId: string): Promise<AccountType | null> {
+  const result = await detectAccountTypeFromDatabase(userId);
   return result.accountType;
 }
 
@@ -203,4 +206,21 @@ export function getAccountTypeDisplayInfo(accountType: AccountType | null) {
         color: 'gray'
       };
   }
+}
+
+/**
+ * Get URL context from current route
+ * Helper to extract buyer/creator hint from URL path
+ */
+export function getUrlContext(): AccountType | null {
+  if (typeof window === 'undefined') return null;
+
+  const path = window.location.pathname;
+  if (path.startsWith('/buyers/') || path.startsWith('/signin/buyer') || path.startsWith('/signup/buyer')) {
+    return 'buyer';
+  }
+  if (path.startsWith('/creators/') || path.startsWith('/signin/creator') || path.startsWith('/signup/creator') || path.startsWith('/home')) {
+    return 'creator';
+  }
+  return null;
 }

@@ -109,7 +109,38 @@ export function RootRedirect() {
           .maybeSingle();
 
         if (buyerProfile) {
-          console.log('✅ RootRedirect: Found buyer profile, redirecting to /buyers/chat');
+          console.log('✅ RootRedirect: Found buyer profile - writing metadata before redirect');
+
+          // CRITICAL: Write metadata BEFORE redirecting (BLOCKING)
+          // Ensures metadata is available on subsequent page loads
+          try {
+            const { error: metadataError } = await supabase.auth.updateUser({
+              data: { account_type: 'buyer' }
+            });
+
+            if (metadataError) {
+              console.error('❌ RootRedirect: Failed to write buyer metadata:', metadataError);
+              toast({
+                title: "Authentication Error",
+                description: "Failed to restore account information. Please try signing in again.",
+                variant: "destructive"
+              });
+              navigate('/signin?error=metadata_write_failed', { replace: true });
+              return;
+            }
+
+            console.log('✅ RootRedirect: Buyer metadata written successfully');
+          } catch (error) {
+            console.error('❌ RootRedirect: Exception writing buyer metadata:', error);
+            toast({
+              title: "Authentication Error",
+              description: "An error occurred restoring your account. Please try again.",
+              variant: "destructive"
+            });
+            navigate('/signin?error=metadata_exception', { replace: true });
+            return;
+          }
+
           setAccountType('buyer');
           navigate('/buyers/chat', { replace: true });
           return;
@@ -123,7 +154,38 @@ export function RootRedirect() {
           .maybeSingle();
 
         if (creatorProfile) {
-          console.log('✅ RootRedirect: Found creator profile, redirecting to /creators/home');
+          console.log('✅ RootRedirect: Found creator profile - writing metadata before redirect');
+
+          // CRITICAL: Write metadata BEFORE redirecting (BLOCKING)
+          // Ensures metadata is available on subsequent page loads
+          try {
+            const { error: metadataError } = await supabase.auth.updateUser({
+              data: { account_type: 'creator' }
+            });
+
+            if (metadataError) {
+              console.error('❌ RootRedirect: Failed to write creator metadata:', metadataError);
+              toast({
+                title: "Authentication Error",
+                description: "Failed to restore account information. Please try signing in again.",
+                variant: "destructive"
+              });
+              navigate('/signin?error=metadata_write_failed', { replace: true});
+              return;
+            }
+
+            console.log('✅ RootRedirect: Creator metadata written successfully');
+          } catch (error) {
+            console.error('❌ RootRedirect: Exception writing creator metadata:', error);
+            toast({
+              title: "Authentication Error",
+              description: "An error occurred restoring your account. Please try again.",
+              variant: "destructive"
+            });
+            navigate('/signin?error=metadata_exception', { replace: true });
+            return;
+          }
+
           setAccountType('creator');
           navigate('/creators/home', { replace: true });
           return;

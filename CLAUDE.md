@@ -29,7 +29,8 @@ git checkout v2                         # Default development branch
 > 🗂️ **[Master Documentation Index](docs/INDEX.md)** - Complete documentation catalog
 
 ### App-Specific Guides
-- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Auth, OAuth, tier system, premium content (312 lines, condensed)
+- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Buyer dashboard with tier system, premium content, AI chatbot (also serves auth pages for buyers and creators temporarily)
+- **[Creator App](apps/creator/CLAUDE.md)** - Creator-focused dashboard for content management
 - **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects
 
 ### System Documentation (`docs/active/`)
@@ -50,7 +51,9 @@ git checkout v2                         # Default development branch
 - **[TESTING_GUIDE.md](docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures
 
 ### Setup Guides (`docs/guides/`)
-- **[DEPLOYMENT_STRATEGY.md](docs/guides/DEPLOYMENT_STRATEGY.md)** - Deployment architecture
+- **[GIT_DEPLOYMENT_STRUCTURE.md](docs/guides/GIT_DEPLOYMENT_STRUCTURE.md)** - Complete Git deployment configuration reference
+- **[DEPLOYMENT_STRATEGY.md](docs/guides/DEPLOYMENT_STRATEGY.md)** - Deployment architecture and branch strategy
+- **[DEPLOYMENT_INSTRUCTIONS.md](docs/guides/DEPLOYMENT_INSTRUCTIONS.md)** - Vercel deployment procedures
 - **[STRIPE_SETUP_GUIDE.md](docs/guides/STRIPE_SETUP_GUIDE.md)** - Stripe integration
 - **[OPENAI_PRODUCTION_SETUP.md](docs/guides/OPENAI_PRODUCTION_SETUP.md)** - OpenAI API setup
 
@@ -60,8 +63,9 @@ git checkout v2                         # Default development branch
 
 ### Root Level
 ```bash
-npm run dev:dashboard     # http://localhost:8081
-npm run dev:website       # http://localhost:5173
+npm run dev:dashboard     # http://localhost:8081 (Buyer dashboard)
+npm run dev:creator       # http://localhost:8082 (Creator dashboard)
+npm run dev:website       # http://localhost:5173 (Marketing site)
 npm run build:all         # Build all apps
 npm run lint:all          # Lint all apps
 npm install               # Install dependencies
@@ -83,8 +87,9 @@ npm run preview           # Preview production build
 ### Project Structure
 ```
 ├── apps/
-│   ├── dashboard/     # User dashboard + ALL authentication
-│   └── website/       # Marketing website only
+│   ├── dashboard/     # Buyer dashboard (port 8081)
+│   ├── creator/       # Creator dashboard (port 8082)
+│   └── website/       # Marketing website (port 5173)
 ├── packages/          # Shared libraries
 └── docs/              # Documentation
 ```
@@ -102,20 +107,50 @@ npm run preview           # Preview production build
 - Auto-generated types: `src/integrations/supabase/types.ts`
 - **CRITICAL**: Query by `email`, never by `user_id` (field doesn't exist)
 
+### Three-App Architecture (UPDATED 2025-10-22)
+
+**Separate Apps for Different User Types**:
+
+| App | Port | Production URL | Purpose | Status |
+|-----|------|----------------|---------|--------|
+| **Dashboard** | 8081 | dashboard.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
+| **Creator** | 8082 | creator.kstorybridge.com | Creator-focused features (content management) | 🚧 Phase 1 (8% complete) |
+| **Website** | 5173 | kstorybridge.com | Marketing site, auth redirects | ✅ Live |
+
+**Key Differences**:
+- **Dashboard**: Buyer routes (`/buyers/*`), AI chatbot, tier-gated content, Stripe integration
+- **Creator**: Clean URLs (`/home`, `/titles`), content management, pitch deck uploads, analytics
+- **Website**: Marketing pages, redirects to dashboard OR creator for authentication
+
+**Authentication Routing**:
+- Buyers sign up → Dashboard app (`/buyers/home`)
+- Creators sign up → Creator app (`/home`) [PLANNED - currently goes to dashboard `/creators/home`]
+
+**See**: [Creator App Separation Project](docs/CREATOR_APP_QUICK_REFERENCE.md) for migration status
+
 ---
 
-## 🔐 Authentication Flow (UPDATED 2025-10-03)
+## 🔐 Authentication Flow (UPDATED 2025-10-22)
 
-### User Flow
+### Current User Flow
 1. Users visit **Website** (`kstorybridge.com`) for marketing
 2. Website redirects to **Dashboard** for auth:
    - `/signup/buyer` - Buyer signup
    - `/signup/creator` - Creator signup (formerly IP Owner)
    - `/signin` - Universal signin
    - `/auth/callback` - OAuth callback (no parameters in URL)
-3. After auth, users stay in Dashboard:
-   - **Buyers**: Route to `/buyers/home`
-   - **Creators**: Route to `/creators/home`
+3. After auth:
+   - **Buyers**: Route to dashboard `/buyers/home` (redirects to `/buyers/chat`)
+   - **Creators**: Route to dashboard `/creators/home` (⚠️ will change to creator app `/home`)
+
+### Planned User Flow (After Creator App Migration)
+1. Users visit **Website** for marketing
+2. Website redirects based on account type:
+   - Buyers → **Dashboard** app authentication
+   - Creators → **Creator** app authentication
+3. After auth:
+   - **Buyers**: Dashboard app `/buyers/home`
+   - **Creators**: Creator app `/home` (clean URLs)
 
 ### Account Types
 - **buyer** - Media buyers with tier system (basic/pro/suite)
@@ -437,11 +472,13 @@ interface CreatorFormData {
 
 ### Development
 - Dashboard: http://localhost:8081
+- Creator: http://localhost:8082
 - Website: http://localhost:5173
 - Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
 
 ### Production
 - Dashboard: https://dashboard.kstorybridge.com
+- Creator: https://creator.kstorybridge.com (🚧 Configured, not yet deployed to custom domain)
 - Website: https://kstorybridge.com
 
 ### Documentation

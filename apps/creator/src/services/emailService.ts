@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import { syncOAuthUserMetadata, getCurrentUserForSync } from '@/utils/oauthMetadataSync';
 
 interface BaseEmailData {
   to: string;
@@ -199,7 +198,10 @@ export class EmailService {
   }
 
   /**
-   * Send welcome email to new users with duplicate prevention and OAuth metadata sync
+   * Send welcome email to new users with duplicate prevention
+   *
+   * NOTE: OAuth metadata sync removed to prevent concurrent updateUser() deadlock.
+   * Metadata is already set by signupService.ts before this function is called.
    */
   async sendWelcomeEmail(data: WelcomeEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
     const emailType = 'welcome';
@@ -212,59 +214,15 @@ export class EmailService {
       return { success: true, error: 'Email already sent (duplicate prevented)' };
     }
 
-    // OAuth Metadata Sync: Ensure metadata matches database for OAuth users (with timeout protection)
-    let finalAccountType = data.accountType;
-    try {
-      console.log(`🔍 OAuth Sync: Checking metadata for ${userEmail} (${data.accountType})`);
-
-      // Add timeout protection to prevent hanging
-      const syncWithTimeout = async () => {
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('OAuth metadata sync timeout after 60 seconds')), 60000)
-        );
-
-        const syncPromise = (async () => {
-          // Get current user for OAuth detection and metadata update
-          const currentUser = await getCurrentUserForSync();
-
-          // Sync OAuth user metadata (email users are skipped automatically)
-          return await syncOAuthUserMetadata(
-            userEmail,
-            data.accountType,
-            currentUser
-          );
-        })();
-
-        return await Promise.race([syncPromise, timeoutPromise]);
-      };
-
-      const correctedAccountType = await syncWithTimeout();
-
-      if (correctedAccountType !== data.accountType) {
-        console.log(`✅ OAuth Sync: Account type corrected for welcome email - ${data.accountType} → ${correctedAccountType}`);
-        finalAccountType = correctedAccountType;
-      }
-
-    } catch (error) {
-      console.warn('⚠️ OAuth Sync: Metadata sync failed/timed out, using original account type:', error);
-      // Continue with original account type - don't fail email sending
-    }
-
     const subject = `Welcome to KStoryBridge, ${data.userName}! 🎉`;
 
-    console.log(`📧 Sending welcome email to ${userEmail} (${finalAccountType})`);
-
-    // Use corrected account type for email template data
-    const emailData = {
-      ...data,
-      accountType: finalAccountType
-    };
+    console.log(`📧 Sending welcome email to ${userEmail} (${data.accountType})`);
 
     const result = await this.sendEmail({
       to: data.userEmail,
       subject,
       template: 'welcome',
-      templateData: emailData,
+      templateData: data,
       from: 'KStoryBridge Team <welcome@kstorybridge.com>'
     });
 

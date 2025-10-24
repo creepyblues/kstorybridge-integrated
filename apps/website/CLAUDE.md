@@ -2,7 +2,7 @@
 
 **App Scope**: Marketing website with basic authentication redirects to dashboard app. Focuses on content presentation and user acquisition.
 
-**Last Updated**: 2025-01-14
+**Last Updated**: 2025-10-14
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -10,12 +10,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Development Commands
 
-- `npm run dev` - Start development server with Vite
+- `npm run dev` - Start development server on port **5173**
 - `npm run build` - Build for production
 - `npm run build:dev` - Build in development mode
 - `npm run lint` - Run ESLint for code linting
 - `npm run preview` - Preview production build locally
 - `npm i` - Install dependencies
+
+**Local Development**: http://localhost:5173
 
 ## Architecture Overview
 
@@ -56,7 +58,12 @@ The application uses Supabase with migrations in `supabase/migrations/`. Check t
 
 **Language System**: The app uses a custom translation system in `LanguageContext.tsx`. All user-facing text should use the `t()` function for translations. Both English and Korean translations are stored in the same file.
 
-**Authentication Flow**: Supabase handles auth with persistent sessions. The client configuration is in `src/integrations/supabase/client.ts`.
+**Authentication Flow**:
+- **IMPORTANT**: This app does NOT handle authentication directly
+- All auth pages (signup/signin) redirect to **Dashboard app** (dashboard.kstorybridge.com)
+- Supabase handles auth with persistent sessions
+- Client configuration is in `src/integrations/supabase/client.ts`
+- **See**: [Root CLAUDE.md Authentication Flow](../../CLAUDE.md#authentication-flow) for complete details
 
 **Component Patterns**: 
 - Uses shadcn/ui conventions for component structure

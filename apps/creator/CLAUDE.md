@@ -1,161 +1,181 @@
-# CLAUDE.md - Dashboard App
+# CLAUDE.md - Creator App
 
-**App Scope**: User dashboard for authenticated buyers and creators with complex authentication flows, tier-based access control, and premium content management.
+**App Scope**: Creator-focused dashboard for content management, title submissions, pitch deck uploads, and analytics. Dedicated app for Korean content creators (webtoon artists, web novel authors).
 
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-10-22
+
+**Migration Status**: 🚧 Phase 1 Complete (8% of separation project) - See [Creator App Separation Project](../../docs/CREATOR_APP_QUICK_REFERENCE.md)
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with the Dashboard application.
+This file provides guidance to Claude Code (claude.ai/code) when working with the Creator application.
 
 ---
 
 ## 📚 Documentation Index
 
 ### Essential Docs (Quick Links)
-- **[Toast System](docs/TOAST_SYSTEM.md)** - Toast notification implementation and troubleshooting
-- **[Pitch Deck System](docs/PITCH_DECK_SYSTEM.md)** - Automated pitch deck extraction (v2.0)
+- **[Creator App Separation Project](../../docs/CREATOR_APP_QUICK_REFERENCE.md)** - Migration status and roadmap
 - **[Design Standards](../../docs/active/DESIGN_SYSTEM.md)** - UI/UX standards (root-level)
 - **[Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md)** - Complete auth system reference (root-level)
-
-### Extracted Documentation
-Large sections have been extracted to separate files for better organization:
-- Toast notifications → `docs/TOAST_SYSTEM.md`
-- Pitch deck extraction → `docs/PITCH_DECK_SYSTEM.md`
-- Design guidelines → Root `DESIGN_SYSTEM.md`
+- **[Database Schema](../../docs/active/DATABASE_SCHEMA.md)** - Database schema reference
 
 ---
 
 ## Development Commands
 
-- `npm run dev` - Start development server on port 8080
+- `npm run dev` - Start development server on port 8082
 - `npm run build` - Build for production
 - `npm run build:dev` - Development build
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 
+**Note**: This app runs on port **8082**. Dashboard app runs on port 8081, website on 5173.
+
 ---
 
 ## Architecture Overview
 
-React-based dashboard built with Vite, TypeScript, and shadcn/ui components. Serves different dashboards based on user account types (buyers vs creators).
+React-based creator dashboard built with Vite, TypeScript, and shadcn/ui components. **Exclusively for creators** - clean URLs without `/creators` prefix for professional appearance.
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite
 - **UI**: shadcn/ui + Radix UI + Tailwind CSS
-- **Backend**: Supabase (auth, database)
+- **Backend**: Supabase (auth, database) - shared with dashboard
 - **State**: TanStack Query + React Context
 - **Routing**: React Router v6
 - **Forms**: React Hook Form + Zod
 
 ### Key Patterns
 
-**Authentication** (CRITICAL):
-- **This app contains ALL authentication pages** (signin, signup, OAuth callback)
-- Website app redirects here for authentication
+**Authentication**:
+- **Currently**: Shares authentication with dashboard app (temporary)
+- **Planned**: Dedicated creator authentication at creator.kstorybridge.com
 - Uses Supabase auth with custom AuthProvider (`src/hooks/useAuth.tsx`)
-- Account type in user metadata determines dashboard routing
+- Account type in user metadata determines routing
 - OAuth redirects to `/auth/callback` in THIS app
 
-**Auth Pages**:
-- `/signin` - Sign in
-- `/signup/buyer` - Buyer signup
-- `/signup/creator` - Creator signup
+**Auth Pages** (Creator-only):
+- `/signin` - Creator sign in (redirects from `/signin/creator`)
+- `/signup` - Creator signup (redirects from `/signup/creator`)
 - `/auth/callback` - OAuth callback handler
 - `/forgot-password` - Password reset
+
+**Routing Philosophy**:
+- **Clean URLs**: No `/creators` prefix (e.g., `/home` not `/creators/home`)
+- **Professional**: Easier for marketing and creator communication
+- **Dedicated**: All routes are creator-specific, no buyer routes
 
 **Data Management**:
 - Supabase client: `src/integrations/supabase/client.ts`
 - Service layer: `src/services/`
 - TanStack Query for server state
+- Shared database with dashboard app (same Supabase project)
 
 **Component Structure**:
 - shadcn/ui: `src/components/ui/` (auto-generated, avoid editing)
 - Custom: `src/components/`
-- Layouts: `src/components/layout/`
+- Layouts: `src/components/layout/` (includes CMSSidebar for creator menu)
 - Pages: `src/pages/`
 
 ### Import Aliases
 - `@/*` maps to `./src/*`
 
 ### Database
-- Migrations: `supabase/migrations/`
+- Migrations: `supabase/migrations/` (separate from dashboard)
 - Auto-generated types: `src/integrations/supabase/types.ts`
+- Shared Supabase project: `dlrnrgcoguxlkkcitlpd`
 
 ---
 
-## Performance Optimization
+## Creator App Routes
 
-### Tier System Optimization
+### Main Routes (Clean URLs)
+- `/` - Redirects to `/home`
+- `/home` - Creator dashboard home
+- `/titles` - My titles list
+- `/titles/add` - Add new title
+- `/titles/:titleId` - Title detail view
+- `/titles/:titleId/edit` - Edit title
+- `/requests` - My requests (buyer inquiries)
+- `/profile` - Creator profile
+- `/news` - News and updates
+- `/send-message` - Send message to admin
 
-**Problem**: Individual database queries per component caused slow page loads.
+### Authentication Routes
+- `/signin` - Creator sign in
+- `/signup` - Creator signup
+- `/forgot-password` - Password reset
+- `/auth/callback` - OAuth callback
 
-**Solution**: Centralized tier management with React Context.
+### Documentation Routes (Shared)
+- `/docs` - Documentation index
+- `/docs/schema` - Database schema
+- `/docs/view/:filename` - Document viewer
+- `/docs/ux` - UX dashboard
+- `/docs/user_journey` - User journey map
+- `/docs/messaging` - Messaging documentation
 
-**Performance Gains**:
-- 70-80% faster loading
-- 99% fewer database queries (N → 1 per page)
-
-**Usage**:
-```jsx
-import { TierProvider } from '@/contexts/TierContext';
-import OptimizedTierGatedContent from '@/components/OptimizedTierGatedContent';
-
-export default function MyPage() {
-  return (
-    <TierProvider>
-      <MyPageContent />
-    </TierProvider>
-  );
-}
-
-<OptimizedTierGatedContent requiredTier="pro">
-  <PremiumContent />
-</OptimizedTierGatedContent>
-```
-
-**Migrated Pages**: Titles.tsx, TitleDetail.tsx
+### Legacy Redirects (Backwards Compatibility)
+- `/signin/creator` → `/signin`
+- `/signup/creator` → `/signup`
 
 ---
 
-## 📄 Pitch Deck Extraction
+## Key Features
 
-**Status**: ✅ v2.0 Enhanced Comprehensive Extraction
+### 1. Content Management
+- **Title Submission**: Add new titles with comprehensive metadata
+- **Title Editing**: Update title information, images, pitch decks
+- **Pitch Deck Upload**: PDF upload with automated extraction (50+ fields)
+- **Cover Image Management**: Title image uploads to Supabase storage
 
-Automated pitch deck analysis extracting 50+ structured fields using GPT-4o.
+### 2. Analytics & Insights
+- **Title Performance**: Views, likes, ratings for submitted content
+- **Buyer Interest**: Track requests and inquiries from media buyers
+- **Market Positioning**: See comparable titles and target audiences
 
-- **Admin UI**: `/admin/pitch-extraction-test`
-- **Edge Function**: `extract-pitch-test` (v7)
-- **Database**: `title_content_analysis` table
-- **Cost**: ~$0.15-0.20 per deck
+### 3. Request Management
+- **Buyer Requests**: View and respond to buyer inquiries
+- **Message System**: Direct communication with platform administrators
 
-**See**: [Pitch Deck System Documentation](docs/PITCH_DECK_SYSTEM.md)
+### 4. Profile Management
+- **Creator Profile**: Pen name, bio, portfolio, contact information
+- **Content Portfolio**: Showcase all submitted titles in one place
+
+---
+
+## Protected Routes
+
+### CreatorProtectedLayout
+All creator routes are wrapped in `CreatorProtectedLayout` which:
+- Verifies user is authenticated
+- Checks account_type is 'creator'
+- Redirects non-creators to appropriate app (future: cross-domain redirect)
+- Includes CMSSidebar for navigation
+
+### DocsProtectedLayout
+Documentation routes require authentication but are accessible to all authenticated users (buyers and creators).
 
 ---
 
 ## Database Schema Guidelines
 
-### Account Types (UPDATED 2024-09-10)
-
+### Account Types
 Standardized to `'buyer'` and `'creator'` only.
 
-- ✅ **Buyer**: `account_type: 'buyer'` → `/buyers/home`
-- ✅ **Creator**: `account_type: 'creator'` → `/creators/home`
+- ✅ **Creator**: `account_type: 'creator'` → `/home`
 
 **Tables**:
-- `user_buyers` - Buyer profiles
 - `user_creators` - Creator profiles
 
-### User Profile Fields
-
-**Buyer Profiles**:
-- `tier`: basic (default) | invited | pro | suite
-- Default tier: `basic` (changed 2025-08-21)
-
-**Creator Profiles**:
-- `pen_name`: Pen name/studio field
+### Creator Profile Fields
+- `pen_name`: Pen name/studio field (REQUIRED)
 - `ip_owner_role`: REQUIRED (author | agent)
 - `invitation_status`: invited (default) | active | pending
+- `full_name`: Creator's full name
+- `ip_owner_company`: Optional company/studio name
+- `website_url`: Optional portfolio/website URL
 
 **Field Naming**: Always use snake_case matching database fields.
 
@@ -163,43 +183,20 @@ Standardized to `'buyer'` and `'creator'` only.
 
 ## Page Access Controls
 
-### Account Type-Based Access (UPDATED 2025-01-14)
+### Creator-Only Access
+All routes except authentication and documentation are creator-only:
+- `/home` - Creator dashboard
+- `/titles` - My titles
+- `/titles/add` - Add title
+- `/titles/:titleId/edit` - Edit title
+- `/requests` - My requests
+- `/profile` - Creator profile
+- `/news` - News
+- `/send-message` - Send message
 
-**Buyer Access**:
-- `/chat` - AI chatbot (changed from admin-only 2025-01-14)
-- `/buyers/home`, `/buyers/titles`, `/buyers/saved`, `/buyers/news`
-
-**Admin-Only** (`sungho@dadble.com`, `kevin@sandstoneartists.com`):
-- `/experiment` - Feature testing (gateway to admin tools)
-
-**Creator Access**:
-- `/creators/home`, `/creators/titles`, `/creators/profile`
-
----
-
-## Toast Notification System
-
-**CRITICAL**: All dashboard pages MUST import `useToast` from local hook, NOT shared package.
-
-**✅ CORRECT**:
-```typescript
-import { useToast } from "@/hooks/use-toast";
-```
-
-**❌ INCORRECT**:
-```typescript
-import { useToast } from "@kstorybridge/ui"; // NEVER use in dashboard
-```
-
-**Always include both title AND description**:
-```typescript
-toast({
-  title: "Profile Updated",
-  description: "Your profile changes have been saved successfully"
-});
-```
-
-**See**: [Toast System Documentation](docs/TOAST_SYSTEM.md) for complete troubleshooting guide
+### Shared Access (Documentation)
+Documentation routes accessible to all authenticated users:
+- `/docs/*` - All documentation routes
 
 ---
 
@@ -210,103 +207,105 @@ toast({
 > - Button Standard (light grey hover)
 > - Typography (SF Pro default)
 > - Color Policy (no yellow colors)
-> - Pro Tier Color (#AF52DE purple)
+> - Hanok Teal Primary Color (#4C9C9B)
 
 **Standard Components**:
 - `StandardButton` (`@/components/StandardButton`)
 - `StandardCard` (`@/components/StandardCard`)
-- `ProBadge` (`@/components/ProBadge`)
 
 **Design System Components** (`@/components/design-system`):
 - `Surface` - Replaces `<div>`, semantic layout primitive
 - `Stack` / `Inline` - Layout with automatic spacing
 - `EmptyState` - Standardized empty states
 
-**Reference Page**: `/buyers/profile` for visual standard
-
----
-
-## Documentation System
-
-### Adding New Documentation Files
-
-**CRITICAL**: For docs viewable at `/docs/view/[filename].md`, place files in:
-
-**Required Location**: `/apps/dashboard/public/docs/[filename].md`
-
-**Why**: DocumentViewer fetches docs via HTTP from Vite dev server's `public/` directory.
-
-**Process**:
-1. Create: `/apps/dashboard/public/docs/your-doc.md`
-2. Add entry to: `/apps/dashboard/src/pages/Docs.tsx`
-3. Verify: `http://localhost:8081/docs/view/your-doc.md`
-
----
-
-## Project Tracking
-
-**Active Projects**:
-- **PRD 2.1**: Track in `/apps/dashboard/public/docs/project_KSB_2_1.md`
-
-**Guidelines**:
-1. Always update project files when completing tasks
-2. Use structured tables for status tracking (✅ Complete, 🔄 In Progress, ⏳ Pending)
-3. Update "Last Updated" date
-4. Verify web accessibility at `/docs/view/project_[NAME].md`
-
----
-
-## Local Testing Environment
-
-### Localhost OAuth Testing
-
-**Environment Variables**:
-- `VITE_SUPABASE_URL` - Local Supabase URL
-- `VITE_SUPABASE_ANON_KEY` - Local anon key
-- `VITE_LOCAL_TESTING=true` - Enable local mode
-- `VITE_OAUTH_TESTING=true` - OAuth debugging
-- `VITE_AUTH_DEBUG=true` - Auth debug logs
-
-**Local Supabase**:
-```bash
-cd supabase
-npx supabase start
-# Studio: http://localhost:54324
-```
-
-**OAuth Config** (Local):
-- Site URL: `http://localhost:8081`
-- Redirect URLs: `http://localhost:8081/auth/callback`
+**Reference**: Creator-specific design patterns use hanok-teal as primary accent color
 
 ---
 
 ## Development Notes
 
+### Creator App Separation Status
+**Current Phase**: Phase 1 Complete (8% of project)
+- ✅ App scaffolding and structure created
+- ✅ Package.json configured
+- ✅ Root scripts added
+- ✅ Buyer pages removed from creator app
+- ✅ App.tsx rewritten with creator-only routes
+- ✅ CMSSidebar simplified to creator menu only
+
+**Next Critical Phases**:
+- Phase 3: Cross-domain redirects (buyers → dashboard, creators → creator)
+- Phase 6: Infrastructure setup (Vercel project, DNS configuration)
+- Phase 7: OAuth configuration (add creator.kstorybridge.com callbacks)
+
+**See**: [Creator App Separation Project](../../docs/CREATOR_APP_QUICK_REFERENCE.md) for complete roadmap
+
+### Technical Configuration
 - TypeScript config relaxed (noImplicitAny: false, strictNullChecks: false)
 - ESLint: React + TypeScript, unused vars disabled
 - Uses SWC for fast compilation
 - Lovable-tagger plugin for dev mode tagging
+
+### Migration Notes
+- Currently shares Supabase project with dashboard app
+- Future: Will have separate OAuth callbacks at creator.kstorybridge.com
+- Cross-domain session sharing via Supabase auth
+- Shared database tables (`user_creators`, `titles`, etc.)
 
 ---
 
 ## Quick Links
 
 ### Development
-- Dashboard: http://localhost:8081
+- Creator App: http://localhost:8082
+- Dashboard App: http://localhost:8081
+- Website: http://localhost:5173
 - Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
 
-### Production
-- Dashboard: https://dashboard.kstorybridge.com
+### Production (Planned)
+- Creator App: https://creator.kstorybridge.com (🚧 Not yet deployed)
+- Dashboard App: https://dashboard.kstorybridge.com
+- Website: https://kstorybridge.com
 
 ### Documentation
 - [Root CLAUDE.md](../../CLAUDE.md) - Monorepo documentation
-- [Toast System](docs/TOAST_SYSTEM.md) - Toast notifications
-- [Pitch Deck System](docs/PITCH_DECK_SYSTEM.md) - Pitch extraction
+- [Creator App Separation](../../docs/CREATOR_APP_QUICK_REFERENCE.md) - Migration status
 - [Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md) - Complete auth reference
 - [Design System](../../docs/active/DESIGN_SYSTEM.md) - UI/UX standards
-- [Chatbot Overview](../../docs/features/chatbot/OVERVIEW.md) - AI chatbot system
+- [Database Schema](../../docs/active/DATABASE_SCHEMA.md) - Database reference
+
+---
+
+## Common Tasks
+
+### Adding a New Creator Page
+1. Create page component in `src/pages/[PageName].tsx`
+2. Add lazy import to `App.tsx`
+3. Add route wrapped in `<CreatorProtectedLayout>`
+4. Update CMSSidebar navigation if needed
+
+### Updating Creator Profile Fields
+1. Check `user_creators` table schema
+2. Update form in `Profile.tsx`
+3. Use snake_case field names matching database
+4. Always include `ip_owner_role` (REQUIRED field)
+
+### Testing Authentication
+```bash
+# Start all 3 apps
+npm run dev:website   # Terminal 1
+npm run dev:dashboard # Terminal 2
+npm run dev:creator   # Terminal 3
+
+# Test creator signup flow
+1. Visit localhost:5173
+2. Click "Creator Signup"
+3. Should redirect to localhost:8082/signup (when cross-domain is implemented)
+4. After auth, should land at localhost:8082/home
+```
 
 ---
 
 **For complete design standards, see [Root DESIGN_SYSTEM.md](../../docs/active/DESIGN_SYSTEM.md)**
 **For auth flow details, see [Root AUTH_DOCUMENTATION.md](../../docs/active/AUTH_DOCUMENTATION.md)**
+**For migration status, see [Creator App Separation](../../docs/CREATOR_APP_QUICK_REFERENCE.md)**

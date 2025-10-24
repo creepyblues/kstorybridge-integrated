@@ -169,10 +169,13 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
               );
 
               toast({
-                title: "Profile Creation Failed",
-                description: result.error || "Failed to create buyer profile. Please try signing in or contact support.",
+                title: "Account Creation Failed",
+                description: result.error || "Failed to complete signup. Please try again or contact support if the issue persists.",
                 variant: "destructive"
               });
+
+              // Sign out to allow retry with clean state
+              await supabase.auth.signOut();
               return;
             }
 
@@ -251,10 +254,13 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
               console.error('❌ Creator OAuth profile completion failed:', result.error);
 
               toast({
-                title: "Profile Creation Failed",
-                description: result.error || "Failed to create creator profile. Please try signing in or contact support.",
+                title: "Account Creation Failed",
+                description: result.error || "Failed to complete signup. Please try again or contact support if the issue persists.",
                 variant: "destructive"
               });
+
+              // Sign out to allow retry with clean state
+              await supabase.auth.signOut();
               return;
             }
 

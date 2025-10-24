@@ -97,19 +97,18 @@ const SigninForm = ({ accountType, hideOtherAccountTypeLink = false, disabled = 
     try {
       console.log(`🔐 ${accountType.toUpperCase()} OAuth signin initiated with Google`);
 
-      // Store flow data in sessionStorage (as backup fallback)
+      // Store flow data in sessionStorage (PRIMARY data passing mechanism)
       sessionStorage.setItem('oauth_account_type', accountType);
       sessionStorage.setItem('oauth_flow', 'signin');
 
-      // ✅ CORRECT: Use URL query parameters in redirectTo URL (per AUTH_DOCUMENTATION.md)
-      // URL params persist through all redirects: Google → Supabase → Your App
-      // Does NOT conflict with Supabase PKCE state parameter
-      const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
+      // ✅ CRITICAL: NO URL parameters in OAuth callback URL (per CLAUDE.md)
+      // Use clean callback URL - data passed via sessionStorage only
+      const callbackUrl = `${window.location.origin}/auth/callback`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: callbackUrl // URL parameters included in redirect URL
+          redirectTo: callbackUrl // Clean callback URL, no parameters
         }
       });
 

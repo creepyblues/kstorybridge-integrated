@@ -92,22 +92,70 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // Return success immediately, send notifications asynchronously in background
-      const userResult = { success: true, user };
+      // CRITICAL: Metadata write is MANDATORY and BLOCKING
+      // User CANNOT sign up without account_type metadata
+      if (!session?.access_token) {
+        console.error('❌ CRITICAL: No session available for metadata update');
 
-      // Start metadata update but don't await (fire-and-forget, non-blocking)
-      if (session?.access_token) {
-        console.log('🔄 Updating account_type metadata with existing session...');
-        supabase.auth.updateUser({
-          data: { account_type: 'buyer' }
-        }).then(() => {
-          console.log('✅ Account type metadata updated successfully');
-        }).catch((metadataError) => {
-          console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
-        });
-      } else {
-        console.warn('⚠️ No session available, skipping metadata update');
+        // Cleanup: Delete the profile since metadata cannot be set
+        const { cleanupFailedOAuthSignup } = await import('@/utils/authCleanup');
+        await cleanupFailedOAuthSignup(user.id, user.email, 'buyer');
+
+        return {
+          success: false,
+          error: 'OAuth session invalid - cannot complete signup without account_type metadata'
+        };
       }
+
+      console.log('🔄 Updating account_type metadata (BLOCKING - MANDATORY)...');
+      console.log('🔍 DEBUG: Session state before updateUser:', {
+        hasSession: !!session,
+        hasAccessToken: !!session?.access_token,
+        tokenPreview: session?.access_token?.substring(0, 20) + '...',
+        userId: user.id,
+        userEmail: user.email
+      });
+
+      try {
+        console.log('📤 DEBUG: Calling supabase.auth.updateUser() now...');
+        const updateStartTime = Date.now();
+
+        const { error: metadataError } = await supabase.auth.updateUser({
+          data: { account_type: 'buyer' }
+        });
+
+        const updateDuration = Date.now() - updateStartTime;
+        console.log(`✅ DEBUG: updateUser() returned after ${updateDuration}ms`);
+
+        if (metadataError) {
+          console.error('❌ CRITICAL: Metadata update failed:', metadataError);
+
+          // Cleanup: Delete the profile since metadata update failed
+          const { cleanupFailedOAuthSignup } = await import('@/utils/authCleanup');
+          await cleanupFailedOAuthSignup(user.id, user.email, 'buyer');
+
+          return {
+            success: false,
+            error: 'Failed to set account_type metadata - please try signing up again'
+          };
+        }
+
+        console.log('✅ Account type metadata written successfully - signup can proceed');
+      } catch (error) {
+        console.error('❌ CRITICAL: Metadata update exception:', error);
+
+        // Cleanup: Delete the profile since metadata update failed
+        const { cleanupFailedOAuthSignup } = await import('@/utils/authCleanup');
+        await cleanupFailedOAuthSignup(user.id, user.email, 'buyer');
+
+        return {
+          success: false,
+          error: 'Metadata update failed - please try signing up again'
+        };
+      }
+
+      // Only return success AFTER metadata is confirmed written
+      const userResult = { success: true, user };
 
       // Send welcome email and Slack notification in background (non-blocking)
       (async () => {
@@ -172,22 +220,70 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // Return success immediately, send notifications asynchronously in background
-      const userResult = { success: true, user };
+      // CRITICAL: Metadata write is MANDATORY and BLOCKING
+      // User CANNOT sign up without account_type metadata
+      if (!session?.access_token) {
+        console.error('❌ CRITICAL: No session available for metadata update');
 
-      // Start metadata update but don't await (fire-and-forget, non-blocking)
-      if (session?.access_token) {
-        console.log('🔄 Updating account_type metadata with existing session...');
-        supabase.auth.updateUser({
-          data: { account_type: 'creator' }
-        }).then(() => {
-          console.log('✅ Account type metadata updated successfully');
-        }).catch((metadataError) => {
-          console.warn('⚠️ Metadata update failed (non-critical):', metadataError);
-        });
-      } else {
-        console.warn('⚠️ No session available, skipping metadata update');
+        // Cleanup: Delete the profile since metadata cannot be set
+        const { cleanupFailedOAuthSignup } = await import('@/utils/authCleanup');
+        await cleanupFailedOAuthSignup(user.id, user.email, 'creator');
+
+        return {
+          success: false,
+          error: 'OAuth session invalid - cannot complete signup without account_type metadata'
+        };
       }
+
+      console.log('🔄 Updating account_type metadata (BLOCKING - MANDATORY)...');
+      console.log('🔍 DEBUG: Session state before updateUser:', {
+        hasSession: !!session,
+        hasAccessToken: !!session?.access_token,
+        tokenPreview: session?.access_token?.substring(0, 20) + '...',
+        userId: user.id,
+        userEmail: user.email
+      });
+
+      try {
+        console.log('📤 DEBUG: Calling supabase.auth.updateUser() now...');
+        const updateStartTime = Date.now();
+
+        const { error: metadataError } = await supabase.auth.updateUser({
+          data: { account_type: 'creator' }
+        });
+
+        const updateDuration = Date.now() - updateStartTime;
+        console.log(`✅ DEBUG: updateUser() returned after ${updateDuration}ms`);
+
+        if (metadataError) {
+          console.error('❌ CRITICAL: Metadata update failed:', metadataError);
+
+          // Cleanup: Delete the profile since metadata update failed
+          const { cleanupFailedOAuthSignup } = await import('@/utils/authCleanup');
+          await cleanupFailedOAuthSignup(user.id, user.email, 'creator');
+
+          return {
+            success: false,
+            error: 'Failed to set account_type metadata - please try signing up again'
+          };
+        }
+
+        console.log('✅ Account type metadata written successfully - signup can proceed');
+      } catch (error) {
+        console.error('❌ CRITICAL: Metadata update exception:', error);
+
+        // Cleanup: Delete the profile since metadata update failed
+        const { cleanupFailedOAuthSignup } = await import('@/utils/authCleanup');
+        await cleanupFailedOAuthSignup(user.id, user.email, 'creator');
+
+        return {
+          success: false,
+          error: 'Metadata update failed - please try signing up again'
+        };
+      }
+
+      // Only return success AFTER metadata is confirmed written
+      const userResult = { success: true, user };
 
       // Send welcome email and Slack notification in background (non-blocking)
       (async () => {
@@ -409,17 +505,16 @@ export const handleOAuthSignup = async (
   try {
     console.log(`🔐 ${accountType.toUpperCase()} OAuth signup initiated with provider: ${provider}`);
 
-    // Store flow data in sessionStorage (as backup fallback)
+    // Store flow data in sessionStorage (PRIMARY data passing mechanism)
     sessionStorage.setItem('oauth_account_type', accountType);
     sessionStorage.setItem('oauth_flow', 'signup');
 
-    // ✅ CORRECT: Use URL query parameters in redirectTo URL (per AUTH_DOCUMENTATION.md)
-    // URL params persist through all redirects: Google → Supabase → Your App
-    // Does NOT conflict with Supabase PKCE state parameter
-    const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signup`;
+    // ✅ CRITICAL: NO URL parameters in OAuth callback URL (per CLAUDE.md)
+    // Use clean callback URL - data passed via sessionStorage only
+    const callbackUrl = `${window.location.origin}/auth/callback`;
 
     const result = await authService.signInWithOAuth(provider, {
-      redirectTo: callbackUrl // URL parameters included in redirect URL
+      redirectTo: callbackUrl // Clean callback URL, no parameters
     });
 
     if (result.error) {

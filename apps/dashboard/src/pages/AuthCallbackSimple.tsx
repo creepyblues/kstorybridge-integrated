@@ -30,18 +30,14 @@ const AuthCallbackSimple = () => {
       console.log('🚀 OAuth Callback: Starting ultra-simple processing');
       console.log('🌐 URL:', window.location.href);
 
-      // Read URL parameters (OAuth code, account_type, and flow)
-      // ✅ CORRECT: Read from URL parameters (per AUTH_DOCUMENTATION.md)
-      // URL params persist through all OAuth redirects reliably
+      // Read OAuth code from URL (only the code, no custom parameters)
+      // ✅ CRITICAL: NO custom URL parameters in OAuth callback (per CLAUDE.md)
+      // Data is passed via sessionStorage only
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      const accountType = urlParams.get('account_type');
-      const flow = urlParams.get('flow');
 
       console.log('📋 OAuth params:', {
         code: !!code,
-        accountType,
-        flow,
         fullUrl: window.location.search
       });
 
@@ -107,17 +103,16 @@ const AuthCallbackSimple = () => {
 
         console.log('✅ OAuth session established for:', user.email);
 
-        // 2. Determine account type (Priority: URL params > metadata > sessionStorage fallback)
+        // 2. Determine account type (Priority: sessionStorage > metadata)
+        // NO URL parameters used (per CLAUDE.md critical rule)
         const finalAccountType = (
-          accountType ||  // From URL parameter (PRIMARY - most reliable)
-          user.user_metadata?.account_type ||
-          (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null)
+          (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null) ||  // From sessionStorage (PRIMARY)
+          user.user_metadata?.account_type  // Fallback to metadata if available
         ) as AccountType | null;
 
         console.log('🎯 Account type detection:', {
-          fromURLParam: accountType,
-          fromMetadata: user.user_metadata?.account_type,
           fromStorage: typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null,
+          fromMetadata: user.user_metadata?.account_type,
           final: finalAccountType
         });
 
@@ -134,15 +129,14 @@ const AuthCallbackSimple = () => {
         // RootRedirect.tsx has fallback logic that checks database tables if metadata is missing
         // Database tables are the source of truth, not metadata
 
-        // 3. Determine flow type (Priority: URL params > sessionStorage > default 'signin')
+        // 3. Determine flow type (Priority: sessionStorage > default 'signin')
+        // NO URL parameters used (per CLAUDE.md critical rule)
         const finalFlow = (
-          flow ||
           (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_flow') : null) ||
           'signin'
         ) as 'signin' | 'signup';
 
         console.log('🎯 Flow type detection:', {
-          fromURLParam: flow,
           fromStorage: typeof window !== 'undefined' ? sessionStorage.getItem('oauth_flow') : null,
           final: finalFlow
         });

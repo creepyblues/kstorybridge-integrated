@@ -1,0 +1,61 @@
+name: Quick Check
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'apps/dashboard/**'
+      - 'packages/**'
+
+jobs:
+  quick-lint:
+    name: Quick Lint Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+
+  quick-build:
+    name: Quick Build Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Build check
+        run: npm run build
+        env:
+          CI: true

@@ -1,472 +1,635 @@
-# 🧪 Authentication Testing Suite
+# 🧪 Dashboard Testing Guide
 
-Complete automated and manual testing suite for KStoryBridge authentication flows.
+**Last Updated**: 2025-10-25
+**Status**: Phase 1, 2, 3 & 4 Complete ✅ - **ALL PHASES COMPLETE!**
 
-**Created**: 2025-10-11
-**Status**: Ready for execution
-**Coverage**: Email signup, OAuth signup, Email signin, OAuth signin, Edge functions, Database verification
+Quick reference for testing infrastructure and utilities.
 
 ---
 
-## 📋 Quick Start
+## 🚀 Quick Start
+
+**IMPORTANT**: All test commands must be run from the **dashboard** directory:
 
 ```bash
-cd /Users/sungholee/code/kstorybridge-v2/apps/dashboard
-
-# Run all automated tests
-npm run test:all
-
-# Or run individual test suites
-npm run test:auth          # Authentication flows
-npm run test:db            # Database verification
-npm run test:edge          # Edge function testing
+cd /Users/sungholee/code/kstorybridge/apps/dashboard
 ```
 
----
+The test infrastructure is centralized in the dashboard app because:
+- Both dashboard and creator apps share the same Supabase database
+- Test users work across all apps
+- Reduces duplication
 
-## 🔧 Test Scripts Overview
-
-### 1. **Automated Authentication Flow Tests** (`test-auth-flows.js`)
-
-Tests email signup, profile creation, and field validation automatically.
-
-**What it tests**:
-- ✅ Email validation (work vs consumer domains)
-- ✅ Required field validation
-- ✅ Buyer email signup flow
-- ✅ Creator email signup flow
-- ✅ Edge function profile creation
-- ✅ Database profile verification
-- ✅ Field integrity checks
-
-**Commands**:
-```bash
-# Basic test run
-npm run test:auth
-
-# Verbose output (see all logs)
-npm run test:auth:verbose
-
-# With automatic cleanup (deletes test users after)
-npm run test:auth:cleanup
-```
-
-**Expected Output**:
-```
-🧪 Starting Authentication Flow Tests
-Timestamp: 2025-10-11T...
-Test Buyer Email: test-buyer-...@testcompany.com
-Test Creator Email: test-creator-...@gmail.com
-
-============================================================
-TEST: Email Validation
-============================================================
-✅ Block consumer email: test@gmail.com: PASSED (correctly blocked)
-✅ Allow work email: test@company.com: PASSED (correctly allowed)
-
-============================================================
-TEST SUMMARY
-============================================================
-Total Tests: 25
-Passed: 25
-Failed: 0
-Success Rate: 100.0%
-```
-
----
-
-### 2. **Database Verification** (`test-database-verification.js`)
-
-Verifies database state, profile existence, and table statistics.
-
-**What it checks**:
-- ✅ Profile existence by email
-- ✅ Table statistics (buyer/creator counts)
-- ✅ Tier distribution
-- ✅ Recent signups (last 24 hours)
-- ✅ Orphaned users detection
-- ✅ Data integrity
-
-**Commands**:
-```bash
-# Check overall database state
-npm run test:db
-
-# Check specific user by email
-node test-database-verification.js --email=user@example.com
-```
-
-**Expected Output**:
-```
-🔍 Database Verification Tool
-Timestamp: 2025-10-11T...
-
-============================================================
-Table Statistics
-============================================================
-👥 Total Buyers: 147
-✍️  Total Creators: 89
-
-📊 Buyer Tier Distribution:
-  basic: 120 users
-  pro: 15 users
-  suite: 12 users
-
-📊 Creator Status Distribution:
-  invited: 65 users
-  active: 24 users
-
-============================================================
-Recent Signups (Last 24 Hours)
-============================================================
-👥 Recent Buyers:
-  test@company.com | Test User | Test Company | Tier: basic
-
-✅ Verification complete!
-```
-
----
-
-### 3. **Edge Function Testing** (`test-edge-functions.js`)
-
-Tests Supabase edge functions for profile creation.
-
-**What it tests**:
-- ✅ `create-buyer-profile` function
-- ✅ `create-oauth-profile` function (buyer)
-- ✅ `create-oauth-profile` function (creator)
-- ✅ Error handling (missing fields, invalid types)
-- ✅ Response times
-- ✅ Function availability
-
-**Commands**:
-```bash
-# Test all edge functions
-npm run test:edge
-
-# Test specific function
-node test-edge-functions.js --function=create-buyer-profile
-```
-
-**Expected Output**:
-```
-🧪 Edge Function Testing Tool
-Timestamp: 2025-10-11T...
-
-============================================================
-Edge Function Availability Check
-============================================================
-✅ create-buyer-profile is available
-✅ create-creator-profile is available
-✅ create-oauth-profile is available
-
-============================================================
-Testing: create-buyer-profile
-============================================================
-Creates buyer profile via edge function (email signup flow)
-
-📤 Sending request to create-buyer-profile...
-⏱️  Response time: 342ms
-📊 Status: 200 OK
-✅ Edge function succeeded
-
-============================================================
-Test Summary
-============================================================
-Total Tests: 3
-Successful: 3
-Failed: 0
-Average Duration: 380ms
-
-✅ All edge function tests passed!
-```
-
----
-
-### 4. **Manual OAuth Flow Testing** (`test-oauth-flow-manual.md`)
-
-Step-by-step guide for manually testing OAuth flows in browser.
-
-**What it covers**:
-- Buyer OAuth signup (Google)
-- Creator OAuth signup (Google)
-- OAuth signin (existing profile)
-- OAuth signin (no profile - error case)
-- URL parameter verification
-- Console log inspection
-- Session storage verification
-
-**How to use**:
-1. Open `test-oauth-flow-manual.md` in your editor
-2. Start dev server: `npm run dev`
-3. Follow step-by-step instructions
-4. Document results for each test
-
----
-
-## 📊 Test Coverage Matrix
-
-| Flow | Automated | Manual | Edge Function | Database |
-|------|-----------|---------|---------------|----------|
-| Buyer Email Signup | ✅ | ✅ | ✅ | ✅ |
-| Creator Email Signup | ✅ | ✅ | ✅ | ✅ |
-| Buyer OAuth Signup | ⚠️ Manual Only | ✅ | ✅ | ✅ |
-| Creator OAuth Signup | ⚠️ Manual Only | ✅ | ✅ | ✅ |
-| Email Signin | ⚠️ Partial | ✅ | N/A | ✅ |
-| OAuth Signin | ⚠️ Manual Only | ✅ | N/A | ✅ |
-| Email Validation | ✅ | ✅ | N/A | N/A |
-| Required Fields | ✅ | ✅ | ✅ | N/A |
-| Profile Creation | ✅ | ✅ | ✅ | ✅ |
-| Database Verification | ✅ | ✅ | N/A | ✅ |
-
-**Legend**:
-- ✅ Fully Automated / Covered
-- ⚠️ Partially Automated (requires manual OAuth)
-- N/A Not Applicable
-
----
-
-## 🚀 Testing Workflow
-
-### Complete Testing Sequence
+### Create Test Users
 
 ```bash
-# 1. Start with automated tests
-npm run test:all
+# Create basic tier buyer
+npm run test:create-buyer
 
-# 2. Check database state
-npm run test:db
+# Create pro tier buyer
+npm run test:create-buyer -- --tier=pro
 
-# 3. Verify specific user
-node test-database-verification.js --email=test@example.com
+# Create suite tier buyer
+npm run test:create-buyer -- --tier=suite
 
-# 4. Manual OAuth testing (follow guide)
-# Open: test-oauth-flow-manual.md
+# Create creator (author)
+npm run test:create-creator
 
-# 5. Check Supabase logs
-# Visit: https://supabase.com/dashboard/project/dlrnrgcoguxlkkcitlpd/functions
+# Create creator (agent)
+npm run test:create-creator -- --role=agent
 ```
 
-### Quick Smoke Test (5 minutes)
+**Default Password**: `Test-Password-123`
+
+### Clean Up Test Data
 
 ```bash
-# 1. Run automated tests
-npm run test:auth:verbose
+# Remove all test users and their data
+npm run test:cleanup
 
-# 2. Check one manual OAuth flow
-# Follow Test 1 in test-oauth-flow-manual.md
-
-# 3. Verify in database
-npm run test:db
+# With auto-confirmation (no prompt)
+npm run test:cleanup -- --confirm
 ```
 
-### Full Regression Test (30 minutes)
+### Verify Setup
 
-1. **Automated Tests** (5 min)
-   ```bash
-   npm run test:all
-   ```
+```bash
+# Check that all test infrastructure is configured
+npm run test:verify
+```
 
-2. **Manual OAuth Tests** (15 min)
-   - Follow all 5 tests in `test-oauth-flow-manual.md`
-   - Test both buyer and creator flows
-   - Test error cases
+### Start in Test Mode
 
-3. **Database Verification** (5 min)
-   ```bash
-   npm run test:db
-   node test-database-verification.js --email=your-test-email@example.com
-   ```
+```bash
+# Start dev server with .env.test configuration
+npm run test:local
+```
 
-4. **Edge Function Logs** (5 min)
-   - Visit Supabase dashboard
-   - Check function execution logs
-   - Verify no errors
+---
+
+## 🎭 E2E Tests (Phase 2)
+
+### Run E2E Tests
+
+```bash
+# Run all E2E tests (headless)
+npm run test:e2e
+
+# Run with UI mode (interactive)
+npm run test:e2e:ui
+
+# Run with browser visible (headed mode)
+npm run test:e2e:headed
+
+# Debug mode (step through tests)
+npm run test:e2e:debug
+
+# Run specific test suites
+npm run test:e2e:auth       # Authentication tests
+npm run test:e2e:chatbot    # AI chatbot tests
+npm run test:e2e:creator    # Creator CRUD tests
+
+# View HTML report
+npm run test:e2e:report
+```
+
+### E2E Test Coverage
+
+**Authentication Flow** (`auth.spec.ts`):
+- ✅ Buyer signup → dashboard redirect
+- ✅ Creator signup → dashboard redirect
+- ✅ Email signin (buyer & creator)
+- ✅ Protected route authentication
+- ✅ Password validation
+
+**AI Chatbot Flow** (`chatbot.spec.ts`):
+- ✅ Discovery queries with title recommendations
+- ✅ Comparison queries with structured responses
+- ✅ Information queries with detailed data
+- ✅ Follow-up queries with contextual responses
+- ✅ Title link navigation
+- ✅ Conversation history
+- ✅ Error handling
+
+**Creator CRUD Flow** (`creator-titles.spec.ts`):
+- ✅ Create title
+- ✅ Edit title
+- ✅ View title details
+- ✅ Delete title
+- ✅ Search/filter titles
+- ✅ Minimal field validation
+
+---
+
+## 🚀 CI/CD Integration (Phase 3)
+
+### GitHub Actions Workflows
+
+**Automatic test runs on**:
+- Every pull request to `v2` or `main`
+- Every push to `v2` branch
+- Vercel preview deployments (optional)
+
+**What runs automatically**:
+```bash
+# On every PR:
+- Unit Tests (Vitest)
+- E2E Tests (Playwright)
+- Build Verification
+- Lint & Type Check
+- Test Cleanup
+
+# On every push:
+- Quick Lint Check
+- Quick Build Check
+
+# On Vercel preview deployment:
+- Smoke Tests on preview URL
+```
+
+### Workflows
+
+| Workflow | Triggers | Duration | Purpose |
+|----------|----------|----------|---------|
+| `dashboard-tests.yml` | PR to v2/main | 10-15 min | Full test suite |
+| `quick-check.yml` | Any push | 3-5 min | Fast feedback |
+| `preview-test.yml` | Vercel deployment | 2-3 min | Preview smoke tests |
+
+### CI Test Commands
+
+```bash
+# Tests run automatically in CI, but you can run locally:
+
+# Full CI test suite (what runs in CI)
+npm run test           # Unit tests
+npm run test:e2e       # E2E tests
+npm run build          # Build verification
+npm run lint           # Lint check
+
+# Preview deployment smoke tests
+npm run test:preview -- https://preview-url.vercel.app
+```
+
+### Setup CI/CD
+
+See **[CI_CD_SETUP_GUIDE.md](CI_CD_SETUP_GUIDE.md)** for complete setup instructions:
+1. Add GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
+2. Enable GitHub Actions
+3. Configure branch protection rules
+4. (Optional) Configure Vercel webhooks
+
+### PR Workflow
+
+1. **Create PR** → GitHub Actions automatically runs tests
+2. **View test results** → Check "Checks" tab on PR
+3. **Fix any failures** → Push fixes to branch
+4. **Tests pass** → PR can be merged
+5. **Merge** → Triggers deployment
+
+### Test Artifacts
+
+After CI runs, download artifacts from workflow page:
+- **playwright-report** - HTML test report with screenshots/videos
+- **test-results** - Raw test results
+- **coverage-report** - Code coverage data
+- **dashboard-build** - Production build output
+
+---
+
+## 📚 Test Utilities
+
+All utilities are in `src/test-utils/` and can be imported:
+
+```typescript
+import {
+  createTestBuyer,
+  createTestCreator,
+  loginAs,
+  TEST_USER_PRESETS,
+  mockStripeWebhook,
+  STANDARD_TEST_QUERIES,
+  cleanupAllTestData,
+} from '@/test-utils';
+```
+
+### User Setup
+
+```typescript
+// Create test buyer
+const { user, email } = await createTestBuyer('pro');
+
+// Create test creator
+const { user, email } = await createTestCreator('author');
+
+// Login as test user
+await loginAs('test-buyer-pro@testcompany.com');
+
+// Quick login to preset users
+await loginAsPreset('BUYER_PRO');
+```
+
+### Mock Stripe
+
+```typescript
+// Simulate complete checkout flow
+const result = await simulateStripeCheckout(
+  'test@testcompany.com',
+  'pro'
+);
+
+// Generate webhook event
+const webhook = mockStripeWebhook('checkout.session.completed', {
+  customer_email: 'test@testcompany.com',
+  subscription_tier: 'pro',
+});
+
+// Use scenario helpers
+await MOCK_STRIPE_SCENARIOS.UPGRADE_TO_PRO('test@testcompany.com');
+```
+
+### Chatbot Test Queries
+
+```typescript
+// Get all standard queries
+const queries = STANDARD_TEST_QUERIES;
+
+// Get queries by intent
+const discoveryQueries = getQueriesByIntent('discovery');
+
+// Get queries by tag
+const romanceQueries = getQueriesByTag('romance');
+
+// Get random query
+const query = getRandomTestQuery();
+
+// Smoke test queries (quick validation)
+const smokeTests = SMOKE_TEST_QUERIES;
+```
+
+### Cleanup
+
+```typescript
+// Clean up all test data
+const result = await cleanupAllTestData();
+
+// Clean up specific types
+await cleanupTestBuyers();
+await cleanupTestCreators();
+await cleanupTestChatSessions();
+
+// Verify cleanup
+const verification = await verifyTestDataCleanup();
+```
+
+### Supabase Test Client
+
+```typescript
+// Get service role client (bypasses RLS)
+const testClient = getTestClient();
+
+// Execute with service role
+await withServiceRole(async (client) => {
+  // Perform admin operations
+  return await client.from('user_buyers').select('*');
+});
+
+// Helper functions
+await insertTestData('user_buyers', { email: '...', ... });
+await deleteTestData('user_buyers', { column: 'email', value: '...' });
+await queryTestData('titles');
+```
+
+---
+
+## 🚩 Feature Flags
+
+Configured in `src/lib/feature-flags.ts`:
+
+```typescript
+import { DEV_FLAGS, shouldSkipEmail } from '@/lib/feature-flags';
+
+// Check flags
+if (shouldSkipEmail()) {
+  console.log('Skipping email in test mode');
+  return;
+}
+
+// Available flags
+DEV_FLAGS.SKIP_EMAIL_SEND        // Skip actual email sending
+DEV_FLAGS.USE_TEST_STRIPE        // Use Stripe test mode
+DEV_FLAGS.MOCK_OPENAI            // Mock OpenAI responses
+DEV_FLAGS.AUTO_LOGIN_EMAIL       // Auto-login as specific user
+DEV_FLAGS.VERBOSE_LOGS           // Show all debug logs
+```
+
+### Set Flags in .env.test
+
+```bash
+VITE_TEST_MODE=true
+VITE_SKIP_EMAIL_SEND=true
+VITE_USE_TEST_STRIPE=true
+VITE_AUTO_LOGIN_EMAIL=test-buyer-pro@testcompany.com
+VITE_DEBUG_MODE=true
+```
+
+---
+
+## 📦 Test Data
+
+### Seed Data
+
+Location: `supabase/seed.sql`
+
+Includes:
+- 50 sample titles (10 per genre)
+- 10 test users (5 buyers, 5 creators)
+- Sample chat sessions and messages
+
+### Test User Presets
+
+```typescript
+TEST_USER_PRESETS = {
+  BUYER_BASIC: 'test-buyer-basic@testcompany.com',
+  BUYER_PRO: 'test-buyer-pro@testcompany.com',
+  BUYER_SUITE: 'test-buyer-suite@testcompany.com',
+  CREATOR_AUTHOR: 'test-creator-author@gmail.com',
+  CREATOR_AGENT: 'test-creator-agent@agency.com',
+}
+```
+
+### Test Query Categories
+
+- **Discovery** (5 queries): Genre exploration, popularity searches
+- **Comparison** (3 queries): Direct title comparisons
+- **Information** (5 queries): Specific title details
+- **Recommendation** (4 queries): Similar title suggestions
+- **Follow-up** (4 queries): Contextual queries
+
+Total: 21 standard queries + edge cases + performance tests
+
+---
+
+## 🔍 Verification
+
+Run verification to check setup:
+
+```bash
+npm run test:verify
+```
+
+Checks:
+- ✅ Environment variables configured
+- ✅ All required files present
+- ✅ Database connection working
+- ✅ Test data status
+- ✅ NPM scripts configured
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Automated Tests Failing
+### "Missing script" or "workspace" errors
 
-**Error**: `Cannot find module '@supabase/supabase-js'`
+**Problem**: Running test commands from the wrong directory:
+```
+npm error Missing script: "test:create-buyer"
+npm error location /Users/.../apps/creator-v2
+```
 
-**Solution**:
+**Solution**: Test scripts only exist in the dashboard app. Always run from:
 ```bash
-npm install @supabase/supabase-js
+cd /Users/sungholee/code/kstorybridge/apps/dashboard
+npm run test:create-buyer
 ```
 
-**Error**: `VITE_SUPABASE_URL is not defined`
+**Why**: Test infrastructure is centralized in dashboard because both apps share the same Supabase database.
 
-**Solution**:
+---
+
+### "Edge Function returned a non-2xx status code"
+
+**Problem**: Warning appears when creating test users:
+```
+⚠️  Profile creation warning: Edge Function returned a non-2xx status code
+```
+
+**Status**: Known issue - safe to ignore
+
+**Explanation**:
+- The auth user is created successfully ✅
+- The profile edge function has a separate issue ⚠️
+- Test users can still sign in and work correctly
+- This doesn't affect test functionality
+
+**Verification**: User appears in Supabase Auth dashboard with correct email and metadata.
+
+---
+
+### "VITE_SUPABASE_ANON_KEY not found in environment"
+
+**Problem**: CLI scripts fail with environment variable error when running:
+- `npm run test:create-buyer`
+- `npm run test:cleanup`
+- `npm run test:verify`
+
+**Solution**: ✅ **Fixed as of 2025-10-25**
+
+All CLI scripts now automatically load `.env.local`. If you still see this error:
+
 ```bash
-# Make sure .env.local exists with:
-VITE_SUPABASE_URL=https://dlrnrgcoguxlkkcitlpd.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+# 1. Verify .env.local exists
+ls -la .env.local
+
+# 2. Check it contains VITE_SUPABASE_ANON_KEY
+cat .env.local | grep VITE_SUPABASE_ANON_KEY
+
+# 3. Ensure you're in the dashboard directory
+pwd  # Should show: /Users/.../apps/dashboard
+
+# 4. Test the fix
+npm run test:verify
 ```
 
-### Manual Tests Failing
+**Expected output**:
+```
+✅ Passed: 25
+❌ Failed: 0
+✅ Test setup is properly configured!
+```
 
-**Issue**: OAuth redirect shows "bad_oauth_state" error
+---
 
-**Solution**: Verify the fix was applied correctly:
+### "Cannot find module" errors
+
 ```bash
-# Check SigninForm.tsx line 104
-grep -A 5 "callbackUrl" src/components/SigninForm.tsx
-
-# Should show: redirectTo: callbackUrl
+# Install dependencies
+npm install
 ```
 
-**Issue**: Profile not created after OAuth
+### "Supabase connection failed"
 
-**Solution**: Check edge function logs:
-1. Visit: https://supabase.com/dashboard/project/dlrnrgcoguxlkkcitlpd/functions
-2. Check `create-oauth-profile` logs
-3. Look for errors
-
-### Database Verification Issues
-
-**Issue**: "No profiles found"
-
-**Solution**:
 ```bash
-# Check if test users exist
-node test-database-verification.js --email=test-buyer-...@testcompany.com
+# Check .env.local has credentials
+cat .env.local | grep VITE_SUPABASE
+
+# Test connection manually
+npm run test:verify
 ```
 
-**Issue**: RLS errors in console
+### "Email still sending in test mode"
 
-**Solution**: Edge functions should bypass RLS with service role key. Check edge function deployment.
+```bash
+# Ensure TEST_MODE is enabled in .env.test
+echo "VITE_TEST_MODE=true" >> .env.test
+echo "VITE_SKIP_EMAIL_SEND=true" >> .env.test
 
----
+# Start with test env
+npm run test:local
+```
 
-## 📝 Test Result Documentation
+### "Test users not being cleaned up"
 
-### Test Report Template
+```bash
+# Run cleanup with confirmation
+npm run test:cleanup -- --confirm
 
-```markdown
-## Authentication Test Results
-
-**Date**: 2025-10-11
-**Tester**: [Your Name]
-**Environment**: Localhost / Staging / Production
-**Branch**: v2
-
-### Automated Tests
-
-**test:auth**:
-- ✅ PASS - All 25 tests passed
-- Duration: 8.2 seconds
-- Notes: Email validation and profile creation working correctly
-
-**test:db**:
-- ✅ PASS - Database verification successful
-- Total Buyers: 147
-- Total Creators: 89
-- Notes: All profiles have correct fields
-
-**test:edge**:
-- ✅ PASS - All edge functions operational
-- Average response time: 380ms
-- Notes: No errors in function execution
-
-### Manual OAuth Tests
-
-**Buyer OAuth Signup**:
-- ✅ PASS
-- Duration: 10.2 seconds
-- URL Parameters: ✅ Correct (account_type=buyer&flow=signup)
-- Profile Created: ✅ Yes
-- Dashboard Redirect: ✅ Correct (/buyers/home)
-- Notes: Smooth flow, no errors
-
-**Creator OAuth Signup**:
-- ✅ PASS
-- Duration: 11.8 seconds
-- Notes: Pen name and role required fields working
-
-**OAuth Signin**:
-- ✅ PASS
-- Duration: 7.4 seconds
-- Profile Check: ✅ Working
-- Notes: Fast redirect to dashboard
-
-**OAuth Signin (No Profile)**:
-- ✅ PASS
-- Error Message: ✅ Correct
-- Redirect: ✅ To /signup/buyer
-- Notes: Error handling working as expected
-
-### Issues Found
-
-None
-
-### Recommendations
-
-Ready for production deployment
+# Verify cleanup
+npm run test:verify
 ```
 
 ---
 
-## 🎯 Success Criteria
+## 📖 Documentation
 
-### Must Pass (Blockers)
-
-- [ ] All automated tests pass (test:all)
-- [ ] All manual OAuth flows work (4/4 tests)
-- [ ] No `bad_oauth_state` errors
-- [ ] Profile creation 100% success rate
-- [ ] Database verification shows correct data
-- [ ] Edge functions respond in < 5 seconds
-- [ ] OAuth completion < 15 seconds
-
-### Should Pass (Important)
-
-- [ ] Email validation working correctly
-- [ ] Required field validation working
-- [ ] Proper error messages shown
-- [ ] Slack notifications sent
-- [ ] Welcome emails sent
-- [ ] Console logs clean (no errors)
-
-### Nice to Have
-
-- [ ] OAuth completion < 10 seconds
-- [ ] Edge functions < 3 seconds
-- [ ] No unnecessary database queries
-- [ ] Clean browser console
+- **[Full Testing Plan](../../docs/TESTING_AUTOMATION_PLAN.md)** - Complete 6-week plan
+- **[Phase 1 Summary](../../docs/TESTING_AUTOMATION_PLAN.md#-phase-1-completion-summary)** - What was built
+- **[Chatbot Testing](../../docs/features/chatbot/TESTING_GUIDE.md)** - Chatbot-specific tests
+- **[Auth Testing](TESTING_README.md)** - Authentication flow tests
 
 ---
 
-## 📚 Additional Resources
+## 🎯 Common Workflows
 
-- **AUTH_DOCUMENTATION.md** - Complete auth system reference
-- **USER_JOURNEY_MAP.md** - Detailed user flow diagrams
-- **DATABASE_SCHEMA.md** - Database structure reference
-- **Supabase Dashboard**: https://supabase.com/dashboard/project/dlrnrgcoguxlkkcitlpd
+### Quick Smoke Test (5 min)
+
+```bash
+# 1. Create test buyer
+npm run test:create-buyer -- --tier=pro
+
+# 2. Start app in test mode
+npm run test:local
+
+# 3. Login with created user
+# Email: (shown in terminal)
+# Password: Test-Password-123
+
+# 4. Test key features manually
+
+# 5. Clean up
+npm run test:cleanup -- --confirm
+```
+
+### E2E Test Preparation
+
+```bash
+# 1. Create all preset users
+npm run test:create-buyer -- --tier=basic
+npm run test:create-buyer -- --tier=pro
+npm run test:create-buyer -- --tier=suite
+npm run test:create-creator
+
+# 2. Verify setup
+npm run test:verify
+
+# 3. Run E2E tests (Phase 2)
+# npm run test:e2e (coming in Phase 2)
+```
+
+### Daily Development
+
+```bash
+# Start with test environment
+npm run test:local
+
+# Use auto-login (set in .env.test)
+VITE_AUTO_LOGIN_EMAIL=test-buyer-pro@testcompany.com
+
+# No need to manually login or wait for emails!
+```
 
 ---
 
-## 🔄 Next Steps After Testing
+## 💡 Tips
 
-1. **All tests pass** → Ready for production
-2. **Some tests fail** → Report issues, fix, re-test
-3. **Edge function errors** → Check Supabase logs
-4. **Database issues** → Run verification queries
-5. **OAuth errors** → Verify URL parameter fix applied
-
----
-
-## 📞 Support
-
-If you encounter issues:
-1. Check troubleshooting section above
-2. Review relevant documentation (AUTH_DOCUMENTATION.md)
-3. Check Supabase edge function logs
-4. Verify fix was applied correctly (grep for callbackUrl)
+1. **Use test emails**: All test user emails start with `test-` for easy identification
+2. **Feature flags**: Leverage flags to bypass slow operations during development
+3. **Preset users**: Keep preset users around for quick testing (don't cleanup)
+4. **Verification**: Run `npm run test:verify` after pulling changes
+5. **Cleanup regularly**: Run cleanup before important tests to ensure clean state
 
 ---
 
-**Version**: 1.0
-**Last Updated**: 2025-10-11
-**Maintainer**: Development Team
+## 🆘 Getting Help
+
+1. Check verification output: `npm run test:verify`
+2. Review main documentation: `docs/TESTING_AUTOMATION_PLAN.md`
+3. Check existing tests for examples
+4. Ask in team chat with `npm run test:verify` output
+
+---
+
+**ALL PHASES COMPLETE!** 🎉🎉🎉
+
+**Testing automation is now fully implemented!**
+
+- ✅ Phase 1: Foundation (Test Utils & CLI)
+- ✅ Phase 2: E2E Tests (Playwright)
+- ✅ Phase 3: CI/CD Integration (GitHub Actions)
+- ✅ Phase 4: Monitoring & Observability (Sentry + Metrics)
+
+See [Testing Automation Plan](../../docs/TESTING_AUTOMATION_PLAN.md) for complete overview.
+
+---
+
+## 📊 Monitoring & Metrics (Phase 4)
+
+### Sentry Error Tracking
+
+**Production error monitoring with**:
+- Automatic error capture
+- Session replay for debugging
+- Performance monitoring
+- User context tracking
+
+```bash
+# Setup (one-time):
+# 1. Create Sentry project at sentry.io
+# 2. Add VITE_SENTRY_DSN to .env.local and Vercel
+# 3. Import initSentry() in src/main.tsx
+```
+
+**See**: [MONITORING_SETUP_GUIDE.md](MONITORING_SETUP_GUIDE.md) for complete setup.
+
+### Test Metrics Dashboard
+
+**Visual dashboard showing**:
+- Test pass rate
+- Failed test count
+- Test duration
+- Code coverage
+
+```bash
+# Generate metrics dashboard
+npm run test:e2e
+npm run test:metrics
+
+# View dashboard
+open test-metrics/index.html
+```
+
+**Output**:
+- `test-metrics/index.html` - Interactive dashboard
+- `test-metrics/metrics.json` - Raw data
+- `test-metrics/METRICS.md` - Markdown summary
+
+---

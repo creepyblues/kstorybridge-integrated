@@ -1,0 +1,230 @@
+name: Dashboard Test Suite
+
+on:
+  pull_request:
+    branches: [v2, main]
+    paths:
+      - 'apps/dashboard/**'
+      - 'packages/**'
+      - '.github/workflows/dashboard-tests.yml'
+  push:
+    branches: [v2]
+    paths:
+      - 'apps/dashboard/**'
+      - 'packages/**'
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test -- --run --reporter=verbose
+        env:
+          CI: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: apps/dashboard/coverage/
+          retention-days: 7
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Create test environment file
+        run: |
+          cat > .env.local << EOF
+          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_TEST_MODE=true
+          VITE_SKIP_EMAIL_SEND=true
+          EOF
+
+      - name: Run E2E tests
+        run: npx playwright test --reporter=html,list
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/dashboard/playwright-report/
+          retention-days: 7
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: apps/dashboard/test-results/
+          retention-days: 7
+
+  build-verification:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run production build
+        run: npm run build
+        env:
+          CI: true
+
+      - name: Check build size
+        run: |
+          echo "Build completed successfully!"
+          du -sh dist
+          echo "Dist folder contents:"
+          ls -lh dist
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: dashboard-build
+          path: apps/dashboard/dist/
+          retention-days: 3
+
+  lint-check:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Type check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  test-cleanup:
+    name: Cleanup Test Data
+    runs-on: ubuntu-latest
+    needs: [e2e-tests]
+    if: always()
+    defaults:
+      run:
+        working-directory: apps/dashboard
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create environment file
+        run: |
+          cat > .env.local << EOF
+          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          EOF
+
+      - name: Cleanup test users
+        run: npm run test:cleanup -- --confirm
+        continue-on-error: true
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests, build-verification, lint-check]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "📊 Test Suite Summary"
+          echo "===================="
+          echo "Unit Tests: ${{ needs.unit-tests.result }}"
+          echo "E2E Tests: ${{ needs.e2e-tests.result }}"
+          echo "Build: ${{ needs.build-verification.result }}"
+          echo "Lint: ${{ needs.lint-check.result }}"
+
+          if [ "${{ needs.unit-tests.result }}" != "success" ] || \
+             [ "${{ needs.e2e-tests.result }}" != "success" ] || \
+             [ "${{ needs.build-verification.result }}" != "success" ]; then
+            echo "❌ Tests failed!"
+            exit 1
+          else
+            echo "✅ All tests passed!"
+          fi

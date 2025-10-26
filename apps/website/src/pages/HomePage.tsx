@@ -318,7 +318,7 @@ const HomePage = () => {
                       <TrendingUp className="h-8 w-8 text-hanok-teal" />
                     </div>
                     <h3 className="text-2xl font-bold text-midnight-ink mb-4">
-                      Are You a Buyer?
+                      Are You an IP Scout or Producer?
                     </h3>
                     <p className="text-midnight-ink-600 leading-relaxed mb-6">
                       Find your next Korean hit with AI-powered discovery, verified rights chain, and comprehensive pitch materials.

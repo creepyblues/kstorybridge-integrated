@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { titlesService, type Title } from '@/services/titlesService'
-import { Eye, BookOpen } from 'lucide-react'
+import { draftService, type TitleDraft } from '@/services/draftService'
+import { Eye, BookOpen, Clock, FileEdit } from 'lucide-react'
 
 export default function Titles() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [titles, setTitles] = useState<Title[]>([])
+  const [draft, setDraft] = useState<TitleDraft | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,8 +26,15 @@ export default function Titles() {
     try {
       setLoading(true)
       setError(null)
-      const data = await titlesService.getTitlesByCreator(user.id)
-      setTitles(data)
+
+      // Load both titles and draft in parallel
+      const [titlesData, draftData] = await Promise.all([
+        titlesService.getTitlesByCreator(user.id),
+        draftService.loadDraft(user.id)
+      ])
+
+      setTitles(titlesData)
+      setDraft(draftData)
     } catch (err) {
       console.error('Error loading titles:', err)
       setError('Failed to load titles. Please try again.')
@@ -39,6 +48,21 @@ export default function Titles() {
     if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`
     if (views >= 1000) return `${(views / 1000).toFixed(1)}K`
     return views.toLocaleString()
+  }
+
+  const formatLastSaved = (timestamp: string) => {
+    const now = new Date()
+    const saved = new Date(timestamp)
+    const diffMs = now.getTime() - saved.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+    return saved.toLocaleDateString()
   }
 
   if (loading) {
@@ -82,16 +106,25 @@ export default function Titles() {
             <h1 className="text-3xl font-bold text-black">My Titles</h1>
             <p className="text-gray-600 mt-1">Manage your content submissions</p>
           </div>
-          <Button
-            onClick={() => navigate('/titles/add')}
-            variant="outline"
-            className="border-gray-300 hover:bg-gray-100"
-          >
-            Add New Title
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate('/titles/add')}
+              variant="outline"
+              className="border-gray-300 hover:bg-gray-100"
+            >
+              Add New Title
+            </Button>
+            <Button
+              onClick={() => navigate('/titles/add-survey')}
+              variant="outline"
+              className="border-gray-300 hover:bg-gray-100"
+            >
+              Add New Title (Survey)
+            </Button>
+          </div>
         </div>
 
-        {titles.length === 0 ? (
+        {titles.length === 0 && !draft ? (
           <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardHeader>
               <CardTitle>Title List</CardTitle>
@@ -101,12 +134,67 @@ export default function Titles() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 text-center py-8">
-                No titles yet. Click "Add New Title" to submit your first title!
+                No titles yet. Click "Add New Title" or "Add New Title (Survey)" to submit your first title!
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Draft Card (if exists) */}
+            {draft && (
+              <Card
+                key="draft"
+                className="bg-transparent border-amber-400 border-2 shadow-none rounded-2xl cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate('/titles/add-survey')}
+              >
+                <CardContent className="p-0">
+                  {/* Draft Image Placeholder */}
+                  <div className="w-full h-48 bg-gradient-to-br from-amber-50 to-amber-100 rounded-t-2xl overflow-hidden flex items-center justify-center">
+                    <FileEdit className="w-12 h-12 text-amber-500" />
+                  </div>
+
+                  {/* Draft Info */}
+                  <div className="p-4">
+                    {/* Draft Badge */}
+                    <div className="mb-2">
+                      <span className="inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full bg-amber-500 text-white">
+                        DRAFT
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-black mb-1 line-clamp-1">
+                      {draft.draft_data?.title_name_en || draft.draft_data?.title_name_kr || 'Untitled Draft'}
+                    </h3>
+                    {draft.draft_data?.title_name_kr && draft.draft_data?.title_name_en && (
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-1">
+                        {draft.draft_data.title_name_kr}
+                      </p>
+                    )}
+
+                    {/* Progress Info */}
+                    <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="h-3 w-3" />
+                        <span>Step {draft.current_step} of 5</span>
+                      </div>
+                    </div>
+
+                    {/* Last Saved */}
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <Clock className="h-3 w-3" />
+                      <span>Last saved: {formatLastSaved(draft.last_saved_at)}</span>
+                    </div>
+
+                    {/* Continue Button */}
+                    <div className="mt-3">
+                      <p className="text-xs text-amber-600 font-medium">Click to continue editing →</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Title Cards */}
             {titles.map((title) => (
               <Card
                 key={title.title_id}
@@ -174,9 +262,10 @@ export default function Titles() {
           </div>
         )}
 
-        {titles.length > 0 && (
+        {(titles.length > 0 || draft) && (
           <p className="text-sm text-gray-500 text-center mt-8">
-            {titles.length} {titles.length === 1 ? 'title' : 'titles'} total
+            {titles.length} {titles.length === 1 ? 'title' : 'titles'}
+            {draft && ` + 1 draft`} total
           </p>
         )}
       </div>

@@ -1,20 +1,39 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { signInWithEmail, signInWithOAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/lib/supabase'
 
 export default function SignIn() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showEmailVerificationAlert, setShowEmailVerificationAlert] = useState(false)
+  const [unverifiedEmail, setUnverifiedEmail] = useState('')
+  const [isResendingVerification, setIsResendingVerification] = useState(false)
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
+
+  // Check if user is coming from signup and show verification reminder
+  useEffect(() => {
+    const fromSignup = searchParams.get('from') === 'signup'
+    const emailParam = searchParams.get('email')
+
+    if (fromSignup && emailParam) {
+      setUnverifiedEmail(emailParam)
+      setFormData(prev => ({ ...prev, email: emailParam }))
+      setShowEmailVerificationAlert(true)
+    }
+  }, [searchParams])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -40,7 +59,15 @@ export default function SignIn() {
       navigate('/home')
     } catch (err: any) {
       console.error('❌ Signin error:', err)
-      setError(err.message || 'Invalid email or password')
+
+      // Check for email not confirmed error
+      if (err.message?.includes('Email not confirmed')) {
+        setError('Please check your email and click the verification link before signing in.')
+        setUnverifiedEmail(formData.email)
+        setShowEmailVerificationAlert(true)
+      } else {
+        setError(err.message || 'Invalid email or password')
+      }
     } finally {
       setLoading(false)
     }
@@ -60,6 +87,40 @@ export default function SignIn() {
     }
   }
 
+  const handleResendVerification = async () => {
+    setIsResendingVerification(true)
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: unverifiedEmail,
+      })
+
+      if (error) {
+        toast({
+          title: "Resend failed",
+          description: error.message,
+          variant: "destructive"
+        })
+      } else {
+        toast({
+          title: "Verification email sent",
+          description: "Please check your email for the verification link.",
+          duration: 5000
+        })
+        setShowEmailVerificationAlert(false)
+      }
+    } catch (error) {
+      toast({
+        title: "Resend failed",
+        description: "Failed to resend verification email",
+        variant: "destructive"
+      })
+    } finally {
+      setIsResendingVerification(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
@@ -68,6 +129,39 @@ export default function SignIn() {
           <CardDescription>Welcome back to KStoryBridge</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Email Verification Alert */}
+          {showEmailVerificationAlert && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <h3 className="font-semibold text-amber-800 mb-2">Verify Your Email</h3>
+              <p className="text-sm text-amber-700 mb-3">
+                {unverifiedEmail
+                  ? `We've sent a verification link to ${unverifiedEmail}.`
+                  : "We've sent a verification link to your email."}
+              </p>
+              {unverifiedEmail && (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleResendVerification}
+                    disabled={isResendingVerification}
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                  >
+                    {isResendingVerification ? 'Sending...' : 'Resend verification email'}
+                  </Button>
+                  <Button
+                    onClick={() => setShowEmailVerificationAlert(false)}
+                    size="sm"
+                    variant="ghost"
+                    className="text-amber-700 hover:bg-amber-100"
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
           {error && (
             <div className="p-3 rounded-md bg-red-50 border border-red-200 text-red-800 text-sm">
               {error}

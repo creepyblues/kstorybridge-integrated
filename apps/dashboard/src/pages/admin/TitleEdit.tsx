@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@kstorybridge/ui";
+import { Card, CardContent, CardHeader, CardTitle, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@kstorybridge/ui";
 import { ArrowLeft, Save } from "lucide-react";
 import { titlesService, type Title, type TitleUpdate } from "@/services/titlesService";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -29,7 +29,14 @@ export default function AdminTitleEdit() {
       setLoading(true);
       const data = await titlesService.getTitleById(id);
       setTitle(data);
-      setFormData(data);
+
+      // Convert genre array to single value for the Select component
+      const formattedData = {
+        ...data,
+        genre: (Array.isArray(data.genre) ? data.genre[0] : data.genre) || ''
+      };
+
+      setFormData(formattedData);
     } catch (error) {
       console.error("Error loading title:", error);
       toast({ title: "Error loading title", variant: "destructive"});
@@ -99,27 +106,34 @@ export default function AdminTitleEdit() {
 
   const confirmSave = async () => {
     if (!titleId || !title) return;
-    
+
     try {
       setSaving(true);
-      
+
       // Prepare update data excluding system fields
       const updateData: TitleUpdate = {};
       changes.forEach(change => {
         if (!['title_id', 'created_at', 'updated_at'].includes(change.field)) {
-          (updateData as any)[change.field] = change.newValue;
+          let value = change.newValue;
+
+          // Convert genre string back to array for database
+          if (change.field === 'genre' && value && typeof value === 'string') {
+            value = [value];
+          }
+
+          (updateData as any)[change.field] = value;
         }
      });
-      
+
       await titlesService.updateTitle(titleId, updateData);
       
-      toast({ 
-        title: "Title updated successfully", 
-        description: `Updated ${changes.length} field${changes.length > 1 ? 's' : ''}` 
+      toast({
+        title: "Title updated successfully",
+        description: `Updated ${changes.length} field${changes.length > 1 ? 's' : ''}`
      });
-      
+
       setShowConfirmDialog(false);
-      navigate(`/titles/${titleId}`);
+      navigate('/admin/titles');
     } catch (error) {
       console.error("Error updating title:", error);
       toast({ title: "Error updating title", variant: "destructive"});
@@ -163,12 +177,12 @@ export default function AdminTitleEdit() {
         {/* Back Button */}
         <div className="mb-8">
           <Button
-            onClick={() => navigate(`/titles/${titleId}`)}
+            onClick={() => navigate('/admin/titles')}
             variant="ghost"
             className="text-gray-600 hover:text-gray-800"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Title Detail
+            Back to Titles List
           </Button>
         </div>
 
@@ -613,8 +627,11 @@ export default function AdminTitleEdit() {
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Confirm Changes</DialogTitle>
+              <DialogDescription>
+                Review the changes below before saving to the database.
+              </DialogDescription>
             </DialogHeader>
-            
+
             <div className="py-4">
               <p className="text-gray-600 mb-4">
                 You are about to make the following changes to "{title.title_name_en || title.title_name_kr}":

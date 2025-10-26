@@ -38,6 +38,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       description: 'Manage featured titles'
     },
     {
+      name: 'Titles',
+      href: '/admin/titles',
+      icon: List,
+      description: 'View and edit titles'
+    },
+    {
       name: 'Users',
       href: '/admin/users',
       icon: Users,

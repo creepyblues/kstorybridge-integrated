@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-10-26
 
 ## 🔄 Development Workflow (UPDATED 2025-10-21)
 
@@ -107,26 +107,41 @@ npm run preview           # Preview production build
 - Auto-generated types: `src/integrations/supabase/types.ts`
 - **CRITICAL**: Query by `email`, never by `user_id` (field doesn't exist)
 
-### Three-App Architecture (UPDATED 2025-10-22)
+### Database Migrations (UPDATED 2025-10-25)
+- **✅ Single source of truth**: `/supabase/migrations/` (root level only)
+- **❌ App-specific folders DEPRECATED**: `apps/*/supabase/migrations/` are for historical reference only
+- **Creating migrations**: Always run from root:
+  ```bash
+  cd /Users/sungholee/code/kstorybridge
+  npx supabase migration new [migration_name]
+  ```
+- **Why root only**: All apps share the same Supabase database, so migrations must be centralized
+
+### Three-App Architecture (UPDATED 2025-10-24)
 
 **Separate Apps for Different User Types**:
 
 | App | Port | Production URL | Purpose | Status |
 |-----|------|----------------|---------|--------|
 | **Dashboard** | 8081 | dashboard.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
-| **Creator** | 8082 | creator.kstorybridge.com | Creator-focused features (content management) | 🚧 Phase 1 (8% complete) |
+| **Creator V1** | 8082 | - | Legacy creator app (reference only) | 🗄️ Archived |
+| **Creator V2** | 8084 | creator.kstorybridge.com | Creator-focused features (content management) | ✅ DEPLOYED (98% Complete - One Bug Fix Pending) |
 | **Website** | 5173 | kstorybridge.com | Marketing site, auth redirects | ✅ Live |
 
 **Key Differences**:
 - **Dashboard**: Buyer routes (`/buyers/*`), AI chatbot, tier-gated content, Stripe integration
-- **Creator**: Clean URLs (`/home`, `/titles`), content management, pitch deck uploads, analytics
+- **Creator V2**: Clean URLs (`/home`, `/titles`), content management, title CRUD, profile management, OAuth working perfectly
+- **Creator V1**: Archived - reference only, replaced by V2
 - **Website**: Marketing pages, redirects to dashboard OR creator for authentication
 
 **Authentication Routing**:
 - Buyers sign up → Dashboard app (`/buyers/home`)
-- Creators sign up → Creator app (`/home`) [PLANNED - currently goes to dashboard `/creators/home`]
+- Creators sign up → Creator V2 app (`/home`) ✅ **LIVE**
 
-**See**: [Creator App Separation Project](docs/CREATOR_APP_QUICK_REFERENCE.md) for migration status
+**Known Issues**:
+- ⚠️ Creator V2: Title edit save bug (`tags` field doesn't exist in database) - Fix pending
+
+**See**: [Creator App V2 Rebuild Plan](docs/CREATOR_APP_V2_REBUILD_PLAN.md) for complete deployment history
 
 ---
 
@@ -143,14 +158,20 @@ npm run preview           # Preview production build
    - **Buyers**: Route to dashboard `/buyers/home` (redirects to `/buyers/chat`)
    - **Creators**: Route to dashboard `/creators/home` (⚠️ will change to creator app `/home`)
 
-### Planned User Flow (After Creator App Migration)
+### Planned User Flow (After Creator V2 Deployment)
 1. Users visit **Website** for marketing
 2. Website redirects based on account type:
    - Buyers → **Dashboard** app authentication
-   - Creators → **Creator** app authentication
+   - Creators → **Creator V2** app authentication
 3. After auth:
    - **Buyers**: Dashboard app `/buyers/home`
-   - **Creators**: Creator app `/home` (clean URLs)
+   - **Creators**: Creator V2 app `/home` (clean URLs)
+
+### V2 Status
+- ✅ Auth system complete (email + OAuth, no race conditions)
+- ✅ Title management complete (CRUD operations)
+- ✅ Profile management complete
+- 🚧 Testing & deployment (Phase 5 pending)
 
 ### Account Types
 - **buyer** - Media buyers with tier system (basic/pro/suite)
@@ -171,8 +192,9 @@ npm run preview           # Preview production build
 ### Database
 - ✅ **Query pattern**: `.eq('email', user.email)` (always use `email`)
 - ❌ **Never use**: `user_id` field (doesn't exist in user tables)
-- ✅ **Migration workflow**: Create in `apps/*/supabase/migrations/`, never loose SQL files
-- **See**: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)
+- ✅ **Migration workflow**: Create in `/supabase/migrations/` (root only), never loose SQL files
+- ❌ **Never use**: `apps/*/supabase/migrations/` (deprecated, historical reference only)
+- **See**: [docs/active/DATABASE_SCHEMA.md](docs/active/DATABASE_SCHEMA.md)
 
 ### Authentication
 - ✅ **OAuth callbacks**: No URL parameters, use `${window.location.origin}/auth/callback`
@@ -381,11 +403,14 @@ npm run lint:all         # Lint check
 
 ### Database Migrations
 ```bash
-cd apps/[app]/supabase
+# ALWAYS run from root directory
+cd /Users/sungholee/code/kstorybridge
 npx supabase migration new [name]
 npx supabase db reset    # Test locally first
 npx supabase db push     # Apply to production
 ```
+
+**Important**: Never create migrations in `apps/*/supabase/migrations/` - these folders are deprecated.
 
 ---
 
@@ -443,16 +468,59 @@ interface CreatorFormData {
 ## 📚 Content Management (Titles Table)
 
 ### Complete Field List
-- **Basic**: `title_id`, `title_name_kr`, `title_name_en`, `description`, `synopsis`, `tagline`, `note`
-- **Authors**: `author`, `story_author`, `art_author`, `writer`, `illustrator`
-- **Rights**: `rights`, `rights_owner`, `creator_id`
-- **Content**: `genre`, `content_format`, `chapters`, `completed`, `tags`
-- **Media**: `title_image`, `title_url`, `pitch`
-- **Metrics**: `views`, `likes`, `rating`, `rating_count`
-- **Market**: `perfect_for`, `comps` (array), `tone`, `audience`
-- **System**: `created_at`, `updated_at`
 
-**See**: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) for complete schema
+**Core Fields**:
+- `title_id`, `title_name_kr`, `title_name_en`, `is_official_english_title`, `english_title_type`
+- `synopsis`, `tagline`, `tagline_kr`, `description_kr`, `note`, `note_kr`
+
+**Authors & Credits**:
+- `story_author`, `story_author_kr`, `art_author`, `art_author_kr`
+- `original_author`, `original_author_kr`
+- `script_title_kr`, `script_title_en`, `art_title_kr`, `art_title_en`
+- `underlying_novel_kr`, `underlying_novel_en`, `creator_id`
+
+**Rights & Business**:
+- `rights`, `rights_holder_name`, `rights_holder_company`, `cp`, `pitch`
+
+**Content Classification**:
+- `genre` (array), `genre_kr` (array), `content_format`, `tone`, `audience`, `age_rating`
+- `keywords` (array), `comps` (array)
+
+**Story Details** (Questionnaire - Added 2025-10-24):
+- `inspiration`, `important_issues`, `setting_description`
+- `world_lore`, `supernatural_concepts`, `character_details` (jsonb)
+- `story_structure`, `planned_ending`, `narrative_arc`
+
+**Achievements & Recognition** (Added 2025-10-24):
+- `awards` (array), `sales_records`, `merchandise_deals`
+- `print_editions`, `print_edition_details`
+- `media_coverage`, `celebrity_endorsements`, `creator_achievements` (jsonb)
+
+**Metrics**:
+- `views`, `likes`, `rating`, `rating_count`, `chapters`, `completed`, `perfect_for`
+
+**Media**:
+- `title_image`, `title_url`
+
+**System**:
+- `priority`, `verified`, `created_at`, `updated_at`
+- Vector embeddings (1536-dim): `title_embedding`, `synopsis_embedding`, `description_embedding`, `content_embedding`, `combined_embedding`
+
+### Related Tables (Added 2025-10-24)
+
+**title_platforms**: Platform-specific metrics (Naver, Kakao, Lezhin, etc.)
+- Fields: `platform_name`, `platform_url`, `views`, `subscribers`, `other_metrics` (jsonb)
+
+**title_documents**: Document attachments (PDFs, scripts, press releases, etc.)
+- Fields: `document_type`, `file_url`, `file_name`, `file_size`, `shareable_with_nda`, `external_url`
+
+**title_drafts**: Multi-step questionnaire draft storage
+- Fields: `creator_id`, `draft_data` (jsonb), `current_step` (1-5), `last_saved_at`
+
+**title_content_analysis**: AI-generated content analysis (includes `pitch_analysis` for Phase 3 chatbot)
+- Fields: `semantic_tags`, `character_types`, `plot_elements`, `cultural_elements`, `pitch_analysis` (jsonb), `processing_confidence`
+
+**See**: [docs/active/DATABASE_SCHEMA.md](docs/active/DATABASE_SCHEMA.md) for complete schema
 
 ---
 

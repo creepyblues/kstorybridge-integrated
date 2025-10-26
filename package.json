@@ -9,11 +9,15 @@
   ],
   "scripts": {
     "dev:dashboard": "npm run dev --workspace=apps/dashboard",
+    "dev:dashboard-v2": "npm run dev --workspace=apps/dashboard-v2",
     "dev:website": "npm run dev --workspace=apps/website",
     "dev:creator": "npm run dev --workspace=apps/creator",
+    "dev:creator-v2": "npm run dev --workspace=apps/creator-v2",
     "build:dashboard": "npm run build --workspace=apps/dashboard",
+    "build:dashboard-v2": "npm run build --workspace=apps/dashboard-v2",
     "build:website": "npm run build --workspace=apps/website",
     "build:creator": "npm run build --workspace=apps/creator",
+    "build:creator-v2": "npm run build --workspace=apps/creator-v2",
     "build:packages": "npm run build --workspace=packages/auth && npm run build --workspace=packages/ui && npm run build --workspace=packages/api-client && npm run build --workspace=packages/utils && npm run build --workspace=packages/build-config && npm run build --workspace=packages/testing",
     "build:all": "npm run build:packages && npm run build:dashboard && npm run build:website && npm run build:creator",
     "lint:all": "npm run lint --workspace=apps/dashboard && npm run lint --workspace=apps/website && npm run lint --workspace=apps/creator",
@@ -31,6 +35,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
+    "@sentry/react": "^10.22.0",
     "@supabase/supabase-js": "^2.53.0",
     "class-variance-authority": "^0.7.1",
     "dotenv": "^17.2.1",

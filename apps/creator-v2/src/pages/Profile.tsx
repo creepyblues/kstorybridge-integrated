@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAuth } from '@/hooks/useAuth'
+import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 
 interface CreatorProfile {
@@ -29,6 +30,7 @@ interface CreatorProfile {
 
 export default function Profile() {
   const { user, signOut } = useAuth()
+  const { toast } = useToast()
   const [profile, setProfile] = useState<CreatorProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
@@ -91,9 +93,22 @@ export default function Profile() {
       setProfile(data)
       setFormData(data)
       setIsEditing(false)
+
+      // Show success toast
+      toast({
+        title: 'Profile Updated',
+        description: 'Your profile changes have been saved successfully',
+      })
     } catch (err) {
       console.error('Error updating profile:', err)
       setError('Failed to update profile. Please try again.')
+
+      // Show error toast
+      toast({
+        title: 'Update Failed',
+        description: 'Failed to update profile. Please try again.',
+        variant: 'destructive',
+      })
     } finally {
       setUpdating(false)
     }

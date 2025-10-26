@@ -1,6 +1,6 @@
 # Design System - KStoryBridge
 
-**Last Updated**: 2025-10-03
+**Last Updated**: 2025-10-26
 
 This document defines the visual design standards for all KStoryBridge applications.
 
@@ -223,6 +223,117 @@ className="mb-6 sm:mb-8 lg:mb-12 text-sm sm:text-base"
 - Card, Button, Badge, Label, Input, etc.
 - Radix UI primitives for accessibility
 - Consistent API across all apps
+
+## 📦 Custom Components Library
+
+### TitleCard Component
+**Location**: `src/components/title/TitleCard.tsx`
+
+Unified component for displaying title information across all pages.
+
+#### Variants
+```tsx
+// Grid variant (default) - For Titles and Saved pages
+<TitleCard title={title} variant="grid" />
+
+// Compact variant - For Chat page and inline displays
+<TitleCard title={title} variant="compact" />
+
+// With remove functionality - For Saved page
+<TitleCard
+  title={title}
+  variant="grid"
+  onRemove={handleRemove}
+  removing={isRemoving}
+/>
+```
+
+#### Features
+- Automatic data format normalization (handles both Title and ChatTitle formats)
+- Responsive image display
+- Consistent metadata badges (genre, format)
+- Stats display (views, rating, pitch availability)
+- Click-to-navigate built-in
+- Optional remove button for favorites
+
+#### Usage Guidelines
+- **Always use TitleCard** instead of inline Card code for title displays
+- Use `variant="grid"` for browse/list pages
+- Use `variant="compact"` for inline recommendations or chat results
+- Pass `onRemove` prop only when removal functionality is needed
+
+### TitleMetadata Component
+**Location**: `src/components/title/TitleMetadata.tsx`
+
+Sub-component for displaying title metadata (badges + stats).
+
+```tsx
+<TitleMetadata title={title} compact={false} />
+```
+
+**Automatically handles**:
+- Genre and format badges
+- View count formatting (K/M notation)
+- Rating display (1 decimal)
+- Pitch availability indicator
+
+### EmptyState Component
+**Location**: `src/components/common/EmptyState.tsx`
+
+Standardized empty state display.
+
+```tsx
+<EmptyState
+  icon={Heart}
+  title="No saved titles yet"
+  description="Save titles to find them easily later"
+  actionLabel="Browse Titles"
+  onAction={() => navigate('/buyers/titles')}
+/>
+```
+
+**Props**:
+- `icon`: Lucide icon component
+- `title`: Main message
+- `description`: Optional supporting text
+- `actionLabel` + `onAction`: Optional CTA button
+
+### LoadingState Component
+**Location**: `src/components/common/LoadingState.tsx`
+
+Standardized loading indicator.
+
+```tsx
+<LoadingState message="Loading titles..." />
+// or
+<LoadingState /> // No message
+```
+
+**Props**:
+- `message`: Optional loading text
+- `className`: Optional custom spacing (default: `py-12`)
+
+## 🔄 Component Modulization Benefits
+
+### Consistency
+- All title cards look identical across pages
+- One update propagates everywhere
+- Enforces design system standards
+
+### Maintainability
+- Single source of truth
+- Easier to fix bugs
+- Clear component hierarchy
+
+### Developer Experience
+- Less code duplication
+- Simpler page components
+- Self-documenting props
+
+### Future Extensibility
+- Easy to add new variants
+- Can extend with new features
+- Type-safe with TypeScript
 
 ## 🚀 Implementation Checklist
 

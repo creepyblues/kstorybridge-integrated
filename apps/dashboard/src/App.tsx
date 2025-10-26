@@ -65,6 +65,7 @@ const Experiment = lazy(() => import("./pages/Experiment"));
 const AdminTitleDetail = lazy(() => import("./pages/admin/TitleDetail"));
 const AdminTitleEdit = lazy(() => import("./pages/admin/TitleEdit"));
 const AdminAddTitle = lazy(() => import("./pages/admin/AddTitle"));
+const AdminTitles = lazy(() => import("./pages/admin/AdminTitles"));
 const AdminFeatured = lazy(() => import("./pages/admin/Featured"));
 const AdminUserApproval = lazy(() => import("./pages/admin/UserApproval"));
 const AdminScraperTest = lazy(() => import("./pages/admin/ScraperTest"));
@@ -300,6 +301,12 @@ const App = () => (
                 <Route path="/admin" element={<Navigate to="/admin/featured" replace />} />
                 <Route path="/admin/featured" element={
                   <AdminProtectedRoute><AdminLayout><AdminFeatured /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/titles" element={
+                  <AdminProtectedRoute><AdminTitles /></AdminProtectedRoute>
+                } />
+                <Route path="/admin/titles/:titleId/edit" element={
+                  <AdminProtectedRoute><AdminTitleEdit /></AdminProtectedRoute>
                 } />
                 <Route path="/admin/users" element={
                   <AdminProtectedRoute><AdminLayout><AdminUserApproval /></AdminLayout></AdminProtectedRoute>

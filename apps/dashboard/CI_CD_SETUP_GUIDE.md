@@ -22,14 +22,14 @@ The CI/CD pipeline automatically runs tests on every PR and deployment:
 
 ## 🔐 Required GitHub Secrets
 
-### Step 1: Add Repository Secrets
+### Step 1: Add Repository Secrets✅
 
 Navigate to: `Settings` → `Secrets and variables` → `Actions` → `New repository secret`
 
 Add the following secrets:
 
 | Secret Name | Value | Description |
-|------------|-------|-------------|
+|-------------|-------|-------------|
 | `VITE_SUPABASE_URL` | `https://dlrnrgcoguxlkkcitlpd.supabase.co` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` | Supabase anon key (from `.env.local`) |
 
@@ -43,7 +43,7 @@ cat apps/dashboard/.env.local | grep VITE_SUPABASE
 
 ## ⚙️ GitHub Repository Settings
 
-### Step 2: Enable GitHub Actions
+### Step 2: Enable GitHub Actions✅
 
 1. Go to `Settings` → `Actions` → `General`
 2. Under "Actions permissions", select:
@@ -92,7 +92,7 @@ Click **Create** for each branch.
 
 ---
 
-## 🌐 Vercel Integration (Optional)
+## 🌐 Vercel Integration (Optional) -> "Pro" only
 
 ### Step 4: Configure Vercel Deployment Webhooks
 

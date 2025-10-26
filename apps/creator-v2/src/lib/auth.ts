@@ -1,4 +1,6 @@
 import { supabase } from './supabase'
+import { createCreatorViaEdgeFunction } from '../services/emailSignupEdgeFunction'
+import { sendWelcomeEmail } from '../services/emailService'
 
 // Types
 export interface CreatorProfile {
@@ -48,6 +50,7 @@ export async function signUpWithEmail(data: SignUpData) {
     email: normalizedEmail,
     password: data.password,
     options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`, // ✅ Redirect to creator app
       data: {
         account_type: 'creator', // ✅ Set during signup, not after
         full_name: data.full_name,
@@ -66,16 +69,45 @@ export async function signUpWithEmail(data: SignUpData) {
 
   console.log('✅ Auth signup successful, user ID:', authData.user.id)
 
-  // Step 2: Create creator profile
+  // Step 2: Create creator profile via edge function
+  // Edge function uses service role key to bypass RLS timing issues
   try {
-    await createCreatorProfile(authData.user.id, normalizedEmail, data)
-    console.log('✅ Creator profile created successfully')
+    const result = await createCreatorViaEdgeFunction({
+      id: authData.user.id,
+      email: normalizedEmail,
+      full_name: data.full_name,
+      pen_name: data.pen_name,
+      ip_owner_role: data.ip_owner_role,
+      ip_owner_company: data.ip_owner_company || null,
+      website_url: data.website_url || null,
+    })
+
+    if (!result.success) {
+      throw new Error(result.error || 'Profile creation failed')
+    }
+
+    console.log('✅ Creator profile created successfully via edge function')
   } catch (profileError) {
     console.error('❌ Profile creation failed:', profileError)
     console.warn('⚠️ Orphaned auth user may exist. User should retry signup with same email.')
     // Note: Cannot delete auth user from client (requires service role key)
     // Supabase will return "User already exists" on retry, which is handled gracefully
     throw profileError
+  }
+
+  // Step 3: Send welcome email (non-blocking)
+  // Email failures won't prevent signup completion
+  try {
+    await sendWelcomeEmail({
+      userName: data.full_name,
+      userEmail: normalizedEmail,
+      accountType: 'creator',
+      dashboardUrl: `${window.location.origin}/home`,
+      loginUrl: `${window.location.origin}/signin`,
+    })
+  } catch (emailError) {
+    // Log but don't fail signup if email fails
+    console.warn('⚠️ Welcome email failed (non-blocking):', emailError)
   }
 
   return { user: authData.user, session: authData.session }
@@ -157,10 +189,24 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
 
   console.log('👤 User found:', user.id)
 
-  // Step 1: Create creator profile
+  // Step 1: Create creator profile via edge function
+  // Edge function uses service role key to bypass any RLS issues
   try {
-    await createCreatorProfile(user.id, user.email!, profileData)
-    console.log('✅ Creator profile created')
+    const result = await createCreatorViaEdgeFunction({
+      id: user.id,
+      email: user.email!,
+      full_name: profileData.full_name,
+      pen_name: profileData.pen_name,
+      ip_owner_role: profileData.ip_owner_role,
+      ip_owner_company: profileData.ip_owner_company || null,
+      website_url: profileData.website_url || null,
+    })
+
+    if (!result.success) {
+      throw new Error(result.error || 'Profile creation failed')
+    }
+
+    console.log('✅ Creator profile created via edge function')
   } catch (profileError) {
     console.error('❌ Profile creation failed:', profileError)
     throw profileError
@@ -175,8 +221,6 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
 
     if (metadataError) {
       console.error('❌ Metadata update failed:', metadataError)
-      // Cleanup: Delete profile if metadata update fails
-      await deleteCreatorProfile(user.id)
       throw metadataError
     }
 
@@ -186,43 +230,27 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
     throw error
   }
 
+  // Step 3: Send welcome email (non-blocking)
+  // Email failures won't prevent OAuth signup completion
+  try {
+    await sendWelcomeEmail({
+      userName: profileData.full_name,
+      userEmail: user.email!,
+      accountType: 'creator',
+      dashboardUrl: `${window.location.origin}/home`,
+      loginUrl: `${window.location.origin}/signin`,
+    })
+  } catch (emailError) {
+    // Log but don't fail OAuth completion if email fails
+    console.warn('⚠️ Welcome email failed (non-blocking):', emailError)
+  }
+
   return user
 }
 
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
-
-/**
- * Create creator profile in user_creators table
- */
-async function createCreatorProfile(
-  userId: string,
-  email: string,
-  profile: CreatorProfile
-) {
-  const { error } = await supabase.from('user_creators').insert({
-    id: userId,
-    email: email.toLowerCase(),
-    full_name: profile.full_name,
-    pen_name: profile.pen_name,
-    ip_owner_role: profile.ip_owner_role,
-    ip_owner_company: profile.ip_owner_company || null,
-    website_url: profile.website_url || null,
-    invitation_status: 'active',
-  })
-
-  if (error) {
-    throw error
-  }
-}
-
-/**
- * Delete creator profile (cleanup on failure)
- */
-async function deleteCreatorProfile(userId: string) {
-  await supabase.from('user_creators').delete().eq('id', userId)
-}
 
 /**
  * Check if creator profile exists

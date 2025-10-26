@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/lib/supabase'
 
 export default function SignUp() {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -62,8 +65,19 @@ export default function SignUp() {
         website_url: formData.website_url || undefined,
       })
 
-      console.log('✅ Signup successful, redirecting to home')
-      navigate('/home')
+      console.log('✅ Signup successful, showing confirmation message')
+
+      // Show success toast
+      toast({
+        title: "Account Created!",
+        description: "Please check your email to confirm your account.",
+      })
+
+      // Sign out to force email verification
+      await supabase.auth.signOut()
+
+      // Redirect to signin with email parameter
+      navigate(`/signin?from=signup&email=${encodeURIComponent(formData.email)}`, { replace: true })
     } catch (err: any) {
       console.error('❌ Signup error:', err)
       setError(err.message || 'Failed to sign up. Please try again.')

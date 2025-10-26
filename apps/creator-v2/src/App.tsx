@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/hooks/useAuth'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import { Toaster } from '@/components/ui/toaster'
 
 // Auth pages
 import SignUp from '@/pages/auth/SignUp'
@@ -14,6 +15,8 @@ import Home from '@/pages/Home'
 import Titles from '@/pages/Titles'
 import TitleDetail from '@/pages/TitleDetail'
 import AddTitle from '@/pages/AddTitle'
+import AddTitleSurvey from '@/pages/AddTitleSurvey'
+import EditTitle from '@/pages/EditTitle'
 import Profile from '@/pages/Profile'
 import Requests from '@/pages/Requests'
 import News from '@/pages/News'
@@ -23,6 +26,7 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <Router>
+          <Toaster />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Navigate to="/signin" replace />} />
@@ -53,6 +57,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AddTitle />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/titles/add-survey"
+              element={
+                <ProtectedRoute>
+                  <AddTitleSurvey />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/titles/:titleId/edit"
+              element={
+                <ProtectedRoute>
+                  <EditTitle />
                 </ProtectedRoute>
               }
             />

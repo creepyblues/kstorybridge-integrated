@@ -1,8 +1,8 @@
 # CLAUDE.md - Dashboard App
 
-**App Scope**: User dashboard for authenticated buyers and creators with complex authentication flows, tier-based access control, and premium content management.
+**App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. Contains authentication pages for both buyers and creators (creator auth will migrate to creator app in future).
 
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-10-22
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -28,17 +28,19 @@ Large sections have been extracted to separate files for better organization:
 
 ## Development Commands
 
-- `npm run dev` - Start development server on port 8080
+- `npm run dev` - Start development server on port 8081
 - `npm run build` - Build for production
 - `npm run build:dev` - Development build
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 
+**Note**: This app runs on port **8081**. Creator app runs on port 8082, website on 5173.
+
 ---
 
 ## Architecture Overview
 
-React-based dashboard built with Vite, TypeScript, and shadcn/ui components. Serves different dashboards based on user account types (buyers vs creators).
+React-based dashboard built with Vite, TypeScript, and shadcn/ui components. **Primary focus**: Buyer features (AI chatbot, tier system, premium content). Also serves creator dashboard routes temporarily (will migrate to separate creator app).
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite
@@ -51,11 +53,12 @@ React-based dashboard built with Vite, TypeScript, and shadcn/ui components. Ser
 ### Key Patterns
 
 **Authentication** (CRITICAL):
-- **This app contains ALL authentication pages** (signin, signup, OAuth callback)
+- **This app currently contains authentication pages for BOTH buyers and creators**
 - Website app redirects here for authentication
 - Uses Supabase auth with custom AuthProvider (`src/hooks/useAuth.tsx`)
 - Account type in user metadata determines dashboard routing
 - OAuth redirects to `/auth/callback` in THIS app
+- **Future**: Creator authentication will move to creator app (separate at creator.kstorybridge.com)
 
 **Auth Pages**:
 - `/signin` - Sign in

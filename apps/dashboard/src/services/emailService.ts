@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { syncOAuthUserMetadata, getCurrentUserForSync } from '@/utils/oauthMetadataSync';
+import { shouldSkipEmail, testLog } from '@/lib/feature-flags';
 
 interface BaseEmailData {
   to: string;
@@ -179,6 +180,14 @@ export class EmailService {
    */
   async sendEmail(emailData: EmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
+      // Check if email sending should be skipped (test mode)
+      if (shouldSkipEmail()) {
+        testLog(`[EMAIL SKIPPED] To: ${emailData.to}, Subject: ${emailData.subject}`);
+        testLog('[EMAIL SKIPPED] Email would have been sent, but SKIP_EMAIL_SEND flag is active');
+        // Return success to not break test flows
+        return { success: true, messageId: `mock-${Date.now()}` };
+      }
+
       console.log('📧 Sending email:', { to: emailData.to, subject: emailData.subject });
 
       const { data, error } = await supabase.functions.invoke('send-email', {

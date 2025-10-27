@@ -1,0 +1,758 @@
+[
+  {
+    "title_id": "2448b5ea-8222-4bd7-a559-30d194f9d322",
+    "title_name": "Punch Drunk Love",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2025-02-05/xt/xt2c6BA7zuBPNRTP.jpg",
+    "previous_image": "https://static.mantacdn.net/2024-01-05/gK/gKQHoj1mM6bGvYfe.jpg",
+    "url": "https://manta.net/en/series/punch-drunk-love?seriesId=2090"
+  },
+  {
+    "title_id": "c0fc47fb-3461-42fd-bcb3-b210000fbc18",
+    "title_name": "Winter Wolf",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2024-11-13/Ba/Bajd1y7ddBhYq5nh.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-07-09/eT/eTNcs4mFucFOxNFp.jpg",
+    "url": "https://manta.net/en/series/winter-wolf?seriesId=1965"
+  },
+  {
+    "title_id": "14f3aa3a-b481-40bf-88ad-dcb3f06a451c",
+    "title_name": "My Sweet Enemy, Thy Name is Husband",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2024-01-05/Gi/GiN8pMnzFGIXqpmR.jpg",
+    "previous_image": "https://static.mantacdn.net/2023-12-07/Pl/PlIjqjhMc2TmGL3v.jpg",
+    "url": "https://manta.net/en/series/my-sweet-enemy-thy-name-is-husband?seriesId=2173"
+  },
+  {
+    "title_id": "1813044e-306f-4479-87cb-bb212b502e1f",
+    "title_name": "Werewolves Going Crazy Over Me",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2025-05-19/QL/QLcKK2HlSxpPNVq0.jpg",
+    "previous_image": "https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg",
+    "url": "https://manta.net/en/series/werewolves-going-crazy-over-me?seriesId=2107"
+  },
+  {
+    "title_id": "0fd314ba-6041-41fd-a9dd-6624eec61e26",
+    "title_name": "Sangyang: The Wanderer",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2023-03-31/Kr/Krftlp6rIwdDMlvP.jpg",
+    "previous_image": "https://static.mantacdn.net/2023-06-02/Hl/HldDm0f83IsaG2kv.jpg",
+    "url": "https://manta.net/en/series/sangyang-the-wanderer?seriesId=2007"
+  },
+  {
+    "title_id": "0cfbbe46-e4b3-4d29-925a-a5e9e88bcdab",
+    "title_name": "Devil at the Crossroads",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2023-02-02/nj/njX5Gm4Sz0QX0Iaw.jpg",
+    "previous_image": "https://static.mantacdn.net/2023-04-27/ck/ckHNqJuxp5WuXp1G.jpg",
+    "url": "https://manta.net/en/series/devil-at-the-crossroads?seriesId=2089"
+  },
+  {
+    "title_id": "a254b69c-b1d4-4c54-acac-723be6cf8b7e",
+    "title_name": "My Second Life as an Idol",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2023-03-02/Iy/IyGlhkUuz8bXfYS9.jpg",
+    "previous_image": "https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg",
+    "url": "https://manta.net/en/series/my-second-life-as-an-idol?seriesId=2060"
+  },
+  {
+    "title_id": "b1798def-906c-4bcc-91ec-030e661ce914",
+    "title_name": "The Fantastical After-School Writing Club",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2023-01-16/sD/sD1DM1dmj3n6vnDi.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg",
+    "url": "https://manta.net/en/series/the-fantastical-after-school-writing-club?seriesId=2154"
+  },
+  {
+    "title_id": "f6b4fb66-9baf-4e71-a5fb-adae0b7eccc3",
+    "title_name": "The Dilettante",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2024-01-05/Bn/BntQTqOnSa9HlEEn.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg",
+    "url": "https://manta.net/en/series/the-dilettante?seriesId=1929"
+  },
+  {
+    "title_id": "e87ca7b0-976c-44c8-84be-898611bd62ff",
+    "title_name": "My Miraculous Bookstore",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2022-10-05/cF/cFszK5uO3ZqQzCoT.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-05-05/0d/0dlZPUpNrlczkGzi.jpg",
+    "url": "https://manta.net/en/series/my-miraculous-bookstore?seriesId=1974"
+  },
+  {
+    "title_id": "594d0196-8d77-4f82-86f7-7ef645338c17",
+    "title_name": "The Accidental Heiress",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/thumb/2022-06-03/EK/EKbJOOXWyCGWnrpI.jpg",
+    "previous_image": "https://static.mantacdn.net/2024-01-05/Vp/VppqScRfPPRW1SuY.jpg",
+    "url": "https://manta.net/en/series/the-accidental-heiress?seriesId=1770"
+  },
+  {
+    "title_id": "3803fd38-2cd9-4612-bed3-c962d82ed2e7",
+    "title_name": "Paljae, Child of Winter",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2024-01-04/kO/kOwAv2NUlTuE0CWc.jpg",
+    "previous_image": "https://static.mantacdn.net/2023-07-13/v3/v3JdyG5CgYG3eWs5.jpg",
+    "url": "https://manta.net/en/series/paljae-child-of-winter?seriesId=1775"
+  },
+  {
+    "title_id": "cae9e60c-e7d6-4a96-acb4-f29687a980b0",
+    "title_name": "Being Me, Being You",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2022-03-30/Ox/OxWjRNTdY3BHgLyV.jpg",
+    "previous_image": "https://static.mantacdn.net/2022-04-01/lX/lXEqC6fnfIxg8Qs6.jpg",
+    "url": "https://manta.net/en/series/being-me-being-you?seriesId=1800"
+  },
+  {
+    "title_id": "81f2b150-6c1a-4224-90ac-6a8437e873b1",
+    "title_name": "Happiness Starts at Home",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2022-02-18/Gv/Gvx1RCkqnZaTcQJs.jpg",
+    "previous_image": "https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg",
+    "url": "https://manta.net/en/series/happiness-starts-at-home?seriesId=1787"
+  },
+  {
+    "title_id": "83927eac-40f0-4816-8d36-f717d353a30d",
+    "title_name": "NPCs Can Save the World Too!",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2024-01-04/8A/8AIglHk6sWVjhSvA.jpg",
+    "previous_image": "https://static.mantacdn.net/2024-11-04/9N/9N7CzghWfMPlygw0.jpg",
+    "url": "https://manta.net/en/series/npcs-can-save-the-world-too?seriesId=1697"
+  },
+  {
+    "title_id": "7077d89f-23ec-4ccd-9f20-57c0a30bffe3",
+    "title_name": "I Work at a Witch's Mansion",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2021-12-01/sG/sGEgxwdtHBi13cNk.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-01-11/dl/dlPg3ziM11o07ar4.jpg",
+    "url": "https://manta.net/en/series/i-work-at-a-witch-s-mansion?seriesId=1223"
+  },
+  {
+    "title_id": "dbbf1602-011e-41ca-b576-4267c1fdd272",
+    "title_name": "Goodbye, Dieting!",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2021-03-07/N2/N2iZ9QgOKwHCtLfe.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-02-03/Mb/Mbty6AetQZF2aPTI.jpg",
+    "url": "https://manta.net/en/series/goodbye-dieting?seriesId=1289"
+  },
+  {
+    "title_id": "5e1bca6c-cd21-4450-834e-4379d59809dd",
+    "title_name": "I Raised a Black Dragon",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2022-02-18/Ct/Ct3kAhDXnMmE3F4V.jpg",
+    "previous_image": "https://static.mantacdn.net/2023-01-05/DB/DBbHVKZW9tiSVSea.jpg",
+    "url": "https://manta.net/en/series/i-raised-a-black-dragon?seriesId=1768"
+  },
+  {
+    "title_id": "d13ddbe1-ffe6-46de-91f7-bce685d867bf",
+    "title_name": "Bongchon Bride",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2023-03-02/Iy/IyGlhkUuz8bXfYS9.jpg",
+    "previous_image": "https://static.mantacdn.net/2024-09-11/kz/kzbqN8ppP0XuO8xT.jpg",
+    "url": "https://manta.net/en/series/my-second-life-as-an-idol?seriesId=2060"
+  },
+  {
+    "title_id": "6afd8eaf-569d-4227-9183-a9d39d0f3916",
+    "title_name": "Reborn as the Enemy Prince",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2024-06-28/Un/UnQoBGpwJsGrNarq.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-07-18/9k/9kRZRgdpk9Llh50Z.jpg",
+    "url": "https://manta.net/en/series/reborn-as-the-enemy-prince?seriesId=2328"
+  },
+  {
+    "title_id": "bf9f9e26-bc41-41e8-ad46-66b4fde2d5c6",
+    "title_name": "Wish Upon a Husband",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2024-01-04/x2/x2TGBQk6peNNJZW3.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-01-24/6a/6aw4oKlJFHRxwNRl.jpg",
+    "url": "https://manta.net/en/series/wish-upon-a-husband?seriesId=1799"
+  },
+  {
+    "title_id": "c87644c8-1cfd-4c95-b8e3-eb48a131f277",
+    "title_name": "Juliet, We're Not in Kansas Anymore!",
+    "status": "success",
+    "action": "updated",
+    "image_url": "https://static.mantacdn.net/2023-10-05/Qk/QkVpks9Q1u0i3dVQ.jpg",
+    "previous_image": "https://static.mantacdn.net/2025-07-18/HR/HRpd00PtY6KnKbdq.jpg",
+    "url": "https://manta.net/en/series/juliet-we-re-not-in-kansas-anymore?seriesId=2144"
+  },
+  {
+    "title_id": "484203bf-5148-413d-b93e-84ba50166d9a",
+    "title_name": "Call Me Master",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/call-me-master?seriesId=2180"
+  },
+  {
+    "title_id": "e388e37f-7a11-4ca4-8164-15339c6bfda4",
+    "title_name": "Homo Plastikos",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/homo-plastikos?seriesId=2436"
+  },
+  {
+    "title_id": "6ff53693-d898-4311-be5a-ff819d34812f",
+    "title_name": "The Redemption of Earl Nottingham",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-redemption-of-earl-nottingham?seriesId=2071"
+  },
+  {
+    "title_id": "4a834f17-ac0c-430c-a2df-0e0a61f6724c",
+    "title_name": "The Duke's Fake Sister",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-duke-s-fake-sister?seriesId=1772"
+  },
+  {
+    "title_id": "add27af2-1cf2-4f31-ab6c-fdb4842aa577",
+    "title_name": "When Fate Finds Us",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/when-fate-finds-us?seriesId=2182"
+  },
+  {
+    "title_id": "fe0ac154-f343-4943-b297-e7b103c4a723",
+    "title_name": "Cold-Blooded Beast",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/cold-blooded-beast?seriesId=2085"
+  },
+  {
+    "title_id": "9e74881a-4a33-4d1e-b8ee-ae4be165fbcb",
+    "title_name": "Rewriting My Tragic Ending",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/rewriting-my-tragic-ending?seriesId=2073"
+  },
+  {
+    "title_id": "bfd26f1e-acae-46f8-99d9-154699fcd178",
+    "title_name": "May God Bless Your Demise",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/may-god-bless-your-demise?seriesId=1981"
+  },
+  {
+    "title_id": "d5b4a1d0-7b4b-40f2-83d4-de6bcef08fe7",
+    "title_name": "Love Lies",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/love-lies?seriesId=1277"
+  },
+  {
+    "title_id": "6a0a8bea-10be-486e-89ee-34177828e19b",
+    "title_name": "I Became a Doting Father",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/i-became-a-doting-father?seriesId=1752"
+  },
+  {
+    "title_id": "17e1a427-1083-482b-85ae-e3258be98efd",
+    "title_name": "Cheolsu Saves the World",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/cheolsu-saves-the-world?seriesId=1826"
+  },
+  {
+    "title_id": "4bd3a7a3-40a1-4cde-ab2f-8d52dd39cca2",
+    "title_name": "Isnelda",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/isnelda?seriesId=1825"
+  },
+  {
+    "title_id": "75f3dd37-4111-494f-b451-dc3c22ed6803",
+    "title_name": "The Devil and His Sacrifice",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-devil-and-his-sacrifice?seriesId=1925"
+  },
+  {
+    "title_id": "a221dad3-93ba-4a6c-b9bd-cab11af10cb0",
+    "title_name": "You Get Me Going",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/you-get-me-going?seriesId=2081"
+  },
+  {
+    "title_id": "935651fe-d70c-40d1-a923-449b51b0f335",
+    "title_name": "Countdown to Love",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/countdown-to-love?seriesId=2177"
+  },
+  {
+    "title_id": "d6cdcc3a-b7a0-446b-97e0-1310d672c6aa",
+    "title_name": "Falling for Danger",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/falling-for-danger?seriesId=2195"
+  },
+  {
+    "title_id": "e1d472ae-8b9e-48c2-a47c-919fa910765a",
+    "title_name": "Heartrate Presto",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/heartrate-presto?seriesId=2092"
+  },
+  {
+    "title_id": "b5c4e3a5-1f6e-4f46-b099-eb80aa94f7da",
+    "title_name": "The Many Seasons of Food",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-many-seasons-of-food?seriesId=2274"
+  },
+  {
+    "title_id": "b4b35705-6d22-40e7-84dc-b94d217542cb",
+    "title_name": "Falling for a Dying Princess",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/falling-for-a-dying-princess?seriesId=2065"
+  },
+  {
+    "title_id": "91068599-1dc8-4ceb-b173-3ff20cc15d9a",
+    "title_name": "My Master, My Prince",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/my-master-my-prince?seriesId=2093"
+  },
+  {
+    "title_id": "2b9ca011-a6ac-4c84-a9c5-0c6960900c57",
+    "title_name": "Opposites Attract",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/opposites-attract?seriesId=2094"
+  },
+  {
+    "title_id": "4a8f9233-e9fb-4dfd-b0e1-14fb50800bf1",
+    "title_name": "The Superheroes of Class F",
+    "status": "no_image_found",
+    "url": "https://www.acfm.kr/eng/addon/10000001/page.asp?page_num=3880"
+  },
+  {
+    "title_id": "7d626b88-c82c-481f-bbf9-a205a69806bc",
+    "title_name": "The Flower of Veneration",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-flower-of-veneration?seriesId=1982"
+  },
+  {
+    "title_id": "2413e8f0-34ef-4bf2-b3fc-6ef27ff6fd96",
+    "title_name": "The Woodsman and the Stag",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-woodsman-and-the-stag?seriesId=2091"
+  },
+  {
+    "title_id": "4364b5c6-4789-4c58-8d78-0cb639895d83",
+    "title_name": "Shoot for the Stars",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/shoot-for-the-stars?seriesId=1961"
+  },
+  {
+    "title_id": "2bd0068c-8a26-46d3-843a-8fe4b4e049e8",
+    "title_name": "The Deviless' Impression of a Princess",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-deviless-s-impression-of-a-princess?seriesId=2105"
+  },
+  {
+    "title_id": "be36df58-80e1-44de-a51e-0498435821d9",
+    "title_name": "Shall We Bathe, Your Grace?",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/shall-we-bathe-your-grace?seriesId=2061"
+  },
+  {
+    "title_id": "51aace45-4ee7-466a-b874-b8887fc4e67d",
+    "title_name": "The Fallen Duke & the Knight Who Hated Him",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-fallen-duke-the-knight-who-hated-him?seriesId=2063"
+  },
+  {
+    "title_id": "38198638-610d-4eaa-a7f0-941cdd8b3d77",
+    "title_name": "The Blood Moon",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-blood-moon?seriesId=2103"
+  },
+  {
+    "title_id": "7e9146e4-1b36-4c5b-ab28-4af4ead2afd5",
+    "title_name": "Science Tikitaka",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/science-tikitaka?seriesId=1863"
+  },
+  {
+    "title_id": "06a6ac30-0b8b-49c6-9b37-e9e02ed99537",
+    "title_name": "I Can See Your Stats!",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/i-can-see-your-stats?seriesId=2267"
+  },
+  {
+    "title_id": "2613fd45-ca78-406a-8d11-3580326d1ea2",
+    "title_name": "The Tale of the Frost Flower",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-tale-of-the-frost-flower?seriesId=1910"
+  },
+  {
+    "title_id": "c4e6c20c-d946-4497-872c-227aaf3dfce0",
+    "title_name": "Zodiac Hunters",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/zodiac-hunters?seriesId=2155"
+  },
+  {
+    "title_id": "ffd5d491-428f-46c5-b9c5-7e806f10dee7",
+    "title_name": "Reunion",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/reunion?seriesId=2078"
+  },
+  {
+    "title_id": "89067fe7-b3aa-49b6-aecd-e66c189f3ba9",
+    "title_name": "Bittersweet Con Panna",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/bittersweet-con-panna?seriesId=2006"
+  },
+  {
+    "title_id": "2bb88b2a-599b-454a-9cf5-9b084c1dbe87",
+    "title_name": "Betrayal of Dignity",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/betrayal-of-dignity?seriesId=2067"
+  },
+  {
+    "title_id": "3fa4a863-1492-4a97-a944-cab61b3c73c4",
+    "title_name": "Arpeggio on the Surface of the Sea",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/arpeggio-on-the-surface-of-the-sea?seriesId=2083"
+  },
+  {
+    "title_id": "70eea124-ce24-4a44-b9c2-5ebcae7bacc2",
+    "title_name": "Trophy Husband",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/trophy-husband?seriesId=1874"
+  },
+  {
+    "title_id": "82747af4-f8a8-4bb1-af1e-f5e8ac793801",
+    "title_name": "Justice Now!",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/justice-now?seriesId=1978"
+  },
+  {
+    "title_id": "2ba01662-71b0-4fe6-930e-be4bd271ea4e",
+    "title_name": "Mokrin",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/mokrin?seriesId=1953"
+  },
+  {
+    "title_id": "b8f1367c-94a7-41a2-baf6-a8ac974584ef",
+    "title_name": "Even If...",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/even-if?seriesId=1918"
+  },
+  {
+    "title_id": "43937bbd-be21-4ae4-a141-cbdf695f91c2",
+    "title_name": "I've Become a True Villainess",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/i-ve-become-a-true-villainess?seriesId=1931"
+  },
+  {
+    "title_id": "d3d999f8-bded-4692-9df0-5665353b0268",
+    "title_name": "The Forgotten Princess Just Wants Peace",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-forgotten-princess-just-wants-peace?seriesId=1912"
+  },
+  {
+    "title_id": "45c1ce60-08ef-4029-864e-1fb8c3fa3e80",
+    "title_name": "Getting Along Just Fine",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/getting-along-just-fine?seriesId=1831"
+  },
+  {
+    "title_id": "8e32a092-7d01-4307-afad-302a9a0f098b",
+    "title_name": "Duchess Crow",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/duchess-crow?seriesId=1913"
+  },
+  {
+    "title_id": "dd67888c-bd8c-4ad6-b134-b1ad97e080c7",
+    "title_name": "Your Eternal Lies",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/your-eternal-lies?seriesId=1909"
+  },
+  {
+    "title_id": "d0eaaddf-2d0f-4b9b-8e09-3453ba663f1e",
+    "title_name": "The Year of No Shopping",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-year-of-no-shopping?seriesId=1865"
+  },
+  {
+    "title_id": "ebf5e1d4-6aa2-4784-952e-85e8f80502ab",
+    "title_name": "Fry My Life",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/fry-my-life?seriesId=1833"
+  },
+  {
+    "title_id": "66760b36-fdda-49cd-8720-f855384d5505",
+    "title_name": "[ blank。]",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/blank?seriesId=1858"
+  },
+  {
+    "title_id": "122ad9a1-1626-4c18-b9f7-6b3b8e250def",
+    "title_name": "The Secret of Umbra",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-secret-of-umbra?seriesId=1855"
+  },
+  {
+    "title_id": "805e7c66-1868-44b6-ac50-ec6f06bc2c79",
+    "title_name": "Nowhere But Iceland",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/nowhere-but-iceland?seriesId=1824"
+  },
+  {
+    "title_id": "8db1c816-4ece-43fa-8cac-4f831864fd1d",
+    "title_name": "Whispers Through the Willows",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/whispers-through-the-willows?seriesId=1423"
+  },
+  {
+    "title_id": "cbb957fc-cf21-434d-a0a1-64a44c08bc8b",
+    "title_name": "The Script",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-script?seriesId=1774"
+  },
+  {
+    "title_id": "f29cb752-cb3c-4eb5-9fee-a40f6cf95815",
+    "title_name": "Kneel Before Me",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/kneel-before-me?seriesId=1783"
+  },
+  {
+    "title_id": "c28790d7-6d69-4eb9-b2d0-c4805d9d1a77",
+    "title_name": "Evangeline's Sword",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/evangeline-s-sword?seriesId=1830"
+  },
+  {
+    "title_id": "6b35e586-4082-4cac-a7a5-48612df05144",
+    "title_name": "Terrarium Adventure",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/terrarium-adventure?seriesId=1691"
+  },
+  {
+    "title_id": "bec9732b-0781-4eaf-b23c-caba7d10c874",
+    "title_name": "Flip Turn",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/flip-turn?seriesId=1216"
+  },
+  {
+    "title_id": "e9d4369a-6e36-449e-8b56-bfb33232f72c",
+    "title_name": "Flash Behavior",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/flash-behavior?seriesId=1773"
+  },
+  {
+    "title_id": "3674b0c3-777e-4cfc-bb34-7a94b0e84eb3",
+    "title_name": "The Quant of Wall Street",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-quant-of-wall-street?seriesId=1792"
+  },
+  {
+    "title_id": "fed7124b-52e8-4a3f-a4bb-2bb3d33083f4",
+    "title_name": "Stand Up, Now!",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/stand-up-now?seriesId=1795"
+  },
+  {
+    "title_id": "f7d326fe-6264-4718-80bf-500094f4d0ad",
+    "title_name": "Restoring Art and Love",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/restoring-art-and-love?seriesId=1785"
+  },
+  {
+    "title_id": "ebf9e63c-af25-48fe-b44b-3a4a4949cf46",
+    "title_name": "The Summer of Penguins",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-summer-of-penguins?seriesId=1749"
+  },
+  {
+    "title_id": "c5625f30-29f8-4715-9064-2b2e8bdf7c64",
+    "title_name": "A Zero Waste Life",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/a-zero-waste-life?seriesId=1711"
+  },
+  {
+    "title_id": "06067d4e-358f-4868-8427-d9011fe89924",
+    "title_name": "Stone House on Jeju Island",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/stone-house-on-jeju-island?seriesId=1446"
+  },
+  {
+    "title_id": "ef4f9cfb-ac86-4355-bee9-16cd79de48f9",
+    "title_name": "Shall We Pole Dance?",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/shall-we-pole-dance?seriesId=1443"
+  },
+  {
+    "title_id": "ad2aeb6b-831d-4c8a-9f14-ce27ece2f421",
+    "title_name": "My Husband, My Sister, and I",
+    "status": "no_image_found",
+    "url": "https://www.youtube.com/watch?v=5v0BNQfrB4Q"
+  },
+  {
+    "title_id": "ffea82c7-e999-4ee3-8ea5-129f4c9ab204",
+    "title_name": "I Wanna Be the Madam!",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/i-wanna-be-the-madam?seriesId=1222"
+  },
+  {
+    "title_id": "deccf4eb-d467-4be5-a22b-0b283a3e5835",
+    "title_name": "Tori and Samuel",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/tori-and-samuel?seriesId=1698"
+  },
+  {
+    "title_id": "edf7ca87-86ab-44a8-b6e8-8dc16c0414d2",
+    "title_name": "My Super-Granny",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/my-super-granny?seriesId=1375"
+  },
+  {
+    "title_id": "8fcb37a5-da39-4f25-84dc-14ab30d31531",
+    "title_name": "Tendering Resignation",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/tendering-resignation?seriesId=1273"
+  },
+  {
+    "title_id": "16303045-b90d-4455-a290-c366326f61ee",
+    "title_name": "Let's Get You Better",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/let-s-get-you-better?seriesId=1381"
+  },
+  {
+    "title_id": "d135f597-700f-45e7-a98a-0cb312949f8f",
+    "title_name": "Go, Haechi, Go!",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/go-haechi-go?seriesId=1402"
+  },
+  {
+    "title_id": "bd85ea2c-f854-4b46-99ae-a1c180e1fcc3",
+    "title_name": "Love Order",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/love-order?seriesId=1403"
+  },
+  {
+    "title_id": "99b02f86-de61-4f71-be2d-ce7f04e13512",
+    "title_name": "Season of Change",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/season-of-change?seriesId=1225"
+  },
+  {
+    "title_id": "d06b1821-b77b-4cb0-89df-b2f840cfd849",
+    "title_name": "From Bread to Closets",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/from-bread-to-closets?seriesId=1331"
+  },
+  {
+    "title_id": "64148d92-d8be-4b77-8091-8b47da5fbeac",
+    "title_name": "Women's Soccer",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/women-s-soccer?seriesId=1316"
+  },
+  {
+    "title_id": "bed5c9a5-bf82-4413-9d6e-fed9343cc281",
+    "title_name": "Observing Elena Evoy",
+    "status": "no_image_found",
+    "url": "https://www.youtube.com/watch?v=MTVutfJfrqU"
+  },
+  {
+    "title_id": "4228f2c9-9391-4214-8b28-5c020ba23d55",
+    "title_name": "Lies Become You",
+    "status": "no_image_found",
+    "url": "https://www.youtube.com/watch?v=ooEKbvR4y3M"
+  },
+  {
+    "title_id": "f1de96cf-27a9-4470-85d4-3f484ef8b30c",
+    "title_name": "My Father is a Tyrant",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/my-father-is-a-tyrant?seriesId=1243"
+  },
+  {
+    "title_id": "aaad6b04-793a-45be-918c-1f4644d29be5",
+    "title_name": "I Lived in a Shelter",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/i-lived-in-a-shelter?seriesId=1231"
+  },
+  {
+    "title_id": "3e08c59e-ea2d-4a86-ab5e-d8404108254b",
+    "title_name": "The Demon Queen Has a Death Wish",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-demon-queen-has-a-death-wish?seriesId=1242"
+  },
+  {
+    "title_id": "91811177-7588-420a-9352-79a21ab7a978",
+    "title_name": "4 Week Lovers",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/4-week-lovers?seriesId=1215"
+  },
+  {
+    "title_id": "50d1ae46-2888-47b2-9f4f-b8075752cc9a",
+    "title_name": "Princess of the Animals",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/princess-of-the-animals?seriesId=1810"
+  },
+  {
+    "title_id": "84e964e0-ea66-491c-b7ad-863e55740176",
+    "title_name": "The Noble Pirate",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-noble-pirate?seriesId=1794"
+  },
+  {
+    "title_id": "11b3fd88-14e4-4785-a0ad-d54cb7afaa8e",
+    "title_name": "Traces of the Sun",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/traces-of-the-sun?seriesId=1788"
+  },
+  {
+    "title_id": "1f76f392-fd3b-4e51-9aec-266c2c0bfdf3",
+    "title_name": "Disobey the Duke if You Dare",
+    "status": "no_image_found",
+    "url": "https://www.youtube.com/watch?v=2gsB2NLJEG0"
+  },
+  {
+    "title_id": "ea2167ba-3d89-4c09-979c-1d5114bfcb19",
+    "title_name": "Finding Camellia",
+    "status": "no_image_found",
+    "url": "https://www.youtube.com/watch?v=WhYCTK9FGvU"
+  },
+  {
+    "title_id": "5e387f06-473d-468c-a49e-6c81c1abd8fa",
+    "title_name": "Under the Oak Tree",
+    "status": "no_image_found",
+    "url": "https://www.youtube.com/watch?v=aO94ax34hxM"
+  },
+  {
+    "title_id": "36805404-d0ff-4775-8400-3f009f714f3c",
+    "title_name": "Lady Devil",
+    "status": "no_image_found",
+    "url": "https://www.youtube.com/watch?v=1cYYu-dqnus"
+  },
+  {
+    "title_id": "e96690d8-4ea8-4b6a-919a-bb455a4762d5",
+    "title_name": "If I Were You",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/if-i-were-you?seriesId=1261"
+  },
+  {
+    "title_id": "29fff781-6fa0-40c2-81a8-bfa939c46087",
+    "title_name": "Sora's Eyes",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/sora-s-eyes?seriesId=1221"
+  },
+  {
+    "title_id": "89aae928-36d3-410d-b546-7badd0312418",
+    "title_name": "Miss You, Lucifer",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/miss-you-lucifer?seriesId=1272"
+  },
+  {
+    "title_id": "14dd5a43-ba95-46c8-a4a0-6634bd37c989",
+    "title_name": "The Golden Light of Dawn",
+    "status": "no_image_found",
+    "url": "https://manta.net/en/series/the-golden-light-of-dawn?seriesId=1751"
+  }
+]

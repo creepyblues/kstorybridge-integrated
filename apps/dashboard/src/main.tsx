@@ -3,6 +3,10 @@ import App from './App.tsx'
 import './index.css'
 import './styles/layout-variables.css'
 import './styles/design-tokens.css'
+import { initSentry } from './lib/sentry'
+
+// Initialize Sentry error tracking (production only)
+initSentry();
 
 // Load debugging utilities in development
 if (import.meta.env.DEV) {

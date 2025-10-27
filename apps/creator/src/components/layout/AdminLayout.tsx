@@ -1,0 +1,156 @@
+import { ReactNode } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@kstorybridge/ui';
+import {
+  LayoutDashboard,
+  List,
+  Star,
+  Users,
+  TestTube,
+  FileText,
+  ArrowLeft,
+  LogOut,
+  Zap,
+  MessageSquare
+} from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+
+interface AdminLayoutProps {
+  children: ReactNode;
+}
+
+/**
+ * Admin layout with sidebar navigation
+ *
+ * Provides consistent layout and navigation for all admin pages.
+ * Includes sidebar with links to all admin tools.
+ */
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const navigation = [
+    {
+      name: 'Titles',
+      href: '/admin/titles',
+      icon: List,
+      description: 'Manage all titles'
+    },
+    {
+      name: 'Featured',
+      href: '/admin/featured',
+      icon: Star,
+      description: 'Featured titles'
+    },
+    {
+      name: 'Users',
+      href: '/admin/users',
+      icon: Users,
+      description: 'User approval'
+    },
+    {
+      name: 'Scraper',
+      href: '/admin/scraper',
+      icon: TestTube,
+      description: 'Scraper testing'
+    },
+    {
+      name: 'Pitch Extraction',
+      href: '/admin/pitch-extraction-test',
+      icon: FileText,
+      description: 'Pitch deck analysis'
+    },
+    {
+      name: 'Experiment',
+      href: '/admin/experiment',
+      icon: Zap,
+      description: 'Feature testing'
+    },
+    {
+      name: 'Chat Test',
+      href: '/admin/chat-test',
+      icon: MessageSquare,
+      description: 'Chat testing'
+    }
+  ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/signin');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-2 mb-2">
+            <LayoutDashboard className="w-6 h-6 text-gray-900" />
+            <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+          </div>
+          <p className="text-sm text-gray-500">{user?.email}</p>
+        </div>
+
+        {/* Navigation */}
+        <nav className="p-4 space-y-1">
+          {navigation.map((item) => {
+            const isActive = location.pathname === item.href ||
+                           location.pathname.startsWith(item.href + '/');
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`
+                  flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  ${isActive
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }
+                `}
+              >
+                <Icon className="w-5 h-5" />
+                <div className="flex-1">
+                  <div>{item.name}</div>
+                  <div className="text-xs text-gray-500">{item.description}</div>
+                </div>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 space-y-2">
+          <Button
+            onClick={() => navigate('/buyers/chat')}
+            variant="outline"
+            className="w-full justify-start"
+            size="sm"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <Button
+            onClick={handleSignOut}
+            variant="outline"
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+            size="sm"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="pl-64">
+        <main className="min-h-screen">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

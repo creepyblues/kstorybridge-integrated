@@ -1,13 +1,36 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-10-26
+
+## 🔄 Development Workflow (UPDATED 2025-10-21)
+
+**Git Branch Strategy**:
+- **`v2` branch**: Staging/development branch (deploy to staging environment)
+- **`main` branch**: Production branch (deploy to production only when stable)
+
+**Workflow**:
+1. Work on `v2` branch for all development
+2. Test changes in staging environment (dashboard-staging-*.vercel.app)
+3. When stable, merge `v2` → `main` for production deployment
+4. Never commit directly to `main` (except for hotfixes)
+
+**Local Setup**:
+```bash
+cd /Users/sungholee/code/kstorybridge  # Primary working directory
+git checkout v2                         # Default development branch
+```
+
+**Archive Directories** (for reference only):
+- `/Users/sungholee/code/kstorybridge-v2/` - Archive of v2 branch state
+- `/Users/sungholee/code/kstorybridge-monorepo/` - Archive of main branch state
 
 ## 📁 Documentation Navigation
 
 > 🗂️ **[Master Documentation Index](docs/INDEX.md)** - Complete documentation catalog
 
 ### App-Specific Guides
-- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Auth, OAuth, tier system, premium content (312 lines, condensed)
+- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Buyer dashboard with tier system, premium content, AI chatbot (also serves auth pages for buyers and creators temporarily)
+- **[Creator App](apps/creator/CLAUDE.md)** - Creator-focused dashboard for content management
 - **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects
 
 ### System Documentation (`docs/active/`)
@@ -28,7 +51,9 @@
 - **[TESTING_GUIDE.md](docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures
 
 ### Setup Guides (`docs/guides/`)
-- **[DEPLOYMENT_STRATEGY.md](docs/guides/DEPLOYMENT_STRATEGY.md)** - Deployment architecture
+- **[GIT_DEPLOYMENT_STRUCTURE.md](docs/guides/GIT_DEPLOYMENT_STRUCTURE.md)** - Complete Git deployment configuration reference
+- **[DEPLOYMENT_STRATEGY.md](docs/guides/DEPLOYMENT_STRATEGY.md)** - Deployment architecture and branch strategy
+- **[DEPLOYMENT_INSTRUCTIONS.md](docs/guides/DEPLOYMENT_INSTRUCTIONS.md)** - Vercel deployment procedures
 - **[STRIPE_SETUP_GUIDE.md](docs/guides/STRIPE_SETUP_GUIDE.md)** - Stripe integration
 - **[OPENAI_PRODUCTION_SETUP.md](docs/guides/OPENAI_PRODUCTION_SETUP.md)** - OpenAI API setup
 
@@ -38,8 +63,9 @@
 
 ### Root Level
 ```bash
-npm run dev:dashboard     # http://localhost:8081
-npm run dev:website       # http://localhost:5173
+npm run dev:dashboard     # http://localhost:8081 (Buyer dashboard)
+npm run dev:creator       # http://localhost:8082 (Creator dashboard)
+npm run dev:website       # http://localhost:5173 (Marketing site)
 npm run build:all         # Build all apps
 npm run lint:all          # Lint all apps
 npm install               # Install dependencies
@@ -61,8 +87,9 @@ npm run preview           # Preview production build
 ### Project Structure
 ```
 ├── apps/
-│   ├── dashboard/     # User dashboard + ALL authentication
-│   └── website/       # Marketing website only
+│   ├── dashboard/     # Buyer dashboard (port 8081)
+│   ├── creator/       # Creator dashboard (port 8082)
+│   └── website/       # Marketing website (port 5173)
 ├── packages/          # Shared libraries
 └── docs/              # Documentation
 ```
@@ -80,20 +107,71 @@ npm run preview           # Preview production build
 - Auto-generated types: `src/integrations/supabase/types.ts`
 - **CRITICAL**: Query by `email`, never by `user_id` (field doesn't exist)
 
+### Database Migrations (UPDATED 2025-10-25)
+- **✅ Single source of truth**: `/supabase/migrations/` (root level only)
+- **❌ App-specific folders DEPRECATED**: `apps/*/supabase/migrations/` are for historical reference only
+- **Creating migrations**: Always run from root:
+  ```bash
+  cd /Users/sungholee/code/kstorybridge
+  npx supabase migration new [migration_name]
+  ```
+- **Why root only**: All apps share the same Supabase database, so migrations must be centralized
+
+### Three-App Architecture (UPDATED 2025-10-24)
+
+**Separate Apps for Different User Types**:
+
+| App | Port | Production URL | Staging URL | Purpose | Status |
+|-----|------|----------------|-------------|---------|--------|
+| **Dashboard** | 8081 | dashboard.kstorybridge.com | staging.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
+| **Creator V1** | 8082 | - | - | Legacy creator app (reference only) | 🗄️ Archived |
+| **Creator V2** | 8083 | creator.kstorybridge.com | creator-v2.kstorybridge.com | Creator-focused features (content management) | ✅ Live |
+| **Website** | 5173 | kstorybridge.com | - | Marketing site, auth redirects | ✅ Live |
+
+**Key Differences**:
+- **Dashboard**: Buyer routes (`/buyers/*`), AI chatbot, tier-gated content, Stripe integration
+- **Creator V2**: Clean URLs (`/home`, `/titles`), content management, title CRUD, profile management, OAuth working perfectly
+- **Creator V1**: Archived - reference only, replaced by V2
+- **Website**: Marketing pages, redirects to dashboard OR creator for authentication
+
+**Authentication Routing**:
+- Buyers sign up → Dashboard app (`/buyers/home`)
+- Creators sign up → Creator V2 app (`/home`) ✅ **LIVE**
+
+**Known Issues**:
+- ⚠️ Creator V2: Title edit save bug (`tags` field doesn't exist in database) - ✅ **FIXED** (October 26, 2025)
+
+**See**: [Creator App V2 Rebuild Plan](docs/CREATOR_APP_V2_REBUILD_PLAN.md) for complete deployment history
+
 ---
 
-## 🔐 Authentication Flow (UPDATED 2025-10-03)
+## 🔐 Authentication Flow (UPDATED 2025-10-22)
 
-### User Flow
+### Current User Flow
 1. Users visit **Website** (`kstorybridge.com`) for marketing
 2. Website redirects to **Dashboard** for auth:
    - `/signup/buyer` - Buyer signup
    - `/signup/creator` - Creator signup (formerly IP Owner)
    - `/signin` - Universal signin
    - `/auth/callback` - OAuth callback (no parameters in URL)
-3. After auth, users stay in Dashboard:
-   - **Buyers**: Route to `/buyers/home`
-   - **Creators**: Route to `/creators/home`
+3. After auth:
+   - **Buyers**: Route to dashboard `/buyers/home` (redirects to `/buyers/chat`)
+   - **Creators**: Route to dashboard `/creators/home` (⚠️ will change to creator app `/home`)
+
+### Planned User Flow (After Creator V2 Deployment)
+1. Users visit **Website** for marketing
+2. Website redirects based on account type:
+   - Buyers → **Dashboard** app authentication
+   - Creators → **Creator V2** app authentication
+3. After auth:
+   - **Buyers**: Dashboard app `/buyers/home`
+   - **Creators**: Creator V2 app `/home` (clean URLs)
+
+### V2 Status
+- ✅ Auth system complete (email + OAuth, no race conditions)
+- ✅ Title management complete (CRUD operations)
+- ✅ Profile management complete
+- 🚧 Testing & deployment (Phase 5 pending)
 
 ### Account Types
 - **buyer** - Media buyers with tier system (basic/pro/suite)
@@ -114,8 +192,9 @@ npm run preview           # Preview production build
 ### Database
 - ✅ **Query pattern**: `.eq('email', user.email)` (always use `email`)
 - ❌ **Never use**: `user_id` field (doesn't exist in user tables)
-- ✅ **Migration workflow**: Create in `apps/*/supabase/migrations/`, never loose SQL files
-- **See**: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)
+- ✅ **Migration workflow**: Create in `/supabase/migrations/` (root only), never loose SQL files
+- ❌ **Never use**: `apps/*/supabase/migrations/` (deprecated, historical reference only)
+- **See**: [docs/active/DATABASE_SCHEMA.md](docs/active/DATABASE_SCHEMA.md)
 
 ### Authentication
 - ✅ **OAuth callbacks**: No URL parameters, use `${window.location.origin}/auth/callback`
@@ -144,7 +223,7 @@ npm run preview           # Preview production build
 
 ## 🤖 AI Chatbot System (UPDATED 2025-10-21)
 
-**Status**: ✅ Phases 1-3 Complete (Pitch Analytics Integration Deployed)
+**Status**: ✅ Phases 1-4 Complete (Contextual Response Generation ACTIVE)
 
 ### Deployed Improvements
 
@@ -163,13 +242,20 @@ npm run preview           # Preview production build
 8. ✅ **Edge Function Enhancement** - Integrated pitch analytics formatting and context
 9. ✅ **Feature Flag Control** - `ENABLE_PITCH_CONTEXT` for gradual rollout
 
-**Enhanced Capabilities** (Phase 3):
+**Phase 4: Contextual Response Generation** (Deployed & Active 2025-10-21)
+10. ✅ **Smart Follow-up Detection** - Analyzes last 3 messages for title mentions
+11. ✅ **Focused Response Generation** - Section-specific responses (characters, plot, themes, market)
+12. ✅ **Anti-Repetition Logic** - Prevents repeating information already shared
+13. ✅ **Feature Flag Control** - `ENABLE_CONTEXTUAL_RESPONSES=true` (ACTIVE)
+
+**Enhanced Capabilities** (Phase 3 + 4):
 - 60+ enhanced query types across 9 categories (character, story, theme, market, cultural, IP value, production, content, creative team)
 - Character details with archetypes and relationships
 - Story loglines, conflicts, and narrative structure
 - Market positioning and comparable titles
 - Source material metrics (views, chapters, platform)
 - Korean cultural elements analysis
+- **Smart follow-up responses**: 50% token reduction on multi-turn conversations, zero repetition
 - Quality threshold: Only uses data with processing_confidence >= 0.70
 
 ### Implementation Files
@@ -178,29 +264,33 @@ npm run preview           # Preview production build
 - **Frontend**: `apps/dashboard/src/pages/Chat.tsx`
 - **Test Suite**: `apps/dashboard/test-chatbot-improvements.js`
 
-### Performance Metrics
+### Performance Metrics (Updated with Phase 4)
 - **Search Results**: 10 titles with >0.8 similarity scores
 - **Response Times**: 3-5 seconds average (with pitch analytics)
 - **Hallucination Rate**: <5%
 - **Intent Accuracy**: 100%
 - **Zero-Results Rate**: ~2%
 - **Pitch Coverage**: 30-50% of queries use pitch data (when available)
+- **Token Efficiency** (Phase 4): 50% reduction on multi-turn conversations
+- **Repetition Rate** (Phase 4): 0% (down from ~70% on follow-ups)
+- **Contextual Activation** (Phase 4): ~20-30% of queries use focused responses
 
 ### Documentation
-- **[Chatbot Overview](docs/features/chatbot/OVERVIEW.md)** - Complete system overview
+- **[Chatbot Overview](docs/features/chatbot/OVERVIEW.md)** - Complete system overview (Phases 1-4)
 - **[Phase 1 & 2 Summary](docs/features/chatbot/PHASE_1_2_SUMMARY.md)** - Test results with log evidence
 - **[Pitch Analytics](docs/features/chatbot/PITCH_ANALYTICS.md)** - Phase 3 implementation plan
+- **[Contextual Responses](docs/features/chatbot/PHASE_4_CONTEXTUAL_RESPONSES.md)** - Phase 4 implementation & testing
 - **[Testing Guide](docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures and log interpretation
 - **[AI Chatbot Docs](apps/dashboard/public/docs/AI_CHATBOT_DOCUMENTATION.md)** - User-facing documentation
 
 ### Monitoring
-- Monitor edge function logs for pitch analytics usage
-- Track token costs (target: $0.02/query)
-- Review response quality with pitch data enabled
-- Gather user feedback on recommendation quality
+- Monitor edge function logs for contextual response activation (`🎯 Contextual Response Analysis`)
+- Track token costs (current: $0.015-0.018/query on follow-ups, down from $0.02)
+- Review focused response quality and user satisfaction
+- Gather user feedback on conversation flow improvements
 
 **Future Phases** (Planned):
-- Phase 4: Hybrid search, response caching, analytics dashboard, advanced prompt engineering
+- Phase 5: Hybrid search, response caching, analytics dashboard, multi-turn memory (beyond 3 messages)
 
 ---
 
@@ -313,11 +403,14 @@ npm run lint:all         # Lint check
 
 ### Database Migrations
 ```bash
-cd apps/[app]/supabase
+# ALWAYS run from root directory
+cd /Users/sungholee/code/kstorybridge
 npx supabase migration new [name]
 npx supabase db reset    # Test locally first
 npx supabase db push     # Apply to production
 ```
+
+**Important**: Never create migrations in `apps/*/supabase/migrations/` - these folders are deprecated.
 
 ---
 
@@ -375,16 +468,59 @@ interface CreatorFormData {
 ## 📚 Content Management (Titles Table)
 
 ### Complete Field List
-- **Basic**: `title_id`, `title_name_kr`, `title_name_en`, `description`, `synopsis`, `tagline`, `note`
-- **Authors**: `author`, `story_author`, `art_author`, `writer`, `illustrator`
-- **Rights**: `rights`, `rights_owner`, `creator_id`
-- **Content**: `genre`, `content_format`, `chapters`, `completed`, `tags`
-- **Media**: `title_image`, `title_url`, `pitch`
-- **Metrics**: `views`, `likes`, `rating`, `rating_count`
-- **Market**: `perfect_for`, `comps` (array), `tone`, `audience`
-- **System**: `created_at`, `updated_at`
 
-**See**: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) for complete schema
+**Core Fields**:
+- `title_id`, `title_name_kr`, `title_name_en`, `is_official_english_title`, `english_title_type`
+- `synopsis`, `tagline`, `tagline_kr`, `description_kr`, `note`, `note_kr`
+
+**Authors & Credits**:
+- `story_author`, `story_author_kr`, `art_author`, `art_author_kr`
+- `original_author`, `original_author_kr`
+- `script_title_kr`, `script_title_en`, `art_title_kr`, `art_title_en`
+- `underlying_novel_kr`, `underlying_novel_en`, `creator_id`
+
+**Rights & Business**:
+- `rights`, `rights_holder_name`, `rights_holder_company`, `cp`, `pitch`
+
+**Content Classification**:
+- `genre` (array), `genre_kr` (array), `content_format`, `tone`, `audience`, `age_rating`
+- `keywords` (array), `comps` (array)
+
+**Story Details** (Questionnaire - Added 2025-10-24):
+- `inspiration`, `important_issues`, `setting_description`
+- `world_lore`, `supernatural_concepts`, `character_details` (jsonb)
+- `story_structure`, `planned_ending`, `narrative_arc`
+
+**Achievements & Recognition** (Added 2025-10-24):
+- `awards` (array), `sales_records`, `merchandise_deals`
+- `print_editions`, `print_edition_details`
+- `media_coverage`, `celebrity_endorsements`, `creator_achievements` (jsonb)
+
+**Metrics**:
+- `views`, `likes`, `rating`, `rating_count`, `chapters`, `completed`, `perfect_for`
+
+**Media**:
+- `title_image`, `title_url`
+
+**System**:
+- `priority`, `verified`, `created_at`, `updated_at`
+- Vector embeddings (1536-dim): `title_embedding`, `synopsis_embedding`, `description_embedding`, `content_embedding`, `combined_embedding`
+
+### Related Tables (Added 2025-10-24)
+
+**title_platforms**: Platform-specific metrics (Naver, Kakao, Lezhin, etc.)
+- Fields: `platform_name`, `platform_url`, `views`, `subscribers`, `other_metrics` (jsonb)
+
+**title_documents**: Document attachments (PDFs, scripts, press releases, etc.)
+- Fields: `document_type`, `file_url`, `file_name`, `file_size`, `shareable_with_nda`, `external_url`
+
+**title_drafts**: Multi-step questionnaire draft storage
+- Fields: `creator_id`, `draft_data` (jsonb), `current_step` (1-5), `last_saved_at`
+
+**title_content_analysis**: AI-generated content analysis (includes `pitch_analysis` for Phase 3 chatbot)
+- Fields: `semantic_tags`, `character_types`, `plot_elements`, `cultural_elements`, `pitch_analysis` (jsonb), `processing_confidence`
+
+**See**: [docs/active/DATABASE_SCHEMA.md](docs/active/DATABASE_SCHEMA.md) for complete schema
 
 ---
 
@@ -404,11 +540,17 @@ interface CreatorFormData {
 
 ### Development
 - Dashboard: http://localhost:8081
+- Creator: http://localhost:8082
 - Website: http://localhost:5173
 - Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
 
+### Staging
+- Dashboard V1: https://staging.kstorybridge.com
+- Creator V2: https://creator-v2.kstorybridge.com (⏳ Pending Vercel project setup)
+
 ### Production
 - Dashboard: https://dashboard.kstorybridge.com
+- Creator: https://creator.kstorybridge.com (✅ Live - October 2025)
 - Website: https://kstorybridge.com
 
 ### Documentation

@@ -21,6 +21,8 @@ import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { BuyerProtectedLayout } from "@/components/BuyerProtectedLayout";
 import { CreatorProtectedLayout } from "@/components/CreatorProtectedLayout";
 import { DocsProtectedLayout } from "@/components/DocsProtectedLayout";
+import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
+import AdminLayout from "@/components/layout/AdminLayout";
 import { RootRedirect } from "./components/RootRedirect";
 import { DashboardEntrypoint } from "./components/DashboardEntrypoint";
 
@@ -58,6 +60,15 @@ const SearchResults = lazy(() => import("./pages/SearchResults"));
 const ChatbotFeedbackAnalysis = lazy(() => import("./pages/ChatbotFeedbackAnalysis"));
 const SearchAnalytics = lazy(() => import("./pages/SearchAnalytics"));
 const Experiment = lazy(() => import("./pages/Experiment"));
+
+// Admin pages
+const AdminTitleDetail = lazy(() => import("./pages/admin/TitleDetail"));
+const AdminTitleEdit = lazy(() => import("./pages/admin/TitleEdit"));
+const AdminAddTitle = lazy(() => import("./pages/admin/AddTitle"));
+const AdminTitles = lazy(() => import("./pages/admin/AdminTitles"));
+const AdminFeatured = lazy(() => import("./pages/admin/Featured"));
+const AdminUserApproval = lazy(() => import("./pages/admin/UserApproval"));
+const AdminScraperTest = lazy(() => import("./pages/admin/ScraperTest"));
 const PitchExtractionTest = lazy(() => import("./pages/admin/PitchExtractionTest"));
 
 // Documentation pages
@@ -136,9 +147,6 @@ const App = () => (
                 <Route path="/buyers/home" element={<Navigate to="/buyers/chat" replace />} />
                 <Route path="/buyers/chat" element={
                   <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
-                } />
-                <Route path="/buyers/chat-test" element={
-                  <BuyerProtectedLayout><ChatTest /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/featured" element={
                   <BuyerProtectedLayout><BuyerHome /></BuyerProtectedLayout>
@@ -289,14 +297,31 @@ const App = () => (
                   <ProtectedLayout><SearchAnalytics /></ProtectedLayout>
                 } />
                 
-                {/* Experiment page - admin only */}
-                <Route path="/experiment" element={
-                  <ProtectedLayout><Experiment /></ProtectedLayout>
+                {/* Admin routes - database-based access control */}
+                <Route path="/admin" element={<Navigate to="/admin/featured" replace />} />
+                <Route path="/admin/featured" element={
+                  <AdminProtectedRoute><AdminLayout><AdminFeatured /></AdminLayout></AdminProtectedRoute>
                 } />
-
-                {/* Pitch Extraction Test - admin only */}
-                <Route path="/pitch-extraction-test" element={
-                  <ProtectedLayout><PitchExtractionTest /></ProtectedLayout>
+                <Route path="/admin/titles" element={
+                  <AdminProtectedRoute><AdminTitles /></AdminProtectedRoute>
+                } />
+                <Route path="/admin/titles/:titleId/edit" element={
+                  <AdminProtectedRoute><AdminTitleEdit /></AdminProtectedRoute>
+                } />
+                <Route path="/admin/users" element={
+                  <AdminProtectedRoute><AdminLayout><AdminUserApproval /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/scraper" element={
+                  <AdminProtectedRoute><AdminLayout><AdminScraperTest /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/pitch-extraction-test" element={
+                  <AdminProtectedRoute><AdminLayout><PitchExtractionTest /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/experiment" element={
+                  <AdminProtectedRoute><AdminLayout><Experiment /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/chat-test" element={
+                  <AdminProtectedRoute><AdminLayout><ChatTest /></AdminLayout></AdminProtectedRoute>
                 } />
 
                 {/* Documentation routes - accessible to all authenticated users */}

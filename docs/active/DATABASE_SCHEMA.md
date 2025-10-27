@@ -1,6 +1,6 @@
 # Database Schema Reference
 
-**Last Updated**: 2025-10-18
+**Last Updated**: 2025-10-26
 
 **WARNING**: This schema is for context only and is not meant to be run directly. Table order and constraints may not be valid for execution.
 
@@ -142,6 +142,7 @@ CREATE TABLE public.user_onboarding (
   skipped boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  has_seen_welcome_video boolean DEFAULT false,
   CONSTRAINT user_onboarding_pkey PRIMARY KEY (id),
   CONSTRAINT user_onboarding_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
@@ -156,6 +157,7 @@ CREATE TABLE public.user_onboarding (
 - `onboarding_completed_at`: When onboarding completed
 - `current_step`: Current onboarding step number
 - `skipped`: Whether user skipped onboarding
+- `has_seen_welcome_video`: Whether user has viewed welcome video (Added 2025-10-24, default: false)
 - `created_at`: Record creation timestamp
 - `updated_at`: Last update timestamp
 
@@ -216,6 +218,33 @@ CREATE TABLE public.titles (
   content_embedding USER-DEFINED,
   priority USER-DEFINED NOT NULL DEFAULT '2'::priority,
   verified boolean DEFAULT false,
+  is_official_english_title boolean,
+  english_title_type text CHECK (english_title_type = ANY (ARRAY['official'::text, 'translation'::text])),
+  script_title_kr text,
+  script_title_en text,
+  art_title_kr text,
+  art_title_en text,
+  underlying_novel_kr text,
+  underlying_novel_en text,
+  rights_holder_name text,
+  rights_holder_company text,
+  inspiration text,
+  important_issues text,
+  setting_description text,
+  world_lore text,
+  supernatural_concepts text,
+  character_details jsonb DEFAULT '[]'::jsonb,
+  story_structure text,
+  planned_ending text,
+  narrative_arc text,
+  awards ARRAY,
+  sales_records text,
+  merchandise_deals text,
+  print_editions boolean DEFAULT false,
+  print_edition_details text,
+  media_coverage text,
+  celebrity_endorsements text,
+  creator_achievements jsonb DEFAULT '{}'::jsonb,
   CONSTRAINT titles_pkey PRIMARY KEY (title_id),
   CONSTRAINT titles_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES auth.users(id)
 );
@@ -225,8 +254,11 @@ CREATE TABLE public.titles (
 - `title_id`: UUID primary key
 - `title_name_en`: English title name
 - `title_name_kr`: Korean title name
+- `is_official_english_title`: Whether English title is official (boolean)
+- `english_title_type`: Type of English title ('official' | 'translation')
 - `synopsis`: Full story synopsis
 - `tagline`: Short tagline
+- `tagline_kr`: Short tagline (Korean)
 - `description_kr`: Korean description
 - `note`: Internal notes
 - `note_kr`: Korean notes
@@ -238,6 +270,12 @@ CREATE TABLE public.titles (
 - `art_author_kr`: Artist (Korean)
 - `original_author`: Original author
 - `original_author_kr`: Original author (Korean)
+- `script_title_kr`: Script title (Korean)
+- `script_title_en`: Script title (English)
+- `art_title_kr`: Art title (Korean)
+- `art_title_en`: Art title (English)
+- `underlying_novel_kr`: Underlying novel title (Korean)
+- `underlying_novel_en`: Underlying novel title (English)
 - `creator_id`: References auth.users(id)
 
 **Classification**:
@@ -249,12 +287,34 @@ CREATE TABLE public.titles (
 - `age_rating`: Age rating
 - `keywords`: Array of keywords
 - `comps`: Array of comparable titles
-- `tags`: Array of tags
 
 **Rights & Business**:
 - `rights`: Rights status
+- `rights_holder_name`: Rights holder's name
+- `rights_holder_company`: Rights holder's company
 - `cp`: Copyright information
 - `pitch`: Pitch deck URL/text
+
+**Story Details** (Questionnaire fields added 2025-10-24):
+- `inspiration`: What inspired the story
+- `important_issues`: Important themes/issues addressed
+- `setting_description`: Story setting details
+- `world_lore`: World-building and lore
+- `supernatural_concepts`: Supernatural elements description
+- `character_details`: JSONB array of character information
+- `story_structure`: Narrative structure details
+- `planned_ending`: How the story will end
+- `narrative_arc`: Character/story arcs
+
+**Achievements & Recognition** (Added 2025-10-24):
+- `awards`: Array of awards received
+- `sales_records`: Sales performance text
+- `merchandise_deals`: Merchandising information
+- `print_editions`: Whether print versions exist (boolean, default: false)
+- `print_edition_details`: Print edition information
+- `media_coverage`: Media mentions and coverage
+- `celebrity_endorsements`: Celebrity endorsements
+- `creator_achievements`: JSONB object of creator's achievements
 
 **Metrics**:
 - `views`: View count
@@ -312,13 +372,103 @@ CREATE TABLE public.featured (
 - `created_at`: When featured
 - `updated_at`: Last update timestamp
 
+### title_platforms
+Platform-specific metrics and URLs (Added 2025-10-24)
+
+```sql
+CREATE TABLE public.title_platforms (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title_id uuid NOT NULL,
+  platform_name text NOT NULL CHECK (platform_name = ANY (ARRAY['naver'::text, 'kakao'::text, 'lezhin'::text, 'ridibooks'::text, 'toomics'::text, 'bomtoon'::text, 'ktoon'::text, 'kakaopage'::text, 'munpia'::text, 'joara'::text, 'novelpia'::text, 'other'::text])),
+  platform_url text NOT NULL,
+  views bigint DEFAULT 0,
+  subscribers bigint DEFAULT 0,
+  other_metrics jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT title_platforms_pkey PRIMARY KEY (id),
+  CONSTRAINT title_platforms_title_id_fkey FOREIGN KEY (title_id) REFERENCES public.titles(title_id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `title_id`: References titles(title_id)
+- `platform_name`: Platform name (naver|kakao|lezhin|ridibooks|toomics|bomtoon|ktoon|kakaopage|munpia|joara|novelpia|other)
+- `platform_url`: URL to content on platform
+- `views`: View count on platform
+- `subscribers`: Subscriber count on platform
+- `other_metrics`: JSONB object for additional platform-specific metrics
+- `created_at`: Record creation timestamp
+- `updated_at`: Last update timestamp
+
+### title_documents
+Document attachments for titles (Added 2025-10-24)
+
+```sql
+CREATE TABLE public.title_documents (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title_id uuid NOT NULL,
+  document_type text NOT NULL CHECK (document_type = ANY (ARRAY['source_pdf'::text, 'story_bible'::text, 'outline'::text, 'script'::text, 'press_release'::text, 'interview'::text, 'review'::text, 'wiki'::text, 'other'::text])),
+  file_url text NOT NULL,
+  file_name text NOT NULL,
+  file_size bigint,
+  shareable_with_nda boolean DEFAULT false,
+  external_url text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT title_documents_pkey PRIMARY KEY (id),
+  CONSTRAINT title_documents_title_id_fkey FOREIGN KEY (title_id) REFERENCES public.titles(title_id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `title_id`: References titles(title_id)
+- `document_type`: Type of document (source_pdf|story_bible|outline|script|press_release|interview|review|wiki|other)
+- `file_url`: Supabase Storage URL to file
+- `file_name`: Original filename
+- `file_size`: File size in bytes
+- `shareable_with_nda`: Whether document can be shared under NDA
+- `external_url`: External URL if document hosted elsewhere
+- `created_at`: Upload timestamp
+- `updated_at`: Last update timestamp
+
+### title_drafts
+Creator draft storage for multi-step form (Added 2025-10-24)
+
+```sql
+CREATE TABLE public.title_drafts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  creator_id uuid NOT NULL UNIQUE,
+  draft_data jsonb NOT NULL DEFAULT '{}'::jsonb,
+  current_step integer DEFAULT 1 CHECK (current_step >= 1 AND current_step <= 5),
+  last_saved_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT title_drafts_pkey PRIMARY KEY (id),
+  CONSTRAINT title_drafts_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES auth.users(id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `creator_id`: References auth.users(id), unique per creator
+- `draft_data`: JSONB object containing all form data
+- `current_step`: Current step in multi-step form (1-5)
+- `last_saved_at`: When draft was last saved
+- `created_at`: Draft creation timestamp
+- `updated_at`: Last update timestamp
+
+**Purpose**: Allows creators to save progress while filling out the multi-step title questionnaire
+
 ### title_content_analysis
 AI-generated content analysis for enhanced search
 
 ```sql
 CREATE TABLE public.title_content_analysis (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  title_id text NOT NULL UNIQUE,
+  title_id uuid NOT NULL UNIQUE,
   semantic_tags ARRAY DEFAULT '{}'::text[],
   mood_analysis jsonb DEFAULT '{}'::jsonb,
   character_types ARRAY DEFAULT '{}'::text[],
@@ -332,13 +482,19 @@ CREATE TABLE public.title_content_analysis (
   search_boost_factor numeric DEFAULT 1.0,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  accessibility_features ARRAY DEFAULT '{}'::text[],
+  analysis_version text,
+  processed_by text,
+  processing_confidence numeric CHECK (processing_confidence >= 0.0 AND processing_confidence <= 1.0),
+  reading_time_minutes integer,
+  pitch_analysis jsonb DEFAULT '{}'::jsonb,
   CONSTRAINT title_content_analysis_pkey PRIMARY KEY (id)
 );
 ```
 
 **Fields**:
 - `id`: UUID primary key
-- `title_id`: Unique title identifier
+- `title_id`: Unique title identifier (UUID)
 - `semantic_tags`: Array of semantic tags
 - `mood_analysis`: JSONB mood analysis data
 - `character_types`: Array of character archetypes
@@ -350,8 +506,23 @@ CREATE TABLE public.title_content_analysis (
 - `complexity_score`: Content complexity (0-10)
 - `content_quality_score`: Quality rating (0-10)
 - `search_boost_factor`: Search ranking boost
+- `accessibility_features`: Array of accessibility features (Added 2025-10-21)
+- `analysis_version`: Version of analysis algorithm used (Added 2025-10-21)
+- `processed_by`: Processing system identifier (Added 2025-10-21)
+- `processing_confidence`: Confidence score 0-1 (Added 2025-10-21, used for Phase 3 chatbot quality threshold)
+- `reading_time_minutes`: Estimated reading time (Added 2025-10-21)
+- `pitch_analysis`: JSONB pitch analytics data (Added 2025-10-21, **CRITICAL for Phase 3 chatbot**)
 - `created_at`: Analysis creation timestamp
 - `updated_at`: Last update timestamp
+
+**Phase 3 Chatbot Integration**:
+The `pitch_analysis` field stores structured pitch deck data extracted from PDFs, enabling enhanced chatbot responses with:
+- Character details (archetypes, relationships)
+- Story loglines and conflicts
+- Market positioning and comparables
+- Source material metrics (views, chapters)
+- Korean cultural elements
+- Only data with `processing_confidence >= 0.70` is used by the chatbot
 
 ---
 
@@ -616,6 +787,27 @@ CREATE TABLE public.stripe_customers (
 - `cancel_at_period_end`: Whether subscription cancels at period end
 - `created_at`: Record creation timestamp
 - `updated_at`: Last update timestamp
+
+### webhook_events
+Stripe webhook event deduplication
+
+```sql
+CREATE TABLE public.webhook_events (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  stripe_event_id text NOT NULL UNIQUE,
+  processed_at timestamp with time zone DEFAULT now(),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT webhook_events_pkey PRIMARY KEY (id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `stripe_event_id`: Stripe event ID (unique)
+- `processed_at`: When event was processed
+- `created_at`: Record creation timestamp
+
+**Purpose**: Prevents duplicate processing of Stripe webhook events by tracking which event IDs have already been handled
 
 ---
 

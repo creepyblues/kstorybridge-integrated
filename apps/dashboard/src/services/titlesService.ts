@@ -282,21 +282,10 @@ export const titlesService = {
     try {
       console.log('📚 [TITLES VERBOSE] Starting getAllTitles query...');
 
-      // Add timeout protection for the query
-      const queryPromise = supabase
+      const { data, error } = await supabase
         .from("titles")
         .select("*")
         .order("created_at", { ascending: false });
-
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          console.warn('⏰ [TITLES VERBOSE] Query timeout (15s) - likely RLS or connection issue');
-          reject(new Error('Titles query timeout'));
-        }, 15000);
-      });
-
-      console.log('📚 [TITLES VERBOSE] Racing query against timeout...');
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
       console.log('📚 [TITLES VERBOSE] Query completed:', {
         hasData: !!data,

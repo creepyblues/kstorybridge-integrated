@@ -1659,11 +1659,25 @@ Please try again.`,
               <div className="flex items-center gap-2">
                 <Button
                 onClick={() => {
+                  // Clear UI messages and input
                   setMessages([]);
                   setInputMessage('');
                   setHasStartedConversation(false);
                   setShowAllMessages(false);
                   setHasLoadedHistory(false);
+
+                  // Force new session creation (session isolation)
+                  setCurrentSession(null);
+
+                  // Clear streaming artifacts
+                  setStreamingResponse('');
+                  setIsStreaming(false);
+
+                  // Reset UI state
+                  setShowHistory(false);
+                  setPremiumPopupOpen(false);
+
+                  // Note: Keep titleCache and titlePitchData for performance
                 }}
                 variant="outline"
                 className="border-gray-300 hover:bg-gray-100"

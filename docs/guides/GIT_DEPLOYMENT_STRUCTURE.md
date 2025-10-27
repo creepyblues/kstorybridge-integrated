@@ -31,16 +31,16 @@ This document provides a comprehensive reference for the KStoryBridge Git deploy
 
 | Branch | Purpose | Deploys To | Status |
 |--------|---------|------------|--------|
-| **v2** | Staging/Development | dashboard-staging only | Active development branch |
-| **main** | Production | All apps (dashboard, creator, website) | Stable production code |
+| **v2** | Staging/Development | dashboard-staging, creator-v2-staging | Active development branch |
+| **main** | Production | All apps (dashboard, creator-v2, website) | Stable production code |
 
 ### Branch Workflow
 
 ```
 Development Cycle:
 1. Work on v2 branch (primary working branch)
-2. Push to v2 → Auto-deploy to staging
-3. Test on staging.kstorybridge.com
+2. Push to v2 → Auto-deploy to staging environments
+3. Test on staging.kstorybridge.com (dashboard V1) and creator-v2.kstorybridge.com (creator-v2)
 4. When stable: Merge v2 → main
 5. Push to main → Auto-deploy to production
 ```
@@ -58,13 +58,14 @@ Development Cycle:
 
 ### Vercel Projects Overview
 
-KStoryBridge uses **4 separate Vercel projects** for deploying 3 apps across 2 environments:
+KStoryBridge uses **5 separate Vercel projects** for deploying 3 apps across 2 environments:
 
 | Vercel Project | App | Environment | Domain | Builds From |
 |----------------|-----|-------------|--------|-------------|
-| **dashboard-staging** | Dashboard | Staging | staging.kstorybridge.com | `v2` branch |
-| **kstorybridge-dashboard** | Dashboard | Production | dashboard.kstorybridge.com | `main` branch |
-| **kstorybridge-creator** | Creator | Production | creator.kstorybridge.com | `main` branch |
+| **dashboard-staging** | Dashboard V1 | Staging | staging.kstorybridge.com | `v2` branch |
+| **creator-v2-staging** | Creator V2 | Staging | creator-v2.kstorybridge.com | `v2` branch |
+| **kstorybridge-dashboard** | Dashboard V1 | Production | dashboard.kstorybridge.com | `main` branch |
+| **kstorybridge-creator** | Creator V2 | Production | creator.kstorybridge.com | `main` branch |
 | **kstorybridge-website** | Website | Production | kstorybridge.com | `main` branch |
 
 ### Project Configuration
@@ -96,7 +97,33 @@ VITE_OPENAI_ENABLED=true
 
 ---
 
-#### 2. kstorybridge-dashboard (Production Dashboard)
+#### 2. creator-v2-staging (Creator V2 Staging Environment)
+
+**Purpose**: Testing ground for all creator-v2 changes before production
+
+**Configuration**:
+```yaml
+Project Name: creator-v2-staging
+Production Branch: v2
+Root Directory: apps/creator-v2
+Ignored Build Step: (empty - builds all v2 commits)
+Custom Domain: creator-v2.kstorybridge.com
+```
+
+**Environment Variables** (Key Settings):
+```env
+VITE_SUPABASE_URL=https://dlrnrgcoguxlkkcitlpd.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJI...
+VITE_AUTH_DEBUG=true
+```
+
+**Deployment Trigger**:
+- Builds on EVERY push to `v2` branch
+- Auto-deploys to staging domain
+
+---
+
+#### 3. kstorybridge-dashboard (Production Dashboard)
 
 **Purpose**: Production dashboard for buyers (AI chatbot, tier system, premium content)
 
@@ -124,29 +151,30 @@ VITE_OPENAI_ENABLED=true
 
 ---
 
-#### 3. kstorybridge-creator (Production Creator App)
+#### 4. kstorybridge-creator (Production Creator V2 App)
 
-**Purpose**: Dedicated creator dashboard (content management, pitch uploads, analytics)
+**Purpose**: Production creator dashboard (content management, pitch uploads, analytics)
 
 **Configuration**:
 ```yaml
 Project Name: kstorybridge-creator
 Production Branch: main
-Root Directory: apps/creator
+Root Directory: apps/creator-v2
 Ignored Build Step: if [ "$VERCEL_GIT_COMMIT_REF" = "v2" ]; then exit 0; else exit 1; fi
-Custom Domain: creator.kstorybridge.com (🚧 Planned)
+Custom Domain: creator.kstorybridge.com
 ```
 
-**Status**: 🚧 Phase 1 Complete (8% of creator app separation)
+**Status**: ✅ Deployed to Production (October 2025)
 
-**Migration Notes**:
-- Currently shares authentication with dashboard
+**Notes**:
+- Independent authentication system
+- Clean rebuild from scratch (no dashboard dependencies)
 - Future: Dedicated OAuth callbacks at creator.kstorybridge.com
 - See `docs/CREATOR_APP_QUICK_REFERENCE.md` for migration status
 
 ---
 
-#### 4. kstorybridge-website (Production Website)
+#### 5. kstorybridge-website (Production Website)
 
 **Purpose**: Marketing website with authentication redirects
 
@@ -240,13 +268,14 @@ git push origin v2
 
 **What Happens**:
 1. GitHub receives push to `v2` branch
-2. Vercel webhook triggered for all 4 projects
+2. Vercel webhook triggered for all 5 projects
 3. **dashboard-staging**: Builds and deploys (production branch = v2)
-4. **kstorybridge-dashboard**: Skips build (ignored build step)
-5. **kstorybridge-creator**: Skips build (ignored build step)
-6. **kstorybridge-website**: Skips build (ignored build step)
+4. **creator-v2-staging**: Builds and deploys (production branch = v2)
+5. **kstorybridge-dashboard**: Skips build (ignored build step)
+6. **kstorybridge-creator**: Skips build (ignored build step)
+7. **kstorybridge-website**: Skips build (ignored build step)
 
-**Result**: Only staging environment updates
+**Result**: Only staging environments update (dashboard V1 + creator-v2)
 
 ---
 
@@ -294,13 +323,14 @@ git push origin main
 
 **What Happens**:
 1. GitHub receives push to `main` branch
-2. Vercel webhook triggered for all 4 projects
+2. Vercel webhook triggered for all 5 projects
 3. **dashboard-staging**: Skips build (production branch = v2)
-4. **kstorybridge-dashboard**: Builds and deploys
-5. **kstorybridge-creator**: Builds and deploys
-6. **kstorybridge-website**: Builds and deploys
+4. **creator-v2-staging**: Skips build (production branch = v2)
+5. **kstorybridge-dashboard**: Builds and deploys
+6. **kstorybridge-creator**: Builds and deploys
+7. **kstorybridge-website**: Builds and deploys
 
-**Result**: All production apps update simultaneously
+**Result**: All production apps update simultaneously (dashboard V1 + creator-v2 + website)
 
 ---
 

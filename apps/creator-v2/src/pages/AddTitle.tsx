@@ -29,7 +29,6 @@ interface FormValues {
   // Content classification
   genre: string | ''
   content_format?: string | ''
-  tags?: string
   keywords?: string
 
   // Content details
@@ -131,7 +130,6 @@ export default function AddTitle() {
         // Content classification
         genre: values.genre ? [values.genre] : null,
         content_format: values.content_format || null,
-        tags: values.tags ? values.tags.split(',').map(t => t.trim()).filter(Boolean) : null,
         keywords: values.keywords ? values.keywords.split(',').map(k => k.trim()).filter(Boolean) : null,
 
         // Content details
@@ -305,15 +303,6 @@ export default function AddTitle() {
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="tags">Tags</Label>
-                    <Input
-                      id="tags"
-                      placeholder="action, adventure, comedy (comma-separated)"
-                      {...register('tags')}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
-                  </div>
                   <div>
                     <Label htmlFor="keywords">Keywords</Label>
                     <Input

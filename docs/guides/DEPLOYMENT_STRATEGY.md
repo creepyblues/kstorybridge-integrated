@@ -12,10 +12,12 @@ KStoryBridge uses a three-tier deployment strategy with separate environments fo
 
 | Environment | Git Branch | Domain | Apps Deployed |
 |-------------|------------|--------|---------------|
-| **Development** | (local) | localhost:8081/8082/5173 | Dashboard, Creator, Website |
-| **Staging** | v2 | staging.kstorybridge.com | Dashboard only |
-| **Production** | main | dashboard.kstorybridge.com | Dashboard, Website |
-| **Production (Planned)** | main | creator.kstorybridge.com | Creator (🚧 8% complete) |
+| **Development** | (local) | localhost:8081/8082/8083 | Dashboard V1, Creator V1 (archived), Creator V2 |
+| **Staging** | v2 | staging.kstorybridge.com | Dashboard V1 |
+| **Staging** | v2 | creator-v2.kstorybridge.com | Creator V2 |
+| **Production** | main | dashboard.kstorybridge.com | Dashboard V1 |
+| **Production** | main | creator.kstorybridge.com | Creator V2 (✅ Deployed Oct 2025) |
+| **Production** | main | kstorybridge.com | Website |
 
 ## Branch Deployment Rules
 
@@ -30,20 +32,22 @@ KStoryBridge uses a three-tier deployment strategy with separate environments fo
 - `/Users/sungholee/code/kstorybridge-v2/` - Independent archive of v2 state
 - `/Users/sungholee/code/kstorybridge-monorepo/` - Independent archive of main state
 
-### v2 Branch → Staging (dashboard-staging only)
+### v2 Branch → Staging
 
 **Deployments Enabled:**
-- ✅ **dashboard-staging** - Dashboard app deployed to staging.kstorybridge.com
+- ✅ **dashboard-staging** - Dashboard V1 app deployed to staging.kstorybridge.com
+- ✅ **creator-v2-staging** - Creator V2 app deployed to creator-v2.kstorybridge.com
 
 **Deployments Disabled:**
 - ❌ **kstorybridge-dashboard** - Skip v2 branch (only build main)
+- ❌ **kstorybridge-creator** - Skip v2 branch (only build main)
 - ❌ **kstorybridge-website** - Skip v2 branch (only build main)
 
 ### main Branch → Production (all apps)
 
 **Deployments Enabled:**
-- ✅ **kstorybridge-dashboard** - Dashboard app (buyer-focused)
-- ✅ **kstorybridge-creator** - Creator app (configured, not yet deployed to custom domain)
+- ✅ **kstorybridge-dashboard** - Dashboard V1 app (buyer-focused)
+- ✅ **kstorybridge-creator** - Creator V2 app (deployed to creator.kstorybridge.com)
 - ✅ **kstorybridge-website** - Marketing website
 
 ## Vercel Configuration Instructions

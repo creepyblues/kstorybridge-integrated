@@ -121,12 +121,12 @@ npm run preview           # Preview production build
 
 **Separate Apps for Different User Types**:
 
-| App | Port | Production URL | Purpose | Status |
-|-----|------|----------------|---------|--------|
-| **Dashboard** | 8081 | dashboard.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
-| **Creator V1** | 8082 | - | Legacy creator app (reference only) | 🗄️ Archived |
-| **Creator V2** | 8084 | creator.kstorybridge.com | Creator-focused features (content management) | ✅ DEPLOYED (98% Complete - One Bug Fix Pending) |
-| **Website** | 5173 | kstorybridge.com | Marketing site, auth redirects | ✅ Live |
+| App | Port | Production URL | Staging URL | Purpose | Status |
+|-----|------|----------------|-------------|---------|--------|
+| **Dashboard** | 8081 | dashboard.kstorybridge.com | staging.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
+| **Creator V1** | 8082 | - | - | Legacy creator app (reference only) | 🗄️ Archived |
+| **Creator V2** | 8083 | creator.kstorybridge.com | creator-v2.kstorybridge.com | Creator-focused features (content management) | ✅ Live |
+| **Website** | 5173 | kstorybridge.com | - | Marketing site, auth redirects | ✅ Live |
 
 **Key Differences**:
 - **Dashboard**: Buyer routes (`/buyers/*`), AI chatbot, tier-gated content, Stripe integration
@@ -139,7 +139,7 @@ npm run preview           # Preview production build
 - Creators sign up → Creator V2 app (`/home`) ✅ **LIVE**
 
 **Known Issues**:
-- ⚠️ Creator V2: Title edit save bug (`tags` field doesn't exist in database) - Fix pending
+- ⚠️ Creator V2: Title edit save bug (`tags` field doesn't exist in database) - ✅ **FIXED** (October 26, 2025)
 
 **See**: [Creator App V2 Rebuild Plan](docs/CREATOR_APP_V2_REBUILD_PLAN.md) for complete deployment history
 
@@ -544,9 +544,13 @@ interface CreatorFormData {
 - Website: http://localhost:5173
 - Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
 
+### Staging
+- Dashboard V1: https://staging.kstorybridge.com
+- Creator V2: https://creator-v2.kstorybridge.com (⏳ Pending Vercel project setup)
+
 ### Production
 - Dashboard: https://dashboard.kstorybridge.com
-- Creator: https://creator.kstorybridge.com (🚧 Configured, not yet deployed to custom domain)
+- Creator: https://creator.kstorybridge.com (✅ Live - October 2025)
 - Website: https://kstorybridge.com
 
 ### Documentation

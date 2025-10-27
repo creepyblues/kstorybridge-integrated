@@ -1,8 +1,9 @@
 # Creator App V2
 
-**Status**: ✅ 98% Complete - DEPLOYED TO PRODUCTION (One Bug Fix Pending)
-**Port**: 8084 (development)
+**Status**: ✅ 100% Complete - DEPLOYED TO PRODUCTION
+**Port**: 8083 (development)
 **Production URL**: https://creator.kstorybridge.com ✅ LIVE
+**Staging URL**: https://creator-v2.kstorybridge.com (⏳ Pending setup)
 
 Clean rebuild of the creator-focused platform with zero OAuth authentication issues.
 
@@ -23,7 +24,8 @@ Clean rebuild of the creator-focused platform with zero OAuth authentication iss
 - ✅ OAuth callbacks configured (Google + Supabase)
 - ✅ Production deployed to creator.kstorybridge.com
 - ✅ Custom domain DNS configured
-- ⚠️ **Known Issue**: Title edit save bug (`tags` field - line 188 EditTitle.tsx)
+- ✅ **Bug Fixed**: Title edit save bug (`tags` → `keywords` field fixed Oct 26, 2025)
+- ⏳ **Staging**: creator-v2.kstorybridge.com (Vercel project pending)
 
 ---
 
@@ -213,6 +215,12 @@ See `/apps/creator-v2/TESTING_STATUS.md` for 19-item checklist
 - **Vercel URL**: https://creator-v2-xi.vercel.app
 - **Deployment Date**: 2025-10-24
 - **Status**: LIVE ✅
+
+### ⏳ Staging Environment (Pending Setup)
+- **Staging URL**: https://creator-v2.kstorybridge.com
+- **Branch**: v2
+- **Purpose**: Test changes before pushing to production
+- **Setup Required**: Create Vercel project 'creator-v2-staging' + DNS configuration
 
 ### Completed Setup
 - [x] Vercel project created

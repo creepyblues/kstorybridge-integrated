@@ -15,7 +15,7 @@ KStoryBridge uses a three-app architecture with separate applications for differ
 | App | Directory | Port | Production URL | Purpose |
 |-----|-----------|------|----------------|---------|
 | **Dashboard** | `apps/dashboard` | 8081 | dashboard.kstorybridge.com | Buyer-focused features (AI chatbot, tier system, premium content) |
-| **Creator** | `apps/creator` | 8082 | creator.kstorybridge.com | Creator-focused features (content management, pitch uploads) |
+| **Creator** | `apps/creator-v2` | 8083 | creator.kstorybridge.com | Creator-focused features (content management, pitch uploads) |
 | **Website** | `apps/website` | 5173 | kstorybridge.com | Marketing site, authentication redirects |
 
 ---
@@ -36,7 +36,7 @@ Start individual apps:
 # Buyer dashboard (port 8081)
 npm run dev:dashboard
 
-# Creator dashboard (port 8082)
+# Creator dashboard (port 8083)
 npm run dev:creator
 
 # Marketing website (port 5173)
@@ -45,7 +45,7 @@ npm run dev:website
 
 **Local URLs**:
 - Dashboard: http://localhost:8081
-- Creator: http://localhost:8082
+- Creator: http://localhost:8083
 - Website: http://localhost:5173
 
 ### Build
@@ -75,7 +75,8 @@ npm run lint:all
 kstorybridge/
 ├── apps/
 │   ├── dashboard/          # Buyer dashboard (React + Vite)
-│   ├── creator/            # Creator dashboard (React + Vite)
+│   ├── creator-v2/         # Creator dashboard (React + Vite)
+│   ├── creator-v1/         # 🗄️ ARCHIVED - Legacy creator (reference only)
 │   └── website/            # Marketing website (React + Vite)
 ├── packages/               # Shared libraries
 │   ├── ui/                 # Shared UI components
@@ -153,7 +154,7 @@ Start here for comprehensive guidance:
 ### App-Specific Guides
 
 - **[Dashboard](apps/dashboard/CLAUDE.md)** - Buyer dashboard, tier system, AI chatbot
-- **[Creator](apps/creator/CLAUDE.md)** - Creator dashboard, content management
+- **[Creator](apps/creator-v2/CLAUDE.md)** - Creator dashboard, content management
 - **[Website](apps/website/CLAUDE.md)** - Marketing site, preview pages
 
 ### System Documentation
@@ -179,7 +180,7 @@ Located in `docs/guides/`:
 
 ```bash
 npm run dev:dashboard     # Start dashboard (localhost:8081)
-npm run dev:creator       # Start creator (localhost:8082)
+npm run dev:creator       # Start creator (localhost:8083)
 npm run dev:website       # Start website (localhost:5173)
 ```
 
@@ -248,7 +249,7 @@ VITE_SUPABASE_ANON_KEY=your_anon_key_here
 
 # App-specific URLs
 VITE_DASHBOARD_URL=http://localhost:8081
-VITE_CREATOR_URL=http://localhost:8082
+VITE_CREATOR_URL=http://localhost:8083
 VITE_WEBSITE_URL=http://localhost:5173
 
 # Feature flags (dashboard only)

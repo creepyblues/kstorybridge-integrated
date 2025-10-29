@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-10-26
+**Last Updated**: 2025-10-28
 
 ## 🔄 Development Workflow (UPDATED 2025-10-21)
 
@@ -30,7 +30,7 @@ git checkout v2                         # Default development branch
 
 ### App-Specific Guides
 - **[Dashboard App](apps/dashboard/CLAUDE.md)** - Buyer dashboard with tier system, premium content, AI chatbot (also serves auth pages for buyers and creators temporarily)
-- **[Creator App](apps/creator/CLAUDE.md)** - Creator-focused dashboard for content management
+- **[Creator App](apps/creator-v2/CLAUDE.md)** - Creator-focused dashboard for content management
 - **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects
 
 ### System Documentation (`docs/active/`)
@@ -64,7 +64,7 @@ git checkout v2                         # Default development branch
 ### Root Level
 ```bash
 npm run dev:dashboard     # http://localhost:8081 (Buyer dashboard)
-npm run dev:creator       # http://localhost:8082 (Creator dashboard)
+npm run dev:creator       # http://localhost:8083 (Creator dashboard)
 npm run dev:website       # http://localhost:5173 (Marketing site)
 npm run build:all         # Build all apps
 npm run lint:all          # Lint all apps
@@ -88,7 +88,8 @@ npm run preview           # Preview production build
 ```
 ├── apps/
 │   ├── dashboard/     # Buyer dashboard (port 8081)
-│   ├── creator/       # Creator dashboard (port 8082)
+│   ├── creator-v2/    # Creator dashboard (port 8083)
+│   ├── creator-v1/    # 🗄️ ARCHIVED - Legacy creator app (reference only)
 │   └── website/       # Marketing website (port 5173)
 ├── packages/          # Shared libraries
 └── docs/              # Documentation
@@ -124,22 +125,17 @@ npm run preview           # Preview production build
 | App | Port | Production URL | Staging URL | Purpose | Status |
 |-----|------|----------------|-------------|---------|--------|
 | **Dashboard** | 8081 | dashboard.kstorybridge.com | staging.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
-| **Creator V1** | 8082 | - | - | Legacy creator app (reference only) | 🗄️ Archived |
-| **Creator V2** | 8083 | creator.kstorybridge.com | creator-v2.kstorybridge.com | Creator-focused features (content management) | ✅ Live |
+| **Creator** | 8083 | creator.kstorybridge.com | creator-v2.kstorybridge.com | Creator-focused features (content management) | ✅ Live |
 | **Website** | 5173 | kstorybridge.com | - | Marketing site, auth redirects | ✅ Live |
 
 **Key Differences**:
 - **Dashboard**: Buyer routes (`/buyers/*`), AI chatbot, tier-gated content, Stripe integration
-- **Creator V2**: Clean URLs (`/home`, `/titles`), content management, title CRUD, profile management, OAuth working perfectly
-- **Creator V1**: Archived - reference only, replaced by V2
+- **Creator**: Clean URLs (`/home`, `/titles`), content management, title CRUD, profile management, OAuth working perfectly
 - **Website**: Marketing pages, redirects to dashboard OR creator for authentication
 
 **Authentication Routing**:
 - Buyers sign up → Dashboard app (`/buyers/home`)
-- Creators sign up → Creator V2 app (`/home`) ✅ **LIVE**
-
-**Known Issues**:
-- ⚠️ Creator V2: Title edit save bug (`tags` field doesn't exist in database) - ✅ **FIXED** (October 26, 2025)
+- Creators sign up → Creator app (`/home`) ✅ **LIVE**
 
 **See**: [Creator App V2 Rebuild Plan](docs/CREATOR_APP_V2_REBUILD_PLAN.md) for complete deployment history
 
@@ -540,7 +536,7 @@ interface CreatorFormData {
 
 ### Development
 - Dashboard: http://localhost:8081
-- Creator: http://localhost:8082
+- Creator: http://localhost:8083
 - Website: http://localhost:5173
 - Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
 

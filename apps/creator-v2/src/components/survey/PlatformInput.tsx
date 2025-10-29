@@ -3,13 +3,6 @@ import { X, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 
 export interface PlatformData {
   id: string // Temporary ID for form management
@@ -25,21 +18,6 @@ interface PlatformInputProps {
   onChange: (platforms: PlatformData[]) => void
   error?: string
 }
-
-const PLATFORM_OPTIONS = [
-  { value: 'naver', label: 'Naver Webtoon' },
-  { value: 'kakao', label: 'Kakao Page' },
-  { value: 'lezhin', label: 'Lezhin Comics' },
-  { value: 'ridibooks', label: 'Ridibooks' },
-  { value: 'toomics', label: 'Toomics' },
-  { value: 'bomtoon', label: 'Bomtoon' },
-  { value: 'ktoon', label: 'KToon' },
-  { value: 'kakaopage', label: 'Kakao Page' },
-  { value: 'munpia', label: 'Munpia' },
-  { value: 'joara', label: 'Joara' },
-  { value: 'novelpia', label: 'Novelpia' },
-  { value: 'other', label: 'Other Platform' },
-]
 
 /**
  * PlatformInput Component
@@ -144,33 +122,6 @@ export const PlatformInput: React.FC<PlatformInputProps> = ({
                   <X className="w-4 h-4" />
                   <span className="sr-only">Remove platform</span>
                 </Button>
-              </div>
-
-              {/* Platform Name Selection */}
-              <div className="space-y-2">
-                <Label htmlFor={`platform-name-${platform.id}`}>
-                  Platform Name <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={platform.platform_name}
-                  onValueChange={(value) =>
-                    updatePlatform(platform.id, 'platform_name', value)
-                  }
-                >
-                  <SelectTrigger
-                    id={`platform-name-${platform.id}`}
-                    className="bg-white border-gray-300"
-                  >
-                    <SelectValue placeholder="Select platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PLATFORM_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
               {/* Platform URL */}

@@ -170,7 +170,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
         <div className="space-y-2">
           <Label htmlFor="inspiration">
-            Inspiration
+            What inspired this story?
           </Label>
           <Textarea
             id="inspiration"
@@ -186,7 +186,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
         <div className="space-y-2">
           <Label htmlFor="important_issues">
-            Important Issues
+            Does it address any important issues?
           </Label>
           <Textarea
             id="important_issues"
@@ -276,7 +276,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
         <div className="space-y-2">
           <Label htmlFor="setting_description">
-            Setting Description <span className="text-red-500">*</span>
+            Please describe the setting of your story (time, place, key locations) <span className="text-red-500">*</span>
           </Label>
           <Textarea
             id="setting_description"
@@ -297,7 +297,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
         <div className="space-y-2">
           <Label htmlFor="world_lore">
-            World Lore
+            Please describe the "rules" or lore of your world - magic systems, supernatural forces, sci-fi concepts, etc.
           </Label>
           <Textarea
             id="world_lore"
@@ -313,7 +313,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
         <div className="space-y-2">
           <Label htmlFor="supernatural_concepts">
-            Supernatural/Sci-Fi Concepts
+            Are there any supernatural or sci-fi concepts that separates this story from conventional reality? If so, is there any "lore" or "twist" or "big idea" or "high concept" crucial to understanding the story?
           </Label>
           <Textarea
             id="supernatural_concepts"

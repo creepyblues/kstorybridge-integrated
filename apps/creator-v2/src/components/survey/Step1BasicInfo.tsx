@@ -114,7 +114,7 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="title_name_en">
-              English Title <span className="text-red-500">*</span>
+              English Title Name <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title_name_en"
@@ -129,7 +129,7 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
           <div className="space-y-2">
             <Label htmlFor="title_name_kr">
-              Korean Title <span className="text-red-500">*</span>
+              Korean Title Name <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title_name_kr"
@@ -147,7 +147,7 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="title_url">
-              Title URL <span className="text-red-500">*</span>
+              English Title URL <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title_url"
@@ -178,20 +178,32 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
         </div>
 
-        {/* Story Author */}
-        <div className="space-y-2">
-          <Label htmlFor="story_author">
-            Story Author <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="story_author"
-            placeholder="Author name"
-            {...register('story_author', { required: 'Story author is required' })}
-            className="bg-white border-gray-300"
-          />
-          {errors.story_author && (
-            <p className="text-sm text-red-600">{errors.story_author.message as string}</p>
-          )}
+        {/* Underlying Novel */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="underlying_novel_kr">
+              Underlying Novel (Korean)
+              <span className="text-xs text-gray-500 ml-2">if adapted</span>
+            </Label>
+            <Input
+              id="underlying_novel_kr"
+              placeholder="원작 소설 제목 (선택사항)"
+              {...register('underlying_novel_kr')}
+              className="bg-white border-gray-300"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="underlying_novel_en">
+              Underlying Novel (English)
+            </Label>
+            <Input
+              id="underlying_novel_en"
+              placeholder="Original Novel Title (optional)"
+              {...register('underlying_novel_en')}
+              className="bg-white border-gray-300"
+            />
+          </div>
         </div>
 
         {/* Genre and Format */}
@@ -326,102 +338,6 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         )}
       </div>
 
-      {/* Section: Hangul Titles */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Hangul Titles</h3>
-          <p className="text-sm text-gray-500 mt-1">
-            Provide Korean titles for script, art, and underlying work (if different)
-          </p>
-        </div>
-
-        {/* Script Title */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="script_title_kr">
-              Script Title (Korean)
-            </Label>
-            <Input
-              id="script_title_kr"
-              placeholder="웹툰 제목"
-              {...register('script_title_kr')}
-              className="bg-white border-gray-300"
-            />
-            {errors.script_title_kr && (
-              <p className="text-sm text-red-600">{errors.script_title_kr.message as string}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="script_title_en">
-              Script Title (English)
-            </Label>
-            <Input
-              id="script_title_en"
-              placeholder="Webtoon Title"
-              {...register('script_title_en')}
-              className="bg-white border-gray-300"
-            />
-          </div>
-        </div>
-
-        {/* Art Title (if different) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="art_title_kr">
-              Art Title (Korean)
-              <span className="text-xs text-gray-500 ml-2">if different from script</span>
-            </Label>
-            <Input
-              id="art_title_kr"
-              placeholder="작화 제목 (선택사항)"
-              {...register('art_title_kr')}
-              className="bg-white border-gray-300"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="art_title_en">
-              Art Title (English)
-            </Label>
-            <Input
-              id="art_title_en"
-              placeholder="Art Title (optional)"
-              {...register('art_title_en')}
-              className="bg-white border-gray-300"
-            />
-          </div>
-        </div>
-
-        {/* Underlying Novel */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="underlying_novel_kr">
-              Underlying Novel (Korean)
-              <span className="text-xs text-gray-500 ml-2">if adapted</span>
-            </Label>
-            <Input
-              id="underlying_novel_kr"
-              placeholder="원작 소설 제목 (선택사항)"
-              {...register('underlying_novel_kr')}
-              className="bg-white border-gray-300"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="underlying_novel_en">
-              Underlying Novel (English)
-            </Label>
-            <Input
-              id="underlying_novel_en"
-              placeholder="Original Novel Title (optional)"
-              {...register('underlying_novel_en')}
-              className="bg-white border-gray-300"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Section: Rights Holder */}
       <div className="space-y-4">
         <div>
@@ -431,44 +347,44 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="rights_holder_name">
-              Rights Holder Name
-            </Label>
-            <Input
-              id="rights_holder_name"
-              placeholder="Individual or company name"
-              {...register('rights_holder_name')}
-              className="bg-white border-gray-300"
-            />
-            {errors.rights_holder_name && (
-              <p className="text-sm text-red-600">{errors.rights_holder_name.message as string}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="rights_holder_company">
-              Rights Holder Company
-              <span className="text-xs text-gray-500 ml-2">if applicable</span>
-            </Label>
-            <Input
-              id="rights_holder_company"
-              placeholder="Company name (optional)"
-              {...register('rights_holder_company')}
-              className="bg-white border-gray-300"
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="rights_holder_name">
+            Rights Holder Name
+          </Label>
+          <Input
+            id="rights_holder_name"
+            placeholder="Individual or company name"
+            {...register('rights_holder_name')}
+            className="bg-white border-gray-300"
+          />
+          {errors.rights_holder_name && (
+            <p className="text-sm text-red-600">{errors.rights_holder_name.message as string}</p>
+          )}
         </div>
       </div>
 
-      {/* Section: Additional Credits */}
+      {/* Section: Credits */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Additional Credits</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Credits</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Other contributors to this title (if different from story author)
+            Contributors to this title
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="story_author">
+            Story Author <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="story_author"
+            placeholder="Author name"
+            {...register('story_author', { required: 'Story author is required' })}
+            className="bg-white border-gray-300"
+          />
+          {errors.story_author && (
+            <p className="text-sm text-red-600">{errors.story_author.message as string}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -483,33 +399,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="author">Author (General)</Label>
-            <Input
-              id="author"
-              placeholder="Author name"
-              {...register('author')}
-              className="bg-white border-gray-300"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="writer">Writer</Label>
+            <Label htmlFor="writer">Original Author</Label>
             <Input
               id="writer"
-              placeholder="Writer name"
+              placeholder="Original author name"
               {...register('writer')}
-              className="bg-white border-gray-300"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="illustrator">Illustrator</Label>
-            <Input
-              id="illustrator"
-              placeholder="Illustrator name"
-              {...register('illustrator')}
               className="bg-white border-gray-300"
             />
           </div>

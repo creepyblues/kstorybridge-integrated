@@ -1,6 +1,6 @@
 # Creator V2 - OAuth Configuration Reference
 
-**Last Updated**: 2025-10-24
+**Last Updated**: 2025-10-29
 **Purpose**: Quick reference for OAuth callback URL configuration
 
 ---
@@ -10,13 +10,11 @@
 ### Development (Local)
 ```
 http://localhost:8083/auth/callback
-http://localhost:8084/auth/callback
 ```
 
-### Staging (Vercel Preview)
+### Staging
 ```
-https://creator-v2-*.vercel.app/auth/callback
-https://creator-v2-staging-*.vercel.app/auth/callback
+https://creator-v2.kstorybridge.com/auth/callback
 ```
 
 ### Production
@@ -24,7 +22,12 @@ https://creator-v2-staging-*.vercel.app/auth/callback
 https://creator.kstorybridge.com/auth/callback
 ```
 
-**Note**: The `*` wildcard in Vercel URLs allows all preview deployments to work without individual configuration.
+**Multi-Environment Support**: Creator V2 uses explicit domain detection to route OAuth callbacks correctly:
+- Production: `creator.kstorybridge.com`
+- Staging: `creator-v2.kstorybridge.com`
+- Localhost: `localhost:8083`
+
+See [Implementation Details](#-implementation-details) below for technical explanation.
 
 ---
 
@@ -51,14 +54,11 @@ https://creator.kstorybridge.com/auth/callback
 **Required URIs to Add**:
 ```
 https://creator.kstorybridge.com/auth/callback
-https://creator-v2-*.vercel.app/auth/callback
+https://creator-v2.kstorybridge.com/auth/callback
+http://localhost:8083/auth/callback
 ```
 
-**Optional (for local testing)**:
-```
-http://localhost:8083/auth/callback
-http://localhost:8084/auth/callback
-```
+**Note**: All three URLs must be added for local development, staging, and production environments to work.
 
 ---
 
@@ -75,12 +75,17 @@ http://localhost:8084/auth/callback
 6. Update "Site URL" to production URL
 7. Click "Save"
 
-**Redirect URLs to Add**:
+**Redirect URLs to Add** (All Apps):
 ```
+# Creator App
 https://creator.kstorybridge.com/auth/callback
-https://creator-v2-*.vercel.app/auth/callback
+https://creator-v2.kstorybridge.com/auth/callback
 http://localhost:8083/auth/callback
-http://localhost:8084/auth/callback
+
+# Dashboard App
+https://dashboard.kstorybridge.com/auth/callback
+https://dashboard-v2.kstorybridge.com/auth/callback
+http://localhost:8081/auth/callback
 ```
 
 **Site URL**:
@@ -88,12 +93,7 @@ http://localhost:8084/auth/callback
 https://creator.kstorybridge.com
 ```
 
-**Additional Redirect URLs** (keep existing):
-```
-https://dashboard.kstorybridge.com/auth/callback
-https://kstorybridge.com/auth/callback
-http://localhost:8081/auth/callback
-```
+**Note**: Both creator and dashboard apps share the same Supabase project. All redirect URLs for both apps must be whitelisted.
 
 ---
 
@@ -102,24 +102,26 @@ http://localhost:8081/auth/callback
 After updating OAuth settings:
 
 ### Google OAuth Console
-- [ ] Authorized redirect URIs list includes production URL
-- [ ] Authorized redirect URIs includes Vercel wildcard
+- [ ] Authorized redirect URIs includes production URL (`creator.kstorybridge.com`)
+- [ ] Authorized redirect URIs includes staging URL (`creator-v2.kstorybridge.com`)
+- [ ] Authorized redirect URIs includes localhost (`localhost:8083`)
 - [ ] Changes saved successfully
 - [ ] No errors or warnings displayed
 
 ### Supabase Auth Settings
-- [ ] Redirect URLs includes production URL
-- [ ] Redirect URLs includes Vercel wildcard
-- [ ] Redirect URLs includes localhost (for dev)
+- [ ] Redirect URLs includes all creator URLs (production, staging, localhost)
+- [ ] Redirect URLs includes all dashboard URLs (production, staging, localhost)
 - [ ] Site URL set to production domain
 - [ ] Changes saved successfully
 
 ### Testing
-- [ ] Test OAuth signup on localhost (before deployment)
-- [ ] Test OAuth signup on Vercel preview (after deploy)
-- [ ] Test OAuth signup on production (after DNS setup)
-- [ ] Test OAuth signin (existing user)
+- [ ] Test OAuth signup on localhost:8083 (before deployment)
+- [ ] Test OAuth signup on staging (creator-v2.kstorybridge.com)
+- [ ] Test OAuth signup on production (creator.kstorybridge.com)
+- [ ] Test OAuth signin (existing user) on all environments
 - [ ] Verify no "redirect_uri_mismatch" errors
+- [ ] Verify no 400 "code verifier" errors
+- [ ] Verify no 401 Unauthorized errors
 
 ---
 
@@ -158,20 +160,82 @@ After updating OAuth settings:
 
 ## 📋 Quick Copy-Paste
 
-### For Google OAuth Console
+### For Google OAuth Console (All Apps)
 ```
 https://creator.kstorybridge.com/auth/callback
-https://creator-v2-*.vercel.app/auth/callback
+https://creator-v2.kstorybridge.com/auth/callback
+https://dashboard.kstorybridge.com/auth/callback
+https://dashboard-v2.kstorybridge.com/auth/callback
+http://localhost:8081/auth/callback
 http://localhost:8083/auth/callback
 ```
 
-### For Supabase Auth Settings
+### For Supabase Auth Settings (All Apps)
 ```
 https://creator.kstorybridge.com/auth/callback
-https://creator-v2-*.vercel.app/auth/callback
+https://creator-v2.kstorybridge.com/auth/callback
+https://dashboard.kstorybridge.com/auth/callback
+https://dashboard-v2.kstorybridge.com/auth/callback
+http://localhost:8081/auth/callback
 http://localhost:8083/auth/callback
-http://localhost:8084/auth/callback
 ```
+
+---
+
+## 🔧 Implementation Details
+
+### Explicit Domain Handling Pattern
+
+**Problem**: Both creator and dashboard apps share the same Supabase project with a single "Site URL" configuration, which can cause OAuth callbacks to redirect to the wrong domain.
+
+**Solution**: Explicit domain detection in OAuth initiation code.
+
+**Location**: `apps/creator-v2/src/lib/auth.ts` (lines 150-159)
+
+```typescript
+// Detect environment and set correct redirect URL
+const isStaging = window.location.hostname === 'creator-v2.kstorybridge.com'
+const isProduction = window.location.hostname === 'creator.kstorybridge.com'
+
+const redirectUrl = isStaging
+  ? 'https://creator-v2.kstorybridge.com/auth/callback'
+  : isProduction
+  ? 'https://creator.kstorybridge.com/auth/callback'
+  : `${window.location.origin}/auth/callback`  // Localhost
+```
+
+**Why This Works**:
+- Bypasses Supabase Site URL configuration
+- Explicitly tells Google OAuth which callback URL to use
+- Handles production, staging, and localhost correctly
+- Each app controls its own redirect logic
+
+### Check-Then-Fallback Pattern
+
+**Problem**: Supabase's `detectSessionInUrl: true` automatically exchanges OAuth codes. If we also call `exchangeCodeForSession()` explicitly, we attempt to use the same single-use code twice → 400 error.
+
+**Solution**: Check if automatic exchange succeeded before attempting explicit exchange.
+
+**Location**: `apps/creator-v2/src/pages/auth/AuthCallback.tsx` (lines 18-56)
+
+```typescript
+// Check if session already exists from automatic code exchange
+let { data: { session } } = await supabase.auth.getSession()
+
+if (session) {
+  console.log('✅ OAuth session found (automatic exchange)')
+} else {
+  // Fallback: Explicit exchange if automatic failed
+  const result = await supabase.auth.exchangeCodeForSession(code)
+  session = result.data.session
+}
+```
+
+**Why This Works**:
+- Respects automatic code exchange (when it works)
+- Provides fallback for edge cases
+- Prevents duplicate code exchange attempts
+- Avoids 400 "code verifier" errors
 
 ---
 
@@ -179,6 +243,9 @@ http://localhost:8084/auth/callback
 
 | Date | Change | Updated By |
 |------|--------|------------|
+| 2025-10-29 | Added multi-environment support (staging URLs) | Claude |
+| 2025-10-29 | Added explicit domain handling pattern documentation | Claude |
+| 2025-10-29 | Added check-then-fallback pattern documentation | Claude |
 | 2025-10-24 | Initial setup for V2 | Claude |
 
 ---
@@ -194,8 +261,9 @@ If OAuth issues persist:
 ---
 
 **Next Steps After Configuration**:
-1. Test OAuth locally before deploying
-2. Deploy to Vercel staging
+1. Test OAuth locally (localhost:8083)
+2. Deploy to staging (creator-v2.kstorybridge.com)
 3. Test OAuth on staging URL
-4. Deploy to production
+4. Merge to main and deploy to production (creator.kstorybridge.com)
 5. Test OAuth on production domain
+6. Verify all environments working correctly

@@ -2,7 +2,7 @@
 
 **App Scope**: Creator-focused dashboard for content management, title submissions, and profile management. Dedicated app for Korean content creators (webtoon artists, web novel authors, agents).
 
-**Last Updated**: 2025-10-28
+**Last Updated**: 2025-10-29
 
 **Status**: ✅ PRODUCTION - Primary creator app (V1 archived as reference)
 
@@ -167,18 +167,39 @@ React-based creator dashboard built from scratch to eliminate OAuth authenticati
 await signUpWithEmail(email, password, { pen_name, full_name, ip_owner_role, ... })
 ```
 
-**OAuth Signup**:
+**OAuth Signup** (Multi-Environment Support):
 ```typescript
+// Explicit domain handling (src/lib/auth.ts:150-159)
+const isStaging = window.location.hostname === 'creator-v2.kstorybridge.com'
+const isProduction = window.location.hostname === 'creator.kstorybridge.com'
+
+const redirectUrl = isStaging
+  ? 'https://creator-v2.kstorybridge.com/auth/callback'
+  : isProduction
+  ? 'https://creator.kstorybridge.com/auth/callback'
+  : `${window.location.origin}/auth/callback`  // Localhost
+
 // Sequential operations (no race conditions)
-1. Exchange code for session
-2. Create user_creators profile
-3. Set account_type='creator' metadata
+1. Initiate OAuth with explicit redirect URL
+2. Google redirects back to correct domain
+3. Exchange code for session (check-then-fallback pattern)
+4. Create user_creators profile
+5. Set account_type='creator' metadata
 ```
 
-**OAuth Signin**:
+**OAuth Signin** (Check-Then-Fallback Pattern):
 ```typescript
-// Just exchange code, profile already exists
-await exchangeCodeForSession(code)
+// src/pages/auth/AuthCallback.tsx:18-56
+// Check if automatic exchange succeeded first
+let { data: { session } } = await supabase.auth.getSession()
+
+if (session) {
+  // Automatic exchange succeeded, use existing session
+} else {
+  // Fallback: Explicit exchange if automatic failed
+  const result = await supabase.auth.exchangeCodeForSession(code)
+  session = result.data.session
+}
 ```
 
 ---
@@ -220,6 +241,15 @@ await exchangeCodeForSession(code)
 - **URL**: https://creator-v2.kstorybridge.com
 - **Platform**: Vercel
 - **Branch**: Deploy from `v2` branch
+- **OAuth**: Configured for staging callback URLs
+
+### Multi-Environment OAuth Support
+All environments use **explicit domain detection** for OAuth redirects:
+- Production: `creator.kstorybridge.com/auth/callback`
+- Staging: `creator-v2.kstorybridge.com/auth/callback`
+- Localhost: `localhost:8083/auth/callback`
+
+**No environment variables needed** for redirect URLs - detection is automatic based on hostname.
 
 ### Environment Variables (Vercel)
 ```bash
@@ -228,13 +258,15 @@ VITE_SUPABASE_ANON_KEY=[anon_key]
 ```
 
 See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for complete instructions.
+See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for OAuth configuration details.
 
 ---
 
 ## Critical Rules
 
 ### Authentication
-- ✅ **OAuth callbacks**: No URL parameters, use `${window.location.origin}/auth/callback`
+- ✅ **OAuth multi-environment**: Use explicit domain detection pattern (staging, production, localhost)
+- ✅ **Check-then-fallback**: Check automatic code exchange before explicit exchange (prevents 400 errors)
 - ✅ **account_type**: Set during signup in metadata, never default assignment
 - ✅ **Single auth listener**: One listener in AuthProvider, no competing listeners
 - ✅ **Sequential OAuth**: Exchange code → Create profile → Set metadata (never concurrent)

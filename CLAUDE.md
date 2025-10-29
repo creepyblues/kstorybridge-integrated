@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-10-28
+**Last Updated**: 2025-10-29
 
 ## 🔄 Development Workflow (UPDATED 2025-10-21)
 
@@ -118,13 +118,13 @@ npm run preview           # Preview production build
   ```
 - **Why root only**: All apps share the same Supabase database, so migrations must be centralized
 
-### Three-App Architecture (UPDATED 2025-10-28)
+### Three-App Architecture (UPDATED 2025-10-29)
 
 **Separate Apps for Different User Types**:
 
 | App | Port | Production URL | Staging URL | Purpose | Status |
 |-----|------|----------------|-------------|---------|--------|
-| **Dashboard** | 8081 | dashboard.kstorybridge.com | staging.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
+| **Dashboard** | 8081 | dashboard.kstorybridge.com | dashboard-v2.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
 | **Creator** | 8083 | creator.kstorybridge.com | creator-v2.kstorybridge.com | Creator-focused features (content management) | ✅ Live |
 | **Website** | 5173 | kstorybridge.com | - | Marketing site, auth redirects | ✅ Live |
 
@@ -541,8 +541,8 @@ interface CreatorFormData {
 - Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
 
 ### Staging
-- Dashboard V1: https://staging.kstorybridge.com
-- Creator V2: https://creator-v2.kstorybridge.com (⏳ Pending Vercel project setup)
+- Dashboard: https://dashboard-v2.kstorybridge.com
+- Creator: https://creator-v2.kstorybridge.com
 
 ### Production
 - Dashboard: https://dashboard.kstorybridge.com

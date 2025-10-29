@@ -24,7 +24,6 @@ export interface Title {
   audience?: string | null
   comps?: string[] | null
   content_format?: string | null
-  tags?: string[] | null
   keywords?: string[] | null
   creator_id?: string | null
   created_at?: string
@@ -93,7 +92,6 @@ export interface CreateTitleInput {
   // Content classification
   genre?: string[] | null
   content_format?: string | null
-  tags?: string[] | null
   keywords?: string[] | null
 
   // Content details

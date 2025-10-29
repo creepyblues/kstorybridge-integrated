@@ -366,13 +366,13 @@ export default function TitleDetail() {
                   )}
 
                   {/* Keywords */}
-                  {(title.keywords || title.tags) && (title.keywords || title.tags).length > 0 && (
+                  {title.keywords && title.keywords.length > 0 && (
                     <div className="pt-4">
                       <h5 className="font-bold text-gray-700 mb-3">Keywords</h5>
                       <div className="flex flex-wrap gap-2">
-                        {(title.keywords || title.tags).map((tag, idx) => (
+                        {title.keywords.map((keyword, idx) => (
                           <Badge key={idx} variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
-                            {tag}
+                            {keyword}
                           </Badge>
                         ))}
                       </div>

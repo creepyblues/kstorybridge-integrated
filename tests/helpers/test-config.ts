@@ -12,9 +12,12 @@ export interface EnvironmentConfig {
 
 export const ENVIRONMENTS: Record<Environment, EnvironmentConfig> = {
   staging: {
-    dashboard: 'https://dashboard-v2.kstorybridge.com',
-    creator: 'https://creator-v2.kstorybridge.com',
-    website: 'https://kstorybridge.com',
+    // Using Vercel auto-domains (*.vercel.app) to bypass custom domain SSL issues
+    // Custom domains have DNS configuration issues preventing SSL provisioning
+    // These Vercel domains have auto-managed SSL and work immediately
+    dashboard: 'https://dashboard-staging.vercel.app',
+    creator: 'https://creator-v2-staging.vercel.app',
+    website: 'https://kstorybridge.com', // Website has no staging environment
   },
   production: {
     dashboard: 'https://dashboard.kstorybridge.com',

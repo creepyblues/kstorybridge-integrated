@@ -1,9 +1,9 @@
 # Creator App V2 - Complete Rebuild Plan
 
-**Status**: ✅ DEPLOYED TO PRODUCTION - One Bug Found (Title Edit)
+**Status**: ✅ PRODUCTION READY - V2 is Primary, V1 Archived
 **Timeline**: 2-3 days (20-22 hours)
-**Last Updated**: 2025-10-24
-**Progress**: Phase 5 Complete (98% - Production Ready)
+**Last Updated**: 2025-10-28
+**Progress**: Phase 6 Complete (100% - V2 is Primary Creator App)
 
 ---
 
@@ -472,16 +472,118 @@ Table: `user_creators`
 
 ---
 
+### Phase 6: Archive V1 and Promote V2
+**Status**: ✅ COMPLETED
+**Time Estimate**: 1-2 hours
+**Owner**: Claude + User
+**Completed**: 2025-10-28
+
+#### Strategic Decision
+With Creator V2 successfully deployed to production and all features working, archive the legacy V1 app and make V2 the single source of truth for creator dashboard development.
+
+#### Tasks
+- [x] **6.1 Directory Restructure** (15 min)
+  - [x] Renamed `/apps/creator` → `/apps/creator-v1`
+  - [x] Preserved all 685 files for historical reference
+  - [x] Used `git mv` for clean rename (maintains git history)
+
+- [x] **6.2 Update Build Configuration** (15 min)
+  - [x] Updated `package.json` scripts to reference `creator-v2`:
+    - `dev:creator` → points to apps/creator-v2 (port 8083)
+    - `build:creator` → builds apps/creator-v2
+    - `build:all` → includes creator-v2
+    - `lint:all` → lints creator-v2
+
+- [x] **6.3 Update Documentation** (30 min)
+  - [x] Updated root `CLAUDE.md`:
+    - Changed port references (8082 → 8083)
+    - Updated project structure diagrams
+    - Marked creator-v1 as 🗄️ ARCHIVED
+    - Removed V1/V2 distinction in active documentation
+  - [x] Updated `README.md`:
+    - Updated app table with correct ports
+    - Updated command examples
+    - Updated project structure
+  - [x] Added Phase 6 to `CREATOR_APP_V2_REBUILD_PLAN.md` (this document)
+  - [x] Created `apps/creator-v2/CLAUDE.md` for app-specific docs
+  - [x] Updated `docs/INDEX.md` with creator app references
+
+- [x] **6.4 Verification Testing** (15 min)
+  - [x] `npm run dev:creator` → correctly starts creator-v2 on port 8083
+  - [x] `npm run build:creator` → successfully builds creator-v2
+  - [x] `npm run lint:all` → lints all apps including creator-v2
+  - [x] Git status clean (all changes committed)
+
+- [x] **6.5 Git Commit and Push** (5 min)
+  - [x] Committed refactoring changes (commit: f71f40cb)
+  - [x] Committed creator-v2 updates (commit: 8815ee99)
+  - [x] Pushed to `origin/v2` branch
+
+#### Deliverables
+- [x] Legacy creator app safely archived as `/apps/creator-v1/`
+- [x] Creator-v2 is now primary creator app (no -v2 suffix needed in docs)
+- [x] All npm scripts point to creator-v2
+- [x] Documentation updated across all relevant files
+- [x] Verification tests pass
+
+#### Files Modified
+- `/package.json` - Updated scripts (4 lines changed)
+- `/CLAUDE.md` - Updated ports, structure, references (9 updates)
+- `/README.md` - Updated commands, ports, structure (7 updates)
+- `/docs/CREATOR_APP_V2_REBUILD_PLAN.md` - Added Phase 6 (this section)
+- `/docs/INDEX.md` - Added creator app references
+
+#### Files Created
+- `/apps/creator-v2/CLAUDE.md` - App-specific documentation
+
+#### What's Preserved in creator-v1
+The `/apps/creator-v1/` directory contains:
+- Complete codebase (682 files, ~158 MB)
+- Full git history
+- All documentation and configuration
+- Reference for any needed code/patterns
+- Status: 🗄️ ARCHIVED (read-only, historical reference)
+
+#### Why Archive Instead of Delete?
+1. **Historical reference** - May need to check old implementations
+2. **Code patterns** - Useful examples for future features
+3. **Documentation** - Contains extensive setup/deployment docs
+4. **Safety** - Can restore if needed (though V2 is better in every way)
+5. **Minimal cost** - No active maintenance burden, just storage
+
+#### Key Changes Summary
+```bash
+# Before
+apps/creator/          # Legacy app (port 8082) - ACTIVE
+apps/creator-v2/       # New app (port 8083) - TESTING
+
+# After
+apps/creator-v1/       # 🗄️ ARCHIVED - Legacy app (reference only)
+apps/creator-v2/       # ✅ PRIMARY - Active creator app (port 8083)
+```
+
+#### Production Status
+- **Live URL**: https://creator.kstorybridge.com
+- **Staging URL**: https://creator-v2.kstorybridge.com
+- **OAuth**: Fully configured and working
+- **Features**: All creator features operational
+- **Known Issues**: None (title edit bug fixed 2025-10-26)
+
+---
+
 ## 📞 Questions or Blockers
 
 Track any questions or blockers here as they arise:
 
-- ⚠️ **BLOCKER**: Title edit save bug (tags field) - needs immediate fix
+- ✅ Title edit save bug (tags field) - **FIXED** (2025-10-26)
 - ✅ OAuth configuration complete
 - ✅ Custom domain active
+- ✅ V1 archived, V2 promoted to primary (2025-10-28)
+
+**No open blockers or questions**
 
 ---
 
-**Last Updated**: 2025-10-24
-**Status**: DEPLOYED TO PRODUCTION (creator.kstorybridge.com)
-**Completion**: 98% (One bug fix remaining)
+**Last Updated**: 2025-10-28
+**Status**: ✅ COMPLETE - V2 is Primary Creator App
+**Completion**: 100% (All phases complete, V1 archived)

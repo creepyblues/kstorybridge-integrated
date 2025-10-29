@@ -89,7 +89,7 @@ npm run preview           # Preview production build
 ├── apps/
 │   ├── dashboard/     # Buyer dashboard (port 8081)
 │   ├── creator-v2/    # Creator dashboard (port 8083)
-│   ├── creator-v1/    # 🗄️ ARCHIVED - Legacy creator app (reference only)
+│   ├── creator-v1/    # 🗄️ ARCHIVED (Oct 2025) - Legacy creator app (reference only)
 │   └── website/       # Marketing website (port 5173)
 ├── packages/          # Shared libraries
 └── docs/              # Documentation
@@ -118,7 +118,7 @@ npm run preview           # Preview production build
   ```
 - **Why root only**: All apps share the same Supabase database, so migrations must be centralized
 
-### Three-App Architecture (UPDATED 2025-10-24)
+### Three-App Architecture (UPDATED 2025-10-28)
 
 **Separate Apps for Different User Types**:
 

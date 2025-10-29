@@ -24,13 +24,24 @@
     "test:all": "npm run test --workspace=apps/dashboard -- --run && npm run test --workspace=apps/website -- --run",
     "test:watch": "npm run test:watch --workspace=apps/dashboard",
     "test:coverage": "npm run test:coverage --workspace=apps/dashboard && npm run test:coverage --workspace=apps/website",
-    "clean:all": "npm run clean --workspace=apps/dashboard && npm run clean --workspace=apps/website && npm run clean --workspace=packages/ui && npm run clean --workspace=packages/build-config",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --headed --debug",
+    "test:e2e:staging": "TEST_ENV=staging playwright test",
+    "test:e2e:production": "TEST_ENV=production playwright test",
+    "test:e2e:auth": "playwright test auth.spec.ts",
+    "test:e2e:chatbot": "playwright test chatbot.spec.ts",
+    "test:e2e:creator": "playwright test creator.spec.ts",
+    "test:e2e:report": "playwright show-report",
+    "clean:all": "npm run clean --workspace=apps/dashboard && npm run clean --workspace=apps/website && npm run clean --workspace/packages/ui && npm run clean --workspace=packages/build-config",
     "storybook": "npm run storybook --workspace=packages/storybook",
     "build-storybook": "npm run build-storybook --workspace=packages/storybook",
     "install:all": "npm install"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^22.5.5",
+    "playwright": "^1.56.1",
     "typescript": "^5.5.3"
   },
   "dependencies": {

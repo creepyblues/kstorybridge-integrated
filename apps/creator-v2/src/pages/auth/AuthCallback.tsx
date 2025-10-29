@@ -15,40 +15,45 @@ export default function AuthCallback() {
     try {
       console.log('🔐 OAuth callback: Processing...')
 
-      // Extract OAuth code from URL
-      const urlParams = new URLSearchParams(window.location.search)
-      const code = urlParams.get('code')
+      // Check if session already exists from automatic code exchange (detectSessionInUrl: true)
+      let { data: { session } } = await supabase.auth.getSession()
 
-      if (!code) {
-        console.error('❌ No OAuth code found in URL')
-        setStatus('Invalid authentication request')
-        setTimeout(() => navigate('/signin'), 2000)
-        return
+      if (session) {
+        console.log('✅ OAuth session found (automatic exchange):', session.user.email)
+      } else {
+        // If no session from automatic exchange, try explicit exchange as fallback
+        const urlParams = new URLSearchParams(window.location.search)
+        const code = urlParams.get('code')
+
+        if (!code) {
+          console.error('❌ No OAuth code found in URL and no existing session')
+          setStatus('Invalid authentication request')
+          setTimeout(() => navigate('/signin'), 2000)
+          return
+        }
+
+        console.log('🔄 No automatic session, attempting explicit code exchange...')
+
+        const result = await supabase.auth.exchangeCodeForSession(code)
+
+        if (result.error) {
+          console.error('❌ Code exchange error:', result.error)
+          setStatus('Authentication failed: ' + result.error.message)
+          setTimeout(() => navigate('/signin'), 3000)
+          return
+        }
+
+        session = result.data.session
+
+        if (!session) {
+          console.error('❌ No session returned from code exchange')
+          setStatus('Authentication failed: No session')
+          setTimeout(() => navigate('/signin'), 2000)
+          return
+        }
+
+        console.log('✅ OAuth session established (explicit exchange):', session.user.email)
       }
-
-      console.log('🔄 Exchanging OAuth code for session...')
-
-      // Explicitly exchange OAuth code for session (don't rely on automatic detection)
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.exchangeCodeForSession(code)
-
-      if (sessionError) {
-        console.error('❌ Code exchange error:', sessionError)
-        setStatus('Authentication failed: ' + sessionError.message)
-        setTimeout(() => navigate('/signin'), 3000)
-        return
-      }
-
-      if (!session) {
-        console.error('❌ No session returned from code exchange')
-        setStatus('Authentication failed: No session')
-        setTimeout(() => navigate('/signin'), 2000)
-        return
-      }
-
-      console.log('✅ OAuth session established:', session.user.email)
 
       // Check if this is a signup or signin by checking for existing profile
       const profileExists = await checkCreatorProfileExists(session.user.id)

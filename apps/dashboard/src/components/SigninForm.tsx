@@ -104,7 +104,17 @@ const SigninForm = ({ accountType, hideOtherAccountTypeLink = false, disabled = 
       // ✅ CORRECT: Use URL query parameters in redirectTo URL (per AUTH_DOCUMENTATION.md)
       // URL params persist through all redirects: Google → Supabase → Your App
       // Does NOT conflict with Supabase PKCE state parameter
-      const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
+      // Explicit domain handling for multi-environment OAuth redirects
+      const isStaging = window.location.hostname === 'dashboard-v2.kstorybridge.com'
+      const isProduction = window.location.hostname === 'dashboard.kstorybridge.com'
+
+      const baseUrl = isStaging
+        ? 'https://dashboard-v2.kstorybridge.com'
+        : isProduction
+        ? 'https://dashboard.kstorybridge.com'
+        : window.location.origin  // Localhost
+
+      const callbackUrl = `${baseUrl}/auth/callback?account_type=${accountType}&flow=signin`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

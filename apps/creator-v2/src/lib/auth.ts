@@ -147,7 +147,17 @@ export async function signInWithOAuth(flow: 'signup' | 'signin') {
   // Store flow type for callback handler
   sessionStorage.setItem('oauth_flow', flow)
 
-  const redirectUrl = `${window.location.origin}/auth/callback`
+  // Explicit domain handling for multi-environment OAuth redirects
+  // Bypasses Supabase Site URL configuration which may default to dashboard
+  const isStaging = window.location.hostname === 'creator-v2.kstorybridge.com'
+  const isProduction = window.location.hostname === 'creator.kstorybridge.com'
+
+  const redirectUrl = isStaging
+    ? 'https://creator-v2.kstorybridge.com/auth/callback'
+    : isProduction
+    ? 'https://creator.kstorybridge.com/auth/callback'
+    : `${window.location.origin}/auth/callback`  // Localhost
+
   console.log('🔗 OAuth redirect URL:', redirectUrl)
 
   const { data, error } = await supabase.auth.signInWithOAuth({

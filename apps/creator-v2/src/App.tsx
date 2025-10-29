@@ -14,7 +14,6 @@ import CompleteProfile from '@/pages/auth/CompleteProfile'
 import Home from '@/pages/Home'
 import Titles from '@/pages/Titles'
 import TitleDetail from '@/pages/TitleDetail'
-import AddTitle from '@/pages/AddTitle'
 import AddTitleSurvey from '@/pages/AddTitleSurvey'
 import EditTitle from '@/pages/EditTitle'
 import Profile from '@/pages/Profile'
@@ -49,14 +48,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Titles />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/titles/add"
-              element={
-                <ProtectedRoute>
-                  <AddTitle />
                 </ProtectedRoute>
               }
             />

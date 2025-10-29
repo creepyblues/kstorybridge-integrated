@@ -4,10 +4,19 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { X, Plus } from 'lucide-react'
 import { CharacterDetailsInput, CharacterDetail } from './CharacterDetailsInput'
 
 interface Step2FormData {
+  // Content details (from AddTitle merge)
+  synopsis?: string
+  description?: string
+  tagline?: string
+  note?: string
+  chapters?: number
+  completed?: boolean
+
   // Story background
   inspiration: string
   comparables: string[]
@@ -37,6 +46,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
   const comparables = watch('comparables') || []
   const characters = watch('character_details') || []
+  const completed = watch('completed') || false
 
   const addComparable = () => {
     setValue('comparables', [...comparables, ''])
@@ -57,6 +67,98 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
   return (
     <div className="space-y-8">
+      {/* Section: Content Details */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Content Details</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Brief descriptions to help buyers discover your title
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="tagline">Tagline</Label>
+          <Input
+            id="tagline"
+            placeholder="A compelling one-line description"
+            {...register('tagline')}
+            className="bg-white border-gray-300"
+          />
+          <p className="text-xs text-gray-500">
+            A catchy one-liner that captures your story's essence
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="synopsis">Synopsis</Label>
+          <Textarea
+            id="synopsis"
+            placeholder="Brief synopsis of the title..."
+            {...register('synopsis')}
+            rows={4}
+            className="bg-white border-gray-300 resize-none"
+          />
+          <p className="text-xs text-gray-500">
+            A short summary of your story (2-3 paragraphs)
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            placeholder="Detailed description of the title..."
+            {...register('description')}
+            rows={4}
+            className="bg-white border-gray-300 resize-none"
+          />
+          <p className="text-xs text-gray-500">
+            A more detailed description with plot points and character info
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="note">Notes</Label>
+          <Textarea
+            id="note"
+            placeholder="Additional notes or comments..."
+            {...register('note')}
+            rows={3}
+            className="bg-white border-gray-300 resize-none"
+          />
+          <p className="text-xs text-gray-500">
+            Any additional information for potential buyers
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="chapters">Number of Chapters</Label>
+            <Input
+              id="chapters"
+              type="number"
+              placeholder="120"
+              {...register('chapters', { valueAsNumber: true })}
+              className="bg-white border-gray-300"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2 pt-8">
+            <Checkbox
+              id="completed"
+              checked={completed}
+              onCheckedChange={(checked) => setValue('completed', checked as boolean)}
+            />
+            <Label
+              htmlFor="completed"
+              className="text-sm font-medium leading-none cursor-pointer"
+            >
+              Series Completed
+            </Label>
+          </div>
+        </div>
+      </div>
+
       {/* Section: Story Inspiration */}
       <div className="space-y-4">
         <div>

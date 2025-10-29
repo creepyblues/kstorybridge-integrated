@@ -106,22 +106,13 @@ export default function Titles() {
             <h1 className="text-3xl font-bold text-black">My Titles</h1>
             <p className="text-gray-600 mt-1">Manage your content submissions</p>
           </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => navigate('/titles/add')}
-              variant="outline"
-              className="border-gray-300 hover:bg-gray-100"
-            >
-              Add New Title
-            </Button>
-            <Button
-              onClick={() => navigate('/titles/add-survey')}
-              variant="outline"
-              className="border-gray-300 hover:bg-gray-100"
-            >
-              Add New Title (Survey)
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate('/titles/add-survey')}
+            variant="outline"
+            className="border-gray-300 hover:bg-gray-100"
+          >
+            Add New Title
+          </Button>
         </div>
 
         {titles.length === 0 && !draft ? (
@@ -134,7 +125,7 @@ export default function Titles() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 text-center py-8">
-                No titles yet. Click "Add New Title" or "Add New Title (Survey)" to submit your first title!
+                No titles yet. Click "Add New Title" to submit your first title!
               </p>
             </CardContent>
           </Card>

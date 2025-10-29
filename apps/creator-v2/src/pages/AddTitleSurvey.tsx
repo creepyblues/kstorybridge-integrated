@@ -24,7 +24,7 @@ import { titlesService } from '@/services/titlesService'
 import { documentsService } from '@/services/documentsService'
 
 // Schema
-import { surveyFormSchema, validateStep2, validateStep3, type SurveyFormData } from '@/lib/surveySchema'
+import { surveyFormSchema, validateStep1, validateStep2, validateStep3, type SurveyFormData } from '@/lib/surveySchema'
 
 /**
  * AddTitleSurvey Page
@@ -44,6 +44,13 @@ export default function AddTitleSurvey() {
     resolver: zodResolver(surveyFormSchema),
     mode: 'onBlur',
     defaultValues: {
+      // Step 1 defaults
+      title_name_en: '',
+      title_name_kr: '',
+      title_url: '',
+      title_image: '',
+      story_author: '',
+      genre: [],
       is_official_english_title: false,
       platforms: [],
       comparables: [],
@@ -129,9 +136,17 @@ export default function AddTitleSurvey() {
     clearErrors()
 
     switch (currentStep) {
-      case 1:
-        // Step 1: No strict validation (optional fields)
+      case 1: {
+        // Step 1: Validate required basic fields
+        const step1Errors = validateStep1(formValues)
+        if (Object.keys(step1Errors).length > 0) {
+          Object.entries(step1Errors).forEach(([field, message]) => {
+            setError(field as any, { message })
+          })
+          return false
+        }
         return true
+      }
 
       case 2: {
         // Step 2: Validate setting description and characters
@@ -223,10 +238,11 @@ export default function AddTitleSurvey() {
     }
 
     // Validate all steps before submission
+    const step1Errors = validateStep1(data)
     const step2Errors = validateStep2(data)
     const step3Errors = validateStep3(data)
 
-    if (Object.keys(step2Errors).length > 0 || Object.keys(step3Errors).length > 0) {
+    if (Object.keys(step1Errors).length > 0 || Object.keys(step2Errors).length > 0 || Object.keys(step3Errors).length > 0) {
       alert('Please complete all required fields before submitting')
       return
     }
@@ -234,52 +250,78 @@ export default function AddTitleSurvey() {
     setIsSubmitting(true)
 
     try {
-      // Prepare title data (from existing fields in AddTitle.tsx)
+      // Prepare title data (merged from AddTitle.tsx + survey fields)
       const titleData = {
-        // Required fields (these should come from parent form or be added here)
-        title_name_en: 'New Title', // TODO: Get from parent form
-        title_name_kr: data.script_title_kr || 'New Title KR',
-        title_url: data.platforms[0]?.platform_url || '',
-        title_image: '', // TODO: Get from parent form
-        story_author: data.rights_holder_name || '',
+        // Required basic fields (from AddTitle merge)
+        title_name_en: data.title_name_en,
+        title_name_kr: data.title_name_kr,
+        title_url: data.title_url,
+        title_image: data.title_image,
+        story_author: data.story_author,
         creator_id: userId,
 
-        // Questionnaire fields from Step 1
+        // Content classification (from AddTitle merge)
+        genre: data.genre || [],
+        content_format: data.content_format || null,
+        keywords: data.keywords ? data.keywords.split(',').map(k => k.trim()).filter(Boolean) : null,
+        tone: data.tone || null,
+
+        // Credits (from AddTitle merge)
+        art_author: data.art_author || null,
+        author: data.author || null,
+        writer: data.writer || null,
+        illustrator: data.illustrator || null,
+
+        // Content details (from AddTitle merge - Step 2)
+        synopsis: data.synopsis || null,
+        description: data.description || null,
+        tagline: data.tagline || null,
+        note: data.note || null,
+        chapters: data.chapters || null,
+
+        // Rights & business (from AddTitle merge)
+        rights: data.rights || null,
+        perfect_for: data.perfect_for || null,
+        audience: data.audience || null,
+
+        // English title classification (Step 1 survey)
         is_official_english_title: data.is_official_english_title,
-        english_title_type: data.english_title_type,
-        script_title_kr: data.script_title_kr,
-        script_title_en: data.script_title_en,
-        art_title_kr: data.art_title_kr,
-        art_title_en: data.art_title_en,
-        underlying_novel_kr: data.underlying_novel_kr,
-        underlying_novel_en: data.underlying_novel_en,
-        rights_holder_name: data.rights_holder_name,
-        rights_holder_company: data.rights_holder_company,
+        english_title_type: data.english_title_type || null,
+        script_title_kr: data.script_title_kr || null,
+        script_title_en: data.script_title_en || null,
+        art_title_kr: data.art_title_kr || null,
+        art_title_en: data.art_title_en || null,
+        underlying_novel_kr: data.underlying_novel_kr || null,
+        underlying_novel_en: data.underlying_novel_en || null,
 
-        // Step 2
-        inspiration: data.inspiration,
-        comparables: data.comparables,
-        important_issues: data.important_issues,
-        setting_description: data.setting_description,
-        world_lore: data.world_lore,
-        supernatural_concepts: data.supernatural_concepts,
-        character_details: data.character_details,
+        // Rights holder (Step 1 survey)
+        rights_holder_name: data.rights_holder_name || null,
+        rights_holder_company: data.rights_holder_company || null,
 
-        // Step 3
-        story_structure: data.story_structure,
-        planned_ending: data.planned_ending,
-        narrative_arc: data.narrative_arc,
-        completed: data.completed,
+        // Story details (Step 2 survey)
+        inspiration: data.inspiration || null,
+        comparables: data.comparables || null,
+        important_issues: data.important_issues || null,
+        setting_description: data.setting_description || null,
+        world_lore: data.world_lore || null,
+        supernatural_concepts: data.supernatural_concepts || null,
+        character_details: data.character_details || null,
 
-        // Step 5
-        awards: data.awards,
-        sales_records: data.sales_records,
-        merchandise_deals: data.merchandise_deals,
-        print_editions: data.print_editions,
-        print_edition_details: data.print_edition_details,
-        media_coverage: data.media_coverage,
-        celebrity_endorsements: data.celebrity_endorsements,
-        creator_achievements: data.creator_achievements,
+        // Narrative (Step 3 survey)
+        story_structure: data.story_structure || null,
+        planned_ending: data.planned_ending || null,
+        narrative_arc: data.narrative_arc || null,
+        completed: data.completed || false,
+
+        // Profile (Step 5 survey)
+        awards: data.awards || null,
+        sales_records: data.sales_records || null,
+        merchandise_deals: data.merchandise_deals || null,
+        print_editions: data.print_editions || false,
+        print_edition_details: data.print_edition_details || null,
+        media_coverage: data.media_coverage || null,
+        celebrity_endorsements: data.celebrity_endorsements || null,
+        creator_achievements: data.creator_achievements || null,
       }
 
       // Prepare platforms data

@@ -61,7 +61,24 @@ export const creatorAchievementsSchema = z.object({
 
 // Main survey form schema
 export const surveyFormSchema = z.object({
-  // Step 1: Basic Info
+  // Step 1: Basic Info - Required fields (from AddTitle merge)
+  title_name_en: z.string().min(1, 'English title is required'),
+  title_name_kr: z.string().min(1, 'Korean title is required'),
+  title_url: z.string().url('Invalid URL').min(1, 'Title URL is required'),
+  title_image: z.string().url('Invalid URL').min(1, 'Cover image URL is required'),
+  story_author: z.string().min(1, 'Story author is required'),
+  genre: z.array(z.string()).min(1, 'At least one genre is required'),
+  content_format: z.string().optional(),
+  keywords: z.string().optional(),
+  tone: z.string().optional(),
+
+  // Step 1: Credits (additional authors)
+  art_author: z.string().optional(),
+  author: z.string().optional(),
+  writer: z.string().optional(),
+  illustrator: z.string().optional(),
+
+  // Step 1: English title classification
   is_official_english_title: z.boolean().default(false),
   english_title_type: z.enum(['official', 'translation']).optional(),
   script_title_kr: z.string().optional(),
@@ -70,9 +87,25 @@ export const surveyFormSchema = z.object({
   art_title_en: z.string().optional(),
   underlying_novel_kr: z.string().optional(),
   underlying_novel_en: z.string().optional(),
+
+  // Step 1: Rights holder
   rights_holder_name: z.string().optional(),
   rights_holder_company: z.string().optional(),
+
+  // Step 1: Rights & business
+  rights: z.string().optional(),
+  perfect_for: z.string().optional(),
+  audience: z.string().optional(),
+
+  // Step 1: Platforms
   platforms: z.array(platformSchema).default([]),
+
+  // Step 2: Content details (from AddTitle merge)
+  synopsis: z.string().optional(),
+  description: z.string().optional(),
+  tagline: z.string().optional(),
+  note: z.string().optional(),
+  chapters: z.number().optional(),
 
   // Step 2: Story Details
   inspiration: z.string().optional(),
@@ -116,18 +149,33 @@ export const surveyFormSchema = z.object({
   creator_achievements: creatorAchievementsSchema.optional(),
 })
 
-// Conditional validation for step 3
-export const validateStep3 = (data: any) => {
+// Conditional validation for step 1
+export const validateStep1 = (data: any) => {
   const errors: Record<string, string> = {}
 
-  // Story structure is always required
-  if (!data.story_structure || data.story_structure.length < 100) {
-    errors.story_structure = 'Story structure is required (minimum 100 characters)'
+  // Required fields validation
+  if (!data.title_name_en || data.title_name_en.trim() === '') {
+    errors.title_name_en = 'English title is required'
   }
 
-  // Planned ending required if not completed
-  if (!data.completed && (!data.planned_ending || data.planned_ending.length < 50)) {
-    errors.planned_ending = 'Planned ending is required for ongoing titles (minimum 50 characters)'
+  if (!data.title_name_kr || data.title_name_kr.trim() === '') {
+    errors.title_name_kr = 'Korean title is required'
+  }
+
+  if (!data.title_url || data.title_url.trim() === '') {
+    errors.title_url = 'Title URL is required'
+  }
+
+  if (!data.title_image || data.title_image.trim() === '') {
+    errors.title_image = 'Cover image URL is required'
+  }
+
+  if (!data.story_author || data.story_author.trim() === '') {
+    errors.story_author = 'Story author is required'
+  }
+
+  if (!data.genre || data.genre.length === 0) {
+    errors.genre = 'At least one genre is required'
   }
 
   return errors
@@ -153,6 +201,23 @@ export const validateStep2 = (data: any) => {
     if (invalidCharacters.length > 0) {
       errors.character_details = 'All characters must have a name'
     }
+  }
+
+  return errors
+}
+
+// Conditional validation for step 3
+export const validateStep3 = (data: any) => {
+  const errors: Record<string, string> = {}
+
+  // Story structure is always required
+  if (!data.story_structure || data.story_structure.length < 100) {
+    errors.story_structure = 'Story structure is required (minimum 100 characters)'
+  }
+
+  // Planned ending required if not completed
+  if (!data.completed && (!data.planned_ending || data.planned_ending.length < 50)) {
+    errors.planned_ending = 'Planned ending is required for ongoing titles (minimum 50 characters)'
   }
 
   return errors

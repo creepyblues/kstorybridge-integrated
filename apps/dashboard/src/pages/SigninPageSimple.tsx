@@ -139,9 +139,9 @@ const SigninPageSimple = () => {
 
             {/* Two-column signin layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-              {/* Left Column - Creator Sign In (Temporarily Disabled) */}
+              {/* Left Column - Creator Sign In */}
               <div className="flex flex-col">
-                <SigninForm accountType="creator" hideOtherAccountTypeLink={true} disabled={true} />
+                <SigninForm accountType="creator" hideOtherAccountTypeLink={true} />
               </div>
 
               {/* Right Column - Buyer Sign In */}

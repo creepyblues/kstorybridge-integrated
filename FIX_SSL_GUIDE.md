@@ -3,7 +3,7 @@
 **Issue**: SSL certificate error blocking all E2E tests
 **Domains Affected**:
 - `dashboard-v2.kstorybridge.com`
-- `creator-v2.kstorybridge.com`
+- `creator-staging.kstorybridge.com`
 
 ---
 
@@ -30,7 +30,7 @@
 1. Open creator project
 2. Click **Settings** tab
 3. Click **Domains** in left sidebar
-4. Find `creator-v2.kstorybridge.com`
+4. Find `creator-staging.kstorybridge.com`
 5. Check SSL certificate status
 
 **Look for**:
@@ -73,7 +73,7 @@
 ```bash
 # Open staging URLs
 open https://dashboard-v2.kstorybridge.com
-open https://creator-v2.kstorybridge.com
+open https://creator-staging.kstorybridge.com
 ```
 
 **Expected**: Pages load without SSL warning

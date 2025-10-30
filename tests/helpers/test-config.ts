@@ -16,7 +16,7 @@ export const ENVIRONMENTS: Record<Environment, EnvironmentConfig> = {
     // Custom domains have DNS configuration issues preventing SSL provisioning
     // These Vercel domains have auto-managed SSL and work immediately
     dashboard: 'https://dashboard-staging.vercel.app',
-    creator: 'https://creator-v2-staging.vercel.app',
+    creator: 'https://creator-staging.vercel.app',
     website: 'https://kstorybridge.com', // Website has no staging environment
   },
   production: {

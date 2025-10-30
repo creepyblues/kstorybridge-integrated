@@ -487,7 +487,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### File Structure
 ```
-apps/creator-v2/
+apps/creator/
 ├── package.json
 ├── vite.config.ts
 ├── tsconfig.json
@@ -605,7 +605,7 @@ apps/creator-v2/
 - Overall Grade: A- (Excellent, Production Ready with one known bug)
 
 **Production Testing**: Completed ✅
-- See `apps/creator-v2/PRODUCTION_TEST_REPORT.md` for detailed findings
+- See `apps/creator/PRODUCTION_TEST_REPORT.md` for detailed findings
 - Manual browser testing performed by user
 - 23 test cases defined and executed
 - Infrastructure: 10/10 passed

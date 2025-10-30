@@ -1,7 +1,7 @@
 # E2E Test Results - Initial Run (2025-10-29)
 
 **Status**: ❌ All tests blocked by SSL certificate issue
-**Environment**: Staging (`dashboard-v2.kstorybridge.com`, `creator-v2.kstorybridge.com`)
+**Environment**: Staging (`dashboard-v2.kstorybridge.com`, `creator-staging.kstorybridge.com`)
 **Test Suite**: Playwright E2E Tests (36 total test cases)
 
 ---
@@ -55,7 +55,7 @@ Call log:
 
 **Affected Domains**:
 - `dashboard-v2.kstorybridge.com` (staging dashboard)
-- `creator-v2.kstorybridge.com` (staging creator app)
+- `creator-staging.kstorybridge.com` (staging creator app)
 
 **Impact**: Playwright cannot navigate to any staging pages due to SSL trust failure.
 
@@ -142,7 +142,7 @@ waiting for navigation to "**/home**" until "load"
 3. Navigate to: **Settings** → **Domains**
 4. Check SSL status for:
    - `dashboard-v2.kstorybridge.com`
-   - `creator-v2.kstorybridge.com`
+   - `creator-staging.kstorybridge.com`
 
 **Look for**:
 - ❌ "Certificate Expired"

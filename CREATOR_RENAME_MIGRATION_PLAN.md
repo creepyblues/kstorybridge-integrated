@@ -9,10 +9,10 @@
 ## Migration Overview
 
 Complete rename of creator-v2 to creator across:
-- Git repository: `apps/creator-v2` → `apps/creator`
-- Vercel staging project: `creator-v2-staging` → `creator-staging`
-- Staging domain: `creator-v2.kstorybridge.com` → `creator-staging.kstorybridge.com`
-- Package name: `@kstorybridge/creator-v2` → `@kstorybridge/creator`
+- Git repository: `apps/creator` → `apps/creator`
+- Vercel staging project: `creator-staging` → `creator-staging`
+- Staging domain: `creator-staging.kstorybridge.com` → `creator-staging.kstorybridge.com`
+- Package name: `@kstorybridge/creator` → `@kstorybridge/creator`
 - All documentation (45+ files)
 
 ---
@@ -21,7 +21,7 @@ Complete rename of creator-v2 to creator across:
 
 - [ ] **Verify clean working directory**: `git status` shows no uncommitted changes
 - [ ] **Create backup branch**: `git checkout -b backup-before-creator-rename`
-- [ ] **Verify staging site working**: Visit https://creator-v2.kstorybridge.com
+- [ ] **Verify staging site working**: Visit https://creator-staging.kstorybridge.com
 - [ ] **Test current OAuth**: Sign in with Google on staging
 - [ ] **Document current Vercel URLs**: Note deployment URLs for rollback
 - [ ] **Notify team**: If applicable, alert team about upcoming changes
@@ -35,14 +35,14 @@ Complete rename of creator-v2 to creator across:
 ### 1.1 Supabase Configuration
 - [x] Go to: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd/auth/url-configuration
 - [x] Add NEW redirect URL: `https://creator-staging.kstorybridge.com/auth/callback`
-- [x] **Keep existing**: `https://creator-v2.kstorybridge.com/auth/callback` (for rollback)
+- [x] **Keep existing**: `https://creator-staging.kstorybridge.com/auth/callback` (for rollback)
 - [x] Save changes
 
 ### 1.2 Google OAuth Console
 - [x] Go to: Google Cloud Console → APIs & Services → Credentials
 - [x] Select OAuth 2.0 Client ID for KStoryBridge
 - [x] Add NEW Authorized redirect URI: `https://creator-staging.kstorybridge.com/auth/callback`
-- [x] **Keep existing**: `https://creator-v2.kstorybridge.com/auth/callback` (for rollback)
+- [x] **Keep existing**: `https://creator-staging.kstorybridge.com/auth/callback` (for rollback)
 - [x] Save changes
 
 **Status**: ✅ COMPLETE (2025-10-29)
@@ -56,7 +56,7 @@ Complete rename of creator-v2 to creator across:
 ### 2.1 Rename Directory (Preserves Git History)
 ```bash
 git checkout v2
-git mv apps/creator-v2 apps/creator
+git mv apps/creator apps/creator
 ```
 
 - [ ] Execute `git mv` command
@@ -66,7 +66,7 @@ git mv apps/creator-v2 apps/creator
 ### 2.2 Update Package Configurations (4 files)
 
 **File 1: `apps/creator/package.json`**
-- [ ] Change `"name": "@kstorybridge/creator-v2"` → `"name": "@kstorybridge/creator"`
+- [ ] Change `"name": "@kstorybridge/creator"` → `"name": "@kstorybridge/creator"`
 
 **File 2: Root `package.json`**
 - [ ] Line 14: Update `"dev:creator"` script path
@@ -86,8 +86,8 @@ git mv apps/creator-v2 apps/creator
 ### 2.3 Update Source Code OAuth URLs (1 CRITICAL file)
 
 **File: `apps/creator/src/lib/auth.ts`**
-- [ ] Line 152: Change `'creator-v2.kstorybridge.com'` → `'creator-staging.kstorybridge.com'`
-- [ ] Line 156: Change `'https://creator-v2.kstorybridge.com/auth/callback'` → `'https://creator-staging.kstorybridge.com/auth/callback'`
+- [ ] Line 152: Change `'creator-staging.kstorybridge.com'` → `'creator-staging.kstorybridge.com'`
+- [ ] Line 156: Change `'https://creator-staging.kstorybridge.com/auth/callback'` → `'https://creator-staging.kstorybridge.com/auth/callback'`
 
 ### 2.4 Update Test Configurations (4 files)
 
@@ -168,7 +168,7 @@ npm run build:creator
 git add .
 git commit -m "refactor: rename creator-v2 to creator for consistency
 
-- Rename apps/creator-v2 → apps/creator
+- Rename apps/creator → apps/creator
 - Update package name to @kstorybridge/creator
 - Update staging domain to creator-staging.kstorybridge.com
 - Update OAuth redirect URLs
@@ -190,16 +190,16 @@ git push origin v2
 
 ### 3.1 Staging Project Configuration
 
-**Project: creator-v2-staging → creator-staging**
+**Project: creator-staging → creator-staging**
 
-- [ ] Go to: https://vercel.com/[your-team]/creator-v2-staging/settings
+- [ ] Go to: https://vercel.com/[your-team]/creator-staging/settings
 - [ ] **Update Root Directory**:
   - Settings > General > Root Directory
-  - Change: `apps/creator-v2` → `apps/creator`
+  - Change: `apps/creator` → `apps/creator`
   - Save
 - [ ] **Rename Vercel Project** (optional but recommended):
   - Settings > General > Project Name
-  - Change: `creator-v2-staging` → `creator-staging`
+  - Change: `creator-staging` → `creator-staging`
   - Save
 - [ ] **Trigger Redeploy**:
   - Go to Deployments tab
@@ -214,7 +214,7 @@ git push origin v2
   - Click "Add"
   - Enter domain
   - Vercel will show DNS instructions
-- [ ] **Keep old domain temporarily**: Leave `creator-v2.kstorybridge.com` active (for rollback)
+- [ ] **Keep old domain temporarily**: Leave `creator-staging.kstorybridge.com` active (for rollback)
 
 ### 3.3 Production Project Configuration
 
@@ -223,7 +223,7 @@ git push origin v2
 - [ ] Go to: https://vercel.com/[your-team]/kstorybridge-creator/settings
 - [ ] **Update Root Directory ONLY**:
   - Settings > General > Root Directory
-  - Change: `apps/creator-v2` → `apps/creator`
+  - Change: `apps/creator` → `apps/creator`
   - Save
 - [ ] **No other changes** (domain already correct: `creator.kstorybridge.com`)
 - [ ] **Do NOT redeploy yet** (wait for Phase 6)
@@ -342,12 +342,12 @@ git push origin main
 **⚠️ Wait 48 hours after production deployment before cleanup**
 
 ### 7.1 Remove Old OAuth Redirect URLs
-- [ ] **Supabase**: Remove `https://creator-v2.kstorybridge.com/auth/callback`
-- [ ] **Google OAuth**: Remove `https://creator-v2.kstorybridge.com/auth/callback`
+- [ ] **Supabase**: Remove `https://creator-staging.kstorybridge.com/auth/callback`
+- [ ] **Google OAuth**: Remove `https://creator-staging.kstorybridge.com/auth/callback`
 
 ### 7.2 Remove Old Vercel Domain
 - [ ] Go to: creator-staging project > Settings > Domains
-- [ ] Remove domain: `creator-v2.kstorybridge.com`
+- [ ] Remove domain: `creator-staging.kstorybridge.com`
 
 ### 7.3 Remove Old DNS Record
 - [ ] Log into DNS provider
@@ -373,12 +373,12 @@ git branch -D backup-before-creator-rename
 
 1. **Revert Vercel Staging Domain**:
    - [ ] creator-staging project > Settings > Domains
-   - [ ] Make `creator-v2.kstorybridge.com` primary domain
+   - [ ] Make `creator-staging.kstorybridge.com` primary domain
    - [ ] Remove `creator-staging.kstorybridge.com`
 
 2. **Revert Vercel Root Directory**:
-   - [ ] creator-staging: Change Root Directory back to `apps/creator-v2`
-   - [ ] kstorybridge-creator: Change Root Directory back to `apps/creator-v2`
+   - [ ] creator-staging: Change Root Directory back to `apps/creator`
+   - [ ] kstorybridge-creator: Change Root Directory back to `apps/creator`
 
 3. **Redeploy Both Projects**:
    - [ ] Trigger manual redeploy on both projects

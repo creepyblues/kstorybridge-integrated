@@ -15,7 +15,7 @@ KStoryBridge uses a three-app architecture with separate applications for differ
 | App | Directory | Port | Production URL | Purpose |
 |-----|-----------|------|----------------|---------|
 | **Dashboard** | `apps/dashboard` | 8081 | dashboard.kstorybridge.com | Buyer-focused features (AI chatbot, tier system, premium content) |
-| **Creator** | `apps/creator-v2` | 8083 | creator.kstorybridge.com | Creator-focused features (content management, pitch uploads) |
+| **Creator** | `apps/creator` | 8083 | creator.kstorybridge.com | Creator-focused features (content management, pitch uploads) |
 | **Website** | `apps/website` | 5173 | kstorybridge.com | Marketing site, authentication redirects |
 
 ---
@@ -154,7 +154,7 @@ Start here for comprehensive guidance:
 ### App-Specific Guides
 
 - **[Dashboard](apps/dashboard/CLAUDE.md)** - Buyer dashboard, tier system, AI chatbot
-- **[Creator](apps/creator-v2/CLAUDE.md)** - Creator dashboard, content management
+- **[Creator](apps/creator/CLAUDE.md)** - Creator dashboard, content management
 - **[Website](apps/website/CLAUDE.md)** - Marketing site, preview pages
 
 ### System Documentation

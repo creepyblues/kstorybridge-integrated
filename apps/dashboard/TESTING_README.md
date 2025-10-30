@@ -393,7 +393,7 @@ Checks:
 **Problem**: Running test commands from the wrong directory:
 ```
 npm error Missing script: "test:create-buyer"
-npm error location /Users/.../apps/creator-v2
+npm error location /Users/.../apps/creator
 ```
 
 **Solution**: Test scripts only exist in the dashboard app. Always run from:

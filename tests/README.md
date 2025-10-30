@@ -116,7 +116,7 @@ npx playwright test auth.spec.ts --headed --debug
 
 ### Staging
 - **Dashboard**: https://dashboard-v2.kstorybridge.com
-- **Creator**: https://creator-v2.kstorybridge.com
+- **Creator**: https://creator-staging.kstorybridge.com
 - **Website**: https://kstorybridge.com
 - **Environment**: `TEST_ENV=staging`
 

@@ -24,7 +24,7 @@ cd /Users/sungholee/code/kstorybridge/apps/dashboard
 **Common mistake**:
 ```bash
 # ❌ WRONG - Running from creator-v2 or root directory
-cd apps/creator-v2
+cd apps/creator
 npm run test:create-buyer  # Error: Missing script
 
 # ✅ CORRECT - Always run from dashboard
@@ -923,7 +923,7 @@ npm run test:verify
 **Problem**: Running test commands from wrong directory:
 ```
 npm error Missing script: "test:create-buyer"
-npm error location /Users/.../apps/creator-v2
+npm error location /Users/.../apps/creator
 ```
 
 **Solution**: Always run test commands from dashboard directory:

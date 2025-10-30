@@ -130,7 +130,7 @@
 
 ### Phase 2: Backend Services (2-3 hours)
 
-Create in `/apps/creator-v2/src/services/`:
+Create in `/apps/creator/src/services/`:
 - `platformsService.ts` - CRUD for title_platforms
 - `documentsService.ts` - File upload to Supabase Storage
 - `draftService.ts` - Auto-save logic
@@ -138,7 +138,7 @@ Create in `/apps/creator-v2/src/services/`:
 
 ### Phase 3: UI Components (4-6 hours)
 
-Create in `/apps/creator-v2/src/components/survey/`:
+Create in `/apps/creator/src/components/survey/`:
 - `MultiStepProgressBar.tsx` - Progress indicator (1-5)
 - `Step1BasicInfo.tsx` - Step 1 fields
 - `Step2StoryDetails.tsx` - Step 2 fields
@@ -152,7 +152,7 @@ Create in `/apps/creator-v2/src/components/survey/`:
 
 ### Phase 4: Main Page (2-3 hours)
 
-- Create `/apps/creator-v2/src/pages/AddTitleSurvey.tsx`
+- Create `/apps/creator/src/pages/AddTitleSurvey.tsx`
 - Implement 5-step navigation with React Hook Form
 - Auto-save every 30 seconds to title_drafts table
 - Resume from draft on page load
@@ -230,11 +230,11 @@ Create in `/apps/creator-v2/src/components/survey/`:
 - `/apps/dashboard/src/pages/Chat.tsx` - Chatbot UI
 
 ### Creator-v2 Code (To be created)
-- `/apps/creator-v2/src/services/platformsService.ts` - ⏳ Pending
-- `/apps/creator-v2/src/services/documentsService.ts` - ⏳ Pending
-- `/apps/creator-v2/src/services/draftService.ts` - ⏳ Pending
-- `/apps/creator-v2/src/pages/AddTitleSurvey.tsx` - ⏳ Pending
-- `/apps/creator-v2/src/components/survey/*.tsx` - ⏳ Pending
+- `/apps/creator/src/services/platformsService.ts` - ⏳ Pending
+- `/apps/creator/src/services/documentsService.ts` - ⏳ Pending
+- `/apps/creator/src/services/draftService.ts` - ⏳ Pending
+- `/apps/creator/src/pages/AddTitleSurvey.tsx` - ⏳ Pending
+- `/apps/creator/src/components/survey/*.tsx` - ⏳ Pending
 
 ---
 

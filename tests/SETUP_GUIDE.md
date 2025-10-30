@@ -197,7 +197,7 @@ npx playwright install chromium
 
 **Environment URLs:**
 - Staging Dashboard: https://dashboard-v2.kstorybridge.com
-- Staging Creator: https://creator-v2.kstorybridge.com
+- Staging Creator: https://creator-staging.kstorybridge.com
 - Production Dashboard: https://dashboard.kstorybridge.com
 - Production Creator: https://creator.kstorybridge.com
 

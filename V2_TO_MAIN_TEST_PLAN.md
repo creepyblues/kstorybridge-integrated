@@ -15,8 +15,8 @@
 - **Problem**: TypeScript interfaces included non-existent `tags` field alongside `keywords`
 - **Impact**: Potential errors when updating titles (field doesn't exist in database)
 - **Solution**: Removed all references to `tags` field from:
-  - `apps/creator-v2/src/services/titlesService.ts` (TypeScript interfaces)
-  - `apps/creator-v2/src/pages/TitleDetail.tsx` (display fallback logic)
+  - `apps/creator/src/services/titlesService.ts` (TypeScript interfaces)
+  - `apps/creator/src/pages/TitleDetail.tsx` (display fallback logic)
 - **Verification**: Build succeeded with no TypeScript errors
 - **Commit**: `7eb5c09a` - "fix: remove non-existent 'tags' field from Creator V2 app"
 

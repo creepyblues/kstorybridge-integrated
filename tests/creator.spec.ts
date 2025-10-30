@@ -396,7 +396,7 @@ test.describe('Creator V2 - OAuth Authentication', () => {
     const url = popup.url()
 
     if (process.env.TEST_ENV === 'staging') {
-      expect(url).toContain('redirect_uri=https%3A%2F%2Fcreator-v2.kstorybridge.com%2Fauth%2Fcallback')
+      expect(url).toContain('redirect_uri=https%3A%2F%2Fcreator-staging.kstorybridge.com%2Fauth%2Fcallback')
     } else if (process.env.TEST_ENV === 'production') {
       expect(url).toContain('redirect_uri=https%3A%2F%2Fcreator.kstorybridge.com%2Fauth%2Fcallback')
     }

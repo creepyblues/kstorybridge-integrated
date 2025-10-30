@@ -87,8 +87,8 @@ useEffect(() => {
 ```
 
 **Files Modified**:
-- `/apps/creator-v2/src/pages/AddTitleSurvey.tsx` (line 121)
-- `/apps/creator-v2/src/components/survey/AutoSaveIndicator.tsx` (lines 1, 139, 141-177, 180-186)
+- `/apps/creator/src/pages/AddTitleSurvey.tsx` (line 121)
+- `/apps/creator/src/components/survey/AutoSaveIndicator.tsx` (lines 1, 139, 141-177, 180-186)
 
 ---
 
@@ -122,7 +122,7 @@ if (error) {
 }
 ```
 
-**File Modified**: `/apps/creator-v2/src/services/draftService.ts` (line 89)
+**File Modified**: `/apps/creator/src/services/draftService.ts` (line 89)
 
 ---
 
@@ -144,11 +144,11 @@ if (error) {
 
 ### Files Modified (2)
 
-1. **`apps/creator-v2/src/pages/AddTitleSurvey.tsx`**
+1. **`apps/creator/src/pages/AddTitleSurvey.tsx`**
    - Line 121: Removed `triggerSave` from useEffect dependencies
    - Added eslint-disable comment
 
-2. **`apps/creator-v2/src/services/draftService.ts`**
+2. **`apps/creator/src/services/draftService.ts`**
    - Line 89: Changed `.single()` to `.maybeSingle()`
    - Lines 96-98: Added graceful error handling (return null instead of throw)
    - Lines 103-105: Catch block returns null for safety
@@ -245,7 +245,7 @@ enabled: false,  // Temporarily disable auto-save
 
 ### Option 2: Revert Code Changes
 ```bash
-cd apps/creator-v2
+cd apps/creator
 git checkout src/pages/AddTitleSurvey.tsx
 git checkout src/services/draftService.ts
 ```
@@ -319,8 +319,8 @@ git checkout src/services/draftService.ts
 
 | File | Purpose | Status |
 |------|---------|--------|
-| `apps/creator-v2/src/pages/AddTitleSurvey.tsx` | Main survey page | ✅ Modified |
-| `apps/creator-v2/src/services/draftService.ts` | Draft CRUD operations | ✅ Modified |
+| `apps/creator/src/pages/AddTitleSurvey.tsx` | Main survey page | ✅ Modified |
+| `apps/creator/src/services/draftService.ts` | Draft CRUD operations | ✅ Modified |
 | `APPLY_SURVEY_MIGRATIONS_PRODUCTION.sql` | Migration script (backup) | ✅ Created |
 | `PRODUCTION_MIGRATION_INSTRUCTIONS.md` | Migration guide | ✅ Created |
 | `FIXES_APPLIED_SUMMARY.md` | This document | ✅ Created |

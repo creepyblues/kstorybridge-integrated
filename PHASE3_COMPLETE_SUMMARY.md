@@ -285,7 +285,7 @@ User must complete these fields to submit:
 
 ## File Locations
 
-All components located in: `/apps/creator-v2/src/components/survey/`
+All components located in: `/apps/creator/src/components/survey/`
 
 ```
 survey/
@@ -311,7 +311,7 @@ survey/
 
 ### Create AddTitleSurvey.tsx Page
 
-**Location**: `/apps/creator-v2/src/pages/AddTitleSurvey.tsx`
+**Location**: `/apps/creator/src/pages/AddTitleSurvey.tsx`
 
 **Requirements**:
 1. React Hook Form setup with Zod validation schema

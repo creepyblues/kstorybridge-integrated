@@ -30,7 +30,7 @@ git checkout v2                         # Default development branch
 
 ### App-Specific Guides
 - **[Dashboard App](apps/dashboard/CLAUDE.md)** - Buyer dashboard with tier system, premium content, AI chatbot (also serves auth pages for buyers and creators temporarily)
-- **[Creator App](apps/creator-v2/CLAUDE.md)** - Creator-focused dashboard for content management
+- **[Creator App](apps/creator/CLAUDE.md)** - Creator-focused dashboard for content management
 - **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects
 
 ### System Documentation (`docs/active/`)
@@ -125,7 +125,7 @@ npm run preview           # Preview production build
 | App | Port | Production URL | Staging URL | Purpose | Status |
 |-----|------|----------------|-------------|---------|--------|
 | **Dashboard** | 8081 | dashboard.kstorybridge.com | dashboard-v2.kstorybridge.com | Buyer-focused features (AI chatbot, tier system) | ✅ Live |
-| **Creator** | 8083 | creator.kstorybridge.com | creator-v2.kstorybridge.com | Creator-focused features (content management) | ✅ Live |
+| **Creator** | 8083 | creator.kstorybridge.com | creator-staging.kstorybridge.com | Creator-focused features (content management) | ✅ Live |
 | **Website** | 5173 | kstorybridge.com | - | Marketing site, auth redirects | ✅ Live |
 
 **Key Differences**:
@@ -542,7 +542,7 @@ interface CreatorFormData {
 
 ### Staging
 - Dashboard: https://dashboard-v2.kstorybridge.com
-- Creator: https://creator-v2.kstorybridge.com
+- Creator: https://creator-staging.kstorybridge.com
 
 ### Production
 - Dashboard: https://dashboard.kstorybridge.com

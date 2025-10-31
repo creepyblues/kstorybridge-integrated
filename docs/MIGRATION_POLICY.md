@@ -14,7 +14,7 @@
 We previously had migrations scattered across multiple app folders:
 - `/apps/dashboard/supabase/migrations/` (70 files)
 - `/apps/creator/supabase/migrations/` (65 files)
-- `/apps/creator-v2/supabase/migrations/` (1 file)
+- `/apps/creator/supabase/migrations/` (1 file)
 - `/apps/website/supabase/migrations/` (21 files)
 - `/supabase/migrations/` (18 files)
 
@@ -107,7 +107,7 @@ All apps connect to the same Supabase project:
 ### Deprecated (Historical Reference Only)
 - `/apps/dashboard/supabase/migrations/` - ❌ Do not add new files
 - `/apps/creator/supabase/migrations/` - ❌ Do not add new files
-- `/apps/creator-v2/supabase/migrations/` - ❌ Do not add new files
+- `/apps/creator/supabase/migrations/` - ❌ Do not add new files
 - `/apps/website/supabase/migrations/` - ❌ Do not add new files
 
 These folders contain historical migrations but are **no longer used**. They remain for:

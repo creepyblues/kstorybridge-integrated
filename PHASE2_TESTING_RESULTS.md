@@ -276,7 +276,7 @@ COMMIT;
 
 1. `/supabase/migrations/20251009194246_fix_genre_cast.sql` - Fix for enum-to-array casting
 2. `/supabase/migrations/20251009194247_drop_trigger_first.sql` - Fix for trigger dependency
-3. `/apps/creator-v2/test-backend-services.js` - Comprehensive test suite (partial run)
+3. `/apps/creator/test-backend-services.js` - Comprehensive test suite (partial run)
 4. `/BACKEND_SERVICES_TESTING_GUIDE.md` - Step-by-step testing guide
 5. `/PHASE2_TESTING_RESULTS.md` - This document
 

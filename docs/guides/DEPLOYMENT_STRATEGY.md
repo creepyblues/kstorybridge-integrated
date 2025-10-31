@@ -14,7 +14,7 @@ KStoryBridge uses a three-tier deployment strategy with separate environments fo
 |-------------|------------|--------|---------------|
 | **Development** | (local) | localhost:8081/8082/8083 | Dashboard V1, Creator V1 (archived), Creator V2 |
 | **Staging** | v2 | staging.kstorybridge.com | Dashboard V1 |
-| **Staging** | v2 | creator-v2.kstorybridge.com | Creator V2 |
+| **Staging** | v2 | creator-staging.kstorybridge.com | Creator V2 |
 | **Production** | main | dashboard.kstorybridge.com | Dashboard V1 |
 | **Production** | main | creator.kstorybridge.com | Creator V2 (✅ Deployed Oct 2025) |
 | **Production** | main | kstorybridge.com | Website |
@@ -36,7 +36,7 @@ KStoryBridge uses a three-tier deployment strategy with separate environments fo
 
 **Deployments Enabled:**
 - ✅ **dashboard-staging** - Dashboard V1 app deployed to staging.kstorybridge.com
-- ✅ **creator-v2-staging** - Creator V2 app deployed to creator-v2.kstorybridge.com
+- ✅ **creator-staging** - Creator V2 app deployed to creator-staging.kstorybridge.com
 
 **Deployments Disabled:**
 - ❌ **kstorybridge-dashboard** - Skip v2 branch (only build main)

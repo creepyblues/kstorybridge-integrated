@@ -161,7 +161,7 @@ Before testing, ensure you have:
 
 1. **Make test script executable**:
    ```bash
-   cd /Users/sungholee/code/kstorybridge/apps/creator-v2
+   cd /Users/sungholee/code/kstorybridge/apps/creator
    ```
 
 2. **Install dependencies** (if not already installed):
@@ -272,7 +272,7 @@ Before testing, ensure you have:
 
 1. **Start creator-v2 app**:
    ```bash
-   cd /Users/sungholee/code/kstorybridge/apps/creator-v2
+   cd /Users/sungholee/code/kstorybridge/apps/creator
    npm run dev
    ```
 
@@ -318,7 +318,7 @@ Before testing, ensure you have:
 **Error**: `Cannot find module '@supabase/supabase-js'`
 - **Fix**: Install dependencies
   ```bash
-  cd apps/creator-v2
+  cd apps/creator
   npm install
   ```
 
@@ -392,7 +392,7 @@ If migrations cause critical issues in local testing:
 
 ## Files Created for Testing
 
-- ✅ `/apps/creator-v2/test-backend-services.js` - Comprehensive test suite
+- ✅ `/apps/creator/test-backend-services.js` - Comprehensive test suite
 - ✅ `/BACKEND_SERVICES_TESTING_GUIDE.md` - This guide (step-by-step instructions)
 - ✅ `/MIGRATION_IMPLEMENTATION_SUMMARY.md` - Phase 1 summary with next steps
 - ✅ `/rollback_questionnaire_changes.sql` - Emergency rollback script

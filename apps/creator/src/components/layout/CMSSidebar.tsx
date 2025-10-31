@@ -1,94 +1,116 @@
-
-import { Link, useLocation } from "react-router-dom";
-import { useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { trackNavigationClick, trackLogoClick, trackMobileMenuToggle } from "@/utils/analytics";
-import { User, Menu, X } from "lucide-react";
+import { Link, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
+import { User, Menu, X } from 'lucide-react'
 
 interface MenuItem {
-  title: string;
-  href: string;
-  badge?: string;
-  icon?: string;
+  title: string
+  href: string
+  badge?: string
+  icon?: string
 }
 
 // Creator-only menu items (no /creators prefix)
 const getDiscoverItems = (): MenuItem[] => {
   return [
-    { title: "Home", href: "/home" },
-    { title: "My Titles", href: "/titles" },
-    { title: "K-content News", href: "/news" },
-  ];
-};
-
-const getSettingsItems = (): MenuItem[] => {
-  return [
-    { title: "Profile", href: "/profile" },
-  ];
-};
+    { title: 'Home', href: '/home' },
+    { title: 'My Titles', href: '/titles' },
+    { title: 'My Requests', href: '/requests' },
+    { title: 'K-content News', href: '/news' },
+  ]
+}
 
 export function CMSSidebar() {
-  const { user } = useAuth();
-  const { isAdmin } = useAdminAuth();
-  const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth()
+  const location = useLocation()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const userEmail = user?.email;
-  const discoverItems = getDiscoverItems();
-  const settingsItems = getSettingsItems();
+  const userEmail = user?.email
+  const discoverItems = getDiscoverItems()
 
-  const handleLogoClick = () => {
-    trackLogoClick();
-  };
-
-  const handleLinkClick = (title: string, href: string) => {
-    trackNavigationClick(title, href);
-    setIsMobileMenuOpen(false);
-  };
+  const handleLinkClick = () => {
+    setIsMobileMenuOpen(false)
+  }
 
   const handleMobileMenuToggle = () => {
-    const newState = !isMobileMenuOpen;
-    setIsMobileMenuOpen(newState);
-    trackMobileMenuToggle(newState);
-  };
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
 
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        onClick={handleMobileMenuToggle}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50"
-      >
-        {isMobileMenuOpen ? (
-          <X className="h-6 w-6 text-gray-900" />
-        ) : (
-          <Menu className="h-6 w-6 text-gray-900" />
-        )}
-      </button>
+      {/* Mobile Header with Logo and Menu Button */}
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-gray-100 shadow-sm border-b border-gray-300 z-50">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Logo on the left */}
+          <Link
+            to="/home"
+            className="flex items-center"
+          >
+            <h2 className="text-xl font-bold text-gray-900">KStoryBridge</h2>
+          </Link>
 
-      {/* Overlay for mobile */}
+          {/* Menu button on the right */}
+          <button
+            onClick={handleMobileMenuToggle}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-30"
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed left-4 right-4 top-[60px] bg-white rounded-2xl shadow-xl border border-gray-300 z-50 overflow-hidden">
+          <div className="py-2">
+            {/* Discover items */}
+            {discoverItems.map((item) => {
+              const isActive = location.pathname === item.href
+
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={handleLinkClick}
+                  className={cn(
+                    'flex items-center justify-between px-4 py-3 text-base font-normal transition-colors border-b border-gray-100 last:border-b-0',
+                    isActive
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-900 hover:bg-gray-50'
+                  )}
+                >
+                  <span>{item.title}</span>
+                  {item.badge && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold text-white rounded-full bg-red-500 uppercase tracking-wider">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Sidebar - hidden on mobile */}
       <aside
-        className={cn(
-          "fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 transition-transform md:translate-x-0",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        )}
+        className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200"
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-gray-200">
             <Link
               to="/home"
-              onClick={handleLogoClick}
               className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
             >
               KStoryBridge
@@ -108,12 +130,12 @@ export function CMSSidebar() {
                   <li key={item.href}>
                     <Link
                       to={item.href}
-                      onClick={() => handleLinkClick(item.title, item.href)}
+                      onClick={handleLinkClick}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                         location.pathname === item.href
-                          ? "bg-gray-100 text-gray-900"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          ? 'bg-gray-100 text-gray-900'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       )}
                     >
                       {item.icon && <span>{item.icon}</span>}
@@ -128,55 +150,27 @@ export function CMSSidebar() {
                 ))}
               </ul>
             </div>
-
-            {/* Settings section */}
-            <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-                Settings
-              </h3>
-              <ul className="space-y-1">
-                {settingsItems.map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      to={item.href}
-                      onClick={() => handleLinkClick(item.title, item.href)}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                        location.pathname === item.href
-                          ? "bg-gray-100 text-gray-900"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                      )}
-                    >
-                      {item.icon && <span>{item.icon}</span>}
-                      <span>{item.title}</span>
-                      {item.badge && (
-                        <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-500 text-white">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </nav>
 
-          {/* User info */}
+          {/* User info - clickable link to profile */}
           <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center gap-3 px-3 py-2">
+            <Link
+              to="/profile"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-gray-600">
                 <User className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {user?.user_metadata?.full_name || "Creator"}
+                  {user?.user_metadata?.full_name || 'Creator'}
                 </p>
                 <p className="text-xs text-gray-500 truncate">{userEmail}</p>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </aside>
     </>
-  );
+  )
 }

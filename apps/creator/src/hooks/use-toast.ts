@@ -1,18 +1,24 @@
 import * as React from "react"
 
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
+// Note: Toast UI components are imported from @/components/ui/toast
+// This file provides the toast() function and useToast() hook
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 5000
 
-type ToasterToast = ToastProps & {
-  id: string
+export type ToastProps = {
+  id?: string
   title?: React.ReactNode
   description?: React.ReactNode
-  action?: ToastActionElement
+  action?: React.ReactNode
+  variant?: "default" | "destructive"
+  duration?: number
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+type ToasterToast = ToastProps & {
+  id: string
 }
 
 const actionTypes = {
@@ -90,8 +96,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -140,39 +144,6 @@ function dispatch(action: Action) {
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
-  // Enhanced validation: Prevent empty notifications (including empty strings and whitespace)
-  const titleContent = typeof props.title === 'string' ? props.title.trim() : props.title
-  const descriptionContent = typeof props.description === 'string' ? props.description.trim() : props.description
-
-  // Strict validation: Check for null, undefined, empty strings, whitespace-only content
-  const hasValidTitle = titleContent && titleContent !== '' && titleContent !== null && titleContent !== undefined
-  const hasValidDescription = descriptionContent && descriptionContent !== '' && descriptionContent !== null && descriptionContent !== undefined
-
-  if (!hasValidTitle && !hasValidDescription) {
-    console.warn('🚫 Dashboard Toast blocked: Called without meaningful title or description.', {
-      originalTitle: props.title,
-      originalDescription: props.description,
-      trimmedTitle: titleContent,
-      trimmedDescription: descriptionContent,
-      hasValidTitle,
-      hasValidDescription,
-      stack: new Error().stack?.split('\n').slice(1, 4).join('\n')
-    })
-    // Return early without adding to toasts array
-    return {
-      id: '',
-      dismiss: () => {},
-      update: () => {},
-    }
-  }
-
-  // Debug logging for successful toasts
-  console.log('✅ Dashboard Toast created:', {
-    title: titleContent || '[no title]',
-    description: descriptionContent || '[no description]',
-    variant: props.variant || 'default'
-  })
-
   const id = genId()
 
   const update = (props: ToasterToast) =>

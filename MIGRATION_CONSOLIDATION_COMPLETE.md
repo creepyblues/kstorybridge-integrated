@@ -44,7 +44,7 @@ Created complete migration policy guide covering:
 - **App Folders**: 175 files (deprecated, historical reference only)
   - `/apps/dashboard/supabase/migrations/`: 70 files
   - `/apps/creator/supabase/migrations/`: 65 files
-  - `/apps/creator-v2/supabase/migrations/`: 1 file
+  - `/apps/creator/supabase/migrations/`: 1 file
   - `/apps/website/supabase/migrations/`: 21 files
 
 ### Edge Functions

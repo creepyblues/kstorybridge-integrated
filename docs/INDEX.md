@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-10-28
 
 This is the master index of all active documentation for the KStoryBridge project.
 
@@ -83,6 +83,20 @@ This is the master index of all active documentation for the KStoryBridge projec
 | **[docs/PITCH_DECK_SYSTEM.md](../apps/dashboard/docs/PITCH_DECK_SYSTEM.md)** | Pitch deck extraction |
 | **[PITCH_DECK_EXTRACTION_GUIDE.md](../apps/dashboard/PITCH_DECK_EXTRACTION_GUIDE.md)** | Complete pitch extraction guide |
 | **[PITCH_DECK_EXTRACTION_CHANGELOG.md](../apps/dashboard/PITCH_DECK_EXTRACTION_CHANGELOG.md)** | Pitch extraction version history |
+
+### Creator App (`apps/creator/`)
+
+| Document | Description |
+|----------|-------------|
+| **[CLAUDE.md](../apps/creator/CLAUDE.md)** | Creator V2 app documentation (primary) |
+| **[CREATOR_APP_V2_REBUILD_PLAN.md](CREATOR_APP_V2_REBUILD_PLAN.md)** | Complete V2 rebuild history (Phases 1-6) |
+| **[CREATOR_APP_V2_PRD.md](CREATOR_APP_V2_PRD.md)** | Product requirements document |
+| **[DEPLOYMENT_GUIDE.md](../apps/creator/DEPLOYMENT_GUIDE.md)** | Vercel deployment instructions |
+| **[OAUTH_SETUP.md](../apps/creator/OAUTH_SETUP.md)** | OAuth configuration guide |
+| **[TESTING_CHECKLIST.md](../apps/creator/TESTING_CHECKLIST.md)** | Manual testing checklist |
+
+**Legacy Reference**:
+- **[Creator V1 CLAUDE.md](../apps/creator-v1/CLAUDE.md)** - 🗄️ Archived (historical reference only)
 
 ### Website App (`apps/website/`)
 

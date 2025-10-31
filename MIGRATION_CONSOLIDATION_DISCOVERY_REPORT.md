@@ -12,7 +12,7 @@
 - **Root** (`/supabase/migrations/`): 18 files ✅ CLEAN, NO DUPLICATES
 - **Dashboard** (`/apps/dashboard/supabase/migrations/`): 70 files
 - **Creator V1** (`/apps/creator/supabase/migrations/`): 65 files
-- **Creator V2** (`/apps/creator-v2/supabase/migrations/`): 1 file
+- **Creator V2** (`/apps/creator/supabase/migrations/`): 1 file
 - **Website** (`/apps/website/supabase/migrations/`): 21 files
 - **Total**: 186 migration files across 5 locations
 

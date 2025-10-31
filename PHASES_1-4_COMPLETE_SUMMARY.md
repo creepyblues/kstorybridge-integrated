@@ -287,7 +287,7 @@ The 5-step title questionnaire feature is now **fully implemented** from databas
 The following shadcn/ui components need to be installed:
 
 ```bash
-cd apps/creator-v2
+cd apps/creator
 npx shadcn-ui@latest add checkbox
 npx shadcn-ui@latest add radio-group
 npx shadcn-ui@latest add select
@@ -301,7 +301,7 @@ npx shadcn-ui@latest add textarea
 
 ### 2. Add Route Configuration ⏳
 
-Add to `/apps/creator-v2/src/App.tsx`:
+Add to `/apps/creator/src/App.tsx`:
 
 ```typescript
 import AddTitleSurvey from '@/pages/AddTitleSurvey'
@@ -485,7 +485,7 @@ Update the "Add Title" button in existing pages to point to `/add-title-survey` 
 ## File Structure Summary
 
 ```
-apps/creator-v2/src/
+apps/creator/src/
 ├── components/
 │   └── survey/
 │       ├── MultiStepProgressBar.tsx      (156 lines)

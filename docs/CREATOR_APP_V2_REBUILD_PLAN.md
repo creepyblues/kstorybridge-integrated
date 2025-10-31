@@ -1,9 +1,9 @@
 # Creator App V2 - Complete Rebuild Plan
 
-**Status**: ✅ DEPLOYED TO PRODUCTION - One Bug Found (Title Edit)
+**Status**: ✅ PRODUCTION READY - V2 is Primary, V1 Archived
 **Timeline**: 2-3 days (20-22 hours)
-**Last Updated**: 2025-10-24
-**Progress**: Phase 5 Complete (98% - Production Ready)
+**Last Updated**: 2025-10-28
+**Progress**: Phase 6 Complete (100% - V2 is Primary Creator App)
 
 ---
 
@@ -21,7 +21,7 @@ Build a completely new creator app from scratch to eliminate OAuth authenticatio
 - ❌ Leftover buyer code (8% separation project incomplete)
 - ❌ Shared abstractions with dashboard causing tight coupling
 
-**New Approach (apps/creator-v2)**:
+**New Approach (apps/creator)**:
 - ✅ Clean slate - no legacy code
 - ✅ Minimal abstractions - simple, maintainable
 - ✅ account_type='creator' set DURING signup (not after)
@@ -47,7 +47,7 @@ Build a completely new creator app from scratch to eliminate OAuth authenticatio
   - [x] Document edge functions needed
   - [x] List Supabase storage usage
 - [x] Create PRD document (`docs/CREATOR_APP_V2_PRD.md`)
-- [x] Create new app directory structure (`apps/creator-v2/`)
+- [x] Create new app directory structure (`apps/creator/`)
 - [x] Configure package.json and build tools
 
 #### Deliverables
@@ -57,17 +57,17 @@ Build a completely new creator app from scratch to eliminate OAuth authenticatio
 
 #### Files Created
 - `/Users/sungholee/code/kstorybridge/docs/CREATOR_APP_V2_PRD.md`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/package.json`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/vite.config.ts`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/tsconfig.json`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/tsconfig.node.json`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/tailwind.config.ts`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/postcss.config.js`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/.eslintrc.cjs`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/index.html`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/main.tsx`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/App.tsx`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/index.css`
+- `/Users/sungholee/code/kstorybridge/apps/creator/package.json`
+- `/Users/sungholee/code/kstorybridge/apps/creator/vite.config.ts`
+- `/Users/sungholee/code/kstorybridge/apps/creator/tsconfig.json`
+- `/Users/sungholee/code/kstorybridge/apps/creator/tsconfig.node.json`
+- `/Users/sungholee/code/kstorybridge/apps/creator/tailwind.config.ts`
+- `/Users/sungholee/code/kstorybridge/apps/creator/postcss.config.js`
+- `/Users/sungholee/code/kstorybridge/apps/creator/.eslintrc.cjs`
+- `/Users/sungholee/code/kstorybridge/apps/creator/index.html`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/main.tsx`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/App.tsx`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/index.css`
 
 #### Verification
 - [x] Dev server starts successfully on port 8083
@@ -108,12 +108,12 @@ Build a completely new creator app from scratch to eliminate OAuth authenticatio
 - [x] account_type='creator' set during signup
 
 #### Files Created
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/.env.local`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/lib/supabase.ts` (17 lines)
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/lib/auth.ts` (240 lines)
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/hooks/useAuth.tsx` (55 lines)
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/lib/utils.ts` (6 lines)
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/vite-env.d.ts` (10 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/.env.local`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/lib/supabase.ts` (17 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/lib/auth.ts` (240 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/hooks/useAuth.tsx` (55 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/lib/utils.ts` (6 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/vite-env.d.ts` (10 lines)
 
 #### Verification
 - [x] TypeScript build succeeds (no errors)
@@ -182,16 +182,16 @@ await updateUser({ account_type: 'creator' })
 - [x] Clean error handling with user-facing messages
 
 #### Files Created
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/components/ui/button.tsx`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/components/ui/input.tsx`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/components/ui/card.tsx`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/components/ui/label.tsx`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/pages/auth/SignUp.tsx` (248 lines)
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/pages/auth/SignIn.tsx` (143 lines)
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/pages/auth/AuthCallback.tsx` (69 lines)
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/pages/auth/CompleteProfile.tsx` (146 lines)
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/components/ProtectedRoute.tsx`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/src/pages/Home.tsx`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/components/ui/button.tsx`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/components/ui/input.tsx`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/components/ui/card.tsx`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/components/ui/label.tsx`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/pages/auth/SignUp.tsx` (248 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/pages/auth/SignIn.tsx` (143 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/pages/auth/AuthCallback.tsx` (69 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/pages/auth/CompleteProfile.tsx` (146 lines)
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/components/ProtectedRoute.tsx`
+- `/Users/sungholee/code/kstorybridge/apps/creator/src/pages/Home.tsx`
 
 #### Verification
 - [x] TypeScript build succeeds (133 modules transformed)
@@ -447,13 +447,13 @@ Table: `user_creators`
 - [x] Production test report
 
 #### Files Created
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/TESTING_CHECKLIST.md`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/vercel.json`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/.vercelignore`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/DEPLOYMENT_GUIDE.md`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/OAUTH_SETUP.md`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/PRODUCTION_TEST_REPORT.md`
-- `/Users/sungholee/code/kstorybridge/apps/creator-v2/README.md`
+- `/Users/sungholee/code/kstorybridge/apps/creator/TESTING_CHECKLIST.md`
+- `/Users/sungholee/code/kstorybridge/apps/creator/vercel.json`
+- `/Users/sungholee/code/kstorybridge/apps/creator/.vercelignore`
+- `/Users/sungholee/code/kstorybridge/apps/creator/DEPLOYMENT_GUIDE.md`
+- `/Users/sungholee/code/kstorybridge/apps/creator/OAUTH_SETUP.md`
+- `/Users/sungholee/code/kstorybridge/apps/creator/PRODUCTION_TEST_REPORT.md`
+- `/Users/sungholee/code/kstorybridge/apps/creator/README.md`
 
 #### Verification
 - [x] Deployment URL: https://creator-v2-xi.vercel.app
@@ -472,16 +472,118 @@ Table: `user_creators`
 
 ---
 
+### Phase 6: Archive V1 and Promote V2
+**Status**: ✅ COMPLETED
+**Time Estimate**: 1-2 hours
+**Owner**: Claude + User
+**Completed**: 2025-10-28
+
+#### Strategic Decision
+With Creator V2 successfully deployed to production and all features working, archive the legacy V1 app and make V2 the single source of truth for creator dashboard development.
+
+#### Tasks
+- [x] **6.1 Directory Restructure** (15 min)
+  - [x] Renamed `/apps/creator` → `/apps/creator-v1`
+  - [x] Preserved all 685 files for historical reference
+  - [x] Used `git mv` for clean rename (maintains git history)
+
+- [x] **6.2 Update Build Configuration** (15 min)
+  - [x] Updated `package.json` scripts to reference `creator-v2`:
+    - `dev:creator` → points to apps/creator (port 8083)
+    - `build:creator` → builds apps/creator
+    - `build:all` → includes creator-v2
+    - `lint:all` → lints creator-v2
+
+- [x] **6.3 Update Documentation** (30 min)
+  - [x] Updated root `CLAUDE.md`:
+    - Changed port references (8082 → 8083)
+    - Updated project structure diagrams
+    - Marked creator-v1 as 🗄️ ARCHIVED
+    - Removed V1/V2 distinction in active documentation
+  - [x] Updated `README.md`:
+    - Updated app table with correct ports
+    - Updated command examples
+    - Updated project structure
+  - [x] Added Phase 6 to `CREATOR_APP_V2_REBUILD_PLAN.md` (this document)
+  - [x] Created `apps/creator/CLAUDE.md` for app-specific docs
+  - [x] Updated `docs/INDEX.md` with creator app references
+
+- [x] **6.4 Verification Testing** (15 min)
+  - [x] `npm run dev:creator` → correctly starts creator-v2 on port 8083
+  - [x] `npm run build:creator` → successfully builds creator-v2
+  - [x] `npm run lint:all` → lints all apps including creator-v2
+  - [x] Git status clean (all changes committed)
+
+- [x] **6.5 Git Commit and Push** (5 min)
+  - [x] Committed refactoring changes (commit: f71f40cb)
+  - [x] Committed creator-v2 updates (commit: 8815ee99)
+  - [x] Pushed to `origin/v2` branch
+
+#### Deliverables
+- [x] Legacy creator app safely archived as `/apps/creator-v1/`
+- [x] Creator-v2 is now primary creator app (no -v2 suffix needed in docs)
+- [x] All npm scripts point to creator-v2
+- [x] Documentation updated across all relevant files
+- [x] Verification tests pass
+
+#### Files Modified
+- `/package.json` - Updated scripts (4 lines changed)
+- `/CLAUDE.md` - Updated ports, structure, references (9 updates)
+- `/README.md` - Updated commands, ports, structure (7 updates)
+- `/docs/CREATOR_APP_V2_REBUILD_PLAN.md` - Added Phase 6 (this section)
+- `/docs/INDEX.md` - Added creator app references
+
+#### Files Created
+- `/apps/creator/CLAUDE.md` - App-specific documentation
+
+#### What's Preserved in creator-v1
+The `/apps/creator-v1/` directory contains:
+- Complete codebase (682 files, ~158 MB)
+- Full git history
+- All documentation and configuration
+- Reference for any needed code/patterns
+- Status: 🗄️ ARCHIVED (read-only, historical reference)
+
+#### Why Archive Instead of Delete?
+1. **Historical reference** - May need to check old implementations
+2. **Code patterns** - Useful examples for future features
+3. **Documentation** - Contains extensive setup/deployment docs
+4. **Safety** - Can restore if needed (though V2 is better in every way)
+5. **Minimal cost** - No active maintenance burden, just storage
+
+#### Key Changes Summary
+```bash
+# Before
+apps/creator/          # Legacy app (port 8082) - ACTIVE
+apps/creator/       # New app (port 8083) - TESTING
+
+# After
+apps/creator-v1/       # 🗄️ ARCHIVED - Legacy app (reference only)
+apps/creator/       # ✅ PRIMARY - Active creator app (port 8083)
+```
+
+#### Production Status
+- **Live URL**: https://creator.kstorybridge.com
+- **Staging URL**: https://creator-staging.kstorybridge.com
+- **OAuth**: Fully configured and working
+- **Features**: All creator features operational
+- **Known Issues**: None (title edit bug fixed 2025-10-26)
+
+---
+
 ## 📞 Questions or Blockers
 
 Track any questions or blockers here as they arise:
 
-- ⚠️ **BLOCKER**: Title edit save bug (tags field) - needs immediate fix
+- ✅ Title edit save bug (tags field) - **FIXED** (2025-10-26)
 - ✅ OAuth configuration complete
 - ✅ Custom domain active
+- ✅ V1 archived, V2 promoted to primary (2025-10-28)
+
+**No open blockers or questions**
 
 ---
 
-**Last Updated**: 2025-10-24
-**Status**: DEPLOYED TO PRODUCTION (creator.kstorybridge.com)
-**Completion**: 98% (One bug fix remaining)
+**Last Updated**: 2025-10-28
+**Status**: ✅ COMPLETE - V2 is Primary Creator App
+**Completion**: 100% (All phases complete, V1 archived)

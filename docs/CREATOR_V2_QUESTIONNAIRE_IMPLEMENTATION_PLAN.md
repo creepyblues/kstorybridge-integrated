@@ -112,7 +112,7 @@ tone, audience, perfect_for, comps, verified, priority, views, likes
 
 #### Migration 1: `title_platforms`
 ```sql
--- File: apps/creator-v2/supabase/migrations/20251024000001_create_title_platforms.sql
+-- File: apps/creator/supabase/migrations/20251024000001_create_title_platforms.sql
 CREATE TABLE IF NOT EXISTS public.title_platforms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title_id UUID NOT NULL REFERENCES public.titles(title_id) ON DELETE CASCADE,
@@ -144,7 +144,7 @@ COMMENT ON TABLE public.title_platforms IS 'Multiple platform URLs and metrics p
 
 #### Migration 2: `title_documents`
 ```sql
--- File: apps/creator-v2/supabase/migrations/20251024000002_create_title_documents.sql
+-- File: apps/creator/supabase/migrations/20251024000002_create_title_documents.sql
 CREATE TABLE IF NOT EXISTS public.title_documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title_id UUID NOT NULL REFERENCES public.titles(title_id) ON DELETE CASCADE,
@@ -219,7 +219,7 @@ USING (
 
 #### Migration 3: `title_drafts`
 ```sql
--- File: apps/creator-v2/supabase/migrations/20251024000003_create_title_drafts.sql
+-- File: apps/creator/supabase/migrations/20251024000003_create_title_drafts.sql
 CREATE TABLE IF NOT EXISTS public.title_drafts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   creator_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -251,7 +251,7 @@ COMMENT ON TABLE public.title_drafts IS 'Auto-saved draft data for incomplete ti
 ### Phase 2: Add Fields to `titles` Table (ADDITIVE ONLY)
 
 ```sql
--- File: apps/creator-v2/supabase/migrations/20251024000004_add_questionnaire_fields_to_titles.sql
+-- File: apps/creator/supabase/migrations/20251024000004_add_questionnaire_fields_to_titles.sql
 BEGIN;
 
 -- ✅ SAFE: All fields are NULLABLE (backward compatible)
@@ -328,7 +328,7 @@ const titles = await supabase.from('titles').select('*');
 
 ## 🛠️ Backend Implementation
 
-### New Services (apps/creator-v2/src/services/)
+### New Services (apps/creator/src/services/)
 
 #### 1. `platformsService.ts`
 ```typescript
@@ -622,7 +622,7 @@ export interface CreateTitleInput {
 ### Component Structure
 
 ```
-apps/creator-v2/src/
+apps/creator/src/
 ├── pages/
 │   ├── AddTitleSurvey.tsx              # Main 5-step form page
 │   └── Drafts.tsx                      # (Optional) List saved drafts
@@ -817,7 +817,7 @@ npm run build
 
 ```bash
 # Run creator-v2 tests
-cd apps/creator-v2
+cd apps/creator
 npm run build  # Verify TypeScript compilation
 npm test       # Run unit tests (if exist)
 
@@ -994,9 +994,9 @@ curl https://dashboard.kstorybridge.com/api/titles
 ## 🔗 References
 
 - **Original Questionnaire**: K-Story Bridge Questionnaire (provided by user)
-- **Current Add Title Form**: `/apps/creator-v2/src/pages/AddTitle.tsx`
+- **Current Add Title Form**: `/apps/creator/src/pages/AddTitle.tsx`
 - **Dashboard Dependencies**: `/apps/dashboard/src/services/titlesService.ts`
-- **Database Migrations**: `/apps/creator-v2/supabase/migrations/` (to be created)
+- **Database Migrations**: `/apps/creator/supabase/migrations/` (to be created)
 
 ---
 

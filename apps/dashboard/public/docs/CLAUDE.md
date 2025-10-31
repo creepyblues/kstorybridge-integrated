@@ -2,7 +2,7 @@
 
 **App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. Contains authentication pages for both buyers and creators (creator auth will migrate to creator app in future).
 
-**Last Updated**: 2025-10-22
+**Last Updated**: 2025-10-29
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -58,6 +58,10 @@ React-based dashboard built with Vite, TypeScript, and shadcn/ui components. **P
 - Uses Supabase auth with custom AuthProvider (`src/hooks/useAuth.tsx`)
 - Account type in user metadata determines dashboard routing
 - OAuth redirects to `/auth/callback` in THIS app
+- **Multi-environment OAuth**: Explicit domain detection for production, staging, and localhost
+  - Production: `dashboard.kstorybridge.com/auth/callback`
+  - Staging: `dashboard-v2.kstorybridge.com/auth/callback`
+  - Localhost: `localhost:8081/auth/callback`
 - **Future**: Creator authentication will move to creator app (separate at creator.kstorybridge.com)
 
 **Auth Pages**:
@@ -297,6 +301,9 @@ npx supabase start
 ### Development
 - Dashboard: http://localhost:8081
 - Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
+
+### Staging
+- Dashboard: https://dashboard-v2.kstorybridge.com
 
 ### Production
 - Dashboard: https://dashboard.kstorybridge.com

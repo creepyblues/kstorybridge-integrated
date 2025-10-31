@@ -455,7 +455,15 @@ export const handleOAuthSignup = async (
 
     // ✅ CRITICAL: NO URL parameters in OAuth callback URL (per CLAUDE.md)
     // Use clean callback URL - data passed via sessionStorage only
-    const callbackUrl = `${window.location.origin}/auth/callback`;
+    // Explicit domain handling for multi-environment OAuth redirects
+    const isStaging = window.location.hostname === 'dashboard-v2.kstorybridge.com'
+    const isProduction = window.location.hostname === 'dashboard.kstorybridge.com'
+
+    const callbackUrl = isStaging
+      ? 'https://dashboard-v2.kstorybridge.com/auth/callback'
+      : isProduction
+      ? 'https://dashboard.kstorybridge.com/auth/callback'
+      : `${window.location.origin}/auth/callback`;  // Localhost
 
     const result = await authService.signInWithOAuth(provider, {
       redirectTo: callbackUrl // Clean callback URL, no parameters

@@ -9,7 +9,7 @@
 ## Completed Components ✅
 
 ### 1. MultiStepProgressBar.tsx ✅
-**Location**: `/apps/creator-v2/src/components/survey/MultiStepProgressBar.tsx`
+**Location**: `/apps/creator/src/components/survey/MultiStepProgressBar.tsx`
 
 **Features**:
 - ✅ Visual 5-step progress indicator
@@ -29,7 +29,7 @@
 ---
 
 ### 2. AutoSaveIndicator.tsx ✅
-**Location**: `/apps/creator-v2/src/components/survey/AutoSaveIndicator.tsx`
+**Location**: `/apps/creator/src/components/survey/AutoSaveIndicator.tsx`
 
 **Features**:
 - ✅ Real-time save status display (idle, saving, saved, error)
@@ -51,7 +51,7 @@
 ---
 
 ### 3. PlatformInput.tsx ✅
-**Location**: `/apps/creator-v2/src/components/survey/PlatformInput.tsx`
+**Location**: `/apps/creator/src/components/survey/PlatformInput.tsx`
 
 **Features**:
 - ✅ Dynamic add/remove platform entries
@@ -79,7 +79,7 @@
 ---
 
 ### 4. CharacterDetailsInput.tsx ✅
-**Location**: `/apps/creator-v2/src/components/survey/CharacterDetailsInput.tsx`
+**Location**: `/apps/creator/src/components/survey/CharacterDetailsInput.tsx`
 
 **Features**:
 - ✅ Dynamic add/remove character entries
@@ -108,7 +108,7 @@
 ---
 
 ### 5. FileUploadZone.tsx ✅
-**Location**: `/apps/creator-v2/src/components/survey/FileUploadZone.tsx`
+**Location**: `/apps/creator/src/components/survey/FileUploadZone.tsx`
 
 **Features**:
 - ✅ Drag-and-drop file upload
@@ -301,11 +301,11 @@ useEffect(() => {
 
 ## Files Created (Phase 3A)
 
-1. ✅ `/apps/creator-v2/src/components/survey/MultiStepProgressBar.tsx` (156 lines)
-2. ✅ `/apps/creator-v2/src/components/survey/AutoSaveIndicator.tsx` (164 lines)
-3. ✅ `/apps/creator-v2/src/components/survey/PlatformInput.tsx` (229 lines)
-4. ✅ `/apps/creator-v2/src/components/survey/CharacterDetailsInput.tsx` (291 lines)
-5. ✅ `/apps/creator-v2/src/components/survey/FileUploadZone.tsx` (358 lines)
+1. ✅ `/apps/creator/src/components/survey/MultiStepProgressBar.tsx` (156 lines)
+2. ✅ `/apps/creator/src/components/survey/AutoSaveIndicator.tsx` (164 lines)
+3. ✅ `/apps/creator/src/components/survey/PlatformInput.tsx` (229 lines)
+4. ✅ `/apps/creator/src/components/survey/CharacterDetailsInput.tsx` (291 lines)
+5. ✅ `/apps/creator/src/components/survey/FileUploadZone.tsx` (358 lines)
 
 **Total Lines**: ~1,198 lines of production-ready TypeScript/React code
 

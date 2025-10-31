@@ -1,42 +1,49 @@
-# CLAUDE.md - Creator App
+# CLAUDE.md - Creator App V2
 
-**App Scope**: Creator-focused dashboard for content management, title submissions, pitch deck uploads, and analytics. Dedicated app for Korean content creators (webtoon artists, web novel authors).
+**App Scope**: Creator-focused dashboard for content management, title submissions, and profile management. Dedicated app for Korean content creators (webtoon artists, web novel authors, agents).
 
-**Last Updated**: 2025-10-22
+**Last Updated**: 2025-10-29
 
-**Migration Status**: 🚧 Phase 1 Complete (8% of separation project) - See [Creator App Separation Project](../../docs/CREATOR_APP_QUICK_REFERENCE.md)
+**Status**: ✅ PRODUCTION - Primary creator app (V1 archived as reference)
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with the Creator application.
+This file provides guidance to Claude Code (claude.ai/code) when working with the Creator V2 application.
 
 ---
 
 ## 📚 Documentation Index
 
 ### Essential Docs (Quick Links)
-- **[Creator App Separation Project](../../docs/CREATOR_APP_QUICK_REFERENCE.md)** - Migration status and roadmap
+- **[Creator V2 Rebuild Plan](../../docs/CREATOR_APP_V2_REBUILD_PLAN.md)** - Complete V2 build history and phases
+- **[Creator V2 PRD](../../docs/CREATOR_APP_V2_PRD.md)** - Product requirements document
 - **[Design Standards](../../docs/active/DESIGN_SYSTEM.md)** - UI/UX standards (root-level)
 - **[Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md)** - Complete auth system reference (root-level)
 - **[Database Schema](../../docs/active/DATABASE_SCHEMA.md)** - Database schema reference
+
+### Deployment Docs (In App Directory)
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Vercel deployment instructions
+- **[OAUTH_SETUP.md](./OAUTH_SETUP.md)** - OAuth configuration guide
+- **[PRODUCTION_TEST_REPORT.md](./PRODUCTION_TEST_REPORT.md)** - Production verification tests
+- **[TESTING_CHECKLIST.md](./TESTING_CHECKLIST.md)** - Manual testing checklist
 
 ---
 
 ## Development Commands
 
-- `npm run dev` - Start development server on port 8082
+- `npm run dev` - Start development server on port 8083
 - `npm run build` - Build for production
-- `npm run build:dev` - Development build
+- `npm run build:dev` - Development build (with source maps)
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 
-**Note**: This app runs on port **8082**. Dashboard app runs on port 8081, website on 5173.
+**Note**: This app runs on port **8083**. Dashboard app runs on port 8081, website on 5173.
 
 ---
 
 ## Architecture Overview
 
-React-based creator dashboard built with Vite, TypeScript, and shadcn/ui components. **Exclusively for creators** - clean URLs without `/creators` prefix for professional appearance.
+React-based creator dashboard built from scratch to eliminate OAuth authentication issues. **Exclusively for creators** - clean URLs without `/creators` prefix for professional appearance.
 
 ### Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite
@@ -46,20 +53,29 @@ React-based creator dashboard built with Vite, TypeScript, and shadcn/ui compone
 - **Routing**: React Router v6
 - **Forms**: React Hook Form + Zod
 
+### Key Improvements Over V1
+- ✅ **Clean auth implementation** - No race conditions, single auth listener
+- ✅ **account_type set during signup** - No separate updateUser() call needed
+- ✅ **OAuth works perfectly** - Sequential operations, no deadlocks
+- ✅ **No dashboard dependencies** - Fully independent codebase
+- ✅ **Better title forms** - All database fields supported (vs V1's 7 fields)
+- ✅ **Simpler codebase** - ~300 lines of auth code vs V1's 800+
+
 ### Key Patterns
 
 **Authentication**:
-- **Currently**: Shares authentication with dashboard app (temporary)
-- **Planned**: Dedicated creator authentication at creator.kstorybridge.com
-- Uses Supabase auth with custom AuthProvider (`src/hooks/useAuth.tsx`)
-- Account type in user metadata determines routing
-- OAuth redirects to `/auth/callback` in THIS app
+- Simple auth service: `src/lib/auth.ts` (240 lines)
+- Single auth listener: `src/hooks/useAuth.tsx` (55 lines)
+- Supabase client: `src/lib/supabase.ts` (17 lines)
+- account_type='creator' set **during** signup (not after)
+- OAuth: Sequential operations (exchange → profile → metadata)
+- No session health checks, no race conditions
 
 **Auth Pages** (Creator-only):
-- `/signin` - Creator sign in (redirects from `/signin/creator`)
-- `/signup` - Creator signup (redirects from `/signup/creator`)
+- `/signin` - Creator sign in
+- `/signup` - Creator signup
 - `/auth/callback` - OAuth callback handler
-- `/forgot-password` - Password reset
+- `/complete-profile` - OAuth profile completion (pen_name, role, etc.)
 
 **Routing Philosophy**:
 - **Clean URLs**: No `/creators` prefix (e.g., `/home` not `/creators/home`)
@@ -68,13 +84,13 @@ React-based creator dashboard built with Vite, TypeScript, and shadcn/ui compone
 
 **Data Management**:
 - Supabase client: `src/integrations/supabase/client.ts`
-- Service layer: `src/services/`
+- Services: `src/services/titlesService.ts`
 - TanStack Query for server state
-- Shared database with dashboard app (same Supabase project)
+- Shared database with dashboard app (same Supabase project: `dlrnrgcoguxlkkcitlpd`)
 
 **Component Structure**:
 - shadcn/ui: `src/components/ui/` (auto-generated, avoid editing)
-- Custom: `src/components/`
+- Custom components: `src/components/`
 - Layouts: `src/components/layout/` (includes CMSSidebar for creator menu)
 - Pages: `src/pages/`
 
@@ -82,230 +98,245 @@ React-based creator dashboard built with Vite, TypeScript, and shadcn/ui compone
 - `@/*` maps to `./src/*`
 
 ### Database
-- Migrations: `supabase/migrations/` (separate from dashboard)
+- Migrations: Use root-level `/supabase/migrations/` (centralized)
 - Auto-generated types: `src/integrations/supabase/types.ts`
 - Shared Supabase project: `dlrnrgcoguxlkkcitlpd`
+- Query pattern: Always use `.eq('email', user.email)` (never `user_id`)
 
 ---
 
 ## Creator App Routes
 
 ### Main Routes (Clean URLs)
-- `/` - Redirects to `/home`
+- `/` - Redirects to `/home` or `/signin` (if not authenticated)
 - `/home` - Creator dashboard home
 - `/titles` - My titles list
-- `/titles/add` - Add new title
+- `/titles/add` - Add new title (multi-step survey form)
 - `/titles/:titleId` - Title detail view
 - `/titles/:titleId/edit` - Edit title
-- `/requests` - My requests (buyer inquiries)
-- `/profile` - Creator profile
-- `/news` - News and updates
-- `/send-message` - Send message to admin
+- `/profile` - Creator profile management
+- `/requests` - My requests (buyer inquiries) - **Skeleton**
+- `/news` - Platform news - **Skeleton**
 
-### Authentication Routes
-- `/signin` - Creator sign in
-- `/signup` - Creator signup
-- `/forgot-password` - Password reset
-- `/auth/callback` - OAuth callback
-
-### Documentation Routes (Shared)
-- `/docs` - Documentation index
-- `/docs/schema` - Database schema
-- `/docs/view/:filename` - Document viewer
-- `/docs/ux` - UX dashboard
-- `/docs/user_journey` - User journey map
-- `/docs/messaging` - Messaging documentation
-
-### Legacy Redirects (Backwards Compatibility)
-- `/signin/creator` → `/signin`
-- `/signup/creator` → `/signup`
+### Auth Routes
+- `/signin` - Sign in page
+- `/signup` - Sign up page
+- `/auth/callback` - OAuth callback handler
+- `/complete-profile` - OAuth profile completion
 
 ---
 
 ## Key Features
 
-### 1. Content Management
-- **Title Submission**: Add new titles with comprehensive metadata
-- **Title Editing**: Update title information, images, pitch decks
-- **Pitch Deck Upload**: PDF upload with automated extraction (50+ fields)
-- **Cover Image Management**: Title image uploads to Supabase storage
+### 1. Title Management (CRUD)
+**Location**: `src/services/titlesService.ts`
 
-### 2. Analytics & Insights
-- **Title Performance**: Views, likes, ratings for submitted content
-- **Buyer Interest**: Track requests and inquiries from media buyers
-- **Market Positioning**: See comparable titles and target audiences
+**Operations**:
+- `getTitlesByCreator(email)` - Fetch all titles for creator
+- `getTitleById(titleId)` - Fetch single title
+- `createTitle(titleData)` - Create new title
+- `updateTitle(titleId, updates)` - Update existing title
+- `deleteTitle(titleId)` - Delete title
 
-### 3. Request Management
-- **Buyer Requests**: View and respond to buyer inquiries
-- **Message System**: Direct communication with platform administrators
+**Forms**:
+- **AddTitle**: Multi-step survey form (`src/pages/AddTitleSurvey.tsx`)
+  - Step 1: Basic Info (title_name_kr, genre, format, etc.)
+  - Step 2: Story Details (inspiration, themes, world-building, etc.)
+  - Step 3: Achievements (awards, sales, media coverage, etc.)
+  - Step 4: Platform Metrics (views, chapters, rating, etc.)
+  - Step 5: Documents (pitch decks, scripts, press releases, etc.)
+- **EditTitle**: Single-page form with all fields (`src/pages/EditTitle.tsx`)
 
-### 4. Profile Management
-- **Creator Profile**: Pen name, bio, portfolio, contact information
-- **Content Portfolio**: Showcase all submitted titles in one place
+**Components**:
+- `src/components/TitleCard.tsx` - Title list item
+- Survey components in `src/components/survey/`
 
----
+### 2. Profile Management
+**Location**: `src/pages/Profile.tsx`
 
-## Protected Routes
+**Features**:
+- View/edit pen_name, full_name, company, website
+- Email display (read-only)
+- Account creation date
+- Edit mode with form validation
 
-### CreatorProtectedLayout
-All creator routes are wrapped in `CreatorProtectedLayout` which:
-- Verifies user is authenticated
-- Checks account_type is 'creator'
-- Redirects non-creators to appropriate app (future: cross-domain redirect)
-- Includes CMSSidebar for navigation
+### 3. Authentication System
+**Email Signup**:
+```typescript
+// Sets account_type during signup (atomic operation)
+await signUpWithEmail(email, password, { pen_name, full_name, ip_owner_role, ... })
+```
 
-### DocsProtectedLayout
-Documentation routes require authentication but are accessible to all authenticated users (buyers and creators).
+**OAuth Signup** (Multi-Environment Support):
+```typescript
+// Explicit domain handling (src/lib/auth.ts:150-159)
+const isStaging = window.location.hostname === 'creator-staging.kstorybridge.com'
+const isProduction = window.location.hostname === 'creator.kstorybridge.com'
 
----
+const redirectUrl = isStaging
+  ? 'https://creator-staging.kstorybridge.com/auth/callback'
+  : isProduction
+  ? 'https://creator.kstorybridge.com/auth/callback'
+  : `${window.location.origin}/auth/callback`  // Localhost
 
-## Database Schema Guidelines
+// Sequential operations (no race conditions)
+1. Initiate OAuth with explicit redirect URL
+2. Google redirects back to correct domain
+3. Exchange code for session (check-then-fallback pattern)
+4. Create user_creators profile
+5. Set account_type='creator' metadata
+```
 
-### Account Types
-Standardized to `'buyer'` and `'creator'` only.
+**OAuth Signin** (Check-Then-Fallback Pattern):
+```typescript
+// src/pages/auth/AuthCallback.tsx:18-56
+// Check if automatic exchange succeeded first
+let { data: { session } } = await supabase.auth.getSession()
 
-- ✅ **Creator**: `account_type: 'creator'` → `/home`
-
-**Tables**:
-- `user_creators` - Creator profiles
-
-### Creator Profile Fields
-- `pen_name`: Pen name/studio field (REQUIRED)
-- `ip_owner_role`: REQUIRED (author | agent)
-- `invitation_status`: invited (default) | active | pending
-- `full_name`: Creator's full name
-- `ip_owner_company`: Optional company/studio name
-- `website_url`: Optional portfolio/website URL
-
-**Field Naming**: Always use snake_case matching database fields.
-
----
-
-## Page Access Controls
-
-### Creator-Only Access
-All routes except authentication and documentation are creator-only:
-- `/home` - Creator dashboard
-- `/titles` - My titles
-- `/titles/add` - Add title
-- `/titles/:titleId/edit` - Edit title
-- `/requests` - My requests
-- `/profile` - Creator profile
-- `/news` - News
-- `/send-message` - Send message
-
-### Shared Access (Documentation)
-Documentation routes accessible to all authenticated users:
-- `/docs/*` - All documentation routes
-
----
-
-## Design Guidelines
-
-> 🎨 **See [Root DESIGN_SYSTEM.md](../../docs/active/DESIGN_SYSTEM.md)** for complete design standards:
-> - Card/Box Standard (transparent backgrounds, no shadows)
-> - Button Standard (light grey hover)
-> - Typography (SF Pro default)
-> - Color Policy (no yellow colors)
-> - Hanok Teal Primary Color (#4C9C9B)
-
-**Standard Components**:
-- `StandardButton` (`@/components/StandardButton`)
-- `StandardCard` (`@/components/StandardCard`)
-
-**Design System Components** (`@/components/design-system`):
-- `Surface` - Replaces `<div>`, semantic layout primitive
-- `Stack` / `Inline` - Layout with automatic spacing
-- `EmptyState` - Standardized empty states
-
-**Reference**: Creator-specific design patterns use hanok-teal as primary accent color
+if (session) {
+  // Automatic exchange succeeded, use existing session
+} else {
+  // Fallback: Explicit exchange if automatic failed
+  const result = await supabase.auth.exchangeCodeForSession(code)
+  session = result.data.session
+}
+```
 
 ---
 
-## Development Notes
+## Design System
 
-### Creator App Separation Status
-**Current Phase**: Phase 1 Complete (8% of project)
-- ✅ App scaffolding and structure created
-- ✅ Package.json configured
-- ✅ Root scripts added
-- ✅ Buyer pages removed from creator app
-- ✅ App.tsx rewritten with creator-only routes
-- ✅ CMSSidebar simplified to creator menu only
+### Color Palette
+- **Primary Text**: `text-black`
+- **Neutrals**: `gray-50`, `gray-100`, `gray-200`, `gray-300`, `gray-500`, `gray-900`
+- **Status**: `red-*` (error), `green-*` (success), `blue-*` (info)
+- ❌ **NEVER**: Yellow colors (`bg-yellow-*`, yellow hex values)
 
-**Next Critical Phases**:
-- Phase 3: Cross-domain redirects (buyers → dashboard, creators → creator)
-- Phase 6: Infrastructure setup (Vercel project, DNS configuration)
-- Phase 7: OAuth configuration (add creator.kstorybridge.com callbacks)
+### Standard Components
+```tsx
+// Card
+<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+  <CardContent className="p-4 sm:p-6">...</CardContent>
+</Card>
 
-**See**: [Creator App Separation Project](../../docs/CREATOR_APP_QUICK_REFERENCE.md) for complete roadmap
+// Button
+<Button variant="outline" className="border-gray-300 hover:bg-gray-100">
+  Button Text
+</Button>
+```
 
-### Technical Configuration
-- TypeScript config relaxed (noImplicitAny: false, strictNullChecks: false)
-- ESLint: React + TypeScript, unused vars disabled
-- Uses SWC for fast compilation
-- Lovable-tagger plugin for dev mode tagging
-
-### Migration Notes
-- Currently shares Supabase project with dashboard app
-- Future: Will have separate OAuth callbacks at creator.kstorybridge.com
-- Cross-domain session sharing via Supabase auth
-- Shared database tables (`user_creators`, `titles`, etc.)
+**Reference**: Dashboard `/buyers/profile` page for visual standards
 
 ---
 
-## Quick Links
+## Deployment
 
-### Development
-- Creator App: http://localhost:8082
-- Dashboard App: http://localhost:8081
-- Website: http://localhost:5173
-- Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
+### Production
+- **URL**: https://creator.kstorybridge.com
+- **Platform**: Vercel
+- **Branch**: Deploy from `main` branch
+- **OAuth**: Configured for production callback URLs
 
-### Production (Planned)
-- Creator App: https://creator.kstorybridge.com (🚧 Not yet deployed)
-- Dashboard App: https://dashboard.kstorybridge.com
-- Website: https://kstorybridge.com
+### Staging
+- **URL**: https://creator-staging.kstorybridge.com
+- **Platform**: Vercel
+- **Branch**: Deploy from `v2` branch
+- **OAuth**: Configured for staging callback URLs
 
-### Documentation
-- [Root CLAUDE.md](../../CLAUDE.md) - Monorepo documentation
-- [Creator App Separation](../../docs/CREATOR_APP_QUICK_REFERENCE.md) - Migration status
-- [Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md) - Complete auth reference
-- [Design System](../../docs/active/DESIGN_SYSTEM.md) - UI/UX standards
-- [Database Schema](../../docs/active/DATABASE_SCHEMA.md) - Database reference
+### Multi-Environment OAuth Support
+All environments use **explicit domain detection** for OAuth redirects:
+- Production: `creator.kstorybridge.com/auth/callback`
+- Staging: `creator-staging.kstorybridge.com/auth/callback`
+- Localhost: `localhost:8083/auth/callback`
+
+**No environment variables needed** for redirect URLs - detection is automatic based on hostname.
+
+### Environment Variables (Vercel)
+```bash
+VITE_SUPABASE_URL=https://dlrnrgcoguxlkkcitlpd.supabase.co
+VITE_SUPABASE_ANON_KEY=[anon_key]
+```
+
+See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for complete instructions.
+See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for OAuth configuration details.
+
+---
+
+## Critical Rules
+
+### Authentication
+- ✅ **OAuth multi-environment**: Use explicit domain detection pattern (staging, production, localhost)
+- ✅ **Check-then-fallback**: Check automatic code exchange before explicit exchange (prevents 400 errors)
+- ✅ **account_type**: Set during signup in metadata, never default assignment
+- ✅ **Single auth listener**: One listener in AuthProvider, no competing listeners
+- ✅ **Sequential OAuth**: Exchange code → Create profile → Set metadata (never concurrent)
+
+### Database
+- ✅ **Query pattern**: `.eq('email', user.email.toLowerCase())` (always use `email`)
+- ❌ **Never use**: `user_id` field (doesn't exist in user tables)
+- ✅ **Migrations**: Create in root `/supabase/migrations/` (never app-specific)
+
+### Design System
+- ❌ **NEVER**: Yellow colors (`bg-yellow-*`, yellow hex values)
+- ✅ **Cards**: `bg-transparent border-gray-300 shadow-none rounded-2xl`
+- ✅ **Buttons**: `variant="outline" border-gray-300 hover:bg-gray-100`
+- ✅ **Font**: SF Pro (automatic, no class needed)
 
 ---
 
 ## Common Tasks
 
-### Adding a New Creator Page
-1. Create page component in `src/pages/[PageName].tsx`
-2. Add lazy import to `App.tsx`
-3. Add route wrapped in `<CreatorProtectedLayout>`
-4. Update CMSSidebar navigation if needed
+### Adding a New Page
+1. Create page in `src/pages/`
+2. Add route in `src/App.tsx`
+3. Add navigation link in `src/components/layout/CMSSidebar.tsx` (if needed)
+4. Wrap with `<ProtectedRoute>` if authentication required
 
-### Updating Creator Profile Fields
-1. Check `user_creators` table schema
-2. Update form in `Profile.tsx`
-3. Use snake_case field names matching database
-4. Always include `ip_owner_role` (REQUIRED field)
+### Updating Title Fields
+1. Check database schema: `/docs/active/DATABASE_SCHEMA.md`
+2. Update form in `src/pages/AddTitleSurvey.tsx` or `EditTitle.tsx`
+3. Update service in `src/services/titlesService.ts`
+4. Update TypeScript types if needed
 
-### Testing Authentication
-```bash
-# Start all 3 apps
-npm run dev:website   # Terminal 1
-npm run dev:dashboard # Terminal 2
-npm run dev:creator   # Terminal 3
-
-# Test creator signup flow
-1. Visit localhost:5173
-2. Click "Creator Signup"
-3. Should redirect to localhost:8082/signup (when cross-domain is implemented)
-4. After auth, should land at localhost:8082/home
-```
+### Testing OAuth Locally
+1. Add `http://localhost:8083/auth/callback` to:
+   - Google OAuth Console (Authorized redirect URIs)
+   - Supabase Auth Settings (Redirect URLs)
+2. Start dev server: `npm run dev`
+3. Test signup and signin flows
+4. Check browser console for errors
 
 ---
 
-**For complete design standards, see [Root DESIGN_SYSTEM.md](../../docs/active/DESIGN_SYSTEM.md)**
-**For auth flow details, see [Root AUTH_DOCUMENTATION.md](../../docs/active/AUTH_DOCUMENTATION.md)**
-**For migration status, see [Creator App Separation](../../docs/CREATOR_APP_QUICK_REFERENCE.md)**
+## Known Issues
+
+**None** - All major issues resolved:
+- ✅ OAuth signup/signin working perfectly
+- ✅ Title edit save bug fixed (2025-10-26)
+- ✅ Profile management working
+- ✅ All CRUD operations functional
+
+---
+
+## 🔗 Related Documentation
+
+### Root Documentation
+- [Root CLAUDE.md](../../CLAUDE.md) - Monorepo overview
+- [Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md)
+- [Database Schema](../../docs/active/DATABASE_SCHEMA.md)
+- [Design System](../../docs/active/DESIGN_SYSTEM.md)
+
+### Creator V2 Specific
+- [Creator V2 Rebuild Plan](../../docs/CREATOR_APP_V2_REBUILD_PLAN.md)
+- [Creator V2 PRD](../../docs/CREATOR_APP_V2_PRD.md)
+- [Deployment Guide](./DEPLOYMENT_GUIDE.md)
+- [OAuth Setup](./OAUTH_SETUP.md)
+
+### Legacy Reference
+- [Creator V1 CLAUDE.md](../creator-v1/CLAUDE.md) - Archived, reference only
+
+---
+
+**Last Updated**: 2025-10-28
+**Status**: ✅ PRODUCTION READY
+**Version**: 2.0.0

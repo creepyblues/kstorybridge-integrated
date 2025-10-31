@@ -264,7 +264,7 @@ Users must complete these fields to submit:
 ## File Structure
 
 ```
-apps/creator-v2/
+apps/creator/
 ├── src/
 │   ├── components/
 │   │   ├── ui/

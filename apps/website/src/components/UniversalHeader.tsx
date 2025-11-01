@@ -76,11 +76,11 @@ const UniversalHeader = () => {
             </button>
             
             {/* Auth Buttons */}
-            <Button 
+            <Button
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
-              onClick={() => window.location.href = `${getDashboardUrl()}/signin`}
+              onClick={() => navigate('/signin')}
             >
-              SIGN IN
+              GET STARTED
             </Button>
           </div>
           
@@ -161,14 +161,14 @@ const UniversalHeader = () => {
             
             {/* Auth Buttons - Full width on mobile */}
             <div className="pt-6 border-t border-gray-200 space-y-3">
-              <Button 
+              <Button
                 className="w-full border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-3 rounded-full font-medium transition-colors"
                 onClick={() => {
-                  window.location.href = `${getDashboardUrl()}/signin`;
+                  navigate('/signin');
                   setMobileMenuOpen(false);
                 }}
               >
-                SIGN IN
+                GET STARTED
               </Button>
             </div>
           </div>

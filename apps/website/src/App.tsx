@@ -20,6 +20,7 @@ const HomePagePreview3 = lazy(() => import("./pages/HomePagePreview3"));
 const BuyersOnboardingPage = lazy(() => import("./pages/BuyersOnboardingPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
+const SigninPage = lazy(() => import("./pages/SigninPage"));
 const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
 const SampleTitleDetailPage = lazy(() => import("./pages/SampleTitleDetailPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -55,6 +56,7 @@ const App = () => (
           <Route path="/buyers/onboarding" element={<BuyersOnboardingPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/signin" element={<SigninPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
           <Route path="/sample/werewolves-going-crazy-over-me" element={<SampleTitleDetailPage />} />

@@ -16,14 +16,10 @@ const SigninPage = () => {
           console.log('✅ SIGNIN: Email verification detected, determining account type');
           const { data: { session } } = await supabase.auth.getSession();
 
-          const accountType = session?.user?.user_metadata?.account_type;
           const suffix = '?verified=true';
 
-          if (accountType === 'creator') {
-            navigate(`/signin/creator${suffix}`, { replace: true });
-          } else {
-            navigate(`/signin/buyer${suffix}`, { replace: true });
-          }
+          // Always route to buyer signin after email verification
+          navigate(`/signin/buyer${suffix}`, { replace: true });
         } catch (error) {
           console.error('❌ SIGNIN: Failed to route after verification, defaulting to buyer signin', error);
           navigate('/signin/buyer?verified=true', { replace: true });

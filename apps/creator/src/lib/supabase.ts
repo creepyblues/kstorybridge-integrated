@@ -11,6 +11,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Must be explicit to ensure code_verifier persists across OAuth redirect
 const STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-auth-token-creator'
 
+// Enable debug mode in development
+const isDev = import.meta.env.DEV
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: localStorage,
@@ -19,5 +22,22 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
+    debug: isDev, // Enhanced logging in development
   },
 })
+
+// Enhanced OAuth callback logging
+if (typeof window !== 'undefined') {
+  const isCallback = window.location.pathname === '/auth/callback'
+  const hasCode = window.location.search.includes('code=')
+
+  if (isCallback && hasCode) {
+    console.log('🔐 OAuth Callback Debug Info:', {
+      pathname: window.location.pathname,
+      hasCode: hasCode,
+      storageKey: STORAGE_KEY,
+      storageContents: localStorage.getItem(STORAGE_KEY) ? 'Present' : 'Missing',
+      timestamp: new Date().toISOString()
+    })
+  }
+}

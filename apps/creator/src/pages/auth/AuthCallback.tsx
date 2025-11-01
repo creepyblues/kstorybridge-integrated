@@ -13,13 +13,24 @@ export default function AuthCallback() {
 
   const handleCallback = async () => {
     try {
-      console.log('🔐 OAuth callback: Processing...')
+      console.log('🔐 OAuth callback: Processing...', {
+        pathname: window.location.pathname,
+        hasCode: window.location.search.includes('code='),
+        timestamp: new Date().toISOString()
+      })
+
+      // Small delay to ensure automatic PKCE exchange completes
+      // This prevents racing with the automatic exchange triggered by detectSessionInUrl
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Check if session already exists from automatic code exchange (detectSessionInUrl: true)
       let { data: { session } } = await supabase.auth.getSession()
 
       if (session) {
-        console.log('✅ OAuth session found (automatic exchange):', session.user.email)
+        console.log('✅ OAuth session found (automatic exchange):', {
+          email: session.user.email,
+          provider: session.user.app_metadata?.provider
+        })
       } else {
         // If no session from automatic exchange, try explicit exchange as fallback
         const urlParams = new URLSearchParams(window.location.search)
@@ -32,7 +43,10 @@ export default function AuthCallback() {
           return
         }
 
-        console.log('🔄 No automatic session, attempting explicit code exchange...')
+        console.log('🔄 No automatic session, attempting explicit code exchange...', {
+          codeLength: code.length,
+          storageKey: 'sb-dlrnrgcoguxlkkcitlpd-auth-token-creator'
+        })
 
         const result = await supabase.auth.exchangeCodeForSession(code)
 

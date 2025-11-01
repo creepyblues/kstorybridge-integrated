@@ -105,9 +105,16 @@ export const completeOAuthProfile = async (
       console.log('🔄 Updating account_type metadata (BLOCKING - MANDATORY)...');
 
       try {
-        const { error: metadataError } = await supabase.auth.updateUser({
+        // Wrap metadata update with timeout to prevent infinite hangs
+        const metadataUpdatePromise = supabase.auth.updateUser({
           data: { account_type: 'buyer' }
         });
+
+        const timeoutPromise = new Promise<{ error: Error }>((_, reject) =>
+          setTimeout(() => reject(new Error('Metadata update timeout after 5 seconds')), 5000)
+        );
+
+        const { error: metadataError } = await Promise.race([metadataUpdatePromise, timeoutPromise]);
 
         if (metadataError) {
           console.error('❌ CRITICAL: Metadata update failed:', metadataError);
@@ -205,9 +212,16 @@ export const completeOAuthProfile = async (
       console.log('🔄 Updating account_type metadata (BLOCKING - MANDATORY)...');
 
       try {
-        const { error: metadataError } = await supabase.auth.updateUser({
+        // Wrap metadata update with timeout to prevent infinite hangs
+        const metadataUpdatePromise = supabase.auth.updateUser({
           data: { account_type: 'creator' }
         });
+
+        const timeoutPromise = new Promise<{ error: Error }>((_, reject) =>
+          setTimeout(() => reject(new Error('Metadata update timeout after 5 seconds')), 5000)
+        );
+
+        const { error: metadataError } = await Promise.race([metadataUpdatePromise, timeoutPromise]);
 
         if (metadataError) {
           console.error('❌ CRITICAL: Metadata update failed:', metadataError);

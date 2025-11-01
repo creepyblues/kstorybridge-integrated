@@ -24,13 +24,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('🎯 AuthProvider: Initializing')
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🎯 Initial session:', session ? 'Found' : 'None')
-      setSession(session)
-      setUser(session?.user ?? null)
+    // Skip initial getSession() during OAuth callback to avoid interfering with PKCE exchange
+    const isOAuthCallback = window.location.pathname === '/auth/callback' && window.location.search.includes('code=')
+
+    if (isOAuthCallback) {
+      console.log('🔄 OAuth callback detected - skipping initial getSession() to allow PKCE exchange')
+      // Auth state listener will catch the session after successful exchange
       setLoading(false)
-    })
+    } else {
+      // Get initial session for normal page loads
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        console.log('🎯 Initial session:', session ? 'Found' : 'None')
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      })
+    }
 
     // ✅ SINGLE AUTH LISTENER - This is the ONLY listener in the entire app
     // No competing listeners = No race conditions

@@ -150,7 +150,13 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
           console.log('🔄 Starting OAuth profile completion...');
 
           try {
-            const result = await completeOAuthProfile(accountType, buyerFormData, user, session);
+            // Wrap profile completion with timeout to prevent infinite hangs
+            const profilePromise = completeOAuthProfile(accountType, buyerFormData, user, session);
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Profile creation timeout - please try again')), 30000)
+            );
+
+            const result = await Promise.race([profilePromise, timeoutPromise]);
 
             if (!result.success) {
               console.error('❌ OAuth profile completion failed:', result.error);
@@ -245,7 +251,13 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
           console.log('🔄 Starting creator OAuth profile completion...');
 
           try {
-            const result = await completeOAuthProfile(accountType, creatorFormData, user, session);
+            // Wrap profile completion with timeout to prevent infinite hangs
+            const profilePromise = completeOAuthProfile(accountType, creatorFormData, user, session);
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Profile creation timeout - please try again')), 30000)
+            );
+
+            const result = await Promise.race([profilePromise, timeoutPromise]);
 
             if (!result.success) {
               console.error('❌ Creator OAuth profile completion failed:', result.error);
@@ -615,7 +627,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
               {state.isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                  Creating account...
+                  Creating account... (this may take 10-15 seconds)
                 </div>
               ) : (
                 isOAuthCompletion

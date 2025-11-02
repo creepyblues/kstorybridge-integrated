@@ -1,6 +1,6 @@
 # Git Deployment Structure - KStoryBridge
 
-**Last Updated**: 2025-10-22
+**Last Updated**: 2025-11-02
 **Repository**: https://github.com/creepyblues/kstorybridge-integrated
 
 ## Overview
@@ -752,15 +752,91 @@ cat .vercel/project.json
 
 ---
 
+## Turborepo Integration (ADDED 2025-11-02)
+
+### Overview
+
+The monorepo now uses **Turborepo** for intelligent build orchestration and selective deployments. This provides:
+
+- ✅ **~50x faster builds** with intelligent caching (4s → 80ms)
+- ✅ **Selective deployments** - Only build apps that changed
+- ✅ **Automatic dependency graph** - Packages build before apps
+- ✅ **Parallel builds** - Multiple apps build simultaneously
+- ✅ **Remote caching** - Share cache across team and CI/CD
+
+### Updated Vercel Configuration
+
+**All 5 Vercel projects now use `turbo-ignore`**:
+
+| Vercel Project | Old Ignored Build Step | New Ignored Build Step |
+|----------------|------------------------|------------------------|
+| dashboard-staging | (empty) | `npx turbo-ignore` |
+| creator-staging | (empty) | `npx turbo-ignore` |
+| kstorybridge-dashboard | Branch check script | `npx turbo-ignore` |
+| kstorybridge-creator | Branch check script | `npx turbo-ignore` |
+| kstorybridge-website | Branch check script | `npx turbo-ignore` |
+
+### How turbo-ignore Works
+
+**Selective Deployment Logic**:
+
+```
+turbo-ignore checks:
+1. App code changes (apps/dashboard/, apps/creator/, apps/website/)
+2. Shared package changes (packages/* that the app depends on)
+3. Root config changes (turbo.json, package.json)
+
+Result:
+- Changed: exit 1 (proceed with build)
+- Unchanged: exit 0 (skip build)
+```
+
+**Example Scenarios**:
+
+| Change | Dashboard Deploys? | Creator Deploys? | Website Deploys? |
+|--------|-------------------|------------------|------------------|
+| `apps/dashboard/src/pages/Home.tsx` | ✅ Yes | ❌ No | ❌ No |
+| `apps/creator/src/components/TitleCard.tsx` | ❌ No | ✅ Yes | ❌ No |
+| `packages/auth/src/index.ts` | ✅ Yes | ❌ No | ✅ Yes |
+| `turbo.json` (root) | ✅ Yes | ✅ Yes | ✅ Yes |
+
+**Why Creator is Special**:
+- Creator app has **no shared package dependencies**
+- Only deploys when `apps/creator/` or root configs change
+- Dashboard and Website share `@kstorybridge/auth` and `@kstorybridge/ui`
+
+### Configuration Files
+
+**Root-level**:
+- `/turbo.json` - Pipeline configuration, task definitions, caching rules
+- `/package.json` - Updated scripts to use `turbo run` commands
+
+**App-level**:
+- `/apps/dashboard/turbo.json` - Extends root config
+- `/apps/creator/turbo.json` - Extends root config
+- `/apps/website/turbo.json` - Extends root config
+
+### Complete Setup Guide
+
+See **[TURBOREPO_VERCEL_SETUP.md](./TURBOREPO_VERCEL_SETUP.md)** for:
+- Step-by-step Vercel configuration
+- Testing procedures
+- Troubleshooting guide
+- Remote cache setup
+
+---
+
 ## Summary
 
-### Current State (2025-10-22)
+### Current State (2025-11-02)
 
 ✅ **Configured**:
 - Git repository: `kstorybridge-integrated`
 - Two-branch strategy: `v2` (staging) + `main` (production)
-- Four Vercel projects: 1 staging + 3 production
-- Ignored Build Step prevents duplicate builds
+- Five Vercel projects: 2 staging + 3 production
+- **Turborepo** for build orchestration and selective deployments
+- `turbo-ignore` in all Vercel projects for intelligent build skipping
+- Intelligent caching (~50x faster builds)
 - Vercel.json rewrite rules prevent module errors
 - Supabase OAuth callbacks configured for all domains
 
@@ -776,6 +852,6 @@ cat .vercel/project.json
 
 ---
 
-**Last Reviewed**: 2025-10-22
+**Last Reviewed**: 2025-11-02
 **Maintainer**: Development Team
 **Status**: ✅ Production-ready documentation

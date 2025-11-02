@@ -85,7 +85,7 @@ npx supabase secrets set STRIPE_PRICE_ID_PRO=price_xxxxx_pro
 npx supabase secrets set STRIPE_PRICE_ID_SUITE=price_xxxxx_suite
 
 # Set dashboard URL (for callbacks)
-npx supabase secrets set DASHBOARD_URL=http://localhost:8086
+npx supabase secrets set DASHBOARD_URL=http://localhost:8085
 
 # List secrets to verify
 npx supabase secrets list

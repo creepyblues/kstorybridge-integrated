@@ -8,7 +8,7 @@
 ## ✅ What's Already Done
 
 - [x] All Supabase credentials copied from dashboard app
-- [x] `.env.local` created with correct port (8086)
+- [x] `.env.local` created with correct port (8085)
 - [x] OAuth redirect URL configured for localhost
 - [x] Edge functions created (create-checkout-session, stripe-webhook)
 - [x] Complete codebase implemented (Phases 1-5)
@@ -65,7 +65,7 @@ npx supabase secrets set STRIPE_PRICE_ID_PRO=price_YOUR_PRO_ID
 npx supabase secrets set STRIPE_PRICE_ID_SUITE=price_YOUR_SUITE_ID
 
 # Set dashboard URL
-npx supabase secrets set DASHBOARD_URL=http://localhost:8086
+npx supabase secrets set DASHBOARD_URL=http://localhost:8085
 
 # Verify secrets were set
 npx supabase secrets list
@@ -76,7 +76,7 @@ npx supabase secrets list
 STRIPE_SECRET_KEY: sk_test_*** (hidden)
 STRIPE_PRICE_ID_PRO: price_***
 STRIPE_PRICE_ID_SUITE: price_***
-DASHBOARD_URL: http://localhost:8086
+DASHBOARD_URL: http://localhost:8085
 ```
 
 ---
@@ -129,11 +129,11 @@ npx supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_YOUR_SECRET_HERE
 # Start dev server
 npm run dev
 
-# Server should start on http://localhost:8086
+# Server should start on http://localhost:8085
 ```
 
 **Test Flow**:
-1. Navigate to http://localhost:8086/signin
+1. Navigate to http://localhost:8085/signin
 2. Sign in with test account
 3. Go to `/buyers/plan`
 4. Click "Upgrade to Pro"
@@ -250,7 +250,7 @@ After completing all steps, verify:
   3. Verify webhook secret is correct
 
 **Issue**: OAuth fails on localhost
-- **Solution**: Make sure `VITE_OAUTH_REDIRECT_URL=http://localhost:8086/auth/callback` in `.env.local`
+- **Solution**: Make sure `VITE_OAUTH_REDIRECT_URL=http://localhost:8085/auth/callback` in `.env.local`
 
 ---
 

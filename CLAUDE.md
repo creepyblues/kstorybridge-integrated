@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-10-29
+**Last Updated**: 2025-11-02
 
 ## 🔄 Development Workflow (UPDATED 2025-10-21)
 
@@ -51,6 +51,7 @@ git checkout v2                         # Default development branch
 - **[TESTING_GUIDE.md](docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures
 
 ### Setup Guides (`docs/guides/`)
+- **[TURBOREPO_VERCEL_SETUP.md](docs/guides/TURBOREPO_VERCEL_SETUP.md)** - Turborepo + Vercel selective deployment guide
 - **[GIT_DEPLOYMENT_STRUCTURE.md](docs/guides/GIT_DEPLOYMENT_STRUCTURE.md)** - Complete Git deployment configuration reference
 - **[DEPLOYMENT_STRATEGY.md](docs/guides/DEPLOYMENT_STRATEGY.md)** - Deployment architecture and branch strategy
 - **[DEPLOYMENT_INSTRUCTIONS.md](docs/guides/DEPLOYMENT_INSTRUCTIONS.md)** - Vercel deployment procedures
@@ -61,15 +62,33 @@ git checkout v2                         # Default development branch
 
 ## 🚀 Quick Start Commands
 
-### Root Level
+### Root Level (Turborepo)
+
+**Development**:
 ```bash
-npm run dev:dashboard     # http://localhost:8081 (Buyer dashboard)
-npm run dev:creator       # http://localhost:8083 (Creator dashboard)
-npm run dev:website       # http://localhost:5173 (Marketing site)
-npm run build:all         # Build all apps
-npm run lint:all          # Lint all apps
+npm run dev               # Start all apps in parallel
+npm run dev:dashboard     # http://localhost:8081 (Buyer dashboard only)
+npm run dev:creator       # http://localhost:8083 (Creator dashboard only)
+npm run dev:website       # http://localhost:5173 (Marketing site only)
+```
+
+**Building** (with intelligent caching):
+```bash
+npm run build             # Build all apps (with dependency graph)
+npm run build:dashboard   # Build dashboard only
+npm run build:creator     # Build creator only
+npm run build:website     # Build website only
+npm run build:packages    # Build shared packages only
+```
+
+**Other**:
+```bash
+npm run lint              # Lint all apps
+npm run test              # Run tests in all apps
 npm install               # Install dependencies
 ```
+
+**Performance**: Turborepo provides ~50x faster cached builds. Second builds complete in ~80ms vs 4+ seconds.
 
 ### Individual Apps (from `apps/{app}/`)
 ```bash
@@ -102,6 +121,35 @@ npm run preview           # Preview production build
 - **State**: TanStack Query + React Context
 - **Routing**: React Router v6
 - **Forms**: React Hook Form + Zod
+- **Build System**: Turborepo (monorepo orchestration, caching, selective deployments)
+
+### Turborepo Build System (ADDED 2025-11-02)
+
+**What is Turborepo?**
+Turborepo is a high-performance build system for JavaScript/TypeScript monorepos. It provides:
+
+- ✅ **Intelligent caching** - ~50x faster builds (4s → 80ms)
+- ✅ **Dependency graph** - Builds packages before apps automatically
+- ✅ **Parallel execution** - Multiple apps build simultaneously
+- ✅ **Selective deployments** - Only build apps that changed (via `turbo-ignore`)
+- ✅ **Remote caching** - Share cache across team and CI/CD
+
+**Configuration Files**:
+- `/turbo.json` - Root pipeline configuration
+- `/apps/{app}/turbo.json` - App-specific overrides (for turbo-ignore)
+- `/package.json` - Scripts use `turbo run` commands
+
+**Common Commands**:
+```bash
+npm run build              # Build all apps with caching
+npm run build:creator      # Build specific app
+turbo run build --dry-run  # Preview what will build
+```
+
+**Vercel Integration**:
+All 5 Vercel projects use `npx turbo-ignore` to skip builds when apps haven't changed.
+
+**See**: [TURBOREPO_VERCEL_SETUP.md](docs/guides/TURBOREPO_VERCEL_SETUP.md) for complete setup guide.
 
 ### Database & Backend
 - Single Supabase project shared across all apps

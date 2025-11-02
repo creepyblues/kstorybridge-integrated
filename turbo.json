@@ -1,0 +1,53 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "build/**", ".next/**", "storybook-static/**"],
+      "env": [
+        "VITE_SUPABASE_URL",
+        "VITE_SUPABASE_ANON_KEY",
+        "VITE_DASHBOARD_URL",
+        "VITE_WEBSITE_URL",
+        "VITE_CREATOR_URL",
+        "VITE_STRIPE_PUBLISHABLE_KEY",
+        "VITE_OPENAI_API_KEY",
+        "NODE_ENV"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "cache": false
+    },
+    "clean": {
+      "cache": false
+    }
+  },
+  "remoteCache": {
+    "enabled": true
+  }
+}

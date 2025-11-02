@@ -2,7 +2,7 @@
 
 **App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. Contains authentication pages for both buyers and creators (creator auth will migrate to creator app in future).
 
-**Last Updated**: 2025-10-29
+**Last Updated**: 2025-11-02
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -28,13 +28,19 @@ Large sections have been extracted to separate files for better organization:
 
 ## Development Commands
 
+**From app directory** (`apps/dashboard/`):
 - `npm run dev` - Start development server on port 8081
 - `npm run build` - Build for production
 - `npm run build:dev` - Development build
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 
-**Note**: This app runs on port **8081**. Creator app runs on port 8082, website on 5173.
+**From root** (with Turborepo, ~50x faster cached builds):
+- `npm run dev:dashboard` - Start dashboard only (port 8081)
+- `npm run build:dashboard` - Build dashboard with intelligent caching
+- `npm run build` - Build all apps (if dashboard dependencies changed)
+
+**Note**: This app runs on port **8081**. Creator app runs on 8083, website on 5173.
 
 ---
 

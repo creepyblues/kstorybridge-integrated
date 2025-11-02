@@ -55,7 +55,7 @@ serve(async (req) => {
     const stripeCheckoutUrl = 'https://api.stripe.com/v1/checkout/sessions';
 
     // Get callback URLs from environment or use defaults
-    const baseUrl = Deno.env.get('DASHBOARD_URL') || 'http://localhost:8086';
+    const baseUrl = Deno.env.get('DASHBOARD_URL') || 'http://localhost:8085';
     const successUrl = `${baseUrl}/buyers/checkout/success?tier=${tier}&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${baseUrl}/buyers/checkout/cancel`;
 

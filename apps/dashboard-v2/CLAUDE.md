@@ -1,0 +1,412 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+**Last Updated**: 2025-11-02
+
+---
+
+## 📁 Project Overview
+
+**Dashboard V2** is a clean rebuild of the buyer-focused dashboard for KStoryBridge, featuring:
+- AI chatbot (Jinu) with GPT-4 + vector search
+- Tier system (basic/pro/suite) with content gating
+- Title discovery with search, filters, and favorites
+- Stripe subscription integration
+- Admin panel for title management
+
+**Port**: 8085 (development)
+**Production URL**: https://dashboard-v2.kstorybridge.com (TBD)
+
+This is part of a monorepo with separate creator and website apps, all sharing the same Supabase database (`dlrnrgcoguxlkkcitlpd`).
+
+---
+
+## 🚀 Development Commands
+
+### From this directory (`apps/dashboard-v2/`)
+```bash
+npm install                # Install dependencies
+npm run dev                # Start dev server (port 8085)
+npm run build              # Production build
+npm run build:dev          # Development build
+npm run lint               # Run ESLint
+npm run preview            # Preview production build
+```
+
+### From project root (`/Users/sungholee/code/kstorybridge/`)
+```bash
+npm run dev:dashboard-v2   # Alternative way to start dev server
+npm run build:all          # Build all apps in monorepo
+npm run lint:all           # Lint all apps
+```
+
+---
+
+## 🏗️ Architecture
+
+### Technology Stack
+- **Frontend**: React 18 + TypeScript (strict mode) + Vite
+- **Styling**: Tailwind CSS + shadcn/ui + Radix UI
+- **Backend**: Supabase (shared project: `dlrnrgcoguxlkkcitlpd`)
+- **State**: TanStack Query + React Context (TierContext)
+- **Routing**: React Router v6
+- **Forms**: React Hook Form + Zod validation
+- **Payments**: Stripe (test/live mode)
+
+### Project Structure
+```
+apps/dashboard-v2/
+├── src/
+│   ├── components/
+│   │   ├── chat/              # ChatMessage, ChatInput, ChatEmptyState, TitleCard
+│   │   ├── tier/              # ProBadge, TierGatedContent
+│   │   ├── layout/            # BuyerLayout, AdminLayout, BuyerSidebar
+│   │   ├── ui/                # shadcn/ui base components
+│   │   └── ProtectedRoute.tsx # Auth guard component
+│   ├── contexts/
+│   │   └── TierContext.tsx    # Tier access control (basic/pro/suite)
+│   ├── hooks/
+│   │   ├── useAuth.tsx        # Auth context & hook
+│   │   └── use-toast.tsx      # Toast notifications
+│   ├── lib/
+│   │   ├── supabase.ts        # Supabase client initialization
+│   │   └── auth.ts            # Auth service (~350 lines)
+│   ├── pages/
+│   │   ├── auth/              # SignIn, SignUp, AuthCallback, CompleteProfile
+│   │   ├── buyers/            # Chat, Titles, TitleDetail, Saved, Profile, Plan, Checkout
+│   │   └── admin/             # AdminTitles
+│   ├── services/
+│   │   ├── chatOrchestratorService.ts  # AI chatbot wrapper
+│   │   └── titlesService.ts            # Title CRUD operations
+│   ├── App.tsx                # Main router with all routes
+│   └── main.tsx               # React entry point
+├── supabase/functions/
+│   ├── create-checkout-session/   # Stripe checkout edge function
+│   └── stripe-webhook/             # Stripe webhook handler
+├── .env.local                 # Local environment variables
+├── package.json               # Dependencies (port 8085)
+├── vite.config.ts             # Vite config with @ path alias
+└── README.md                  # Detailed documentation
+```
+
+### Path Aliases
+- `@/*` → `./src/*` (configured in `tsconfig.json` and `vite.config.ts`)
+- Example: `import { supabase } from '@/lib/supabase'`
+
+---
+
+## 🔑 Core Patterns
+
+### Authentication System
+
+**Key Principles**:
+- ✅ **Query by email, never by user_id**: Database tables don't have `user_id` field
+- ✅ **Profile existence = valid account**: No auto-profile creation
+- ✅ **Sequential operations**: No race conditions in signup flow
+- ✅ **Single auth listener**: Prevents competing listeners
+- ✅ **OAuth uses URL parameters**: Not state parameter (`?account_type=buyer&flow=signup`)
+- ✅ **Work email only**: Blocks personal domains (Gmail, Yahoo, etc.)
+
+**Code Location**: `src/lib/auth.ts` (~350 lines of clean auth code)
+
+**Auth Flow**:
+1. User signs up → Email validation
+2. Edge function creates profile (bypasses RLS)
+3. Session created → Redirect to `/buyers/chat`
+4. `AuthProvider` wraps app → `useAuth()` hook available everywhere
+
+**Example**:
+```typescript
+import { useAuth } from '@/hooks/useAuth';
+
+const { user, profile, loading, signOut } = useAuth();
+
+// Query pattern (CORRECT)
+const { data } = await supabase
+  .from('user_buyers')
+  .select('*')
+  .eq('email', user.email?.toLowerCase())
+  .single();
+
+// NEVER use .eq('user_id', user.id) - field doesn't exist
+```
+
+### Tier System
+
+**Tier Hierarchy**: invited(0) < basic(1) < pro(2) < suite(3)
+
+**Implementation**:
+- `TierContext.tsx` provides `hasAccess(requiredTier)` function
+- Single database query on mount (cached in context)
+- Automatic tier display with `ProBadge` component
+- Tier-gated content with `TierGatedContent` wrapper
+
+**Example**:
+```typescript
+import { useTierAccess } from '@/hooks/useTierAccess';
+
+const { hasAccess, tier } = useTierAccess();
+
+if (!hasAccess('pro')) {
+  return <TierGatedContent requiredTier="pro">
+    <PitchDeckContent />
+  </TierGatedContent>;
+}
+```
+
+### Database Queries
+
+**Always query by email**:
+```typescript
+// ✅ CORRECT
+.eq('email', user.email?.toLowerCase())
+
+// ❌ WRONG
+.eq('user_id', user.id)
+```
+
+**Tables Used**:
+- `user_buyers` - Buyer profiles with tier (basic/pro/suite)
+- `titles` - Content metadata (shared with creator app)
+- `user_favorites` - Saved titles (future feature)
+- `chat_history` - AI chatbot conversations (future feature)
+
+---
+
+## 🧩 Key Features
+
+### AI Chatbot (Jinu)
+- **Location**: `src/pages/buyers/Chat.tsx`
+- **Service**: `src/services/chatOrchestratorService.ts`
+- **Edge Function**: `supabase/functions/chat-orchestrator/` (deployed separately)
+- **Components**: ChatMessage, ChatInput, ChatEmptyState, TitleCard
+- **Features**: GPT-4 + vector search, conversation history, suggested queries
+
+### Title Discovery
+- **Browse**: `src/pages/buyers/Titles.tsx` - Search, filter by genre/format
+- **Detail**: `src/pages/buyers/TitleDetail.tsx` - Full metadata with tier-gated pitch
+- **Saved**: `src/pages/buyers/Saved.tsx` - Favorites management
+- **Service**: `src/services/titlesService.ts` - Complete CRUD operations
+
+### Subscriptions (Stripe)
+- **Plan Selection**: `src/pages/buyers/Plan.tsx` - Tier comparison
+- **Checkout**: `src/pages/buyers/Checkout.tsx` - Stripe integration
+- **Edge Functions**:
+  - `create-checkout-session` - Creates Stripe Checkout session
+  - `stripe-webhook` - Handles subscription events (tier updates)
+- **Guide**: `STRIPE_SETUP_GUIDE.md` - Complete Stripe setup instructions
+
+### Admin Panel
+- **Layout**: `src/components/layout/AdminLayout.tsx` - Sidebar navigation
+- **Titles**: `src/pages/admin/AdminTitles.tsx` - Title management table
+
+---
+
+## 🎨 Design System
+
+### Colors
+- **Primary Text**: `text-black`
+- **Neutrals**: `gray-50`, `gray-100`, `gray-200`, `gray-300`, `gray-500`, `gray-900`
+- **Tier Colors**: `hanok-teal` (#4C9C9B), `pro-purple` (#AF52DE)
+- **Status**: `red-*` (error), `green-*` (success), `blue-*` (info)
+- ❌ **NEVER use yellow** (except Suite tier badge gradient)
+
+### Standard Components
+```tsx
+// Card
+<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+  <CardContent className="p-4 sm:p-6">...</CardContent>
+</Card>
+
+// Button
+<Button variant="outline" className="border-gray-300 hover:bg-gray-100">
+  Button Text
+</Button>
+
+// Tier Badge
+<ProBadge tier="pro" size="md" />
+```
+
+### Typography
+- **Font**: SF Pro (system default, no class needed)
+- **Headings**: `font-bold text-black`
+- **Body**: `text-gray-600` or `text-gray-700`
+
+**Reference Page**: `/buyers/profile` page demonstrates all design standards
+
+---
+
+## 🧪 Testing
+
+### Local Testing
+1. Start dev server: `npm run dev`
+2. Visit: http://localhost:8085
+3. Test auth flows: `/signup`, `/signin`, OAuth
+4. Test buyer features: `/buyers/chat`, `/buyers/titles`, `/buyers/profile`
+5. Test admin panel: `/admin/titles`
+
+### Build Verification
+```bash
+npm run build        # Should complete with 0 errors
+npm run lint         # Should pass with 0 warnings
+npm run preview      # Test production build locally
+```
+
+### Test Cards (Stripe Test Mode)
+- **Success**: 4242 4242 4242 4242
+- **Declined**: 4000 0000 0000 9995
+- **Requires Auth**: 4000 0000 0000 0341
+
+---
+
+## 🔧 Environment Setup
+
+### Required Environment Variables (`.env.local`)
+```bash
+# Supabase (shared project)
+VITE_SUPABASE_URL=https://dlrnrgcoguxlkkcitlpd.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Dashboard URL
+VITE_DASHBOARD_URL=http://localhost:8085
+
+# OAuth Testing (Development)
+VITE_OAUTH_REDIRECT_URL=http://localhost:8085/auth/callback
+VITE_OAUTH_TESTING=true
+
+# Auth Debug Mode (Development)
+VITE_AUTH_DEBUG=true
+
+# Stripe (Test Mode)
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_KEY_HERE
+```
+
+### Edge Function Secrets
+Set via Supabase CLI:
+```bash
+npx supabase secrets set STRIPE_SECRET_KEY=sk_test_...
+npx supabase secrets set STRIPE_PRICE_ID_PRO=price_...
+npx supabase secrets set STRIPE_PRICE_ID_SUITE=price_...
+npx supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...
+npx supabase secrets set DASHBOARD_URL=http://localhost:8085
+```
+
+**See**: `STRIPE_SETUP_GUIDE.md` for complete Stripe configuration
+
+---
+
+## 🚨 Critical Rules
+
+### Security
+- ❌ **NEVER commit**: `.env.local`, API keys, service role keys
+- ✅ **Use**: Vercel for frontend env vars, Supabase CLI for edge function secrets
+- ❌ **NEVER use**: Parameters in OAuth callback URL (use URL search params)
+
+### Database
+- ✅ **Query pattern**: `.eq('email', user.email?.toLowerCase())`
+- ❌ **Never use**: `user_id` field (doesn't exist in user tables)
+- ✅ **Always**: Fail clean with clear error messages (no mock data fallback)
+
+### Design
+- ❌ **NEVER**: Yellow colors in UI (except Suite tier badge)
+- ✅ **Cards**: `bg-transparent border-gray-300 shadow-none rounded-2xl`
+- ✅ **Buttons**: `variant="outline" border-gray-300 hover:bg-gray-100`
+
+### Field Naming
+- ✅ **Always**: Use snake_case matching database (e.g., `full_name`, `buyer_company`)
+- ❌ **Never**: Convert to camelCase in forms (causes submission failures)
+
+---
+
+## 📊 User Flows
+
+### Buyer Signup
+1. Visit `/signup` → Enter email/password, company, role
+2. Work email validation → Profile created via edge function
+3. Redirect to `/buyers/chat` → Welcome to dashboard
+
+### OAuth Signup
+1. Click "Sign in with Google" → OAuth consent
+2. Callback to `/auth/callback?account_type=buyer&flow=signup`
+3. If new user → `/signup/complete` → Fill profile
+4. Edge function creates profile → Redirect to `/buyers/chat`
+
+### Title Discovery
+1. Browse at `/buyers/titles` → Search/filter
+2. Click title → `/buyers/titles/:id` → View details
+3. Click heart → Save to favorites
+4. View saved at `/buyers/saved`
+
+### Tier Upgrade
+1. View profile at `/buyers/profile` → Click "Upgrade to Pro"
+2. Navigate to `/buyers/plan` → Compare tiers
+3. Select tier → `/buyers/checkout` → Stripe Checkout
+4. Complete payment → Webhook updates tier
+5. Return to app → Pro features unlocked
+
+---
+
+## 🔗 Related Documentation
+
+- **[README.md](./README.md)** - Complete project documentation
+- **[PHASES_1-4_COMPLETE.md](./PHASES_1-4_COMPLETE.md)** - Development history
+- **[STRIPE_SETUP_GUIDE.md](./STRIPE_SETUP_GUIDE.md)** - Stripe integration guide
+- **[Root CLAUDE.md](../../CLAUDE.md)** - Monorepo documentation
+- **[Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md)** - System-wide auth reference
+- **[Database Schema](../../docs/active/DATABASE_SCHEMA.md)** - Complete schema
+
+---
+
+## 💡 Development Tips
+
+### Why V2 Exists
+V1 (apps/dashboard) had 279 files with mixed buyer/creator logic, complex fallbacks, and tight coupling. V2 is a clean rebuild with 82% fewer files (~50 total), buyer-only focus, and simpler patterns.
+
+### Shared Supabase Database
+All apps (dashboard-v2, creator-v2, website) share the same Supabase project. This means:
+- Database migrations affect all apps
+- Edge functions are shared
+- No data migration needed between apps
+
+### File Count Philosophy
+This app intentionally minimizes files by:
+- Colocating related components
+- Using services for shared logic
+- Avoiding premature abstraction
+- Keeping auth code in one place (~350 lines in `auth.ts`)
+
+### When to Add New Files
+Only create new files when:
+- A component is reused in 3+ places
+- A utility is shared across multiple features
+- A service encapsulates complex external logic (like Stripe)
+- Avoid creating files "just in case"
+
+---
+
+## 🐛 Common Issues
+
+### OAuth Hangs or Times Out
+- **Issue**: OAuth signup hangs in production
+- **Solution**: Edge function architecture (100% success rate)
+- **See**: `AUTH_DOCUMENTATION.md` - "OAuth signup hangs" section
+
+### Tier Not Updating After Payment
+- **Issue**: Stripe webhook fired but tier unchanged
+- **Check**:
+  1. Webhook endpoint URL is correct
+  2. Webhook secret is set in edge function
+  3. View edge function logs: `npx supabase functions logs stripe-webhook`
+  4. Verify RLS policies allow service role to update
+
+### Build Fails with Type Errors
+- **Issue**: TypeScript errors in strict mode
+- **Solution**: Fix type errors (no `any` types allowed)
+- **Run**: `npm run build` to see all errors at once
+
+---
+
+**Last Updated**: 2025-11-02
+**Version**: 2.0
+**Status**: ✅ Production Ready (Phases 1-5 Complete)

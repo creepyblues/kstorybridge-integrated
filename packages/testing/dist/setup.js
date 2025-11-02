@@ -1,5 +1,6 @@
 // Jest/Vitest setup file for all tests
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 // Mock window.matchMedia for tests that use responsive components
 Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -21,19 +22,19 @@ class MockIntersectionObserver {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: jest.fn()
+            value: vi.fn()
         });
         Object.defineProperty(this, "disconnect", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: jest.fn()
+            value: vi.fn()
         });
         Object.defineProperty(this, "unobserve", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: jest.fn()
+            value: vi.fn()
         });
     }
 }
@@ -49,19 +50,19 @@ class MockResizeObserver {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: jest.fn()
+            value: vi.fn()
         });
         Object.defineProperty(this, "disconnect", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: jest.fn()
+            value: vi.fn()
         });
         Object.defineProperty(this, "unobserve", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: jest.fn()
+            value: vi.fn()
         });
     }
 }

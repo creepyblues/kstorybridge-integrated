@@ -15,7 +15,7 @@ export function TitleEditModal({ title, onSave, onClose }: TitleEditModalProps) 
   const [formData, setFormData] = useState({
     title_name_en: title.title_name_en || '',
     title_name_kr: title.title_name_kr || '',
-    description: title.description || '',
+    synopsis: title.synopsis || '',
     genre: title.genre || '',
     content_format: title.content_format || '',
   });
@@ -78,17 +78,17 @@ export function TitleEditModal({ title, onSave, onClose }: TitleEditModalProps) 
               />
             </div>
 
-            {/* Description */}
+            {/* Synopsis */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
+                Synopsis
               </label>
               <textarea
-                value={formData.description}
+                value={formData.synopsis}
                 onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+                  setFormData({ ...formData, synopsis: e.target.value })
                 }
-                placeholder="Enter description"
+                placeholder="Enter synopsis"
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />

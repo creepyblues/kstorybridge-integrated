@@ -131,11 +131,17 @@ git push origin v2
 
 # 3. Test on staging.kstorybridge.com
 
-# 4. When stable, merge to production
-git checkout main
-git merge v2
-git push origin main
+# 4. When stable, create pull request for production
+# Option A: GitHub CLI
+gh pr create --base main --head v2 --title "Deploy v2 to production"
+
+# Option B: GitHub Web UI
+# - Go to GitHub repository
+# - Create pull request: v2 → main
+# - Get approval and merge
 ```
+
+**Note**: The `main` branch has protection enabled and requires pull requests. Direct pushes are blocked.
 
 **See**: [docs/guides/GIT_DEPLOYMENT_STRUCTURE.md](docs/guides/GIT_DEPLOYMENT_STRUCTURE.md) for complete deployment guide.
 

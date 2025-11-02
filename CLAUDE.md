@@ -2,22 +2,35 @@
 
 **Last Updated**: 2025-11-02
 
-## 🔄 Development Workflow (UPDATED 2025-10-21)
+## 🔄 Development Workflow (UPDATED 2025-11-02)
 
 **Git Branch Strategy**:
 - **`v2` branch**: Staging/development branch (deploy to staging environment)
 - **`main` branch**: Production branch (deploy to production only when stable)
+- **Branch Protection**: `main` branch requires pull requests (direct pushes blocked)
 
 **Workflow**:
 1. Work on `v2` branch for all development
 2. Test changes in staging environment (dashboard-staging-*.vercel.app)
-3. When stable, merge `v2` → `main` for production deployment
-4. Never commit directly to `main` (except for hotfixes)
+3. When stable, create pull request from `v2` → `main` for production deployment
+4. Get PR approval and merge via GitHub (direct commits to `main` are blocked)
 
 **Local Setup**:
 ```bash
 cd /Users/sungholee/code/kstorybridge  # Primary working directory
 git checkout v2                         # Default development branch
+```
+
+**Creating Pull Request for Production**:
+```bash
+# Option 1: GitHub CLI (if installed)
+gh pr create --base main --head v2 --title "Deploy v2 to production"
+
+# Option 2: GitHub Web UI
+# 1. Go to https://github.com/creepyblues/kstorybridge-integrated
+# 2. Click "Pull requests" → "New pull request"
+# 3. Set base: main, compare: v2
+# 4. Review changes, create PR, get approval, and merge
 ```
 
 **Archive Directories** (for reference only):

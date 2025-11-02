@@ -41,15 +41,15 @@ Development Cycle:
 1. Work on v2 branch (primary working branch)
 2. Push to v2 → Auto-deploy to staging environments
 3. Test on staging.kstorybridge.com (dashboard V1) and creator-staging.kstorybridge.com (creator-v2)
-4. When stable: Merge v2 → main
-5. Push to main → Auto-deploy to production
+4. When stable: Create pull request v2 → main
+5. Get PR approval and merge → Auto-deploy to production
 ```
 
 ### Critical Rules
 - ✅ **Always develop on `v2` branch**
-- ✅ **Test on staging before merging to main**
-- ✅ **Merge v2 → main only when staging is stable**
-- ❌ **Never commit directly to main** (except hotfixes)
+- ✅ **Test on staging before creating PR to main**
+- ✅ **Create PR v2 → main only when staging is stable**
+- ❌ **Never push directly to main** (branch protection enabled - PRs required)
 - ❌ **Never force push to main**
 
 ---
@@ -300,37 +300,41 @@ git push origin v2
 
 ---
 
-### 3. Merging to Production (main)
+### 3. Deploying to Production (main)
 
 **Only proceed if staging tests pass 100%**
 
+**⚠️ Note**: The `main` branch has protection enabled. Direct pushes are blocked - you must use pull requests.
+
 ```bash
-# Switch to main branch
-git checkout main
+# Option 1: GitHub CLI (Recommended)
+gh pr create --base main --head v2 \
+  --title "Deploy v2 to production" \
+  --body "Staging tests passed. Ready for production deployment."
 
-# Pull latest changes (in case of team updates)
-git pull origin main
+# Review the PR URL provided
+# Get approval (if required by team settings)
+# Merge via GitHub UI or CLI: gh pr merge <pr-number>
 
-# Merge v2 into main
-git merge v2
-
-# Review changes
-git log --oneline -5
-
-# Push to production
-git push origin main
+# Option 2: GitHub Web UI
+# 1. Go to https://github.com/creepyblues/kstorybridge-integrated
+# 2. Click "Pull requests" → "New pull request"
+# 3. Base: main, Compare: v2
+# 4. Review changes, create PR
+# 5. Get approval (if required)
+# 6. Merge pull request
 ```
 
-**What Happens**:
-1. GitHub receives push to `main` branch
+**What Happens After PR Merge**:
+1. GitHub merges PR to `main` branch
 2. Vercel webhook triggered for all 5 projects
 3. **dashboard-staging**: Skips build (production branch = v2)
 4. **creator-staging**: Skips build (production branch = v2)
-5. **kstorybridge-dashboard**: Builds and deploys
-6. **kstorybridge-creator**: Builds and deploys
-7. **kstorybridge-website**: Builds and deploys
+5. **kstorybridge-dashboard**: Checks changes with turbo-ignore, builds if needed
+6. **kstorybridge-creator**: Checks changes with turbo-ignore, builds if needed
+7. **kstorybridge-website**: Checks changes with turbo-ignore, builds if needed
 
-**Result**: All production apps update simultaneously (dashboard V1 + creator-v2 + website)
+**Result**: Only changed production apps deploy (thanks to Turborepo selective deployment)
 
 ---
 
@@ -369,52 +373,60 @@ git push origin v2
 
 ### Scenario 2: Hotfix to Production
 
+**⚠️ Note**: Direct pushes to main are blocked. Even hotfixes require PRs.
+
 ```bash
 # Critical bug in production requires immediate fix
 
-# Option A: Hotfix directly to main (use sparingly)
-git checkout main
+# Hotfix workflow (all hotfixes go through v2 → PR → main)
+git checkout v2
 # ... make minimal fix ...
 git add .
-git commit -m "fix: critical auth bug in production"
-git push origin main
+git commit -m "hotfix: critical auth bug in production"
+git push origin v2  # Test on staging first (even for hotfixes)
 
-# Option B: Hotfix via v2 (recommended)
-git checkout v2
-# ... make fix ...
-git push origin v2  # Test on staging
-git checkout main
-git merge v2
-git push origin main
+# Create emergency PR
+gh pr create --base main --head v2 \
+  --title "HOTFIX: Critical auth bug" \
+  --body "Production critical fix. Staging tested."
 
-# CRITICAL: After hotfix, sync v2 with main
-git checkout v2
-git merge main  # Ensure v2 has the hotfix
-git push origin v2
+# Get quick approval (contact team if needed)
+# Merge PR immediately after approval
+
+# No manual sync needed - v2 and main are now aligned after PR merge
 ```
+
+**For true emergencies**: If branch protection prevents immediate deployment, contact repository admin to temporarily disable protection or approve PR immediately.
 
 ---
 
 ### Scenario 3: Rolling Back Production
 
+**⚠️ Note**: Git rollbacks require PRs. For immediate rollback, use Vercel dashboard.
+
 ```bash
 # Production deployment has issues, need to rollback
 
-# Option 1: Revert via Git
-git checkout main
+# Option 1: Revert via Git (requires PR)
+git checkout v2
 git revert <bad-commit-hash>
-git push origin main
+git add .
+git commit -m "Revert: rollback problematic change"
+git push origin v2
 
-# Option 2: Revert via Vercel Dashboard
+# Create rollback PR
+gh pr create --base main --head v2 \
+  --title "Rollback: Revert problematic deployment" \
+  --body "Rolling back due to production issues."
+
+# Get approval and merge
+
+# Option 2: Immediate Rollback via Vercel (recommended for emergencies)
 # 1. Go to Vercel project → Deployments
 # 2. Find last good deployment
-# 3. Click "..." → "Redeploy"
-# 4. Confirm rollback
-
-# CRITICAL: After rollback, sync v2
-git checkout v2
-git merge main  # Or rebase to clean history
-git push origin v2
+# 3. Click "..." → "Promote to Production"
+# 4. This bypasses Git and immediately restores previous version
+# 5. Then sync v2 with the rollback via PR when ready
 ```
 
 ---
@@ -685,22 +697,26 @@ git commit -m "feat: your feature"
 git push origin v2
 
 # Deploy to production (after staging tests pass)
-git checkout main
-git merge v2
-git push origin main
+# Create pull request v2 → main
+gh pr create --base main --head v2 --title "Deploy v2 to production"
+# Or use GitHub UI to create PR, get approval, and merge
 ```
 
 ### Emergency Procedures
 ```bash
-# Hotfix production
-git checkout main
+# Hotfix production (requires PR even for emergencies)
+git checkout v2
 # ... make fix ...
-git push origin main
+git add . && git commit -m "hotfix: critical fix"
+git push origin v2
+# Create emergency PR: gh pr create --base main --head v2 --title "HOTFIX: critical issue"
+# Get quick approval and merge
 
-# Rollback production
-git checkout main
+# Rollback production (requires PR)
+git checkout v2
 git revert <commit>
-git push origin main
+git push origin v2
+# Create rollback PR: gh pr create --base main --head v2 --title "Rollback: revert problematic change"
 
 # Check deployment status
 # Visit Vercel dashboard or use:

@@ -27,7 +27,8 @@ interface SignupFormContainerProps {
 
 export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accountType }) => {
   const [searchParams] = useSearchParams();
-  const isOAuthCompletion = searchParams.get('complete') === 'true';
+  // Check sessionStorage for OAuth completion (NO URL parameters per CLAUDE.md)
+  const isOAuthCompletion = typeof window !== 'undefined' && sessionStorage.getItem('oauth_signup_complete') === 'true';
 
   const [state, setState] = useState<SignupState>({
     isLoading: false,
@@ -185,6 +186,13 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
             // Profile creation succeeded - show success immediately
             console.log('✅ OAuth profile completion succeeded');
 
+            // Clear OAuth sessionStorage after successful completion
+            sessionStorage.removeItem('oauth_signup_complete');
+            sessionStorage.removeItem('oauth_user_id');
+            sessionStorage.removeItem('oauth_user_email');
+            sessionStorage.removeItem('oauth_user_account_type');
+            console.log('🧹 Cleared OAuth completion sessionStorage');
+
             toast({
               title: "Profile Created!",
               description: "Welcome to KStoryBridge! Your buyer profile has been set up.",
@@ -272,6 +280,13 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
 
             // Profile creation succeeded - show success immediately
             console.log('✅ Creator OAuth profile completion succeeded');
+
+            // Clear OAuth sessionStorage after successful completion
+            sessionStorage.removeItem('oauth_signup_complete');
+            sessionStorage.removeItem('oauth_user_id');
+            sessionStorage.removeItem('oauth_user_email');
+            sessionStorage.removeItem('oauth_user_account_type');
+            console.log('🧹 Cleared OAuth completion sessionStorage');
 
             toast({
               title: "Profile Created!",

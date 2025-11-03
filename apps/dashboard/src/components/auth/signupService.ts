@@ -111,7 +111,7 @@ export const completeOAuthProfile = async (
         });
 
         const timeoutPromise = new Promise<{ error: Error }>((_, reject) =>
-          setTimeout(() => reject(new Error('Metadata update timeout after 5 seconds')), 5000)
+          setTimeout(() => reject(new Error('Metadata update timeout after 15 seconds')), 15000)
         );
 
         const { error: metadataError } = await Promise.race([metadataUpdatePromise, timeoutPromise]);
@@ -218,7 +218,7 @@ export const completeOAuthProfile = async (
         });
 
         const timeoutPromise = new Promise<{ error: Error }>((_, reject) =>
-          setTimeout(() => reject(new Error('Metadata update timeout after 5 seconds')), 5000)
+          setTimeout(() => reject(new Error('Metadata update timeout after 15 seconds')), 15000)
         );
 
         const { error: metadataError } = await Promise.race([metadataUpdatePromise, timeoutPromise]);

@@ -141,21 +141,26 @@ const AuthCallbackSimple = () => {
           final: finalFlow
         });
 
-        // 4. Clear sessionStorage
+        // 4. Clear initial OAuth sessionStorage (will be replaced with completion data if signup)
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('oauth_account_type');
           sessionStorage.removeItem('oauth_flow');
-          console.log('🧹 Cleared OAuth session storage');
+          console.log('🧹 Cleared initial OAuth session storage');
         }
 
         // 5. Redirect based on flow type
 
         if (finalFlow === 'signup') {
           // OAuth signup - redirect to complete profile
+          // Store completion data in sessionStorage (NO URL parameters per CLAUDE.md)
+          sessionStorage.setItem('oauth_signup_complete', 'true');
+          sessionStorage.setItem('oauth_user_id', user.id);
+          sessionStorage.setItem('oauth_user_email', user.email);
+          sessionStorage.setItem('oauth_user_account_type', finalAccountType);
+
           const signupPath = getSignupPath(finalAccountType);
-          const signupUrl = `${signupPath}?complete=true&user_id=${user.id}&email=${encodeURIComponent(user.email)}`;
-          console.log('📝 OAuth signup - redirecting to:', signupUrl);
-          navigate(signupUrl);
+          console.log('📝 OAuth signup - redirecting to:', signupPath);
+          navigate(signupPath);
         } else {
           // OAuth signin - redirect to dashboard immediately (no profile check here)
           // Profile check will happen on dashboard load to avoid infinite getSession() loops

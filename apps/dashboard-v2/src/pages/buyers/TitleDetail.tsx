@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
 import { type PitchAnalysis } from '@/types/pitchAnalysis';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TierGatedContent } from '@/components/tier/TierGatedContent';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -91,28 +92,32 @@ export default function TitleDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
+      <BuyerLayout>
+        <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      </BuyerLayout>
     );
   }
 
   if (!title) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-        <p className="text-gray-500 text-lg mb-4">Title not found</p>
-        <Button variant="outline" onClick={() => navigate('/buyers/titles')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Titles
-        </Button>
-      </div>
+      <BuyerLayout>
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)]">
+          <p className="text-gray-500 text-lg mb-4">Title not found</p>
+          <Button variant="outline" onClick={() => navigate('/buyers/titles')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Titles
+          </Button>
+        </div>
+      </BuyerLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <BuyerLayout>
       {/* Header */}
-      <div className="border-b border-gray-300 bg-white px-4 py-3">
+      <div className="border-b border-gray-300 bg-white px-4 py-3 mb-6">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Button
             variant="outline"
@@ -629,6 +634,6 @@ export default function TitleDetail() {
           </div>
         </div>
       </div>
-    </div>
+    </BuyerLayout>
   );
 }

@@ -9,9 +9,11 @@
 ---
 
 ## Quick Links
-- [PRD 2.1 Full Document](./PRD-2.1.md)
-- [Progress Dashboard](#progress-dashboard)
-- [Current Sprint](#current-sprint)
+- 📄 [PRD 2.1 Full Document](./PRD-2.1.md)
+- 📊 **[Master Progress Tracker](./PRD_2.1_PROGRESS.md)** ⭐ (NEW - Detailed tracking)
+- 📋 [Progress Dashboard](#progress-dashboard)
+- 📅 [Current Sprint](#current-sprint)
+- 🗂️ [Phase Tracking Files](./tracking/)
 
 ---
 

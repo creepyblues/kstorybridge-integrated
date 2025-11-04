@@ -7,6 +7,8 @@
 **Author**: Product Team
 **Target Release**: Q1 2025
 
+📊 **[Track Progress →](./PRD_2.1_PROGRESS.md)** | 📋 **[Implementation Plan →](./PRD-2.1-Implementation-Plan.md)**
+
 ---
 
 ## Executive Summary

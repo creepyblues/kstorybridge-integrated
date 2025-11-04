@@ -2,7 +2,7 @@
 
 **App Scope**: Creator-focused dashboard for content management, title submissions, and profile management. Dedicated app for Korean content creators (webtoon artists, web novel authors, agents).
 
-**Last Updated**: 2025-10-29
+**Last Updated**: 2025-11-02
 
 **Status**: ✅ PRODUCTION - Primary creator app (V1 archived as reference)
 
@@ -31,13 +31,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Development Commands
 
+**From app directory** (`apps/creator/`):
 - `npm run dev` - Start development server on port 8083
 - `npm run build` - Build for production
 - `npm run build:dev` - Development build (with source maps)
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 
-**Note**: This app runs on port **8083**. Dashboard app runs on port 8081, website on 5173.
+**From root** (with Turborepo, ~50x faster cached builds):
+- `npm run dev:creator` - Start creator only (port 8083)
+- `npm run build:creator` - Build creator with intelligent caching
+- `npm run build` - Build all apps
+
+**Note**: This app runs on port **8083**. Dashboard app runs on 8081, website on 5173.
+**Turborepo**: Creator has no shared package dependencies, so it only rebuilds when `apps/creator/` or root configs change.
 
 ---
 

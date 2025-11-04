@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated**: 2025-10-28
+**Last Updated**: 2025-11-02
 
 This is the master index of all active documentation for the KStoryBridge project.
 
@@ -56,6 +56,8 @@ This is the master index of all active documentation for the KStoryBridge projec
 
 | Document | Description |
 |----------|-------------|
+| **[TURBOREPO_VERCEL_SETUP.md](guides/TURBOREPO_VERCEL_SETUP.md)** | Turborepo + Vercel selective deployment guide ⭐ NEW |
+| **[GIT_DEPLOYMENT_STRUCTURE.md](guides/GIT_DEPLOYMENT_STRUCTURE.md)** | Complete Git deployment configuration reference |
 | **[DEPLOYMENT_STRATEGY.md](guides/DEPLOYMENT_STRATEGY.md)** | Deployment architecture |
 | **[DEPLOYMENT_INSTRUCTIONS.md](guides/DEPLOYMENT_INSTRUCTIONS.md)** | Deployment procedures |
 | **[STRIPE_SETUP_GUIDE.md](guides/STRIPE_SETUP_GUIDE.md)** | Stripe payment integration |
@@ -145,6 +147,11 @@ Archived deployment reports, test results, and historical guides. See `/docs/arc
 **Pitch Decks**:
 - [PITCH_DECK_SYSTEM.md](../apps/dashboard/docs/PITCH_DECK_SYSTEM.md) - Quick reference
 - [PITCH_DECK_EXTRACTION_GUIDE.md](../apps/dashboard/PITCH_DECK_EXTRACTION_GUIDE.md) - Complete guide
+
+**Build System & Deployment**:
+- [TURBOREPO_VERCEL_SETUP.md](guides/TURBOREPO_VERCEL_SETUP.md) - Turborepo selective deployments ⭐
+- [GIT_DEPLOYMENT_STRUCTURE.md](guides/GIT_DEPLOYMENT_STRUCTURE.md) - Git/Vercel configuration
+- [DEPLOYMENT_STRATEGY.md](guides/DEPLOYMENT_STRATEGY.md) - Deployment architecture
 
 ---
 

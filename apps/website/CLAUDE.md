@@ -2,7 +2,7 @@
 
 **App Scope**: Marketing website with basic authentication redirects to dashboard app. Focuses on content presentation and user acquisition.
 
-**Last Updated**: 2025-10-14
+**Last Updated**: 2025-11-02
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -10,12 +10,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Development Commands
 
-- `npm run dev` - Start development server on port **5173**
+**From app directory** (`apps/website/`):
+- `npm run dev` - Start development server on port 5173
 - `npm run build` - Build for production
 - `npm run build:dev` - Build in development mode
 - `npm run lint` - Run ESLint for code linting
 - `npm run preview` - Preview production build locally
 - `npm i` - Install dependencies
+
+**From root** (with Turborepo, ~50x faster cached builds):
+- `npm run dev:website` - Start website only (port 5173)
+- `npm run build:website` - Build website with intelligent caching
+- `npm run build` - Build all apps (if website or shared packages changed)
 
 **Local Development**: http://localhost:5173
 

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { type PitchAnalysis } from '@/types/pitchAnalysis';
 
 export interface Title {
   title_id: string;
@@ -7,7 +8,7 @@ export interface Title {
   synopsis?: string;
   tagline?: string;
   author?: string;
-  genre?: string | string[];
+  genre?: string;
   content_format?: string;
   title_image?: string;
   title_url?: string;
@@ -22,9 +23,11 @@ export interface Title {
   tone?: string;
   audience?: string;
   pitch?: string;
-  verified?: boolean;
   created_at?: string;
   updated_at?: string;
+  // Pitch analysis data from title_content_analysis table
+  pitch_analysis?: PitchAnalysis;
+  processing_confidence?: number;
 }
 
 export interface TitleFilters {
@@ -85,79 +88,36 @@ class TitlesService {
   }
 
   /**
-   * Fetch titles with pagination
-   */
-  async getTitlesPaginated(
-    filters?: TitleFilters,
-    offset: number = 0,
-    limit: number = 12
-  ): Promise<{ data: Title[]; hasMore: boolean }> {
-    try {
-      let query = supabase
-        .from('titles')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
-
-      // Apply filters (same as getTitles)
-      if (filters?.genre) {
-        query = query.eq('genre', filters.genre);
-      }
-
-      if (filters?.format) {
-        query = query.eq('content_format', filters.format);
-      }
-
-      if (filters?.search) {
-        // Search in English name, Korean name, or synopsis
-        query = query.or(
-          `title_name_en.ilike.%${filters.search}%,title_name_kr.ilike.%${filters.search}%,synopsis.ilike.%${filters.search}%`
-        );
-      }
-
-      if (filters?.minRating !== undefined) {
-        query = query.gte('rating', filters.minRating);
-      }
-
-      if (filters?.completed !== undefined) {
-        query = query.eq('completed', filters.completed);
-      }
-
-      // Apply pagination
-      query = query.range(offset, offset + limit - 1);
-
-      const { data, error, count } = await query;
-
-      if (error) {
-        console.error('❌ Error fetching paginated titles:', error);
-        throw new Error(`Failed to fetch titles: ${error.message}`);
-      }
-
-      const hasMore = count ? offset + limit < count : false;
-
-      return {
-        data: data || [],
-        hasMore,
-      };
-    } catch (error: any) {
-      console.error('❌ Paginated titles service error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Fetch a single title by ID
+   * Fetch a single title by ID with pitch analysis data
    */
   async getTitleById(titleId: string): Promise<Title | null> {
     try {
       const { data, error } = await supabase
         .from('titles')
-        .select('*')
+        .select(`
+          *,
+          title_content_analysis (
+            pitch_analysis,
+            processing_confidence
+          )
+        `)
         .eq('title_id', titleId)
         .maybeSingle();
 
       if (error) {
         console.error('❌ Error fetching title:', error);
         throw new Error(`Failed to fetch title: ${error.message}`);
+      }
+
+      // Flatten the nested title_content_analysis data
+      if (data && data.title_content_analysis) {
+        const analysis = Array.isArray(data.title_content_analysis)
+          ? data.title_content_analysis[0]
+          : data.title_content_analysis;
+
+        data.pitch_analysis = analysis?.pitch_analysis;
+        data.processing_confidence = analysis?.processing_confidence;
+        delete data.title_content_analysis;
       }
 
       return data;

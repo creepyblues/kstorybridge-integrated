@@ -111,22 +111,33 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // ✅ Profile creation succeeded - OAuth signup complete
+      // ✅ Profile creation succeeded - write metadata in non-blocking mode
       //
-      // Note: Metadata update intentionally skipped for OAuth flows
+      // STRATEGY: Attempt to write account_type metadata immediately but don't fail signup if it times out
       //
-      // REASON: Database tables (user_buyers) are the source of truth for account_type.
-      // RootRedirect.tsx has fallback logic (lines 101-192) that:
-      //   1. Checks database table for account_type if metadata missing
-      //   2. Lazily writes metadata after detecting from database
-      //   3. All subsequent loads use metadata (fast path)
+      // REASONING:
+      // - Writing metadata NOW gives fast path for subsequent loads (metadata check is instant)
+      // - If write times out, RootRedirect.tsx has fallback logic to write it lazily
+      // - Best of both worlds: performance optimization + reliability fallback
       //
-      // Blocking on metadata.updateUser() causes false timeout issues in production
-      // (similar to exchangeCodeForSession timeout already fixed in AuthCallbackSimple.tsx).
-      //
-      // TESTING: OAuth callback handler already uses this pattern successfully.
-      //
-      console.log('✅ OAuth buyer profile created - proceeding to dashboard (metadata will be written lazily by RootRedirect)');
+      console.log('🔄 Writing account_type metadata (non-blocking)');
+
+      // Non-blocking metadata update - don't await, don't fail signup on error
+      supabase.auth.updateUser({
+        data: { account_type: 'buyer' }
+      }).then(({ error }) => {
+        if (error) {
+          console.warn('⚠️ Metadata update failed (non-blocking):', error.message);
+          console.log('ℹ️ RootRedirect will write metadata lazily on next load');
+        } else {
+          console.log('✅ Account type metadata written successfully');
+        }
+      }).catch((error) => {
+        console.warn('⚠️ Metadata update exception (non-blocking):', error);
+        console.log('ℹ️ RootRedirect will write metadata lazily on next load');
+      });
+
+      console.log('✅ OAuth buyer profile created - proceeding to dashboard');
       const userResult = { success: true, user };
 
       // Send welcome email and Slack notification in background (non-blocking)
@@ -211,22 +222,33 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // ✅ Profile creation succeeded - OAuth signup complete
+      // ✅ Profile creation succeeded - write metadata in non-blocking mode
       //
-      // Note: Metadata update intentionally skipped for OAuth flows
+      // STRATEGY: Attempt to write account_type metadata immediately but don't fail signup if it times out
       //
-      // REASON: Database tables (user_creators) are the source of truth for account_type.
-      // RootRedirect.tsx has fallback logic (lines 101-192) that:
-      //   1. Checks database table for account_type if metadata missing
-      //   2. Lazily writes metadata after detecting from database
-      //   3. All subsequent loads use metadata (fast path)
+      // REASONING:
+      // - Writing metadata NOW gives fast path for subsequent loads (metadata check is instant)
+      // - If write times out, RootRedirect.tsx has fallback logic to write it lazily
+      // - Best of both worlds: performance optimization + reliability fallback
       //
-      // Blocking on metadata.updateUser() causes false timeout issues in production
-      // (similar to exchangeCodeForSession timeout already fixed in AuthCallbackSimple.tsx).
-      //
-      // TESTING: OAuth callback handler already uses this pattern successfully.
-      //
-      console.log('✅ OAuth creator profile created - proceeding to dashboard (metadata will be written lazily by RootRedirect)');
+      console.log('🔄 Writing account_type metadata (non-blocking)');
+
+      // Non-blocking metadata update - don't await, don't fail signup on error
+      supabase.auth.updateUser({
+        data: { account_type: 'creator' }
+      }).then(({ error }) => {
+        if (error) {
+          console.warn('⚠️ Metadata update failed (non-blocking):', error.message);
+          console.log('ℹ️ RootRedirect will write metadata lazily on next load');
+        } else {
+          console.log('✅ Account type metadata written successfully');
+        }
+      }).catch((error) => {
+        console.warn('⚠️ Metadata update exception (non-blocking):', error);
+        console.log('ℹ️ RootRedirect will write metadata lazily on next load');
+      });
+
+      console.log('✅ OAuth creator profile created - proceeding to dashboard');
       const userResult = { success: true, user };
 
       // Send welcome email and Slack notification in background (non-blocking)

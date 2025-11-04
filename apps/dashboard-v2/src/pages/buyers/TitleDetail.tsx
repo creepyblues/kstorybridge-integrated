@@ -6,21 +6,27 @@ import { titlesService, Title } from '@/services/titlesService';
 import { type PitchAnalysis } from '@/types/pitchAnalysis';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TierGatedContent } from '@/components/tier/TierGatedContent';
+import { useTierAccess } from '@/contexts/TierContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Heart, ExternalLink, Loader2, FileText } from 'lucide-react';
+import { ArrowLeft, Heart, ExternalLink, Loader2, FileText, X } from 'lucide-react';
+import SecurePDFViewer from '@/components/premium/SecurePDFViewer';
+import PitchDeckThumbnail from '@/components/premium/PitchDeckThumbnail';
 
 export default function TitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { tier } = useTierAccess();
 
   const [title, setTitle] = useState<Title | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [pitchAnalysis, setPitchAnalysis] = useState<PitchAnalysis | null>(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState<boolean>(false);
+  const [currentPdfUrl, setCurrentPdfUrl] = useState<string>("");
 
   useEffect(() => {
     const fetchTitle = async () => {
@@ -289,24 +295,29 @@ export default function TitleDetail() {
               </Card>
             )}
 
-            {/* Tier-Gated Pitch Deck */}
-            {title.pitch && (
+            {/* Tier-Gated Pitch Deck with PDF Viewer */}
+            {title.pitch && title.pitch.trim() !== '' && (
               <TierGatedContent requiredTier="pro">
                 <Card className="border-pro-purple/30">
                   <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-4">
                       <FileText className="h-5 w-5 text-pro-purple" />
                       <h2 className="text-lg font-bold text-black">Pitch Deck</h2>
                       <span className="ml-auto px-2 py-0.5 bg-pro-purple/10 text-pro-purple text-xs font-semibold rounded-full">
                         PRO
                       </span>
                     </div>
-                    <div className="prose prose-sm max-w-none">
-                      <div
-                        className="text-gray-700 leading-relaxed whitespace-pre-wrap"
-                        dangerouslySetInnerHTML={{ __html: title.pitch }}
-                      />
-                    </div>
+
+                    {/* PDF Thumbnail Preview */}
+                    <PitchDeckThumbnail
+                      pdfUrl={title.pitch}
+                      onClick={() => {
+                        setCurrentPdfUrl(title.pitch || '');
+                        setTimeout(() => setIsPdfModalOpen(true), 10);
+                      }}
+                      className="mb-4"
+                      alt={`${title.title_name_en || title.title_name_kr} pitch deck preview`}
+                    />
                   </CardContent>
                 </Card>
               </TierGatedContent>
@@ -633,6 +644,30 @@ export default function TitleDetail() {
             </div>
           </div>
         </div>
+
+        {/* PDF Modal */}
+        {isPdfModalOpen && (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2 sm:p-4">
+            <div className="w-full h-full max-w-7xl max-h-[90vh] bg-white rounded-xl overflow-hidden relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsPdfModalOpen(false)}
+                className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 p-0"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+
+              <div className="h-full">
+                <SecurePDFViewer
+                  pdfUrl={currentPdfUrl}
+                  userTier={tier}
+                  maxPagesForBasic={5}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </BuyerLayout>
   );

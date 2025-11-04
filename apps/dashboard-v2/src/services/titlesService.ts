@@ -8,7 +8,7 @@ export interface Title {
   synopsis?: string;
   tagline?: string;
   author?: string;
-  genre?: string;
+  genre?: string[];
   content_format?: string;
   title_image?: string;
   title_url?: string;
@@ -23,6 +23,7 @@ export interface Title {
   tone?: string;
   audience?: string;
   pitch?: string;
+  verified?: boolean;
   created_at?: string;
   updated_at?: string;
   // Pitch analysis data from title_content_analysis table

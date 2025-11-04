@@ -40,7 +40,11 @@ const resolveDashboardUrl = () => {
 export interface SignupResult {
   success: boolean;
   error?: string;
-  user?: any;
+  user?: {
+    id: string;
+    email: string;
+    user_metadata?: Record<string, unknown>;
+  };
 }
 
 /**
@@ -49,8 +53,8 @@ export interface SignupResult {
  */
 export const completeOAuthProfile = async (
   formData: BuyerFormData,
-  user: any,
-  session?: any
+  user: { id: string; email: string; user_metadata?: Record<string, unknown> },
+  session?: { access_token: string; refresh_token: string }
 ): Promise<SignupResult> => {
   try {
     console.log('🔄 Completing OAuth buyer profile for:', user.email);
@@ -60,7 +64,7 @@ export const completeOAuthProfile = async (
     // Use secure edge function for OAuth profile creation with retry for race conditions
     // During OAuth, there's a brief window where auth.users record isn't visible yet
     // Retry with exponential backoff for foreign key constraint violations
-    let profileResult: any = null;
+    let profileResult: { success: boolean; error?: string; profile?: unknown } | null = null;
     const maxRetries = 3;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {

@@ -37,10 +37,19 @@ export default function TitleDetail() {
         const data = await titlesService.getTitleById(titleId);
         setTitle(data);
 
-        // Extract pitch_analysis if available and meets quality threshold
-        if (data?.pitch_analysis && (data.processing_confidence ?? 0) >= 0.70) {
+        // Extract pitch_analysis if available (confidence filter removed for testing)
+        console.log('[TitleDetail] Title data received:', {
+          title_id: data?.title_id,
+          has_pitch: !!data?.pitch,
+          has_pitch_analysis: !!data?.pitch_analysis,
+          processing_confidence: data?.processing_confidence
+        });
+
+        if (data?.pitch_analysis) {
+          console.log('[TitleDetail] ✅ Setting pitch_analysis - confidence:', data.processing_confidence);
           setPitchAnalysis(data.pitch_analysis);
         } else {
+          console.log('[TitleDetail] ❌ No pitch_analysis data available');
           setPitchAnalysis(null);
         }
 

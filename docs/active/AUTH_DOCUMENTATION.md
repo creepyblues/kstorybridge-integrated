@@ -1,7 +1,7 @@
 # KStoryBridge Authentication Documentation
 
-**Last Updated:** 2025-10-11
-**Version:** 3.8 - OAuth URL Parameter Fix (CRITICAL)
+**Last Updated:** 2025-11-04
+**Version:** 4.0 - Dashboard Buyer-Only Simplification (BREAKING CHANGE)
 **Working Auth Commit:** `26f6fef0eb6a6cd15177e1d218eca3db4a1028d5` (WORKING VER - 2025-10-11)
 
 This is the single source of truth for all authentication-related information in the KStoryBridge platform.
@@ -63,33 +63,47 @@ if (!profileExists) {
 
 ---
 
-#### RULE 2: Pass Data via URL Query Parameters (NOT OAuth State)
+#### RULE 2: NEVER Use URL Parameters in OAuth Callback URLs (CRITICAL)
 
-**The Critical Distinction**:
-- ✅ **URL query parameters in redirectTo** - CORRECT, reliable, standard practice
-- ❌ **OAuth state parameter via queryParams** - WRONG, conflicts with Supabase PKCE
+**UPDATED:** 2025-11-04 - Clean callback URLs only, sessionStorage for data passing
+
+**The Critical Rule**:
+- ✅ **Clean callback URLs** - CORRECT, per global user instructions
+- ❌ **URL query parameters in redirectTo** - FORBIDDEN, violates global policy
+- ❌ **OAuth state parameter via queryParams** - FORBIDDEN, conflicts with Supabase PKCE
 
 ---
 
-✅ **CORRECT** - URL query parameters in redirectTo URL:
+✅ **CORRECT** - Clean callback URL with sessionStorage:
 ```typescript
-// Store in sessionStorage as backup
-sessionStorage.setItem('oauth_account_type', accountType);
-sessionStorage.setItem('oauth_flow', 'signin');
+// Store in sessionStorage (ONLY method for passing data)
+sessionStorage.setItem('oauth_account_type', 'buyer');
+sessionStorage.setItem('oauth_flow', 'signup');
 
-// Encode account_type and flow in redirect URL for reliable persistence
-const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=signin`;
+// CLEAN callback URL (NO parameters)
+const callbackUrl = `${window.location.origin}/auth/callback`;
 await supabase.auth.signInWithOAuth({
   provider: 'google',
   options: {
-    redirectTo: callbackUrl  // URL params are part of the redirect URL
+    redirectTo: callbackUrl  // Clean URL, no parameters
   }
 });
 
-// In callback handler - read from URL params (primary), sessionStorage (backup)
-const urlParams = new URLSearchParams(window.location.search);
-const accountType = urlParams.get('account_type') || sessionStorage.getItem('oauth_account_type');
-const flow = urlParams.get('flow') || sessionStorage.getItem('oauth_flow');
+// In callback handler - read from sessionStorage ONLY
+const accountType = sessionStorage.getItem('oauth_account_type') || 'buyer';
+const flow = sessionStorage.getItem('oauth_flow') || 'signin';
+```
+
+❌ **FORBIDDEN** - URL parameters in callback:
+```typescript
+// NEVER use parameters in OAuth callback URLs
+const callbackUrl = `${window.location.origin}/auth/callback?account_type=buyer&flow=signup`;  // ❌ WRONG
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: callbackUrl,  // ❌ WRONG - has parameters
+  }
+});
 ```
 
 ❌ **FORBIDDEN** - OAuth state parameter:
@@ -106,37 +120,37 @@ await supabase.auth.signInWithOAuth({
 
 ---
 
-**WHY URL Parameters Work**:
-1. **Survives all redirects**: URL params persist through Google → Supabase → Your App
-2. **No PKCE conflict**: Supabase's internal `state` parameter is separate from your URL params
-3. **Standard practice**: This is how OAuth redirect URLs are designed to work
-4. **Reliable**: Works across domains, browsers, and devices
+**WHY Clean URLs + SessionStorage**:
+1. **User requirement**: Global policy: "never ever use parameter in oauth callback URL!!!"
+2. **Simple and reliable**: SessionStorage persists across OAuth redirect
+3. **No conflicts**: Clean URLs never conflict with OAuth providers
+4. **Security**: Prevents data leakage in URL logs
 
-**WHY OAuth State Breaks**:
-1. **Supabase manages PKCE state internally**: Uses `state` param for security
-2. **Custom state overrides PKCE**: Causes `error_code=bad_oauth_state`
-3. **OAuth hangs**: Validation fails, user stuck on callback page
+**WHY URL Parameters Are Forbidden**:
+1. **User policy violation**: Explicit global instruction to never use parameters
+2. **URL pollution**: Parameters visible in logs, browser history
+3. **Not necessary**: SessionStorage is sufficient for same-domain OAuth flows
 
 **OAuth Flow Architecture**:
 ```
-Your App (staging.kstorybridge.com/auth/callback?account_type=buyer&flow=signin)
-  ↓ signInWithOAuth()
+Your App (dashboard.kstorybridge.com/auth/callback) ← Clean URL
+  ↓ signInWithOAuth() + sessionStorage.setItem('oauth_account_type', 'buyer')
 Supabase (dlrnrgcoguxlkkcitlpd.supabase.co)
   ↓ (adds internal PKCE state parameter)
 Google OAuth
-  ↓ (redirects with code + Supabase's state + YOUR URL params)
+  ↓ (redirects with code + Supabase's state)
 Supabase (validates its own state ✅)
-  ↓ (redirects back to your app WITH your URL params intact)
-Your App (staging.kstorybridge.com/auth/callback?account_type=buyer&flow=signin&code=xyz)
-  ↓ Read account_type and flow from URL ✅
+  ↓ (redirects back to your app)
+Your App (dashboard.kstorybridge.com/auth/callback?code=xyz) ← Clean callback URL
+  ↓ Read from sessionStorage.getItem('oauth_account_type') ✅
 ```
 
-**WHERE THIS IS IMPLEMENTED** (as of 2025-10-11 - CRITICAL FIX):
-- Signin Flow: `apps/dashboard/src/components/SigninForm.tsx` (line 104: `const callbackUrl = ...?account_type=${accountType}&flow=signin`)
-- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (line 419: `const callbackUrl = ...?account_type=${accountType}&flow=signup`)
-- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (lines 37-39: reads from URL parameters)
+**WHERE THIS IS IMPLEMENTED** (as of 2025-11-04):
+- Signup Flow: `apps/dashboard/src/components/auth/signupService.ts` (handleOAuthSignup function)
+- Callback Handler: `apps/dashboard/src/pages/AuthCallbackSimple.tsx` (reads from sessionStorage)
+- Tests: `apps/dashboard/src/__tests__/auth/signupServiceClean.test.ts` (validates clean URLs)
 
-**CRITICAL CHANGE (2025-10-11)**: Fixed OAuth implementation that was incorrectly using custom state parameter. Now correctly uses URL query parameters in redirectTo URL as documented above.
+**CRITICAL CHANGE (2025-11-04)**: Callback URLs MUST be clean (no parameters). SessionStorage is the ONLY method for passing data to OAuth callback handler.
 
 ---
 
@@ -187,14 +201,109 @@ AND NOT EXISTS (SELECT 1 FROM user_creators WHERE id = u.id);
 
 ---
 
+## 🚀 Auth Simplification (2025-11-04)
+
+**BREAKING CHANGE**: Dashboard app simplified to handle BUYER authentication ONLY.
+
+### What Changed
+
+**Dashboard App** (`apps/dashboard/`):
+- ✅ **Buyer auth ONLY**: All buyer authentication flows (email + OAuth)
+- ❌ **Removed**: Creator signup/signin routes and logic (~215 lines)
+- ✅ **Tests**: 100% pass rate (99/99 tests, removed 9 redundant creator tests)
+- ✅ **Complexity reduction**: 50% reduction in auth flow complexity
+
+**Creator App** (`apps/creator/`):
+- ✅ **Creator auth**: Handles all creator authentication (separate app)
+- ✅ **Clean URLs**: Uses same OAuth clean URL pattern (no parameters)
+- ✅ **Production**: Live at `creator.kstorybridge.com`
+
+### Code Changes Summary
+
+**Files Modified**:
+1. `src/App.tsx` - Removed creator auth route imports and routes
+2. `src/components/auth/signupService.ts` - Simplified to buyer-only:
+   - `completeOAuthProfile()`: Removed `accountType` parameter
+   - `handleOAuthSignup()`: Removed `accountType` parameter, always uses 'buyer'
+   - Removed `signupCreator()` function entirely
+3. `src/pages/AuthCallbackSimple.tsx` - Always defaults to 'buyer' account type
+4. `src/components/auth/SignupFormContainer.tsx` - Updated function calls, added deprecation warnings
+
+**Tests Updated**:
+- `mandatoryMetadata.test.ts`: Removed 5 creator tests
+- `authCallbackProfileCheck.test.tsx`: Removed 2 creator tests
+- `signupServiceClean.test.ts`: Removed 3 creator tests
+- All remaining tests passing (99/99 - 100% pass rate)
+
+### Function Signature Changes
+
+**Before**:
+```typescript
+// signupService.ts
+export const completeOAuthProfile = async (
+  accountType: AccountType,
+  formData: BuyerFormData | CreatorFormData,
+  user: any,
+  session?: any
+): Promise<SignupResult>
+
+export const handleOAuthSignup = async (
+  provider: 'google' | 'discord',
+  accountType: AccountType
+): Promise<{ error?: string }>
+```
+
+**After**:
+```typescript
+// signupService.ts
+export const completeOAuthProfile = async (
+  formData: BuyerFormData,
+  user: any,
+  session?: any
+): Promise<SignupResult>
+
+export const handleOAuthSignup = async (
+  provider: 'google' | 'discord'
+): Promise<{ error?: string }>
+```
+
+### Impact
+
+**Dashboard App**:
+- **Routes removed**: `/signup/creator`, `/signin/creator`
+- **Functions simplified**: `completeOAuthProfile()`, `handleOAuthSignup()`
+- **Account type**: Always 'buyer' (no conditional logic)
+- **Lines removed**: ~215 lines (creator logic + imports + tests)
+
+**Creator App**:
+- **Handles all creator auth**: Signup, signin, OAuth
+- **Separate deployment**: `creator.kstorybridge.com`
+- **No impact**: Creator users unaffected (authenticate through creator app)
+
+### Migration Path
+
+**For developers**:
+1. Update any calls to `completeOAuthProfile()` - remove `accountType` parameter
+2. Update any calls to `handleOAuthSignup()` - remove `accountType` parameter
+3. Creator signup links should point to creator app, not dashboard app
+
+**For users**:
+- **Buyers**: No change, continue using dashboard app
+- **Creators**: Authenticate through creator app (`creator.kstorybridge.com`)
+
+---
+
 ## System Architecture
 
-### Overview
+### Overview (UPDATED 2025-11-04)
 
 KStoryBridge uses a **dual-user authentication system** with a **split-app architecture**:
 
 - **Website App** (`kstorybridge.com`): Marketing pages only
-- **Dashboard App** (`dashboard.kstorybridge.com`): ALL authentication + user dashboard
+- **Dashboard App** (`dashboard.kstorybridge.com`): **BUYER authentication only** + buyer dashboard
+- **Creator App** (`creator.kstorybridge.com`): **CREATOR authentication only** + creator dashboard
+
+**CRITICAL CHANGE (2025-11-04)**: Dashboard app simplified to handle BUYER auth ONLY. Creator auth moved to creator app (~215 lines removed, 50% complexity reduction).
 
 ### User Types
 

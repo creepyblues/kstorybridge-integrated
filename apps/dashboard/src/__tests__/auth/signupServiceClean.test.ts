@@ -92,14 +92,7 @@ describe('Signup Service - Clean OAuth Callback URL', () => {
       expect(sessionStorage.getItem('oauth_flow')).toBe('signup');
     });
 
-    it('should store account_type in sessionStorage for creator signup', async () => {
-      mockSignInWithOAuth.mockResolvedValue({ error: null });
-
-      await handleOAuthSignup('google', 'creator');
-
-      expect(sessionStorage.getItem('oauth_account_type')).toBe('creator');
-      expect(sessionStorage.getItem('oauth_flow')).toBe('signup');
-    });
+    // Creator test removed - dashboard app now only handles buyer auth (creator auth moved to creator app)
 
     it('should store flow type as "signup" in sessionStorage', async () => {
       mockSignInWithOAuth.mockResolvedValue({ error: null });
@@ -112,10 +105,10 @@ describe('Signup Service - Clean OAuth Callback URL', () => {
     it('should use sessionStorage as PRIMARY data passing mechanism', async () => {
       mockSignInWithOAuth.mockResolvedValue({ error: null });
 
-      await handleOAuthSignup('google', 'creator');
+      await handleOAuthSignup('google');
 
-      // Verify sessionStorage is set BEFORE OAuth redirect
-      expect(sessionStorage.getItem('oauth_account_type')).toBe('creator');
+      // Verify sessionStorage is set BEFORE OAuth redirect (dashboard app only handles buyer)
+      expect(sessionStorage.getItem('oauth_account_type')).toBe('buyer');
       expect(sessionStorage.getItem('oauth_flow')).toBe('signup');
 
       // Verify callback URL is clean
@@ -239,13 +232,7 @@ describe('Signup Service - Clean OAuth Callback URL', () => {
       expect(sessionStorage.getItem('oauth_account_type')).toBe('buyer');
     });
 
-    it('should handle creator account type correctly', async () => {
-      mockSignInWithOAuth.mockResolvedValue({ error: null });
-
-      await handleOAuthSignup('google', 'creator');
-
-      expect(sessionStorage.getItem('oauth_account_type')).toBe('creator');
-    });
+    // Creator test removed - dashboard app now only handles buyer auth (creator auth moved to creator app)
   });
 
   describe('Callback URL Consistency', () => {

@@ -79,13 +79,11 @@ const UXDashboard = lazy(() => import("./pages/ux/UXDashboard"));
 const UserJourneyPage = lazy(() => import("./pages/ux/UserJourneyPage"));
 const MessagingPage = lazy(() => import("./pages/ux/MessagingPage"));
 
-// Authentication pages
+// Authentication pages (buyer-only - creator auth moved to creator app)
 const SigninPage = lazy(() => import("./pages/SigninPageSimple"));
 const BuyerSigninPage = lazy(() => import("./pages/BuyerSigninPage"));
-const CreatorSigninPage = lazy(() => import("./pages/CreatorSigninPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage"));
 const BuyerSignupPage = lazy(() => import("./pages/BuyerSignupPage"));
-const CreatorSignupPage = lazy(() => import("./pages/CreatorSignupPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackSimple"));
 
@@ -126,13 +124,11 @@ const App = () => (
                 <div className="min-h-screen w-full bg-gray-50">
                 <Suspense fallback={<PageLoader />}>
                 <Routes>
-                {/* Authentication routes - no authentication required */}
+                {/* Authentication routes - buyer-only (creator auth moved to creator app) */}
                 <Route path="/signin" element={<SigninPage />} />
                 <Route path="/signin/buyer" element={<BuyerSigninPage />} />
-                <Route path="/signin/creator" element={<CreatorSigninPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/signup/buyer" element={<BuyerSignupPage />} />
-                <Route path="/signup/creator" element={<CreatorSignupPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/auth/callback" element={<AuthCallbackPage />} />
 

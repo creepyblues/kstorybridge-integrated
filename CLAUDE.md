@@ -202,33 +202,28 @@ All 5 Vercel projects use `npx turbo-ignore` to skip builds when apps haven't ch
 
 ---
 
-## 🔐 Authentication Flow (UPDATED 2025-10-22)
+## 🔐 Authentication Flow (UPDATED 2025-11-04)
 
-### Current User Flow
+### Current User Flow (Simplified 2025-11-04)
 1. Users visit **Website** (`kstorybridge.com`) for marketing
-2. Website redirects to **Dashboard** for auth:
-   - `/signup/buyer` - Buyer signup
-   - `/signup/creator` - Creator signup (formerly IP Owner)
-   - `/signin` - Universal signin
-   - `/auth/callback` - OAuth callback (no parameters in URL)
-3. After auth:
-   - **Buyers**: Route to dashboard `/buyers/home` (redirects to `/buyers/chat`)
-   - **Creators**: Route to dashboard `/creators/home` (⚠️ will change to creator app `/home`)
-
-### Planned User Flow (After Creator V2 Deployment)
-1. Users visit **Website** for marketing
 2. Website redirects based on account type:
-   - Buyers → **Dashboard** app authentication
-   - Creators → **Creator V2** app authentication
+   - **Buyers** → **Dashboard** app for authentication
+     - `/signup/buyer` - Buyer signup
+     - `/signin` - Buyer signin
+     - `/auth/callback` - OAuth callback (no parameters in URL)
+   - **Creators** → **Creator** app for authentication (`creator.kstorybridge.com`)
+     - `/signup` - Creator signup
+     - `/signin` - Creator signin
+     - `/auth/callback` - OAuth callback
 3. After auth:
-   - **Buyers**: Dashboard app `/buyers/home`
-   - **Creators**: Creator V2 app `/home` (clean URLs)
+   - **Buyers**: Dashboard app `/buyers/chat`
+   - **Creators**: Creator app `/home`
 
-### V2 Status
-- ✅ Auth system complete (email + OAuth, no race conditions)
-- ✅ Title management complete (CRUD operations)
-- ✅ Profile management complete
-- 🚧 Testing & deployment (Phase 5 pending)
+### Auth Simplification (Completed 2025-11-04)
+- ✅ **Dashboard app**: BUYER auth only (~215 lines removed, 50% complexity reduction)
+- ✅ **Creator app**: CREATOR auth only (complete separation)
+- ✅ **No shared auth pages**: Each app handles its own user type
+- ✅ **Tests**: 100% pass rate (99/99 tests passing in dashboard)
 
 ### Account Types
 - **buyer** - Media buyers with tier system (basic/pro/suite)

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { type PitchAnalysis } from '@/types/pitchAnalysis';
 
 export interface Title {
   title_id: string;
@@ -24,6 +25,9 @@ export interface Title {
   pitch?: string;
   created_at?: string;
   updated_at?: string;
+  // Pitch analysis data from title_content_analysis table
+  pitch_analysis?: PitchAnalysis;
+  processing_confidence?: number;
 }
 
 export interface TitleFilters {
@@ -84,19 +88,36 @@ class TitlesService {
   }
 
   /**
-   * Fetch a single title by ID
+   * Fetch a single title by ID with pitch analysis data
    */
   async getTitleById(titleId: string): Promise<Title | null> {
     try {
       const { data, error } = await supabase
         .from('titles')
-        .select('*')
+        .select(`
+          *,
+          title_content_analysis (
+            pitch_analysis,
+            processing_confidence
+          )
+        `)
         .eq('title_id', titleId)
         .maybeSingle();
 
       if (error) {
         console.error('❌ Error fetching title:', error);
         throw new Error(`Failed to fetch title: ${error.message}`);
+      }
+
+      // Flatten the nested title_content_analysis data
+      if (data && data.title_content_analysis) {
+        const analysis = Array.isArray(data.title_content_analysis)
+          ? data.title_content_analysis[0]
+          : data.title_content_analysis;
+
+        data.pitch_analysis = analysis?.pitch_analysis;
+        data.processing_confidence = analysis?.processing_confidence;
+        delete data.title_content_analysis;
       }
 
       return data;

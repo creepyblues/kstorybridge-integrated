@@ -74,7 +74,7 @@ export function TitleCard({ title }: TitleCardProps) {
               {title.views !== undefined && (
                 <span>👁️ {formatNumber(title.views)}</span>
               )}
-              {title.rating !== undefined && (
+              {title.rating != null && (
                 <span>⭐ {title.rating.toFixed(1)}</span>
               )}
               {title.hasPitch && (

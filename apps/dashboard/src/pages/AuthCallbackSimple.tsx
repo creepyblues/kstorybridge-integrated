@@ -162,21 +162,102 @@ const AuthCallbackSimple = () => {
           console.log('📝 OAuth signup - redirecting to:', signupPath);
           navigate(signupPath);
         } else {
-          // OAuth signin - redirect to dashboard immediately (no profile check here)
-          // Profile check will happen on dashboard load to avoid infinite getSession() loops
-          console.log('✅ OAuth signin - setting up dashboard redirect with profile check');
+          // OAuth signin - VERIFY PROFILE EXISTS BEFORE REDIRECTING
+          // This prevents authenticated users without profiles from reaching dashboard
+          console.log('✅ OAuth signin - verifying profile existence before redirect');
 
-          // Store OAuth signin state for dashboard to verify profile existence
-          sessionStorage.setItem('oauth_signin_pending', 'true');
-          sessionStorage.setItem('oauth_signin_account_type', finalAccountType);
-          sessionStorage.setItem('oauth_signin_user_id', user.id);
-          sessionStorage.setItem('oauth_signin_email', user.email);
+          try {
+            // Check if profile exists in database
+            let profileExists = false;
+            let profileCheckError: string | null = null;
 
-          const dashboardPath = getDashboardPath(finalAccountType);
-          console.log('🔄 Redirecting to dashboard:', dashboardPath);
+            if (finalAccountType === 'buyer') {
+              const { data, error } = await withRetry(
+                () => supabase
+                  .from('user_buyers')
+                  .select('id')
+                  .eq('id', user.id)
+                  .maybeSingle(),
+                { maxRetries: 2, delay: 500 }
+              );
 
-          // Navigate to dashboard - profile check will happen there
-          navigate(dashboardPath);
+              if (error) {
+                console.error('❌ OAuth signin: Error checking buyer profile:', error);
+                profileCheckError = error.message;
+              } else {
+                profileExists = !!data;
+                console.log(profileExists ? '✅ Buyer profile found' : '❌ No buyer profile found');
+              }
+            } else if (finalAccountType === 'creator') {
+              const { data, error } = await withRetry(
+                () => supabase
+                  .from('user_creators')
+                  .select('id')
+                  .eq('id', user.id)
+                  .maybeSingle(),
+                { maxRetries: 2, delay: 500 }
+              );
+
+              if (error) {
+                console.error('❌ OAuth signin: Error checking creator profile:', error);
+                profileCheckError = error.message;
+              } else {
+                profileExists = !!data;
+                console.log(profileExists ? '✅ Creator profile found' : '❌ No creator profile found');
+              }
+            }
+
+            if (profileCheckError) {
+              // Database error - show error and redirect to signin
+              console.error('❌ OAuth signin: Profile check failed with database error');
+              toast({
+                title: "Connection Error",
+                description: "Unable to verify your profile. Please try signing in again.",
+                variant: "destructive"
+              });
+              navigate('/signin?error=profile_check_error');
+              return;
+            }
+
+            if (!profileExists) {
+              // No profile found - this is first-time OAuth "signin" (should be signup)
+              // Redirect to signup to complete profile
+              console.log('❌ OAuth signin: No profile found - redirecting to signup');
+
+              toast({
+                title: "Welcome!",
+                description: "Please complete your profile to get started.",
+                variant: "default"
+              });
+
+              // Set signup completion flags (reuse signup flow)
+              sessionStorage.setItem('oauth_signup_complete', 'true');
+              sessionStorage.setItem('oauth_user_id', user.id);
+              sessionStorage.setItem('oauth_user_email', user.email);
+              sessionStorage.setItem('oauth_user_account_type', finalAccountType);
+
+              const signupPath = getSignupPath(finalAccountType);
+              console.log('📝 Redirecting to signup:', signupPath);
+              navigate(signupPath);
+              return;
+            }
+
+            // Profile exists - proceed to dashboard
+            console.log('✅ OAuth signin: Profile verified - proceeding to dashboard');
+
+            const dashboardPath = getDashboardPath(finalAccountType);
+            console.log('🔄 Redirecting to dashboard:', dashboardPath);
+            navigate(dashboardPath);
+
+          } catch (error) {
+            console.error('❌ OAuth signin: Unexpected error during profile check:', error);
+            toast({
+              title: "Authentication Error",
+              description: "Unable to verify your profile. Please try signing in again.",
+              variant: "destructive"
+            });
+            navigate('/signin?error=profile_check_exception');
+          }
         }
 
       } catch (error) {

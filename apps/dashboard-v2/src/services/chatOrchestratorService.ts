@@ -59,6 +59,10 @@ export const chatOrchestratorService = {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`, // ✅ Explicit auth token
+      const { data, error } = await supabase.functions.invoke('chat-orchestrator', {
+        body: {
+          messages,
+          userId,
         },
         body: JSON.stringify({
           messages,

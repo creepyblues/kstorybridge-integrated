@@ -55,6 +55,8 @@ export const completeOAuthProfile = async (
   formData: BuyerFormData,
   user: { id: string; email: string; user_metadata?: Record<string, unknown> },
   session?: { access_token: string; refresh_token: string }
+  user: any,
+  session?: any
 ): Promise<SignupResult> => {
   try {
     console.log('🔄 Completing OAuth buyer profile for:', user.email);
@@ -65,6 +67,7 @@ export const completeOAuthProfile = async (
     // During OAuth, there's a brief window where auth.users record isn't visible yet
     // Retry with exponential backoff for foreign key constraint violations
     let profileResult: { success: boolean; error?: string; profile?: unknown } | null = null;
+    let profileResult: any = null;
     const maxRetries = 3;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {

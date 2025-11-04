@@ -85,6 +85,8 @@ describe('OAuth Profile Bypass Fix (PR #11)', () => {
     // Set up default window.location
     delete (window as unknown as { location: unknown }).location;
     (window as unknown as { location: { href: string; search: string } }).location = {
+    delete (window as any).location;
+    (window as any).location = {
       href: 'http://localhost:8081/auth/callback?code=oauth-code',
       search: '?code=oauth-code',
     };

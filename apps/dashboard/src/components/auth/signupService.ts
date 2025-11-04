@@ -58,17 +58,36 @@ export const completeOAuthProfile = async (
     if (accountType === 'buyer') {
       const buyerData = formData as BuyerFormData;
 
-      // Use secure edge function for OAuth profile creation
-      let profileResult = await createOAuthProfileViaEdgeFunction('buyer', user.id, {
-        id: user.id,
-        email: user.email,
-        full_name: buyerData.full_name,
-        buyer_company: buyerData.buyer_company,
-        buyer_role: buyerData.buyer_role,
-        linkedin_url: buyerData.linkedin_url || null,
-        tier: 'basic',
-        requested: false
-      }, session);
+      // Use secure edge function for OAuth profile creation with retry for race conditions
+      // During OAuth, there's a brief window where auth.users record isn't visible yet
+      // Retry with exponential backoff for foreign key constraint violations
+      let profileResult: any = null;
+      const maxRetries = 3;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        profileResult = await createOAuthProfileViaEdgeFunction('buyer', user.id, {
+          id: user.id,
+          email: user.email,
+          full_name: buyerData.full_name,
+          buyer_company: buyerData.buyer_company,
+          buyer_role: buyerData.buyer_role,
+          linkedin_url: buyerData.linkedin_url || null,
+          tier: 'basic',
+          requested: false
+        }, session);
+
+        // Success or non-retryable error
+        if (profileResult.success || !profileResult.error?.includes('foreign key constraint')) {
+          break;
+        }
+
+        // Retry for foreign key constraint violations (OAuth race condition)
+        if (attempt < maxRetries) {
+          const delay = 100 * Math.pow(2, attempt - 1); // 100ms, 200ms, 400ms
+          console.log(`⏳ OAuth Profile: Foreign key constraint, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
 
       // Fallback to atomic profile creator if service role fails
       if (!profileResult.success) {
@@ -166,16 +185,35 @@ export const completeOAuthProfile = async (
       const creatorData = formData as CreatorFormData;
       const normalizedRole = normalizeCreatorRole(creatorData.ip_owner_role);
 
-      // Use secure edge function for OAuth profile creation
-      let profileResult = await createOAuthProfileViaEdgeFunction('creator', user.id, {
-        id: user.id,
-        email: user.email,
-        full_name: creatorData.full_name,
-        pen_name: creatorData.pen_name,
-        ip_owner_role: normalizedRole,
-        ip_owner_company: creatorData.ip_owner_company || null,
-        website_url: creatorData.website_url || null
-      }, session);
+      // Use secure edge function for OAuth profile creation with retry for race conditions
+      // During OAuth, there's a brief window where auth.users record isn't visible yet
+      // Retry with exponential backoff for foreign key constraint violations
+      let profileResult: any = null;
+      const maxRetries = 3;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        profileResult = await createOAuthProfileViaEdgeFunction('creator', user.id, {
+          id: user.id,
+          email: user.email,
+          full_name: creatorData.full_name,
+          pen_name: creatorData.pen_name,
+          ip_owner_role: normalizedRole,
+          ip_owner_company: creatorData.ip_owner_company || null,
+          website_url: creatorData.website_url || null
+        }, session);
+
+        // Success or non-retryable error
+        if (profileResult.success || !profileResult.error?.includes('foreign key constraint')) {
+          break;
+        }
+
+        // Retry for foreign key constraint violations (OAuth race condition)
+        if (attempt < maxRetries) {
+          const delay = 100 * Math.pow(2, attempt - 1); // 100ms, 200ms, 400ms
+          console.log(`⏳ OAuth Profile: Foreign key constraint, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
 
       // Fallback to atomic profile creator if service role fails
       if (!profileResult.success) {

@@ -4,11 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTierAccess } from '@/contexts/TierContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { signOut } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { ProBadge } from '@/components/tier/ProBadge';
-import { Loader2, User, Mail, Building, Briefcase, Linkedin } from 'lucide-react';
+import { Loader2, User, Mail, Building, Briefcase, Linkedin, LogOut } from 'lucide-react';
 
 interface BuyerProfile {
   email: string;
@@ -28,6 +29,20 @@ export default function Profile() {
 
   const [profile, setProfile] = useState<BuyerProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/signin');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to sign out. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -254,6 +269,24 @@ export default function Profile() {
                 </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Account Actions */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-bold text-black mb-4">Account Actions</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Sign out of your account. You'll need to sign in again to access your dashboard.
+            </p>
+            <Button
+              variant="outline"
+              onClick={handleSignOut}
+              className="border-gray-300 hover:bg-gray-100"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
           </CardContent>
         </Card>
 

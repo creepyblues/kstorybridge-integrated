@@ -16,7 +16,7 @@ import {
   validateCreatorRole,
   normalizeCreatorRole
 } from './validation';
-import { signupBuyer, signupCreator, handleOAuthSignup, completeOAuthProfile } from './signupService';
+import { signupBuyer, handleOAuthSignup, completeOAuthProfile } from './signupService';
 import { BuyerSignupForm } from './BuyerSignupForm';
 import { CreatorSignupForm } from './CreatorSignupForm';
 import { OAuthProviders } from './OAuthProviders';
@@ -152,7 +152,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
 
           try {
             // Wrap profile completion with timeout to prevent infinite hangs
-            const profilePromise = completeOAuthProfile(accountType, buyerFormData, user, session);
+            const profilePromise = completeOAuthProfile(buyerFormData, user, session);
             const timeoutPromise = new Promise((_, reject) =>
               setTimeout(() => reject(new Error('Profile creation timeout - please try again')), 30000)
             );
@@ -256,11 +256,12 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
           }
 
           // Complete OAuth creator profile - improved handling for false timeouts
+          // NOTE: Creator auth moved to creator app - this code path is deprecated
           console.log('🔄 Starting creator OAuth profile completion...');
 
           try {
             // Wrap profile completion with timeout to prevent infinite hangs
-            const profilePromise = completeOAuthProfile(accountType, creatorFormData, user, session);
+            const profilePromise = completeOAuthProfile(creatorFormData as any, user, session);
             const timeoutPromise = new Promise((_, reject) =>
               setTimeout(() => reject(new Error('Profile creation timeout - please try again')), 30000)
             );
@@ -428,6 +429,16 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
         }
 
         // Submit creator signup
+        // NOTE: Creator auth moved to creator app - this code path is deprecated and will never execute
+        console.error('❌ Creator signup attempted in dashboard app - creator auth moved to creator app');
+        toast({
+          title: "Creator Signup Unavailable",
+          description: "Creator signups have moved to the creator app. Please contact support.",
+          variant: "destructive"
+        });
+        return;
+
+        /* DEPRECATED CODE - Creator auth moved to creator app
         const result = await signupCreator(creatorFormData);
         if (!result.success) {
           // Track signup error
@@ -460,6 +471,7 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
 
         await supabase.auth.signOut();
         navigate('/signin/creator?from=signup', { replace: true });
+        */
       }
 
     } catch (error) {
@@ -493,7 +505,8 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
   const handleGoogleSignup = async () => {
     try {
       updateState({ isGoogleLoading: true });
-      const result = await handleOAuthSignup('google', accountType);
+      // Dashboard app now only handles buyer OAuth (creator auth moved to creator app)
+      const result = await handleOAuthSignup('google');
 
       if (result.error) {
         // Track OAuth signup error
@@ -543,7 +556,8 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
 
   const handleDiscordSignup = async () => {
     try {
-      const result = await handleOAuthSignup('discord', accountType);
+      // Dashboard app now only handles buyer OAuth (creator auth moved to creator app)
+      const result = await handleOAuthSignup('discord');
 
       if (result.error) {
         toast({

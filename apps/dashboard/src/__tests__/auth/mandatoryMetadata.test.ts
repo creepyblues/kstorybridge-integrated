@@ -1,18 +1,28 @@
 /**
- * Mandatory Metadata Test Suite
+ * Non-Blocking Metadata Test Suite (Updated for PR #9)
  *
- * CRITICAL REQUIREMENT: Users MUST have account_type metadata after signup
- * If metadata write fails, signup MUST fail (no orphaned profiles)
+ * NEW STRATEGY (since PR #9):
+ * - Metadata updates are NON-BLOCKING (fire-and-forget pattern)
+ * - Signup SUCCEEDS even if metadata write fails
+ * - RootRedirect has fallback logic to write metadata lazily if initial write fails
+ *
+ * This eliminates false timeouts while maintaining eventual metadata consistency.
  *
  * Related files:
- * - signupService.ts: completeOAuthProfile function
+ * - signupService.ts: completeOAuthProfile function (lines 114-138, 225-249)
+ * - RootRedirect.tsx: Lazy metadata write fallback
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock Supabase
 const mockUpdateUser = vi.fn();
-const mockAuthUpdateUser = vi.fn();
+const mockCreateOAuthProfileViaEdgeFunction = vi.fn();
+const mockCreateBuyerProfileAtomic = vi.fn();
+const mockCreateCreatorProfileAtomic = vi.fn();
+const mockSendWelcomeEmail = vi.fn();
+const mockNotifyBuyerSignup = vi.fn();
+const mockNotifyCreatorSignup = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -30,27 +40,27 @@ vi.mock('@/services/auth', () => ({
 }));
 
 vi.mock('@/utils/atomicProfileCreator', () => ({
-  createBuyerProfileAtomic: vi.fn(),
-  createCreatorProfileAtomic: vi.fn(),
+  createBuyerProfileAtomic: mockCreateBuyerProfileAtomic,
+  createCreatorProfileAtomic: mockCreateCreatorProfileAtomic,
 }));
 
 vi.mock('@/services/oauthProfileEdgeFunction', () => ({
-  createOAuthProfileViaEdgeFunction: vi.fn().mockResolvedValue({ success: true }),
+  createOAuthProfileViaEdgeFunction: mockCreateOAuthProfileViaEdgeFunction,
 }));
 
 vi.mock('@/services/emailService', () => ({
-  sendWelcomeEmail: vi.fn(),
+  sendWelcomeEmail: mockSendWelcomeEmail,
 }));
 
 vi.mock('@/utils/slack', () => ({
-  notifyBuyerSignup: vi.fn(),
-  notifyCreatorSignup: vi.fn(),
+  notifyBuyerSignup: mockNotifyBuyerSignup,
+  notifyCreatorSignup: mockNotifyCreatorSignup,
 }));
 
 // Import after mocking
 const { completeOAuthProfile } = await import('@/components/auth/signupService');
 
-describe('Mandatory Metadata - OAuth Signup', () => {
+describe('Non-Blocking Metadata - OAuth Signup (PR #9)', () => {
   const mockUser = {
     id: 'test-user-id',
     email: 'test@example.com',
@@ -85,241 +95,158 @@ describe('Mandatory Metadata - OAuth Signup', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Set up default mock return values
+    mockCreateOAuthProfileViaEdgeFunction.mockResolvedValue({
+      success: true,
+      profile: { id: 'test-user-id' }
+    });
+
+    mockCreateBuyerProfileAtomic.mockResolvedValue({
+      success: true,
+      profile: { id: 'test-user-id' }
+    });
+
+    mockCreateCreatorProfileAtomic.mockResolvedValue({
+      success: true,
+      profile: { id: 'test-user-id' }
+    });
+
+    mockUpdateUser.mockResolvedValue({ error: null });
+
+    mockSendWelcomeEmail.mockResolvedValue(undefined);
+    mockNotifyBuyerSignup.mockResolvedValue(undefined);
+    mockNotifyCreatorSignup.mockResolvedValue(undefined);
   });
 
-  describe('CRITICAL: Metadata Write Must Succeed', () => {
-    it('should BLOCK and AWAIT metadata write for buyer signup', async () => {
+  describe('Non-Blocking Metadata Updates', () => {
+    it('should attempt metadata write for buyer signup (non-blocking)', async () => {
+      // Mock successful metadata write
       mockUpdateUser.mockResolvedValue({ error: null });
 
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, mockSession);
+      const result = await completeOAuthProfile(buyerFormData, mockUser, mockSession);
 
-      // Metadata update should be called
+      // Signup should succeed (profile created)
+      expect(result.success).toBe(true);
+
+      // Metadata update should be called (but not awaited)
+      // Note: We can't verify .then() was used, but we verify updateUser was called
       expect(mockUpdateUser).toHaveBeenCalledWith({
         data: { account_type: 'buyer' },
       });
+    });
 
-      // Should succeed after metadata write
+    // Creator test removed - dashboard app now only handles buyer auth (creator auth moved to creator app)
+
+    it('should SUCCEED signup even if metadata write fails (buyer)', async () => {
+      // Mock metadata write failure
+      mockUpdateUser.mockResolvedValue({
+        error: new Error('Metadata update failed'),
+      });
+
+      const result = await completeOAuthProfile(buyerFormData, mockUser, mockSession);
+
+      // NEW BEHAVIOR: Signup succeeds even if metadata fails
+      // RootRedirect will write metadata lazily later
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+
+    // Creator tests removed - dashboard app now only handles buyer auth
+
+    it('should SUCCEED signup even if metadata write throws exception (buyer)', async () => {
+      // Mock metadata write exception (network timeout, etc.)
+      mockUpdateUser.mockRejectedValue(new Error('Network timeout'));
+
+      const result = await completeOAuthProfile(buyerFormData, mockUser, mockSession);
+
+      // NEW BEHAVIOR: Signup succeeds even if metadata times out
+      // This prevents false failures from Supabase auth.updateUser() timeouts
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+  });
+
+  describe('Signup Returns Immediately After Profile Creation', () => {
+    it('should return success without waiting for metadata write (buyer)', async () => {
+      // Mock slow metadata write (1 second delay)
+      mockUpdateUser.mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return { error: null };
+      });
+
+      const startTime = Date.now();
+      const result = await completeOAuthProfile(buyerFormData, mockUser, mockSession);
+      const duration = Date.now() - startTime;
+
+      // Should return quickly (< 500ms), not wait for 1-second metadata write
+      expect(duration).toBeLessThan(500);
       expect(result.success).toBe(true);
     });
 
-    it('should BLOCK and AWAIT metadata write for creator signup', async () => {
+    // Creator test removed - dashboard app now only handles buyer auth
+  });
+
+  describe('Metadata Optimization (Fast Path)', () => {
+    it('should attempt immediate metadata write for performance optimization', async () => {
       mockUpdateUser.mockResolvedValue({ error: null });
 
-      const result = await completeOAuthProfile('creator', creatorFormData, mockUser, mockSession);
+      await completeOAuthProfile(buyerFormData, mockUser, mockSession);
 
-      // Metadata update should be called
+      // Verify metadata write is attempted (optimization for fast path)
+      // If successful, user has metadata immediately without waiting for RootRedirect
+      expect(mockUpdateUser).toHaveBeenCalledTimes(1);
       expect(mockUpdateUser).toHaveBeenCalledWith({
-        data: { account_type: 'creator' },
+        data: { account_type: 'buyer' },
+      });
+    });
+  });
+
+  describe('RootRedirect Fallback Documentation', () => {
+    it('documents that RootRedirect writes metadata if initial write fails', async () => {
+      // This test documents the fallback behavior (tested in RootRedirect tests)
+      mockUpdateUser.mockResolvedValue({
+        error: new Error('Timeout'),
       });
 
-      // Should succeed after metadata write
+      const result = await completeOAuthProfile(buyerFormData, mockUser, mockSession);
+
+      // Signup succeeds without metadata
       expect(result.success).toBe(true);
-    });
 
-    it('should FAIL signup if metadata write fails (buyer)', async () => {
-      // Mock metadata write failure
-      mockUpdateUser.mockResolvedValue({
-        error: new Error('Metadata update failed'),
-      });
-
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, mockSession);
-
-      // Signup MUST fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Failed to set account_type metadata');
-      expect(result.error).toContain('signup aborted');
-    });
-
-    it('should FAIL signup if metadata write fails (creator)', async () => {
-      // Mock metadata write failure
-      mockUpdateUser.mockResolvedValue({
-        error: new Error('Metadata update failed'),
-      });
-
-      const result = await completeOAuthProfile('creator', creatorFormData, mockUser, mockSession);
-
-      // Signup MUST fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Failed to set account_type metadata');
-      expect(result.error).toContain('signup aborted');
-    });
-
-    it('should FAIL signup if metadata write throws exception (buyer)', async () => {
-      // Mock metadata write exception
-      mockUpdateUser.mockRejectedValue(new Error('Network error'));
-
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, mockSession);
-
-      // Signup MUST fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Exception during metadata write');
-      expect(result.error).toContain('signup aborted');
-    });
-
-    it('should FAIL signup if metadata write throws exception (creator)', async () => {
-      // Mock metadata write exception
-      mockUpdateUser.mockRejectedValue(new Error('Network error'));
-
-      const result = await completeOAuthProfile('creator', creatorFormData, mockUser, mockSession);
-
-      // Signup MUST fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Exception during metadata write');
-      expect(result.error).toContain('signup aborted');
+      // DOCUMENTED BEHAVIOR (not tested here):
+      // When user visits root URL, RootRedirect.tsx:
+      // 1. Checks user metadata for account_type
+      // 2. If missing, checks database tables (user_buyers/user_creators)
+      // 3. Writes metadata from database (lazy fallback)
+      // 4. Redirects to appropriate dashboard
+      //
+      // See: RootRedirect.tsx lines 46-82 (buyer), 84-127 (creator)
     });
   });
 
-  describe('CRITICAL: No Session = Signup Failure', () => {
-    it('should FAIL buyer signup if no session available', async () => {
-      // No session
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, null);
-
-      // Signup MUST fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('OAuth session invalid');
-      expect(result.error).toContain('cannot complete signup without account_type metadata');
-
-      // Metadata update should NOT be called
-      expect(mockUpdateUser).not.toHaveBeenCalled();
-    });
-
-    it('should FAIL creator signup if no session available', async () => {
-      // No session
-      const result = await completeOAuthProfile('creator', creatorFormData, mockUser, null);
-
-      // Signup MUST fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('OAuth session invalid');
-      expect(result.error).toContain('cannot complete signup without account_type metadata');
-
-      // Metadata update should NOT be called
-      expect(mockUpdateUser).not.toHaveBeenCalled();
-    });
-
-    it('should FAIL buyer signup if session has no access token', async () => {
-      // Session without access token
-      const invalidSession = { user: mockUser };
-
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, invalidSession as any);
-
-      // Signup MUST fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('OAuth session invalid');
-
-      // Metadata update should NOT be called
-      expect(mockUpdateUser).not.toHaveBeenCalled();
-    });
-
-    it('should FAIL creator signup if session has no access token', async () => {
-      // Session without access token
-      const invalidSession = { user: mockUser };
-
-      const result = await completeOAuthProfile('creator', creatorFormData, mockUser, invalidSession as any);
-
-      // Signup MUST fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('OAuth session invalid');
-
-      // Metadata update should NOT be called
-      expect(mockUpdateUser).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Success Only After Metadata Write', () => {
-    it('should NOT return success until metadata is written (buyer)', async () => {
-      let metadataWritten = false;
-
-      mockUpdateUser.mockImplementation(async () => {
-        // Simulate async delay
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        metadataWritten = true;
-        return { error: null };
+  describe('Profile Creation Failure (Still Blocks Signup)', () => {
+    it('should FAIL signup if profile creation fails (buyer)', async () => {
+      // Mock both edge function and atomic creator to fail
+      mockCreateOAuthProfileViaEdgeFunction.mockResolvedValue({
+        success: false,
+        error: 'Database connection failed',
+      });
+      mockCreateBuyerProfileAtomic.mockResolvedValue({
+        success: false,
+        error: 'Database connection failed',
       });
 
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, mockSession);
+      const result = await completeOAuthProfile(buyerFormData, mockUser, mockSession);
 
-      // Verify metadata was written BEFORE success returned
-      expect(metadataWritten).toBe(true);
-      expect(result.success).toBe(true);
-    });
-
-    it('should NOT return success until metadata is written (creator)', async () => {
-      let metadataWritten = false;
-
-      mockUpdateUser.mockImplementation(async () => {
-        // Simulate async delay
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        metadataWritten = true;
-        return { error: null };
-      });
-
-      const result = await completeOAuthProfile('creator', creatorFormData, mockUser, mockSession);
-
-      // Verify metadata was written BEFORE success returned
-      expect(metadataWritten).toBe(true);
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe('Error Messages', () => {
-    it('should provide clear error message for metadata write failure', async () => {
-      mockUpdateUser.mockResolvedValue({
-        error: new Error('Database connection lost'),
-      });
-
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, mockSession);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Failed to set account_type metadata');
-      expect(result.error).toContain('signup aborted to prevent orphaned profile');
-    });
-
-    it('should provide clear error message for missing session', async () => {
-      const result = await completeOAuthProfile('creator', creatorFormData, mockUser, null);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('OAuth session invalid');
-      expect(result.error).toContain('cannot complete signup without account_type metadata');
-    });
-
-    it('should provide clear error message for exception', async () => {
-      mockUpdateUser.mockRejectedValue(new Error('Unexpected error'));
-
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, mockSession);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Exception during metadata write');
-      expect(result.error).toContain('signup aborted to prevent orphaned profile');
-    });
-  });
-
-  describe('No Orphaned Profiles', () => {
-    it('should prevent orphaned profiles by failing before success', async () => {
-      mockUpdateUser.mockResolvedValue({
-        error: new Error('Metadata service unavailable'),
-      });
-
-      const result = await completeOAuthProfile('buyer', buyerFormData, mockUser, mockSession);
-
-      // Profile may exist in database, but signup reports failure
-      // This allows cleanup/retry logic
+      // Profile creation failure BLOCKS signup (this is correct)
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
+
+      // Metadata update should NOT be called if profile creation fails
+      expect(mockUpdateUser).not.toHaveBeenCalled();
     });
 
-    it('should ensure metadata exists before completing signup', async () => {
-      const metadataUpdates: string[] = [];
-
-      mockUpdateUser.mockImplementation(async (options: any) => {
-        metadataUpdates.push(options.data.account_type);
-        return { error: null };
-      });
-
-      await completeOAuthProfile('buyer', buyerFormData, mockUser, mockSession);
-
-      // Verify metadata was written
-      expect(metadataUpdates).toContain('buyer');
-      expect(metadataUpdates.length).toBeGreaterThan(0);
-    });
+    // Creator test removed - dashboard app now only handles buyer auth
   });
 });

@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import { User, Menu, X, MessageSquare, BookOpen, Heart, UserCircle, CreditCard } from 'lucide-react';
+import { User, Menu, X, MessageSquare, Star, BookOpen, Heart, UserCircle, CreditCard } from 'lucide-react';
 
 interface MenuItem {
   title: string;
@@ -15,6 +15,7 @@ interface MenuItem {
 const getDiscoverItems = (): MenuItem[] => {
   return [
     { title: 'Chat', href: '/buyers/chat', icon: <MessageSquare className="h-4 w-4" /> },
+    { title: 'Featured', href: '/buyers/featured', icon: <Star className="h-4 w-4" /> },
     { title: 'Titles', href: '/buyers/titles', icon: <BookOpen className="h-4 w-4" /> },
     { title: 'Saved', href: '/buyers/saved', icon: <Heart className="h-4 w-4" /> },
   ];

@@ -1,11 +1,11 @@
 import { authService } from '@/services/auth';
-import { createBuyerProfileAtomic, createCreatorProfileAtomic } from '@/utils/atomicProfileCreator';
+import { createBuyerProfileAtomic } from '@/utils/atomicProfileCreator';
 import { createOAuthProfileViaEdgeFunction } from '@/services/oauthProfileEdgeFunction';
-import { createBuyerViaEdgeFunction, createCreatorViaEdgeFunction } from '@/services/emailSignupEdgeFunction';
-import type { BuyerFormData, CreatorFormData, AccountType } from './types';
-import { isBlockedEmail, normalizeCreatorRole } from './validation';
+import { createBuyerViaEdgeFunction } from '@/services/emailSignupEdgeFunction';
+import type { BuyerFormData } from './types';
+import { isBlockedEmail } from './validation';
 import { sendWelcomeEmail } from '@/services/emailService';
-import { notifyBuyerSignup, notifyCreatorSignup } from '@/utils/slack';
+import { notifyBuyerSignup } from '@/utils/slack';
 import { supabase } from '@/integrations/supabase/client';
 
 const resolveDashboardUrl = () => {
@@ -45,239 +45,125 @@ export interface SignupResult {
 
 /**
  * Complete OAuth user profile - for users who are already authenticated
+ * Dashboard app now only handles BUYER auth (creator auth moved to creator app)
  */
 export const completeOAuthProfile = async (
-  accountType: AccountType,
-  formData: BuyerFormData | CreatorFormData,
+  formData: BuyerFormData,
   user: any,
   session?: any
 ): Promise<SignupResult> => {
   try {
-    console.log('🔄 Completing OAuth profile for:', user.email, 'as', accountType);
+    console.log('🔄 Completing OAuth buyer profile for:', user.email);
 
-    if (accountType === 'buyer') {
-      const buyerData = formData as BuyerFormData;
+    const buyerData = formData;
 
-      // Use secure edge function for OAuth profile creation with retry for race conditions
-      // During OAuth, there's a brief window where auth.users record isn't visible yet
-      // Retry with exponential backoff for foreign key constraint violations
-      let profileResult: any = null;
-      const maxRetries = 3;
+    // Use secure edge function for OAuth profile creation with retry for race conditions
+    // During OAuth, there's a brief window where auth.users record isn't visible yet
+    // Retry with exponential backoff for foreign key constraint violations
+    let profileResult: any = null;
+    const maxRetries = 3;
 
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        profileResult = await createOAuthProfileViaEdgeFunction('buyer', user.id, {
-          id: user.id,
-          email: user.email,
-          full_name: buyerData.full_name,
-          buyer_company: buyerData.buyer_company,
-          buyer_role: buyerData.buyer_role,
-          linkedin_url: buyerData.linkedin_url || null,
-          tier: 'basic',
-          requested: false
-        }, session);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      profileResult = await createOAuthProfileViaEdgeFunction('buyer', user.id, {
+        id: user.id,
+        email: user.email,
+        full_name: buyerData.full_name,
+        buyer_company: buyerData.buyer_company,
+        buyer_role: buyerData.buyer_role,
+        linkedin_url: buyerData.linkedin_url || null,
+        tier: 'basic',
+        requested: false
+      }, session);
 
-        // Success or non-retryable error
-        if (profileResult.success || !profileResult.error?.includes('foreign key constraint')) {
-          break;
-        }
-
-        // Retry for foreign key constraint violations (OAuth race condition)
-        if (attempt < maxRetries) {
-          const delay = 100 * Math.pow(2, attempt - 1); // 100ms, 200ms, 400ms
-          console.log(`⏳ OAuth Profile: Foreign key constraint, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
+      // Success or non-retryable error
+      if (profileResult.success || !profileResult.error?.includes('foreign key constraint')) {
+        break;
       }
 
-      // Fallback to atomic profile creator if service role fails
-      if (!profileResult.success) {
-        console.log('⚠️ Simple OAuth profile creation failed, falling back to atomic creator');
-        profileResult = await createBuyerProfileAtomic({
-          id: user.id,
-          email: user.email,
-          full_name: buyerData.full_name,
-          buyer_company: buyerData.buyer_company,
-          buyer_role: buyerData.buyer_role,
-          linkedin_url: buyerData.linkedin_url || null,
-          tier: 'basic',
-          requested: false
-        }, {
-          maxRetries: 3,
-          allowUpdate: true
-        });
+      // Retry for foreign key constraint violations (OAuth race condition)
+      if (attempt < maxRetries) {
+        const delay = 100 * Math.pow(2, attempt - 1); // 100ms, 200ms, 400ms
+        console.log(`⏳ OAuth Profile: Foreign key constraint, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
-
-      if (!profileResult.success) {
-        return { success: false, error: profileResult.error };
-      }
-
-      // ✅ Profile creation succeeded - write metadata in non-blocking mode
-      //
-      // STRATEGY: Attempt to write account_type metadata immediately but don't fail signup if it times out
-      //
-      // REASONING:
-      // - Writing metadata NOW gives fast path for subsequent loads (metadata check is instant)
-      // - If write times out, RootRedirect.tsx has fallback logic to write it lazily
-      // - Best of both worlds: performance optimization + reliability fallback
-      //
-      console.log('🔄 Writing account_type metadata (non-blocking)');
-
-      // Non-blocking metadata update - don't await, don't fail signup on error
-      supabase.auth.updateUser({
-        data: { account_type: 'buyer' }
-      }).then(({ error }) => {
-        if (error) {
-          console.warn('⚠️ Metadata update failed (non-blocking):', error.message);
-          console.log('ℹ️ RootRedirect will write metadata lazily on next load');
-        } else {
-          console.log('✅ Account type metadata written successfully');
-        }
-      }).catch((error) => {
-        console.warn('⚠️ Metadata update exception (non-blocking):', error);
-        console.log('ℹ️ RootRedirect will write metadata lazily on next load');
-      });
-
-      console.log('✅ OAuth buyer profile created - proceeding to dashboard');
-      const userResult = { success: true, user };
-
-      // Send welcome email and Slack notification in background (non-blocking)
-      (async () => {
-        try {
-          await Promise.all([
-            sendWelcomeEmail({
-              userName: buyerData.full_name,
-              userEmail: user.email,
-              accountType: 'buyer',
-              dashboardUrl: `${window.location.origin}/buyers/chat`,
-              loginUrl: `${window.location.origin}/signin`
-            }),
-            notifyBuyerSignup({
-              fullName: buyerData.full_name,
-              email: user.email,
-              company: buyerData.buyer_company,
-              role: buyerData.buyer_role
-            })
-          ]);
-          console.log('✅ Welcome email and Slack notification sent for OAuth buyer (background)');
-        } catch (notificationError) {
-          console.error('⚠️ Failed to send notifications (non-blocking background):', notificationError);
-        }
-      })();
-
-      return userResult;
-
-    } else {
-      const creatorData = formData as CreatorFormData;
-      const normalizedRole = normalizeCreatorRole(creatorData.ip_owner_role);
-
-      // Use secure edge function for OAuth profile creation with retry for race conditions
-      // During OAuth, there's a brief window where auth.users record isn't visible yet
-      // Retry with exponential backoff for foreign key constraint violations
-      let profileResult: any = null;
-      const maxRetries = 3;
-
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        profileResult = await createOAuthProfileViaEdgeFunction('creator', user.id, {
-          id: user.id,
-          email: user.email,
-          full_name: creatorData.full_name,
-          pen_name: creatorData.pen_name,
-          ip_owner_role: normalizedRole,
-          ip_owner_company: creatorData.ip_owner_company || null,
-          website_url: creatorData.website_url || null
-        }, session);
-
-        // Success or non-retryable error
-        if (profileResult.success || !profileResult.error?.includes('foreign key constraint')) {
-          break;
-        }
-
-        // Retry for foreign key constraint violations (OAuth race condition)
-        if (attempt < maxRetries) {
-          const delay = 100 * Math.pow(2, attempt - 1); // 100ms, 200ms, 400ms
-          console.log(`⏳ OAuth Profile: Foreign key constraint, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
-      }
-
-      // Fallback to atomic profile creator if service role fails
-      if (!profileResult.success) {
-        console.log('⚠️ Simple OAuth creator profile creation failed, falling back to atomic creator');
-        profileResult = await createCreatorProfileAtomic({
-          id: user.id,
-          email: user.email,
-          full_name: creatorData.full_name,
-          pen_name: creatorData.pen_name,
-          ip_owner_role: normalizedRole,
-          ip_owner_company: creatorData.ip_owner_company,
-          website_url: creatorData.website_url,
-          invitation_status: 'invited'
-        }, {
-          maxRetries: 3,
-          allowUpdate: true
-        });
-      }
-
-      if (!profileResult.success) {
-        return { success: false, error: profileResult.error };
-      }
-
-      // ✅ Profile creation succeeded - write metadata in non-blocking mode
-      //
-      // STRATEGY: Attempt to write account_type metadata immediately but don't fail signup if it times out
-      //
-      // REASONING:
-      // - Writing metadata NOW gives fast path for subsequent loads (metadata check is instant)
-      // - If write times out, RootRedirect.tsx has fallback logic to write it lazily
-      // - Best of both worlds: performance optimization + reliability fallback
-      //
-      console.log('🔄 Writing account_type metadata (non-blocking)');
-
-      // Non-blocking metadata update - don't await, don't fail signup on error
-      supabase.auth.updateUser({
-        data: { account_type: 'creator' }
-      }).then(({ error }) => {
-        if (error) {
-          console.warn('⚠️ Metadata update failed (non-blocking):', error.message);
-          console.log('ℹ️ RootRedirect will write metadata lazily on next load');
-        } else {
-          console.log('✅ Account type metadata written successfully');
-        }
-      }).catch((error) => {
-        console.warn('⚠️ Metadata update exception (non-blocking):', error);
-        console.log('ℹ️ RootRedirect will write metadata lazily on next load');
-      });
-
-      console.log('✅ OAuth creator profile created - proceeding to dashboard');
-      const userResult = { success: true, user };
-
-      // Send welcome email and Slack notification in background (non-blocking)
-      (async () => {
-        try {
-          await Promise.all([
-            sendWelcomeEmail({
-              userName: creatorData.full_name,
-              userEmail: user.email,
-              accountType: 'creator',
-              dashboardUrl: `${window.location.origin}/creators/home`,
-              loginUrl: `${window.location.origin}/signin`
-            }),
-            notifyCreatorSignup({
-              fullName: creatorData.full_name,
-              email: user.email,
-              penName: creatorData.pen_name,
-              role: creatorData.ip_owner_role,
-              company: creatorData.ip_owner_company
-            })
-          ]);
-          console.log('✅ Welcome email and Slack notification sent for OAuth creator (background)');
-        } catch (notificationError) {
-          console.error('⚠️ Failed to send notifications (non-blocking background):', notificationError);
-        }
-      })();
-
-      return userResult;
     }
+
+    // Fallback to atomic profile creator if service role fails
+    if (!profileResult.success) {
+      console.log('⚠️ Simple OAuth profile creation failed, falling back to atomic creator');
+      profileResult = await createBuyerProfileAtomic({
+        id: user.id,
+        email: user.email,
+        full_name: buyerData.full_name,
+        buyer_company: buyerData.buyer_company,
+        buyer_role: buyerData.buyer_role,
+        linkedin_url: buyerData.linkedin_url || null,
+        tier: 'basic',
+        requested: false
+      }, {
+        maxRetries: 3,
+        allowUpdate: true
+      });
+    }
+
+    if (!profileResult.success) {
+      return { success: false, error: profileResult.error };
+    }
+
+    // ✅ Profile creation succeeded - write metadata in non-blocking mode
+    //
+    // STRATEGY: Attempt to write account_type metadata immediately but don't fail signup if it times out
+    //
+    // REASONING:
+    // - Writing metadata NOW gives fast path for subsequent loads (metadata check is instant)
+    // - If write times out, RootRedirect.tsx has fallback logic to write it lazily
+    // - Best of both worlds: performance optimization + reliability fallback
+    //
+    console.log('🔄 Writing account_type metadata (non-blocking)');
+
+    // Non-blocking metadata update - don't await, don't fail signup on error
+    supabase.auth.updateUser({
+      data: { account_type: 'buyer' }
+    }).then(({ error }) => {
+      if (error) {
+        console.warn('⚠️ Metadata update failed (non-blocking):', error.message);
+        console.log('ℹ️ RootRedirect will write metadata lazily on next load');
+      } else {
+        console.log('✅ Account type metadata written successfully');
+      }
+    }).catch((error) => {
+      console.warn('⚠️ Metadata update exception (non-blocking):', error);
+      console.log('ℹ️ RootRedirect will write metadata lazily on next load');
+    });
+
+    console.log('✅ OAuth buyer profile created - proceeding to dashboard');
+    const userResult = { success: true, user };
+
+    // Send welcome email and Slack notification in background (non-blocking)
+    (async () => {
+      try {
+        await Promise.all([
+          sendWelcomeEmail({
+            userName: buyerData.full_name,
+            userEmail: user.email,
+            accountType: 'buyer',
+            dashboardUrl: `${window.location.origin}/buyers/chat`,
+            loginUrl: `${window.location.origin}/signin`
+          }),
+          notifyBuyerSignup({
+            fullName: buyerData.full_name,
+            email: user.email,
+            company: buyerData.buyer_company,
+            role: buyerData.buyer_role
+          })
+        ]);
+        console.log('✅ Welcome email and Slack notification sent for OAuth buyer (background)');
+      } catch (notificationError) {
+        console.error('⚠️ Failed to send notifications (non-blocking background):', notificationError);
+      }
+    })();
+
+    return userResult;
 
   } catch (error) {
     console.error('OAuth profile completion error:', error);
@@ -374,105 +260,20 @@ export const signupBuyer = async (formData: BuyerFormData): Promise<SignupResult
   }
 };
 
-/**
- * Handle creator signup - both email and OAuth
- */
-export const signupCreator = async (formData: CreatorFormData): Promise<SignupResult> => {
-  try {
-    // Check for blocked email
-    if (isBlockedEmail(formData.email)) {
-      return {
-        success: false,
-        error: 'This email domain is not allowed to sign up.'
-      };
-    }
-
-    // Create auth user with metadata
-    const dashboardUrl = resolveDashboardUrl();
-
-    const result = await authService.signUp({
-      email: formData.email,
-      password: formData.password,
-      metadata: {
-        full_name: formData.full_name,
-        pen_name: formData.pen_name,
-        ip_owner_role: normalizeCreatorRole(formData.ip_owner_role) || undefined,
-        ip_owner_company: formData.ip_owner_company,
-        website_url: formData.website_url,
-        account_type: 'creator',
-        invitation_status: formData.invitation_status || 'invited'
-      },
-      emailRedirectTo: `${dashboardUrl}/signin/creator?verified=true`
-    });
-
-    if (result.error) {
-      return { success: false, error: result.error };
-    }
-
-    if (!result.user) {
-      return { success: false, error: 'Failed to create user account' };
-    }
-
-    // Create profile using edge function (bypasses RLS with server-side service role)
-    console.log('📝 Email signup: Creating creator profile via edge function');
-    const profileResult = await createCreatorViaEdgeFunction({
-      id: result.user.id,
-      email: formData.email,
-      full_name: formData.full_name,
-      pen_name: formData.pen_name,
-      ip_owner_role: normalizeCreatorRole(formData.ip_owner_role), // Role is now required
-      ip_owner_company: formData.ip_owner_company,
-      website_url: formData.website_url,
-      invitation_status: formData.invitation_status || 'invited'
-    });
-
-    if (!profileResult.success) {
-      console.error('❌ Email signup: Creator profile creation failed:', profileResult.error);
-      return {
-        success: false,
-        error: `Failed to create creator profile: ${profileResult.error || 'Unknown error'}`
-      };
-    }
-
-    console.log('✅ Email signup: Creator profile created successfully');
-
-    // Send Slack notification (welcome email will be sent after email verification)
-    try {
-      await notifyCreatorSignup({
-        fullName: formData.full_name,
-        email: formData.email,
-        penName: formData.pen_name,
-        role: formData.ip_owner_role,
-        company: formData.ip_owner_company
-      });
-      console.log('✅ Slack notification sent for email creator signup (welcome email will be sent after verification)');
-    } catch (notificationError) {
-      console.error('⚠️ Failed to send notifications (non-blocking):', notificationError);
-    }
-
-    return { success: true, user: result.user };
-
-  } catch (error) {
-    console.error('Creator signup error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown signup error'
-    };
-  }
-};
+// signupCreator() function removed - creator auth moved to creator app
 
 /**
- * Handle OAuth signup
+ * Handle OAuth signup - Dashboard app now only handles BUYER auth
  */
 export const handleOAuthSignup = async (
-  provider: 'google' | 'discord',
-  accountType: AccountType
+  provider: 'google' | 'discord'
 ): Promise<{ error?: string }> => {
   try {
-    console.log(`🔐 ${accountType.toUpperCase()} OAuth signup initiated with provider: ${provider}`);
+    console.log(`🔐 BUYER OAuth signup initiated with provider: ${provider}`);
 
     // Store flow data in sessionStorage (PRIMARY data passing mechanism)
-    sessionStorage.setItem('oauth_account_type', accountType);
+    // Dashboard app now only handles buyer auth (creator auth moved to creator app)
+    sessionStorage.setItem('oauth_account_type', 'buyer');
     sessionStorage.setItem('oauth_flow', 'signup');
 
     // ✅ CRITICAL: NO URL parameters in OAuth callback URL (per CLAUDE.md)

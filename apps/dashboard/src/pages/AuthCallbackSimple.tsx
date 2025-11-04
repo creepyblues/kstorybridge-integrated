@@ -103,27 +103,12 @@ const AuthCallbackSimple = () => {
 
         console.log('✅ OAuth session established for:', user.email);
 
-        // 2. Determine account type (Priority: sessionStorage > metadata)
+        // 2. Determine account type - Dashboard app now only handles BUYER auth
         // NO URL parameters used (per CLAUDE.md critical rule)
-        const finalAccountType = (
-          (typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null) ||  // From sessionStorage (PRIMARY)
-          user.user_metadata?.account_type  // Fallback to metadata if available
-        ) as AccountType | null;
+        // Always default to 'buyer' (creator auth moved to creator app)
+        const finalAccountType: AccountType = 'buyer';
 
-        console.log('🎯 Account type detection:', {
-          fromStorage: typeof window !== 'undefined' ? sessionStorage.getItem('oauth_account_type') : null,
-          fromMetadata: user.user_metadata?.account_type,
-          final: finalAccountType
-        });
-
-        // Validate account type
-        if (!finalAccountType || (finalAccountType !== 'buyer' && finalAccountType !== 'creator')) {
-          console.log('❓ No valid account type found, redirecting to selection');
-          navigate(`/account-type-selection?oauth=true&email=${encodeURIComponent(user.email)}`);
-          return;
-        }
-
-        console.log('✅ Valid account type:', finalAccountType);
+        console.log('🎯 Account type: buyer (dashboard app buyer-only mode)');
 
         // Note: Metadata update removed - not required for OAuth flow
         // RootRedirect.tsx has fallback logic that checks database tables if metadata is missing
@@ -167,44 +152,25 @@ const AuthCallbackSimple = () => {
           console.log('✅ OAuth signin - verifying profile existence before redirect');
 
           try {
-            // Check if profile exists in database
+            // Check if buyer profile exists in database
             let profileExists = false;
             let profileCheckError: string | null = null;
 
-            if (finalAccountType === 'buyer') {
-              const { data, error } = await withRetry(
-                () => supabase
-                  .from('user_buyers')
-                  .select('id')
-                  .eq('id', user.id)
-                  .maybeSingle(),
-                { maxRetries: 2, delay: 500 }
-              );
+            const { data, error } = await withRetry(
+              () => supabase
+                .from('user_buyers')
+                .select('id')
+                .eq('id', user.id)
+                .maybeSingle(),
+              { maxRetries: 2, delay: 500 }
+            );
 
-              if (error) {
-                console.error('❌ OAuth signin: Error checking buyer profile:', error);
-                profileCheckError = error.message;
-              } else {
-                profileExists = !!data;
-                console.log(profileExists ? '✅ Buyer profile found' : '❌ No buyer profile found');
-              }
-            } else if (finalAccountType === 'creator') {
-              const { data, error } = await withRetry(
-                () => supabase
-                  .from('user_creators')
-                  .select('id')
-                  .eq('id', user.id)
-                  .maybeSingle(),
-                { maxRetries: 2, delay: 500 }
-              );
-
-              if (error) {
-                console.error('❌ OAuth signin: Error checking creator profile:', error);
-                profileCheckError = error.message;
-              } else {
-                profileExists = !!data;
-                console.log(profileExists ? '✅ Creator profile found' : '❌ No creator profile found');
-              }
+            if (error) {
+              console.error('❌ OAuth signin: Error checking buyer profile:', error);
+              profileCheckError = error.message;
+            } else {
+              profileExists = !!data;
+              console.log(profileExists ? '✅ Buyer profile found' : '❌ No buyer profile found');
             }
 
             if (profileCheckError) {

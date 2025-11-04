@@ -33,11 +33,16 @@ export const chatOrchestratorService = {
     try {
       console.log('🤖 Sending message to chatbot', { query, historyLength: conversationHistory.length });
 
+      // Combine conversation history with new query into messages array
+      const messages: ChatMessage[] = [
+        ...conversationHistory,
+        { role: 'user', content: query }
+      ];
+
       const { data, error } = await supabase.functions.invoke('chat-orchestrator', {
         body: {
-          query,
-          conversation_history: conversationHistory,
-          user_id: userId,
+          messages,
+          userId,
         },
       });
 

@@ -1,12 +1,26 @@
 import { supabase } from './supabase';
 
 const DEBUG = import.meta.env.VITE_AUTH_DEBUG === 'true';
+const AUTH_TIMEOUT_MS = 10000; // 10 seconds for all auth operations
 
 const log = (message: string, data?: any) => {
   if (DEBUG) {
     console.log(`[Auth Service] ${message}`, data || '');
   }
 };
+
+/**
+ * Timeout wrapper for async operations
+ * Ensures auth operations fail fast instead of hanging
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${operation} timed out after ${timeoutMs}ms`)), timeoutMs)
+    ),
+  ]);
+}
 
 /**
  * Consumer email domains to block for buyer signups
@@ -138,8 +152,9 @@ export async function signInWithOAuth(accountType: 'buyer' = 'buyer', flow: 'sig
   sessionStorage.setItem('oauth_account_type', accountType);
   sessionStorage.setItem('oauth_flow', flow);
 
-  // Redirect URL with account_type and flow as URL parameters
-  const callbackUrl = `${window.location.origin}/auth/callback?account_type=${accountType}&flow=${flow}`;
+  // 🚨 CRITICAL: No URL parameters in OAuth callback (per CLAUDE.md and global rules)
+  // Use sessionStorage only - URL params interfere with Supabase PKCE validation
+  const callbackUrl = `${window.location.origin}/auth/callback`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -239,16 +254,23 @@ export async function signOut() {
 
 /**
  * Check if profile exists in user_buyers table
+ * With timeout protection to prevent OAuth callback hangs
  */
 export async function checkBuyerProfileExists(userId: string): Promise<boolean> {
   log('Checking buyer profile existence', { userId });
 
   try {
-    const { data, error } = await supabase
-      .from('user_buyers')
-      .select('id')
-      .eq('id', userId)
-      .maybeSingle();
+    const result = await withTimeout(
+      supabase
+        .from('user_buyers')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle() as unknown as Promise<any>,
+      AUTH_TIMEOUT_MS,
+      'Profile existence check'
+    );
+
+    const { data, error } = result as any;
 
     if (error) {
       log('Profile check error', error);
@@ -258,8 +280,10 @@ export async function checkBuyerProfileExists(userId: string): Promise<boolean> 
     const exists = !!data;
     log('Profile existence check', { exists });
     return exists;
-  } catch (error) {
+  } catch (error: any) {
     log('Profile check failed', error);
+    // Fail-safe: Return false on timeout or error
+    // OAuth flow will treat user as new and redirect to signup
     return false;
   }
 }

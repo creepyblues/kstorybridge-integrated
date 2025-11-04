@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title, TitleFilters } from '@/services/titlesService';
 import { Button } from '@/components/ui/button';
@@ -8,16 +8,23 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TitleCard } from '@/components/title/TitleCard';
 import { Search, Loader2 } from 'lucide-react';
 
+const PAGE_SIZE = 12;
+
 export default function Titles() {
   const { toast } = useToast();
 
   const [titles, setTitles] = useState<Title[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>('');
   const [selectedFormat, setSelectedFormat] = useState<string>('');
   const [genres, setGenres] = useState<string[]>([]);
   const [formats, setFormats] = useState<string[]>([]);
+
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   // Fetch genres and formats on mount
   useEffect(() => {
@@ -36,10 +43,11 @@ export default function Titles() {
     fetchMetadata();
   }, []);
 
-  // Fetch titles with filters
+  // Fetch initial titles with filters
   useEffect(() => {
     const fetchTitles = async () => {
       setLoading(true);
+      setOffset(0); // Reset offset when filters change
       try {
         const filters: TitleFilters = {
           search: searchQuery || undefined,
@@ -47,8 +55,14 @@ export default function Titles() {
           format: selectedFormat || undefined,
         };
 
-        const data = await titlesService.getTitles(filters);
+        const { data, hasMore: more } = await titlesService.getTitlesPaginated(
+          filters,
+          0,
+          PAGE_SIZE
+        );
         setTitles(data);
+        setHasMore(more);
+        setOffset(PAGE_SIZE);
       } catch (error: any) {
         console.error('Error fetching titles:', error);
         toast({
@@ -63,6 +77,62 @@ export default function Titles() {
 
     fetchTitles();
   }, [searchQuery, selectedGenre, selectedFormat, toast]);
+
+  // Load more titles on scroll
+  const loadMoreTitles = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    try {
+      const filters: TitleFilters = {
+        search: searchQuery || undefined,
+        genre: selectedGenre || undefined,
+        format: selectedFormat || undefined,
+      };
+
+      const { data, hasMore: more } = await titlesService.getTitlesPaginated(
+        filters,
+        offset,
+        PAGE_SIZE
+      );
+
+      setTitles((prev) => [...prev, ...data]);
+      setHasMore(more);
+      setOffset((prev) => prev + PAGE_SIZE);
+    } catch (error: any) {
+      console.error('Error loading more titles:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load more titles',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, offset, searchQuery, selectedGenre, selectedFormat, toast]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          loadMoreTitles();
+        }
+      },
+      { rootMargin: '100px' }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loadingMore, loadMoreTitles, loading]);
 
   return (
     <BuyerLayout>
@@ -172,7 +242,8 @@ export default function Titles() {
         ) : (
           <>
             <div className="mb-4 text-sm text-gray-600">
-              Found {titles.length} title{titles.length !== 1 ? 's' : ''}
+              Showing {titles.length} title{titles.length !== 1 ? 's' : ''}
+              {hasMore && ' (scroll for more)'}
             </div>
 
             {/* Title Grid */}
@@ -180,6 +251,21 @@ export default function Titles() {
               {titles.map((title) => (
                 <TitleCard key={title.title_id} title={title} variant="grid" />
               ))}
+            </div>
+
+            {/* Infinite Scroll Observer Target */}
+            <div ref={observerTarget} className="py-8">
+              {loadingMore && (
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  <span className="ml-2 text-sm text-gray-500">Loading more...</span>
+                </div>
+              )}
+              {!hasMore && titles.length > 0 && (
+                <div className="text-center text-sm text-gray-500">
+                  You've reached the end of the list
+                </div>
+              )}
             </div>
           </>
         )}

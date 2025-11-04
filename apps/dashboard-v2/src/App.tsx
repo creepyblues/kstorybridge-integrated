@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/hooks/useAuth';
 import { TierProvider } from '@/contexts/TierContext';
+import { DataCacheProvider } from '@/contexts/DataCacheContext';
+import { SessionCacheInitializer } from '@/components/SessionCacheInitializer';
 import { Toaster } from '@/components/ui/toaster';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
@@ -20,113 +22,163 @@ import Plan from '@/pages/buyers/Plan';
 import Checkout from '@/pages/buyers/Checkout';
 import CheckoutSuccess from '@/pages/buyers/CheckoutSuccess';
 import CheckoutCancel from '@/pages/buyers/CheckoutCancel';
+import Featured from '@/pages/buyers/Featured';
 
 // Admin pages
 import AdminTitles from '@/pages/admin/AdminTitles';
+import AdminFeatured from '@/pages/admin/Featured';
+
+// 🚨 AUTH ISOLATION ARCHITECTURE
+// AuthProvider wraps entire app (auth state only)
+// TierProvider wraps ONLY protected routes (business logic, non-blocking)
+// Public routes (signin, signup, callback) do NOT load tier checking
 
 function App() {
   return (
     <AuthProvider>
-      <TierProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Navigate to="/signin" replace />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/signup/complete" element={<CompleteProfile />} />
+      <DataCacheProvider>
+        <SessionCacheInitializer>
+          <BrowserRouter>
+            <Routes>
+          {/* Public routes - No TierProvider (auth isolated) */}
+          <Route path="/" element={<Navigate to="/signin" replace />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/signup/complete" element={<CompleteProfile />} />
 
-            {/* Protected buyer routes */}
-            <Route
-              path="/buyers/chat"
-              element={
+          {/* Protected buyer routes - TierProvider loaded on-demand */}
+          <Route
+            path="/buyers/chat"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <Chat />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/buyers/titles"
-              element={
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/titles"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <Titles />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/buyers/titles/:titleId"
-              element={
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/titles/:titleId"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <TitleDetail />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/buyers/saved"
-              element={
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/saved"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <Saved />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/buyers/profile"
-              element={
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/featured"
+            element={
+              <TierProvider>
+                <ProtectedRoute>
+                  <Featured />
+                </ProtectedRoute>
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/profile"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <Profile />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/buyers/plan"
-              element={
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/plan"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <Plan />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/buyers/checkout"
-              element={
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/checkout"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <Checkout />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/buyers/checkout/success"
-              element={
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/checkout/success"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <CheckoutSuccess />
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/buyers/checkout/cancel"
-              element={
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/checkout/cancel"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <CheckoutCancel />
                 </ProtectedRoute>
-              }
-            />
+              </TierProvider>
+            }
+          />
 
-            {/* Admin routes */}
-            <Route
-              path="/admin/titles"
-              element={
+          {/* Admin routes */}
+          <Route path="/admin" element={<Navigate to="/admin/featured" replace />} />
+          <Route
+            path="/admin/featured"
+            element={
+              <TierProvider>
+                <ProtectedRoute>
+                  <AdminFeatured />
+                </ProtectedRoute>
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/admin/titles"
+            element={
+              <TierProvider>
                 <ProtectedRoute>
                   <AdminTitles />
                 </ProtectedRoute>
-              }
-            />
+              </TierProvider>
+            }
+          />
 
-            {/* Catch all */}
-            <Route path="*" element={<Navigate to="/signin" replace />} />
-          </Routes>
-          <Toaster />
-        </BrowserRouter>
-      </TierProvider>
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/signin" replace />} />
+        </Routes>
+        <Toaster />
+      </BrowserRouter>
+        </SessionCacheInitializer>
+      </DataCacheProvider>
     </AuthProvider>
   );
 }

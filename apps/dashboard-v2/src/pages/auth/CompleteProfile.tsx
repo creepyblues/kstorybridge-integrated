@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,9 +9,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { completeOAuthProfile } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
 
+// 🚨 AUTH ISOLATION BOUNDARY
+// This page handles profile completion only - no business logic
+
 export default function CompleteProfile() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, session } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -22,8 +24,9 @@ export default function CompleteProfile() {
     linkedin_url: '',
   });
 
-  const userId = searchParams.get('user_id');
-  const email = searchParams.get('email');
+  // 🚨 CRITICAL: Read from sessionStorage only (no URL parameters per CLAUDE.md)
+  const userId = sessionStorage.getItem('oauth_user_id');
+  const email = sessionStorage.getItem('oauth_user_email');
 
   useEffect(() => {
     if (user && user.user_metadata?.full_name) {
@@ -72,6 +75,10 @@ export default function CompleteProfile() {
         buyer_role: formData.buyer_role,
         linkedin_url: formData.linkedin_url,
       }, session);
+
+      // Clear OAuth sessionStorage after successful profile creation
+      sessionStorage.removeItem('oauth_user_id');
+      sessionStorage.removeItem('oauth_user_email');
 
       toast({
         title: 'Profile Created!',

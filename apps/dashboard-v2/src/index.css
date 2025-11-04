@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Layout variables for PageContainer */
+@import './styles/layout-variables.css';
+
 @layer base {
   :root {
     --background: 0 0% 100%;

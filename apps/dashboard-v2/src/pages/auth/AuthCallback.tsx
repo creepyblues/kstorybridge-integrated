@@ -5,6 +5,20 @@ import { supabase } from '@/lib/supabase';
 import { checkBuyerProfileExists } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
 
+// 🚨 AUTH ISOLATION BOUNDARY
+// This page handles OAuth callback only - no business logic
+
+const CALLBACK_TIMEOUT_MS = 15000; // 15 seconds max for entire callback flow
+
+/**
+ * Clear OAuth sessionStorage
+ * Called on BOTH success and error to prevent state leakage
+ */
+function clearOAuthStorage() {
+  sessionStorage.removeItem('oauth_account_type');
+  sessionStorage.removeItem('oauth_flow');
+}
+
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -12,17 +26,28 @@ export default function AuthCallback() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    handleOAuthCallback();
+    // Set global timeout for entire callback flow
+    const timeoutId = setTimeout(() => {
+      clearOAuthStorage();
+      setError('Authentication timed out. Please try again.');
+    }, CALLBACK_TIMEOUT_MS);
+
+    handleOAuthCallback().finally(() => {
+      clearTimeout(timeoutId);
+    });
   }, []);
 
   async function handleOAuthCallback() {
     try {
       // Get code from URL
       const code = searchParams.get('code');
-      const accountType = searchParams.get('account_type') || sessionStorage.getItem('oauth_account_type');
-      const flow = searchParams.get('flow') || sessionStorage.getItem('oauth_flow');
+
+      // 🚨 CRITICAL: Only use sessionStorage (no URL parameters per CLAUDE.md)
+      const accountType = sessionStorage.getItem('oauth_account_type');
+      const flow = sessionStorage.getItem('oauth_flow');
 
       if (!code) {
+        clearOAuthStorage();
         setError('No authorization code found');
         return;
       }
@@ -34,11 +59,13 @@ export default function AuthCallback() {
 
       if (exchangeError) {
         console.error('❌ Code exchange error', exchangeError);
+        clearOAuthStorage();
         setError(exchangeError.message);
         return;
       }
 
       if (!data.session) {
+        clearOAuthStorage();
         setError('No session returned from OAuth');
         return;
       }
@@ -46,12 +73,9 @@ export default function AuthCallback() {
       const user = data.session.user;
       console.log('✅ OAuth session established', { userId: user.id, email: user.email });
 
-      // Clear sessionStorage
-      sessionStorage.removeItem('oauth_account_type');
-      sessionStorage.removeItem('oauth_flow');
-
       // Validate account type
       if (!accountType || accountType !== 'buyer') {
+        clearOAuthStorage();
         setError('Invalid account type');
         return;
       }
@@ -62,31 +86,38 @@ export default function AuthCallback() {
         const profileExists = await checkBuyerProfileExists(user.id);
 
         if (!profileExists) {
+          clearOAuthStorage();
           toast({
             title: 'Account Not Found',
             description: 'Your account doesn\'t exist. Please sign up first.',
             variant: 'destructive',
           });
-
-          setTimeout(() => {
-            navigate('/signup');
-          }, 2000);
+          // Immediate navigation - no setTimeout
+          navigate('/signup');
           return;
         }
 
         // Profile exists - redirect to dashboard
+        clearOAuthStorage();
         toast({
           title: 'Welcome back!',
           description: 'Successfully signed in',
         });
-
         navigate('/buyers/chat');
       } else {
-        // Signup flow - redirect to complete profile
-        navigate(`/signup/complete?user_id=${user.id}&email=${user.email}`);
+        // Signup flow - store user data in sessionStorage for CompleteProfile page
+        sessionStorage.setItem('oauth_user_id', user.id);
+        sessionStorage.setItem('oauth_user_email', user.email || '');
+
+        // Clear OAuth flow storage
+        clearOAuthStorage();
+
+        // Navigate without URL parameters
+        navigate('/signup/complete');
       }
     } catch (error: any) {
       console.error('❌ OAuth callback error', error);
+      clearOAuthStorage();
       setError(error.message || 'Authentication failed');
     }
   }

@@ -7,7 +7,7 @@ export interface Title {
   synopsis?: string;
   tagline?: string;
   author?: string;
-  genre?: string;
+  genre?: string | string[];
   content_format?: string;
   title_image?: string;
   title_url?: string;
@@ -22,6 +22,7 @@ export interface Title {
   tone?: string;
   audience?: string;
   pitch?: string;
+  verified?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -79,6 +80,66 @@ class TitlesService {
       return data || [];
     } catch (error: any) {
       console.error('❌ Titles service error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch titles with pagination
+   */
+  async getTitlesPaginated(
+    filters?: TitleFilters,
+    offset: number = 0,
+    limit: number = 12
+  ): Promise<{ data: Title[]; hasMore: boolean }> {
+    try {
+      let query = supabase
+        .from('titles')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false });
+
+      // Apply filters (same as getTitles)
+      if (filters?.genre) {
+        query = query.eq('genre', filters.genre);
+      }
+
+      if (filters?.format) {
+        query = query.eq('content_format', filters.format);
+      }
+
+      if (filters?.search) {
+        // Search in English name, Korean name, or synopsis
+        query = query.or(
+          `title_name_en.ilike.%${filters.search}%,title_name_kr.ilike.%${filters.search}%,synopsis.ilike.%${filters.search}%`
+        );
+      }
+
+      if (filters?.minRating !== undefined) {
+        query = query.gte('rating', filters.minRating);
+      }
+
+      if (filters?.completed !== undefined) {
+        query = query.eq('completed', filters.completed);
+      }
+
+      // Apply pagination
+      query = query.range(offset, offset + limit - 1);
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        console.error('❌ Error fetching paginated titles:', error);
+        throw new Error(`Failed to fetch titles: ${error.message}`);
+      }
+
+      const hasMore = count ? offset + limit < count : false;
+
+      return {
+        data: data || [],
+        hasMore,
+      };
+    } catch (error: any) {
+      console.error('❌ Paginated titles service error:', error);
       throw error;
     }
   }

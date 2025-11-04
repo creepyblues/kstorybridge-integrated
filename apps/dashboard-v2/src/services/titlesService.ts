@@ -8,7 +8,7 @@ export interface Title {
   synopsis?: string;
   tagline?: string;
   author?: string;
-  genre?: string;
+  genre?: string[];
   content_format?: string;
   title_image?: string;
   title_url?: string;
@@ -23,6 +23,7 @@ export interface Title {
   tone?: string;
   audience?: string;
   pitch?: string;
+  verified?: boolean;
   created_at?: string;
   updated_at?: string;
   // Pitch analysis data from title_content_analysis table
@@ -149,9 +150,11 @@ class TitlesService {
 
   /**
    * Fetch a single title by ID with pitch analysis data
+   * Uses two-query strategy (matching dashboard app) for better reliability
    */
   async getTitleById(titleId: string): Promise<Title | null> {
     try {
+      // Query 1: Get title data
       const { data, error } = await supabase
         .from('titles')
         .select(`
@@ -169,6 +172,32 @@ class TitlesService {
         throw new Error(`Failed to fetch title: ${error.message}`);
       }
 
+      if (!data) {
+        console.log('ℹ️ Title not found:', titleId);
+        return null;
+      }
+
+      // Query 2: Get pitch analysis separately (optional data)
+      try {
+        const { data: analysisData, error: analysisError } = await supabase
+          .from('title_content_analysis')
+          .select('pitch_analysis, processing_confidence')
+          .eq('title_id', titleId)
+          .maybeSingle();
+
+        if (analysisError) {
+          console.log('ℹ️ No pitch analysis found (this is normal for many titles)');
+        } else if (analysisData?.pitch_analysis) {
+          data.pitch_analysis = analysisData.pitch_analysis;
+          data.processing_confidence = analysisData.processing_confidence;
+          console.log('✅ Pitch analysis data attached to title');
+          console.log('📊 Processing confidence:', analysisData.processing_confidence);
+        } else {
+          console.log('ℹ️ No pitch analysis data available for this title');
+        }
+      } catch (analysisError: any) {
+        // Pitch analysis is optional - don't fail the entire request
+        console.log('ℹ️ Pitch analysis query failed (optional data):', analysisError.message);
       // Flatten the nested title_content_analysis data
       if (data && data.title_content_analysis) {
         const analysis = Array.isArray(data.title_content_analysis)

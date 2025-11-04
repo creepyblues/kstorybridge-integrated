@@ -16,7 +16,7 @@ export function TitleEditModal({ title, onSave, onClose }: TitleEditModalProps) 
     title_name_en: title.title_name_en || '',
     title_name_kr: title.title_name_kr || '',
     synopsis: title.synopsis || '',
-    genre: title.genre || '',
+    genre: title.genre || [],
     content_format: title.content_format || '',
   });
 
@@ -100,8 +100,11 @@ export function TitleEditModal({ title, onSave, onClose }: TitleEditModalProps) 
                 Genre
               </label>
               <Input
-                value={formData.genre}
-                onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
+                value={Array.isArray(formData.genre) ? formData.genre.join(', ') : ''}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  genre: e.target.value.split(',').map(g => g.trim()).filter(g => g)
+                })}
                 placeholder="e.g., Romance, Action, Fantasy"
               />
             </div>

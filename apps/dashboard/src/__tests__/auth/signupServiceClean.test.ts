@@ -28,8 +28,8 @@ describe('Signup Service - Clean OAuth Callback URL', () => {
     sessionStorage.clear();
 
     // Mock window.location.origin
-    delete (window as any).location;
-    (window as any).location = {
+    delete (window as unknown as { location: unknown }).location;
+    (window as unknown as { location: { origin: string } }).location = {
       origin: 'http://localhost:8081',
     };
   });
@@ -172,7 +172,7 @@ describe('Signup Service - Clean OAuth Callback URL', () => {
   describe('Production Environment', () => {
     it('should generate correct callback URL for production', async () => {
       // Mock production URL
-      (window as any).location.origin = 'https://dashboard.kstorybridge.com';
+      (window as unknown as { location: { origin: string } }).location.origin = 'https://dashboard.kstorybridge.com';
       mockSignInWithOAuth.mockResolvedValue({ error: null });
 
       await handleOAuthSignup('google', 'buyer');
@@ -183,7 +183,7 @@ describe('Signup Service - Clean OAuth Callback URL', () => {
     });
 
     it('should maintain clean URL in production', async () => {
-      (window as any).location.origin = 'https://dashboard.kstorybridge.com';
+      (window as unknown as { location: { origin: string } }).location.origin = 'https://dashboard.kstorybridge.com';
       mockSignInWithOAuth.mockResolvedValue({ error: null });
 
       await handleOAuthSignup('google', 'creator');
@@ -199,7 +199,7 @@ describe('Signup Service - Clean OAuth Callback URL', () => {
 
   describe('Localhost Development', () => {
     it('should generate correct callback URL for localhost', async () => {
-      (window as any).location.origin = 'http://localhost:8081';
+      (window as unknown as { location: { origin: string } }).location.origin = 'http://localhost:8081';
       mockSignInWithOAuth.mockResolvedValue({ error: null });
 
       await handleOAuthSignup('google', 'buyer');
@@ -210,7 +210,7 @@ describe('Signup Service - Clean OAuth Callback URL', () => {
     });
 
     it('should maintain clean URL in development', async () => {
-      (window as any).location.origin = 'http://localhost:8081';
+      (window as unknown as { location: { origin: string } }).location.origin = 'http://localhost:8081';
       mockSignInWithOAuth.mockResolvedValue({ error: null });
 
       await handleOAuthSignup('google', 'creator');

@@ -4,6 +4,7 @@ import { supabase, withRetry } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getDashboardPath, getSignupPath } from '@/utils/oauthUtils';
 import type { AccountType } from '@/utils/oauthUtils';
+import type { User, Session } from '@supabase/supabase-js';
 
 /**
  * Ultra-Simple OAuth Callback Handler
@@ -59,7 +60,7 @@ const AuthCallbackSimple = () => {
 
         // Set up auth state change listener BEFORE exchange
         // This captures the SIGNED_IN event that we know fires successfully
-        const authPromise = new Promise<{ user: any; session: any }>((resolve, reject) => {
+        const authPromise = new Promise<{ user: User; session: Session }>((resolve, reject) => {
           const timeout = setTimeout(() => reject(new Error('Auth event timeout')), 15000);
 
           const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {

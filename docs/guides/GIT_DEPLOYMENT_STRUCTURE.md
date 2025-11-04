@@ -58,13 +58,14 @@ Development Cycle:
 
 ### Vercel Projects Overview
 
-KStoryBridge uses **5 separate Vercel projects** for deploying 3 apps across 2 environments:
+KStoryBridge uses **6 separate Vercel projects** for deploying 4 apps across 2 environments:
 
 | Vercel Project | App | Environment | Domain | Builds From |
 |----------------|-----|-------------|--------|-------------|
 | **dashboard-staging** | Dashboard V1 | Staging | staging.kstorybridge.com | `v2` branch |
 | **creator-staging** | Creator V2 | Staging | creator-staging.kstorybridge.com | `v2` branch |
 | **kstorybridge-dashboard** | Dashboard V1 | Production | dashboard.kstorybridge.com | `main` branch |
+| **kstorybridge-dashboard-v2** | Dashboard V2 | Production | dashboard-v2.kstorybridge.com | `main` branch |
 | **kstorybridge-creator** | Creator V2 | Production | creator.kstorybridge.com | `main` branch |
 | **kstorybridge-website** | Website | Production | kstorybridge.com | `main` branch |
 
@@ -151,7 +152,54 @@ VITE_OPENAI_ENABLED=true
 
 ---
 
-#### 4. kstorybridge-creator (Production Creator V2 App)
+#### 4. kstorybridge-dashboard-v2 (Production Dashboard V2 App)
+
+**Purpose**: Next-generation buyer dashboard with enhanced chatbot features
+
+**Configuration**:
+```yaml
+Project Name: kstorybridge-dashboard-v2
+Production Branch: main
+Root Directory: apps/dashboard-v2
+Build Command: cd ../.. && npm run build:dashboard-v2
+Output Directory: apps/dashboard-v2/dist
+Install Command: npm install
+Ignored Build Step: cd ../.. && npx turbo-ignore
+Custom Domain: dashboard-v2.kstorybridge.com
+```
+
+**Turborepo Integration**:
+- Uses `turbo-ignore` for selective deployments
+- Only rebuilds when `apps/dashboard-v2/` files change
+- Requires `apps/dashboard-v2/turbo.json` configuration file
+
+**Environment Variables**:
+```env
+VITE_DASHBOARD_URL=https://dashboard-v2.kstorybridge.com
+VITE_SUPABASE_URL=https://dlrnrgcoguxlkkcitlpd.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
+```
+
+**Status**: ✅ Deployed to Production (November 2025)
+
+**Key Features**:
+- Session-based chat history persistence
+- Fuzzy title matching (80% similarity threshold)
+- ConversationalMessage with inline title linking
+- Suggested queries with database tracking
+- Analytics tracking (clicks, interactions, sessions)
+- Title cache (1,500+ titles)
+
+**Notes**:
+- Clean rebuild focused on buyer experience
+- Enhanced AI chatbot with database persistence
+- No staging environment (direct to production)
+- See `apps/dashboard-v2/CLAUDE.md` for architecture details
+
+---
+
+#### 5. kstorybridge-creator (Production Creator V2 App)
 
 **Purpose**: Production creator dashboard (content management, pitch uploads, analytics)
 

@@ -33,23 +33,46 @@ export const chatOrchestratorService = {
     try {
       console.log('🤖 Sending message to chatbot', { query, historyLength: conversationHistory.length });
 
+      // Get current session with auth token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        console.error('❌ No active session', sessionError);
+        throw new Error('Please sign in to use the chatbot');
+      }
+
       // Combine conversation history with new query into messages array
       const messages: ChatMessage[] = [
         ...conversationHistory,
         { role: 'user', content: query }
       ];
 
-      const { data, error } = await supabase.functions.invoke('chat-orchestrator', {
-        body: {
+      // Get Supabase URL from environment
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) {
+        throw new Error('VITE_SUPABASE_URL not configured');
+      }
+
+      // Use fetch with explicit Authorization header (like dashboard V1)
+      const response = await fetch(`${supabaseUrl}/functions/v1/chat-orchestrator`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`, // ✅ Explicit auth token
+        },
+        body: JSON.stringify({
           messages,
           userId,
-        },
+        }),
       });
 
-      if (error) {
-        console.error('❌ Chat orchestrator error', error);
-        throw new Error(`Chatbot error: ${error.message}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Chat orchestrator error', { status: response.status, error: errorText });
+        throw new Error(`Chatbot error: ${response.statusText || 'Unknown error'}`);
       }
+
+      const data = await response.json();
 
       if (!data) {
         throw new Error('No response from chatbot');

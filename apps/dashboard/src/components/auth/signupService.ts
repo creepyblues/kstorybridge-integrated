@@ -111,48 +111,22 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // CRITICAL: Metadata write is MANDATORY and BLOCKING
-      // User CANNOT sign up without account_type metadata
-      if (!session?.access_token) {
-        console.error('❌ CRITICAL: No session available for metadata update');
-        return {
-          success: false,
-          error: 'OAuth session invalid - cannot complete signup without account_type metadata'
-        };
-      }
-
-      console.log('🔄 Updating account_type metadata (BLOCKING - MANDATORY)...');
-
-      try {
-        // Wrap metadata update with timeout to prevent infinite hangs
-        const metadataUpdatePromise = supabase.auth.updateUser({
-          data: { account_type: 'buyer' }
-        });
-
-        const timeoutPromise = new Promise<{ error: Error }>((_, reject) =>
-          setTimeout(() => reject(new Error('Metadata update timeout after 15 seconds')), 15000)
-        );
-
-        const { error: metadataError } = await Promise.race([metadataUpdatePromise, timeoutPromise]);
-
-        if (metadataError) {
-          console.error('❌ CRITICAL: Metadata update failed:', metadataError);
-          return {
-            success: false,
-            error: 'Failed to set account_type metadata - signup aborted to prevent orphaned profile'
-          };
-        }
-
-        console.log('✅ Account type metadata written successfully - signup can proceed');
-      } catch (error) {
-        console.error('❌ CRITICAL: Metadata update exception:', error);
-        return {
-          success: false,
-          error: 'Exception during metadata write - signup aborted to prevent orphaned profile'
-        };
-      }
-
-      // Only return success AFTER metadata is confirmed written
+      // ✅ Profile creation succeeded - OAuth signup complete
+      //
+      // Note: Metadata update intentionally skipped for OAuth flows
+      //
+      // REASON: Database tables (user_buyers) are the source of truth for account_type.
+      // RootRedirect.tsx has fallback logic (lines 101-192) that:
+      //   1. Checks database table for account_type if metadata missing
+      //   2. Lazily writes metadata after detecting from database
+      //   3. All subsequent loads use metadata (fast path)
+      //
+      // Blocking on metadata.updateUser() causes false timeout issues in production
+      // (similar to exchangeCodeForSession timeout already fixed in AuthCallbackSimple.tsx).
+      //
+      // TESTING: OAuth callback handler already uses this pattern successfully.
+      //
+      console.log('✅ OAuth buyer profile created - proceeding to dashboard (metadata will be written lazily by RootRedirect)');
       const userResult = { success: true, user };
 
       // Send welcome email and Slack notification in background (non-blocking)
@@ -237,48 +211,22 @@ export const completeOAuthProfile = async (
         return { success: false, error: profileResult.error };
       }
 
-      // CRITICAL: Metadata write is MANDATORY and BLOCKING
-      // User CANNOT sign up without account_type metadata
-      if (!session?.access_token) {
-        console.error('❌ CRITICAL: No session available for metadata update');
-        return {
-          success: false,
-          error: 'OAuth session invalid - cannot complete signup without account_type metadata'
-        };
-      }
-
-      console.log('🔄 Updating account_type metadata (BLOCKING - MANDATORY)...');
-
-      try {
-        // Wrap metadata update with timeout to prevent infinite hangs
-        const metadataUpdatePromise = supabase.auth.updateUser({
-          data: { account_type: 'creator' }
-        });
-
-        const timeoutPromise = new Promise<{ error: Error }>((_, reject) =>
-          setTimeout(() => reject(new Error('Metadata update timeout after 15 seconds')), 15000)
-        );
-
-        const { error: metadataError } = await Promise.race([metadataUpdatePromise, timeoutPromise]);
-
-        if (metadataError) {
-          console.error('❌ CRITICAL: Metadata update failed:', metadataError);
-          return {
-            success: false,
-            error: 'Failed to set account_type metadata - signup aborted to prevent orphaned profile'
-          };
-        }
-
-        console.log('✅ Account type metadata written successfully - signup can proceed');
-      } catch (error) {
-        console.error('❌ CRITICAL: Metadata update exception:', error);
-        return {
-          success: false,
-          error: 'Exception during metadata write - signup aborted to prevent orphaned profile'
-        };
-      }
-
-      // Only return success AFTER metadata is confirmed written
+      // ✅ Profile creation succeeded - OAuth signup complete
+      //
+      // Note: Metadata update intentionally skipped for OAuth flows
+      //
+      // REASON: Database tables (user_creators) are the source of truth for account_type.
+      // RootRedirect.tsx has fallback logic (lines 101-192) that:
+      //   1. Checks database table for account_type if metadata missing
+      //   2. Lazily writes metadata after detecting from database
+      //   3. All subsequent loads use metadata (fast path)
+      //
+      // Blocking on metadata.updateUser() causes false timeout issues in production
+      // (similar to exchangeCodeForSession timeout already fixed in AuthCallbackSimple.tsx).
+      //
+      // TESTING: OAuth callback handler already uses this pattern successfully.
+      //
+      console.log('✅ OAuth creator profile created - proceeding to dashboard (metadata will be written lazily by RootRedirect)');
       const userResult = { success: true, user };
 
       // Send welcome email and Slack notification in background (non-blocking)

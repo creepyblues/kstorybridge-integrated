@@ -16,74 +16,9 @@ export function RootRedirect() {
 
       console.log('🏠 RootRedirect: Determining account type for user:', user.email);
 
-      // Check for pending OAuth signin (needs profile verification)
-      const isPendingOAuth = sessionStorage.getItem('oauth_signin_pending');
-
-      if (isPendingOAuth === 'true') {
-        console.log('🔍 RootRedirect: OAuth signin detected - verifying profile existence');
-
-        const oauthAccountType = sessionStorage.getItem('oauth_signin_account_type');
-        const oauthUserId = sessionStorage.getItem('oauth_signin_user_id');
-        const oauthEmail = sessionStorage.getItem('oauth_signin_email');
-
-        // Clear OAuth flags immediately to prevent re-checking
-        sessionStorage.removeItem('oauth_signin_pending');
-        sessionStorage.removeItem('oauth_signin_account_type');
-        sessionStorage.removeItem('oauth_signin_user_id');
-        sessionStorage.removeItem('oauth_signin_email');
-
-        if (oauthAccountType && oauthUserId) {
-          try {
-            // Check if profile exists in database
-            let profileExists = false;
-
-            if (oauthAccountType === 'buyer') {
-              const { data } = await supabase
-                .from('user_buyers')
-                .select('id')
-                .eq('id', oauthUserId)
-                .maybeSingle();
-              profileExists = !!data;
-            } else if (oauthAccountType === 'creator') {
-              const { data } = await supabase
-                .from('user_creators')
-                .select('id')
-                .eq('id', oauthUserId)
-                .maybeSingle();
-              profileExists = !!data;
-            }
-
-            if (!profileExists) {
-              // No profile found - redirect to signup
-              console.log('❌ RootRedirect: OAuth user has no profile - redirecting to signup');
-              toast({
-                title: "Account Not Found",
-                description: "Your account doesn't exist. Please sign up first.",
-                variant: "destructive"
-              });
-              setTimeout(() => {
-                navigate(`/signup/${oauthAccountType}`, { replace: true });
-              }, 2000);
-              return;
-            }
-
-            console.log('✅ RootRedirect: OAuth profile verified - continuing to dashboard');
-            // Profile exists - fall through to normal redirect logic below
-          } catch (error) {
-            console.error('❌ RootRedirect: Error checking OAuth profile:', error);
-            // On error, redirect to signup to be safe
-            toast({
-              title: "Verification Error",
-              description: "Unable to verify your account. Please sign up.",
-              variant: "destructive"
-            });
-            setTimeout(() => {
-              navigate(`/signup/${oauthAccountType}`, { replace: true });
-            }, 2000);
-            return;
-          }
-        }
-      }
+      // NOTE: OAuth signin profile check removed - now handled in AuthCallbackSimple.tsx
+      // This eliminates race conditions and ensures profile is verified before user reaches dashboard
+      // Keeping this file for non-OAuth users who visit root URL directly
 
       try {
         // First check user metadata

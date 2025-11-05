@@ -1,0 +1,195 @@
+/**
+ * Design Tokens - CSS Variables
+ *
+ * Single source of truth for all design values.
+ * Change once, update everywhere.
+ *
+ * Last Updated: 2025-11-03
+ */
+
+:root {
+  /* ==================== SPACING SYSTEM ==================== */
+  /* Used for margins, padding, gaps */
+  --space-xs: 0.5rem;        /* 8px */
+  --space-sm: 0.75rem;       /* 12px */
+  --space-md: 1rem;          /* 16px */
+  --space-lg: 1.5rem;        /* 24px */
+  --space-xl: 2rem;          /* 32px */
+  --space-2xl: 3rem;         /* 48px */
+  --space-3xl: 4rem;         /* 64px */
+
+  /* ==================== BORDER RADIUS ==================== */
+  --radius-xs: 0.25rem;      /* 4px */
+  --radius-sm: 0.5rem;       /* 8px */
+  --radius-md: 1rem;         /* 16px */
+  --radius-lg: 1.5rem;       /* 24px */
+  --radius-xl: 2rem;         /* 32px - rounded-2xl (STANDARD) */
+  --radius-full: 9999px;     /* Fully rounded */
+
+  /* ==================== BORDER WIDTHS ==================== */
+  --border-thin: 1px;
+  --border-medium: 2px;
+  --border-thick: 3px;
+
+  /* ==================== SHADOWS ==================== */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+  /* ==================== TYPOGRAPHY ==================== */
+  --font-size-xs: 0.75rem;   /* 12px */
+  --font-size-sm: 0.875rem;  /* 14px */
+  --font-size-base: 1rem;    /* 16px */
+  --font-size-lg: 1.125rem;  /* 18px */
+  --font-size-xl: 1.25rem;   /* 20px */
+  --font-size-2xl: 1.5rem;   /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ==================== COLORS ==================== */
+  /* Standard grays (Tailwind defaults) */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* Brand colors - Essential shades */
+  --color-hanok-teal-100: #D1EAEA;
+  --color-hanok-teal-300: #75C0BF;
+  --color-hanok-teal-500: #3D7D7C;
+  --color-hanok-teal-700: #1F3F3E;
+  --color-hanok-teal-900: #000000;
+
+  --color-midnight-ink-100: #EBEBEB;
+  --color-midnight-ink-300: #C3C3C3;
+  --color-midnight-ink-500: #9B9B9B;
+  --color-midnight-ink-700: #737373;
+  --color-midnight-ink-900: #1C1C1C;
+
+  --color-pro-purple-100: #F3E5FF;
+  --color-pro-purple-300: #D9A8FF;
+  --color-pro-purple-500: #AF52DE;
+  --color-pro-purple-700: #8B2FC9;
+  --color-pro-purple-900: #5A1B85;
+
+  --color-porcelain-blue-100: #E3F3F2;
+  --color-porcelain-blue-300: #A3D3D2;
+  --color-porcelain-blue-500: #63B3B2;
+  --color-porcelain-blue-700: #239392;
+  --color-porcelain-blue-900: #027372;
+
+  --color-sunrise-coral-100: #FFE1E1;
+  --color-sunrise-coral-300: #FFA5A5;
+  --color-sunrise-coral-500: #FF6B6B;
+  --color-sunrise-coral-700: #FF2F2F;
+  --color-sunrise-coral-900: #F00000;
+
+  --color-warm-sand-100: #FDF9F3;
+  --color-warm-sand-300: #F5E9D7;
+  --color-warm-sand-500: #EDD9BF;
+  --color-warm-sand-700: #E5C9A7;
+  --color-warm-sand-900: #DDB98F;
+
+  /* ==================== COMPONENT TOKENS ==================== */
+
+  /* Surface (replaces div, Card) */
+  --surface-bg-default: transparent;
+  --surface-bg-elevated: var(--color-white);
+  --surface-bg-flat: var(--color-gray-50);
+  --surface-border-color: var(--color-gray-300);
+  --surface-border-width: var(--border-thin);
+  --surface-shadow: var(--shadow-none);
+  --surface-radius: var(--radius-xl);
+  --surface-padding-sm: var(--space-md);
+  --surface-padding-md: var(--space-lg);
+  --surface-padding-lg: var(--space-2xl);
+
+  /* Card Spacing */
+  --card-spacing-sm: var(--space-md);
+  --card-spacing-md: var(--space-lg);
+  --card-spacing-lg: var(--space-2xl);
+
+  /* Button */
+  --button-border-color: var(--color-gray-300);
+  --button-border-width: var(--border-thin);
+  --button-hover-bg: var(--color-gray-100);
+  --button-radius: var(--radius-sm);
+  --button-padding-x: var(--space-md);
+  --button-padding-y: var(--space-sm);
+
+  /* Badge */
+  --badge-radius: var(--radius-full);
+  --badge-padding-x: 0.625rem;  /* 10px - 2.5 */
+  --badge-padding-y: 0.125rem;  /* 2px - 0.5 */
+  --badge-font-size: var(--font-size-xs);
+  --badge-font-weight: var(--font-weight-semibold);
+
+  /* Empty State */
+  --empty-state-icon-size: 2.5rem;         /* 40px default */
+  --empty-state-icon-size-sm: 2rem;        /* 32px */
+  --empty-state-icon-size-lg: 3rem;        /* 48px */
+  --empty-state-icon-color: var(--color-gray-400);
+  --empty-state-title-size: var(--font-size-lg);
+  --empty-state-title-color: var(--color-gray-900);
+  --empty-state-desc-size: var(--font-size-base);
+  --empty-state-desc-color: var(--color-gray-600);
+
+  /* Icon Sizes */
+  --icon-xs: 1rem;      /* 16px */
+  --icon-sm: 1.25rem;   /* 20px */
+  --icon-md: 1.5rem;    /* 24px */
+  --icon-lg: 2rem;      /* 32px */
+  --icon-xl: 2.5rem;    /* 40px */
+  --icon-2xl: 3rem;     /* 48px */
+
+  /* ==================== TRANSITIONS ==================== */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 200ms ease-in-out;
+  --transition-slow: 300ms ease-in-out;
+
+  /* ==================== Z-INDEX SCALE ==================== */
+  --z-base: 0;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-tooltip: 70;
+}
+
+/* ==================== RESPONSIVE OVERRIDES ==================== */
+
+/* Tablet (640px and up) */
+@media (min-width: 640px) {
+  :root {
+    --empty-state-icon-size: 2.5rem;    /* 40px */
+    --empty-state-icon-size-lg: 3rem;   /* 48px */
+  }
+}
+
+/* Desktop (1024px and up) */
+@media (min-width: 1024px) {
+  :root {
+    --empty-state-icon-size: 3rem;      /* 48px */
+    --empty-state-icon-size-lg: 3.5rem; /* 56px */
+  }
+}

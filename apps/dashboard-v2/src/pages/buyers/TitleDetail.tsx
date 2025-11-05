@@ -9,7 +9,8 @@ import { TierGatedContent } from '@/components/tier/TierGatedContent';
 import { useTierAccess } from '@/contexts/TierContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Heart, ExternalLink, Loader2, FileText, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Heart, ExternalLink, Loader2, FileText, X, Eye, BookOpen, Calendar } from 'lucide-react';
 import SecurePDFViewer from '@/components/premium/SecurePDFViewer';
 import PitchDeckThumbnail from '@/components/premium/PitchDeckThumbnail';
 
@@ -135,188 +136,317 @@ export default function TitleDetail() {
 
   return (
     <BuyerLayout>
-      {/* Header */}
-      <div className="border-b border-gray-300 bg-white px-4 py-3 mb-6">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/buyers/titles')}
-            className="border-gray-300"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleFavoriteToggle}
-            disabled={favoriteLoading}
-            className={`border-gray-300 ${
-              isFavorited ? 'bg-red-50 text-red-600 hover:bg-red-100' : ''
-            }`}
-          >
-            <Heart
-              className={`h-4 w-4 mr-1 ${isFavorited ? 'fill-current' : ''}`}
-            />
-            {isFavorited ? 'Saved' : 'Save'}
-          </Button>
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Image */}
-          <div className="lg:col-span-1">
-            {title.title_image && (
-              <div className="w-full rounded-2xl overflow-hidden bg-gray-100 sticky top-6">
-                <img
-                  src={title.title_image}
-                  alt={title.title_name_en || title.title_name_kr || 'Title'}
-                  className="w-full h-auto object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        {/* Hero Section - Full Width */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+          <div className="flex-1 min-w-0">
+            {/* Mobile: Full width image first */}
+            <div className="sm:hidden mb-4">
+              <div className="w-full h-48 bg-gray-100 rounded-xl overflow-hidden shadow-xl ring-1 ring-gray-200">
+                {title.title_image ? (
+                  <img
+                    src={title.title_image}
+                    alt={title.title_name_en || title.title_name_kr || 'Title'}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#4C9C9B]/10 to-[#4C9C9B]/20 flex items-center justify-center">
+                    <BookOpen className="w-10 h-10 text-[#4C9C9B]" />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* Desktop: Side-by-side layout */}
+            <div className="hidden sm:flex sm:items-start gap-4 sm:gap-6 mb-4">
+              <div className="w-32 h-44 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-xl ring-1 ring-gray-200">
+                {title.title_image ? (
+                  <img
+                    src={title.title_image}
+                    alt={title.title_name_en || title.title_name_kr || 'Title'}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#4C9C9B]/10 to-[#4C9C9B]/20 flex items-center justify-center">
+                    <BookOpen className="w-10 h-10 text-[#4C9C9B]" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0 text-center sm:text-left">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black mb-2 sm:mb-3 leading-tight">
+                  {title.title_name_en || title.title_name_kr}
+                </h2>
+                {title.title_name_kr && title.title_name_en && (
+                  <p className="text-lg sm:text-xl text-gray-600 font-medium mb-3 sm:mb-4">
+                    {title.title_name_kr}
+                  </p>
+                )}
+
+                {/* Author info - Story and Art on same line */}
+                <div className="flex flex-row flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-gray-600 justify-center sm:justify-start">
+                  {title.story_author && (
+                    <span className="flex items-center gap-2">
+                      <span className="font-semibold text-[#4C9C9B]">Story:</span>
+                      <span className="font-medium">{title.story_author}</span>
+                    </span>
+                  )}
+                  {title.art_author && (
+                    <span className="flex items-center gap-2">
+                      <span className="font-semibold text-[#4C9C9B]">Art:</span>
+                      <span className="font-medium">{title.art_author}</span>
+                    </span>
+                  )}
+                </div>
+
+                {/* Quick stats - views/chapters/status in one line */}
+                <div className="flex flex-row items-center gap-3 sm:gap-6 mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500 justify-center sm:justify-start flex-wrap">
+                  {title.views !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="font-medium">{titlesService.formatNumber(title.views)} views</span>
+                    </div>
+                  )}
+                  {title.chapters && (
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="font-medium">{title.chapters.toLocaleString()} chapters</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="font-medium">{title.completed ? 'Completed' : 'Ongoing'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile: Content section */}
+            <div className="sm:hidden">
+              <h2 className="text-2xl font-bold text-black mb-2 leading-tight text-center">
+                {title.title_name_en || title.title_name_kr}
+              </h2>
+              {title.title_name_kr && title.title_name_en && (
+                <p className="text-lg text-gray-600 font-medium mb-3 text-center">
+                  {title.title_name_kr}
+                </p>
+              )}
+
+              {/* Author info - Story and Art on same line */}
+              <div className="flex flex-row flex-wrap gap-4 text-sm text-gray-600 justify-center">
+                {title.story_author && (
+                  <span className="flex items-center gap-2">
+                    <span className="font-semibold text-[#4C9C9B]">Story:</span>
+                    <span className="font-medium">{title.story_author}</span>
+                  </span>
+                )}
+                {title.art_author && (
+                  <span className="flex items-center gap-2">
+                    <span className="font-semibold text-[#4C9C9B]">Art:</span>
+                    <span className="font-medium">{title.art_author}</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Quick stats - views/chapters/status in one line */}
+              <div className="flex flex-row items-center gap-3 mt-3 text-xs text-gray-500 justify-center flex-wrap">
+                {title.views !== undefined && (
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-3 w-3" />
+                    <span className="font-medium">{titlesService.formatNumber(title.views)} views</span>
+                  </div>
+                )}
+                {title.chapters && (
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-3 w-3" />
+                    <span className="font-medium">{title.chapters.toLocaleString()} chapters</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-3 w-3" />
+                  <span className="font-medium">{title.completed ? 'Completed' : 'Ongoing'}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Right Column - Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Title Header */}
-            <div>
-              <h1 className="text-3xl font-bold text-black mb-2">
-                {title.title_name_en || title.title_name_kr}
-              </h1>
-              {title.title_name_kr && title.title_name_en && (
-                <p className="text-xl text-gray-600">{title.title_name_kr}</p>
-              )}
-              {title.tagline && (
-                <p className="text-lg text-gray-500 italic mt-2">{title.tagline}</p>
-              )}
-            </div>
+          {/* Action Buttons - Right side */}
+          <div className="flex flex-row gap-2 sm:gap-3 w-full lg:w-auto justify-center lg:justify-end">
+            <Button
+              onClick={handleFavoriteToggle}
+              disabled={favoriteLoading}
+              variant="outline"
+              className={`flex-1 lg:flex-none border-gray-300 hover:bg-gray-100 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base transition-colors ${
+                isFavorited ? 'bg-red-50 text-red-600 hover:bg-red-100' : ''
+              }`}
+            >
+              <Heart className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${isFavorited ? 'fill-current' : ''}`} />
+              {isFavorited ? 'Saved' : 'Save'}
+            </Button>
 
-            {/* Metadata Badges */}
-            <div className="flex flex-wrap gap-2">
-              {title.genre && (
-                <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
-                  {title.genre}
-                </span>
-              )}
-              {title.content_format && (
-                <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
-                  {title.content_format}
-                </span>
-              )}
-              {title.completed !== undefined && (
-                <span
-                  className={`px-3 py-1 text-sm rounded-full ${
-                    title.completed
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}
-                >
-                  {title.completed ? 'Completed' : 'Ongoing'}
-                </span>
-              )}
-            </div>
+            {title.title_url && (
+              <Button
+                variant="outline"
+                className="flex-1 lg:flex-none border-gray-300 hover:bg-gray-100 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base transition-colors"
+                onClick={() => window.open(title.title_url, '_blank')}
+              >
+                <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                View Original
+              </Button>
+            )}
+          </div>
+        </div>
 
-            {/* Stats */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                  {title.views !== undefined && (
-                    <div>
-                      <div className="text-2xl font-bold text-black">
-                        {titlesService.formatNumber(title.views)}
-                      </div>
-                      <div className="text-sm text-gray-500">Views</div>
+        {/* Horizontal divider */}
+        <div className="py-2">
+          <hr className="border-gray-200" />
+        </div>
+
+        {/* Content Area - Two Column Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+
+          {/* Left Column - Business Critical Info */}
+          <div className="space-y-4 sm:space-y-6">
+
+            {/* Business Information Card */}
+            <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="text-xl font-semibold text-black mb-4">
+                  Business Information
+                </h3>
+                <div className="space-y-4">
+
+                  {/* Rights Holder */}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-medium text-gray-700">Rights Holder</h5>
+                      <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
+                        {title.rights_holder_name || title.rights_holder_company || title.rights || 'MANTA/RIDI'}
+                      </span>
+                    </div>
+                    <div className="flex justify-end mt-2">
+                      <Button
+                        className="bg-[#AF52DE] hover:bg-[#AF52DE]/80 text-white text-xs font-semibold px-2.5 py-0.5 h-auto rounded-full transition-colors"
+                      >
+                        Contact
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Target Market Info - Tier gated */}
+                  <TierGatedContent requiredTier="basic">
+                    <div className="space-y-4 pt-4 border-t border-gray-200">
+                      {/* Perfect For */}
+                      {title.perfect_for && (
+                        <div className="flex items-center justify-between">
+                          <h5 className="font-medium text-gray-700">Perfect For</h5>
+                          <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
+                            {title.perfect_for}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Audience */}
+                      {title.audience && (
+                        <div className="flex items-center justify-between">
+                          <h5 className="font-medium text-gray-700">Audience</h5>
+                          <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
+                            {title.audience}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Comps */}
+                      {title.comps && title.comps.length > 0 && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <h5 className="font-medium text-gray-700">Comps</h5>
+                          <div className="font-bold text-[#4C9C9B] uppercase text-xs text-right break-words">
+                            {title.comps.join(', ')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </TierGatedContent>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Content Details Card */}
+            <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="text-xl font-semibold text-black mb-4">Content Details</h3>
+                <div className="space-y-4">
+                  {/* Format */}
+                  {title.content_format && (
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-medium text-gray-700">Format</h5>
+                      <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
+                        {title.content_format.replace('_', ' ')}
+                      </span>
                     </div>
                   )}
-                  {title.rating != null && (
-                    <div>
-                      <div className="text-2xl font-bold text-black">
-                        {title.rating.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-gray-500">Rating</div>
-                    </div>
-                  )}
-                  {title.chapters !== undefined && (
-                    <div>
-                      <div className="text-2xl font-bold text-black">
-                        {title.chapters}
-                      </div>
-                      <div className="text-sm text-gray-500">Chapters</div>
-                    </div>
-                  )}
-                  {title.rating_count !== undefined && (
-                    <div>
-                      <div className="text-2xl font-bold text-black">
-                        {titlesService.formatNumber(title.rating_count)}
-                      </div>
-                      <div className="text-sm text-gray-500">Ratings</div>
+
+                  {/* Series Status */}
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-gray-700">Series Status</h5>
+                    <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
+                      {title.completed ? 'COMPLETED' : 'ONGOING'}
+                    </span>
+                  </div>
+
+                  {/* Genre */}
+                  {title.genre && (
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-medium text-gray-700">Genre</h5>
+                      <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
+                        {Array.isArray(title.genre)
+                          ? title.genre.slice(0, 2).map((g: string) => g.replace('_', ' ')).join(', ')
+                          : title.genre.replace('_', ' ')
+                        }
+                      </span>
                     </div>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Synopsis */}
-            {title.synopsis && (
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-bold text-black mb-3">Synopsis</h2>
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {title.synopsis}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Author Info */}
-            {title.author && (
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-bold text-black mb-3">Credits</h2>
-                  <div className="space-y-2 text-gray-700">
-                    <p>
-                      <span className="font-medium">Author:</span> {title.author}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Tags */}
-            {title.tags && title.tags.length > 0 && (
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-bold text-black mb-3">Tags</h2>
+            {/* Keywords Card */}
+            {title.keywords && title.keywords.length > 0 && (
+              <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="text-xl font-semibold text-black mb-4">Keywords</h3>
                   <div className="flex flex-wrap gap-2">
-                    {title.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded"
-                      >
-                        {tag}
-                      </span>
+                    {title.keywords.map((keyword, idx) => (
+                      <Badge key={idx} variant="secondary" className="bg-gray-100 text-gray-600 border border-gray-200 font-medium px-2.5 py-1 rounded-full text-xs hover:bg-gray-200 transition-colors uppercase">
+                        {keyword}
+                      </Badge>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Tier-Gated Pitch Deck with PDF Viewer */}
+          </div>
+
+          {/* Right Column - Content Overview */}
+          <div className="space-y-4 sm:space-y-6">
+
+            {/* Pitch Deck Card */}
             {title.pitch && title.pitch.trim() !== '' && (
               <TierGatedContent requiredTier="pro">
-                <Card className="border-pro-purple/30">
-                  <CardContent className="p-6">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
+                  <CardContent className="p-4 sm:p-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <FileText className="h-5 w-5 text-pro-purple" />
-                      <h2 className="text-lg font-bold text-black">Pitch Deck</h2>
-                      <span className="ml-auto px-2 py-0.5 bg-pro-purple/10 text-pro-purple text-xs font-semibold rounded-full">
+                      <h3 className="text-xl font-semibold text-black">Pitch Deck</h3>
+                      <span className="ml-auto px-2 py-0.5 bg-[#AF52DE]/10 text-[#AF52DE] text-xs font-semibold rounded-full">
                         PRO
                       </span>
                     </div>
@@ -328,26 +458,49 @@ export default function TitleDetail() {
                         setCurrentPdfUrl(title.pitch || '');
                         setTimeout(() => setIsPdfModalOpen(true), 10);
                       }}
-                      className="mb-4"
                       alt={`${title.title_name_en || title.title_name_kr} pitch deck preview`}
                     />
                   </CardContent>
                 </Card>
               </TierGatedContent>
             )}
+
+            {/* Synopsis Card */}
+            {title.synopsis && (
+              <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="text-xl font-semibold text-black mb-4">Synopsis</h3>
+                  <div className="space-y-4">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {title.synopsis}
+                    </p>
+
+                    {/* Tagline Highlight */}
+                    {title.tagline && (
+                      <div className="mt-4 p-4 bg-[#4C9C9B]/5 border-l-4 border-[#4C9C9B] rounded-r-lg">
+                        <p className="text-gray-700 font-medium italic">
+                          "{title.tagline}"
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
           </div>
         </div>
 
         {/* KStoryBridge Analysis Section - Full Width */}
         {pitchAnalysis && (
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-10 lg:mt-12">
+          <div className="mt-8 sm:mt-10 lg:mt-12">
             <h2 className="text-2xl font-bold text-black mb-6">KStoryBridge Analysis</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 
               {/* Story World Card */}
               {pitchAnalysis.story_world && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Story World</h3>
                     <div className="space-y-3 text-gray-700">
@@ -374,7 +527,7 @@ export default function TitleDetail() {
 
               {/* Characters Card */}
               {pitchAnalysis.characters && pitchAnalysis.characters.length > 0 && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Characters</h3>
                     <div className="space-y-4">
@@ -400,7 +553,7 @@ export default function TitleDetail() {
 
               {/* Themes & Tone Card */}
               {pitchAnalysis.themes_and_tone && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Themes & Tone</h3>
                     <div className="space-y-3 text-gray-700">
@@ -432,12 +585,12 @@ export default function TitleDetail() {
 
               {/* Story Elements Card */}
               {pitchAnalysis.story_elements && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Story Elements</h3>
                     <div className="space-y-3 text-gray-700">
                       {pitchAnalysis.story_elements.logline && (
-                        <div className="p-4 bg-gray-50 border-l-4 border-gray-300 rounded-r-lg">
+                        <div className="p-4 bg-gray-50 border-l-4 border-[#4C9C9B] rounded-r-lg">
                           <span className="font-semibold">Logline:</span> {pitchAnalysis.story_elements.logline}
                         </div>
                       )}
@@ -457,7 +610,7 @@ export default function TitleDetail() {
 
               {/* Market Positioning Card */}
               {pitchAnalysis.market_positioning && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Market Positioning</h3>
                     <div className="space-y-3 text-gray-700">
@@ -497,7 +650,7 @@ export default function TitleDetail() {
 
               {/* IP Value Card */}
               {pitchAnalysis.ip_value && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">IP Value</h3>
                     <div className="space-y-3 text-gray-700">
@@ -541,7 +694,7 @@ export default function TitleDetail() {
 
               {/* Production Details Card */}
               {pitchAnalysis.production_details && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Production Details</h3>
                     <div className="space-y-3 text-gray-700">
@@ -558,7 +711,7 @@ export default function TitleDetail() {
 
               {/* Source Material Card */}
               {pitchAnalysis.source_material && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Source Material</h3>
                     <div className="space-y-3 text-gray-700">
@@ -597,7 +750,7 @@ export default function TitleDetail() {
 
               {/* Korean Cultural Elements Card */}
               {pitchAnalysis.korean_cultural_elements && pitchAnalysis.korean_cultural_elements.length > 0 && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Korean Cultural Elements</h3>
                     <ul className="list-disc ml-5 space-y-1 text-gray-700">
@@ -611,7 +764,7 @@ export default function TitleDetail() {
 
               {/* Content Classification Card */}
               {pitchAnalysis.content_classification && (
-                <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+                <Card className="bg-transparent border-2 border-green-700 shadow-none rounded-2xl">
                   <CardContent className="p-4 sm:p-6">
                     <h3 className="text-xl font-semibold text-black mb-4">Content Classification</h3>
                     <div className="space-y-3 text-gray-700">
@@ -634,29 +787,6 @@ export default function TitleDetail() {
             </div>
           </div>
         )}
-
-        {/* External Link - Back in main grid */}
-        <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1"></div>
-            <div className="lg:col-span-2">
-              {title.title_url && (
-                <Card>
-                  <CardContent className="p-6">
-                    <Button
-                      variant="outline"
-                      onClick={() => window.open(title.title_url, '_blank')}
-                      className="w-full border-gray-300"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View Original Source
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* PDF Modal */}
         {isPdfModalOpen && (

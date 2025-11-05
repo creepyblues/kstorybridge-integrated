@@ -12,6 +12,13 @@ export interface TitleDraft {
   last_saved_at: string
   created_at?: string
   updated_at?: string
+  // Workflow fields
+  status?: 'draft' | 'submitted' | 'approved' | 'rejected'
+  submitted_at?: string
+  approved_at?: string
+  rejected_at?: string
+  approved_by?: string
+  rejection_reason?: string
 }
 
 /**
@@ -24,8 +31,21 @@ export interface SaveDraftInput {
 }
 
 /**
+ * Get display name for a draft
+ * Uses title_name_en or title_name_kr from draft_data, falls back to "Untitled Draft"
+ *
+ * @param draft - Draft object
+ * @returns Display name for UI
+ */
+export function getDraftDisplayName(draft: TitleDraft): string {
+  return draft.draft_data?.title_name_en
+    || draft.draft_data?.title_name_kr
+    || 'Untitled Draft'
+}
+
+/**
  * Service for managing auto-saved title drafts
- * Supports one draft per creator (UNIQUE constraint on creator_id)
+ * Supports multiple drafts per creator (UNIQUE constraint removed 2025-11-04)
  */
 export const draftService = {
   /**
@@ -45,6 +65,7 @@ export const draftService = {
 
     try {
       // Use upsert to handle both insert and update
+      // Always set status to 'draft' for in-progress work
       const { data, error } = await supabase
         .from('title_drafts')
         .upsert(
@@ -52,6 +73,7 @@ export const draftService = {
             creator_id,
             draft_data,
             current_step,
+            status: 'draft', // Always 'draft' for auto-save
             last_saved_at: new Date().toISOString(),
           },
           {
@@ -108,7 +130,7 @@ export const draftService = {
 
   /**
    * Delete the draft for a creator
-   * Used after successful title submission
+   * Only deletes drafts with status='draft' (not submitted/approved/rejected)
    *
    * @param creatorId - UUID of the creator
    */
@@ -118,6 +140,7 @@ export const draftService = {
         .from('title_drafts')
         .delete()
         .eq('creator_id', creatorId)
+        .eq('status', 'draft') // Only delete drafts, not submitted titles
 
       if (error) {
         console.error('Error deleting draft:', error)
@@ -126,6 +149,129 @@ export const draftService = {
     } catch (error) {
       console.error('Error in deleteDraft:', error)
       throw error
+    }
+  },
+
+  /**
+   * Submit a draft for admin approval
+   * Updates status to 'submitted' and sets submitted_at timestamp
+   *
+   * @param creatorId - UUID of the creator
+   * @returns Updated draft record
+   */
+  async submitDraft(creatorId: string): Promise<TitleDraft> {
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .update({
+          status: 'submitted',
+          submitted_at: new Date().toISOString(),
+        })
+        .eq('creator_id', creatorId)
+        .eq('status', 'draft') // Only submit if currently a draft
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error submitting draft:', error)
+        throw new Error(`Failed to submit draft: ${error.message}`)
+      }
+
+      if (!data) {
+        throw new Error('No draft found to submit')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error in submitDraft:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get all submitted drafts for a creator (pending approval)
+   * Returns drafts with status='submitted'
+   *
+   * @param creatorId - UUID of the creator
+   * @returns Array of submitted draft records
+   */
+  async getPendingDrafts(creatorId: string): Promise<TitleDraft[]> {
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .select('*')
+        .eq('creator_id', creatorId)
+        .eq('status', 'submitted')
+        .order('submitted_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching pending drafts:', error)
+        throw new Error(`Failed to fetch pending drafts: ${error.message}`)
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Error in getPendingDrafts:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get all rejected drafts for a creator
+   * Returns drafts with status='rejected' so creator can edit and resubmit
+   *
+   * @param creatorId - UUID of the creator
+   * @returns Array of rejected draft records
+   */
+  async getRejectedDrafts(creatorId: string): Promise<TitleDraft[]> {
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .select('*')
+        .eq('creator_id', creatorId)
+        .eq('status', 'rejected')
+        .order('rejected_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching rejected drafts:', error)
+        throw new Error(`Failed to fetch rejected drafts: ${error.message}`)
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Error in getRejectedDrafts:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Load only in-progress draft (status='draft')
+   * Used on AddTitle page to resume editing
+   *
+   * @param creatorId - UUID of the creator
+   * @returns Draft record or null
+   */
+  async loadInProgressDraft(creatorId: string): Promise<TitleDraft | null> {
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .select('*')
+        .eq('creator_id', creatorId)
+        .eq('status', 'draft')
+        .maybeSingle()
+
+      if (error) {
+        if (error.code === 'PGRST116' || error.code === 'PGRST301') {
+          return null
+        }
+        console.error('Error loading in-progress draft:', error)
+        return null
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error in loadInProgressDraft:', error)
+      return null
     }
   },
 
@@ -248,6 +394,232 @@ export const draftService = {
       })
     } catch (error) {
       console.error('Error in mergeDraftData:', error)
+      throw error
+    }
+  },
+
+  /**
+   * MULTI-DRAFT FUNCTIONS (Added 2025-11-04)
+   * Support for multiple drafts per creator
+   */
+
+  /**
+   * Get all drafts for a creator, optionally filtered by status
+   * Replaces loadDraft() and loadInProgressDraft()
+   *
+   * @param creatorId - UUID of the creator
+   * @param status - Optional status filter ('draft', 'submitted', 'rejected')
+   * @returns Array of draft records (empty array if none found)
+   */
+  async getAllDrafts(
+    creatorId: string,
+    status?: 'draft' | 'submitted' | 'approved' | 'rejected'
+  ): Promise<TitleDraft[]> {
+    try {
+      let query = supabase
+        .from('title_drafts')
+        .select('*')
+        .eq('creator_id', creatorId)
+        .order('last_saved_at', { ascending: false })
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        console.error('Error fetching drafts:', error)
+        throw new Error(`Failed to fetch drafts: ${error.message}`)
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Error in getAllDrafts:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get a specific draft by its ID
+   * Used when navigating to edit a specific draft
+   *
+   * @param draftId - UUID of the draft
+   * @returns Draft record or null if not found
+   */
+  async getDraftById(draftId: string): Promise<TitleDraft | null> {
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .select('*')
+        .eq('id', draftId)
+        .maybeSingle()
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null
+        }
+        console.error('Error fetching draft by ID:', error)
+        throw new Error(`Failed to fetch draft: ${error.message}`)
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error in getDraftById:', error)
+      return null
+    }
+  },
+
+  /**
+   * Create a new draft (INSERT operation, no UPSERT)
+   * Used when starting a new title submission
+   *
+   * @param input - Draft data to create
+   * @returns Created draft record
+   */
+  async createDraft(input: SaveDraftInput): Promise<TitleDraft> {
+    const { creator_id, draft_data, current_step } = input
+
+    // Validate current_step is within valid range
+    if (current_step < 1 || current_step > 5) {
+      throw new Error('current_step must be between 1 and 5')
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .insert({
+          creator_id,
+          draft_data,
+          current_step,
+          status: 'draft',
+          last_saved_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating draft:', error)
+        throw new Error(`Failed to create draft: ${error.message}`)
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error in createDraft:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Update an existing draft by ID
+   * Used by auto-save to update specific draft
+   *
+   * @param draftId - UUID of the draft to update
+   * @param updates - Partial draft data to update
+   * @returns Updated draft record
+   */
+  async updateDraftById(
+    draftId: string,
+    updates: Partial<Omit<SaveDraftInput, 'creator_id'>>
+  ): Promise<TitleDraft> {
+    try {
+      // Validate current_step if provided
+      if (updates.current_step && (updates.current_step < 1 || updates.current_step > 5)) {
+        throw new Error('current_step must be between 1 and 5')
+      }
+
+      const updateData: any = {
+        last_saved_at: new Date().toISOString(),
+      }
+
+      if (updates.draft_data) {
+        updateData.draft_data = updates.draft_data
+      }
+
+      if (updates.current_step !== undefined) {
+        updateData.current_step = updates.current_step
+      }
+
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .update(updateData)
+        .eq('id', draftId)
+        .eq('status', 'draft') // Only update if status is still draft
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating draft by ID:', error)
+        throw new Error(`Failed to update draft: ${error.message}`)
+      }
+
+      if (!data) {
+        throw new Error('Draft not found or cannot be updated (may have been submitted)')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error in updateDraftById:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Delete a specific draft by ID
+   * Replaces deleteDraft(creatorId)
+   *
+   * @param draftId - UUID of the draft to delete
+   */
+  async deleteDraftById(draftId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('title_drafts')
+        .delete()
+        .eq('id', draftId)
+        .eq('status', 'draft') // Only delete if status='draft'
+
+      if (error) {
+        console.error('Error deleting draft by ID:', error)
+        throw new Error(`Failed to delete draft: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('Error in deleteDraftById:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Submit a specific draft for approval by ID
+   * Replaces submitDraft(creatorId)
+   *
+   * @param draftId - UUID of the draft to submit
+   * @returns Updated draft record
+   */
+  async submitDraftById(draftId: string): Promise<TitleDraft> {
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .update({
+          status: 'submitted',
+          submitted_at: new Date().toISOString(),
+        })
+        .eq('id', draftId)
+        .eq('status', 'draft') // Only submit if currently a draft
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error submitting draft by ID:', error)
+        throw new Error(`Failed to submit draft: ${error.message}`)
+      }
+
+      if (!data) {
+        throw new Error('Draft not found or already submitted')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error in submitDraftById:', error)
       throw error
     }
   },

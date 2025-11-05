@@ -117,7 +117,7 @@ Role: Author
 - [ ] **Status**: ⏳ Pending
 
 #### 2.2 Add New Title
-- [ ] Click "Add New Title" button (or navigate to /titles/add)
+- [ ] Click "Add New Title" button (or navigate to /titles/add-title)
 - [ ] Fill out ALL form fields:
   - **Basic Information:**
     - [ ] English Title (required)

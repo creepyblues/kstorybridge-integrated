@@ -71,7 +71,7 @@ export function CMSSidebar() {
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed left-4 right-4 top-[60px] bg-white rounded-2xl shadow-xl border border-gray-300 z-50 overflow-hidden">
+        <div className="md:hidden fixed left-4 right-4 top-[60px] bg-white rounded-2xl shadow-sm border border-gray-300 z-50 overflow-hidden">
           <div className="py-2">
             {/* Discover items */}
             {discoverItems.map((item) => {

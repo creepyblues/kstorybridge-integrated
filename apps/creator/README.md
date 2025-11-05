@@ -108,7 +108,7 @@ apps/creator/
 ### Title Management ✅
 - **List Titles** (`/titles`) - Grid view with stats
 - **View Title** (`/titles/:id`) - Comprehensive detail page
-- **Add Title** (`/titles/add`) - Form with ALL fields (better than V1!)
+- **Add Title** (`/titles/add-title`) - Form with ALL fields (better than V1!)
 - **Edit Title** (`/titles/:id/edit`) - Full edit form
 - **Delete Title** - Via service (not yet in UI)
 

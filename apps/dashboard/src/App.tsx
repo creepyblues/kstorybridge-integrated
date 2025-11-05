@@ -70,6 +70,8 @@ const AdminFeatured = lazy(() => import("./pages/admin/Featured"));
 const AdminUserApproval = lazy(() => import("./pages/admin/UserApproval"));
 const AdminScraperTest = lazy(() => import("./pages/admin/ScraperTest"));
 const PitchExtractionTest = lazy(() => import("./pages/admin/PitchExtractionTest"));
+const AdminDraftApproval = lazy(() => import("./pages/admin/DraftApproval"));
+const AdminDraftDetail = lazy(() => import("./pages/admin/DraftDetail"));
 
 // Documentation pages
 const Docs = lazy(() => import("./pages/Docs"));
@@ -303,6 +305,12 @@ const App = () => (
                 } />
                 <Route path="/admin/titles/:titleId/edit" element={
                   <AdminProtectedRoute><AdminTitleEdit /></AdminProtectedRoute>
+                } />
+                <Route path="/admin/drafts" element={
+                  <AdminProtectedRoute><AdminDraftApproval /></AdminProtectedRoute>
+                } />
+                <Route path="/admin/drafts/:draftId" element={
+                  <AdminProtectedRoute><AdminDraftDetail /></AdminProtectedRoute>
                 } />
                 <Route path="/admin/users" element={
                   <AdminProtectedRoute><AdminLayout><AdminUserApproval /></AdminLayout></AdminProtectedRoute>

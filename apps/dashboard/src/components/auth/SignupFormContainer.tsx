@@ -667,20 +667,11 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
           </form>
 
           {!isOAuthCompletion ? (
-            <div className="mt-6 text-center space-y-4 text-sm text-gray-600">
+            <div className="mt-6 text-center text-sm text-gray-600">
               <p>
                 Already have an account?{' '}
                 <Link to="/signin" className="text-hanok-teal hover:text-hanok-teal/80 font-medium">
                   Sign in here
-                </Link>
-              </p>
-              <p>
-                Looking for the {accountType === 'buyer' ? 'creator' : 'buyer'} signup?{' '}
-                <Link
-                  to={`/signup/${accountType === 'buyer' ? 'creator' : 'buyer'}`}
-                  className="text-hanok-teal hover:text-hanok-teal/80 font-medium"
-                >
-                  Switch to {accountType === 'buyer' ? 'Creator' : 'Buyer'} Sign Up
                 </Link>
               </p>
             </div>

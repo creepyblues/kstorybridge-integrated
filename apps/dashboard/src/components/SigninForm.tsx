@@ -560,18 +560,6 @@ const SigninForm = ({ accountType, hideOtherAccountTypeLink = false, disabled = 
                 Sign up here
               </Link>
             </div>
-
-            {!hideOtherAccountTypeLink && (
-              <div className="text-sm text-gray-600">
-                Looking for {otherAccountTypeDisplayName} signin?{' '}
-                <Link
-                  to={`/signin/${otherAccountType}`}
-                  className="text-hanok-teal hover:text-hanok-teal/80 font-medium"
-                >
-                  {otherAccountTypeDisplayName} Sign In
-                </Link>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

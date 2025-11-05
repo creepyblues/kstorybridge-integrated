@@ -127,7 +127,7 @@ const App = () => (
                 <Suspense fallback={<PageLoader />}>
                 <Routes>
                 {/* Authentication routes - buyer-only (creator auth moved to creator app) */}
-                <Route path="/signin" element={<SigninPage />} />
+                <Route path="/signin" element={<Navigate to="/signin/buyer" replace />} />
                 <Route path="/signin/buyer" element={<BuyerSigninPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/signup/buyer" element={<BuyerSignupPage />} />

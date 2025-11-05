@@ -51,6 +51,10 @@ export default function TitleDetail() {
           setPitchAnalysis(data.pitch_analysis);
         } else {
           console.log('[TitleDetail] ❌ No pitch_analysis data available');
+        // Extract pitch_analysis if available and meets quality threshold
+        if (data?.pitch_analysis && (data.processing_confidence ?? 0) >= 0.70) {
+          setPitchAnalysis(data.pitch_analysis);
+        } else {
           setPitchAnalysis(null);
         }
 

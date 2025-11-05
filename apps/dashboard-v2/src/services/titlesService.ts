@@ -157,7 +157,13 @@ class TitlesService {
       // Query 1: Get title data
       const { data, error } = await supabase
         .from('titles')
-        .select('*')
+        .select(`
+          *,
+          title_content_analysis (
+            pitch_analysis,
+            processing_confidence
+          )
+        `)
         .eq('title_id', titleId)
         .maybeSingle();
 
@@ -192,6 +198,15 @@ class TitlesService {
       } catch (analysisError: any) {
         // Pitch analysis is optional - don't fail the entire request
         console.log('ℹ️ Pitch analysis query failed (optional data):', analysisError.message);
+      // Flatten the nested title_content_analysis data
+      if (data && data.title_content_analysis) {
+        const analysis = Array.isArray(data.title_content_analysis)
+          ? data.title_content_analysis[0]
+          : data.title_content_analysis;
+
+        data.pitch_analysis = analysis?.pitch_analysis;
+        data.processing_confidence = analysis?.processing_confidence;
+        delete data.title_content_analysis;
       }
 
       return data;

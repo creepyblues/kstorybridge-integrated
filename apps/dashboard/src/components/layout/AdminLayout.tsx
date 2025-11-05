@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   LogOut,
   Zap,
-  MessageSquare
+  MessageSquare,
+  FileEdit
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -42,6 +43,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/titles',
       icon: List,
       description: 'View and edit titles'
+    },
+    {
+      name: 'Drafts',
+      href: '/admin/drafts',
+      icon: FileEdit,
+      description: 'Review creator drafts'
     },
     {
       name: 'Users',

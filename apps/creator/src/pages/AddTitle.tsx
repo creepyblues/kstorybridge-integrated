@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -38,6 +39,7 @@ export default function AddTitleSurvey() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [isDraftLoaded, setIsDraftLoaded] = useState(false)
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null)
 
   // React Hook Form setup
   const form = useForm<SurveyFormData>({
@@ -83,22 +85,40 @@ export default function AddTitleSurvey() {
     getUser()
   }, [navigate])
 
-  // Load draft on mount
+  // Get draftId from URL query parameter on mount
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const draftIdParam = searchParams.get('draftId')
+    if (draftIdParam) {
+      setCurrentDraftId(draftIdParam)
+    }
+  }, [])
+
+  // Load draft on mount (if draftId exists in URL)
   useEffect(() => {
     const loadDraft = async () => {
       if (!userId || isDraftLoaded) return
 
       try {
-        const draft = await draftService.loadDraft(userId)
-        if (draft) {
-          // Restore form data
-          Object.keys(draft.draft_data).forEach((key) => {
-            form.setValue(key as any, draft.draft_data[key])
-          })
-          // Restore current step
-          setCurrentStep(draft.current_step)
-          console.log('Draft loaded successfully')
+        // If draftId exists in URL, load that specific draft
+        if (currentDraftId) {
+          const draft = await draftService.getDraftById(currentDraftId)
+          if (draft) {
+            // Restore form data
+            Object.keys(draft.draft_data).forEach((key) => {
+              form.setValue(key as any, draft.draft_data[key])
+            })
+            // Restore current step
+            setCurrentStep(draft.current_step)
+            console.log('Draft loaded successfully:', currentDraftId)
+          } else {
+            // Draft not found, reset ID
+            console.warn('Draft not found:', currentDraftId)
+            setCurrentDraftId(null)
+          }
         }
+        // If no draftId, start fresh (don't auto-load any draft)
+
         setIsDraftLoaded(true)
       } catch (error) {
         console.error('Failed to load draft:', error)
@@ -107,17 +127,30 @@ export default function AddTitleSurvey() {
     }
 
     loadDraft()
-  }, [userId, isDraftLoaded, form])
+  }, [userId, currentDraftId, isDraftLoaded, form])
 
   // Auto-save functionality
   const { saveStatus, lastSavedAt, triggerSave } = useAutoSave({
     onSave: async (data) => {
       if (!userId) return
-      await draftService.saveDraft({
-        creator_id: userId,
-        draft_data: data,
-        current_step: currentStep,
-      })
+
+      if (currentDraftId) {
+        // Update existing draft
+        await draftService.updateDraftById(currentDraftId, {
+          draft_data: data,
+          current_step: currentStep,
+        })
+      } else {
+        // Create new draft and set ID
+        const newDraft = await draftService.createDraft({
+          creator_id: userId,
+          draft_data: data,
+          current_step: currentStep,
+        })
+        setCurrentDraftId(newDraft.id)
+        // Update URL with new draftId (without page reload)
+        window.history.replaceState(null, '', `/titles/add-title?draftId=${newDraft.id}`)
+      }
     },
     debounceMs: 30000, // 30 seconds
     enabled: !!userId && isDraftLoaded,
@@ -250,127 +283,31 @@ export default function AddTitleSurvey() {
     setIsSubmitting(true)
 
     try {
-      // Prepare title data (merged from AddTitle.tsx + survey fields)
-      const titleData = {
-        // Required basic fields (from AddTitle merge)
-        title_name_en: data.title_name_en,
-        title_name_kr: data.title_name_kr,
-        title_url: data.title_url,
-        title_image: data.title_image,
-        story_author: data.story_author,
-        creator_id: userId,
-
-        // Content classification (from AddTitle merge)
-        genre: data.genre || [],
-        content_format: data.content_format || null,
-        keywords: data.keywords ? data.keywords.split(',').map(k => k.trim()).filter(Boolean) : null,
-        tone: data.tone || null,
-
-        // Credits (from AddTitle merge)
-        art_author: data.art_author || null,
-        author: data.author || null,
-        writer: data.writer || null,
-        illustrator: data.illustrator || null,
-
-        // Content details (from AddTitle merge - Step 2)
-        synopsis: data.synopsis || null,
-        description: data.description || null,
-        tagline: data.tagline || null,
-        note: data.note || null,
-        chapters: data.chapters || null,
-
-        // Rights & business (from AddTitle merge)
-        rights: data.rights || null,
-        perfect_for: data.perfect_for || null,
-        audience: data.audience || null,
-
-        // English title classification (Step 1 survey)
-        is_official_english_title: data.is_official_english_title,
-        english_title_type: data.english_title_type || null,
-        script_title_kr: data.script_title_kr || null,
-        script_title_en: data.script_title_en || null,
-        art_title_kr: data.art_title_kr || null,
-        art_title_en: data.art_title_en || null,
-        underlying_novel_kr: data.underlying_novel_kr || null,
-        underlying_novel_en: data.underlying_novel_en || null,
-
-        // Rights holder (Step 1 survey)
-        rights_holder_name: data.rights_holder_name || null,
-        rights_holder_company: data.rights_holder_company || null,
-
-        // Story details (Step 2 survey)
-        inspiration: data.inspiration || null,
-        comparables: data.comparables || null,
-        important_issues: data.important_issues || null,
-        setting_description: data.setting_description || null,
-        world_lore: data.world_lore || null,
-        supernatural_concepts: data.supernatural_concepts || null,
-        character_details: data.character_details || null,
-
-        // Narrative (Step 3 survey)
-        story_structure: data.story_structure || null,
-        planned_ending: data.planned_ending || null,
-        narrative_arc: data.narrative_arc || null,
-        completed: data.completed || false,
-
-        // Profile (Step 5 survey)
-        awards: data.awards || null,
-        sales_records: data.sales_records || null,
-        merchandise_deals: data.merchandise_deals || null,
-        print_editions: data.print_editions || false,
-        print_edition_details: data.print_edition_details || null,
-        media_coverage: data.media_coverage || null,
-        celebrity_endorsements: data.celebrity_endorsements || null,
-        creator_achievements: data.creator_achievements || null,
+      // Ensure draft exists before submitting
+      if (!currentDraftId) {
+        // Create draft first if none exists
+        const newDraft = await draftService.createDraft({
+          creator_id: userId,
+          draft_data: data,
+          current_step: 5,
+        })
+        setCurrentDraftId(newDraft.id)
+        // Submit the new draft
+        await draftService.submitDraftById(newDraft.id)
+      } else {
+        // Update existing draft with final data
+        await draftService.updateDraftById(currentDraftId, {
+          draft_data: data,
+          current_step: 5,
+        })
+        // Submit the existing draft
+        await draftService.submitDraftById(currentDraftId)
       }
 
-      // Prepare platforms data
-      const platformsData = data.platforms.map((p) => ({
-        platform_name: p.platform_name,
-        platform_url: p.platform_url,
-        views: p.views || 0,
-        subscribers: p.subscribers || 0,
-        other_metrics: p.other_metrics || {},
-      }))
+      console.log('Title submitted for approval')
 
-      // Prepare documents data (only metadata, files already uploaded)
-      const documentsData = data.uploaded_files
-        .filter((f) => f.file_url) // Only include successfully uploaded files
-        .map((f) => ({
-          document_type: f.document_type,
-          file_url: f.file_url!,
-          file_name: f.file_name,
-          file_size: f.file_size,
-          shareable_with_nda: f.shareable_with_nda,
-          external_url: null,
-        }))
-
-      // Add external links as documents
-      data.external_links.forEach((link) => {
-        documentsData.push({
-          document_type: link.type,
-          file_url: link.url,
-          file_name: link.description || link.type,
-          file_size: 0,
-          shareable_with_nda: link.shareable_with_nda,
-          external_url: link.url,
-        })
-      })
-
-      // Create title with related data using atomic transaction
-      const result = await titlesService.createTitleWithRelated(
-        titleData as any,
-        platformsData,
-        documentsData
-      )
-
-      console.log('Title created successfully:', result)
-
-      // Delete draft after successful submission
-      await draftService.deleteDraft(userId)
-
-      // Navigate to success page or titles list
-      alert('Title submitted successfully!')
+      // Navigate to titles list (submission will show as "Pending Approval")
+      alert('Title submitted for review! You will be notified when it is approved.')
       navigate('/titles')
     } catch (error) {
       console.error('Submission error:', error)
@@ -446,9 +383,11 @@ export default function AddTitleSurvey() {
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* Step Content */}
-          <div className="bg-white border border-gray-300 rounded-2xl p-6 md:p-8 mb-8">
-            {renderStep()}
-          </div>
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+            <CardContent className="p-6 md:p-8">
+              {renderStep()}
+            </CardContent>
+          </Card>
 
           {/* Navigation Buttons */}
           <div className="flex items-center justify-between">

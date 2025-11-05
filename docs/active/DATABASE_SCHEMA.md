@@ -436,31 +436,53 @@ CREATE TABLE public.title_documents (
 
 ### title_drafts
 Creator draft storage for multi-step form (Added 2025-10-24)
+**UPDATED 2025-11-04**: Added submission approval workflow
 
 ```sql
 CREATE TABLE public.title_drafts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  creator_id uuid NOT NULL UNIQUE,
+  creator_id uuid NOT NULL,
   draft_data jsonb NOT NULL DEFAULT '{}'::jsonb,
   current_step integer DEFAULT 1 CHECK (current_step >= 1 AND current_step <= 5),
   last_saved_at timestamp with time zone NOT NULL DEFAULT now(),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  status text DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'approved', 'rejected')),
+  submitted_at timestamp with time zone,
+  approved_at timestamp with time zone,
+  rejected_at timestamp with time zone,
+  approved_by uuid REFERENCES auth.users(id),
+  rejection_reason text,
   CONSTRAINT title_drafts_pkey PRIMARY KEY (id),
   CONSTRAINT title_drafts_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES auth.users(id)
 );
 ```
 
+**Note**: As of 2025-11-04, the UNIQUE constraint on `creator_id` was removed to allow multiple drafts per creator.
+
 **Fields**:
 - `id`: UUID primary key
-- `creator_id`: References auth.users(id), unique per creator
+- `creator_id`: References auth.users(id), can have multiple drafts
 - `draft_data`: JSONB object containing all form data
 - `current_step`: Current step in multi-step form (1-5)
 - `last_saved_at`: When draft was last saved
 - `created_at`: Draft creation timestamp
 - `updated_at`: Last update timestamp
+- `status`: Workflow status (draft | submitted | approved | rejected, default: 'draft')
+- `submitted_at`: Timestamp when creator clicked Submit Title
+- `approved_at`: Timestamp when admin approved submission
+- `rejected_at`: Timestamp when admin rejected submission
+- `approved_by`: Admin user UUID who approved or rejected (references auth.users)
+- `rejection_reason`: Admin feedback for rejected submissions
 
-**Purpose**: Allows creators to save progress while filling out the multi-step title questionnaire
+**Purpose**: Allows creators to save progress while filling out the multi-step title questionnaire and submit for admin approval.
+
+**Workflow**:
+1. Creator saves progress → status: 'draft'
+2. Creator submits for review → status: 'submitted', `submitted_at` set
+3. Admin reviews:
+   - Approve → status: 'approved', `approved_at` and `approved_by` set
+   - Reject → status: 'rejected', `rejected_at`, `approved_by`, and `rejection_reason` set
 
 ### title_content_analysis
 AI-generated content analysis for enhanced search

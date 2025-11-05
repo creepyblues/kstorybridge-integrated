@@ -118,7 +118,7 @@ React-based creator dashboard built from scratch to eliminate OAuth authenticati
 - `/` - Redirects to `/home` or `/signin` (if not authenticated)
 - `/home` - Creator dashboard home
 - `/titles` - My titles list
-- `/titles/add` - Add new title (multi-step survey form)
+- `/titles/add-title` - Add new title (multi-step survey form)
 - `/titles/:titleId` - Title detail view
 - `/titles/:titleId/edit` - Edit title
 - `/profile` - Creator profile management
@@ -146,7 +146,7 @@ React-based creator dashboard built from scratch to eliminate OAuth authenticati
 - `deleteTitle(titleId)` - Delete title
 
 **Forms**:
-- **AddTitle**: Multi-step survey form (`src/pages/AddTitleSurvey.tsx`)
+- **AddTitle**: Multi-step survey form (`src/pages/AddTitle.tsx`)
   - Step 1: Basic Info (title_name_kr, genre, format, etc.)
   - Step 2: Story Details (inspiration, themes, world-building, etc.)
   - Step 3: Achievements (awards, sales, media coverage, etc.)
@@ -216,21 +216,76 @@ if (session) {
 ### Color Palette
 - **Primary Text**: `text-black`
 - **Neutrals**: `gray-50`, `gray-100`, `gray-200`, `gray-300`, `gray-500`, `gray-900`
-- **Status**: `red-*` (error), `green-*` (success), `blue-*` (info)
+- **Status**: `red-*` (error), `green-*` (success), `blue-*` (info), `amber-*` (drafts)
 - ❌ **NEVER**: Yellow colors (`bg-yellow-*`, yellow hex values)
 
 ### Standard Components
+
+**Card** (Base component for sections):
 ```tsx
-// Card
-<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
   <CardContent className="p-4 sm:p-6">...</CardContent>
 </Card>
+```
 
-// Button
+**Button**:
+```tsx
+// Outline (default)
 <Button variant="outline" className="border-gray-300 hover:bg-gray-100">
   Button Text
 </Button>
+
+// Primary CTA (submit actions)
+<Button className="bg-black text-white hover:bg-gray-800">
+  Submit
+</Button>
 ```
+
+**Badge** (Status indicators):
+```tsx
+// Standard badge - ALWAYS use px-2.5 py-0.5 rounded-full
+<span className="inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full bg-amber-500 text-white">
+  DRAFT
+</span>
+```
+
+**Hover Effects**:
+```tsx
+// Cards - Use border color transitions, NOT shadows
+<Card className="... hover:border-gray-400 transition-colors">
+
+// ❌ WRONG - No shadow-lg or shadow-xl
+<Card className="... hover:shadow-lg transition-shadow">
+```
+
+### Responsive Margins
+
+Use responsive margin pattern for section-level cards:
+```tsx
+// ✅ CORRECT - Responsive margins
+mb-6 sm:mb-8 lg:mb-12
+
+// ❌ WRONG - Static margins
+mb-6
+mb-8
+```
+
+### White Background Exceptions
+
+The design system mandates `bg-transparent` for cards, but these exceptions are acceptable:
+
+1. **Form inputs** - `bg-white` (required for usability)
+2. **Navigation sidebars** - `bg-white` (standard pattern)
+3. **Mobile menu overlays** - `bg-white` with `shadow-sm` (depth perception)
+4. **Content cards with images** - Can use `bg-white` or gradients for draft status differentiation
+
+### Design Reference
+
+**✅ Exemplary Page**: `src/pages/Profile.tsx`
+- Perfect adherence to card styling
+- Correct badge usage
+- Proper responsive margins
+- Standard button patterns
 
 **Reference**: Dashboard `/buyers/profile` page for visual standards
 

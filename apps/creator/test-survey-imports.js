@@ -114,7 +114,7 @@ console.log(`   📈 Success Rate: ${((passed / tests.length) * 100).toFixed(1)}
 if (failed === 0) {
   console.log('🎉 All files present and ready!\n');
   console.log('🚀 Next Steps:');
-  console.log('   1. Navigate to: http://localhost:8085/titles/add-survey');
+  console.log('   1. Navigate to: http://localhost:8083/titles/add-title');
   console.log('   2. Sign in as a creator');
   console.log('   3. Complete the 5-step survey');
   console.log('   4. Verify auto-save works (wait 30s or click "Save Draft Now")');

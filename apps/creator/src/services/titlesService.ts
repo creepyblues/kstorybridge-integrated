@@ -366,4 +366,133 @@ export const titlesService = {
       throw error
     }
   },
+
+  /**
+   * ADMIN FUNCTIONS - For admin approval workflow
+   */
+
+  /**
+   * Get all submitted drafts (pending approval)
+   * Admin function to view all titles awaiting review
+   *
+   * @returns Array of submitted drafts
+   */
+  async getAllSubmittedDrafts() {
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .select(`
+          *,
+          user_creators!title_drafts_creator_id_fkey (
+            pen_name,
+            full_name,
+            email
+          )
+        `)
+        .eq('status', 'submitted')
+        .order('submitted_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching submitted drafts:', error)
+        throw new Error(`Failed to fetch submitted drafts: ${error.message}`)
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Error in getAllSubmittedDrafts:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Approve a draft and create the title in the titles table
+   * Admin function to approve a submission
+   *
+   * @param draftId - UUID of the draft to approve
+   * @param adminUserId - UUID of the admin approving the draft
+   * @returns Created title record
+   */
+  async approveDraft(draftId: string, adminUserId: string) {
+    try {
+      // 1. Fetch the draft
+      const { data: draft, error: fetchError } = await supabase
+        .from('title_drafts')
+        .select('*')
+        .eq('id', draftId)
+        .eq('status', 'submitted')
+        .single()
+
+      if (fetchError || !draft) {
+        throw new Error('Draft not found or not in submitted status')
+      }
+
+      // 2. Create title in titles table using draft_data
+      const titleData = draft.draft_data
+      const result = await this.createTitleWithRelated(
+        titleData,
+        titleData.platforms || [],
+        titleData.documents || []
+      )
+
+      // 3. Update draft status to 'approved'
+      const { error: updateError } = await supabase
+        .from('title_drafts')
+        .update({
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          approved_by: adminUserId,
+        })
+        .eq('id', draftId)
+
+      if (updateError) {
+        console.error('Error updating draft status:', updateError)
+        // Note: Title was already created, so we don't rollback here
+        // Admin can manually fix the draft status if needed
+      }
+
+      return result
+    } catch (error) {
+      console.error('Error in approveDraft:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Reject a draft with a reason
+   * Admin function to reject a submission
+   *
+   * @param draftId - UUID of the draft to reject
+   * @param rejectionReason - Reason for rejection (shown to creator)
+   * @param adminUserId - UUID of the admin rejecting the draft
+   */
+  async rejectDraft(draftId: string, rejectionReason: string, adminUserId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('title_drafts')
+        .update({
+          status: 'rejected',
+          rejected_at: new Date().toISOString(),
+          approved_by: adminUserId, // Reusing field for "reviewed_by"
+          rejection_reason: rejectionReason,
+        })
+        .eq('id', draftId)
+        .eq('status', 'submitted')
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error rejecting draft:', error)
+        throw new Error(`Failed to reject draft: ${error.message}`)
+      }
+
+      if (!data) {
+        throw new Error('Draft not found or not in submitted status')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error in rejectDraft:', error)
+      throw error
+    }
+  },
 }

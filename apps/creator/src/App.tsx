@@ -14,7 +14,7 @@ import CompleteProfile from '@/pages/auth/CompleteProfile'
 import Home from '@/pages/Home'
 import Titles from '@/pages/Titles'
 import TitleDetail from '@/pages/TitleDetail'
-import AddTitleSurvey from '@/pages/AddTitleSurvey'
+import AddTitle from '@/pages/AddTitle'
 import EditTitle from '@/pages/EditTitle'
 import Profile from '@/pages/Profile'
 import Requests from '@/pages/Requests'
@@ -52,10 +52,10 @@ function App() {
               }
             />
             <Route
-              path="/titles/add-survey"
+              path="/titles/add-title"
               element={
                 <ProtectedRoute>
-                  <AddTitleSurvey />
+                  <AddTitle />
                 </ProtectedRoute>
               }
             />

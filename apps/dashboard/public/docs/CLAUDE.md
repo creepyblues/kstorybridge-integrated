@@ -1,8 +1,8 @@
 # CLAUDE.md - Dashboard App
 
-**App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. Contains authentication pages for both buyers and creators (creator auth will migrate to creator app in future).
+**App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. **Authentication**: Handles BUYER auth only (creator auth moved to creator app as of 2025-11-04).
 
-**Last Updated**: 2025-10-29
+**Last Updated**: 2025-11-04
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -28,13 +28,19 @@ Large sections have been extracted to separate files for better organization:
 
 ## Development Commands
 
+**From app directory** (`apps/dashboard/`):
 - `npm run dev` - Start development server on port 8081
 - `npm run build` - Build for production
 - `npm run build:dev` - Development build
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
 
-**Note**: This app runs on port **8081**. Creator app runs on port 8082, website on 5173.
+**From root** (with Turborepo, ~50x faster cached builds):
+- `npm run dev:dashboard` - Start dashboard only (port 8081)
+- `npm run build:dashboard` - Build dashboard with intelligent caching
+- `npm run build` - Build all apps (if dashboard dependencies changed)
+
+**Note**: This app runs on port **8081**. Creator app runs on 8083, website on 5173.
 
 ---
 
@@ -52,24 +58,25 @@ React-based dashboard built with Vite, TypeScript, and shadcn/ui components. **P
 
 ### Key Patterns
 
-**Authentication** (CRITICAL):
-- **This app currently contains authentication pages for BOTH buyers and creators**
-- Website app redirects here for authentication
+**Authentication** (CRITICAL - Updated 2025-11-04):
+- **This app ONLY handles BUYER authentication** (simplified as of 2025-11-04)
+- **Creator authentication** moved to creator app (`creator.kstorybridge.com`)
+- Website app redirects buyers here for authentication
 - Uses Supabase auth with custom AuthProvider (`src/hooks/useAuth.tsx`)
-- Account type in user metadata determines dashboard routing
+- All auth flows default to `account_type: 'buyer'` in metadata
 - OAuth redirects to `/auth/callback` in THIS app
 - **Multi-environment OAuth**: Explicit domain detection for production, staging, and localhost
   - Production: `dashboard.kstorybridge.com/auth/callback`
   - Staging: `dashboard-v2.kstorybridge.com/auth/callback`
   - Localhost: `localhost:8081/auth/callback`
-- **Future**: Creator authentication will move to creator app (separate at creator.kstorybridge.com)
 
-**Auth Pages**:
-- `/signin` - Sign in
+**Auth Pages** (Buyer-only):
+- `/signin` - Buyer sign in
 - `/signup/buyer` - Buyer signup
-- `/signup/creator` - Creator signup
-- `/auth/callback` - OAuth callback handler
+- `/auth/callback` - OAuth callback handler (buyer-only)
 - `/forgot-password` - Password reset
+- ~~`/signup/creator`~~ - **REMOVED** (moved to creator app)
+- ~~`/signin/creator`~~ - **REMOVED** (moved to creator app)
 
 **Data Management**:
 - Supabase client: `src/integrations/supabase/client.ts`

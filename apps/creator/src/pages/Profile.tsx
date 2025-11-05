@@ -196,7 +196,7 @@ export default function Profile() {
         </div>
 
         {error && (
-          <Card className="bg-transparent border-red-300 shadow-none rounded-2xl mb-6">
+          <Card className="bg-transparent border-red-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
             <CardContent className="p-4">
               <p className="text-red-600 text-sm">{error}</p>
             </CardContent>
@@ -204,7 +204,7 @@ export default function Profile() {
         )}
 
         {/* Profile Information Card */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6">
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>

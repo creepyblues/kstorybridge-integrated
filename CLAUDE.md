@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-11-02
+**Last Updated**: 2025-11-05
 
 ## 🔄 Development Workflow (UPDATED 2025-11-02)
 
@@ -71,6 +71,10 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
 - **[STRIPE_SETUP_GUIDE.md](docs/guides/STRIPE_SETUP_GUIDE.md)** - Stripe integration
 - **[OPENAI_PRODUCTION_SETUP.md](docs/guides/OPENAI_PRODUCTION_SETUP.md)** - OpenAI API setup
 
+**Migration Safety** (`docs/guides/`):
+- **[MIGRATION_SAFETY_GUIDE.md](docs/guides/MIGRATION_SAFETY_GUIDE.md)** - Safety protocols for destructive operations (MANDATORY - Added 2025-11-05)
+- **[MIGRATION_TESTING_PROTOCOL.md](docs/guides/MIGRATION_TESTING_PROTOCOL.md)** - Testing procedures and checklists
+
 ---
 
 ## 🚀 Quick Start Commands
@@ -136,7 +140,7 @@ npm run preview           # Preview production build
 - **Forms**: React Hook Form + Zod
 - **Build System**: Turborepo (monorepo orchestration, caching, selective deployments)
 
-### Turborepo Build System (ADDED 2025-11-02)
+### Turborepo Build System (ADDED 2025-11-02, UPDATED 2025-11-05)
 
 **What is Turborepo?**
 Turborepo is a high-performance build system for JavaScript/TypeScript monorepos. It provides:
@@ -160,7 +164,9 @@ turbo run build --dry-run  # Preview what will build
 ```
 
 **Vercel Integration**:
-All 5 Vercel projects use `npx turbo-ignore` to skip builds when apps haven't changed.
+All 5 Vercel projects use `cd ../.. && npx turbo-ignore` in the "Ignored Build Step" field to skip builds when apps haven't changed.
+
+**⚠️ CRITICAL**: The `cd ../..` prefix is **REQUIRED** because Vercel runs from the Root Directory (e.g., `apps/dashboard`). Without it, turbo-ignore cannot access the full monorepo context and will always proceed with build.
 
 **See**: [TURBOREPO_VERCEL_SETUP.md](docs/guides/TURBOREPO_VERCEL_SETUP.md) for complete setup guide.
 
@@ -169,7 +175,7 @@ All 5 Vercel projects use `npx turbo-ignore` to skip builds when apps haven't ch
 - Auto-generated types: `src/integrations/supabase/types.ts`
 - **CRITICAL**: Query by `email`, never by `user_id` (field doesn't exist)
 
-### Database Migrations (UPDATED 2025-10-25)
+### Database Migrations (UPDATED 2025-11-05)
 - **✅ Single source of truth**: `/supabase/migrations/` (root level only)
 - **❌ App-specific folders DEPRECATED**: `apps/*/supabase/migrations/` are for historical reference only
 - **Creating migrations**: Always run from root:
@@ -178,6 +184,13 @@ All 5 Vercel projects use `npx turbo-ignore` to skip builds when apps haven't ch
   npx supabase migration new [migration_name]
   ```
 - **Why root only**: All apps share the same Supabase database, so migrations must be centralized
+
+**⚠️ CRITICAL - Migration Safety (Added 2025-11-05)**:
+- **ALWAYS use templates** from `docs/templates/` for schema changes or destructive operations
+- **ALWAYS create backup** before destructive operations: `./scripts/backup-critical-tables.sh [table_name]`
+- **ALWAYS test in staging** with production-like data before production deployment
+- **NEVER use `DROP TABLE`** for schema changes (use safe migration pattern instead)
+- See [Migration Safety Guide](docs/guides/MIGRATION_SAFETY_GUIDE.md) for complete requirements
 
 ### Three-App Architecture (UPDATED 2025-10-29)
 
@@ -247,6 +260,29 @@ All 5 Vercel projects use `npx turbo-ignore` to skip builds when apps haven't ch
 - ✅ **Migration workflow**: Create in `/supabase/migrations/` (root only), never loose SQL files
 - ❌ **Never use**: `apps/*/supabase/migrations/` (deprecated, historical reference only)
 - **See**: [docs/active/DATABASE_SCHEMA.md](docs/active/DATABASE_SCHEMA.md)
+
+### Migration Safety (ADDED 2025-11-05)
+**Following `title_content_analysis` data loss incident (2025-11-04), these rules are MANDATORY:**
+
+- ❌ **NEVER use `DROP TABLE`** for schema changes (use `ALTER TABLE` with data migration)
+- ❌ **NEVER run destructive migrations** without creating backup first
+- ❌ **NEVER skip staging tests** for destructive operations (DROP, TRUNCATE, ALTER TYPE)
+- ✅ **ALWAYS use migration templates** from `docs/templates/` for safety
+- ✅ **ALWAYS create backup** before destructive operations: `./scripts/backup-critical-tables.sh [table_name]`
+- ✅ **ALWAYS test in staging** with production-like data before production deployment
+- ✅ **ALWAYS document** data impact (row counts, affected tables) in migration header
+- ✅ **ALWAYS get approval** from database admin and lead developer for destructive migrations
+- ✅ **ALWAYS use clear naming** for destructive migrations (include DESTRUCTIVE or DROP in filename)
+- ✅ **ALWAYS document rollback** procedure in migration file
+
+**Templates**:
+- Safe schema change: `docs/templates/safe_schema_change_template.sql`
+- Backup-first destructive: `docs/templates/backup_first_template.sql`
+
+**See**:
+- [Migration Safety Guide](docs/guides/MIGRATION_SAFETY_GUIDE.md) - Complete safety protocols
+- [Migration Testing Protocol](docs/guides/MIGRATION_TESTING_PROTOCOL.md) - Testing procedures
+- [Migration Documentation Standards](docs/MIGRATION_DOCUMENTATION_STANDARDS.md) - Documentation requirements
 
 ### Authentication
 - ✅ **OAuth callbacks**: No URL parameters, use `${window.location.origin}/auth/callback`

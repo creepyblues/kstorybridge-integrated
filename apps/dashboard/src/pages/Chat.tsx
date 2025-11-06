@@ -1,4 +1,5 @@
 // Test selective deployment: Dashboard-only change (2025-11-05)
+// Test #2: Verify selective deployment after config stabilization (2025-11-06)
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, CardContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@kstorybridge/ui";

@@ -1,6 +1,6 @@
 # Git Deployment Structure - KStoryBridge
 
-**Last Updated**: 2025-11-02
+**Last Updated**: 2025-11-05
 **Repository**: https://github.com/creepyblues/kstorybridge-integrated
 
 ## Overview
@@ -834,11 +834,13 @@ The monorepo now uses **Turborepo** for intelligent build orchestration and sele
 
 | Vercel Project | Old Ignored Build Step | New Ignored Build Step |
 |----------------|------------------------|------------------------|
-| dashboard-staging | (empty) | `npx turbo-ignore` |
-| creator-staging | (empty) | `npx turbo-ignore` |
-| kstorybridge-dashboard | Branch check script | `npx turbo-ignore` |
-| kstorybridge-creator | Branch check script | `npx turbo-ignore` |
-| kstorybridge-website | Branch check script | `npx turbo-ignore` |
+| dashboard-staging | (empty) | `cd ../.. && npx turbo-ignore` |
+| creator-staging | (empty) | `cd ../.. && npx turbo-ignore` |
+| kstorybridge-dashboard | Branch check script | `cd ../.. && npx turbo-ignore` |
+| kstorybridge-creator | Branch check script | `cd ../.. && npx turbo-ignore` |
+| kstorybridge-website | Branch check script | `cd ../.. && npx turbo-ignore` |
+
+**⚠️ CRITICAL**: The `cd ../..` is required because Vercel runs from the "Root Directory" (e.g., `apps/dashboard`). Without it, turbo-ignore cannot access the full monorepo context and will always proceed with build.
 
 ### How turbo-ignore Works
 

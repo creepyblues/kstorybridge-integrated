@@ -22,6 +22,56 @@ Build an admin tool that analyzes pitch decks using AI to generate creative asse
 
 ---
 
+## 🚀 Deployment Strategy
+
+**Commit**: `1db41d49` - Phase 1 migrations and documentation committed
+**Branch Strategy**: Deploy to `v2` branch for staging verification first
+
+### Phase 1 Deployment (Database Setup)
+
+**Status**: ✅ Ready for Staging
+
+**Migration Files**:
+- `20251106000000_create_marketing_assets_table.sql` - Table schema with RLS
+- `20251106000001_setup_marketing_assets_storage.sql` - Storage bucket and policies
+
+**Deployment Steps**:
+
+1. **Push to v2 branch** (staging):
+   ```bash
+   git checkout v2
+   git merge main  # or cherry-pick 1db41d49
+   git push origin v2
+   ```
+
+2. **Verify in staging**:
+   - Migrations apply automatically in Supabase
+   - Run test script remotely (via edge function or admin UI)
+   - Verify table exists: `title_marketing_assets`
+   - Verify bucket exists: `marketing-assets`
+
+3. **Test table access**:
+   - Admin user can query table
+   - RLS policies work correctly
+   - Foreign keys properly reference titles and admin tables
+
+4. **Merge to main** (production):
+   ```bash
+   git checkout main
+   git merge v2
+   git push origin main
+   ```
+
+**Note on Local Development**:
+- Local `npx supabase db reset` may fail due to pre-existing table naming inconsistencies
+- This is a known issue not introduced by these migrations
+- Recommended: Test in staging environment instead of local reset
+- Alternative: Apply migrations individually with `npx supabase migration up`
+
+**Risk Assessment**: See [RISK_ASSESSMENT.md](./RISK_ASSESSMENT.md) for complete safety analysis
+
+---
+
 ## 🎯 User Workflow
 
 ### Step 1: Select Title

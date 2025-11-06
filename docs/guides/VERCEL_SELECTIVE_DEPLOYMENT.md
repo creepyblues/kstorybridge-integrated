@@ -53,16 +53,27 @@ For each Vercel project, go to:
 
 | Vercel Project | Ignored Build Step Command |
 |----------------|----------------------------|
-| kstorybridge-dashboard | `bash scripts/check-app-changes.sh apps/dashboard` |
-| dashboard-staging | `bash scripts/check-app-changes.sh apps/dashboard` |
-| dashboard-v2 | `bash scripts/check-app-changes.sh apps/dashboard-v2` |
-| kstorybridge-creator | `bash scripts/check-app-changes.sh apps/creator` |
-| creator-staging | `bash scripts/check-app-changes.sh apps/creator` |
-| kstorybridge-website | `bash scripts/check-app-changes.sh apps/website` |
+| kstorybridge-dashboard | `cd ../.. && bash scripts/check-app-changes.sh apps/dashboard` |
+| dashboard-staging | `cd ../.. && bash scripts/check-app-changes.sh apps/dashboard` |
+| dashboard-v2 | `cd ../.. && bash scripts/check-app-changes.sh apps/dashboard-v2` |
+| kstorybridge-creator | `cd ../.. && bash scripts/check-app-changes.sh apps/creator` |
+| creator-staging | `cd ../.. && bash scripts/check-app-changes.sh apps/creator` |
+| kstorybridge-website | `cd ../.. && bash scripts/check-app-changes.sh apps/website` |
 
 **Step 3: Save Settings**
 
 Click "Save" for each project.
+
+**⚠️ CRITICAL: The `cd ../..` prefix is REQUIRED**
+
+Vercel executes the Ignored Build Step command from your project's **Root Directory** setting (e.g., `apps/creator/`). Since the script is at the monorepo root (`/scripts/check-app-changes.sh`), we must navigate up two levels first:
+
+```bash
+cd ../..  # Navigate from apps/creator/ to monorepo root
+bash scripts/check-app-changes.sh apps/creator  # Now the script is found
+```
+
+Without `cd ../..`, Vercel would look for `apps/creator/scripts/check-app-changes.sh` (which doesn't exist) and fail with "No such file or directory".
 
 ### How It Works
 

@@ -12,7 +12,8 @@ import {
   LogOut,
   Zap,
   MessageSquare,
-  FileEdit
+  FileEdit,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -68,6 +69,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/pitch-extraction-test',
       icon: FileText,
       description: 'Pitch deck analysis'
+    },
+    {
+      name: 'Asset Generation',
+      href: '/admin/asset-generation',
+      icon: Sparkles,
+      description: 'AI-powered marketing assets'
     },
     {
       name: 'Chat Test',

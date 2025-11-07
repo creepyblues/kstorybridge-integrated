@@ -315,8 +315,8 @@ class VectorSearchService {
     context?: SearchContext,
     includeAnalysis: boolean = false
   ): Promise<VectorSearchResult[]> {
-    if (!includeAnalysis || results.length === 0) {
-      return results;
+    if (!results || !includeAnalysis || results.length === 0) {
+      return results || [];
     }
 
     try {
@@ -337,7 +337,7 @@ class VectorSearchService {
       });
     } catch (error) {
       console.error('Error enhancing search results:', error);
-      return results;
+      return results || [];
     }
   }
 

@@ -1,0 +1,32 @@
+{
+  "sidebar": {
+    "home": "Home",
+    "myTitles": "My Titles",
+    "myRequests": "My Requests",
+    "news": "K-content News",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "signOut": "Sign Out"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "titles": "Titles",
+    "titleDetail": "Title Details",
+    "addTitle": "Add Title",
+    "editTitle": "Edit Title",
+    "profile": "Profile",
+    "requests": "Requests",
+    "news": "News"
+  },
+  "pageHeaders": {
+    "dashboard": "Creator Dashboard",
+    "myTitles": "My Titles",
+    "addTitle": "Add New Title",
+    "editTitle": "Edit Title",
+    "titleDetail": "Title Details",
+    "profile": "Profile",
+    "requests": "My Requests",
+    "news": "K-content News"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "required": {
+    "email": "이메일은 필수입니다",
+    "password": "비밀번호는 필수입니다",
+    "fullName": "이름은 필수입니다",
+    "penName": "필명은 필수입니다",
+    "role": "역할은 필수입니다",
+    "titleName": "작품명은 필수입니다",
+    "genre": "최소 하나의 장르가 필요합니다",
+    "synopsis": "시놉시스는 필수입니다",
+    "contentFormat": "콘텐츠 형식은 필수입니다",
+    "field": "이 항목은 필수입니다"
+  },
+  "invalid": {
+    "email": "유효한 이메일 주소를 입력해주세요",
+    "url": "유효한 URL을 입력해주세요",
+    "number": "유효한 숫자를 입력해주세요",
+    "date": "유효한 날짜를 입력해주세요",
+    "phoneNumber": "유효한 전화번호를 입력해주세요"
+  },
+  "length": {
+    "min": "최소 {{count}}자 이상 필요합니다",
+    "max": "최대 {{count}}자까지 허용됩니다",
+    "exact": "정확히 {{count}}자여야 합니다",
+    "passwordMin": "비밀번호는 최소 8자 이상이어야 합니다",
+    "synopsisMin": "시놉시스는 최소 50자 이상이어야 합니다"
+  },
+  "password": {
+    "tooShort": "비밀번호는 최소 8자 이상이어야 합니다",
+    "tooWeak": "비밀번호가 너무 약합니다",
+    "requireNumber": "비밀번호는 최소 하나의 숫자를 포함해야 합니다",
+    "requireSpecial": "비밀번호는 최소 하나의 특수 문자를 포함해야 합니다",
+    "noMatch": "비밀번호가 일치하지 않습니다"
+  },
+  "file": {
+    "tooLarge": "파일 크기는 {{size}}MB 미만이어야 합니다",
+    "invalidType": "잘못된 파일 형식입니다. 허용된 형식: {{types}}",
+    "uploadFailed": "파일 업로드 실패. 다시 시도해주세요."
+  },
+  "form": {
+    "fillAllRequired": "모든 필수 항목을 입력해주세요",
+    "invalidData": "입력한 정보를 확인하고 다시 시도해주세요",
+    "saveFailed": "저장 실패. 다시 시도해주세요.",
+    "loadFailed": "데이터 로드 실패. 다시 시도해주세요.",
+    "networkError": "네트워크 오류. 연결을 확인해주세요.",
+    "serverError": "서버 오류. 나중에 다시 시도해주세요.",
+    "unauthorized": "이 작업을 수행할 권한이 없습니다.",
+    "notFound": "요청한 리소스를 찾을 수 없습니다.",
+    "conflict": "이 리소스는 이미 존재합니다.",
+    "unknownError": "알 수 없는 오류가 발생했습니다. 다시 시도해주세요."
+  },
+  "api": {
+    "createSuccess": "생성되었습니다",
+    "updateSuccess": "업데이트되었습니다",
+    "deleteSuccess": "삭제되었습니다",
+    "createError": "생성 실패. 다시 시도해주세요.",
+    "updateError": "업데이트 실패. 다시 시도해주세요.",
+    "deleteError": "삭제 실패. 다시 시도해주세요.",
+    "fetchError": "데이터 가져오기 실패. 다시 시도해주세요.",
+    "timeout": "요청 시간 초과. 다시 시도해주세요.",
+    "rateLimited": "요청이 너무 많습니다. 나중에 다시 시도해주세요."
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "header": {
+    "title": "프로필",
+    "subtitle": "크리에이터 계정 정보를 관리하세요"
+  },
+  "sections": {
+    "accountInfo": "계정 정보",
+    "contactInfo": "연락처 정보",
+    "preferences": "환경 설정"
+  },
+  "fields": {
+    "email": "이메일",
+    "emailHelp": "이메일 주소는 변경할 수 없습니다",
+    "fullName": "이름",
+    "fullNamePlaceholder": "이름을 입력하세요",
+    "penName": "필명 / 스튜디오명",
+    "penNamePlaceholder": "필명 또는 스튜디오명을 입력하세요",
+    "role": "역할",
+    "roleAuthor": "작가",
+    "roleAgent": "에이전트",
+    "company": "회사",
+    "companyPlaceholder": "회사명을 입력하세요",
+    "website": "웹사이트",
+    "websitePlaceholder": "https://yourwebsite.com",
+    "memberSince": "가입일",
+    "accountType": "계정 유형",
+    "accountTypeCreator": "크리에이터",
+    "invitationStatus": "초대 상태",
+    "invitationStatusInvited": "초대됨",
+    "invitationStatusActive": "활성",
+    "invitationStatusPending": "대기 중"
+  },
+  "buttons": {
+    "editProfile": "프로필 수정",
+    "saveChanges": "변경사항 저장",
+    "cancel": "취소"
+  },
+  "messages": {
+    "loadError": "프로필 로드 실패. 다시 시도해주세요.",
+    "updateSuccess": "프로필이 업데이트되었습니다!",
+    "updateError": "프로필 업데이트 실패. 다시 시도해주세요.",
+    "fieldsRequired": "모든 필수 항목을 입력해주세요"
+  }
+}

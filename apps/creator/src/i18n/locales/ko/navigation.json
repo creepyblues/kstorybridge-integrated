@@ -1,0 +1,32 @@
+{
+  "sidebar": {
+    "home": "홈",
+    "myTitles": "내 작품",
+    "myRequests": "내 요청",
+    "news": "K-콘텐츠 뉴스",
+    "profile": "프로필",
+    "settings": "설정",
+    "help": "도움말",
+    "signOut": "로그아웃"
+  },
+  "breadcrumbs": {
+    "home": "홈",
+    "titles": "작품",
+    "titleDetail": "작품 상세",
+    "addTitle": "작품 추가",
+    "editTitle": "작품 수정",
+    "profile": "프로필",
+    "requests": "요청",
+    "news": "뉴스"
+  },
+  "pageHeaders": {
+    "dashboard": "크리에이터 대시보드",
+    "myTitles": "내 작품",
+    "addTitle": "새 작품 추가",
+    "editTitle": "작품 수정",
+    "titleDetail": "작품 상세",
+    "profile": "프로필",
+    "requests": "내 요청",
+    "news": "K-콘텐츠 뉴스"
+  }
+}

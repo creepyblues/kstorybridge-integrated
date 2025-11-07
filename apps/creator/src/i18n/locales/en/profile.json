@@ -1,0 +1,44 @@
+{
+  "header": {
+    "title": "Profile",
+    "subtitle": "Manage your creator account information"
+  },
+  "sections": {
+    "accountInfo": "Account Information",
+    "contactInfo": "Contact Information",
+    "preferences": "Preferences"
+  },
+  "fields": {
+    "email": "Email",
+    "emailHelp": "Your email address cannot be changed",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "penName": "Pen Name / Studio Name",
+    "penNamePlaceholder": "Enter your pen name or studio name",
+    "role": "Role",
+    "roleAuthor": "Author",
+    "roleAgent": "Agent",
+    "company": "Company",
+    "companyPlaceholder": "Enter your company name",
+    "website": "Website",
+    "websitePlaceholder": "https://yourwebsite.com",
+    "memberSince": "Member Since",
+    "accountType": "Account Type",
+    "accountTypeCreator": "Creator",
+    "invitationStatus": "Invitation Status",
+    "invitationStatusInvited": "Invited",
+    "invitationStatusActive": "Active",
+    "invitationStatusPending": "Pending"
+  },
+  "buttons": {
+    "editProfile": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel"
+  },
+  "messages": {
+    "loadError": "Failed to load profile. Please try again.",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Failed to update profile. Please try again.",
+    "fieldsRequired": "Please fill in all required fields"
+  }
+}

@@ -72,6 +72,7 @@ const AdminScraperTest = lazy(() => import("./pages/admin/ScraperTest"));
 const PitchExtractionTest = lazy(() => import("./pages/admin/PitchExtractionTest"));
 const AdminDraftApproval = lazy(() => import("./pages/admin/DraftApproval"));
 const AdminDraftDetail = lazy(() => import("./pages/admin/DraftDetail"));
+const AssetGeneration = lazy(() => import("./pages/admin/AssetGeneration"));
 
 // Documentation pages
 const Docs = lazy(() => import("./pages/Docs"));
@@ -320,6 +321,9 @@ const App = () => (
                 } />
                 <Route path="/admin/pitch-extraction-test" element={
                   <AdminProtectedRoute><AdminLayout><PitchExtractionTest /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/asset-generation" element={
+                  <AdminProtectedRoute><AdminLayout><AssetGeneration /></AdminLayout></AdminProtectedRoute>
                 } />
                 <Route path="/admin/experiment" element={
                   <AdminProtectedRoute><AdminLayout><Experiment /></AdminLayout></AdminProtectedRoute>

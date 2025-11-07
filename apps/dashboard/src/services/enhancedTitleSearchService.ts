@@ -85,7 +85,7 @@ class EnhancedTitleSearchService {
             threshold,
             limit: maxResults,
             includeAnalysis: true
-          });
+          }) || [];
 
           if (vectorSearchResults && vectorSearchResults.length > 0) {
             console.log(`✅ Vector search found ${vectorSearchResults.length} results with threshold ${threshold}`);
@@ -304,10 +304,10 @@ class EnhancedTitleSearchService {
       const results = await vectorSearchService.vectorSearch(query, {}, {
         threshold: 0.5,
         limit: 10
-      });
+      }) || [];
 
       const suggestions: Set<string> = new Set();
-      
+
       results.forEach(result => {
         // Extract keywords from title names
         const titleWords = [result.title_name_en, result.title_name_kr]

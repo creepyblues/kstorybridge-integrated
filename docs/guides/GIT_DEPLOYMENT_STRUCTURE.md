@@ -830,17 +830,21 @@ The monorepo now uses **Turborepo** for intelligent build orchestration and sele
 
 ### Updated Vercel Configuration
 
-**All 5 Vercel projects now use `turbo-ignore`**:
+**All 6 Vercel projects now use `turbo-ignore`**:
 
-| Vercel Project | Old Ignored Build Step | New Ignored Build Step |
-|----------------|------------------------|------------------------|
-| dashboard-staging | (empty) | `cd ../.. && npx turbo-ignore` |
-| creator-staging | (empty) | `cd ../.. && npx turbo-ignore` |
-| kstorybridge-dashboard | Branch check script | `cd ../.. && npx turbo-ignore` |
-| kstorybridge-creator | Branch check script | `cd ../.. && npx turbo-ignore` |
-| kstorybridge-website | Branch check script | `cd ../.. && npx turbo-ignore` |
+| Vercel Project | Old Ignored Build Step | New Ignored Build Step (Correct) |
+|----------------|------------------------|----------------------------------|
+| dashboard-staging | (empty) | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
+| dashboard-v2 | (empty) | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-v2` |
+| creator-staging | (empty) | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
+| kstorybridge-dashboard | Branch check script | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
+| kstorybridge-creator | Branch check script | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
+| kstorybridge-website | Branch check script | `cd ../.. && npx turbo-ignore @kstorybridge/website` |
 
-**⚠️ CRITICAL**: The `cd ../..` is required because Vercel runs from the "Root Directory" (e.g., `apps/dashboard`). Without it, turbo-ignore cannot access the full monorepo context and will always proceed with build.
+**⚠️ CRITICAL - Both parts are required**:
+- `cd ../..` - Changes from `apps/[app]` to monorepo root (for full context)
+- `@kstorybridge/[workspace]` - Specifies which workspace to check for changes
+- **Without workspace argument**: turbo-ignore fails with error and deploys ALL apps (safety fallback)
 
 ### How turbo-ignore Works
 

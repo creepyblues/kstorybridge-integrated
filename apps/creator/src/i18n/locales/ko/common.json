@@ -1,0 +1,83 @@
+{
+  "buttons": {
+    "save": "저장",
+    "cancel": "취소",
+    "edit": "수정",
+    "delete": "삭제",
+    "submit": "제출",
+    "continue": "계속",
+    "back": "뒤로",
+    "close": "닫기",
+    "confirm": "확인",
+    "add": "추가",
+    "remove": "제거",
+    "upload": "업로드",
+    "download": "다운로드",
+    "signOut": "로그아웃",
+    "saveChanges": "변경사항 저장",
+    "addNew": "새로 추가",
+    "viewDetails": "자세히 보기",
+    "editProfile": "프로필 수정",
+    "cancelEdit": "수정 취소"
+  },
+  "labels": {
+    "email": "이메일",
+    "password": "비밀번호",
+    "fullName": "이름",
+    "name": "이름",
+    "company": "회사",
+    "website": "웹사이트",
+    "role": "역할",
+    "status": "상태",
+    "date": "날짜",
+    "description": "설명",
+    "notes": "메모",
+    "optional": "선택사항",
+    "required": "필수"
+  },
+  "status": {
+    "draft": "초안",
+    "pending": "검토 중",
+    "approved": "승인됨",
+    "rejected": "거절됨",
+    "active": "활성",
+    "inactive": "비활성",
+    "beta": "베타"
+  },
+  "messages": {
+    "loading": "로딩 중...",
+    "saving": "저장 중...",
+    "saved": "저장되었습니다",
+    "error": "오류가 발생했습니다",
+    "noData": "데이터가 없습니다",
+    "comingSoon": "곧 출시 예정",
+    "failedToLoad": "로드 실패. 다시 시도해주세요.",
+    "areYouSure": "정말로 하시겠습니까?",
+    "cannotBeUndone": "이 작업은 취소할 수 없습니다.",
+    "sessionExpired": "세션이 만료되었습니다. 다시 로그인해주세요.",
+    "networkError": "네트워크 오류. 연결을 확인해주세요."
+  },
+  "emptyStates": {
+    "noResults": "결과가 없습니다",
+    "noItems": "표시할 항목이 없습니다",
+    "createFirst": "위의 버튼을 클릭하여 첫 항목을 생성하세요"
+  },
+  "time": {
+    "justNow": "방금",
+    "minutesAgo": "{{count}}분 전",
+    "minutesAgo_plural": "{{count}}분 전",
+    "hoursAgo": "{{count}}시간 전",
+    "hoursAgo_plural": "{{count}}시간 전",
+    "daysAgo": "{{count}}일 전",
+    "daysAgo_plural": "{{count}}일 전"
+  },
+  "actions": {
+    "confirmDelete": "정말 삭제하시겠습니까?",
+    "deleteSuccess": "삭제되었습니다",
+    "deleteError": "삭제 실패",
+    "updateSuccess": "업데이트되었습니다",
+    "updateError": "업데이트 실패",
+    "createSuccess": "생성되었습니다",
+    "createError": "생성 실패"
+  }
+}

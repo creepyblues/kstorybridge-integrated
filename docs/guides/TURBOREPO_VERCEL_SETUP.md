@@ -8,9 +8,15 @@ This guide explains how to configure Vercel projects to use Turborepo's `turbo-i
 
 ## Configuration Status
 
-**✅ Updated 2025-11-05**: All Vercel project settings have been updated to use `cd ../.. && npx turbo-ignore`. Production deployments are being triggered to apply the corrected configuration.
+**⚠️ Updated 2025-11-05**: Vercel project settings require workspace argument fix.
 
-**Previous Issue**: Projects were configured with `npx turbo-ignore` (missing `cd ../..` prefix), causing all apps to deploy on every commit. This has been corrected.
+**Current Issue**: Projects are configured with `cd ../.. && npx turbo-ignore` but are missing the required workspace argument (e.g., `@kstorybridge/dashboard`). Without the workspace argument, turbo-ignore fails and deploys all apps as a safety fallback.
+
+**Required Fix**: Update all 6 Vercel projects to include workspace argument: `cd ../.. && npx turbo-ignore @kstorybridge/[workspace-name]`
+
+**Previous Issues (Resolved)**:
+- ~~Missing `cd ../..` prefix~~ ✅ Fixed in PR #16
+- Missing workspace argument ⚠️ **Needs manual Vercel dashboard update**
 
 ---
 
@@ -50,16 +56,29 @@ You need to update **all 5 Vercel projects**:
 
 #### Step 2: Configure Ignored Build Step
 
-**Replace the existing command** with:
+**Replace the existing command** with the correct command for each project:
 
-```bash
-cd ../.. && npx turbo-ignore
+| Vercel Project | Ignored Build Step Command |
+|----------------|----------------------------|
+| dashboard-staging | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
+| dashboard-v2 | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-v2` |
+| kstorybridge-dashboard | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
+| creator-staging | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
+| kstorybridge-creator | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
+| kstorybridge-website | `cd ../.. && npx turbo-ignore @kstorybridge/website` |
+
+**⚠️ CRITICAL**: Both `cd ../..` AND the workspace argument are **REQUIRED**:
+- `cd ../..` - Changes from `apps/[app]` to monorepo root
+- `@kstorybridge/[app]` - Specifies which workspace to check for changes
+- **Without workspace argument**: turbo-ignore fails and deploys ALL apps (safety fallback)
+
+**How to find workspace name**:
+Open the app's `package.json` and look for the `"name"` field:
+```json
+{
+  "name": "@kstorybridge/dashboard"  ← Use this value
+}
 ```
-
-**⚠️ IMPORTANT**: The `cd ../..` is **REQUIRED** because:
-- Vercel runs commands from the "Root Directory" (e.g., `apps/dashboard`)
-- turbo-ignore needs to run from the **monorepo root** to access the full workspace
-- `cd ../..` changes from `apps/dashboard` → monorepo root before running turbo-ignore
 
 **Remove any existing logic** like:
 ```bash
@@ -68,8 +87,9 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "v2" ]; then exit 0; else exit 1; fi
 
 # OR
 
-# OLD (remove this):
-npx turbo-ignore   # Missing cd ../.. will cause ALL apps to deploy
+# OLD (remove these - both are incomplete):
+npx turbo-ignore
+cd ../.. && npx turbo-ignore  # Missing workspace argument
 ```
 
 #### Step 3: Keep Build Command Unchanged
@@ -170,11 +190,11 @@ From the root of your monorepo:
 ```bash
 # Test from app directory (simulating Vercel environment)
 cd apps/dashboard
-cd ../.. && npx turbo-ignore
-# Should output: "Proceeding with build" or "Skipping build"
+cd ../.. && npx turbo-ignore @kstorybridge/dashboard
+# Should output: "Proceeding with build" or "Ignoring the change"
 ```
 
-**Note**: Always test with `cd ../.. && npx turbo-ignore` to match Vercel's execution context.
+**Note**: Always test with the workspace argument (`@kstorybridge/dashboard`) to match Vercel's execution context.
 
 ### Test 2: Test Selective Deployment
 
@@ -216,11 +236,12 @@ cd ../.. && npx turbo-ignore
 
 | Project | Branch | Root Directory | Build Command | Ignored Build Step |
 |---------|--------|----------------|---------------|-------------------|
-| dashboard-staging | v2 | `apps/dashboard` | `npm run build` | `cd ../.. && npx turbo-ignore` |
-| creator-staging | v2 | `apps/creator` | `npm run build` | `cd ../.. && npx turbo-ignore` |
-| kstorybridge-dashboard | main | `apps/dashboard` | `npm run build` | `cd ../.. && npx turbo-ignore` |
-| kstorybridge-creator | main | `apps/creator` | `npm run build` | `cd ../.. && npx turbo-ignore` |
-| kstorybridge-website | main | `apps/website` | `npm run build` | `cd ../.. && npx turbo-ignore` |
+| dashboard-staging | v2 | `apps/dashboard` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
+| dashboard-v2 | v2 | `apps/dashboard-v2` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-v2` |
+| creator-staging | v2 | `apps/creator` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
+| kstorybridge-dashboard | main | `apps/dashboard` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
+| kstorybridge-creator | main | `apps/creator` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
+| kstorybridge-website | main | `apps/website` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/website` |
 
 ### Dependency Graph
 
@@ -246,42 +267,44 @@ apps/creator ✅ (INDEPENDENT - no package dependencies)
 
 ### Issue: All Apps Deploy Every Time (MOST COMMON)
 
-**Root Cause**: Missing `cd ../..` in the "Ignored Build Step" command.
+**Root Cause 1**: Missing `cd ../..` in the "Ignored Build Step" command.
+**Root Cause 2**: Missing workspace argument after `npx turbo-ignore`.
 
 **Why This Happens**:
 ```bash
-# WRONG (what you might have):
+# WRONG #1 (missing cd ../..):
 Ignored Build Step: npx turbo-ignore
 
 # Vercel executes from Root Directory (apps/dashboard):
 cd apps/dashboard          # Vercel's Root Directory setting
 npx turbo-ignore          # Runs from apps/dashboard ❌
 
-# turbo-ignore cannot access:
-# - Root turbo.json
-# - Root package.json workspaces
-# - Other apps in apps/*
-# - Full monorepo git history
-
-# Result: Always returns exit 1 (proceed with build)
-```
-
-**Solution**:
-```bash
-# CORRECT:
+# WRONG #2 (missing workspace argument):
 Ignored Build Step: cd ../.. && npx turbo-ignore
 
 # Vercel executes:
 cd apps/dashboard          # Vercel's Root Directory
-cd ../.. && npx turbo-ignore  # Changes to monorepo root ✅
+cd ../.. && npx turbo-ignore  # Changes to root ✅ but...
+# Error: "No package found with name 'kstorybridge-monorepo' in workspace"
+# Result: Fallback to deploying ALL apps ❌
+```
 
-# Now turbo-ignore has full context and works correctly
+**Solution**:
+```bash
+# CORRECT (both cd ../.. AND workspace argument):
+Ignored Build Step: cd ../.. && npx turbo-ignore @kstorybridge/dashboard
+
+# For each project, use the correct workspace name:
+# - dashboard-staging: @kstorybridge/dashboard
+# - creator-staging: @kstorybridge/creator
+# - kstorybridge-website: @kstorybridge/website
 ```
 
 **Verification**:
-1. Check Vercel build logs - look for `turbo-ignore` output
-2. Test locally: `cd apps/dashboard && cd ../.. && npx turbo-ignore`
-3. Ensure command includes `cd ../..` for ALL 5 Vercel projects
+1. Check Vercel build logs - look for turbo-ignore success message
+2. Test locally: `cd apps/dashboard && cd ../.. && npx turbo-ignore @kstorybridge/dashboard`
+3. Should output: "Using '@kstorybridge/dashboard' as workspace from arguments"
+4. Ensure ALL 6 Vercel projects have BOTH `cd ../..` AND workspace argument
 
 ---
 
@@ -363,12 +386,15 @@ cd ../.. && bash scripts/ignore-build.sh
 
 Before deploying to production:
 
-- [ ] Updated all 5 Vercel projects with `cd ../.. && npx turbo-ignore`
-- [ ] Verified command includes `cd ../..` (CRITICAL - without this, all apps deploy)
-- [ ] Tested selective deployment with Dashboard change
-- [ ] Tested selective deployment with Creator change
+- [ ] Updated all 6 Vercel projects with complete command: `cd ../.. && npx turbo-ignore @kstorybridge/[workspace]`
+- [ ] Verified command includes BOTH `cd ../..` AND workspace argument (CRITICAL)
+- [ ] Verified workspace names match package.json "name" field for each app
+- [ ] Tested turbo-ignore locally with workspace argument
+- [ ] Tested selective deployment with Dashboard change (only dashboard deploys)
+- [ ] Tested selective deployment with Creator change (only creator deploys)
 - [ ] Verified shared package changes trigger correct apps
-- [ ] Checked Vercel build logs to confirm turbo-ignore is running from monorepo root
+- [ ] Checked Vercel build logs for turbo-ignore success message
+- [ ] Confirmed no "No package found" errors in logs
 - [ ] Enabled Vercel Remote Cache (optional but recommended)
 - [ ] Team members have configured remote cache locally
 - [ ] Updated documentation (CLAUDE.md, deployment guides)
@@ -386,22 +412,30 @@ Before deploying to production:
 
 ## Quick Reference
 
-**Correct Vercel "Ignored Build Step" Command**:
+**Correct Vercel "Ignored Build Step" Command Format**:
 ```bash
-cd ../.. && npx turbo-ignore
+cd ../.. && npx turbo-ignore @kstorybridge/[workspace-name]
 ```
 
-**Why `cd ../..` is Required**:
-- Vercel runs from `apps/[app]` (Root Directory setting)
-- turbo-ignore needs monorepo root context
-- Without it, turbo-ignore cannot determine workspace changes
-- Result: ALL apps deploy every time ❌
+**Complete Commands by Project**:
+- dashboard-staging: `cd ../.. && npx turbo-ignore @kstorybridge/dashboard`
+- dashboard-v2: `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-v2`
+- creator-staging: `cd ../.. && npx turbo-ignore @kstorybridge/creator`
+- kstorybridge-dashboard: `cd ../.. && npx turbo-ignore @kstorybridge/dashboard`
+- kstorybridge-creator: `cd ../.. && npx turbo-ignore @kstorybridge/creator`
+- kstorybridge-website: `cd ../.. && npx turbo-ignore @kstorybridge/website`
+
+**Why Both Parts Are Required**:
+- `cd ../..` - Changes from `apps/[app]` to monorepo root (for full context)
+- `@kstorybridge/[workspace]` - Specifies which workspace to check for changes
+- **Without workspace argument**: turbo-ignore fails and deploys ALL apps ❌
 
 **Testing Locally**:
 ```bash
 cd apps/dashboard
-cd ../.. && npx turbo-ignore
-# Should output selective build decision
+cd ../.. && npx turbo-ignore @kstorybridge/dashboard
+# Should output: "Using '@kstorybridge/dashboard' as workspace from arguments"
+# Then: "Proceeding with build" or "Ignoring the change"
 ```
 
 ---

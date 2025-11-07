@@ -164,9 +164,17 @@ turbo run build --dry-run  # Preview what will build
 ```
 
 **Vercel Integration**:
-All 5 Vercel projects use `cd ../.. && npx turbo-ignore` in the "Ignored Build Step" field to skip builds when apps haven't changed.
+All 6 Vercel projects use `cd ../.. && npx turbo-ignore @kstorybridge/[workspace]` in the "Ignored Build Step" field to skip builds when apps haven't changed.
 
-**⚠️ CRITICAL**: The `cd ../..` prefix is **REQUIRED** because Vercel runs from the Root Directory (e.g., `apps/dashboard`). Without it, turbo-ignore cannot access the full monorepo context and will always proceed with build.
+**⚠️ CRITICAL - Both parts required**:
+- `cd ../..` - Changes from `apps/[app]` to monorepo root
+- `@kstorybridge/[workspace]` - Specifies which workspace to check
+- **Without workspace argument**: turbo-ignore fails and deploys ALL apps ❌
+
+**Correct commands by project**:
+- dashboard projects: `cd ../.. && npx turbo-ignore @kstorybridge/dashboard`
+- creator projects: `cd ../.. && npx turbo-ignore @kstorybridge/creator`
+- website project: `cd ../.. && npx turbo-ignore @kstorybridge/website`
 
 **See**: [TURBOREPO_VERCEL_SETUP.md](docs/guides/TURBOREPO_VERCEL_SETUP.md) for complete setup guide.
 

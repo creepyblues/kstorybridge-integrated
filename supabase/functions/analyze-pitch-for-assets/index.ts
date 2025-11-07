@@ -29,13 +29,17 @@ import {
   DEFAULT_CONFIG,
 } from './types.ts';
 
+// Security utilities
+import { getRequiredEnv, validateEnvironment, logEnvironmentConfig } from '../_shared/env-validator.ts';
+import { getCorsHeaders, handleCorsPrelight, validateOrigin, logCorsConfig } from '../_shared/cors-handler.ts';
+
 // ============================================================================
-// ENVIRONMENT VARIABLES
+// ENVIRONMENT VARIABLES (with validation)
 // ============================================================================
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')!;
+const SUPABASE_URL = getRequiredEnv('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+const OPENAI_API_KEY = getRequiredEnv('OPENAI_API_KEY');
 
 // ============================================================================
 // CONSTANTS
@@ -55,13 +59,25 @@ serve(async (req) => {
   console.log('[analyze-pitch-for-assets] Edge function handler invoked');
   console.log(`[analyze-pitch-for-assets] Environment check: SUPABASE_URL=${!!SUPABASE_URL}, SERVICE_ROLE=${!!SUPABASE_SERVICE_ROLE_KEY}, OPENAI=${!!OPENAI_API_KEY}`);
 
-  // CORS preflight
+  // CORS preflight with origin validation
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
+    return handleCorsPrelight(req);
+  }
+
+  // Validate origin for actual requests
+  const originValidation = validateOrigin(req);
+  if (!originValidation.valid) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: {
+        code: 'CORS_ERROR',
+        message: originValidation.error,
+      },
+    }), {
+      status: 403,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Content-Type': 'application/json',
+        ...getCorsHeaders(req.headers.get('origin')),
       },
     });
   }
@@ -75,7 +91,7 @@ serve(async (req) => {
     // Validate request
     const validationError = validateRequest(requestBody);
     if (validationError) {
-      return errorResponse(validationError.code, validationError.message, 400);
+      return errorResponse(validationError.code, validationError.message, 400, req);
     }
 
     // Initialize Supabase client with service role key
@@ -92,7 +108,8 @@ serve(async (req) => {
       return errorResponse(
         'COST_LIMIT_EXCEEDED',
         `Estimated cost ($${estimatedCost.toFixed(4)}) exceeds limit ($${config.max_cost_usd.toFixed(4)})`,
-        400
+        400,
+        req
       );
     }
 
@@ -115,7 +132,7 @@ serve(async (req) => {
     const insertResult = await insertAssetIdeas(supabase, assetIdeas, requestBody);
 
     if (!insertResult.success) {
-      return errorResponse('DATABASE_ERROR', insertResult.error || 'Failed to insert asset ideas', 500);
+      return errorResponse('DATABASE_ERROR', insertResult.error || 'Failed to insert asset ideas', 500, req);
     }
 
     // Calculate actual cost
@@ -158,7 +175,7 @@ serve(async (req) => {
     return new Response(JSON.stringify(response), {
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
+        ...getCorsHeaders(req.headers.get('origin')),
       },
     });
   } catch (error) {
@@ -166,7 +183,8 @@ serve(async (req) => {
     return errorResponse(
       'INTERNAL_ERROR',
       error instanceof Error ? error.message : 'An unexpected error occurred',
-      500
+      500,
+      req
     );
   }
 });
@@ -375,7 +393,7 @@ async function insertAssetIdeas(
 // ERROR RESPONSE HELPER
 // ============================================================================
 
-function errorResponse(code: string, message: string, status: number): Response {
+function errorResponse(code: string, message: string, status: number, req?: Request): Response {
   const errorBody: AnalyzePitchError = {
     success: false,
     error: {
@@ -390,7 +408,7 @@ function errorResponse(code: string, message: string, status: number): Response 
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      ...getCorsHeaders(req?.headers.get('origin') || null),
     },
   });
 }

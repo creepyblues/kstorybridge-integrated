@@ -27,13 +27,18 @@ import {
 import { generateAndDownloadImage } from './dalle-client.ts';
 import { uploadImageToStorage, validateBlob } from './storage-client.ts';
 
+// Security utilities
+import { getRequiredEnv, validateEnvironment, logEnvironmentConfig } from '../_shared/env-validator.ts';
+import { getCorsHeaders, handleCorsPrelight, validateOrigin, logCorsConfig } from '../_shared/cors-handler.ts';
+import { validatePrompt, sanitizePrompt, logSanitization } from '../_shared/prompt-sanitizer.ts';
+
 // ============================================================================
-// ENVIRONMENT VARIABLES
+// ENVIRONMENT VARIABLES (with validation)
 // ============================================================================
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')!;
+const SUPABASE_URL = getRequiredEnv('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
+const OPENAI_API_KEY = getRequiredEnv('OPENAI_API_KEY');
 
 // ============================================================================
 // MAIN HANDLER
@@ -44,13 +49,25 @@ serve(async (req) => {
   console.log('[generate-asset] Edge function handler invoked');
   console.log(`[generate-asset] Environment check: SUPABASE_URL=${!!SUPABASE_URL}, SERVICE_ROLE=${!!SUPABASE_SERVICE_ROLE_KEY}, OPENAI=${!!OPENAI_API_KEY}`);
 
-  // CORS preflight
+  // CORS preflight with origin validation
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
+    return handleCorsPrelight(req);
+  }
+
+  // Validate origin for actual requests
+  const originValidation = validateOrigin(req);
+  if (!originValidation.valid) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: {
+        code: 'CORS_ERROR',
+        message: originValidation.error,
+      },
+    }), {
+      status: 403,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Content-Type': 'application/json',
+        ...getCorsHeaders(req.headers.get('origin')),
       },
     });
   }
@@ -67,7 +84,39 @@ serve(async (req) => {
     // Validate request
     const validationError = validateRequest(requestBody);
     if (validationError) {
-      return errorResponse(validationError.code, validationError.message, 400);
+      return errorResponse(validationError.code, validationError.message, 400, req);
+    }
+
+    // Sanitize custom prompt if provided
+    if (requestBody.custom_prompt) {
+      const promptValidation = validatePrompt(requestBody.custom_prompt);
+
+      if (!promptValidation.valid) {
+        console.error(`[generate-asset] Custom prompt failed validation: ${promptValidation.error}`);
+        return errorResponse(
+          ERROR_CODES.INVALID_INPUT,
+          `Invalid custom prompt: ${promptValidation.error}`,
+          400,
+          req
+        );
+      }
+
+      // Use sanitized prompt
+      requestBody.custom_prompt = promptValidation.sanitized;
+
+      // Log sanitization warnings if any
+      if (promptValidation.warnings && promptValidation.warnings.length > 0) {
+        console.warn(`[generate-asset] Prompt sanitization warnings:`, promptValidation.warnings);
+        logSanitization(
+          {
+            sanitized: promptValidation.sanitized!,
+            warnings: promptValidation.warnings,
+            originalLength: requestBody.custom_prompt.length,
+            sanitizedLength: promptValidation.sanitized!.length,
+          },
+          { assetId: requestBody.asset_id }
+        );
+      }
     }
 
     // Initialize Supabase client with service role key
@@ -91,24 +140,49 @@ serve(async (req) => {
         return errorResponse(
           ERROR_CODES.ASSET_ALREADY_GENERATED,
           `Asset already generated. Image URL: ${assetRecord.image_url}`,
-          400
+          400,
+          req
         );
       }
       if (assetRecord.status === 'generating') {
         return errorResponse(
           ERROR_CODES.ASSET_ALREADY_GENERATED,
           'Asset is currently being generated',
-          400
+          400,
+          req
         );
       }
     }
 
-    // Update status to 'generating'
+    // Update status to 'generating' with optimistic locking
     const startTime = Date.now();
-    await updateAssetStatus(supabase, requestBody.asset_id, {
-      status: 'generating',
-      generation_attempts: assetRecord.generation_attempts + 1,
-    });
+    const statusUpdateResult = await updateAssetStatusWithLock(
+      supabase,
+      requestBody.asset_id,
+      assetRecord.updated_at, // Use current updated_at as version check
+      {
+        status: 'generating',
+        generation_attempts: assetRecord.generation_attempts + 1,
+      }
+    );
+
+    // Check if update succeeded (race condition check)
+    if (!statusUpdateResult.success) {
+      if (statusUpdateResult.conflict) {
+        return errorResponse(
+          ERROR_CODES.ASSET_ALREADY_GENERATED,
+          'Asset is being modified by another process. Please try again.',
+          409, // 409 Conflict
+          req
+        );
+      }
+      return errorResponse(
+        ERROR_CODES.DATABASE_ERROR,
+        statusUpdateResult.error || 'Failed to update asset status',
+        500,
+        req
+      );
+    }
 
     console.log(`[generate-asset] Starting generation for asset: ${assetRecord.asset_type}`);
 
@@ -140,7 +214,8 @@ serve(async (req) => {
       return errorResponse(
         ERROR_CODES.DALLE_API_ERROR,
         imageResult.error || 'Failed to generate image',
-        500
+        500,
+        req
       );
     }
 
@@ -157,7 +232,8 @@ serve(async (req) => {
       return errorResponse(
         ERROR_CODES.IMAGE_DOWNLOAD_ERROR,
         blobValidation.error || 'Invalid image',
-        500
+        500,
+        req
       );
     }
 
@@ -180,7 +256,8 @@ serve(async (req) => {
       return errorResponse(
         ERROR_CODES.STORAGE_UPLOAD_ERROR,
         uploadResult.error || 'Failed to upload image to storage',
-        500
+        500,
+        req
       );
     }
 
@@ -222,7 +299,7 @@ serve(async (req) => {
     return new Response(JSON.stringify(response), {
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
+        ...getCorsHeaders(req.headers.get('origin')),
       },
     });
   } catch (error) {
@@ -230,7 +307,8 @@ serve(async (req) => {
     return errorResponse(
       ERROR_CODES.INTERNAL_ERROR,
       error instanceof Error ? error.message : 'An unexpected error occurred',
-      500
+      500,
+      req
     );
   }
 });
@@ -346,11 +424,63 @@ async function updateAssetStatus(
   }
 }
 
+/**
+ * Update asset status with optimistic locking (race condition prevention)
+ * Uses updated_at timestamp to ensure no concurrent modifications
+ */
+async function updateAssetStatusWithLock(
+  supabase: ReturnType<typeof createClient>,
+  assetId: string,
+  expectedUpdatedAt: string, // The updated_at value from when we fetched the record
+  updates: AssetUpdatePayload
+): Promise<{ success: boolean; error?: string; conflict?: boolean }> {
+  try {
+    const newUpdatedAt = new Date().toISOString();
+
+    // Update only if updated_at matches expected value (optimistic lock)
+    const { data, error } = await supabase
+      .from('title_marketing_assets')
+      .update({
+        ...updates,
+        updated_at: newUpdatedAt,
+      })
+      .eq('id', assetId)
+      .eq('updated_at', expectedUpdatedAt) // Optimistic lock condition
+      .select();
+
+    if (error) {
+      console.error('[Database] Failed to update asset with lock:', error);
+      return { success: false, error: error.message, conflict: false };
+    }
+
+    // Check if any rows were updated (0 rows = conflict/race condition)
+    if (!data || data.length === 0) {
+      console.warn(`[Database] Optimistic lock conflict for asset ${assetId}`);
+      console.warn(`[Database] Expected updated_at: ${expectedUpdatedAt}, but record was modified`);
+      return {
+        success: false,
+        conflict: true,
+        error: 'Asset was modified by another process',
+      };
+    }
+
+    console.log(`[Database] Successfully updated asset ${assetId} with optimistic lock`);
+    return { success: true };
+  } catch (error) {
+    console.error('[Database] Error updating asset with lock:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      conflict: false,
+    };
+  }
+}
+
 // ============================================================================
 // ERROR RESPONSE HELPER
 // ============================================================================
 
-function errorResponse(code: string, message: string, status: number): Response {
+function errorResponse(code: string, message: string, status: number, req?: Request): Response {
   const errorBody: GenerateAssetError = {
     success: false,
     error: {
@@ -365,7 +495,7 @@ function errorResponse(code: string, message: string, status: number): Response 
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      ...getCorsHeaders(req?.headers.get('origin') || null),
     },
   });
 }

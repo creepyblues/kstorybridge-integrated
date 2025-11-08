@@ -1,31 +1,47 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "v2": false,
+      "main": true
+    }
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
   "rewrites": [
     {
-      "source": "/((?!api|assets|js|docs).*)",
+      "source": "/((?!assets|js|docs).*)",
       "destination": "/index.html"
     }
   ],
-  "functions": {
-    "api/openai-chat.ts": {
-      "maxDuration": 30
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
-    "api/health.ts": {
-      "maxDuration": 10
-    },
-    "api/embeddings.js": {
-      "maxDuration": 30
-    },
-    "api/openai-enhanced.js": {
-      "maxDuration": 30
-    },
-    "api/health-check.js": {
-      "maxDuration": 10
-    },
-    "api/test-minimal.js": {
-      "maxDuration": 30
-    },
-    "api/debug-enhanced.js": {
-      "maxDuration": 30
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
     }
-  }
+  ]
 }

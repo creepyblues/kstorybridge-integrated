@@ -60,7 +60,11 @@
   "emptyStates": {
     "noResults": "No results found",
     "noItems": "No items to display",
-    "createFirst": "Click the button above to create your first item"
+    "createFirst": "Click the button above to create your first item",
+    "noRequests": "No requests yet. Requests from buyers will appear here.",
+    "noRequestsDescription": "Phase 4: Requests functionality will be added from creator v1",
+    "newsComingSoon": "News feed coming soon. Industry updates will appear here.",
+    "newsDescription": "Phase 4: News functionality will be added from creator v1"
   },
   "time": {
     "justNow": "Just now",

@@ -6,7 +6,10 @@
   "sections": {
     "accountInfo": "계정 정보",
     "contactInfo": "연락처 정보",
-    "preferences": "환경 설정"
+    "preferences": "환경 설정",
+    "creatorProfile": "크리에이터 프로필",
+    "profileDescription": "개인 및 업무 정보",
+    "accountActions": "계정 관리"
   },
   "fields": {
     "email": "이메일",
@@ -28,12 +31,15 @@
     "invitationStatus": "초대 상태",
     "invitationStatusInvited": "초대됨",
     "invitationStatusActive": "활성",
-    "invitationStatusPending": "대기 중"
+    "invitationStatusPending": "대기 중",
+    "notSpecified": "지정되지 않음"
   },
   "buttons": {
     "editProfile": "프로필 수정",
     "saveChanges": "변경사항 저장",
-    "cancel": "취소"
+    "saving": "저장 중...",
+    "cancel": "취소",
+    "signOut": "로그아웃"
   },
   "messages": {
     "loadError": "프로필 로드 실패. 다시 시도해주세요.",

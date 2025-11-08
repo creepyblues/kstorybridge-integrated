@@ -302,7 +302,7 @@ export interface AssetGenerationConfig {
   temperature: number;             // Default: 0.7 (creative but controlled)
 
   // Cost limits
-  max_cost_usd: number;            // Default: 0.10 (safety limit)
+  max_cost_usd: number;            // Default: 0.15 (safety limit)
 }
 
 /**
@@ -314,7 +314,7 @@ export const DEFAULT_CONFIG: AssetGenerationConfig = {
   pitch_material_count: 5,
   gpt4_model: 'gpt-4-turbo-preview',
   temperature: 0.7,
-  max_cost_usd: 0.10,
+  max_cost_usd: 0.15,  // Increased from 0.10 to allow for reasonable pitch deck analysis
 };
 
 // ============================================================================

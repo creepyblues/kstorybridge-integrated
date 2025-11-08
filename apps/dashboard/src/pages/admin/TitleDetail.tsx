@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ksto
 import { Badge } from '@kstorybridge/ui';
 import { Button } from '@kstorybridge/ui';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@kstorybridge/ui';
-import { Eye, Heart, Star, ArrowLeft, Crown, FileText, X, Edit } from "lucide-react";
+import { Eye, Heart, Star, ArrowLeft, Crown, FileText, X, Edit, Sparkles } from "lucide-react";
 import { titlesService, type Title } from "@/services/titlesService";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
@@ -124,6 +124,14 @@ export default function AdminTitleDetail() {
               
               <div className="flex flex-col items-end gap-3 ml-6">
                 <div className="flex gap-2">
+                  <Button
+                    onClick={() => navigate(`/admin/asset-generation?titleId=${title.title_id}`)}
+                    variant="outline"
+                    className="border-gray-300 hover:bg-gray-100"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    View Assets
+                  </Button>
                   <Button
                     onClick={() => navigate(`/titles/${title.title_id}/edit`)}
                     className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"

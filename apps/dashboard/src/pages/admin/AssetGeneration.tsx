@@ -1,11 +1,14 @@
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Sparkles, AlertCircle, Wand2 } from 'lucide-react';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Alert, AlertDescription, AlertTitle } from '@kstorybridge/ui';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { useAssetsByTitle, useAnalyzePitch } from '@/hooks/useAssetGeneration';
 import { TitleSelector } from '@/components/admin/TitleSelector';
 import { AssetIdeaList } from '@/components/admin/AssetIdeaList';
 import { GenerationStats } from '@/components/admin/GenerationStats';
+import { supabase } from '@/integrations/supabase/client';
 import type { TitleWithPitch } from '@/types/asset-generation';
 
 /**
@@ -14,18 +17,57 @@ import type { TitleWithPitch } from '@/types/asset-generation';
  */
 export default function AssetGeneration() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [selectedTitle, setSelectedTitle] = React.useState<TitleWithPitch | null>(null);
+  const [isLoadingTitle, setIsLoadingTitle] = React.useState(false);
 
   const { data: assets, isLoading: isLoadingAssets } = useAssetsByTitle(selectedTitle?.title_id || null);
   const analyzePitch = useAnalyzePitch();
 
   const adminEmail = user?.email || '';
+  const titleIdFromUrl = searchParams.get('titleId');
+
+  // Auto-load title if titleId is in URL parameter
+  React.useEffect(() => {
+    if (titleIdFromUrl && !selectedTitle) {
+      setIsLoadingTitle(true);
+
+      // Fetch the title from database
+      supabase
+        .from('titles')
+        .select('title_id, title_name_en, title_name_kr, views, pitch')
+        .eq('title_id', titleIdFromUrl)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error loading title from URL:', error);
+            toast({
+              title: 'Error',
+              description: 'Could not load the requested title',
+              variant: 'destructive',
+            });
+          } else if (data) {
+            setSelectedTitle(data as TitleWithPitch);
+          }
+          setIsLoadingTitle(false);
+        });
+    }
+  }, [titleIdFromUrl, selectedTitle, toast]);
 
   const handleAnalyzePitch = () => {
     if (!selectedTitle || !adminEmail) return;
 
-    // Construct pitch deck URL from title's pitch field
-    const pitchDeckUrl = selectedTitle.pitch || '';
+    // Validate pitch deck URL is not empty
+    const pitchDeckUrl = selectedTitle.pitch?.trim();
+    if (!pitchDeckUrl) {
+      toast({
+        title: 'Missing Pitch Deck',
+        description: 'This title does not have a pitch deck URL. Please upload a pitch deck first.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     analyzePitch.mutate({
       title_id: selectedTitle.title_id,

@@ -61,7 +61,7 @@ You need to update **all 5 Vercel projects**:
 | Vercel Project | Ignored Build Step Command |
 |----------------|----------------------------|
 | dashboard-staging | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
-| dashboard-v2 | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-v2` |
+| dashboard-next | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-next` |
 | kstorybridge-dashboard | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
 | creator-staging | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
 | kstorybridge-creator | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
@@ -237,7 +237,7 @@ cd ../.. && npx turbo-ignore @kstorybridge/dashboard
 | Project | Branch | Root Directory | Build Command | Ignored Build Step |
 |---------|--------|----------------|---------------|-------------------|
 | dashboard-staging | v2 | `apps/dashboard` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
-| dashboard-v2 | v2 | `apps/dashboard-v2` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-v2` |
+| dashboard-next | v2 | `apps/dashboard-next` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-next` |
 | creator-staging | v2 | `apps/creator` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
 | kstorybridge-dashboard | main | `apps/dashboard` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
 | kstorybridge-creator | main | `apps/creator` | `npm run build` | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
@@ -419,7 +419,7 @@ cd ../.. && npx turbo-ignore @kstorybridge/[workspace-name]
 
 **Complete Commands by Project**:
 - dashboard-staging: `cd ../.. && npx turbo-ignore @kstorybridge/dashboard`
-- dashboard-v2: `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-v2`
+- dashboard-next: `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-next`
 - creator-staging: `cd ../.. && npx turbo-ignore @kstorybridge/creator`
 - kstorybridge-dashboard: `cd ../.. && npx turbo-ignore @kstorybridge/dashboard`
 - kstorybridge-creator: `cd ../.. && npx turbo-ignore @kstorybridge/creator`

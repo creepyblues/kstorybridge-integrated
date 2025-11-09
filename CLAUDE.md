@@ -43,6 +43,7 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
 
 ### App-Specific Guides
 - **[Dashboard App](apps/dashboard/CLAUDE.md)** - Buyer dashboard with tier system, premium content, AI chatbot (also serves auth pages for buyers and creators temporarily)
+- **[Dashboard Next](apps/dashboard-next/CLAUDE.md)** - Next generation buyer dashboard (v2.0, replacement for current dashboard)
 - **[Creator App](apps/creator/CLAUDE.md)** - Creator-focused dashboard for content management
 - **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects
 
@@ -123,12 +124,13 @@ npm run preview           # Preview production build
 ### Project Structure
 ```
 ├── apps/
-│   ├── dashboard/     # Buyer dashboard (port 8081)
-│   ├── creator-v2/    # Creator dashboard (port 8083)
-│   ├── creator-v1/    # 🗄️ ARCHIVED (Oct 2025) - Legacy creator app (reference only)
-│   └── website/       # Marketing website (port 5173)
-├── packages/          # Shared libraries
-└── docs/              # Documentation
+│   ├── dashboard/       # Buyer dashboard (port 8081)
+│   ├── dashboard-next/  # Next generation buyer dashboard v2.0 (port 8085)
+│   ├── creator-v2/      # Creator dashboard (port 8083)
+│   ├── creator-v1/      # 🗄️ ARCHIVED (Oct 2025) - Legacy creator app (reference only)
+│   └── website/         # Marketing website (port 5173)
+├── packages/            # Shared libraries
+└── docs/                # Documentation
 ```
 
 ### Technology Stack
@@ -636,6 +638,7 @@ interface CreatorFormData {
 
 ### Development
 - Dashboard: http://localhost:8081
+- Dashboard Next: http://localhost:8085
 - Creator: http://localhost:8083
 - Website: http://localhost:5173
 - Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd

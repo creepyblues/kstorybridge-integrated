@@ -1,16 +1,19 @@
-# Dashboard App V2 - Product Requirements Document
+# Dashboard Next (v2.0) - Product Requirements Document
 
 **Version**: 2.0
 **Status**: Planning Phase
 **Created**: 2025-10-25
-**Last Updated**: 2025-10-25
-**Target Production URL**: https://dashboard-v2.kstorybridge.com (TBD)
+**Last Updated**: 2025-11-08
+**Directory**: apps/dashboard-next (formerly dashboard-v2)
+**Target Production URL**: https://dashboard-next.kstorybridge.com (TBD)
 
 ---
 
 ## Executive Summary
 
-Dashboard App V2 is a complete rebuild of the buyer-focused platform, designed specifically for media buyers and administrators to discover Korean content via AI chatbot, manage subscriptions, and browse the title catalog. This rebuild eliminates creator dependencies, simplifies authentication, and establishes a clean, maintainable architecture following the successful creator-v2 pattern.
+Dashboard Next (v2.0) is a complete rebuild of the buyer-focused platform, designed specifically for media buyers and administrators to discover Korean content via AI chatbot, manage subscriptions, and browse the title catalog. This rebuild eliminates creator dependencies, simplifies authentication, and establishes a clean, maintainable architecture following the successful creator-v2 pattern.
+
+**Directory Name**: `apps/dashboard-next` (renamed from `dashboard-v2` on 2025-11-08 to avoid confusion with `v2` git branch name)
 
 ### Goals
 1. **Clean Separation**: Remove all creator routes and dependencies (moved to creator-v2 app)

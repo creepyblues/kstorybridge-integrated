@@ -1,1 +1,0 @@
-export { DatabaseClient, databaseClient } from './DatabaseClient';

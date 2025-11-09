@@ -1,4 +1,9 @@
 {
   "extends": ["//"],
-  "pipeline": {}
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    }
+  }
 }

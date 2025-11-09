@@ -1,4 +1,10 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "v2": false,
+      "main": true
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!assets|js|docs).*)",

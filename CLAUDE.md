@@ -174,6 +174,19 @@ All 6 Vercel projects use an enhanced wrapper script in the "Ignored Build Step"
 cd ../.. && bash scripts/vercel-ignore-turbo.sh
 ```
 
+**Vercel Project Architecture** (6 Projects, 4 Apps):
+
+| Vercel Project | App Directory | Environment | Branch | Auto-Deploy | Domain |
+|----------------|---------------|-------------|--------|-------------|---------|
+| `dashboard-staging` | apps/dashboard | Staging | v2 | ❌ Manual | dashboard-staging.kstorybridge.com |
+| `creator-staging` | apps/creator | Staging | v2 | ❌ Manual | creator-staging.kstorybridge.com |
+| `kstorybridge-dashboard` | apps/dashboard | Production | main | ✅ Auto (selective) | dashboard.kstorybridge.com |
+| `creator` | apps/creator | Production | main | ✅ Auto (selective) | creator.kstorybridge.com |
+| `kstorybridge-website` | apps/website | Production | main | ✅ Auto (selective) | kstorybridge.com |
+| `dashboard-next` | apps/dashboard-next | Development | main | ❌ Manual | dashboard-next.kstorybridge.com (TBD) |
+
+**Key Insight**: Each app directory's `vercel.json` controls 1-2 Vercel projects through branch-based deployment configuration.
+
 **How it works**:
 - `cd ../..` - Changes from `apps/[app]` to monorepo root
 - `scripts/vercel-ignore-turbo.sh` - Enhanced wrapper that auto-detects workspace from package.json
@@ -187,6 +200,7 @@ cd ../.. && bash scripts/vercel-ignore-turbo.sh
 **Deployment Configuration**:
 - `apps/{app}/vercel.json` - Contains `git.deploymentEnabled: { v2: false, main: true }`
 - `/scripts/vercel-ignore-turbo.sh` - Selective deployment script with debugging
+- **Complete architecture**: See [VERCEL_DEPLOYMENT_ARCHITECTURE.md](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md)
 
 **⚠️ IMPORTANT - Turborepo 2.0 Breaking Change**:
 - Turborepo 2.0 renamed `pipeline` field to `tasks`
@@ -206,7 +220,31 @@ cd ../.. && bash scripts/vercel-ignore-turbo.sh
 
 **See**:
 - [MANUAL_DEPLOYMENT_GUIDE.md](MANUAL_DEPLOYMENT_GUIDE.md) - Complete deployment workflow
+- [VERCEL_DEPLOYMENT_ARCHITECTURE.md](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md) - Complete Vercel architecture reference
 - [TURBOREPO_VERCEL_SETUP.md](docs/guides/TURBOREPO_VERCEL_SETUP.md) - Turborepo setup reference (legacy)
+
+#### Deployment Architecture FAQ
+
+**Q: Why 6 Vercel projects for 4 apps?**
+A: Each production app has TWO Vercel projects: one for staging (v2 branch), one for production (main branch).
+
+**Q: How does one vercel.json file control two Vercel projects?**
+A: The `git.deploymentEnabled` object has branch-name keys. Each Vercel project reads the key matching its configured production branch.
+
+**Q: What happens if I push to v2 branch?**
+A: NONE of the projects auto-deploy (all have `"v2": false`). You must manually deploy using `vercel` CLI.
+
+**Q: What happens if I merge to main branch?**
+A: Only apps that changed will auto-deploy:
+- ✅ `kstorybridge-dashboard` (if dashboard app changed)
+- ✅ `creator` (if creator app changed)
+- ✅ `kstorybridge-website` (if website app changed)
+- ❌ Staging projects remain unchanged (auto-deploy disabled)
+
+**Q: Can I have different vercel.json settings for staging vs production?**
+A: No. Both projects read the SAME file. Use branch-based keys in `git.deploymentEnabled` to differentiate behavior.
+
+**See**: [VERCEL_DEPLOYMENT_ARCHITECTURE.md](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md) for complete FAQ
 
 ### Database & Backend
 - Single Supabase project shared across all apps

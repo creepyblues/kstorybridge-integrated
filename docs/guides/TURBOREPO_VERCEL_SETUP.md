@@ -2,12 +2,17 @@
 
 **Last Updated**: 2025-11-08
 
-> ⚠️ **DEPRECATION NOTICE**: This guide describes the legacy `turbo-ignore` approach that had reliability issues.
+> ⚠️ **LEGACY REFERENCE**: This guide documents the old direct `turbo-ignore` approach.
 >
-> **As of November 2025**, we use an **enhanced wrapper script** for production deployments and **manual deployment** for staging.
+> **Current production setup (2025-11-08)**:
+> - **Staging**: Manual deployment (auto-deploy disabled via vercel.json)
+> - **Production**: Enhanced wrapper script (`scripts/vercel-ignore-turbo.sh`)
+> - **Wrapper auto-detects workspace names** (no manual arguments)
+> - **6 Vercel projects**: One vercel.json controls multiple projects via branch keys
 >
-> **For current deployment setup, see**:
+> **For current setup**:
 > - [MANUAL_DEPLOYMENT_GUIDE.md](../../MANUAL_DEPLOYMENT_GUIDE.md) - Complete deployment workflows
+> - [VERCEL_DEPLOYMENT_ARCHITECTURE.md](./VERCEL_DEPLOYMENT_ARCHITECTURE.md) - Complete architecture reference
 > - Root [CLAUDE.md](../../CLAUDE.md) - Turborepo Build System section (updated)
 >
 > This document remains as technical reference for understanding turbo-ignore internals.

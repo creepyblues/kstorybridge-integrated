@@ -2,11 +2,20 @@
 
 **Last Updated**: 2025-11-08
 
-> ⚠️ **IMPORTANT**: This guide describes the legacy deployment architecture. As of November 2025, we use a **hybrid deployment model** (manual staging, auto production with selective builds).
+> ⚠️ **DEPRECATED**: This file describes legacy deployment concepts from before the hybrid model implementation.
 >
-> **For current deployment workflows, see**: [MANUAL_DEPLOYMENT_GUIDE.md](../../MANUAL_DEPLOYMENT_GUIDE.md)
+> **Current architecture uses**:
+> - **Hybrid model**: Manual staging (v2), auto production (main)
+> - **Single vercel.json per app**: Controls both staging and production projects
+> - **Enhanced wrapper script**: `scripts/vercel-ignore-turbo.sh` for selective builds
+> - **6 Vercel projects**: Separate staging and production projects per app
 >
-> This document remains as architectural reference but may contain outdated workflow information.
+> **For current workflows**:
+> - [MANUAL_DEPLOYMENT_GUIDE.md](../../MANUAL_DEPLOYMENT_GUIDE.md) - Step-by-step deployment workflow
+> - [VERCEL_DEPLOYMENT_ARCHITECTURE.md](./VERCEL_DEPLOYMENT_ARCHITECTURE.md) - Complete architecture reference
+> - [Root CLAUDE.md](../../CLAUDE.md) - Monorepo overview and quick start
+>
+> This document remains as historical reference only.
 
 > 📖 **See also**: [GIT_DEPLOYMENT_STRUCTURE.md](./GIT_DEPLOYMENT_STRUCTURE.md) for complete Git deployment configuration reference with detailed workflows, troubleshooting, and Vercel project configurations
 

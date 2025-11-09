@@ -1,22 +1,72 @@
 # Turborepo + Vercel Selective Deployment Guide
 
-**Last Updated**: 2025-11-05
+**Last Updated**: 2025-11-08
 
-This guide explains how to configure Vercel projects to use Turborepo's `turbo-ignore` for selective deployments. With this setup, Vercel will only build and deploy apps that have actually changed.
+> ⚠️ **DEPRECATION NOTICE**: This guide describes the legacy `turbo-ignore` approach that had reliability issues.
+>
+> **As of November 2025**, we use an **enhanced wrapper script** for production deployments and **manual deployment** for staging.
+>
+> **For current deployment setup, see**:
+> - [MANUAL_DEPLOYMENT_GUIDE.md](../../MANUAL_DEPLOYMENT_GUIDE.md) - Complete deployment workflows
+> - Root [CLAUDE.md](../../CLAUDE.md) - Turborepo Build System section (updated)
+>
+> This document remains as technical reference for understanding turbo-ignore internals.
 
 ---
 
-## Configuration Status
+## Current Production Setup (2025-11-08)
 
-**⚠️ Updated 2025-11-05**: Vercel project settings require workspace argument fix.
+**Staging (v2 branch)**:
+- Auto-deploy **DISABLED** via `vercel.json`
+- Manual deployment required: `cd apps/creator && vercel`
+- See [MANUAL_DEPLOYMENT_GUIDE.md](../../MANUAL_DEPLOYMENT_GUIDE.md)
 
-**Current Issue**: Projects are configured with `cd ../.. && npx turbo-ignore` but are missing the required workspace argument (e.g., `@kstorybridge/dashboard`). Without the workspace argument, turbo-ignore fails and deploys all apps as a safety fallback.
+**Production (main branch)**:
+- Auto-deploy **ENABLED** with selective builds
+- Uses enhanced wrapper: `cd ../.. && bash scripts/vercel-ignore-turbo.sh`
+- Wrapper script auto-detects workspace from package.json
 
-**Required Fix**: Update all 6 Vercel projects to include workspace argument: `cd ../.. && npx turbo-ignore @kstorybridge/[workspace-name]`
+**Why we use wrapper script instead of direct turbo-ignore**:
+- Auto-detection of workspace names (no manual arguments needed)
+- Better error handling and debugging output
+- Works reliably with Turborepo 2.0 breaking changes
 
-**Previous Issues (Resolved)**:
-- ~~Missing `cd ../..` prefix~~ ✅ Fixed in PR #16
-- Missing workspace argument ⚠️ **Needs manual Vercel dashboard update**
+---
+
+## ⚠️ Turborepo 2.0 Breaking Change
+
+**Critical**: Turborepo 2.0 renamed the `pipeline` field to `tasks` in turbo.json files.
+
+**Build Error if not fixed**:
+```
+x Found `pipeline` field instead of `tasks`.
+Rename `pipeline` field to `tasks`
+Error: Command "turbo run build" exited with 1
+```
+
+**Required turbo.json structure**:
+```json
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    }
+  }
+}
+```
+
+**Files that need correct structure**:
+- `/apps/creator/turbo.json`
+- `/apps/dashboard/turbo.json`
+- `/apps/website/turbo.json`
+
+---
+
+## Legacy Configuration Reference (for historical context)
+
+**⚠️ OUTDATED**: The commands below are no longer used in production. See "Current Production Setup" above.
 
 ---
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react'
@@ -11,7 +12,7 @@ import { supabase } from '@/lib/supabase'
 import { MainLayout } from '@/components/layout/MainLayout'
 
 // Components
-import { MultiStepProgressBar, DEFAULT_STEPS } from '@/components/survey/MultiStepProgressBar'
+import { MultiStepProgressBar, getDefaultSteps } from '@/components/survey/MultiStepProgressBar'
 import { AutoSaveIndicator, useAutoSave } from '@/components/survey/AutoSaveIndicator'
 import { Step1BasicInfo } from '@/components/survey/Step1BasicInfo'
 import { Step2StoryDetails } from '@/components/survey/Step2StoryDetails'
@@ -34,6 +35,7 @@ import { surveyFormSchema, validateStep1, validateStep2, validateStep3, type Sur
  * Features: Multi-step navigation, auto-save, draft resume, form validation
  */
 export default function AddTitleSurvey() {
+  const { t } = useTranslation(['survey', 'titles', 'common'])
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -266,7 +268,7 @@ export default function AddTitleSurvey() {
   // Form submission
   const onSubmit = async (data: SurveyFormData) => {
     if (!userId) {
-      alert('You must be logged in to submit')
+      alert(t('survey:messages.loginRequired'))
       return
     }
 
@@ -276,7 +278,7 @@ export default function AddTitleSurvey() {
     const step3Errors = validateStep3(data)
 
     if (Object.keys(step1Errors).length > 0 || Object.keys(step2Errors).length > 0 || Object.keys(step3Errors).length > 0) {
-      alert('Please complete all required fields before submitting')
+      alert(t('survey:messages.completeRequired'))
       return
     }
 
@@ -307,11 +309,11 @@ export default function AddTitleSurvey() {
       console.log('Title submitted for approval')
 
       // Navigate to titles list (submission will show as "Pending Approval")
-      alert('Title submitted for review! You will be notified when it is approved.')
+      alert(t('survey:messages.submitReviewMessage'))
       navigate('/titles')
     } catch (error) {
       console.error('Submission error:', error)
-      alert('Failed to submit title. Please try again.')
+      alert(t('survey:messages.submitFailed'))
     } finally {
       setIsSubmitting(false)
     }
@@ -356,18 +358,18 @@ export default function AddTitleSurvey() {
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Titles
+            {t('survey:page.backToTitles')}
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Add New Title</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('survey:page.pageTitle')}</h1>
           <p className="text-gray-600 mt-2">
-            Complete the 5-step survey to add comprehensive information about your title
+            {t('survey:page.pageSubtitle')}
           </p>
         </div>
 
         {/* Progress Bar */}
         <MultiStepProgressBar
           currentStep={currentStep}
-          steps={DEFAULT_STEPS}
+          steps={getDefaultSteps(t)}
           onStepClick={goToStep}
           allowNavigation={true}
         />
@@ -399,11 +401,11 @@ export default function AddTitleSurvey() {
               className="border-gray-300"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Previous
+              {t('survey:navigation.previous')}
             </Button>
 
             <div className="text-sm text-gray-500">
-              Step {currentStep} of 5
+              {t('survey:navigation.stepProgress', { current: currentStep, total: 5 })}
             </div>
 
             {currentStep < 5 ? (
@@ -412,7 +414,7 @@ export default function AddTitleSurvey() {
                 onClick={goToNextStep}
                 className="bg-black text-white hover:bg-gray-800"
               >
-                Next
+                {t('survey:navigation.next')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : (
@@ -424,12 +426,12 @@ export default function AddTitleSurvey() {
                 {isSubmitting ? (
                   <>
                     <div className="w-4 h-4 mr-2 animate-spin rounded-full border-b-2 border-white" />
-                    Submitting...
+                    {t('survey:messages.submitting')}
                   </>
                 ) : (
                   <>
                     <Check className="w-4 h-4 mr-2" />
-                    Submit Title
+                    {t('survey:navigation.submit')}
                   </>
                 )}
               </Button>
@@ -446,7 +448,7 @@ export default function AddTitleSurvey() {
             className="text-sm text-gray-600"
           >
             <Save className="w-4 h-4 mr-2" />
-            Save Draft Now
+            {t('survey:page.saveDraftNow')}
           </Button>
         </div>
       </div>

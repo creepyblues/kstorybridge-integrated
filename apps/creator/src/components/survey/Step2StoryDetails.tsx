@@ -1,5 +1,6 @@
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -42,6 +43,7 @@ interface Step2StoryDetailsProps {
  * Collects inspiration, setting, world lore, and character details
  */
 export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) => {
+  const { t } = useTranslation(['survey', 'titles'])
   const { register, watch, setValue, formState: { errors } } = form
 
   const comparables = watch('comparables') || []
@@ -70,74 +72,74 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
       {/* Section: Content Details */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Content Details</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step2.contentDetailsSection')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Brief descriptions to help buyers discover your title
+            {t('survey:step2.contentDetailsSubtitle')}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tagline">Tagline</Label>
+          <Label htmlFor="tagline">{t('survey:step2.tagline')}</Label>
           <Input
             id="tagline"
-            placeholder="A compelling one-line description"
+            placeholder={t('survey:step2.taglinePlaceholder')}
             {...register('tagline')}
             className="bg-white border-gray-300"
           />
           <p className="text-xs text-gray-500">
-            A catchy one-liner that captures your story's essence
+            {t('survey:step2.taglineHelper')}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="synopsis">Synopsis</Label>
+          <Label htmlFor="synopsis">{t('survey:step2.synopsis')}</Label>
           <Textarea
             id="synopsis"
-            placeholder="Brief synopsis of the title..."
+            placeholder={t('survey:step2.synopsisPlaceholder')}
             {...register('synopsis')}
             rows={4}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            A short summary of your story (2-3 paragraphs)
+            {t('survey:step2.synopsisHelper')}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">{t('survey:step2.description')}</Label>
           <Textarea
             id="description"
-            placeholder="Detailed description of the title..."
+            placeholder={t('survey:step2.descriptionPlaceholder')}
             {...register('description')}
             rows={4}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            A more detailed description with plot points and character info
+            {t('survey:step2.descriptionHelper')}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="note">Notes</Label>
+          <Label htmlFor="note">{t('survey:step2.notes')}</Label>
           <Textarea
             id="note"
-            placeholder="Additional notes or comments..."
+            placeholder={t('survey:step2.notesPlaceholder')}
             {...register('note')}
             rows={3}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            Any additional information for potential buyers
+            {t('survey:step2.notesHelper')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="chapters">Number of Chapters</Label>
+            <Label htmlFor="chapters">{t('survey:step2.chapters')}</Label>
             <Input
               id="chapters"
               type="number"
-              placeholder="120"
+              placeholder={t('survey:step2.chaptersPlaceholder')}
               {...register('chapters', { valueAsNumber: true })}
               className="bg-white border-gray-300"
             />
@@ -153,7 +155,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
               htmlFor="completed"
               className="text-sm font-medium leading-none cursor-pointer"
             >
-              Series Completed
+              {t('survey:step2.seriesCompleted')}
             </Label>
           </div>
         </div>
@@ -162,41 +164,41 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
       {/* Section: Story Inspiration */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Story Background</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step2.storyBackgroundSection')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            What inspired this story and what themes does it explore?
+            {t('survey:step2.storyBackgroundSubtitle')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="inspiration">
-            What inspired this story?
+            {t('survey:step2.inspiration')}
           </Label>
           <Textarea
             id="inspiration"
-            placeholder="What inspired you to create this story? (personal experiences, historical events, other media, etc.)"
+            placeholder={t('survey:step2.inspirationPlaceholder')}
             {...register('inspiration')}
             rows={3}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            Share the creative spark behind your story
+            {t('survey:step2.inspirationHelper')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="important_issues">
-            Does it address any important issues?
+            {t('survey:step2.importantIssues')}
           </Label>
           <Textarea
             id="important_issues"
-            placeholder="What important issues or themes does your story address? (social justice, mental health, identity, etc.)"
+            placeholder={t('survey:step2.importantIssuesPlaceholder')}
             {...register('important_issues')}
             rows={3}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            Themes that resonate with modern audiences
+            {t('survey:step2.importantIssuesHelper')}
           </p>
         </div>
       </div>
@@ -205,17 +207,17 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
       <div className="space-y-4">
         <div>
           <Label className="text-base font-medium">
-            Comparable Titles
+            {t('survey:step2.comparableTitles')}
           </Label>
           <p className="text-sm text-gray-500 mt-1">
-            What existing titles is your story similar to? (e.g., "Tower of God meets Solo Leveling")
+            {t('survey:step2.comparableTitlesSubtitle')}
           </p>
         </div>
 
         {comparables.length === 0 ? (
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <p className="text-sm text-gray-500 mb-3">
-              No comparable titles added yet
+              {t('survey:step2.noComparables')}
             </p>
             <Button
               type="button"
@@ -225,7 +227,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
               className="border-gray-300"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Comparable Title
+              {t('survey:step2.addComparable')}
             </Button>
           </div>
         ) : (
@@ -233,7 +235,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
             {comparables.map((comparable: string, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
-                  placeholder={`Comparable title ${index + 1}`}
+                  placeholder={t('survey:step2.comparablePlaceholder', { index: index + 1 })}
                   value={comparable}
                   onChange={(e) => updateComparable(index, e.target.value)}
                   className="bg-white border-gray-300"
@@ -257,7 +259,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
               className="border-gray-300"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Another
+              {t('survey:step2.addAnother')}
             </Button>
           </div>
         )}
@@ -267,20 +269,20 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
-            World Building <span className="text-red-500">*</span>
+            {t('survey:step2.worldBuildingSection')} <span className="text-red-500">*</span>
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Help buyers visualize your story's world
+            {t('survey:step2.worldBuildingSubtitle')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="setting_description">
-            Please describe the setting of your story (time, place, key locations) <span className="text-red-500">*</span>
+            {t('survey:step2.settingDescription')} <span className="text-red-500">*</span>
           </Label>
           <Textarea
             id="setting_description"
-            placeholder="Describe the time period, location, and key settings where your story takes place..."
+            placeholder={t('survey:step2.settingPlaceholder')}
             {...register('setting_description', {
               required: 'Setting description is required',
             })}
@@ -291,39 +293,39 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
             <p className="text-sm text-red-600">{errors.setting_description.message as string}</p>
           )}
           <p className="text-xs text-gray-500">
-            Include time period, location type (urban/rural/fantasy realm), and atmosphere
+            {t('survey:step2.settingHelper')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="world_lore">
-            Please describe the "rules" or lore of your world - magic systems, supernatural forces, sci-fi concepts, etc.
+            {t('survey:step2.worldLore')}
           </Label>
           <Textarea
             id="world_lore"
-            placeholder="Describe the history, culture, and rules of your story's world..."
+            placeholder={t('survey:step2.worldLorePlaceholder')}
             {...register('world_lore')}
             rows={4}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            Background information that enriches the setting
+            {t('survey:step2.worldLoreHelper')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="supernatural_concepts">
-            Are there any supernatural or sci-fi concepts that separates this story from conventional reality? If so, is there any "lore" or "twist" or "big idea" or "high concept" crucial to understanding the story?
+            {t('survey:step2.supernaturalConcepts')}
           </Label>
           <Textarea
             id="supernatural_concepts"
-            placeholder="Describe any magic systems, supernatural forces, futuristic technology, or sci-fi concepts..."
+            placeholder={t('survey:step2.supernaturalPlaceholder')}
             {...register('supernatural_concepts')}
             rows={4}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            Special abilities, magic systems, advanced technology, etc.
+            {t('survey:step2.supernaturalHelper')}
           </p>
         </div>
       </div>
@@ -332,10 +334,10 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
-            Main Characters <span className="text-red-500">*</span>
+            {t('survey:step2.mainCharactersSection')} <span className="text-red-500">*</span>
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Detailed information about your story's main characters
+            {t('survey:step2.mainCharactersSubtitle')}
           </p>
         </div>
 
@@ -349,17 +351,13 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
       {/* Help Text */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Step 2 Tips</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-2">{t('survey:step2.tipsTitle')}</h4>
         <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-          <li>
-            <strong>Setting description</strong> is required - be specific about time and place
-          </li>
-          <li>
-            <strong>Add at least one character</strong> with detailed demographics
-          </li>
-          <li>Comparable titles help buyers understand your story's genre and appeal</li>
-          <li>Include diverse character backgrounds to showcase representation</li>
-          <li>Describe your world's unique rules if it's fantasy or sci-fi</li>
+          <li>{t('survey:step2.tip1')}</li>
+          <li>{t('survey:step2.tip2')}</li>
+          <li>{t('survey:step2.tip3')}</li>
+          <li>{t('survey:step2.tip4')}</li>
+          <li>{t('survey:step2.tip5')}</li>
         </ul>
       </div>
     </div>

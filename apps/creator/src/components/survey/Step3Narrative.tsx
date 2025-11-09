@@ -1,5 +1,6 @@
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { AlertCircle } from 'lucide-react'
@@ -27,6 +28,7 @@ interface Step3NarrativeProps {
  * Collects story structure (beginning/middle/end), planned ending, and narrative arc
  */
 export const Step3Narrative: React.FC<Step3NarrativeProps> = ({ form }) => {
+  const { t } = useTranslation(['survey', 'titles'])
   const { register, watch, formState: { errors } } = form
 
   const isCompleted = watch('completed')
@@ -37,10 +39,9 @@ export const Step3Narrative: React.FC<Step3NarrativeProps> = ({ form }) => {
     <div className="space-y-8">
       {/* Introduction */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Narrative Structure</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('survey:step3.title')}</h2>
         <p className="text-gray-600 mt-2">
-          Help buyers understand your story's narrative flow and how it develops from beginning
-          to end.
+          {t('survey:step3.subtitle')}
         </p>
       </div>
 
@@ -48,26 +49,20 @@ export const Step3Narrative: React.FC<Step3NarrativeProps> = ({ form }) => {
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
-            Story Structure <span className="text-red-500">*</span>
+            {t('survey:step3.storyStructureSection')} <span className="text-red-500">*</span>
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Provide a high-level summary of your story's beginning, middle, and end
+            {t('survey:step3.storyStructureSubtitle')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="story_structure">
-            Beginning / Middle / End Summary <span className="text-red-500">*</span>
+            {t('survey:step3.storyStructureLabel')} <span className="text-red-500">*</span>
           </Label>
           <Textarea
             id="story_structure"
-            placeholder={`Example format:
-
-BEGINNING: Introduce protagonist in their ordinary world, inciting incident occurs...
-
-MIDDLE: Protagonist faces escalating challenges, key relationships develop...
-
-END: Climax and resolution, how conflicts are resolved...`}
+            placeholder={t('survey:step3.storyStructurePlaceholder')}
             {...register('story_structure', {
               required: 'Story structure is required',
               minLength: {
@@ -83,13 +78,12 @@ END: Climax and resolution, how conflicts are resolved...`}
           )}
           {storyStructure && (
             <p className="text-xs text-gray-500">
-              {storyStructure.length} characters • Minimum 100 characters
+              {t('survey:step3.storyStructureCharCount', { count: storyStructure.length })}
             </p>
           )}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
             <p className="text-sm text-blue-900">
-              <strong>Tip:</strong> Break down your story into three acts. Describe key plot
-              points, turning points, and how the story progresses from setup to resolution.
+              <strong>{t('survey:step3.storyStructureTip')}</strong>
             </p>
           </div>
         </div>
@@ -99,13 +93,13 @@ END: Climax and resolution, how conflicts are resolved...`}
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
-            Planned Ending
+            {t('survey:step3.plannedEndingSection')}
             {!isCompleted && <span className="text-red-500 ml-1">*</span>}
           </h3>
           <p className="text-sm text-gray-500 mt-1">
             {isCompleted
-              ? 'How does your completed story end?'
-              : 'For ongoing series, describe how you plan to end the story'}
+              ? t('survey:step3.plannedEndingCompleted')
+              : t('survey:step3.plannedEndingOngoing')}
           </p>
         </div>
 
@@ -114,11 +108,10 @@ END: Climax and resolution, how conflicts are resolved...`}
             <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-yellow-900">
-                Required for ongoing series
+                {t('survey:step3.ongoingRequiredTitle')}
               </p>
               <p className="text-sm text-yellow-800 mt-1">
-                Since your title is marked as ongoing, please describe how you plan to conclude
-                the story. This helps buyers understand the long-term vision.
+                {t('survey:step3.ongoingRequiredMessage')}
               </p>
             </div>
           </div>
@@ -126,15 +119,15 @@ END: Climax and resolution, how conflicts are resolved...`}
 
         <div className="space-y-2">
           <Label htmlFor="planned_ending">
-            Ending Description
+            {t('survey:step3.endingLabel')}
             {!isCompleted && <span className="text-red-500 ml-1">*</span>}
           </Label>
           <Textarea
             id="planned_ending"
             placeholder={
               isCompleted
-                ? 'Describe how your story concludes...'
-                : 'Describe how you plan to end your ongoing story...'
+                ? t('survey:step3.endingPlaceholderCompleted')
+                : t('survey:step3.endingPlaceholderOngoing')
             }
             {...register('planned_ending', {
               required: !isCompleted ? 'Planned ending is required for ongoing titles' : false,
@@ -151,12 +144,13 @@ END: Climax and resolution, how conflicts are resolved...`}
           )}
           {plannedEnding && (
             <p className="text-xs text-gray-500">
-              {plannedEnding.length} characters
-              {!isCompleted && ' • Minimum 50 characters'}
+              {!isCompleted
+                ? t('survey:step3.endingCharCountMin', { count: plannedEnding.length })
+                : t('survey:step3.endingCharCount', { count: plannedEnding.length })}
             </p>
           )}
           <p className="text-xs text-gray-500">
-            Avoid major spoilers, but provide enough detail to show you have a clear vision
+            {t('survey:step3.endingHelper')}
           </p>
         </div>
       </div>
@@ -164,44 +158,39 @@ END: Climax and resolution, how conflicts are resolved...`}
       {/* Section: Narrative Arc */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Narrative Arc</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step3.narrativeArcSection')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            How does your story's tension and stakes escalate?
+            {t('survey:step3.narrativeArcSubtitle')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="narrative_arc">
-            Overall Narrative Arc
+            {t('survey:step3.narrativeArcLabel')}
           </Label>
           <Textarea
             id="narrative_arc"
-            placeholder="Describe the emotional or dramatic arc of your story... (rising tension, stakes, character growth, etc.)"
+            placeholder={t('survey:step3.narrativeArcPlaceholder')}
             {...register('narrative_arc')}
             rows={4}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            Examples: redemption arc, coming-of-age journey, revenge quest, mystery unraveling
+            {t('survey:step3.narrativeArcHelper')}
           </p>
         </div>
       </div>
 
       {/* Help Text */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Step 3 Tips</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-2">{t('survey:step3.tipsTitle')}</h4>
         <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-          <li>
-            <strong>Story structure</strong> is required - provide a clear beginning/middle/end
-            summary
-          </li>
-          <li>
-            <strong>Planned ending</strong> is required for ongoing series to show your vision
-          </li>
-          <li>Focus on major plot points and turning points, not every detail</li>
-          <li>Describe how conflicts escalate and resolve</li>
-          <li>Show character growth and transformation throughout the narrative</li>
-          <li>Balance detail with brevity - buyers want clarity, not spoilers</li>
+          <li>{t('survey:step3.tip1')}</li>
+          <li>{t('survey:step3.tip2')}</li>
+          <li>{t('survey:step3.tip3')}</li>
+          <li>{t('survey:step3.tip4')}</li>
+          <li>{t('survey:step3.tip5')}</li>
+          <li>{t('survey:step3.tip6')}</li>
         </ul>
       </div>
     </div>

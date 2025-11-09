@@ -1,5 +1,6 @@
 import React from 'react'
 import { UseFormReturn, Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -93,6 +94,7 @@ interface Step1BasicInfoProps {
  * Collects required fields, English title type, Hangul titles, rights holder info, and publishing platforms
  */
 export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
+  const { t } = useTranslation(['survey', 'titles', 'common'])
   const { register, watch, setValue, control, formState: { errors } } = form
 
   const isOfficialEnglish = watch('is_official_english_title')
@@ -104,9 +106,9 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
       {/* Section: Required Basic Information */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step1.title')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Core information required for all titles
+            {t('survey:step1.subtitle')}
           </p>
         </div>
 
@@ -114,11 +116,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="title_name_en">
-              English Title Name <span className="text-red-500">*</span>
+              {t('survey:step1.titleNameEn')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title_name_en"
-              placeholder="I Became a Doting Father"
+              placeholder={t('survey:step1.titleNameEnPlaceholder')}
               {...register('title_name_en', { required: 'English title is required' })}
               className="bg-white border-gray-300"
             />
@@ -129,11 +131,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
           <div className="space-y-2">
             <Label htmlFor="title_name_kr">
-              Korean Title Name <span className="text-red-500">*</span>
+              {t('survey:step1.titleNameKr')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title_name_kr"
-              placeholder="한국어 제목"
+              placeholder={t('survey:step1.titleNameKrPlaceholder')}
               {...register('title_name_kr', { required: 'Korean title is required' })}
               className="bg-white border-gray-300"
             />
@@ -147,12 +149,12 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="title_url">
-              English Title URL <span className="text-red-500">*</span>
+              {t('survey:step1.titleUrl')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title_url"
               type="url"
-              placeholder="https://example.com/your-title"
+              placeholder={t('survey:step1.titleUrlPlaceholder')}
               {...register('title_url', { required: 'Title URL is required' })}
               className="bg-white border-gray-300"
             />
@@ -163,12 +165,12 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
           <div className="space-y-2">
             <Label htmlFor="title_image">
-              Cover Image URL <span className="text-red-500">*</span>
+              {t('survey:step1.coverImage')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title_image"
               type="url"
-              placeholder="https://example.com/cover.jpg"
+              placeholder={t('survey:step1.coverImagePlaceholder')}
               {...register('title_image', { required: 'Cover image URL is required' })}
               className="bg-white border-gray-300"
             />
@@ -182,12 +184,12 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="underlying_novel_kr">
-              Underlying Novel (Korean)
-              <span className="text-xs text-gray-500 ml-2">if adapted</span>
+              {t('survey:step1.underlyingNovelKr')}
+              <span className="text-xs text-gray-500 ml-2">{t('survey:step1.underlyingNovelKrHelper')}</span>
             </Label>
             <Input
               id="underlying_novel_kr"
-              placeholder="원작 소설 제목 (선택사항)"
+              placeholder={t('survey:step1.underlyingNovelKrPlaceholder')}
               {...register('underlying_novel_kr')}
               className="bg-white border-gray-300"
             />
@@ -195,11 +197,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
           <div className="space-y-2">
             <Label htmlFor="underlying_novel_en">
-              Underlying Novel (English)
+              {t('survey:step1.underlyingNovelEn')}
             </Label>
             <Input
               id="underlying_novel_en"
-              placeholder="Original Novel Title (optional)"
+              placeholder={t('survey:step1.underlyingNovelEnPlaceholder')}
               {...register('underlying_novel_en')}
               className="bg-white border-gray-300"
             />
@@ -210,7 +212,7 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>
-              Genre <span className="text-red-500">*</span>
+              {t('survey:step1.genre')} <span className="text-red-500">*</span>
             </Label>
             <Controller
               name="genre"
@@ -222,7 +224,7 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
                   onValueChange={(value) => field.onChange([value])}
                 >
                   <SelectTrigger className="bg-white border-gray-300">
-                    <SelectValue placeholder="Select genre" />
+                    <SelectValue placeholder={t('survey:step1.genreSelect')} />
                   </SelectTrigger>
                   <SelectContent>
                     {GENRE_OPTIONS.map(option => (
@@ -240,14 +242,14 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Content Format</Label>
+            <Label>{t('survey:step1.contentFormat')}</Label>
             <Controller
               name="content_format"
               control={control}
               render={({ field }) => (
                 <Select value={field.value || ''} onValueChange={field.onChange}>
                   <SelectTrigger className="bg-white border-gray-300">
-                    <SelectValue placeholder="Select format" />
+                    <SelectValue placeholder={t('survey:step1.formatSelect')} />
                   </SelectTrigger>
                   <SelectContent>
                     {CONTENT_FORMAT_OPTIONS.map(option => (
@@ -265,21 +267,21 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         {/* Keywords and Tone */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="keywords">Keywords</Label>
+            <Label htmlFor="keywords">{t('survey:step1.keywords')}</Label>
             <Input
               id="keywords"
-              placeholder="magic, school, friendship (comma-separated)"
+              placeholder={t('survey:step1.keywordsPlaceholder')}
               {...register('keywords')}
               className="bg-white border-gray-300"
             />
-            <p className="text-xs text-gray-500">Separate multiple keywords with commas</p>
+            <p className="text-xs text-gray-500">{t('survey:step1.keywordsHelper')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tone">Tone</Label>
+            <Label htmlFor="tone">{t('survey:step1.tone')}</Label>
             <Input
               id="tone"
-              placeholder="e.g., lighthearted, dark, inspirational"
+              placeholder={t('survey:step1.tonePlaceholder')}
               {...register('tone')}
               className="bg-white border-gray-300"
             />
@@ -289,7 +291,7 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
       {/* Section: English Title */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">English Title Classification</h3>
+        <h3 className="text-lg font-semibold text-gray-900">{t('survey:step1.englishTitleSection')}</h3>
 
         <div className="flex items-start space-x-3">
           <Checkbox
@@ -304,17 +306,17 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
               htmlFor="is_official_english_title"
               className="text-sm font-normal cursor-pointer"
             >
-              This English title is official (not a direct translation)
+              {t('survey:step1.officialEnglishCheckbox')}
             </Label>
             <p className="text-xs text-gray-500">
-              Check this if the title has been officially published in English
+              {t('survey:step1.officialEnglishHelper')}
             </p>
           </div>
         </div>
 
         {isOfficialEnglish && (
           <div className="ml-6 space-y-3">
-            <Label className="text-sm font-medium">English Title Type</Label>
+            <Label className="text-sm font-medium">{t('survey:step1.englishTitleType')}</Label>
             <RadioGroup
               value={englishTitleType}
               onValueChange={(value) =>
@@ -324,13 +326,13 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="official" id="official" />
                 <Label htmlFor="official" className="font-normal cursor-pointer">
-                  Official English title (published version)
+                  {t('survey:step1.englishTitleTypeOfficial')}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="translation" id="translation" />
                 <Label htmlFor="translation" className="font-normal cursor-pointer">
-                  Direct translation for reference
+                  {t('survey:step1.englishTitleTypeTranslation')}
                 </Label>
               </div>
             </RadioGroup>
@@ -341,19 +343,19 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
       {/* Section: Rights Holder */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Rights Holder</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step1.rightsHolderSection')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Who owns the rights to this title?
+            {t('survey:step1.rightsHolderSubtitle')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="rights_holder_name">
-            Rights Holder Name
+            {t('survey:step1.rightsHolderName')}
           </Label>
           <Input
             id="rights_holder_name"
-            placeholder="Individual or company name"
+            placeholder={t('survey:step1.rightsHolderNamePlaceholder')}
             {...register('rights_holder_name')}
             className="bg-white border-gray-300"
           />
@@ -366,19 +368,19 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
       {/* Section: Credits */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Credits</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step1.creditsSection')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Contributors to this title
+            {t('survey:step1.creditsSubtitle')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="story_author">
-            Story Author <span className="text-red-500">*</span>
+            {t('survey:step1.storyAuthor')} <span className="text-red-500">*</span>
           </Label>
           <Input
             id="story_author"
-            placeholder="Author name"
+            placeholder={t('survey:step1.storyAuthorPlaceholder')}
             {...register('story_author', { required: 'Story author is required' })}
             className="bg-white border-gray-300"
           />
@@ -389,20 +391,20 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="art_author">Art Author</Label>
+            <Label htmlFor="art_author">{t('survey:step1.artAuthor')}</Label>
             <Input
               id="art_author"
-              placeholder="Artist name"
+              placeholder={t('survey:step1.artAuthorPlaceholder')}
               {...register('art_author')}
               className="bg-white border-gray-300"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="writer">Original Author</Label>
+            <Label htmlFor="writer">{t('survey:step1.originalAuthor')}</Label>
             <Input
               id="writer"
-              placeholder="Original author name"
+              placeholder={t('survey:step1.originalAuthorPlaceholder')}
               {...register('writer')}
               className="bg-white border-gray-300"
             />
@@ -413,28 +415,28 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
       {/* Section: Rights & Business */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Rights & Business</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step1.rightsBusinessSection')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Information about available rights and target markets
+            {t('survey:step1.rightsBusinessSubtitle')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="rights">Rights Available</Label>
+            <Label htmlFor="rights">{t('survey:step1.rightsAvailable')}</Label>
             <Input
               id="rights"
-              placeholder="e.g., Film, TV, Merchandise"
+              placeholder={t('survey:step1.rightsAvailablePlaceholder')}
               {...register('rights')}
               className="bg-white border-gray-300"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="perfect_for">Perfect For</Label>
+            <Label htmlFor="perfect_for">{t('survey:step1.perfectFor')}</Label>
             <Input
               id="perfect_for"
-              placeholder="e.g., Streaming series, Feature film"
+              placeholder={t('survey:step1.perfectForPlaceholder')}
               {...register('perfect_for')}
               className="bg-white border-gray-300"
             />
@@ -442,10 +444,10 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="audience">Target Audience</Label>
+          <Label htmlFor="audience">{t('survey:step1.targetAudience')}</Label>
           <Input
             id="audience"
-            placeholder="e.g., Young adults, Family"
+            placeholder={t('survey:step1.targetAudiencePlaceholder')}
             {...register('audience')}
             className="bg-white border-gray-300"
           />
@@ -455,9 +457,9 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
       {/* Section: Publishing Platforms */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Publishing Platforms</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step1.platformsSection')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Where is this title currently published? Add platform URLs and metrics.
+            {t('survey:step1.platformsSubtitle')}
           </p>
         </div>
 
@@ -470,12 +472,12 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
       {/* Help Text */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Step 1 Tips</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-2">{t('survey:step1.tipsTitle')}</h4>
         <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-          <li>Provide both Korean and English titles for better searchability</li>
-          <li>If adapted from a novel, include the original source title</li>
-          <li>Add all platforms where your title is published for visibility</li>
-          <li>Include view counts and subscriber numbers to showcase popularity</li>
+          <li>{t('survey:step1.tip1')}</li>
+          <li>{t('survey:step1.tip2')}</li>
+          <li>{t('survey:step1.tip3')}</li>
+          <li>{t('survey:step1.tip4')}</li>
         </ul>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -38,6 +39,7 @@ interface Step5ProfileProps {
  * Collects achievements, sales records, and creator credentials
  */
 export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
+  const { t } = useTranslation(['survey', 'titles'])
   const { register, watch, setValue, formState: { errors } } = form
 
   const awards = watch('awards') || []
@@ -113,10 +115,9 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
     <div className="space-y-8">
       {/* Introduction */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Content & Creator Profile</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('survey:step5.title')}</h2>
         <p className="text-gray-600 mt-2">
-          Showcase your title's success and your credentials as a creator to help buyers
-          understand your track record.
+          {t('survey:step5.subtitle')}
         </p>
       </div>
 
@@ -124,13 +125,13 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Award className="w-5 h-5 text-gray-700" />
-          <h3 className="text-lg font-semibold text-gray-900">Title Achievements</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step5.titleAchievementsSection')}</h3>
         </div>
 
         {/* Awards */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Awards & Recognition</Label>
+            <Label>{t('survey:step5.awardsLabel')}</Label>
             <Button
               type="button"
               variant="outline"
@@ -139,17 +140,17 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
               className="border-gray-300"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Award
+              {t('survey:step5.addAward')}
             </Button>
           </div>
 
           {awards.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">No awards added yet</p>
+            <p className="text-sm text-gray-500 italic">{t('survey:step5.noAwardsYet')}</p>
           ) : (
             awards.map((award: string, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
-                  placeholder={`Award ${index + 1}`}
+                  placeholder={t('survey:step5.awardPlaceholder', { index: index + 1 })}
                   value={award}
                   onChange={(e) => updateAward(index, e.target.value)}
                   className="bg-white border-gray-300"
@@ -170,31 +171,31 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
 
         {/* Sales Records */}
         <div className="space-y-2">
-          <Label htmlFor="sales_records">Sales Records</Label>
+          <Label htmlFor="sales_records">{t('survey:step5.salesRecordsLabel')}</Label>
           <Textarea
             id="sales_records"
-            placeholder="Any notable sales figures, download numbers, or monetization milestones..."
+            placeholder={t('survey:step5.salesRecordsPlaceholder')}
             {...register('sales_records')}
             rows={3}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            e.g., "10 million downloads", "Top 10 on platform for 6 months"
+            {t('survey:step5.salesRecordsHelper')}
           </p>
         </div>
 
         {/* Merchandise Deals */}
         <div className="space-y-2">
-          <Label htmlFor="merchandise_deals">Merchandise & Licensing Deals</Label>
+          <Label htmlFor="merchandise_deals">{t('survey:step5.merchandiseLabel')}</Label>
           <Textarea
             id="merchandise_deals"
-            placeholder="Any merchandise, toy deals, or licensing agreements..."
+            placeholder={t('survey:step5.merchandisePlaceholder')}
             {...register('merchandise_deals')}
             rows={3}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            e.g., "Plush toys released", "Mobile game adaptation"
+            {t('survey:step5.merchandiseHelper')}
           </p>
         </div>
 
@@ -211,20 +212,20 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
                 htmlFor="print_editions"
                 className="text-sm font-normal cursor-pointer"
               >
-                This title has print editions
+                {t('survey:step5.printEditionsCheckbox')}
               </Label>
               <p className="text-xs text-gray-500">
-                Physical book versions published
+                {t('survey:step5.printEditionsHelper')}
               </p>
             </div>
           </div>
 
           {printEditions && (
             <div className="ml-6 space-y-2">
-              <Label htmlFor="print_edition_details">Print Edition Details</Label>
+              <Label htmlFor="print_edition_details">{t('survey:step5.printEditionDetailsLabel')}</Label>
               <Textarea
                 id="print_edition_details"
-                placeholder="Publisher, release date, number of volumes, special editions..."
+                placeholder={t('survey:step5.printEditionDetailsPlaceholder')}
                 {...register('print_edition_details')}
                 rows={3}
                 className="bg-white border-gray-300 resize-none"
@@ -235,25 +236,25 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
 
         {/* Media Coverage */}
         <div className="space-y-2">
-          <Label htmlFor="media_coverage">Media Coverage</Label>
+          <Label htmlFor="media_coverage">{t('survey:step5.mediaCoverageLabel')}</Label>
           <Textarea
             id="media_coverage"
-            placeholder="Any press coverage, articles, or media mentions..."
+            placeholder={t('survey:step5.mediaCoveragePlaceholder')}
             {...register('media_coverage')}
             rows={3}
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            News articles, reviews, podcast appearances, etc.
+            {t('survey:step5.mediaCoverageHelper')}
           </p>
         </div>
 
         {/* Celebrity Endorsements */}
         <div className="space-y-2">
-          <Label htmlFor="celebrity_endorsements">Celebrity Endorsements</Label>
+          <Label htmlFor="celebrity_endorsements">{t('survey:step5.celebrityEndorsementsLabel')}</Label>
           <Textarea
             id="celebrity_endorsements"
-            placeholder="Any notable figures who have endorsed or promoted your title..."
+            placeholder={t('survey:step5.celebrityEndorsementsPlaceholder')}
             {...register('celebrity_endorsements')}
             rows={3}
             className="bg-white border-gray-300 resize-none"
@@ -265,21 +266,21 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-gray-700" />
-          <h3 className="text-lg font-semibold text-gray-900">Your Creator Profile</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step5.creatorProfileSection')}</h3>
         </div>
 
         <p className="text-sm text-gray-600">
-          Highlight your overall credentials and track record as a creator
+          {t('survey:step5.creatorProfileSubtitle')}
         </p>
 
         {/* Total Titles */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="creator_total_titles">Total Titles Created</Label>
+            <Label htmlFor="creator_total_titles">{t('survey:step5.totalTitlesLabel')}</Label>
             <Input
               id="creator_total_titles"
               type="number"
-              placeholder="0"
+              placeholder={t('survey:step5.totalTitlesPlaceholder')}
               value={creatorAchievements.total_titles || ''}
               onChange={(e) =>
                 setValue('creator_achievements', {
@@ -292,10 +293,10 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="creator_total_views">Total Views Across All Works</Label>
+            <Label htmlFor="creator_total_views">{t('survey:step5.totalViewsLabel')}</Label>
             <Input
               id="creator_total_views"
-              placeholder="e.g., 50 million"
+              placeholder={t('survey:step5.totalViewsPlaceholder')}
               value={creatorAchievements.total_views || ''}
               onChange={(e) =>
                 setValue('creator_achievements', {
@@ -311,7 +312,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
         {/* Notable Works */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Notable Previous Works</Label>
+            <Label>{t('survey:step5.notableWorksLabel')}</Label>
             <Button
               type="button"
               variant="outline"
@@ -320,17 +321,17 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
               className="border-gray-300"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Title
+              {t('survey:step5.addTitle')}
             </Button>
           </div>
 
           {notableWorks.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">No previous works added</p>
+            <p className="text-sm text-gray-500 italic">{t('survey:step5.noPreviousWorks')}</p>
           ) : (
             notableWorks.map((work: string, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
-                  placeholder={`Title ${index + 1}`}
+                  placeholder={t('survey:step5.titlePlaceholder', { index: index + 1 })}
                   value={work}
                   onChange={(e) => updateNotableWork(index, e.target.value)}
                   className="bg-white border-gray-300"
@@ -352,7 +353,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
         {/* Creator Awards */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Awards & Recognition (as a Creator)</Label>
+            <Label>{t('survey:step5.creatorAwardsLabel')}</Label>
             <Button
               type="button"
               variant="outline"
@@ -361,17 +362,17 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
               className="border-gray-300"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Award
+              {t('survey:step5.addAward')}
             </Button>
           </div>
 
           {creatorAwards.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">No creator awards added</p>
+            <p className="text-sm text-gray-500 italic">{t('survey:step5.noCreatorAwards')}</p>
           ) : (
             creatorAwards.map((award: string, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
-                  placeholder={`Award ${index + 1}`}
+                  placeholder={t('survey:step5.awardPlaceholder', { index: index + 1 })}
                   value={award}
                   onChange={(e) => updateCreatorAward(index, e.target.value)}
                   className="bg-white border-gray-300"
@@ -393,11 +394,11 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
         {/* Industry Recognition */}
         <div className="space-y-2">
           <Label htmlFor="creator_industry_recognition">
-            Industry Recognition & Achievements
+            {t('survey:step5.industryRecognitionLabel')}
           </Label>
           <Textarea
             id="creator_industry_recognition"
-            placeholder="Any other notable achievements, collaborations, or industry recognition..."
+            placeholder={t('survey:step5.industryRecognitionPlaceholder')}
             value={creatorAchievements.industry_recognition || ''}
             onChange={(e) =>
               setValue('creator_achievements', {
@@ -409,29 +410,28 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
             className="bg-white border-gray-300 resize-none"
           />
           <p className="text-xs text-gray-500">
-            Keynote speeches, industry partnerships, mentorship programs, etc.
+            {t('survey:step5.industryRecognitionHelper')}
           </p>
         </div>
       </div>
 
       {/* Help Text */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Step 5 Tips</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-2">{t('survey:step5.tipsTitle')}</h4>
         <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-          <li>Quantify achievements when possible (numbers, dates, rankings)</li>
-          <li>Include awards at both title and creator level to showcase expertise</li>
-          <li>Sales records and view counts demonstrate market viability</li>
-          <li>Media coverage and endorsements add credibility</li>
-          <li>Your overall creator profile helps buyers assess your track record</li>
-          <li>Don't be shy - this is your chance to shine!</li>
+          <li>{t('survey:step5.tip1')}</li>
+          <li>{t('survey:step5.tip2')}</li>
+          <li>{t('survey:step5.tip3')}</li>
+          <li>{t('survey:step5.tip4')}</li>
+          <li>{t('survey:step5.tip5')}</li>
+          <li>{t('survey:step5.tip6')}</li>
         </ul>
       </div>
 
       {/* Final Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-900">
-          <strong>Almost done!</strong> Once you complete this step, you'll be able to review
-          and submit your title information. Your draft will be saved automatically as you work.
+          <strong>{t('survey:step5.almostDoneTitle')}</strong> {t('survey:step5.almostDoneMessage')}
         </p>
       </div>
     </div>

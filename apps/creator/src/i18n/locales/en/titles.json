@@ -10,7 +10,20 @@
     "filterDraft": "Drafts",
     "filterPending": "Pending",
     "filterApproved": "Approved",
-    "filterRejected": "Rejected"
+    "filterRejected": "Rejected",
+    "retryButton": "Retry",
+    "deleteConfirmation": "Are you sure you want to delete this draft?",
+    "deleteFailed": "Failed to delete draft. Please try again.",
+    "pendingReviewMessage": "This submission is awaiting admin approval. You cannot edit it while under review.",
+    "rejectionMessage": "Rejection reason: {{reason}}\n\nYou can edit and resubmit this title from the Add Title page.",
+    "statsApproved": "{{count}} approved",
+    "statsApproved_plural": "{{count}} approved",
+    "statsPending": "{{count}} pending",
+    "statsRejected": "{{count}} rejected",
+    "statsDrafts": "{{count}} draft",
+    "statsDrafts_plural": "{{count}} drafts",
+    "titleList": "Title List",
+    "titleListDescription": "Your submitted titles will appear here"
   },
   "detail": {
     "title": "Title Details",
@@ -96,5 +109,29 @@
     "slice": "Slice of Life",
     "historical": "Historical",
     "supernatural": "Supernatural"
+  },
+  "card": {
+    "untitled": "Untitled",
+    "statusDraft": "DRAFT",
+    "statusPending": "PENDING APPROVAL",
+    "statusRejected": "REJECTED",
+    "by": "by {{author}}",
+    "step": "Step {{current}} of 5",
+    "lastSaved": "Last saved: {{time}}",
+    "submitted": "Submitted: {{time}}",
+    "rejected": "Rejected: {{time}}",
+    "rejectionReason": "Reason: {{reason}}",
+    "views": "{{count}} views",
+    "chapters": "{{count}} chapters",
+    "ctaContinueEditing": "Click to continue editing →",
+    "ctaUnderReview": "Under admin review",
+    "ctaClickDetails": "Click for details →",
+    "timeJustNow": "Just now",
+    "timeMinutesAgo": "{{count}} min ago",
+    "timeMinutesAgo_plural": "{{count}} mins ago",
+    "timeHoursAgo": "{{count}} hour ago",
+    "timeHoursAgo_plural": "{{count}} hours ago",
+    "timeDaysAgo": "{{count}} day ago",
+    "timeDaysAgo_plural": "{{count}} days ago"
   }
 }

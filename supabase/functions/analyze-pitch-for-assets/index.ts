@@ -202,8 +202,8 @@ function validateRequest(request: AnalyzePitchRequest): { code: string; message:
     return { code: 'INVALID_INPUT', message: 'Missing or invalid title_name' };
   }
 
-  if (!request.pitch_deck_url || typeof request.pitch_deck_url !== 'string') {
-    return { code: 'INVALID_INPUT', message: 'Missing or invalid pitch_deck_url' };
+  if (!request.pitch_deck_url || typeof request.pitch_deck_url !== 'string' || request.pitch_deck_url.trim() === '') {
+    return { code: 'INVALID_INPUT', message: 'pitch_deck_url is required and must be a non-empty string' };
   }
 
   if (!request.admin_email || typeof request.admin_email !== 'string') {

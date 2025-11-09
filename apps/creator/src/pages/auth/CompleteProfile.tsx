@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { completeOAuthProfile } from '@/lib/auth'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function CompleteProfile() {
+  const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
@@ -69,9 +71,9 @@ export default function CompleteProfile() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Complete Your Profile</CardTitle>
+          <CardTitle>{t('auth:completeProfile.title')}</CardTitle>
           <CardDescription>
-            Tell us a bit more about yourself to finish setting up your account
+            {t('auth:completeProfile.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -83,12 +85,12 @@ export default function CompleteProfile() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name *</Label>
+              <Label htmlFor="full_name">{t('auth:signUp.fullNameLabel')} *</Label>
               <Input
                 id="full_name"
                 name="full_name"
                 type="text"
-                placeholder="Your legal name"
+                placeholder={t('auth:signUp.fullNamePlaceholder')}
                 value={formData.full_name}
                 onChange={handleInputChange}
                 disabled={loading}
@@ -97,12 +99,12 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pen_name">Pen Name / Studio Name *</Label>
+              <Label htmlFor="pen_name">{t('auth:completeProfile.penNameLabel')} *</Label>
               <Input
                 id="pen_name"
                 name="pen_name"
                 type="text"
-                placeholder="Your creator name"
+                placeholder={t('auth:completeProfile.penNamePlaceholder')}
                 value={formData.pen_name}
                 onChange={handleInputChange}
                 disabled={loading}
@@ -111,7 +113,7 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ip_owner_role">Role *</Label>
+              <Label htmlFor="ip_owner_role">{t('auth:completeProfile.roleLabel')} *</Label>
               <select
                 id="ip_owner_role"
                 name="ip_owner_role"
@@ -121,18 +123,18 @@ export default function CompleteProfile() {
                 className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
                 required
               >
-                <option value="author">Author</option>
-                <option value="agent">Agent</option>
+                <option value="author">{t('auth:completeProfile.roleAuthor')}</option>
+                <option value="agent">{t('auth:completeProfile.roleAgent')}</option>
               </select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ip_owner_company">Company (Optional)</Label>
+              <Label htmlFor="ip_owner_company">{t('auth:completeProfile.companyLabel')}</Label>
               <Input
                 id="ip_owner_company"
                 name="ip_owner_company"
                 type="text"
-                placeholder="Your company or agency"
+                placeholder={t('auth:completeProfile.companyPlaceholder')}
                 value={formData.ip_owner_company}
                 onChange={handleInputChange}
                 disabled={loading}
@@ -140,12 +142,12 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="website_url">Website (Optional)</Label>
+              <Label htmlFor="website_url">{t('auth:completeProfile.websiteLabel')}</Label>
               <Input
                 id="website_url"
                 name="website_url"
                 type="url"
-                placeholder="https://yourwebsite.com"
+                placeholder={t('auth:completeProfile.websitePlaceholder')}
                 value={formData.website_url}
                 onChange={handleInputChange}
                 disabled={loading}
@@ -153,7 +155,7 @@ export default function CompleteProfile() {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Completing profile...' : 'Complete Profile'}
+              {loading ? t('auth:completeProfile.submitting') : t('auth:completeProfile.submitButton')}
             </Button>
           </form>
         </CardContent>

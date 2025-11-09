@@ -165,7 +165,7 @@ export async function endSession(reason: 'inactivity' | 'navigation' | 'close' =
     // Check if we've already sent end notification for this session
     const endNotified = sessionStorage.getItem(SESSION_END_KEY);
     if (endNotified === sessionData.sessionId) {
-      console.log('Session end already notified');
+      // Session end already processed - guard prevents duplicate notifications
       return;
     }
     

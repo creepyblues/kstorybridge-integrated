@@ -6,7 +6,10 @@
   "sections": {
     "accountInfo": "Account Information",
     "contactInfo": "Contact Information",
-    "preferences": "Preferences"
+    "preferences": "Preferences",
+    "creatorProfile": "Creator Profile",
+    "profileDescription": "Your personal and professional information",
+    "accountActions": "Account Actions"
   },
   "fields": {
     "email": "Email",
@@ -28,12 +31,15 @@
     "invitationStatus": "Invitation Status",
     "invitationStatusInvited": "Invited",
     "invitationStatusActive": "Active",
-    "invitationStatusPending": "Pending"
+    "invitationStatusPending": "Pending",
+    "notSpecified": "Not specified"
   },
   "buttons": {
     "editProfile": "Edit Profile",
     "saveChanges": "Save Changes",
-    "cancel": "Cancel"
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "signOut": "Sign Out"
   },
   "messages": {
     "loadError": "Failed to load profile. Please try again.",

@@ -1,8 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { User, Menu, X } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 interface MenuItem {
   title: string
@@ -11,23 +13,21 @@ interface MenuItem {
   icon?: string
 }
 
-// Creator-only menu items (no /creators prefix)
-const getDiscoverItems = (): MenuItem[] => {
-  return [
-    { title: 'Home', href: '/home' },
-    { title: 'My Titles', href: '/titles' },
-    { title: 'My Requests', href: '/requests' },
-    { title: 'K-content News', href: '/news' },
-  ]
-}
-
 export function CMSSidebar() {
+  const { t } = useTranslation(['navigation', 'common'])
   const { user } = useAuth()
   const location = useLocation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  // Creator-only menu items (no /creators prefix)
+  const discoverItems: MenuItem[] = [
+    { title: t('navigation:sidebar.home'), href: '/home' },
+    { title: t('navigation:sidebar.myTitles'), href: '/titles' },
+    { title: t('navigation:sidebar.myRequests'), href: '/requests' },
+    { title: t('navigation:sidebar.news'), href: '/news' },
+  ]
+
   const userEmail = user?.email
-  const discoverItems = getDiscoverItems()
 
   const handleLinkClick = () => {
     setIsMobileMenuOpen(false)
@@ -83,7 +83,7 @@ export function CMSSidebar() {
                   to={item.href}
                   onClick={handleLinkClick}
                   className={cn(
-                    'flex items-center justify-between px-4 py-3 text-base font-normal transition-colors border-b border-gray-100 last:border-b-0',
+                    'flex items-center justify-between px-4 py-3 text-base font-normal transition-colors border-b border-gray-100',
                     isActive
                       ? 'bg-gray-900 text-white'
                       : 'text-gray-900 hover:bg-gray-50'
@@ -98,6 +98,10 @@ export function CMSSidebar() {
                 </Link>
               )
             })}
+            {/* Language Switcher */}
+            <div className="px-4 py-3">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       )}
@@ -115,7 +119,7 @@ export function CMSSidebar() {
             >
               KStoryBridge
             </Link>
-            <p className="text-sm text-gray-500 mt-1">Creator Dashboard</p>
+            <p className="text-sm text-gray-500 mt-1">{t('navigation:pageHeaders.dashboard')}</p>
           </div>
 
           {/* Navigation */}
@@ -152,8 +156,8 @@ export function CMSSidebar() {
             </div>
           </nav>
 
-          {/* User info - clickable link to profile */}
-          <div className="p-4 border-t border-gray-200">
+          {/* User info and language switcher */}
+          <div className="p-4 border-t border-gray-200 space-y-3">
             <Link
               to="/profile"
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
@@ -168,6 +172,9 @@ export function CMSSidebar() {
                 <p className="text-xs text-gray-500 truncate">{userEmail}</p>
               </div>
             </Link>
+            <div className="px-3">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </aside>

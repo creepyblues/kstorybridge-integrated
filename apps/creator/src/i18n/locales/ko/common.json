@@ -60,7 +60,11 @@
   "emptyStates": {
     "noResults": "결과가 없습니다",
     "noItems": "표시할 항목이 없습니다",
-    "createFirst": "위의 버튼을 클릭하여 첫 항목을 생성하세요"
+    "createFirst": "위의 버튼을 클릭하여 첫 항목을 생성하세요",
+    "noRequests": "아직 요청이 없습니다. 바이어의 요청이 여기에 표시됩니다.",
+    "noRequestsDescription": "Phase 4: creator v1에서 요청 기능이 추가될 예정입니다",
+    "newsComingSoon": "뉴스 피드가 곧 제공됩니다. 업계 소식이 여기에 표시됩니다.",
+    "newsDescription": "Phase 4: creator v1에서 뉴스 기능이 추가될 예정입니다"
   },
   "time": {
     "justNow": "방금",

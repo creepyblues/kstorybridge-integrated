@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { RefreshCw, Edit, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
+import { RefreshCw, Edit, ChevronUp, ChevronDown, ArrowUpDown, Sparkles } from "lucide-react";
 import { Button } from "@kstorybridge/ui";
 import { useToast } from "@/hooks/use-toast";
 import { titlesService, type Title } from "@/services/titlesService";
@@ -307,7 +307,17 @@ export default function AdminTitles() {
                       )}
                     </div>
 
-                    <div className="col-span-1 flex justify-center">
+                    <div className="col-span-1 flex justify-center gap-2">
+                      <Link to={`/admin/asset-generation?titleId=${title.title_id}`}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-gray-300 hover:bg-gray-100"
+                          title="View Generated Assets"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                        </Button>
+                      </Link>
                       <Link to={`/admin/titles/${title.title_id}/edit`}>
                         <Button
                           variant="outline"
@@ -383,17 +393,29 @@ export default function AdminTitles() {
                           )}
                         </div>
 
-                        {/* Edit Button */}
-                        <Link to={`/admin/titles/${title.title_id}/edit`}>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-gray-300 hover:bg-gray-100 w-full"
-                          >
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit Title
-                          </Button>
-                        </Link>
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <Link to={`/admin/asset-generation?titleId=${title.title_id}`} className="flex-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-gray-300 hover:bg-gray-100 w-full"
+                            >
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Assets
+                            </Button>
+                          </Link>
+                          <Link to={`/admin/titles/${title.title_id}/edit`} className="flex-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-gray-300 hover:bg-gray-100 w-full"
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>

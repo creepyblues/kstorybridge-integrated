@@ -2,7 +2,7 @@
 
 **App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. **Authentication**: Handles BUYER auth only (creator auth moved to creator app as of 2025-11-04).
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-08
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -144,6 +144,177 @@ Automated pitch deck analysis extracting 50+ structured fields using GPT-4o.
 - **Cost**: ~$0.15-0.20 per deck
 
 **See**: [Pitch Deck System Documentation](docs/PITCH_DECK_SYSTEM.md)
+
+---
+
+## 🎨 Marketing Asset Generation (ADDED 2025-11-08)
+
+**Status**: ✅ Production-ready with full navigation support
+
+AI-powered marketing asset generation system using GPT-4 and DALL-E 3.
+
+### Overview
+Generates 10-15 marketing asset ideas per title (Instagram stories, posters, ad creatives, etc.) with AI-generated DALL-E prompts, then creates actual images on demand.
+
+### Admin Interface
+
+**Main Page**: `/admin/asset-generation`
+- Select title from dropdown (shows titles with pitch data)
+- Click "Analyze Pitch & Generate Ideas" to create asset concepts (~$0.10-0.15)
+- Click "Generate Image" on individual assets to create visuals (~$0.08 per image)
+- Approve/manage generated assets
+
+**Direct Navigation** (Added 2025-11-08):
+- From Title List (`/admin/titles`) → Click ⚡ Sparkles button
+- From Title Detail (`/admin/titles/:id`) → Click "View Assets" button
+- URL pattern: `/admin/asset-generation?titleId=xxx` (auto-selects title)
+
+### Technical Architecture
+
+**Database**: `title_marketing_assets` table
+- Isolated design (no foreign keys, stores all context)
+- Fields: asset type, category, format, prompt, image URL, status, approval
+- Supports both generated and pending assets
+
+**Edge Functions**:
+- `analyze-pitch-for-assets` - Analyzes pitch deck, generates asset ideas
+  - Version: 6 (deployed 2025-11-08)
+  - Cost limit: $0.15 per analysis
+  - Generates 15 asset ideas grouped by category
+- `generate-asset` - Creates actual DALL-E 3 images from prompts
+  - Cost: ~$0.04-0.12 per image depending on size/quality
+
+**Storage**: `marketing-assets` bucket
+- **Public** bucket for generated images
+- Location: Supabase Storage
+- RLS policies: Public read, authenticated upload, service role management
+- File types: PNG, JPEG, WebP (10 MB limit)
+
+### Asset Categories
+
+1. **Social Media** (5 assets)
+   - Instagram Story (1080x1920)
+   - Instagram Post (1080x1080)
+   - Facebook Post (1200x628)
+   - Twitter Post (1200x675)
+   - TikTok Video Thumbnail (1080x1920)
+
+2. **Ad Creative** (5 assets)
+   - Display Ad (300x250, 728x90)
+   - YouTube Thumbnail (1280x720)
+   - Video Ad Key Frame (1920x1080)
+   - Banner Ad
+
+3. **Pitch Material** (5 assets)
+   - Concept Art (1920x1080)
+   - Key Scene
+   - Character Cards
+   - Mood Board
+   - Poster
+
+### Navigation Flow
+
+**From Title List**:
+```
+/admin/titles → Click ⚡ button → /admin/asset-generation?titleId=xxx
+```
+
+**From Title Detail**:
+```
+/admin/titles/:id → Click "View Assets" → /admin/asset-generation?titleId=xxx
+```
+
+**Direct Access**:
+```
+/admin/asset-generation → Manual title selection from dropdown
+```
+
+### Common Issues & Solutions
+
+**Issue**: 400 Error - Cost limit exceeded
+- **Cause**: Analysis cost > $0.15
+- **Solution**: Cost limit increased to $0.15 (2025-11-08)
+- **Prevention**: Limit scales with reasonable pitch deck sizes
+
+**Issue**: Images show as corrupted/"Bucket not found"
+- **Cause**: Storage bucket was private
+- **Solution**: Bucket made public (2025-11-08)
+- **Prevention**: Diagnostic scripts in `/scripts/` directory
+
+**Issue**: Generic error messages
+- **Cause**: SDK wraps edge function errors
+- **Solution**: Enhanced error logging and extraction (2025-11-08)
+- **Debugging**: Check browser console for detailed error context
+
+### Diagnostic Tools
+
+Located in `/scripts/` directory:
+- `diagnose-asset.js` - Check asset status, test image URLs
+- `create-storage-bucket.js` - Create/configure storage buckets
+- `make-bucket-public.js` - Fix bucket permissions
+
+**Usage**:
+```bash
+node scripts/diagnose-asset.js  # Check asset and image accessibility
+node scripts/make-bucket-public.js  # Fix storage permissions
+```
+
+### Service Functions
+
+**Location**: `src/services/assetGenerationService.ts`
+
+```typescript
+// Fetch titles with pitch data
+getTitlesWithPitch(): Promise<TitleWithPitch[]>
+
+// Get assets for specific title
+getAssetsByTitle(titleId: string): Promise<MarketingAsset[]>
+
+// Get asset count for badge display
+getAssetCountByTitle(titleId: string): Promise<number>
+
+// Analyze pitch and generate asset ideas
+analyzePitchForAssets(request: AnalyzePitchRequest): Promise<AnalyzePitchResponse>
+
+// Generate actual image with DALL-E 3
+generateAsset(request: GenerateAssetRequest): Promise<GenerateAssetResponse>
+
+// Update approval status
+updateAssetApproval(assetId, approved, adminEmail): Promise<void>
+
+// Delete asset
+deleteAsset(assetId: string): Promise<void>
+```
+
+### Components
+
+- `TitleSelector` - Dropdown for title selection
+- `AssetIdeaList` - Display generated assets grouped by category
+- `AssetGenerationCard` - Individual asset card with generate/approve/delete actions
+- `GenerationStats` - Summary statistics (total assets, cost, categories)
+
+### Cost Tracking
+
+**Analysis** (~$0.10-0.15):
+- GPT-4 Turbo: $0.01/1K input tokens, $0.03/1K output tokens
+- Typical analysis: 8,000-10,000 tokens total
+- Includes 15 detailed asset ideas with prompts
+
+**Image Generation** (~$0.04-0.12):
+- DALL-E 3 Standard: $0.04 per image
+- DALL-E 3 HD: $0.08 per image
+- Most assets use standard quality
+
+**Total Per Title**: ~$0.50-1.00 (analysis + 5-10 images)
+
+### Future Enhancements
+
+- Asset count badges on navigation buttons
+- Bulk image generation
+- Image editing/regeneration
+- Video asset support (OpenAI video API)
+- Asset templates and styles
+- Export/download functionality
 
 ---
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MainLayout } from '@/components/layout/MainLayout'
@@ -7,6 +8,7 @@ import { titlesService, Title } from '@/services/titlesService'
 import { draftService, TitleDraft, getDraftDisplayName } from '@/services/draftService'
 
 export default function Home() {
+  const { t } = useTranslation(['titles', 'navigation', 'common'])
   const navigate = useNavigate()
   const { user } = useAuth()
   const [titles, setTitles] = useState<Title[]>([])
@@ -47,8 +49,8 @@ export default function Home() {
     <MainLayout>
       <div className="max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back, {user?.email}</p>
+          <h1 className="text-3xl font-bold text-black">{t('navigation:pageHeaders.dashboard')}</h1>
+          <p className="text-gray-600 mt-1">{t('navigation:sidebar.home')}</p>
         </div>
 
         {/* Two-column grid layout */}
@@ -57,12 +59,12 @@ export default function Home() {
           <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>My Titles</CardTitle>
+                <CardTitle>{t('titles:list.title')}</CardTitle>
                 <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-gray-200 text-black">
                   {titles.length + drafts.length}
                 </span>
               </div>
-              <CardDescription>Your published titles and drafts</CardDescription>
+              <CardDescription>{t('titles:list.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -75,12 +77,12 @@ export default function Home() {
                 </div>
               ) : titles.length === 0 && drafts.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600 text-sm mb-3">No titles yet</p>
+                  <p className="text-gray-600 text-sm mb-3">{t('titles:list.emptyState')}</p>
                   <button
                     onClick={() => navigate('/titles/add-title')}
                     className="text-black hover:text-gray-700 underline text-sm"
                   >
-                    Create your first title
+                    {t('titles:list.emptyStateDescription')}
                   </button>
                 </div>
               ) : (
@@ -125,7 +127,7 @@ export default function Home() {
           <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Buyer Inquiries</CardTitle>
+                <CardTitle>{t('navigation:sidebar.myRequests')}</CardTitle>
                 <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-gray-200 text-black">
                   0
                 </span>
@@ -134,7 +136,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
-                <p className="text-gray-600 text-sm mb-4">Coming soon</p>
+                <p className="text-gray-600 text-sm mb-4">{t('common:messages.comingSoon')}</p>
                 <p className="text-gray-500 text-xs">You'll see buyer inquiries here when they contact you</p>
               </div>
 

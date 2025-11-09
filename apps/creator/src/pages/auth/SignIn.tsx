@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { signInWithEmail, signInWithOAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 
 export default function SignIn() {
+  const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
@@ -125,9 +127,9 @@ export default function SignIn() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-porcelain-blue-50 p-4">
       <Card className="w-full max-w-md shadow-xl border-0">
         <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-3xl font-bold text-midnight-ink">Creator Sign In</CardTitle>
+          <CardTitle className="text-3xl font-bold text-midnight-ink">{t('auth:signIn.title')}</CardTitle>
           <CardDescription className="text-base text-midnight-ink-600">
-            Welcome back! Sign in to your creator account.
+            {t('auth:signIn.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -179,7 +181,7 @@ export default function SignIn() {
               disabled={loading}
             >
               {loading ? (
-                'Redirecting to Google...'
+                t('auth:oauth.redirect')
               ) : (
                 <>
                   <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -188,7 +190,7 @@ export default function SignIn() {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Continue with Google
+                  {t('auth:signIn.googleButton')}
                 </>
               )}
             </Button>
@@ -206,12 +208,12 @@ export default function SignIn() {
           {/* Email Signin Form */}
           <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth:signIn.emailLabel')}</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="creator@example.com"
+                placeholder={t('auth:signIn.emailPlaceholder')}
                 value={formData.email}
                 onChange={handleInputChange}
                 disabled={loading}
@@ -220,12 +222,12 @@ export default function SignIn() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth:signIn.passwordLabel')}</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('auth:signIn.passwordPlaceholder')}
                 value={formData.password}
                 onChange={handleInputChange}
                 disabled={loading}
@@ -238,14 +240,14 @@ export default function SignIn() {
               className="w-full h-14 bg-hanok-teal hover:bg-hanok-teal/90 text-white text-base font-medium"
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('auth:signIn.submitting') : t('auth:signIn.submitButton')}
             </Button>
           </form>
 
           <div className="text-center text-sm text-gray-600">
-            Don't have an account?{' '}
+            {t('auth:signIn.noAccount')}{' '}
             <Link to="/signup" className="text-hanok-teal hover:text-hanok-teal/80 font-medium">
-              Sign up
+              {t('auth:signIn.signUpLink')}
             </Link>
           </div>
         </CardContent>

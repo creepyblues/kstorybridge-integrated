@@ -116,7 +116,7 @@ export function PitchDeckViewer({ pdfUrl, title }: PitchDeckViewerProps) {
         }
 
         // Create blob
-        const blob = new Blob(chunks, { type: 'application/pdf' });
+        const blob = new Blob(chunks as BlobPart[], { type: 'application/pdf' });
 
         if (blob.size > 50 * 1024 * 1024) {
           throw new Error('File too large. Maximum file size is 50MB.');

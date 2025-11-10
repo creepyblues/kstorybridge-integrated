@@ -83,5 +83,9 @@
     "updateError": "Failed to update",
     "createSuccess": "Created successfully",
     "createError": "Failed to create"
+  },
+  "navigation": {
+    "backToTitles": "Back to Titles",
+    "retry": "Retry"
   }
 }

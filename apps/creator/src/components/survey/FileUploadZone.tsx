@@ -130,6 +130,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [files, onChange, onUpload, maxFileSize, acceptedTypes]
   )
 
@@ -177,13 +178,14 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     onChange(files.filter((f) => f.id !== id))
   }
 
-  const toggleShareable = (id: string) => {
-    onChange(
-      files.map((f) =>
-        f.id === id ? { ...f, shareable_with_nda: !f.shareable_with_nda } : f
-      )
-    )
-  }
+  // Toggle shareable status for a file (reserved for future use)
+  // const toggleShareable = (id: string) => {
+  //   onChange(
+  //     files.map((f) =>
+  //       f.id === id ? { ...f, shareable_with_nda: !f.shareable_with_nda } : f
+  //     )
+  //   )
+  // }
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`

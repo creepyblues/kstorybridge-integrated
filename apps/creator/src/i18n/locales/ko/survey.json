@@ -22,6 +22,7 @@
   "step1": {
     "title": "기본 정보",
     "subtitle": "콘텐츠에 대해 알려주세요",
+    "tab": "기본",
     "titleNameKr": "작품명 (한국어)",
     "titleNameKrPlaceholder": "한국어 제목을 입력하세요",
     "titleNameEn": "작품명 (영어)",
@@ -87,6 +88,7 @@
   "step2": {
     "title": "스토리 상세",
     "subtitle": "스토리의 깊이 있는 측면을 공유하세요",
+    "tab": "스토리",
     "contentDetailsSection": "콘텐츠 상세",
     "contentDetailsSubtitle": "구매자가 작품을 발견하는 데 도움이 되는 간단한 설명",
     "tagline": "태그라인",
@@ -141,6 +143,7 @@
   "step3": {
     "title": "내러티브 구조",
     "subtitle": "구매자가 스토리의 서사 흐름과 처음부터 끝까지 어떻게 전개되는지 이해할 수 있도록 도와주세요.",
+    "tab": "구조",
     "storyStructureSection": "스토리 구조",
     "storyStructureSubtitle": "스토리의 시작, 중간, 끝에 대한 개괄적인 요약을 제공하세요",
     "storyStructureLabel": "시작 / 중간 / 끝 요약",
@@ -174,6 +177,7 @@
   "step4": {
     "title": "기존 자료",
     "subtitle": "작품에 대한 더 많은 맥락을 제공하는 창작 문서, 소스 자료 또는 외부 링크를 공유하세요.",
+    "tab": "자료",
     "creativeDocumentsSection": "창작 문서",
     "creativeDocumentsSubtitle": "PDF, 스토리 바이블, 개요, 대본 또는 기타 문서를 업로드하세요",
     "externalLinksSection": "외부 링크",
@@ -204,6 +208,7 @@
   },
   "step5": {
     "title": "콘텐츠 및 작가 프로필",
+    "tab": "프로필",
     "subtitle": "바이어가 귀하의 실적을 이해할 수 있도록 작품의 성공과 작가로서의 자격을 보여주세요.",
     "titleAchievementsSection": "작품 성과",
     "awardsLabel": "수상 및 표창",

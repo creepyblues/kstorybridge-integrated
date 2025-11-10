@@ -22,6 +22,7 @@
   "step1": {
     "title": "Basic Information",
     "subtitle": "Tell us about your content",
+    "tab": "Basic",
     "titleNameKr": "Title Name (Korean)",
     "titleNameKrPlaceholder": "한국어 제목을 입력하세요",
     "titleNameEn": "Title Name (English)",
@@ -87,6 +88,7 @@
   "step2": {
     "title": "Story Details",
     "subtitle": "Share the deeper aspects of your story",
+    "tab": "Story",
     "contentDetailsSection": "Content Details",
     "contentDetailsSubtitle": "Brief descriptions to help buyers discover your title",
     "tagline": "Tagline",
@@ -141,6 +143,7 @@
   "step3": {
     "title": "Narrative Structure",
     "subtitle": "Help buyers understand your story's narrative flow and how it develops from beginning to end.",
+    "tab": "Structure",
     "storyStructureSection": "Story Structure",
     "storyStructureSubtitle": "Provide a high-level summary of your story's beginning, middle, and end",
     "storyStructureLabel": "Beginning / Middle / End Summary",
@@ -174,6 +177,7 @@
   "step4": {
     "title": "Existing Materials",
     "subtitle": "Share any creative documents, source materials, or external links that provide more context about your title.",
+    "tab": "Materials",
     "creativeDocumentsSection": "Creative Documents",
     "creativeDocumentsSubtitle": "Upload PDFs, story bibles, outlines, scripts, or other documents",
     "externalLinksSection": "External Links",
@@ -205,6 +209,7 @@
   "step5": {
     "title": "Content & Creator Profile",
     "subtitle": "Showcase your title's success and your credentials as a creator to help buyers understand your track record.",
+    "tab": "Profile",
     "titleAchievementsSection": "Title Achievements",
     "awardsLabel": "Awards & Recognition",
     "addAward": "Add Award",

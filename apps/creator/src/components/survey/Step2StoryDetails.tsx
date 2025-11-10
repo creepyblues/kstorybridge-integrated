@@ -7,30 +7,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { X, Plus } from 'lucide-react'
-import { CharacterDetailsInput, CharacterDetail } from './CharacterDetailsInput'
+import { CharacterDetailsInput } from './CharacterDetailsInput'
 
-interface Step2FormData {
-  // Content details (from AddTitle merge)
-  synopsis?: string
-  description?: string
-  tagline?: string
-  note?: string
-  chapters?: number
-  completed?: boolean
-
-  // Story background
-  inspiration: string
-  comparables: string[]
-  important_issues: string
-
-  // World building (REQUIRED)
-  setting_description: string
-  world_lore: string
-  supernatural_concepts: string
-
-  // Characters (REQUIRED, managed separately)
-  character_details: CharacterDetail[]
-}
 
 interface Step2StoryDetailsProps {
   form: UseFormReturn<any>

@@ -143,6 +143,7 @@ export const MultiStepProgressBar: React.FC<MultiStepProgressBarProps> = ({
  * @param t - Translation function from useTranslation hook
  * @returns Array of localized step definitions
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const getDefaultSteps = (t: (key: string) => string): Step[] => [
   {
     number: 1,
@@ -174,7 +175,9 @@ export const getDefaultSteps = (t: (key: string) => string): Step[] => [
 /**
  * @deprecated Use getDefaultSteps(t) instead
  * Legacy constant for backward compatibility
+// eslint-disable-next-line react-refresh/only-export-components
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const DEFAULT_STEPS: Step[] = [
   {
     number: 1,

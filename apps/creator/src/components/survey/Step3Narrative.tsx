@@ -5,17 +5,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { AlertCircle } from 'lucide-react'
 
-interface Step3FormData {
-  // Narrative structure (REQUIRED)
-  story_structure: string
-
-  // Planned ending (REQUIRED if not completed)
-  planned_ending: string
-  completed: boolean // From parent form
-
-  // Additional narrative info
-  narrative_arc: string
-}
 
 interface Step3NarrativeProps {
   form: UseFormReturn<any>

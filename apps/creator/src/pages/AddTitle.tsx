@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
@@ -22,8 +22,6 @@ import { Step5Profile } from '@/components/survey/Step5Profile'
 
 // Services
 import { draftService } from '@/services/draftService'
-import { titlesService } from '@/services/titlesService'
-import { documentsService } from '@/services/documentsService'
 
 // Schema
 import { surveyFormSchema, validateStep1, validateStep2, validateStep3, type SurveyFormData } from '@/lib/surveySchema'
@@ -68,7 +66,7 @@ export default function AddTitleSurvey() {
     },
   })
 
-  const { watch, handleSubmit, formState: { errors }, setError, clearErrors } = form
+  const { watch, handleSubmit, setError, clearErrors } = form
 
   // Watch form values for auto-save
   const formValues = watch()
@@ -254,7 +252,7 @@ export default function AddTitleSurvey() {
   }
 
   // File upload handler
-  const handleFileUpload = async (file: File, documentType: string) => {
+  const handleFileUpload = async (file: File, _documentType: string) => {
     if (!userId) throw new Error('User not authenticated')
 
     // In a real implementation, this would upload to Supabase Storage

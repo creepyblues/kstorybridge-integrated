@@ -12,50 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { PlatformInput, PlatformData } from './PlatformInput'
+import { PlatformInput } from './PlatformInput'
 
-interface Step1FormData {
-  // Required basic fields (from AddTitle merge)
-  title_name_en: string
-  title_name_kr: string
-  title_url: string
-  title_image: string
-  story_author: string
-  genre: string[]
-  content_format?: string
-  keywords?: string
-  tone?: string
-
-  // Credits (additional authors)
-  art_author?: string
-  author?: string
-  writer?: string
-  illustrator?: string
-
-  // English title classification
-  is_official_english_title: boolean
-  english_title_type: 'official' | 'translation'
-
-  // Hangul titles
-  script_title_kr: string
-  script_title_en: string
-  art_title_kr: string
-  art_title_en: string
-  underlying_novel_kr: string
-  underlying_novel_en: string
-
-  // Rights holder
-  rights_holder_name: string
-  rights_holder_company: string
-
-  // Rights & business
-  rights?: string
-  perfect_for?: string
-  audience?: string
-
-  // Platforms (managed separately)
-  platforms: PlatformData[]
-}
 
 const GENRE_OPTIONS = [
   'romance',

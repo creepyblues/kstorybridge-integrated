@@ -11,11 +11,17 @@ export interface Title {
   genre?: string[] | string | null
   synopsis?: string | null
   description?: string | null
+  description_kr?: string | null
   tagline?: string | null
+  tagline_kr?: string | null
   pitch?: string | null
   tone?: string | null
   note?: string | null
+  note_kr?: string | null
   views?: number | null
+  likes?: number | null
+  rating?: number | null
+  rating_count?: number | null
   chapters?: number | null
   completed?: boolean | null
   rights_owner?: string | null
@@ -55,13 +61,18 @@ export interface Title {
   supernatural_concepts?: string | null
   character_details?: Array<{
     name: string
-    age?: string
+    name_kr?: string
+    role?: 'protagonist' | 'antagonist' | 'supporting' | 'minor'
+    age?: string | number
     gender?: string
     sexuality?: string
     ethnicity?: string
+    occupation?: string
     background?: string
+    personality?: string
     traits?: string
     arc?: string
+    relationships?: string
   }> | null
 
   // Step 3: Narrative Structure
@@ -138,13 +149,18 @@ export interface CreateTitleInput {
   supernatural_concepts?: string | null
   character_details?: Array<{
     name: string
-    age?: string
+    name_kr?: string
+    role?: 'protagonist' | 'antagonist' | 'supporting' | 'minor'
+    age?: string | number
     gender?: string
     sexuality?: string
     ethnicity?: string
+    occupation?: string
     background?: string
+    personality?: string
     traits?: string
     arc?: string
+    relationships?: string
   }> | null // REQUIRED in UI
 
   // Step 3: Narrative Structure
@@ -200,21 +216,55 @@ export const titlesService = {
   },
 
   /**
-   * Get single title by ID
+   * Get single title by ID with platforms and documents
    */
-  async getTitleById(titleId: string): Promise<Title | null> {
-    const { data, error } = await supabase
+  async getTitleById(titleId: string): Promise<Title & { platforms?: any[], documents?: any[] } | null> {
+    // Fetch title data
+    const { data: titleData, error: titleError } = await supabase
       .from('titles')
       .select('*')
       .eq('title_id', titleId)
       .single()
 
-    if (error) {
-      console.error('Error fetching title:', error)
-      throw error
+    if (titleError) {
+      console.error('Error fetching title:', titleError)
+      throw titleError
     }
 
-    return data
+    if (!titleData) {
+      return null
+    }
+
+    // Fetch related platforms
+    const { data: platforms, error: platformsError } = await supabase
+      .from('title_platforms')
+      .select('*')
+      .eq('title_id', titleId)
+      .order('created_at', { ascending: false })
+
+    if (platformsError) {
+      console.error('Error fetching platforms:', platformsError)
+      // Don't throw, just log and continue
+    }
+
+    // Fetch related documents
+    const { data: documents, error: documentsError } = await supabase
+      .from('title_documents')
+      .select('*')
+      .eq('title_id', titleId)
+      .order('created_at', { ascending: false })
+
+    if (documentsError) {
+      console.error('Error fetching documents:', documentsError)
+      // Don't throw, just log and continue
+    }
+
+    // Return combined data
+    return {
+      ...titleData,
+      platforms: platforms || [],
+      documents: documents || [],
+    }
   },
 
   /**

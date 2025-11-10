@@ -8,25 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { X, Plus, Award, TrendingUp } from 'lucide-react'
 
-interface Step5FormData {
-  // Title achievements
-  awards: string[]
-  sales_records: string
-  merchandise_deals: string
-  print_editions: boolean
-  print_edition_details: string
-  media_coverage: string
-  celebrity_endorsements: string
-
-  // Creator achievements
-  creator_achievements: {
-    total_titles?: number
-    total_views?: string
-    notable_works?: string[]
-    awards_received?: string[]
-    industry_recognition?: string
-  }
-}
 
 interface Step5ProfileProps {
   form: UseFormReturn<any>
@@ -40,7 +21,7 @@ interface Step5ProfileProps {
  */
 export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
   const { t } = useTranslation(['survey', 'titles'])
-  const { register, watch, setValue, formState: { errors } } = form
+  const { register, watch, setValue } = form
 
   const awards = watch('awards') || []
   const printEditions = watch('print_editions')

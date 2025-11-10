@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { FileUploadZone, UploadedFile } from './FileUploadZone'
+import { FileUploadZone } from './FileUploadZone'
 import { Link as LinkIcon, X, Plus } from 'lucide-react'
 import {
   Select,
@@ -23,10 +23,6 @@ interface ExternalLink {
   shareable_with_nda: boolean
 }
 
-interface Step4FormData {
-  uploaded_files: UploadedFile[]
-  external_links: ExternalLink[]
-}
 
 interface Step4MaterialsProps {
   form: UseFormReturn<any>

@@ -22,6 +22,7 @@ export default function Titles() {
 
   useEffect(() => {
     loadTitles()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   const loadTitles = async () => {

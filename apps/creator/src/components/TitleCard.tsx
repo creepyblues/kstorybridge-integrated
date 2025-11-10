@@ -249,7 +249,7 @@ export function TitleCard({
             {displayViews !== undefined && (
               <div className="flex items-center gap-1">
                 <Eye className="h-4 w-4 text-blue-600" />
-                <span>{t('titles:card.views', { count: formatViews(displayViews) })}</span>
+                <span>{formatViews(displayViews)} {t('titles:card.views', { count: displayViews || 0 })}</span>
               </div>
             )}
             {displayChapters && (

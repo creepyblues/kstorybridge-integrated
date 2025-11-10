@@ -128,6 +128,7 @@ interface UseAutoSaveOptions {
   enabled?: boolean
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAutoSave = ({
   onSave,
   debounceMs = 30000,

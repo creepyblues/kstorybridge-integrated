@@ -1,110 +1,165 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { FileText, BookMarked, Lightbulb, FolderOpen, Trophy } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { titlesService, type Title } from '@/services/titlesService'
 
-interface FormValues {
-  // Required fields
+// Survey step components
+import { Step1BasicInfo } from '@/components/survey/Step1BasicInfo'
+import { Step2StoryDetails } from '@/components/survey/Step2StoryDetails'
+import { Step3Narrative } from '@/components/survey/Step3Narrative'
+import { Step4Materials } from '@/components/survey/Step4Materials'
+import { Step5Profile } from '@/components/survey/Step5Profile'
+import { PitchDeckUpload } from '@/components/titles/PitchDeckUpload'
+
+interface EditTitleFormData {
+  // Step 1: Basic Information
   title_name_en: string
   title_name_kr: string
   title_url: string
   title_image: string
   story_author: string
-
-  // Content classification
-  genre: string | ''
-  content_format?: string | ''
+  genre: string[]
+  content_format?: string
   keywords?: string
-
-  // Content details
-  synopsis?: string
-  description?: string
-  tagline?: string
-  note?: string
   tone?: string
-  chapters?: number | ''
-  completed?: boolean
-
-  // Credits (multiple author types)
   art_author?: string
   author?: string
   writer?: string
   illustrator?: string
-
-  // Rights and business
-  rights_owner?: string
+  is_official_english_title: boolean
+  english_title_type: 'official' | 'translation'
+  script_title_kr?: string
+  script_title_en?: string
+  art_title_kr?: string
+  art_title_en?: string
+  underlying_novel_kr?: string
+  underlying_novel_en?: string
+  rights_holder_name?: string
+  rights_holder_company?: string
   rights?: string
   perfect_for?: string
   audience?: string
-  comps?: string
+  platforms: Array<{
+    platform_name: string
+    platform_url: string
+    views?: number
+    subscribers?: number
+    other_metrics?: Record<string, any>
+  }>
+
+  // Step 2: Story Details
+  synopsis?: string
+  tagline?: string
+  tagline_kr?: string
+  description_kr?: string
+  inspiration?: string
+  comparables?: string[]
+  important_issues?: string
+  setting_description?: string
+  world_lore?: string
+  supernatural_concepts?: string
+  character_details?: Array<{
+    name: string
+    name_kr?: string
+    role: 'protagonist' | 'antagonist' | 'supporting' | 'minor'
+    age?: number | string
+    gender?: string
+    ethnicity?: string
+    occupation?: string
+    background?: string
+    personality?: string
+    arc?: string
+    relationships?: string
+  }>
+
+  // Step 3: Narrative Structure
+  story_structure?: string
+  planned_ending?: string
+  narrative_arc?: string
+
+  // Step 4: Materials & Platforms
+  chapters?: number
+  completed?: boolean
+  views?: number
+  likes?: number
+  rating?: number
+  rating_count?: number
+  documents: Array<{
+    document_type: string
+    file_url: string
+    file_name: string
+    file_size: number | null
+    shareable_with_nda?: boolean
+    external_url?: string | null
+  }>
+
+  // Step 5: Achievements & Profile
+  awards?: string[]
+  sales_records?: string
+  merchandise_deals?: string
+  print_editions?: boolean
+  print_edition_details?: string
+  media_coverage?: string
+  celebrity_endorsements?: string
+  creator_achievements?: {
+    total_titles?: number
+    total_views?: string
+    notable_works?: string[]
+    awards_received?: string[]
+    industry_recognition?: string
+  }
 }
-
-const GENRE_OPTIONS = [
-  'romance',
-  'fantasy',
-  'action',
-  'drama',
-  'comedy',
-  'thriller',
-  'horror',
-  'sci_fi',
-  'slice_of_life',
-  'historical',
-  'mystery',
-  'sports',
-  'other'
-]
-
-const CONTENT_FORMAT_OPTIONS = [
-  'webtoon',
-  'web_novel',
-  'book',
-  'script',
-  'game',
-  'animation',
-  'other'
-]
 
 export default function EditTitle() {
   const { titleId } = useParams<{ titleId: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation(['titles', 'survey', 'common'])
+
   const [title, setTitle] = useState<Title | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('step1')
 
-  const {
-    control,
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    formState: { errors }
-  } = useForm<FormValues>()
+  const form = useForm<EditTitleFormData>({
+    defaultValues: {
+      // Step 1 defaults
+      title_name_en: '',
+      title_name_kr: '',
+      title_url: '',
+      title_image: '',
+      story_author: '',
+      genre: [],
+      is_official_english_title: true,
+      english_title_type: 'official',
+      platforms: [],
 
-  const completed = watch('completed')
+      // Step 2 defaults
+      character_details: [],
+
+      // Step 4 defaults
+      completed: false,
+      documents: [],
+
+      // Step 5 defaults
+      print_editions: false,
+      awards: [],
+    }
+  })
 
   useEffect(() => {
     if (titleId) {
       loadTitle(titleId)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [titleId])
 
   const loadTitle = async (id: string) => {
@@ -115,56 +170,97 @@ export default function EditTitle() {
       const data = await titlesService.getTitleById(id)
 
       if (!data) {
-        setError('Title not found')
+        setError(t('titles:edit.notFound', 'Title not found'))
         return
       }
 
       // Check if user owns this title
       if (data.creator_id !== user?.id) {
-        setError('You do not have permission to edit this title')
+        setError(t('titles:edit.noPermission', 'You do not have permission to edit this title'))
         return
       }
 
       setTitle(data)
 
       // Pre-populate form with existing data
-      reset({
+      form.reset({
+        // Step 1: Basic Information
         title_name_en: data.title_name_en || '',
         title_name_kr: data.title_name_kr || '',
         title_url: data.title_url || '',
         title_image: data.title_image || '',
         story_author: data.story_author || '',
-        genre: Array.isArray(data.genre) ? data.genre[0] : (data.genre || ''),
+        genre: Array.isArray(data.genre) ? data.genre : (data.genre ? [data.genre] : []),
         content_format: data.content_format || '',
         keywords: Array.isArray(data.keywords) ? data.keywords.join(', ') : '',
-        synopsis: data.synopsis || '',
-        description: data.description || '',
-        tagline: data.tagline || '',
-        note: data.note || '',
         tone: data.tone || '',
-        chapters: data.chapters || '',
-        completed: data.completed || false,
         art_author: data.art_author || '',
         author: data.author || '',
         writer: data.writer || '',
         illustrator: data.illustrator || '',
-        rights_owner: data.rights_owner || '',
+        is_official_english_title: data.is_official_english_title ?? true,
+        english_title_type: data.english_title_type || 'official',
+        script_title_kr: data.script_title_kr || '',
+        script_title_en: data.script_title_en || '',
+        art_title_kr: data.art_title_kr || '',
+        art_title_en: data.art_title_en || '',
+        underlying_novel_kr: data.underlying_novel_kr || '',
+        underlying_novel_en: data.underlying_novel_en || '',
+        rights_holder_name: data.rights_holder_name || '',
+        rights_holder_company: data.rights_holder_company || '',
         rights: data.rights || '',
         perfect_for: data.perfect_for || '',
         audience: data.audience || '',
-        comps: Array.isArray(data.comps) ? data.comps.join(', ') : '',
+        platforms: data.platforms || [],
+
+        // Step 2: Story Details
+        synopsis: data.synopsis || '',
+        tagline: data.tagline || '',
+        tagline_kr: data.tagline_kr || '',
+        description_kr: data.description_kr || '',
+        inspiration: data.inspiration || '',
+        comparables: data.comparables || [],
+        important_issues: data.important_issues || '',
+        setting_description: data.setting_description || '',
+        world_lore: data.world_lore || '',
+        supernatural_concepts: data.supernatural_concepts || '',
+        character_details: data.character_details || [],
+
+        // Step 3: Narrative Structure
+        story_structure: data.story_structure || '',
+        planned_ending: data.planned_ending || '',
+        narrative_arc: data.narrative_arc || '',
+
+        // Step 4: Materials & Platforms
+        chapters: data.chapters || undefined,
+        completed: data.completed || false,
+        views: data.views || undefined,
+        likes: data.likes || undefined,
+        rating: data.rating || undefined,
+        rating_count: data.rating_count || undefined,
+        documents: data.documents || [],
+
+        // Step 5: Achievements & Profile
+        awards: data.awards || [],
+        sales_records: data.sales_records || '',
+        merchandise_deals: data.merchandise_deals || '',
+        print_editions: data.print_editions || false,
+        print_edition_details: data.print_edition_details || '',
+        media_coverage: data.media_coverage || '',
+        celebrity_endorsements: data.celebrity_endorsements || '',
+        creator_achievements: data.creator_achievements || {},
       })
     } catch (err) {
       console.error('Error loading title:', err)
-      setError('Failed to load title. Please try again.')
+      setError(t('titles:edit.loadError', 'Failed to load title. Please try again.'))
     } finally {
       setLoading(false)
     }
   }
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: EditTitleFormData) => {
     if (!titleId || !user?.id) {
-      setError('Missing required information')
+      setError(t('titles:edit.missingInfo', 'Missing required information'))
       return
     }
 
@@ -172,40 +268,79 @@ export default function EditTitle() {
       setIsSubmitting(true)
       setError(null)
 
-      const updateData = {
-        // Required fields
+      // Prepare update data (matching Title interface structure)
+      const updateData: Partial<Title> = {
+        // Step 1: Basic Information
         title_name_en: values.title_name_en.trim(),
         title_name_kr: values.title_name_kr.trim(),
         title_url: values.title_url.trim(),
         title_image: values.title_image.trim(),
         story_author: values.story_author.trim(),
-
-        // Content classification
-        genre: values.genre ? [values.genre] : null,
+        genre: values.genre.length > 0 ? values.genre : null,
         content_format: values.content_format || null,
-        keywords: values.keywords ? values.keywords.split(',').map(k => k.trim()).filter(Boolean) : null,
-
-        // Content details
-        synopsis: values.synopsis?.trim() || null,
-        description: values.description?.trim() || null,
-        tagline: values.tagline?.trim() || null,
-        note: values.note?.trim() || null,
+        keywords: values.keywords
+          ? values.keywords.split(',').map(k => k.trim()).filter(Boolean)
+          : null,
         tone: values.tone?.trim() || null,
-        chapters: values.chapters ? Number(values.chapters) : null,
-        completed: values.completed || null,
-
-        // Credits
         art_author: values.art_author?.trim() || null,
         author: values.author?.trim() || null,
         writer: values.writer?.trim() || null,
         illustrator: values.illustrator?.trim() || null,
-
-        // Rights and business
-        rights_owner: values.rights_owner?.trim() || null,
+        is_official_english_title: values.is_official_english_title,
+        english_title_type: values.english_title_type,
+        script_title_kr: values.script_title_kr?.trim() || null,
+        script_title_en: values.script_title_en?.trim() || null,
+        art_title_kr: values.art_title_kr?.trim() || null,
+        art_title_en: values.art_title_en?.trim() || null,
+        underlying_novel_kr: values.underlying_novel_kr?.trim() || null,
+        underlying_novel_en: values.underlying_novel_en?.trim() || null,
+        rights_holder_name: values.rights_holder_name?.trim() || null,
+        rights_holder_company: values.rights_holder_company?.trim() || null,
         rights: values.rights?.trim() || null,
         perfect_for: values.perfect_for?.trim() || null,
         audience: values.audience?.trim() || null,
-        comps: values.comps ? values.comps.split(',').map(c => c.trim()).filter(Boolean) : null,
+
+        // Step 2: Story Details
+        synopsis: values.synopsis?.trim() || null,
+        tagline: values.tagline?.trim() || null,
+        tagline_kr: values.tagline_kr?.trim() || null,
+        description_kr: values.description_kr?.trim() || null,
+        inspiration: values.inspiration?.trim() || null,
+        comparables: values.comparables && values.comparables.length > 0
+          ? values.comparables
+          : null,
+        important_issues: values.important_issues?.trim() || null,
+        setting_description: values.setting_description?.trim() || null,
+        world_lore: values.world_lore?.trim() || null,
+        supernatural_concepts: values.supernatural_concepts?.trim() || null,
+        character_details: values.character_details && values.character_details.length > 0
+          ? values.character_details
+          : null,
+
+        // Step 3: Narrative Structure
+        story_structure: values.story_structure?.trim() || null,
+        planned_ending: values.planned_ending?.trim() || null,
+        narrative_arc: values.narrative_arc?.trim() || null,
+
+        // Step 4: Materials & Platforms
+        chapters: values.chapters ? Number(values.chapters) : null,
+        completed: values.completed || null,
+        views: values.views ? Number(values.views) : null,
+        likes: values.likes ? Number(values.likes) : null,
+        rating: values.rating ? Number(values.rating) : null,
+        rating_count: values.rating_count ? Number(values.rating_count) : null,
+
+        // Step 5: Achievements & Profile
+        awards: values.awards && values.awards.length > 0 ? values.awards : null,
+        sales_records: values.sales_records?.trim() || null,
+        merchandise_deals: values.merchandise_deals?.trim() || null,
+        print_editions: values.print_editions || null,
+        print_edition_details: values.print_edition_details?.trim() || null,
+        media_coverage: values.media_coverage?.trim() || null,
+        celebrity_endorsements: values.celebrity_endorsements?.trim() || null,
+        creator_achievements: values.creator_achievements && Object.keys(values.creator_achievements).length > 0
+          ? values.creator_achievements
+          : null,
       }
 
       await titlesService.updateTitle(titleId, updateData)
@@ -214,7 +349,7 @@ export default function EditTitle() {
       navigate(`/titles/${titleId}`)
     } catch (err) {
       console.error('Failed to update title:', err)
-      setError('Failed to update title. Please verify the form details and try again.')
+      setError(t('titles:edit.saveError', 'Failed to update title. Please verify the form details and try again.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -223,7 +358,7 @@ export default function EditTitle() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center min-h-96">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
@@ -235,7 +370,7 @@ export default function EditTitle() {
   if (error && !title) {
     return (
       <MainLayout>
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <Card className="bg-transparent border-red-300 shadow-none rounded-2xl">
             <CardContent className="p-8 text-center">
               <p className="text-red-600">{error}</p>
@@ -245,7 +380,7 @@ export default function EditTitle() {
                   variant="outline"
                   className="border-gray-300 hover:bg-gray-100"
                 >
-                  Back to Titles
+                  {t('common:backToTitles', 'Back to Titles')}
                 </Button>
                 {titleId && (
                   <Button
@@ -253,7 +388,7 @@ export default function EditTitle() {
                     variant="outline"
                     className="border-gray-300 hover:bg-gray-100"
                   >
-                    Retry
+                    {t('common:retry', 'Retry')}
                   </Button>
                 )}
               </div>
@@ -266,16 +401,20 @@ export default function EditTitle() {
 
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 sm:gap-0">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
-            <h1 className="text-3xl font-bold text-black mb-2">Edit Title</h1>
+            <h1 className="text-3xl font-bold text-black mb-2">
+              {t('titles:edit.title', 'Edit Title')}
+            </h1>
             <p className="text-gray-600">
-              Update your title information
+              {t('titles:edit.subtitle', 'Update your title information')}
             </p>
           </div>
         </div>
 
+        {/* Error Alert */}
         {error && (
           <Card className="bg-transparent border-red-300 shadow-none rounded-2xl mb-6">
             <CardContent className="p-4">
@@ -284,324 +423,62 @@ export default function EditTitle() {
           </Card>
         )}
 
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-              {/* Basic Information */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-black border-b border-gray-200 pb-2">
-                  Basic Information
-                </h2>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="title_name_en">English Title *</Label>
-                    <Input
-                      id="title_name_en"
-                      placeholder="I Became a Doting Father"
-                      {...register('title_name_en', { required: true })}
-                    />
-                    {errors.title_name_en && (
-                      <p className="text-sm text-red-500 mt-1">English title is required.</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="title_name_kr">Korean Title *</Label>
-                    <Input
-                      id="title_name_kr"
-                      placeholder="한국어 제목"
-                      {...register('title_name_kr', { required: true })}
-                    />
-                    {errors.title_name_kr && (
-                      <p className="text-sm text-red-500 mt-1">Korean title is required.</p>
-                    )}
-                  </div>
-                </div>
+        {/* Tabbed Form */}
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8">
+          <CardContent className="p-4 sm:p-6">
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-5 mb-8">
+                  <TabsTrigger value="step1" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('survey:step1.tab', 'Basic')}</span>
+                    <span className="sm:hidden">1</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="step2" className="flex items-center gap-2">
+                    <BookMarked className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('survey:step2.tab', 'Story')}</span>
+                    <span className="sm:hidden">2</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="step3" className="flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('survey:step3.tab', 'Structure')}</span>
+                    <span className="sm:hidden">3</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="step4" className="flex items-center gap-2">
+                    <FolderOpen className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('survey:step4.tab', 'Materials')}</span>
+                    <span className="sm:hidden">4</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="step5" className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('survey:step5.tab', 'Profile')}</span>
+                    <span className="sm:hidden">5</span>
+                  </TabsTrigger>
+                </TabsList>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="title_url">Title URL *</Label>
-                    <Input
-                      id="title_url"
-                      type="url"
-                      placeholder="https://example.com"
-                      {...register('title_url', { required: true })}
-                    />
-                    {errors.title_url && (
-                      <p className="text-sm text-red-500 mt-1">A valid URL is required.</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="title_image">Cover Image URL *</Label>
-                    <Input
-                      id="title_image"
-                      type="url"
-                      placeholder="https://.../cover.jpg"
-                      {...register('title_image', { required: true })}
-                    />
-                    {errors.title_image && (
-                      <p className="text-sm text-red-500 mt-1">Cover image URL is required.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
+                <TabsContent value="step1" className="space-y-6">
+                  <Step1BasicInfo form={form} />
+                </TabsContent>
 
-              {/* Content Classification */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-black border-b border-gray-200 pb-2">
-                  Content Classification
-                </h2>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label>Genre *</Label>
-                    <Controller
-                      name="genre"
-                      control={control}
-                      rules={{ required: true }}
-                      render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select genre" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {GENRE_OPTIONS.map(option => (
-                              <SelectItem key={option} value={option}>
-                                {option.replace(/_/g, ' ')}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.genre && (
-                      <p className="text-sm text-red-500 mt-1">Genre is required.</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label>Content Format</Label>
-                    <Controller
-                      name="content_format"
-                      control={control}
-                      render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select format" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {CONTENT_FORMAT_OPTIONS.map(option => (
-                              <SelectItem key={option} value={option}>
-                                {option.replace(/_/g, ' ')}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
-                </div>
+                <TabsContent value="step2" className="space-y-6">
+                  <Step2StoryDetails form={form} />
+                </TabsContent>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="keywords">Keywords</Label>
-                    <Input
-                      id="keywords"
-                      placeholder="magic, school, friendship (comma-separated)"
-                      {...register('keywords')}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Separate multiple keywords with commas</p>
-                  </div>
-                </div>
+                <TabsContent value="step3" className="space-y-6">
+                  <Step3Narrative form={form} />
+                </TabsContent>
 
-                <div>
-                  <Label htmlFor="tone">Tone</Label>
-                  <Input
-                    id="tone"
-                    placeholder="e.g., lighthearted, dark, inspirational"
-                    {...register('tone')}
-                  />
-                </div>
-              </div>
+                <TabsContent value="step4" className="space-y-6">
+                  <Step4Materials form={form} />
+                </TabsContent>
 
-              {/* Credits */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-black border-b border-gray-200 pb-2">
-                  Credits
-                </h2>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="story_author">Story Author *</Label>
-                    <Input
-                      id="story_author"
-                      placeholder="Author name"
-                      {...register('story_author', { required: true })}
-                    />
-                    {errors.story_author && (
-                      <p className="text-sm text-red-500 mt-1">Story author is required.</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="art_author">Art Author</Label>
-                    <Input
-                      id="art_author"
-                      placeholder="Artist name"
-                      {...register('art_author')}
-                    />
-                  </div>
-                </div>
+                <TabsContent value="step5" className="space-y-6">
+                  <Step5Profile form={form} />
+                </TabsContent>
+              </Tabs>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="author">Author (General)</Label>
-                    <Input
-                      id="author"
-                      placeholder="Author name"
-                      {...register('author')}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="writer">Writer</Label>
-                    <Input
-                      id="writer"
-                      placeholder="Writer name"
-                      {...register('writer')}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="illustrator">Illustrator</Label>
-                  <Input
-                    id="illustrator"
-                    placeholder="Illustrator name"
-                    {...register('illustrator')}
-                  />
-                </div>
-              </div>
-
-              {/* Content Details */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-black border-b border-gray-200 pb-2">
-                  Content Details
-                </h2>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="chapters">Number of Chapters</Label>
-                    <Input
-                      id="chapters"
-                      type="number"
-                      placeholder="120"
-                      {...register('chapters')}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2 pt-8">
-                    <Checkbox
-                      id="completed"
-                      checked={completed}
-                      onCheckedChange={(checked) => setValue('completed', checked as boolean)}
-                    />
-                    <Label
-                      htmlFor="completed"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    >
-                      Series Completed
-                    </Label>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="tagline">Tagline</Label>
-                  <Input
-                    id="tagline"
-                    placeholder="A compelling one-line description"
-                    {...register('tagline')}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="synopsis">Synopsis</Label>
-                  <Textarea
-                    id="synopsis"
-                    rows={4}
-                    placeholder="Brief synopsis of the title"
-                    {...register('synopsis')}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    rows={4}
-                    placeholder="Detailed description of the title"
-                    {...register('description')}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="note">Notes</Label>
-                  <Textarea
-                    id="note"
-                    rows={3}
-                    placeholder="Additional notes or comments"
-                    {...register('note')}
-                  />
-                </div>
-              </div>
-
-              {/* Rights and Business */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-black border-b border-gray-200 pb-2">
-                  Rights & Business
-                </h2>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="rights_owner">Rights Owner</Label>
-                    <Input
-                      id="rights_owner"
-                      placeholder="Company or individual name"
-                      {...register('rights_owner')}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="rights">Rights Available</Label>
-                    <Input
-                      id="rights"
-                      placeholder="e.g., Film, TV, Merchandise"
-                      {...register('rights')}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="perfect_for">Perfect For</Label>
-                    <Input
-                      id="perfect_for"
-                      placeholder="e.g., Streaming series, Feature film"
-                      {...register('perfect_for')}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="audience">Target Audience</Label>
-                    <Input
-                      id="audience"
-                      placeholder="e.g., Young adults, Family"
-                      {...register('audience')}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="comps">Comparable Titles (Comps)</Label>
-                  <Input
-                    id="comps"
-                    placeholder="Similar Title 1, Similar Title 2 (comma-separated)"
-                    {...register('comps')}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Separate multiple titles with commas</p>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
+              {/* Form Actions */}
+              <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
                 <Button
                   type="button"
                   variant="outline"
@@ -609,20 +486,41 @@ export default function EditTitle() {
                   disabled={isSubmitting}
                   className="border-gray-300 hover:bg-gray-100"
                 >
-                  Cancel
+                  {t('common:cancel', 'Cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  variant="outline"
-                  className="border-gray-300 hover:bg-gray-100"
+                  className="bg-black text-white hover:bg-gray-800"
                 >
-                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  {isSubmitting
+                    ? t('common:saving', 'Saving...')
+                    : t('common:saveChanges', 'Save Changes')}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
+
+        {/* Pitch Deck Upload Section */}
+        {titleId && (
+          <PitchDeckUpload
+            titleId={titleId}
+            currentPitchUrl={title?.pitch}
+            onUploadSuccess={(url) => {
+              // Update local title state
+              if (title) {
+                setTitle({ ...title, pitch: url })
+              }
+            }}
+            onDelete={() => {
+              // Update local title state
+              if (title) {
+                setTitle({ ...title, pitch: null })
+              }
+            }}
+          />
+        )}
       </div>
     </MainLayout>
   )

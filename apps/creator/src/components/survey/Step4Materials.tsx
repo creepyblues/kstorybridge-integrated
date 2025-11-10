@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { FileUploadZone, UploadedFile } from './FileUploadZone'
+import { FileUploadZone } from './FileUploadZone'
 import { Link as LinkIcon, X, Plus } from 'lucide-react'
 import {
   Select,
@@ -22,23 +23,11 @@ interface ExternalLink {
   shareable_with_nda: boolean
 }
 
-interface Step4FormData {
-  uploaded_files: UploadedFile[]
-  external_links: ExternalLink[]
-}
 
 interface Step4MaterialsProps {
   form: UseFormReturn<any>
   onUpload?: (file: File, documentType: string) => Promise<{ file_url: string; id: string }>
 }
-
-const EXTERNAL_LINK_TYPES = [
-  { value: 'interview', label: 'Creator Interview' },
-  { value: 'review', label: 'Review/Article' },
-  { value: 'wiki', label: 'Fan Wiki' },
-  { value: 'press_release', label: 'Press Release' },
-  { value: 'other', label: 'Other' },
-]
 
 /**
  * Step4Materials Component
@@ -47,7 +36,16 @@ const EXTERNAL_LINK_TYPES = [
  * Handles file uploads and external link collection
  */
 export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }) => {
+  const { t } = useTranslation(['survey', 'titles'])
   const { watch, setValue } = form
+
+  const EXTERNAL_LINK_TYPES = [
+    { value: 'interview', label: t('survey:step4.linkTypeInterview') },
+    { value: 'review', label: t('survey:step4.linkTypeReview') },
+    { value: 'wiki', label: t('survey:step4.linkTypeWiki') },
+    { value: 'press_release', label: t('survey:step4.linkTypePressRelease') },
+    { value: 'other', label: t('survey:step4.linkTypeOther') },
+  ]
 
   const uploadedFiles = watch('uploaded_files') || []
   const externalLinks = watch('external_links') || []
@@ -103,19 +101,18 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
     <div className="space-y-8">
       {/* Introduction */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Existing Materials</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('survey:step4.title')}</h2>
         <p className="text-gray-600 mt-2">
-          Share any creative documents, source materials, or external links that provide more
-          context about your title.
+          {t('survey:step4.subtitle')}
         </p>
       </div>
 
       {/* Section: File Uploads */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Creative Documents</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('survey:step4.creativeDocumentsSection')}</h3>
           <p className="text-sm text-gray-500 mt-1">
-            Upload PDFs, story bibles, outlines, scripts, or other documents
+            {t('survey:step4.creativeDocumentsSubtitle')}
           </p>
         </div>
 
@@ -130,9 +127,9 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">External Links</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('survey:step4.externalLinksSection')}</h3>
             <p className="text-sm text-gray-500 mt-1">
-              Add links to interviews, reviews, wikis, or other online resources
+              {t('survey:step4.externalLinksSubtitle')}
             </p>
           </div>
           {!showAddLink && (
@@ -144,7 +141,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
               className="border-gray-300"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Link
+              {t('survey:step4.addLink')}
             </Button>
           )}
         </div>
@@ -153,7 +150,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
         {showAddLink && (
           <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-gray-900">Add External Link</h4>
+              <h4 className="text-sm font-medium text-gray-900">{t('survey:step4.addExternalLink')}</h4>
               <Button
                 type="button"
                 variant="ghost"
@@ -166,7 +163,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
             </div>
 
             <div className="space-y-2">
-              <Label>Link Type</Label>
+              <Label>{t('survey:step4.linkType')}</Label>
               <Select
                 value={newLink.type}
                 onValueChange={(value) => setNewLink({ ...newLink, type: value as ExternalLink['type'] })}
@@ -185,10 +182,10 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
             </div>
 
             <div className="space-y-2">
-              <Label>URL</Label>
+              <Label>{t('survey:step4.url')}</Label>
               <Input
                 type="url"
-                placeholder="https://..."
+                placeholder={t('survey:step4.urlPlaceholder')}
                 value={newLink.url}
                 onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
                 className="bg-white border-gray-300"
@@ -196,9 +193,9 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
             </div>
 
             <div className="space-y-2">
-              <Label>Description (Optional)</Label>
+              <Label>{t('survey:step4.description')}</Label>
               <Input
-                placeholder="Brief description of this link"
+                placeholder={t('survey:step4.descriptionPlaceholder')}
                 value={newLink.description}
                 onChange={(e) => setNewLink({ ...newLink, description: e.target.value })}
                 className="bg-white border-gray-300"
@@ -217,7 +214,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
                 htmlFor="link-shareable"
                 className="text-sm font-normal cursor-pointer"
               >
-                Shareable with buyers (with NDA)
+                {t('survey:step4.shareableWithNda')}
               </Label>
             </div>
 
@@ -227,7 +224,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
               disabled={!newLink.url}
               className="w-full bg-black text-white hover:bg-gray-800"
             >
-              Add Link
+              {t('survey:step4.addLink')}
             </Button>
           </div>
         )}
@@ -249,7 +246,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
                       </span>
                       {link.shareable_with_nda && (
                         <span className="text-xs font-medium text-green-600 px-2 py-0.5 bg-green-50 rounded">
-                          Shareable with NDA
+                          {t('survey:step4.shareableWithNdaBadge')}
                         </span>
                       )}
                     </div>
@@ -274,7 +271,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
                     onClick={() => toggleLinkShareable(link.id)}
                     className="h-8 px-2 text-xs"
                   >
-                    {link.shareable_with_nda ? 'Unshare' : 'Share'}
+                    {link.shareable_with_nda ? t('survey:step4.unshare') : t('survey:step4.share')}
                   </Button>
                   <Button
                     type="button"
@@ -295,7 +292,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <LinkIcon className="w-10 h-10 mx-auto text-gray-400 mb-2" />
             <p className="text-sm text-gray-500 mb-3">
-              No external links added yet
+              {t('survey:step4.noLinksYet')}
             </p>
             <Button
               type="button"
@@ -305,7 +302,7 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
               className="border-gray-300"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add External Link
+              {t('survey:step4.addExternalLink')}
             </Button>
           </div>
         )}
@@ -313,13 +310,13 @@ export const Step4Materials: React.FC<Step4MaterialsProps> = ({ form, onUpload }
 
       {/* Help Text */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Step 4 Tips</h4>
+        <h4 className="text-sm font-medium text-gray-900 mb-2">{t('survey:step4.tipsTitle')}</h4>
         <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-          <li>Upload story bibles, outlines, or scripts to help buyers evaluate your content</li>
-          <li>Mark sensitive materials as "Shareable with NDA" for controlled access</li>
-          <li>Add links to interviews, reviews, or fan wikis for additional context</li>
-          <li>Press releases and media coverage help showcase your title's reach</li>
-          <li>All files must be under 10MB (PDF, Word, or TXT format)</li>
+          <li>{t('survey:step4.tip1')}</li>
+          <li>{t('survey:step4.tip2')}</li>
+          <li>{t('survey:step4.tip3')}</li>
+          <li>{t('survey:step4.tip4')}</li>
+          <li>{t('survey:step4.tip5')}</li>
         </ul>
       </div>
     </div>

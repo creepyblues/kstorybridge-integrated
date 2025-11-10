@@ -20,6 +20,7 @@ export default function Home() {
     if (user?.id) {
       loadData()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   const loadData = async () => {

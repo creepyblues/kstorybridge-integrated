@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
 
 interface Step {
@@ -31,6 +32,8 @@ export const MultiStepProgressBar: React.FC<MultiStepProgressBarProps> = ({
   onStepClick,
   allowNavigation = false,
 }) => {
+  const { t } = useTranslation(['survey'])
+
   const handleStepClick = (stepNumber: number) => {
     if (allowNavigation && onStepClick) {
       onStepClick(stepNumber)
@@ -43,10 +46,10 @@ export const MultiStepProgressBar: React.FC<MultiStepProgressBarProps> = ({
       <div className="md:hidden mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-700">
-            Step {currentStep} of {steps.length}
+            {t('survey:navigation.stepProgress', { current: currentStep, total: steps.length })}
           </span>
           <span className="text-sm text-gray-500">
-            {Math.round((currentStep / steps.length) * 100)}% Complete
+            {t('survey:navigation.percentComplete', { percent: Math.round((currentStep / steps.length) * 100) })}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -136,8 +139,45 @@ export const MultiStepProgressBar: React.FC<MultiStepProgressBarProps> = ({
 }
 
 /**
- * Default step configuration for 5-step title questionnaire
+ * Get default step configuration for 5-step title questionnaire
+ * @param t - Translation function from useTranslation hook
+ * @returns Array of localized step definitions
  */
+// eslint-disable-next-line react-refresh/only-export-components
+export const getDefaultSteps = (t: (key: string) => string): Step[] => [
+  {
+    number: 1,
+    label: t('survey:steps.step1Label'),
+    description: t('survey:steps.step1Description'),
+  },
+  {
+    number: 2,
+    label: t('survey:steps.step2Label'),
+    description: t('survey:steps.step2Description'),
+  },
+  {
+    number: 3,
+    label: t('survey:steps.step3Label'),
+    description: t('survey:steps.step3Description'),
+  },
+  {
+    number: 4,
+    label: t('survey:steps.step4Label'),
+    description: t('survey:steps.step4Description'),
+  },
+  {
+    number: 5,
+    label: t('survey:steps.step5Label'),
+    description: t('survey:steps.step5Description'),
+  },
+]
+
+/**
+ * @deprecated Use getDefaultSteps(t) instead
+ * Legacy constant for backward compatibility
+// eslint-disable-next-line react-refresh/only-export-components
+ */
+// eslint-disable-next-line react-refresh/only-export-components
 export const DEFAULT_STEPS: Step[] = [
   {
     number: 1,

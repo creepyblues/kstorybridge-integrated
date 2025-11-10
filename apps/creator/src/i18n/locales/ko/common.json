@@ -83,5 +83,9 @@
     "updateError": "업데이트 실패",
     "createSuccess": "생성되었습니다",
     "createError": "생성 실패"
+  },
+  "navigation": {
+    "backToTitles": "작품으로 돌아가기",
+    "retry": "다시 시도"
   }
 }

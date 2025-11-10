@@ -1,6 +1,21 @@
 # Deployment Strategy - KStoryBridge Monorepo
 
-**Last Updated**: 2025-10-22
+**Last Updated**: 2025-11-08
+
+> ⚠️ **DEPRECATED**: This file describes legacy deployment concepts from before the hybrid model implementation.
+>
+> **Current architecture uses**:
+> - **Hybrid model**: Manual staging (v2), auto production (main)
+> - **Single vercel.json per app**: Controls both staging and production projects
+> - **Enhanced wrapper script**: `scripts/vercel-ignore-turbo.sh` for selective builds
+> - **6 Vercel projects**: Separate staging and production projects per app
+>
+> **For current workflows**:
+> - [MANUAL_DEPLOYMENT_GUIDE.md](../../MANUAL_DEPLOYMENT_GUIDE.md) - Step-by-step deployment workflow
+> - [VERCEL_DEPLOYMENT_ARCHITECTURE.md](./VERCEL_DEPLOYMENT_ARCHITECTURE.md) - Complete architecture reference
+> - [Root CLAUDE.md](../../CLAUDE.md) - Monorepo overview and quick start
+>
+> This document remains as historical reference only.
 
 > 📖 **See also**: [GIT_DEPLOYMENT_STRUCTURE.md](./GIT_DEPLOYMENT_STRUCTURE.md) for complete Git deployment configuration reference with detailed workflows, troubleshooting, and Vercel project configurations
 
@@ -32,16 +47,25 @@ KStoryBridge uses a three-tier deployment strategy with separate environments fo
 - `/Users/sungholee/code/kstorybridge-v2/` - Independent archive of v2 state
 - `/Users/sungholee/code/kstorybridge-monorepo/` - Independent archive of main state
 
-### v2 Branch → Staging
+### v2 Branch → Staging (MANUAL DEPLOYMENT - Updated 2025-11-08)
 
-**Deployments Enabled:**
-- ✅ **dashboard-staging** - Dashboard V1 app deployed to staging.kstorybridge.com
-- ✅ **creator-staging** - Creator V2 app deployed to creator-staging.kstorybridge.com
+**Auto-Deploy Status: ❌ DISABLED**
 
-**Deployments Disabled:**
-- ❌ **kstorybridge-dashboard** - Skip v2 branch (only build main)
-- ❌ **kstorybridge-creator** - Skip v2 branch (only build main)
-- ❌ **kstorybridge-website** - Skip v2 branch (only build main)
+As of November 2025, v2 branch auto-deploy is **disabled** via `vercel.json` configuration. Staging deployments require **manual deployment**.
+
+**Manual Deployment Required:**
+- ✅ **dashboard-staging** - Dashboard V1 app (manual: `cd apps/dashboard && vercel`)
+- ✅ **creator-staging** - Creator V2 app (manual: `cd apps/creator && vercel`)
+
+**Configuration**:
+- Each app's `vercel.json` contains: `"git": { "deploymentEnabled": { "v2": false, "main": true } }`
+- This prevents automatic builds on v2 pushes, saving build minutes
+- See [MANUAL_DEPLOYMENT_GUIDE.md](../../MANUAL_DEPLOYMENT_GUIDE.md) for complete workflow
+
+**Production Projects (Skip v2 Branch):**
+- ❌ **kstorybridge-dashboard** - Only builds main branch
+- ❌ **kstorybridge-creator** - Only builds main branch
+- ❌ **kstorybridge-website** - Only builds main branch
 
 ### main Branch → Production (all apps)
 

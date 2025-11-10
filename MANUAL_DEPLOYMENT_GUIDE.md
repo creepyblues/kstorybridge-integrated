@@ -58,20 +58,46 @@ vercel --prod             # Deploy to production
 
 ## Configuration Details
 
+### Architecture: One App, Two Vercel Projects
+
+Each app directory controls TWO separate Vercel projects through a SINGLE `vercel.json` file:
+
+**apps/dashboard/vercel.json** controls:
+- `dashboard-staging` (v2 branch, manual deploy)
+- `kstorybridge-dashboard` (main branch, auto-deploy)
+
+**apps/creator/vercel.json** controls:
+- `creator-staging` (v2 branch, manual deploy)
+- `creator` (main branch, auto-deploy)
+
+**apps/website/vercel.json** controls:
+- `kstorybridge-website` (main branch, auto-deploy)
+
+**apps/dashboard-next/vercel.json** controls:
+- `dashboard-next` (both branches, manual deploy - still in development)
+
+The `git.deploymentEnabled` object has keys matching Git branch names. Each Vercel project checks the branch it's configured for.
+
+**See**: [VERCEL_DEPLOYMENT_ARCHITECTURE.md](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md) for complete mapping
+
 ### vercel.json (Git Settings)
 
-Both creator and dashboard apps have `vercel.json` configured to disable v2 auto-deploy:
+Each app has `vercel.json` configured to control deployment behavior for multiple projects:
 
 ```json
 {
   "git": {
     "deploymentEnabled": {
-      "v2": false,      // Staging: manual deploy only
-      "main": true      // Production: auto-deploy enabled
+      "v2": false,      // Staging projects: manual deploy only
+      "main": true      // Production projects: auto-deploy enabled
     }
   }
 }
 ```
+
+**How it works**:
+- Staging projects (e.g., `dashboard-staging`) read `"v2": false` → manual deployment required
+- Production projects (e.g., `kstorybridge-dashboard`) read `"main": true` → auto-deploy enabled
 
 ### turbo-ignore (Production Selective Deploy)
 

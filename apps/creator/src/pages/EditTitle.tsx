@@ -16,6 +16,7 @@ import { Step2StoryDetails } from '@/components/survey/Step2StoryDetails'
 import { Step3Narrative } from '@/components/survey/Step3Narrative'
 import { Step4Materials } from '@/components/survey/Step4Materials'
 import { Step5Profile } from '@/components/survey/Step5Profile'
+import { PitchDeckUpload } from '@/components/titles/PitchDeckUpload'
 
 interface EditTitleFormData {
   // Step 1: Basic Information
@@ -500,6 +501,26 @@ export default function EditTitle() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Pitch Deck Upload Section */}
+        {titleId && (
+          <PitchDeckUpload
+            titleId={titleId}
+            currentPitchUrl={title?.pitch}
+            onUploadSuccess={(url) => {
+              // Update local title state
+              if (title) {
+                setTitle({ ...title, pitch: url })
+              }
+            }}
+            onDelete={() => {
+              // Update local title state
+              if (title) {
+                setTitle({ ...title, pitch: null })
+              }
+            }}
+          />
+        )}
       </div>
     </MainLayout>
   )

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { completeOAuthProfile } from '@/lib/auth'
 import { useAuth } from '@/hooks/useAuth'
+import { sendWelcomeEmail } from '@/services/emailService'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -51,7 +52,26 @@ export default function CompleteProfile() {
         website_url: formData.website_url || undefined,
       })
 
-      console.log('✅ Profile completion successful, redirecting to home')
+      console.log('✅ Profile completion successful')
+
+      // Send welcome email after OAuth profile completion (non-blocking)
+      if (user?.email) {
+        try {
+          await sendWelcomeEmail({
+            userName: formData.full_name,
+            userEmail: user.email,
+            accountType: 'creator',
+            dashboardUrl: `${window.location.origin}/home`,
+            loginUrl: `${window.location.origin}/signin`,
+          })
+          console.log('✅ Welcome email sent after OAuth profile completion')
+        } catch (emailError) {
+          // Log but don't block navigation if email fails
+          console.warn('⚠️ Welcome email failed (non-blocking):', emailError)
+        }
+      }
+
+      console.log('📍 Redirecting to home')
       navigate('/home')
     } catch (err: any) {
       console.error('❌ Profile completion error:', err)

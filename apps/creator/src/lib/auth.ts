@@ -95,21 +95,7 @@ export async function signUpWithEmail(data: SignUpData) {
     throw profileError
   }
 
-  // Step 3: Send welcome email (non-blocking)
-  // Email failures won't prevent signup completion
-  try {
-    await sendWelcomeEmail({
-      userName: data.full_name,
-      userEmail: normalizedEmail,
-      accountType: 'creator',
-      dashboardUrl: `${window.location.origin}/home`,
-      loginUrl: `${window.location.origin}/signin`,
-    })
-  } catch (emailError) {
-    // Log but don't fail signup if email fails
-    console.warn('⚠️ Welcome email failed (non-blocking):', emailError)
-  }
-
+  // Note: Welcome email will be sent after email verification (in AuthCallback)
   return { user: authData.user, session: authData.session }
 }
 
@@ -240,21 +226,7 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
     throw error
   }
 
-  // Step 3: Send welcome email (non-blocking)
-  // Email failures won't prevent OAuth signup completion
-  try {
-    await sendWelcomeEmail({
-      userName: profileData.full_name,
-      userEmail: user.email!,
-      accountType: 'creator',
-      dashboardUrl: `${window.location.origin}/home`,
-      loginUrl: `${window.location.origin}/signin`,
-    })
-  } catch (emailError) {
-    // Log but don't fail OAuth completion if email fails
-    console.warn('⚠️ Welcome email failed (non-blocking):', emailError)
-  }
-
+  // Note: Welcome email will be sent after OAuth redirect completes (in AuthCallback)
   return user
 }
 

@@ -1,6 +1,6 @@
 # Manual Deployment Guide - KStoryBridge Monorepo
 
-**Last Updated**: 2025-11-08
+**Last Updated**: 2025-11-10
 
 ## Overview
 
@@ -256,6 +256,54 @@ vercel project ls
 ---
 
 ## Troubleshooting
+
+### Issue: Staging projects auto-deploy when merging to main
+
+**Root Cause**: Staging projects have "Production Branch" set to `main` instead of `v2` in Vercel Dashboard.
+
+**Symptoms**:
+- `dashboard-staging` deploys every time you merge PR to main
+- `creator-staging` deploys every time you merge PR to main
+- Intended manual-only staging projects are auto-deploying
+
+**Solution**:
+
+1. **Verify current "Production Branch" setting**:
+   - Go to https://vercel.com/[your-team]/dashboard-staging
+   - Navigate to Settings → Git
+   - Check "Production Branch" value
+   - Should be `v2`, likely shows `main` ❌
+
+2. **Fix dashboard-staging**:
+   - Go to Settings → Git
+   - Change "Production Branch" from `main` to `v2`
+   - Click "Save"
+
+3. **Fix creator-staging**:
+   - Go to https://vercel.com/[your-team]/creator-staging
+   - Go to Settings → Git
+   - Change "Production Branch" from `main` to `v2`
+   - Click "Save"
+
+4. **Verify the fix**:
+   ```bash
+   # Make a test commit and push to main
+   git checkout main
+   git commit --allow-empty -m "test: verify staging no longer auto-deploys"
+   git push origin main
+
+   # Expected: Staging projects do NOT auto-deploy
+   # Expected: Production projects DO auto-deploy (if changed)
+   ```
+
+**Why this happens**:
+- Vercel projects have TWO configuration levels:
+  1. **"Production Branch"** (Vercel Dashboard) - Which Git branch to monitor
+  2. **`git.deploymentEnabled`** (vercel.json) - Whether to auto-deploy that branch
+- If staging projects monitor `main` branch, they'll auto-deploy when `main` updates
+- Setting "Production Branch" to `v2` makes them ignore `main` branch pushes entirely
+
+**See**: [VERCEL_DEPLOYMENT_ARCHITECTURE.md - Critical Settings Checklist](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md#critical-vercel-project-settings-checklist)
 
 ### Issue: Staging still auto-deploys after pushing to v2
 

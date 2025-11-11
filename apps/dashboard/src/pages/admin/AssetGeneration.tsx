@@ -133,7 +133,7 @@ export default function AssetGeneration() {
                 {analyzePitch.isPending ? (
                   <>
                     <Wand2 className="w-4 h-4 mr-2 animate-pulse" />
-                    Analyzing...
+                    Analyzing (30-60s)...
                   </>
                 ) : (
                   <>
@@ -212,9 +212,9 @@ export default function AssetGeneration() {
               <p className="font-medium mb-1">How it works</p>
               <ol className="list-decimal list-inside space-y-1 text-blue-800">
                 <li>Select a title with pitch deck data</li>
-                <li>Click "Analyze Pitch" to generate 10-15 asset ideas (~$0.05-0.08 cost)</li>
+                <li>Click "Analyze Pitch" to generate 8-10 asset ideas (~$0.02-0.03 cost, 30-60s)</li>
                 <li>Review the generated ideas grouped by category</li>
-                <li>Click "Generate Image" on any asset to create it with DALL-E 3 (~$0.04-0.12 per image)</li>
+                <li>Click "Generate Image" on any asset to create it with DALL-E 3 (~$0.04-0.08 per image)</li>
                 <li>Approve assets for use in marketing materials</li>
               </ol>
             </div>

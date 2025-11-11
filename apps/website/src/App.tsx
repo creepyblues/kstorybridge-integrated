@@ -5,6 +5,7 @@ import { lazy, Suspense } from "react";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import AnalyticsProvider from "./components/AnalyticsProvider";
 import SessionTracker from "./components/SessionTracker";
+import CookieBanner from "./components/CookieBanner";
 
 // Lazy load page components for code splitting
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -25,6 +26,7 @@ const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
 const SampleTitleDetailPage = lazy(() => import("./pages/SampleTitleDetailPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -40,6 +42,7 @@ const App = () => (
       <BrowserRouter>
         <AnalyticsProvider />
         <SessionTracker />
+        <CookieBanner />
         <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<HomePage />} />
@@ -56,6 +59,7 @@ const App = () => (
           <Route path="/buyers/onboarding" element={<BuyersOnboardingPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/signin" element={<SigninPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />

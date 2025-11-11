@@ -1,6 +1,6 @@
 # Vercel Deployment Architecture
 
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-11-10
 
 This document provides a complete reference for the KStoryBridge Vercel deployment architecture, including the mapping of app directories to Vercel projects and how deployment control works.
 
@@ -242,7 +242,193 @@ Both branches require manual deployment because dashboard-next is still under de
 
 ---
 
+## Critical Vercel Project Settings Checklist
+
+### ⚠️ IMPORTANT: Two-Level Configuration Required
+
+For proper deployment behavior, you need **BOTH** configurations:
+
+1. **`vercel.json` file** (in app directory) - Controls branch-based deployment enablement
+2. **Vercel Dashboard "Production Branch" setting** (per project) - Controls which Git branch the project monitors
+
+**Both must be configured correctly** or auto-deploy may not work as expected.
+
+### Common Misconfiguration Issue
+
+**Problem**: Staging projects auto-deploy when merging to `main` branch
+
+**Root Cause**: Staging projects have "Production Branch" set to `main` instead of `v2` in Vercel Dashboard
+
+**Symptoms**:
+- Staging deployments trigger on every main branch merge/push
+- Intended manual-only staging projects deploy automatically
+- Unnecessary build minutes consumed
+
+**Solution**: Update "Production Branch" setting in Vercel Dashboard (see checklist below)
+
+### Configuration Checklist
+
+#### Staging Projects (Manual Deploy Only)
+
+**Vercel Dashboard Settings**:
+
+| Vercel Project | Production Branch | Location in Dashboard |
+|----------------|-------------------|----------------------|
+| `dashboard-staging` | **v2** ✅ | Settings → Git → Production Branch |
+| `creator-staging` | **v2** ✅ | Settings → Git → Production Branch |
+
+**vercel.json Settings** (already correct):
+```json
+{
+  "git": {
+    "deploymentEnabled": {
+      "v2": false,    // ✅ Manual only
+      "main": true
+    }
+  }
+}
+```
+
+#### Production Projects (Auto-Deploy Enabled)
+
+**Vercel Dashboard Settings**:
+
+| Vercel Project | Production Branch | Location in Dashboard |
+|----------------|-------------------|----------------------|
+| `kstorybridge-dashboard` | **main** ✅ | Settings → Git → Production Branch |
+| `creator` | **main** ✅ | Settings → Git → Production Branch |
+| `kstorybridge-website` | **main** ✅ | Settings → Git → Production Branch |
+
+**vercel.json Settings** (already correct):
+```json
+{
+  "git": {
+    "deploymentEnabled": {
+      "v2": false,
+      "main": true    // ✅ Auto-deploy enabled
+    }
+  }
+}
+```
+
+#### Development Projects (Manual Deploy Only)
+
+**Vercel Dashboard Settings**:
+
+| Vercel Project | Production Branch | Location in Dashboard |
+|----------------|-------------------|----------------------|
+| `dashboard-next` | **main** ✅ | Settings → Git → Production Branch |
+
+**vercel.json Settings** (already correct):
+```json
+{
+  "git": {
+    "deploymentEnabled": {
+      "v2": false,
+      "main": false   // ✅ Manual only (not production-ready)
+    }
+  }
+}
+```
+
+### How to Verify Settings
+
+**Check via Vercel Dashboard**:
+1. Go to https://vercel.com/[your-team]/[project-name]
+2. Navigate to **Settings → Git**
+3. Find **"Production Branch"** setting
+4. Verify it matches the checklist above
+
+**Check via Vercel CLI**:
+```bash
+# List all projects and their settings
+vercel project ls
+
+# Inspect specific project
+vercel inspect [project-name]
+```
+
+### How to Fix Misconfiguration
+
+**If staging projects are auto-deploying on main branch**:
+
+1. **Log into Vercel Dashboard**: https://vercel.com
+2. **For dashboard-staging project**:
+   - Go to Settings → Git
+   - Change "Production Branch" from `main` to `v2`
+   - Click "Save"
+3. **For creator-staging project**:
+   - Go to Settings → Git
+   - Change "Production Branch" from `main` to `v2`
+   - Click "Save"
+4. **Verify the fix**:
+   - Make a small test commit and push to `main`
+   - Confirm staging projects do NOT auto-deploy
+   - Confirm production projects DO auto-deploy (if changed)
+
+### Understanding the Two-Level System
+
+**Level 1: Vercel Dashboard "Production Branch"**
+- Determines **which Git branch** the Vercel project monitors
+- When a push happens to this branch, Vercel checks if it should deploy
+- Example: If set to `main`, Vercel only checks `main` branch pushes
+
+**Level 2: vercel.json "git.deploymentEnabled"**
+- Determines **whether to auto-deploy** when the monitored branch updates
+- Uses branch name as key (e.g., `"main": true`, `"v2": false`)
+- Only checked when the branch from Level 1 receives a push
+
+**Example Flow - Staging Project (dashboard-staging)**:
+1. You push to `main` branch
+2. Vercel checks: Is `main` the "Production Branch" for this project?
+   - If **"Production Branch" = `v2`** ✅ → STOP (ignore main branch push)
+   - If **"Production Branch" = `main`** ❌ → Continue to step 3
+3. Vercel reads `vercel.json`: What is `deploymentEnabled.main`?
+   - If `true` → Deploy
+   - If `false` → Don't deploy (but this is wrong - we wanted to ignore main entirely)
+
+**The Problem**: If staging projects have "Production Branch" = `main`, they'll check `deploymentEnabled.main = true` and deploy, even though they should only deploy from `v2` branch.
+
+**The Solution**: Set "Production Branch" = `v2` for staging projects, so they ignore `main` branch pushes entirely.
+
+### Post-Configuration Verification
+
+After updating settings, verify correct behavior:
+
+```bash
+# Test 1: Push to v2 branch
+git checkout v2
+git commit --allow-empty -m "test: verify v2 doesn't auto-deploy"
+git push origin v2
+# Expected: NO auto-deploy for any project
+
+# Test 2: Push to main branch (with change to dashboard)
+git checkout main
+# Make a small change to apps/dashboard/
+git add apps/dashboard/
+git commit -m "test: verify selective deploy"
+git push origin main
+# Expected:
+# ✅ kstorybridge-dashboard deploys (changed)
+# ❌ creator does NOT deploy (unchanged)
+# ❌ dashboard-staging does NOT deploy (v2 branch only)
+# ❌ creator-staging does NOT deploy (v2 branch only)
+```
+
+---
+
 ## FAQ
+
+### Q: Why are staging projects auto-deploying when I merge to main?
+
+**A:** This is a **Vercel Dashboard configuration issue**, not a code issue. Your staging projects likely have their "Production Branch" setting configured as `main` instead of `v2` in the Vercel Dashboard.
+
+**How to fix**:
+1. Go to Vercel Dashboard → Settings → Git for each staging project
+2. Change "Production Branch" from `main` to `v2`
+3. Save changes
+
+See the [Critical Vercel Project Settings Checklist](#critical-vercel-project-settings-checklist) section above for complete instructions.
 
 ### Q: Why 6 Vercel projects for 4 apps?
 
@@ -255,10 +441,12 @@ Both branches require manual deployment because dashboard-next is still under de
 
 ### Q: How does one vercel.json file control two Vercel projects?
 
-**A:** The `git.deploymentEnabled` object has **branch-name keys**. Each Vercel project is configured to deploy from a specific branch and reads the key matching that branch:
+**A:** The `git.deploymentEnabled` object has **branch-name keys**. Each Vercel project has a **"Production Branch" setting** in Vercel Dashboard that determines which Git branch it monitors. When that branch receives a push, Vercel reads the corresponding key from `vercel.json`:
 
-- `dashboard-staging` reads `deploymentEnabled.v2` (its production branch is v2)
-- `kstorybridge-dashboard` reads `deploymentEnabled.main` (its production branch is main)
+- `dashboard-staging` has "Production Branch" = `v2` → reads `deploymentEnabled.v2`
+- `kstorybridge-dashboard` has "Production Branch" = `main` → reads `deploymentEnabled.main`
+
+**Both configurations must be correct** for proper deployment behavior.
 
 ### Q: What happens if I push to v2 branch?
 
@@ -365,5 +553,5 @@ When ready for production:
 
 ---
 
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-11-10
 **Architecture Version**: Hybrid Deployment Model (Manual Staging + Auto Production)

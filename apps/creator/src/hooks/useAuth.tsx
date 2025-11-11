@@ -24,12 +24,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('🎯 AuthProvider: Initializing')
 
-    // Skip initial getSession() during OAuth callback to avoid interfering with PKCE exchange
-    const isOAuthCallback = window.location.pathname === '/auth/callback' && window.location.search.includes('code=')
+    // Distinguish between OAuth (Google) and email verification callbacks
+    // OAuth: has 'code=' but NOT 'type=' or 'token_hash=' → needs PKCE exchange
+    // Email verification: has 'token_hash=' and 'type=' → automatic session creation
+    const urlParams = new URLSearchParams(window.location.search)
+    const hasCode = urlParams.has('code')
+    const hasType = urlParams.has('type')
+    const hasTokenHash = urlParams.has('token_hash')
+
+    const isOAuthCallback = window.location.pathname === '/auth/callback' && hasCode && !hasType && !hasTokenHash
+    const isEmailVerification = window.location.pathname === '/auth/callback' && (hasType || hasTokenHash)
 
     if (isOAuthCallback) {
       console.log('🔄 OAuth callback detected - skipping initial getSession() to allow PKCE exchange')
       // Auth state listener will catch the session after successful exchange
+      setLoading(false)
+    } else if (isEmailVerification) {
+      console.log('📧 Email verification callback detected - allowing automatic session creation')
+      // Let detectSessionInUrl handle the token_hash automatically
+      // Auth state listener will catch the session after automatic exchange
       setLoading(false)
     } else {
       // Get initial session for normal page loads

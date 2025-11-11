@@ -25,6 +25,7 @@ export function CMSSidebar() {
     { title: t('navigation:sidebar.myTitles'), href: '/titles' },
     { title: t('navigation:sidebar.myRequests'), href: '/requests' },
     { title: t('navigation:sidebar.news'), href: '/news' },
+    { title: t('navigation:sidebar.learningCenter'), href: '/learning-center' },
   ]
 
   const userEmail = user?.email

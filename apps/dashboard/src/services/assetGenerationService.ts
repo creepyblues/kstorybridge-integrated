@@ -74,6 +74,13 @@ export async function analyzePitchForAssets(
     if (errorContext) {
       console.error('[assetGenerationService] Error context:', errorContext);
 
+      // Check for HTTP 546 (Supabase resource limit exceeded)
+      if (errorContext.status === 546) {
+        throw new Error(
+          'Analysis timeout - The pitch deck took too long to analyze. Please try again with a smaller pitch deck or contact support if the issue persists.'
+        );
+      }
+
       // If we have a response body with error details, use that
       if (data && !data.success && data.error?.message) {
         throw new Error(data.error.message);

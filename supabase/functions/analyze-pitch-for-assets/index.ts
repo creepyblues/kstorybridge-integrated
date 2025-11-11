@@ -46,9 +46,9 @@ const OPENAI_API_KEY = getRequiredEnv('OPENAI_API_KEY');
 // ============================================================================
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-const GPT4_MODEL = 'gpt-4-turbo-preview';
-const MAX_RETRIES = 2;
-const TIMEOUT_MS = 60000; // 60 seconds
+const GPT4_MODEL = 'gpt-4o'; // 2x faster than gpt-4-turbo (109 vs 39 tokens/sec)
+const MAX_RETRIES = 1; // Reduced from 2 to prevent edge function timeout (HTTP 546)
+const TIMEOUT_MS = 40000; // 40 seconds (sufficient for gpt-4o with 10 assets ~18s response)
 
 // ============================================================================
 // MAIN HANDLER

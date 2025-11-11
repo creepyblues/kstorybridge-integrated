@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-11-08
+**Last Updated**: 2025-11-10
 
 ## 🔄 Development Workflow (UPDATED 2025-11-02)
 
@@ -200,7 +200,18 @@ cd ../.. && bash scripts/vercel-ignore-turbo.sh
 **Deployment Configuration**:
 - `apps/{app}/vercel.json` - Contains `git.deploymentEnabled: { v2: false, main: true }`
 - `/scripts/vercel-ignore-turbo.sh` - Selective deployment script with debugging
+- **Vercel Dashboard Settings**: Each project must have correct "Production Branch" setting (v2 for staging, main for production)
 - **Complete architecture**: See [VERCEL_DEPLOYMENT_ARCHITECTURE.md](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md)
+
+**⚠️ CRITICAL - Two-Level Configuration Required**:
+For proper deployment behavior, **BOTH** configurations must be correct:
+1. **vercel.json** (`git.deploymentEnabled`) - Controls branch-based auto-deploy enablement
+2. **Vercel Dashboard** ("Production Branch" setting) - Controls which Git branch the project monitors
+
+**Common Issue**: Staging projects auto-deploy on main branch merges
+- **Root Cause**: Staging projects have "Production Branch" = `main` instead of `v2` in Vercel Dashboard
+- **Fix**: Go to Vercel Dashboard → Settings → Git → Change "Production Branch" to `v2` for staging projects
+- **See**: [Critical Vercel Project Settings Checklist](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md#critical-vercel-project-settings-checklist)
 
 **⚠️ IMPORTANT - Turborepo 2.0 Breaking Change**:
 - Turborepo 2.0 renamed `pipeline` field to `tasks`
@@ -225,11 +236,14 @@ cd ../.. && bash scripts/vercel-ignore-turbo.sh
 
 #### Deployment Architecture FAQ
 
+**Q: Why are my staging projects auto-deploying when I merge to main?**
+A: This is a **Vercel Dashboard configuration issue**. Your staging projects likely have "Production Branch" = `main` instead of `v2`. Fix: Go to Vercel Dashboard → Settings → Git → Change "Production Branch" to `v2` for both staging projects. See [Critical Settings Checklist](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md#critical-vercel-project-settings-checklist).
+
 **Q: Why 6 Vercel projects for 4 apps?**
 A: Each production app has TWO Vercel projects: one for staging (v2 branch), one for production (main branch).
 
 **Q: How does one vercel.json file control two Vercel projects?**
-A: The `git.deploymentEnabled` object has branch-name keys. Each Vercel project reads the key matching its configured production branch.
+A: The `git.deploymentEnabled` object has branch-name keys. Each Vercel project has a "Production Branch" setting in Vercel Dashboard that determines which Git branch it monitors. When that branch receives a push, Vercel reads the corresponding key from `vercel.json`. **Both configurations must be correct**.
 
 **Q: What happens if I push to v2 branch?**
 A: NONE of the projects auto-deploy (all have `"v2": false`). You must manually deploy using `vercel` CLI.

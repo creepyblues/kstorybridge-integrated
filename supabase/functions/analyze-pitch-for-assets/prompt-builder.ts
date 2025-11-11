@@ -55,7 +55,7 @@ Return ONLY valid JSON matching this structure (no markdown, no explanations):
   "summary": "Optional: 1-2 sentence strategy overview"
 }
 
-Generate 10-15 diverse asset ideas that would effectively market this title to its target audience.`;
+Generate 10 diverse asset ideas that would effectively market this title to its target audience.`;
 
 // ============================================================================
 // USER PROMPT BUILDER
@@ -255,40 +255,17 @@ function formatPitchAnalysis(analysis: PitchAnalysis): string {
  * Provide example asset ideas to guide GPT-4's output
  */
 function getExampleAssets(): string {
-  return `Example 1 - Instagram Story (Character Focus):
+  return `Example - Instagram Story:
 {
   "category": "social_media",
   "type": "instagram_story",
   "format": "1080x1920",
-  "description": "Main character in dramatic moment showcasing their power",
-  "prompt": "Vertical composition (9:16 aspect ratio) of a young Korean woman with long black hair in a flowing white hanbok, standing in a mystical forest with glowing blue spirits floating around her. Cinematic lighting from above creates dramatic shadows. Her eyes glow with ethereal blue light as she raises one hand, summoning magical energy. Photorealistic anime style, inspired by Studio Ghibli and Korean webtoon aesthetics. Rich color palette of deep blues, ethereal whites, and forest greens. Intimate medium shot focusing on her upper body and face. Magical realism atmosphere.",
-  "priority": 5,
-  "notes": "Character-driven content performs best on Instagram stories. This showcases visual appeal and hints at supernatural elements."
+  "description": "Main character in dramatic moment",
+  "prompt": "Vertical 9:16 composition of Korean protagonist in mystical setting. Cinematic lighting, photorealistic anime style, dramatic atmosphere. Detail character appearance, pose, environment, mood, and color palette in 100-150 words.",
+  "priority": 5
 }
 
-Example 2 - YouTube Thumbnail (Action Scene):
-{
-  "category": "ad_creative",
-  "type": "youtube_thumbnail",
-  "format": "1280x720",
-  "description": "Climactic confrontation between protagonist and antagonist",
-  "prompt": "Horizontal composition (16:9 aspect ratio) showing two characters facing off in a modern Seoul rooftop setting at night. Left side: A young male hero in casual streetwear, fists clenched, determination in his eyes. Right side: A mysterious figure in a black suit with glowing red eyes, smirking confidently. City lights of Seoul skyline in the background with N Seoul Tower visible. Dynamic lighting with neon signs casting red and blue glows. Tense atmosphere with electricity crackling between them. Cinematic Korean drama style, photorealistic with dramatic color grading. Wide shot capturing both characters and the epic scale of the confrontation.",
-  "priority": 4,
-  "notes": "Thumbnails need visual tension and clear composition to attract clicks. This creates intrigue about the conflict."
-}
-
-Example 3 - Concept Art (World-Building):
-{
-  "category": "pitch_material",
-  "type": "concept_art",
-  "format": "1920x1080",
-  "description": "Establishing shot of the story's unique fantasy world",
-  "prompt": "Horizontal landscape (16:9 aspect ratio) depicting a breathtaking fantasy version of Seoul where traditional Korean architecture (hanok with curved roofs, wooden pavilions) seamlessly blends with futuristic skyscrapers. Cherry blossoms float through the air mixing with holographic displays. A massive ancient tree grows through the center of the city, its glowing roots visible beneath glass streets. Golden hour lighting bathes everything in warm amber tones. People in mix of hanbok and modern fashion walk the streets. Flying vehicles hover between buildings adorned with neon hangul signage. Painterly digital art style, rich detail, inspired by concept art from Studio Mir and Korean webtoon backgrounds. Wide establishing shot showing the scale and uniqueness of this world.",
-  "priority": 5,
-  "notes": "Pitch materials need to showcase the unique visual world. This demonstrates the creative vision and production potential."
-}
-
-Follow this format and level of detail for all generated asset ideas.`;
+Follow this format with detailed 100-200 word DALL-E prompts for all assets.`;
 }
 
 // ============================================================================

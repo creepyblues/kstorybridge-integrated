@@ -3,7 +3,9 @@
     "home": "홈",
     "myTitles": "내 작품",
     "myRequests": "내 요청",
+    "updates": "업데이트",
     "news": "K-콘텐츠 뉴스",
+    "learningCenter": "학습 센터",
     "profile": "프로필",
     "settings": "설정",
     "help": "도움말",
@@ -27,6 +29,8 @@
     "titleDetail": "작품 상세",
     "profile": "프로필",
     "requests": "내 요청",
-    "news": "K-콘텐츠 뉴스"
+    "updates": "업데이트",
+    "news": "K-콘텐츠 뉴스",
+    "learningCenter": "학습 센터"
   }
 }

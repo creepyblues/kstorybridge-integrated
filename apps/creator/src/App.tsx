@@ -19,6 +19,10 @@ import EditTitle from '@/pages/EditTitle'
 import Profile from '@/pages/Profile'
 import Requests from '@/pages/Requests'
 import News from '@/pages/News'
+import LearningCenter from '@/pages/LearningCenter'
+
+// Legal pages
+import Terms from '@/pages/Terms'
 
 function App() {
   return (
@@ -33,6 +37,9 @@ function App() {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/complete-profile" element={<CompleteProfile />} />
+
+            {/* Legal pages */}
+            <Route path="/terms" element={<Terms />} />
 
             {/* Protected routes */}
             <Route
@@ -96,6 +103,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <News />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/learning-center"
+              element={
+                <ProtectedRoute>
+                  <LearningCenter />
                 </ProtectedRoute>
               }
             />

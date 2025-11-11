@@ -309,12 +309,12 @@ export interface AssetGenerationConfig {
  * Default configuration
  */
 export const DEFAULT_CONFIG: AssetGenerationConfig = {
-  social_media_count: 5,
-  ad_creative_count: 5,
-  pitch_material_count: 5,
-  gpt4_model: 'gpt-4-turbo-preview',
+  social_media_count: 4,  // Reduced from 5 for faster response time
+  ad_creative_count: 3,   // Reduced from 5 for faster response time
+  pitch_material_count: 3, // Reduced from 5 for faster response time
+  gpt4_model: 'gpt-4o',   // Changed from gpt-4-turbo-preview (2x faster, 50% cheaper)
   temperature: 0.7,
-  max_cost_usd: 0.15,  // Increased from 0.10 to allow for reasonable pitch deck analysis
+  max_cost_usd: 0.15,     // Increased from 0.10 to allow for reasonable pitch deck analysis
 };
 
 // ============================================================================
@@ -369,9 +369,13 @@ export function isValidAssetFormat(format: string): format is AssetFormat {
 // ============================================================================
 
 /**
- * GPT-4 Turbo pricing (as of 2025-11-06)
+ * GPT-4 pricing (as of 2025-11-11)
  */
 export const GPT4_PRICING = {
+  'gpt-4o': {
+    input: 0.005 / 1000,   // $0.005 per 1K tokens (50% cheaper than gpt-4-turbo)
+    output: 0.015 / 1000,  // $0.015 per 1K tokens (50% cheaper than gpt-4-turbo)
+  },
   'gpt-4-turbo-preview': {
     input: 0.01 / 1000,    // $0.01 per 1K tokens
     output: 0.03 / 1000,   // $0.03 per 1K tokens

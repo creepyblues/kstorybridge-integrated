@@ -3,7 +3,9 @@
     "home": "Home",
     "myTitles": "My Titles",
     "myRequests": "My Requests",
+    "updates": "Updates",
     "news": "K-content News",
+    "learningCenter": "Learning Center",
     "profile": "Profile",
     "settings": "Settings",
     "help": "Help",
@@ -27,6 +29,8 @@
     "titleDetail": "Title Details",
     "profile": "Profile",
     "requests": "My Requests",
-    "news": "K-content News"
+    "updates": "Updates",
+    "news": "K-content News",
+    "learningCenter": "Learning Center"
   }
 }

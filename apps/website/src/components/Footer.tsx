@@ -21,6 +21,9 @@ const Footer = () => {
             <Link to="/privacy" className="hover:text-hanok-teal transition-colors">
               Privacy Policy
             </Link>
+            <Link to="/terms" className="hover:text-hanok-teal transition-colors">
+              Terms of Use
+            </Link>
             <button
               onClick={handleCookieSettings}
               className="hover:text-hanok-teal transition-colors"

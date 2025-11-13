@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { PlatformInput } from './PlatformInput'
+import { RightsCheckboxGroup } from './RightsCheckboxGroup'
 
 
 const GENRE_OPTIONS = [
@@ -379,26 +380,33 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="rights">{t('survey:step1.rightsAvailable')}</Label>
-            <Input
-              id="rights"
-              placeholder={t('survey:step1.rightsAvailablePlaceholder')}
-              {...register('rights')}
-              className="bg-white border-gray-300"
-            />
-          </div>
+        {/* Rights Available - Multi-select checkboxes */}
+        <div className="space-y-2">
+          <Label>{t('survey:step1.rightsAvailable')}</Label>
+          <Controller
+            name="rights_available"
+            control={control}
+            render={({ field }) => (
+              <RightsCheckboxGroup
+                value={field.value || []}
+                onChange={field.onChange}
+              />
+            )}
+          />
+          <p className="text-sm text-gray-500">
+            {t('survey:step1.rightsAvailableHelper')}
+          </p>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="perfect_for">{t('survey:step1.perfectFor')}</Label>
-            <Input
-              id="perfect_for"
-              placeholder={t('survey:step1.perfectForPlaceholder')}
-              {...register('perfect_for')}
-              className="bg-white border-gray-300"
-            />
-          </div>
+        {/* Perfect For field */}
+        <div className="space-y-2">
+          <Label htmlFor="perfect_for">{t('survey:step1.perfectFor')}</Label>
+          <Input
+            id="perfect_for"
+            placeholder={t('survey:step1.perfectForPlaceholder')}
+            {...register('perfect_for')}
+            className="bg-white border-gray-300"
+          />
         </div>
 
         <div className="space-y-2">

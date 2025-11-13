@@ -296,6 +296,28 @@ export default function SignUp() {
               {t('auth:signUp.signInLink')}
             </Link>
           </div>
+
+          {/* Legal Links */}
+          <div className="text-center text-xs text-gray-600 pt-4 border-t border-gray-200">
+            By signing up, you agree to our{' '}
+            <a
+              href="https://kstorybridge.com/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline"
+            >
+              Terms of Use
+            </a>
+            {' '}and{' '}
+            <a
+              href="https://kstorybridge.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline"
+            >
+              Privacy Policy
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -2,7 +2,7 @@
 
 **App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. **Authentication**: Handles BUYER auth only (creator auth moved to creator app as of 2025-11-04).
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-11
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -132,6 +132,216 @@ export default function MyPage() {
 
 ---
 
+## 📊 Essential Shared Patterns
+
+### Database Operations
+
+**Supabase Config**:
+```typescript
+const SUPABASE_URL = 'https://dlrnrgcoguxlkkcitlpd.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+**Query Patterns** (CRITICAL):
+```typescript
+// ✅ CORRECT - Always query by email
+.eq('email', user.email?.toLowerCase())
+
+// ❌ INCORRECT - user_id field doesn't exist
+.eq('user_id', user.id)
+```
+
+### User Tables Structure
+
+**user_buyers** (query by `email`):
+- `tier`: basic (default) | invited | pro | suite
+- Tier hierarchy: basic(1) < pro(2) < suite(3)
+- `full_name`, `buyer_company`, `buyer_role`, `linkedin_url` (optional)
+
+**Field Naming** (CRITICAL):
+```typescript
+// ✅ CORRECT - Use snake_case matching database
+interface BuyerFormData {
+  full_name: string;        // NOT fullName
+  buyer_company: string;    // NOT buyerCompany
+  buyer_role: string;       // NOT buyerRole
+  linkedin_url?: string;    // NOT linkedinUrl
+  tier?: 'basic' | 'pro' | 'suite';
+  requested?: boolean;
+}
+```
+
+### Tier System Implementation
+
+**Hook Usage**:
+```typescript
+import { useTierAccess } from '@/hooks/useTierAccess';
+
+const { hasAccess, tier } = useTierAccess();
+// Automatically synced with Stripe subscriptions
+```
+
+**Context Pattern** (Optimized):
+```typescript
+import { TierProvider } from '@/contexts/TierContext';
+import OptimizedTierGatedContent from '@/components/OptimizedTierGatedContent';
+
+// Wrap page with TierProvider for optimal performance
+<TierProvider>
+  <OptimizedTierGatedContent requiredTier="pro">
+    <PremiumContent />
+  </OptimizedTierGatedContent>
+</TierProvider>
+```
+
+**Tier Levels**:
+- `basic` (1) - Free tier, limited access
+- `pro` (2) - Pro subscription
+- `suite` (3) - Full suite access
+
+### Cache System (Dashboard-Specific)
+
+**Implementation**:
+```typescript
+import { useDataCache } from '@/contexts/DataCacheContext';
+
+const { getData, setData, isSessionValid, isFresh } = useDataCache();
+
+// Session-based only (1-hour expiry)
+if (isSessionValid() && isFresh('data')) {
+  return getData();
+}
+```
+
+**Pattern**: Show errors to users, never use mock data fallback.
+
+**See**: [CACHE_POLICY.md](../../CACHE_POLICY.md) for complete implementation details
+
+---
+
+## 🤖 AI Chatbot System
+
+**Status**: ✅ Phases 1-4 Complete (Contextual Response Generation ACTIVE)
+
+### Overview
+
+AI-powered chatbot for title discovery with vector search, pitch analytics integration, and contextual response generation. Phases 1-4 deployed with 50% token reduction on multi-turn conversations and zero repetition.
+
+### Deployed Improvements
+
+**Phase 1: Quick Wins** (Completed 2025-10-04)
+1. ✅ **Vector Search Increase** (5→10 results) - +100% coverage
+2. ✅ **Anti-Hallucination Validation** - <5% false recommendations
+3. ✅ **Fuzzy Title Matching** - 80% similarity threshold, +40% link success
+
+**Phase 2: Prompt Engineering** (Completed 2025-10-04)
+4. ✅ **Intent Classification** - 5 types (discovery, comparison, information, recommendation, follow-up)
+5. ✅ **Conversation Context Weighting** - Recent message prioritization, title mention tracking
+6. ✅ **Fallback Keyword Search** - PostgreSQL full-text search when vector fails
+
+**Phase 3: Pitch Analytics Integration** (Deployed 2025-10-21)
+7. ✅ **Database Migration** - Added `pitch_analysis` JSONB field to vector search results
+8. ✅ **Edge Function Enhancement** - Integrated pitch analytics formatting and context
+9. ✅ **Feature Flag Control** - `ENABLE_PITCH_CONTEXT` for gradual rollout
+
+**Phase 4: Contextual Response Generation** (Deployed & Active 2025-10-21)
+10. ✅ **Smart Follow-up Detection** - Analyzes last 3 messages for title mentions
+11. ✅ **Focused Response Generation** - Section-specific responses (characters, plot, themes, market)
+12. ✅ **Anti-Repetition Logic** - Prevents repeating information already shared
+13. ✅ **Feature Flag Control** - `ENABLE_CONTEXTUAL_RESPONSES=true` (ACTIVE)
+
+### Enhanced Capabilities (Phase 3 + 4)
+
+**Query Types** (60+ types across 9 categories):
+- Character: Details, archetypes, relationships
+- Story: Loglines, conflicts, narrative structure
+- Theme: Genre, tone, cultural elements
+- Market: Positioning, comparable titles, audience
+- Cultural: Korean cultural elements analysis
+- IP Value: Rights, adaptability, marketability
+- Production: Budget, scope, requirements
+- Content: Format, chapters, completion status
+- Creative Team: Authors, artists, credentials
+
+**Quality Standards**:
+- Only uses data with `processing_confidence >= 0.70`
+- Source material metrics (views, chapters, platform)
+- Smart follow-up responses with 50% token reduction
+- Zero repetition on multi-turn conversations
+
+### Implementation Files
+
+**Edge Function**: `supabase/functions/chat-orchestrator/index.ts`
+- Vector search with pitch analytics
+- Intent classification
+- Contextual response generation
+- Anti-hallucination validation
+
+**Database Migration**: `supabase/migrations/20250130000000_add_pitch_to_vector_search.sql`
+- Added `pitch_analysis` JSONB field to vector search
+
+**Frontend**: `src/pages/Chat.tsx`
+- Chat interface
+- Message history
+- Title links with fuzzy matching
+
+**Test Suite**: `test-chatbot-improvements.js`
+- Comprehensive test coverage
+- Log interpretation utilities
+
+### Performance Metrics (Updated with Phase 4)
+
+- **Search Results**: 10 titles with >0.8 similarity scores
+- **Response Times**: 3-5 seconds average (with pitch analytics)
+- **Hallucination Rate**: <5%
+- **Intent Accuracy**: 100%
+- **Zero-Results Rate**: ~2%
+- **Pitch Coverage**: 30-50% of queries use pitch data (when available)
+- **Token Efficiency** (Phase 4): 50% reduction on multi-turn conversations
+- **Repetition Rate** (Phase 4): 0% (down from ~70% on follow-ups)
+- **Contextual Activation** (Phase 4): ~20-30% of queries use focused responses
+
+### Cost Analysis
+
+**Per Query Costs**:
+- Initial query: $0.02-0.025
+- Follow-up with context: $0.015-0.018 (50% reduction)
+- Vector search: Included in Supabase
+- Pitch analytics: No additional cost (data already in DB)
+
+**Monthly Estimates** (assuming 1000 queries):
+- Without optimization: $20-25/month
+- With Phase 4: $15-20/month (25-30% overall reduction)
+
+### Monitoring & Debugging
+
+**Edge Function Logs**:
+- Monitor for contextual response activation: `🎯 Contextual Response Analysis`
+- Track token costs and usage patterns
+- Review focused response quality
+- Gather user feedback on conversation flow
+
+**Key Metrics to Track**:
+- Token usage per query (should average $0.015-0.020)
+- Repetition detection (should be 0%)
+- User satisfaction with follow-up responses
+- Contextual activation rate (target: 20-30%)
+
+### Documentation
+
+- **[Chatbot Overview](../../docs/features/chatbot/OVERVIEW.md)** - Complete system overview (Phases 1-4)
+- **[Phase 1 & 2 Summary](../../docs/features/chatbot/PHASE_1_2_SUMMARY.md)** - Test results with log evidence
+- **[Pitch Analytics](../../docs/features/chatbot/PITCH_ANALYTICS.md)** - Phase 3 implementation plan
+- **[Contextual Responses](../../docs/features/chatbot/PHASE_4_CONTEXTUAL_RESPONSES.md)** - Phase 4 implementation & testing
+- **[Testing Guide](../../docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures and log interpretation
+- **[AI Chatbot Docs](public/docs/AI_CHATBOT_DOCUMENTATION.md)** - User-facing documentation
+
+### Future Phases (Planned)
+
+**Phase 5**: Hybrid search, response caching, analytics dashboard, multi-turn memory (beyond 3 messages)
+
+---
+
 ## 📄 Pitch Deck Extraction
 
 **Status**: ✅ v2.0 Enhanced Comprehensive Extraction
@@ -144,6 +354,177 @@ Automated pitch deck analysis extracting 50+ structured fields using GPT-4o.
 - **Cost**: ~$0.15-0.20 per deck
 
 **See**: [Pitch Deck System Documentation](docs/PITCH_DECK_SYSTEM.md)
+
+---
+
+## 🎨 Marketing Asset Generation (ADDED 2025-11-08)
+
+**Status**: ✅ Production-ready with full navigation support
+
+AI-powered marketing asset generation system using GPT-4 and DALL-E 3.
+
+### Overview
+Generates 10-15 marketing asset ideas per title (Instagram stories, posters, ad creatives, etc.) with AI-generated DALL-E prompts, then creates actual images on demand.
+
+### Admin Interface
+
+**Main Page**: `/admin/asset-generation`
+- Select title from dropdown (shows titles with pitch data)
+- Click "Analyze Pitch & Generate Ideas" to create asset concepts (~$0.10-0.15)
+- Click "Generate Image" on individual assets to create visuals (~$0.08 per image)
+- Approve/manage generated assets
+
+**Direct Navigation** (Added 2025-11-08):
+- From Title List (`/admin/titles`) → Click ⚡ Sparkles button
+- From Title Detail (`/admin/titles/:id`) → Click "View Assets" button
+- URL pattern: `/admin/asset-generation?titleId=xxx` (auto-selects title)
+
+### Technical Architecture
+
+**Database**: `title_marketing_assets` table
+- Isolated design (no foreign keys, stores all context)
+- Fields: asset type, category, format, prompt, image URL, status, approval
+- Supports both generated and pending assets
+
+**Edge Functions**:
+- `analyze-pitch-for-assets` - Analyzes pitch deck, generates asset ideas
+  - Version: 6 (deployed 2025-11-08)
+  - Cost limit: $0.15 per analysis
+  - Generates 15 asset ideas grouped by category
+- `generate-asset` - Creates actual DALL-E 3 images from prompts
+  - Cost: ~$0.04-0.12 per image depending on size/quality
+
+**Storage**: `marketing-assets` bucket
+- **Public** bucket for generated images
+- Location: Supabase Storage
+- RLS policies: Public read, authenticated upload, service role management
+- File types: PNG, JPEG, WebP (10 MB limit)
+
+### Asset Categories
+
+1. **Social Media** (5 assets)
+   - Instagram Story (1080x1920)
+   - Instagram Post (1080x1080)
+   - Facebook Post (1200x628)
+   - Twitter Post (1200x675)
+   - TikTok Video Thumbnail (1080x1920)
+
+2. **Ad Creative** (5 assets)
+   - Display Ad (300x250, 728x90)
+   - YouTube Thumbnail (1280x720)
+   - Video Ad Key Frame (1920x1080)
+   - Banner Ad
+
+3. **Pitch Material** (5 assets)
+   - Concept Art (1920x1080)
+   - Key Scene
+   - Character Cards
+   - Mood Board
+   - Poster
+
+### Navigation Flow
+
+**From Title List**:
+```
+/admin/titles → Click ⚡ button → /admin/asset-generation?titleId=xxx
+```
+
+**From Title Detail**:
+```
+/admin/titles/:id → Click "View Assets" → /admin/asset-generation?titleId=xxx
+```
+
+**Direct Access**:
+```
+/admin/asset-generation → Manual title selection from dropdown
+```
+
+### Common Issues & Solutions
+
+**Issue**: 400 Error - Cost limit exceeded
+- **Cause**: Analysis cost > $0.15
+- **Solution**: Cost limit increased to $0.15 (2025-11-08)
+- **Prevention**: Limit scales with reasonable pitch deck sizes
+
+**Issue**: Images show as corrupted/"Bucket not found"
+- **Cause**: Storage bucket was private
+- **Solution**: Bucket made public (2025-11-08)
+- **Prevention**: Diagnostic scripts in `/scripts/` directory
+
+**Issue**: Generic error messages
+- **Cause**: SDK wraps edge function errors
+- **Solution**: Enhanced error logging and extraction (2025-11-08)
+- **Debugging**: Check browser console for detailed error context
+
+### Diagnostic Tools
+
+Located in `/scripts/` directory:
+- `diagnose-asset.js` - Check asset status, test image URLs
+- `create-storage-bucket.js` - Create/configure storage buckets
+- `make-bucket-public.js` - Fix bucket permissions
+
+**Usage**:
+```bash
+node scripts/diagnose-asset.js  # Check asset and image accessibility
+node scripts/make-bucket-public.js  # Fix storage permissions
+```
+
+### Service Functions
+
+**Location**: `src/services/assetGenerationService.ts`
+
+```typescript
+// Fetch titles with pitch data
+getTitlesWithPitch(): Promise<TitleWithPitch[]>
+
+// Get assets for specific title
+getAssetsByTitle(titleId: string): Promise<MarketingAsset[]>
+
+// Get asset count for badge display
+getAssetCountByTitle(titleId: string): Promise<number>
+
+// Analyze pitch and generate asset ideas
+analyzePitchForAssets(request: AnalyzePitchRequest): Promise<AnalyzePitchResponse>
+
+// Generate actual image with DALL-E 3
+generateAsset(request: GenerateAssetRequest): Promise<GenerateAssetResponse>
+
+// Update approval status
+updateAssetApproval(assetId, approved, adminEmail): Promise<void>
+
+// Delete asset
+deleteAsset(assetId: string): Promise<void>
+```
+
+### Components
+
+- `TitleSelector` - Dropdown for title selection
+- `AssetIdeaList` - Display generated assets grouped by category
+- `AssetGenerationCard` - Individual asset card with generate/approve/delete actions
+- `GenerationStats` - Summary statistics (total assets, cost, categories)
+
+### Cost Tracking
+
+**Analysis** (~$0.10-0.15):
+- GPT-4 Turbo: $0.01/1K input tokens, $0.03/1K output tokens
+- Typical analysis: 8,000-10,000 tokens total
+- Includes 15 detailed asset ideas with prompts
+
+**Image Generation** (~$0.04-0.12):
+- DALL-E 3 Standard: $0.04 per image
+- DALL-E 3 HD: $0.08 per image
+- Most assets use standard quality
+
+**Total Per Title**: ~$0.50-1.00 (analysis + 5-10 images)
+
+### Future Enhancements
+
+- Asset count badges on navigation buttons
+- Bulk image generation
+- Image editing/regeneration
+- Video asset support (OpenAI video API)
+- Asset templates and styles
+- Export/download functionality
 
 ---
 

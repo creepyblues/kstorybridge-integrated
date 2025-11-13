@@ -27,6 +27,7 @@ const SampleTitleDetailPage = lazy(() => import("./pages/SampleTitleDetailPage")
 const NotFound = lazy(() => import("./pages/NotFound"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -60,6 +61,7 @@ const App = () => (
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route path="/signin" element={<SigninPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />

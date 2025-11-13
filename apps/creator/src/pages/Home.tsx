@@ -5,8 +5,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { titlesService, Title } from '@/services/titlesService'
-import { draftService, TitleDraft, getDraftDisplayName } from '@/services/draftService'
+import { draftService, TitleDraft } from '@/services/draftService'
+import { listPosts, type ContentPost } from '@/services/contentService'
 import { LearningCard } from '@/components/LearningCard'
+import { HomeTitleCard } from '@/components/HomeTitleCard'
 
 export default function Home() {
   const { t } = useTranslation(['titles', 'navigation', 'common'])
@@ -14,6 +16,8 @@ export default function Home() {
   const { user } = useAuth()
   const [titles, setTitles] = useState<Title[]>([])
   const [drafts, setDrafts] = useState<TitleDraft[]>([])
+  const [newsPosts, setNewsPosts] = useState<ContentPost[]>([])
+  const [learningPosts, setLearningPosts] = useState<ContentPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,14 +35,18 @@ export default function Home() {
       setLoading(true)
       setError(null)
 
-      // Fetch titles and drafts in parallel
-      const [titlesData, draftsData] = await Promise.all([
+      // Fetch titles, drafts, news posts, and learning posts in parallel
+      const [titlesData, draftsData, newsData, learningData] = await Promise.all([
         titlesService.getTitlesByCreator(user.id),
         draftService.getAllDrafts(user.id, 'draft'),
+        listPosts({ category: 'news', status: 'published', limit: 3 }),
+        listPosts({ category: 'learning', status: 'published', limit: 3 }),
       ])
 
       setTitles(titlesData)
       setDrafts(draftsData)
+      setNewsPosts(newsData.posts)
+      setLearningPosts(learningData.posts)
     } catch (err) {
       console.error('Error loading data:', err)
       setError('Failed to load data. Please try again.')
@@ -49,43 +57,62 @@ export default function Home() {
 
   return (
     <MainLayout>
-      <div className="max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black">{t('navigation:pageHeaders.dashboard')}</h1>
-          <p className="text-gray-600 mt-1">{t('navigation:sidebar.home')}</p>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('navigation:pageHeaders.dashboard')}</h1>
         </div>
 
         {/* Two-column grid layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 sm:mb-8 lg:mb-12">
-          {/* Updates Section (formerly My Requests) */}
+          {/* Updates Section - News Posts */}
           <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{t('navigation:sidebar.updates')}</CardTitle>
-                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-gray-200 text-black">
-                  0
+                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sunrise-coral-100 text-sunrise-coral-700">
+                  {newsPosts.length}
                 </span>
               </div>
-              <CardDescription>Inquiries from interested buyers</CardDescription>
+              <CardDescription>Latest news and announcements</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-gray-600 text-sm mb-4">{t('common:messages.comingSoon')}</p>
-                <p className="text-gray-500 text-xs">You'll see buyer inquiries here when they contact you</p>
-              </div>
-
-              {/* Placeholder items */}
-              <div className="space-y-3 mt-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="p-3 border border-gray-200 rounded-lg bg-gray-50 opacity-40"
-                  >
-                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-300 rounded w-1/2"></div>
-                  </div>
-                ))}
-              </div>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                </div>
+              ) : newsPosts.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 text-sm">No news updates at the moment</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {newsPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      onClick={() => navigate(`/news/${post.slug}`)}
+                      className="p-3 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors cursor-pointer"
+                    >
+                      <h3 className="font-semibold text-black text-sm mb-1">{post.title}</h3>
+                      {post.excerpt && (
+                        <p className="text-gray-600 text-xs line-clamp-2">{post.excerpt}</p>
+                      )}
+                      {post.published_at && (
+                        <p className="text-gray-500 text-xs mt-2">
+                          {new Date(post.published_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {newsPosts.length > 0 && (
+                <button
+                  onClick={() => navigate('/news')}
+                  className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline text-sm font-medium mt-4 block"
+                >
+                  View All News
+                </button>
+              )}
             </CardContent>
           </Card>
 
@@ -94,7 +121,7 @@ export default function Home() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{t('titles:list.title')}</CardTitle>
-                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-gray-200 text-black">
+                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sunrise-coral-100 text-sunrise-coral-700">
                   {titles.length + drafts.length}
                 </span>
               </div>
@@ -114,7 +141,7 @@ export default function Home() {
                   <p className="text-gray-600 text-sm mb-3">{t('titles:list.emptyState')}</p>
                   <button
                     onClick={() => navigate('/titles/add-title')}
-                    className="text-black hover:text-gray-700 underline text-sm"
+                    className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline text-sm font-medium"
                   >
                     {t('titles:list.emptyStateDescription')}
                   </button>
@@ -123,34 +150,23 @@ export default function Home() {
                 <div className="space-y-3">
                   {/* Published Titles */}
                   {titles.map((title) => (
-                    <div
+                    <HomeTitleCard
                       key={title.title_id}
-                      className="p-3 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors"
-                    >
-                      <button
-                        onClick={() => navigate(`/titles/${title.title_id}`)}
-                        className="text-black hover:text-gray-700 font-medium text-sm text-left w-full"
-                      >
-                        {title.title_name_en || title.title_name_kr || 'Untitled'}
-                      </button>
-                      <p className="text-gray-500 text-xs mt-1">Published</p>
-                    </div>
+                      title={title}
+                      status="published"
+                      onClick={() => navigate(`/titles/${title.title_id}`)}
+                    />
                   ))}
 
                   {/* Drafts */}
                   {drafts.map((draft) => (
-                    <div
+                    <HomeTitleCard
                       key={draft.id}
-                      className="p-3 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors bg-gray-50"
-                    >
-                      <button
-                        onClick={() => navigate(`/titles/add-title?draftId=${draft.id}`)}
-                        className="text-black hover:text-gray-700 font-medium text-sm text-left w-full"
-                      >
-                        {getDraftDisplayName(draft)}
-                      </button>
-                      <p className="text-gray-500 text-xs mt-1">Draft • Step {draft.current_step} of 5</p>
-                    </div>
+                      draft={draft}
+                      status="draft"
+                      currentStep={draft.current_step}
+                      onClick={() => navigate(`/titles/add-title?draftId=${draft.id}`)}
+                    />
                   ))}
                 </div>
               )}
@@ -165,26 +181,38 @@ export default function Home() {
             <CardDescription>Resources and guides to help you succeed</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <LearningCard
-                title="How to Create a Compelling Pitch"
-                description="Learn the essential elements of a pitch that captures buyer attention and showcases your story's potential."
-                tags={["Pitching", "Getting Started"]}
-                onClick={() => {}}
-              />
-              <LearningCard
-                title="Understanding International Rights"
-                description="Navigate the complexities of rights management, licensing, and international distribution for your content."
-                tags={["Rights", "Legal"]}
-                onClick={() => {}}
-              />
-              <LearningCard
-                title="Platform Metrics That Matter"
-                description="Discover which metrics buyers care about most and how to present your title's performance data effectively."
-                tags={["Analytics", "Marketing"]}
-                onClick={() => {}}
-              />
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+              </div>
+            ) : learningPosts.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600 text-sm">No learning resources available yet</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {learningPosts.map((post) => (
+                    <LearningCard
+                      key={post.id}
+                      title={post.title}
+                      description={post.excerpt || ''}
+                      imageUrl={post.featured_image_url || undefined}
+                      tags={post.tags || []}
+                      onClick={() => navigate(`/learning-center/${post.slug}`)}
+                    />
+                  ))}
+                </div>
+                {learningPosts.length > 0 && (
+                  <button
+                    onClick={() => navigate('/learning-center')}
+                    className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline text-sm font-medium mt-6 block mx-auto"
+                  >
+                    View All Learning Resources
+                  </button>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

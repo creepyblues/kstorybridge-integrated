@@ -358,9 +358,9 @@ export default function EditTitle() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center min-h-96">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-gray-500">{t('titles:edit.loading', 'Loading title...')}</p>
           </div>
         </div>
       </MainLayout>
@@ -370,30 +370,28 @@ export default function EditTitle() {
   if (error && !title) {
     return (
       <MainLayout>
-        <div className="max-w-6xl mx-auto">
-          <Card className="bg-transparent border-red-300 shadow-none rounded-2xl">
-            <CardContent className="p-8 text-center">
-              <p className="text-red-600">{error}</p>
-              <div className="flex gap-3 justify-center mt-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-red-500">{error}</p>
+            <div className="flex gap-3 justify-center mt-4">
+              <Button
+                onClick={() => navigate('/titles')}
+                variant="outline"
+                className="border-gray-300 hover:bg-gray-100"
+              >
+                {t('common:backToTitles', 'Back to Titles')}
+              </Button>
+              {titleId && (
                 <Button
-                  onClick={() => navigate('/titles')}
+                  onClick={() => loadTitle(titleId)}
                   variant="outline"
                   className="border-gray-300 hover:bg-gray-100"
                 >
-                  {t('common:backToTitles', 'Back to Titles')}
+                  {t('common:retry', 'Retry')}
                 </Button>
-                {titleId && (
-                  <Button
-                    onClick={() => loadTitle(titleId)}
-                    variant="outline"
-                    className="border-gray-300 hover:bg-gray-100"
-                  >
-                    {t('common:retry', 'Retry')}
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              )}
+            </div>
+          </div>
         </div>
       </MainLayout>
     )
@@ -401,11 +399,11 @@ export default function EditTitle() {
 
   return (
     <MainLayout>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-0">
           <div>
-            <h1 className="text-3xl font-bold text-black mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">
               {t('titles:edit.title', 'Edit Title')}
             </h1>
             <p className="text-gray-600">
@@ -416,15 +414,15 @@ export default function EditTitle() {
 
         {/* Error Alert */}
         {error && (
-          <Card className="bg-transparent border-red-300 shadow-none rounded-2xl mb-6">
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8">
             <CardContent className="p-4">
-              <p className="text-red-600 text-sm">{error}</p>
+              <p className="text-red-500 text-sm">{error}</p>
             </CardContent>
           </Card>
         )}
 
         {/* Tabbed Form */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8">
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
           <CardContent className="p-4 sm:p-6">
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -491,7 +489,7 @@ export default function EditTitle() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-black text-white hover:bg-gray-800"
+                  className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
                 >
                   {isSubmitting
                     ? t('common:saving', 'Saving...')

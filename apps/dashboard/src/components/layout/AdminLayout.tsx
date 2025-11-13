@@ -13,7 +13,8 @@ import {
   Zap,
   MessageSquare,
   FileEdit,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -50,6 +51,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/drafts',
       icon: FileEdit,
       description: 'Review creator drafts'
+    },
+    {
+      name: 'Content',
+      href: '/admin/content',
+      icon: BookOpen,
+      description: 'Learning & News CMS'
     },
     {
       name: 'Users',

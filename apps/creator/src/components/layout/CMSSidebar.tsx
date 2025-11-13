@@ -20,10 +20,9 @@ export function CMSSidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Creator-only menu items (no /creators prefix)
-  const discoverItems: MenuItem[] = [
+  const menuItems: MenuItem[] = [
     { title: t('navigation:sidebar.home'), href: '/home' },
     { title: t('navigation:sidebar.myTitles'), href: '/titles' },
-    { title: t('navigation:sidebar.myRequests'), href: '/requests' },
     { title: t('navigation:sidebar.news'), href: '/news' },
     { title: t('navigation:sidebar.learningCenter'), href: '/learning-center' },
   ]
@@ -74,8 +73,8 @@ export function CMSSidebar() {
       {isMobileMenuOpen && (
         <div className="md:hidden fixed left-4 right-4 top-[60px] bg-white rounded-2xl shadow-sm border border-gray-300 z-50 overflow-hidden">
           <div className="py-2">
-            {/* Discover items */}
-            {discoverItems.map((item) => {
+            {/* Menu items */}
+            {menuItems.map((item) => {
               const isActive = location.pathname === item.href
 
               return (
@@ -86,8 +85,8 @@ export function CMSSidebar() {
                   className={cn(
                     'flex items-center justify-between px-4 py-3 text-base font-normal transition-colors border-b border-gray-100',
                     isActive
-                      ? 'bg-gray-900 text-white'
-                      : 'text-gray-900 hover:bg-gray-50'
+                      ? 'bg-sunrise-coral-600 text-white'
+                      : 'text-gray-900 hover:bg-sunrise-coral-50'
                   )}
                 >
                   <span>{item.title}</span>
@@ -125,13 +124,14 @@ export function CMSSidebar() {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4">
-            {/* Discover section */}
+            {/* Language Switcher */}
+            <div className="mb-6 px-3 flex justify-end">
+              <LanguageSwitcher size="xs" />
+            </div>
+
             <div className="mb-8">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">
-                Discover
-              </h3>
               <ul className="space-y-1">
-                {discoverItems.map((item) => (
+                {menuItems.map((item) => (
                   <li key={item.href}>
                     <Link
                       to={item.href}
@@ -139,8 +139,8 @@ export function CMSSidebar() {
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                         location.pathname === item.href
-                          ? 'bg-gray-100 text-gray-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          ? 'bg-sunrise-coral-50 text-sunrise-coral-700 border-l-4 border-sunrise-coral-500 pl-2'
+                          : 'text-gray-600 hover:bg-sunrise-coral-50 hover:text-gray-900'
                       )}
                     >
                       {item.icon && <span>{item.icon}</span>}
@@ -157,8 +157,8 @@ export function CMSSidebar() {
             </div>
           </nav>
 
-          {/* User info and language switcher */}
-          <div className="p-4 border-t border-gray-200 space-y-3">
+          {/* User info */}
+          <div className="p-4 border-t border-gray-200">
             <Link
               to="/profile"
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
@@ -173,9 +173,6 @@ export function CMSSidebar() {
                 <p className="text-xs text-gray-500 truncate">{userEmail}</p>
               </div>
             </Link>
-            <div className="px-3">
-              <LanguageSwitcher />
-            </div>
           </div>
         </div>
       </aside>

@@ -20,9 +20,7 @@ import Profile from '@/pages/Profile'
 import Requests from '@/pages/Requests'
 import News from '@/pages/News'
 import LearningCenter from '@/pages/LearningCenter'
-
-// Legal pages
-import Terms from '@/pages/Terms'
+import PostDetail from '@/pages/PostDetail'
 
 function App() {
   return (
@@ -37,9 +35,6 @@ function App() {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/complete-profile" element={<CompleteProfile />} />
-
-            {/* Legal pages */}
-            <Route path="/terms" element={<Terms />} />
 
             {/* Protected routes */}
             <Route
@@ -111,6 +106,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <LearningCenter />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/learning-center/:slug"
+              element={
+                <ProtectedRoute>
+                  <PostDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/news/:slug"
+              element={
+                <ProtectedRoute>
+                  <PostDetail />
                 </ProtectedRoute>
               }
             />

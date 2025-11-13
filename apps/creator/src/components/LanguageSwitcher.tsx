@@ -1,8 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  size?: 'xs' | 'sm';
+}
+
+export function LanguageSwitcher({ size = 'sm' }: LanguageSwitcherProps) {
   const { i18n } = useTranslation();
 
   const toggleLanguage = () => {
@@ -15,11 +20,14 @@ export function LanguageSwitcher() {
   return (
     <Button
       variant="outline"
-      size="sm"
+      size={size === 'xs' ? 'sm' : 'sm'}
       onClick={toggleLanguage}
-      className="border-gray-300 hover:bg-gray-100"
+      className={cn(
+        'border-gray-300 hover:bg-gray-100',
+        size === 'xs' && 'h-7 px-2 text-xs'
+      )}
     >
-      <Globe className="h-4 w-4 mr-2" />
+      <Globe className={cn(size === 'xs' ? 'h-3 w-3 mr-1.5' : 'h-4 w-4 mr-2')} />
       {currentLanguage}
     </Button>
   );

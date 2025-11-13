@@ -2,7 +2,7 @@
 
 **App Scope**: Marketing website with basic authentication redirects to dashboard app. Focuses on content presentation and user acquisition.
 
-**Last Updated**: 2025-11-02
+**Last Updated**: 2025-11-11
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -242,46 +242,12 @@ The project is connected to Lovable for collaborative development, but can be de
 
 ## Database Schema Guidelines
 
-### User Tier System
+### Shared Patterns
 
-**Buyer Tier Management:**
-- Default tier for new signups: 'basic' (changed from 'invited' in 2025-08-21 update)
-- All signup methods (email and OAuth) set tier to 'basic'
-- Tier hierarchy: basic (default), invited (legacy), pro, suite
+For complete database patterns including:
+- User table structures (user_buyers, user_creators)
+- Query patterns (always use `.eq('email', user.email)`)
+- Field naming conventions (snake_case)
+- Tier system implementation
 
-**✅ Correct Signup Implementation:**
-```typescript
-// Both email and OAuth signups
-const metadata = {
-  tier: 'basic', // Always set to 'basic' for new signups
-  account_type: 'buyer'
-}
-```
-
-### User Profile Field Naming
-
-**Critical Requirement**: Always use `pen_name` for creator profiles.
-
-**Note**: Creator profiles are stored in the `user_creators` table (renamed from `user_ipowners` on 2025-09-10).
-
-**✅ Correct Implementation:**
-```typescript
-// SignupForm metadata
-const metadata = {
-  pen_name: formData.penNameOrStudio  // Store as pen_name in metadata
-}
-
-// Database insertion (triggers)
-INSERT INTO user_creators (pen_name, ...) 
-VALUES (NEW.raw_user_meta_data->>'pen_name', ...)
-```
-
-**❌ Legacy Field (Do NOT Use):**
-- Old field name found in historical migrations only
-- **Do NOT use in new code**
-- Historical reference only
-
-**Standard Implementation:**
-- **New signups**: Always use `pen_name` in metadata and database
-- **Database operations**: Always target `pen_name` column
-- **Metadata**: Store as `pen_name` key
+**See**: [Root CLAUDE.md Common Development Patterns](../../CLAUDE.md#common-development-patterns)

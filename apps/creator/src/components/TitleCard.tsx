@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -45,7 +44,6 @@ export function TitleCard({
   onDelete
 }: TitleCardProps) {
   const { t } = useTranslation(['titles'])
-  const [isHovered, setIsHovered] = useState(false)
 
   // Determine data source
   const displayData = title || draft?.draft_data
@@ -132,11 +130,7 @@ export function TitleCard({
 
   return (
     <Card
-      className={`group cursor-pointer transition-shadow duration-200 bg-white border-gray-200 overflow-hidden rounded-lg ${
-        isHovered ? 'shadow-2xl' : 'shadow-md'
-      } hover:shadow-xl`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={`cursor-pointer bg-transparent ${styles.border} shadow-none rounded-2xl transition-colors overflow-hidden`}
       onClick={onClick}
     >
       {/* Image Container - 4:3 aspect ratio */}
@@ -182,7 +176,7 @@ export function TitleCard({
       <CardContent className="p-4 space-y-3">
         {/* Title */}
         <div>
-          <h3 className="font-bold text-black line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors duration-200 will-change-auto">
+          <h3 className="font-bold text-black line-clamp-2 mb-1">
             {displayTitle}
           </h3>
           {displayKoreanTitle && displayData?.title_name_en && (

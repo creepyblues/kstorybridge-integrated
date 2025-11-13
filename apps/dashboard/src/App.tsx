@@ -73,6 +73,8 @@ const PitchExtractionTest = lazy(() => import("./pages/admin/PitchExtractionTest
 const AdminDraftApproval = lazy(() => import("./pages/admin/DraftApproval"));
 const AdminDraftDetail = lazy(() => import("./pages/admin/DraftDetail"));
 const AssetGeneration = lazy(() => import("./pages/admin/AssetGeneration"));
+const ContentList = lazy(() => import("./pages/admin/ContentList").then(m => ({ default: m.ContentList })));
+const ContentEditor = lazy(() => import("./pages/admin/ContentEditor").then(m => ({ default: m.ContentEditor })));
 
 // Documentation pages
 const Docs = lazy(() => import("./pages/Docs"));
@@ -330,6 +332,15 @@ const App = () => (
                 } />
                 <Route path="/admin/chat-test" element={
                   <AdminProtectedRoute><AdminLayout><ChatTest /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/content" element={
+                  <AdminProtectedRoute><AdminLayout><ContentList /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/content/new" element={
+                  <AdminProtectedRoute><AdminLayout><ContentEditor /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/content/:id/edit" element={
+                  <AdminProtectedRoute><AdminLayout><ContentEditor /></AdminLayout></AdminProtectedRoute>
                 } />
 
                 {/* Documentation routes - accessible to all authenticated users */}

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { titlesService, type Title } from '@/services/titlesService'
@@ -68,71 +67,45 @@ export default function Titles() {
     }
   }
 
-  if (loading) {
-    return (
-      <MainLayout>
-        <div className="max-w-6xl">
-          <div className="flex items-center justify-center min-h-96">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          </div>
-        </div>
-      </MainLayout>
-    )
-  }
-
-  if (error) {
-    return (
-      <MainLayout>
-        <div className="max-w-6xl">
-          <Card className="bg-transparent border-red-300 shadow-none rounded-2xl">
-            <CardContent className="p-8 text-center">
-              <p className="text-red-600">{error}</p>
-              <Button
-                onClick={loadTitles}
-                variant="outline"
-                className="mt-4 border-gray-300 hover:bg-gray-100"
-              >
-                {t('titles:list.retryButton')}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </MainLayout>
-    )
-  }
-
   return (
     <MainLayout>
-      <div className="max-w-6xl">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-black">{t('titles:list.title')}</h1>
-            <p className="text-gray-600 mt-1">{t('titles:list.subtitle')}</p>
-          </div>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('titles:list.title')}</h1>
           <Button
             onClick={() => navigate('/titles/add-title')}
-            variant="outline"
-            className="border-gray-300 hover:bg-gray-100"
+            className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
           >
             {t('titles:list.addNewButton')}
           </Button>
         </div>
 
-        {titles.length === 0 && drafts.length === 0 && pendingDrafts.length === 0 && rejectedDrafts.length === 0 ? (
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-            <CardHeader>
-              <CardTitle>{t('titles:list.titleList')}</CardTitle>
-              <CardDescription>
-                {t('titles:list.titleListDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 text-center py-8">
-                {t('titles:list.emptyStateDescription')}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">{t('titles:list.loadingMessage', 'Loading titles...')}</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-500">{error}</p>
+            <Button
+              onClick={loadTitles}
+              variant="outline"
+              className="mt-4 border-gray-300 hover:bg-gray-100"
+            >
+              {t('titles:list.retryButton')}
+            </Button>
+          </div>
+        )}
+
+        {!loading && !error && titles.length === 0 && drafts.length === 0 && pendingDrafts.length === 0 && rejectedDrafts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">{t('titles:list.emptyStateDescription')}</p>
+          </div>
+        )}
+
+        {!loading && !error && (titles.length > 0 || drafts.length > 0 || pendingDrafts.length > 0 || rejectedDrafts.length > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* In-Progress Drafts */}
             {drafts.map((draft) => (
@@ -186,7 +159,7 @@ export default function Titles() {
           </div>
         )}
 
-        {(titles.length > 0 || drafts.length > 0 || pendingDrafts.length > 0 || rejectedDrafts.length > 0) && (
+        {!loading && !error && (titles.length > 0 || drafts.length > 0 || pendingDrafts.length > 0 || rejectedDrafts.length > 0) && (
           <p className="text-sm text-gray-500 text-center mt-8">
             {t('titles:list.statsApproved', { count: titles.length })}
             {pendingDrafts.length > 0 && ` + ${t('titles:list.statsPending', { count: pendingDrafts.length })}`}

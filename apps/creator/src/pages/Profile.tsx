@@ -142,9 +142,9 @@ export default function Profile() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="max-w-4xl">
-          <div className="flex items-center justify-center min-h-96">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading profile...</p>
           </div>
         </div>
       </MainLayout>
@@ -154,19 +154,17 @@ export default function Profile() {
   if (error && !profile) {
     return (
       <MainLayout>
-        <div className="max-w-4xl">
-          <Card className="bg-transparent border-red-300 shadow-none rounded-2xl">
-            <CardContent className="p-8 text-center">
-              <p className="text-red-600">{error}</p>
-              <Button
-                onClick={loadProfile}
-                variant="outline"
-                className="mt-4 border-gray-300 hover:bg-gray-100"
-              >
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-red-500">{error}</p>
+            <Button
+              onClick={loadProfile}
+              variant="outline"
+              className="mt-4 border-gray-300 hover:bg-gray-100"
+            >
+              Retry
+            </Button>
+          </div>
         </div>
       </MainLayout>
     )
@@ -175,12 +173,10 @@ export default function Profile() {
   if (!profile) {
     return (
       <MainLayout>
-        <div className="max-w-4xl">
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-            <CardContent className="p-8 text-center">
-              <p className="text-gray-600">Profile not found</p>
-            </CardContent>
-          </Card>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-gray-500">Profile not found</p>
+          </div>
         </div>
       </MainLayout>
     )
@@ -188,18 +184,18 @@ export default function Profile() {
 
   return (
     <MainLayout>
-      <div className="max-w-4xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-black">Profile</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-black">Profile</h1>
             <p className="text-gray-600 mt-1">Manage your creator account information</p>
           </div>
         </div>
 
         {error && (
-          <Card className="bg-transparent border-red-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
             <CardContent className="p-4">
-              <p className="text-red-600 text-sm">{error}</p>
+              <p className="text-red-500 text-sm">{error}</p>
             </CardContent>
           </Card>
         )}
@@ -215,8 +211,7 @@ export default function Profile() {
               {!isEditing ? (
                 <Button
                   onClick={() => setIsEditing(true)}
-                  variant="outline"
-                  className="border-gray-300 hover:bg-gray-100"
+                  className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
                 >
                   Edit Profile
                 </Button>
@@ -225,8 +220,7 @@ export default function Profile() {
                   <Button
                     onClick={handleUpdateProfile}
                     disabled={updating}
-                    variant="outline"
-                    className="border-gray-300 hover:bg-gray-100"
+                    className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
                   >
                     {updating ? 'Saving...' : 'Save Changes'}
                   </Button>

@@ -52,7 +52,20 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // Brand colors for auth pages
+        // Brand colors - Primary: sunrise-coral, Secondary: hanok-teal
+        'sunrise-coral': {
+          DEFAULT: '#FF6B6B',
+          50: '#FFF0F0',
+          100: '#FFE1E1',
+          200: '#FFC3C3',
+          300: '#FFA5A5',
+          400: '#FF8787',
+          500: '#FF6B6B',
+          600: '#FF4D4D',
+          700: '#FF2F2F',
+          800: '#FF1111',
+          900: '#F00000',
+        },
         'hanok-teal': {
           DEFAULT: '#4C9C9B',
           50: '#E8F5F5',

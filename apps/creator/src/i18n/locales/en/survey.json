@@ -73,6 +73,7 @@
     "rightsBusinessSubtitle": "Information about available rights and target markets",
     "rightsAvailable": "Rights Available",
     "rightsAvailablePlaceholder": "e.g., Film, TV, Merchandise",
+    "rightsAvailableHelper": "Select all types of rights that are available for licensing or adaptation",
     "perfectFor": "Perfect For",
     "perfectForPlaceholder": "e.g., Streaming series, Feature film",
     "targetAudience": "Target Audience",
@@ -269,7 +270,7 @@
   },
   "page": {
     "backToTitles": "Back to Titles",
-    "pageTitle": "Add New Title",
+    "pageTitle": "New Title",
     "pageSubtitle": "Complete the 5-step survey to add comprehensive information about your title",
     "saveDraftNow": "Save Draft Now"
   }

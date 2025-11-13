@@ -338,8 +338,10 @@ export default function AddTitleSurvey() {
   if (!userId || !isDraftLoaded) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center min-h-96">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black" />
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-gray-500">{t('survey:messages.loading', 'Loading survey form...')}</p>
+          </div>
         </div>
       </MainLayout>
     )
@@ -347,18 +349,10 @@ export default function AddTitleSurvey() {
 
   return (
     <MainLayout>
-      <div className="max-w-4xl">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/titles')}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('survey:page.backToTitles')}
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">{t('survey:page.pageTitle')}</h1>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('survey:page.pageTitle')}</h1>
           <p className="text-gray-600 mt-2">
             {t('survey:page.pageSubtitle')}
           </p>
@@ -410,7 +404,7 @@ export default function AddTitleSurvey() {
               <Button
                 type="button"
                 onClick={goToNextStep}
-                className="bg-black text-white hover:bg-gray-800"
+                className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
               >
                 {t('survey:navigation.next')}
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -419,7 +413,7 @@ export default function AddTitleSurvey() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-black text-white hover:bg-gray-800"
+                className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
               >
                 {isSubmitting ? (
                   <>

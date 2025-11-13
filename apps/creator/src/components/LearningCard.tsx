@@ -12,7 +12,7 @@ interface LearningCardProps {
 export function LearningCard({ title, description, imageUrl, tags, onClick }: LearningCardProps) {
   return (
     <Card
-      className="bg-transparent border-gray-300 shadow-none rounded-2xl hover:border-gray-400 transition-colors cursor-pointer overflow-hidden"
+      className="bg-transparent border-gray-300 shadow-none rounded-2xl hover:border-sunrise-coral-300 transition-colors cursor-pointer overflow-hidden"
       onClick={onClick}
     >
       {/* Cover Image - 4:3 aspect ratio */}
@@ -33,7 +33,7 @@ export function LearningCard({ title, description, imageUrl, tags, onClick }: Le
       {/* Content */}
       <div className="p-4">
         {/* Title */}
-        <h3 className="font-bold text-black text-lg mb-2 line-clamp-2 hover:text-gray-700 transition-colors">
+        <h3 className="font-bold text-black text-lg mb-2 line-clamp-2 hover:text-sunrise-coral-600 transition-colors">
           {title}
         </h3>
 
@@ -49,7 +49,7 @@ export function LearningCard({ title, description, imageUrl, tags, onClick }: Le
               <Badge
                 key={index}
                 variant="outline"
-                className="border-gray-300 text-blue-600 text-xs px-2 py-0.5"
+                className="border-sunrise-coral-300 text-sunrise-coral-600 text-xs px-2 py-0.5 hover:bg-sunrise-coral-50 transition-colors"
               >
                 {tag}
               </Badge>

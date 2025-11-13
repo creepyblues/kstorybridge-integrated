@@ -192,7 +192,8 @@ CREATE TABLE public.titles (
   perfect_for text,
   tone text,
   audience text,
-  rights text,
+  rights text, -- DEPRECATED: Use rights_available instead
+  rights_available text[], -- Multi-select rights (film_tv, animation, publication, merchandising, game, other)
   art_author_kr text,
   story_author_kr text,
   note text,
@@ -289,7 +290,12 @@ CREATE TABLE public.titles (
 - `comps`: Array of comparable titles
 
 **Rights & Business**:
-- `rights`: Rights status
+- `rights`: **DEPRECATED** (migrated 2025-11-12) - Use `rights_available` instead
+- `rights_available`: Multi-select array of available rights for licensing
+  - Type: `text[]` (PostgreSQL array)
+  - Valid values: `film_tv`, `animation`, `publication`, `merchandising`, `game`, `other`
+  - UI: Checkbox group in creator AddTitle/EditTitle forms
+  - Migration: 244 titles migrated from old `rights` field
 - `rights_holder_name`: Rights holder's name
 - `rights_holder_company`: Rights holder's company
 - `cp`: Copyright information

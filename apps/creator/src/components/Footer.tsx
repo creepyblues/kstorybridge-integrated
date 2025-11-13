@@ -18,12 +18,14 @@ const Footer = () => {
 
           {/* Links */}
           <div className="flex items-center space-x-6 text-sm text-gray-600">
-            <Link
-              to="/terms"
+            <a
+              href="https://kstorybridge.com/terms"
+              target="_blank"
+              rel="noopener noreferrer"
               className="hover:text-black transition-colors"
             >
               Terms of Use
-            </Link>
+            </a>
             <a
               href="https://kstorybridge.com/privacy"
               target="_blank"

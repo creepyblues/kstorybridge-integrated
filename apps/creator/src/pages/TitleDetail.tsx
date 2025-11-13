@@ -77,9 +77,9 @@ export default function TitleDetail() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center min-h-96">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-gray-500">{t('titles:detail.loading', 'Loading title details...')}</p>
           </div>
         </div>
       </MainLayout>
@@ -89,19 +89,17 @@ export default function TitleDetail() {
   if (error || !title) {
     return (
       <MainLayout>
-        <div className="max-w-6xl mx-auto">
-          <Card className="bg-transparent border-red-300 shadow-none rounded-2xl">
-            <CardContent className="p-8 text-center">
-              <p className="text-red-600">{error || 'Title not found'}</p>
-              <Button
-                onClick={() => navigate('/titles')}
-                variant="outline"
-                className="mt-4 border-gray-300 hover:bg-gray-100"
-              >
-                {t('titles:detail.backToList', 'Back to Titles')}
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-red-500">{error || 'Title not found'}</p>
+            <Button
+              onClick={() => navigate('/titles')}
+              variant="outline"
+              className="mt-4 border-gray-300 hover:bg-gray-100"
+            >
+              {t('titles:detail.backToList', 'Back to Titles')}
+            </Button>
+          </div>
         </div>
       </MainLayout>
     )
@@ -116,7 +114,7 @@ export default function TitleDetail() {
 
   return (
     <MainLayout>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Hero Section */}
         <div>
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
@@ -188,8 +186,7 @@ export default function TitleDetail() {
             <div className="flex flex-row gap-3 w-full lg:w-auto justify-center lg:justify-end">
               <Button
                 onClick={() => navigate(`/titles/${title.title_id}/edit`)}
-                variant="outline"
-                className="flex-1 border-gray-300 hover:bg-gray-100"
+                className="flex-1 bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
               >
                 <Edit className="h-4 w-4 mr-2" />
                 {t('titles:detail.editButton', 'Edit')}
@@ -211,7 +208,7 @@ export default function TitleDetail() {
 
         {/* Pitch Deck Section */}
         {title.pitch && title.pitch.trim() !== '' && (
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6">
+          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
             <CardContent className="p-4 sm:p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Pitch Deck</h3>
               <PitchDeckThumbnail

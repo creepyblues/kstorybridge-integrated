@@ -93,7 +93,8 @@ export const surveyFormSchema = z.object({
   rights_holder_company: z.string().optional(),
 
   // Step 1: Rights & business
-  rights: z.string().optional(),
+  rights: z.string().optional(), // @deprecated - Use rights_available instead
+  rights_available: z.array(z.string()).optional(), // Multi-select rights: film_tv, animation, publication, merchandising, game, other
   perfect_for: z.string().optional(),
   audience: z.string().optional(),
 

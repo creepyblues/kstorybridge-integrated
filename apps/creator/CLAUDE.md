@@ -2,7 +2,7 @@
 
 **App Scope**: Creator-focused dashboard for content management, title submissions, and profile management. Dedicated app for Korean content creators (webtoon artists, web novel authors, agents).
 
-**Last Updated**: 2025-11-02
+**Last Updated**: 2025-11-12
 
 **Status**: ✅ PRODUCTION - Primary creator app (V1 archived as reference)
 
@@ -211,6 +211,251 @@ if (session) {
 
 ---
 
+## 📊 Essential Shared Patterns
+
+### Database Operations
+
+**Supabase Config**:
+```typescript
+const SUPABASE_URL = 'https://dlrnrgcoguxlkkcitlpd.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+**Query Patterns** (CRITICAL):
+```typescript
+// ✅ CORRECT - Always query by email
+.eq('email', user.email?.toLowerCase())
+
+// ❌ INCORRECT - user_id field doesn't exist
+.eq('user_id', user.id)
+```
+
+### User Tables Structure
+
+**user_creators** (query by `email`):
+- `pen_name`: Always use this field (not `pen_name_or_studio`)
+- `ip_owner_role`: REQUIRED (author | agent)
+- `invitation_status`: invited (default) | active | pending
+- `full_name`, `ip_owner_company` (optional), `website_url` (optional)
+
+**Field Naming** (CRITICAL):
+```typescript
+// ✅ CORRECT - Use snake_case matching database
+interface CreatorFormData {
+  full_name: string;           // NOT fullName
+  pen_name: string;            // NOT penNameOrStudio
+  ip_owner_role: string;       // NOT ipOwnerRole (REQUIRED)
+  ip_owner_company?: string;   // NOT ipOwnerCompany
+  website_url?: string;        // NOT websiteUrl
+  invitation_status?: string;
+}
+```
+
+---
+
+## 📚 Content Management (Titles Table)
+
+### Complete Field List
+
+**Core Fields**:
+- `title_id` (uuid, primary key)
+- `title_name_kr` (text, NOT NULL) - Korean title
+- `title_name_en` (text) - English title
+- `is_official_english_title` (boolean) - Whether English title is official
+- `english_title_type` (text) - Type: official | literal | marketing
+- `synopsis` (text) - English synopsis
+- `tagline` (text) - English tagline
+- `tagline_kr` (text) - Korean tagline
+- `description_kr` (text) - Korean description
+- `note` (text) - Internal notes (English)
+- `note_kr` (text) - Internal notes (Korean)
+
+**Authors & Credits**:
+- `story_author` (text) - Story author name (English)
+- `story_author_kr` (text) - Story author name (Korean)
+- `art_author` (text) - Art author name (English)
+- `art_author_kr` (text) - Art author name (Korean)
+- `original_author` (text) - Original author if adapted (English)
+- `original_author_kr` (text) - Original author if adapted (Korean)
+- `script_title_kr` (text) - Script/webtoon title (Korean)
+- `script_title_en` (text) - Script/webtoon title (English)
+- `art_title_kr` (text) - Art/webtoon title (Korean)
+- `art_title_en` (text) - Art/webtoon title (English)
+- `underlying_novel_kr` (text) - Source novel title (Korean)
+- `underlying_novel_en` (text) - Source novel title (English)
+- `creator_id` (text) - Associated creator email
+
+**Rights & Business**:
+- `rights` (text) - **DEPRECATED** - Use `rights_available` instead
+- `rights_available` (text[], array) - Multi-select rights available for licensing
+  - Valid values: `film_tv`, `animation`, `publication`, `merchandising`, `game`, `other`
+  - UI: Checkbox group in Step 1 of AddTitle/EditTitle forms
+  - Migrated: 2025-11-12 (244 titles migrated from old `rights` field)
+- `rights_holder_name` (text) - Rights holder name
+- `rights_holder_company` (text) - Rights holder company
+- `cp` (text) - Content provider/studio
+- `pitch` (text) - Pitch deck description
+
+**Content Classification**:
+- `genre` (text[], array) - Genre tags (e.g., ["romance", "fantasy"])
+- `genre_kr` (text[], array) - Korean genre tags
+- `content_format` (text) - Format: webtoon | web_novel | light_novel | manga
+- `tone` (text) - Tone: lighthearted | serious | dark | comedic
+- `audience` (text) - Target audience
+- `age_rating` (text) - Age rating
+- `keywords` (text[], array) - Searchable keywords
+- `comps` (text[], array) - Comparable titles/IPs
+
+**Story Details** (Questionnaire - Added 2025-10-24):
+- `inspiration` (text) - What inspired this story
+- `important_issues` (text) - Themes and issues explored
+- `setting_description` (text) - Story setting details
+- `world_lore` (text) - World-building and lore
+- `supernatural_concepts` (text) - Supernatural elements
+- `character_details` (jsonb) - Character descriptions (structured)
+- `story_structure` (text) - Narrative structure
+- `planned_ending` (text) - Ending description/type
+- `narrative_arc` (text) - Story arc description
+
+**Achievements & Recognition** (Added 2025-10-24):
+- `awards` (text[], array) - Awards received
+- `sales_records` (text) - Sales achievements
+- `merchandise_deals` (text) - Merchandising deals
+- `print_editions` (boolean) - Has print editions
+- `print_edition_details` (text) - Print edition info
+- `media_coverage` (text) - Press coverage details
+- `celebrity_endorsements` (text) - Celebrity endorsements
+- `creator_achievements` (jsonb) - Creator accomplishments (structured)
+
+**Metrics**:
+- `views` (bigint) - Total views
+- `likes` (integer) - Total likes
+- `rating` (numeric) - Average rating (0-10)
+- `rating_count` (integer) - Number of ratings
+- `chapters` (integer) - Number of chapters/episodes
+- `completed` (boolean) - Is series completed
+- `perfect_for` (text) - "Perfect for fans of..."
+
+**Media**:
+- `title_image` (text) - Cover/poster image URL
+- `title_url` (text) - External URL to original content
+
+**System Fields**:
+- `priority` (integer) - Display priority/ranking
+- `verified` (boolean) - Verification status
+- `created_at` (timestamptz) - Creation timestamp
+- `updated_at` (timestamptz) - Last update timestamp
+
+**Vector Embeddings** (1536-dim for AI search):
+- `title_embedding` (vector) - Title name embedding
+- `synopsis_embedding` (vector) - Synopsis embedding
+- `description_embedding` (vector) - Description embedding
+- `content_embedding` (vector) - Combined content embedding
+- `combined_embedding` (vector) - All fields combined
+
+### Related Tables (Added 2025-10-24)
+
+**title_platforms**: Platform-specific metrics (Naver, Kakao, Lezhin, etc.)
+- `id` (uuid, primary key)
+- `title_id` (uuid, foreign key → titles.title_id)
+- `platform_name` (text) - Platform name
+- `platform_url` (text) - Link to title on platform
+- `views` (bigint) - Platform-specific views
+- `subscribers` (integer) - Platform-specific subscribers
+- `other_metrics` (jsonb) - Additional platform metrics (structured)
+- `created_at` (timestamptz)
+- `updated_at` (timestamptz)
+
+**title_documents**: Document attachments (PDFs, scripts, press releases, etc.)
+- `id` (uuid, primary key)
+- `title_id` (uuid, foreign key → titles.title_id)
+- `document_type` (text) - Type: pitch_deck | script | press_release | etc.
+- `file_url` (text) - Supabase storage URL
+- `file_name` (text) - Original filename
+- `file_size` (bigint) - File size in bytes
+- `shareable_with_nda` (boolean) - Requires NDA to share
+- `external_url` (text) - External link (if not uploaded)
+- `created_at` (timestamptz)
+- `updated_at` (timestamptz)
+
+**title_drafts**: Multi-step questionnaire draft storage
+- `id` (uuid, primary key)
+- `creator_id` (text) - Creator email
+- `draft_data` (jsonb) - Draft form data (structured)
+- `current_step` (integer) - Current step (1-5)
+- `last_saved_at` (timestamptz) - Auto-save timestamp
+- `created_at` (timestamptz)
+
+**title_content_analysis**: AI-generated content analysis
+- `id` (uuid, primary key)
+- `title_id` (uuid, foreign key → titles.title_id)
+- `semantic_tags` (text[]) - AI-extracted semantic tags
+- `character_types` (text[]) - Character archetypes
+- `plot_elements` (text[]) - Plot components
+- `cultural_elements` (text[]) - Cultural themes
+- `pitch_analysis` (jsonb) - Structured pitch deck analysis (for Phase 3 chatbot)
+- `processing_confidence` (numeric) - AI confidence score (0-1)
+- `created_at` (timestamptz)
+- `updated_at` (timestamptz)
+
+### Query Patterns
+
+**Fetch all titles for a creator**:
+```typescript
+const { data: titles } = await supabase
+  .from('titles')
+  .select('*')
+  .eq('creator_id', user.email)
+  .order('created_at', { ascending: false })
+```
+
+**Create title with minimal data**:
+```typescript
+const { data, error } = await supabase
+  .from('titles')
+  .insert({
+    title_name_kr: 'Title Name',
+    creator_id: user.email,
+    content_format: 'webtoon',
+    genre: ['romance', 'fantasy'],
+    // Other fields optional
+  })
+  .select()
+  .single()
+```
+
+**Update title**:
+```typescript
+const { data, error } = await supabase
+  .from('titles')
+  .update({
+    synopsis: 'Updated synopsis',
+    rating: 8.5,
+    updated_at: new Date().toISOString()
+  })
+  .eq('title_id', titleId)
+  .select()
+  .single()
+```
+
+**Add platform metrics**:
+```typescript
+const { data, error } = await supabase
+  .from('title_platforms')
+  .insert({
+    title_id: titleId,
+    platform_name: 'Naver Webtoon',
+    platform_url: 'https://comic.naver.com/...',
+    views: 1500000,
+    subscribers: 50000,
+    other_metrics: { rating: 9.8, episodes: 120 }
+  })
+```
+
+**See**: [docs/active/DATABASE_SCHEMA.md](../../docs/active/DATABASE_SCHEMA.md) for complete schema reference
+
+---
+
 ## Design System
 
 ### Color Palette
@@ -258,6 +503,63 @@ if (session) {
 <Card className="... hover:shadow-lg transition-shadow">
 ```
 
+### Standard Page Structure
+
+All pages MUST follow this consistent structure:
+
+**Page Container**:
+```tsx
+<MainLayout>
+  <div className="max-w-7xl mx-auto">
+    {/* Page content */}
+  </div>
+</MainLayout>
+```
+
+**Page Header**:
+```tsx
+<div className="mb-6 sm:mb-8">
+  <h1 className="text-2xl sm:text-3xl font-bold text-black">Page Title</h1>
+  <p className="text-gray-600 mt-2">Optional subtitle</p>
+</div>
+```
+
+**Loading/Error/Empty States**:
+```tsx
+// Loading
+{loading && (
+  <div className="text-center py-12">
+    <p className="text-gray-500">Loading...</p>
+  </div>
+)}
+
+// Error
+{error && (
+  <div className="text-center py-12">
+    <p className="text-red-500">{error}</p>
+    <Button onClick={handleRetry} variant="outline" className="mt-4 border-gray-300 hover:bg-gray-100">
+      Retry
+    </Button>
+  </div>
+)}
+
+// Empty
+{!loading && !error && items.length === 0 && (
+  <div className="text-center py-12">
+    <p className="text-gray-500">No items found</p>
+  </div>
+)}
+```
+
+**Page Structure Requirements**:
+- **Container**: `max-w-7xl mx-auto` (not `max-w-6xl` or `max-w-4xl`)
+- **Page Title**: `text-2xl sm:text-3xl font-bold text-black` (responsive)
+- **Title Margin**: `mb-6 sm:mb-8` (responsive)
+- **Title Color**: `text-black` (not `text-gray-900`)
+- **Loading State**: Simple text, no spinners
+- **Error State**: `text-red-500`, no red borders on cards
+- **Error Cards**: Use `border-gray-300`, not `border-red-300`
+
 ### Responsive Margins
 
 Use responsive margin pattern for section-level cards:
@@ -281,13 +583,14 @@ The design system mandates `bg-transparent` for cards, but these exceptions are 
 
 ### Design Reference
 
-**✅ Exemplary Page**: `src/pages/Profile.tsx`
-- Perfect adherence to card styling
-- Correct badge usage
-- Proper responsive margins
-- Standard button patterns
+**✅ Standard Pages**: All creator pages follow consistent structure
+- `src/pages/Titles.tsx` - List page with grid layout
+- `src/pages/Profile.tsx` - Form page with card sections
+- `src/pages/AddTitle.tsx` - Multi-step form
+- `src/pages/EditTitle.tsx` - Edit form with tabs
+- `src/pages/TitleDetail.tsx` - Detail view page
 
-**Reference**: Dashboard `/buyers/profile` page for visual standards
+**Reference**: [DESIGN_SYSTEM.md](../../docs/active/DESIGN_SYSTEM.md) for complete guidelines
 
 ---
 
@@ -380,6 +683,31 @@ See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for OAuth configuration details.
 
 ---
 
+## 📝 Recent Changes
+
+### 2025-11-12: Rights Field Converted to Multi-Select
+- **Changed**: `rights` (text) → `rights_available` (text[] array)
+- **Migration**: 244 titles successfully migrated
+- **UI**: New checkbox group in Step 1 (AddTitle/EditTitle forms)
+- **Options**: Film & TV, Animation, Publication, Merchandising, Game, Other
+- **Component**: `RightsCheckboxGroup.tsx`
+- **Files Modified**:
+  - Database: `/supabase/migrations/20251112000000_convert_rights_to_array.sql`
+  - Types: `src/services/titlesService.ts`
+  - Component: `src/components/survey/RightsCheckboxGroup.tsx`
+  - Form: `src/components/survey/Step1BasicInfo.tsx`
+  - Validation: `src/lib/surveySchema.ts`
+  - i18n: `src/i18n/locales/{en,ko}/survey.json`
+
+### 2025-11-11: CMS Content Integration
+- **Added**: Home page now displays news and learning posts from `content_posts` table
+- **Service**: `src/services/contentService.ts` added
+- **Updates Section**: Shows 3 recent news posts (category='news')
+- **Learning Center Section**: Shows 3 recent learning posts (category='learning')
+- **Navigation**: Links to `/news/{slug}` and `/learning-center/{slug}`
+
+---
+
 ## 🔗 Related Documentation
 
 ### Root Documentation
@@ -399,6 +727,6 @@ See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for OAuth configuration details.
 
 ---
 
-**Last Updated**: 2025-10-28
+**Last Updated**: 2025-11-12
 **Status**: ✅ PRODUCTION READY
 **Version**: 2.0.0

@@ -5,7 +5,10 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "Bash(ls:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(npx supabase:*)",
+      "Bash(apps/dashboard/src/integrations/supabase/types.ts)",
+      "Bash(/Users/sungholee/code/kstorybridge/apps/dashboard/src/integrations/supabase/types.ts)"
     ],
     "deny": []
   }

@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin: {
@@ -337,6 +312,63 @@ export type Database = {
           },
         ]
       }
+      content_posts: {
+        Row: {
+          author_email: string
+          author_name: string
+          category: string
+          content: string
+          created_at: string | null
+          excerpt: string | null
+          featured_image_url: string | null
+          id: string
+          meta_description: string | null
+          meta_keywords: string[] | null
+          published_at: string | null
+          slug: string
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_email: string
+          author_name: string
+          category: string
+          content: string
+          created_at?: string | null
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          published_at?: string | null
+          slug: string
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_email?: string
+          author_name?: string
+          category?: string
+          content?: string
+          created_at?: string | null
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          published_at?: string | null
+          slug?: string
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       featured: {
         Row: {
           created_at: string
@@ -474,65 +506,310 @@ export type Database = {
       }
       title_content_analysis: {
         Row: {
+          accessibility_features: string[] | null
+          analysis_version: string | null
           character_types: string[] | null
           complexity_score: number | null
           content_quality_score: number | null
           content_warnings: string[] | null
-          created_at: string | null
+          created_at: string
           cultural_elements: string[] | null
           id: string
           keyword_density: Json | null
           mood_analysis: Json | null
+          pitch_analysis: Json | null
           plot_elements: string[] | null
+          processed_by: string | null
+          processing_confidence: number | null
+          reading_time_minutes: number | null
           search_boost_factor: number | null
-          semantic_tags: string[] | null
+          semantic_tags: Json | null
           target_demographics: Json | null
           title_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
+          accessibility_features?: string[] | null
+          analysis_version?: string | null
           character_types?: string[] | null
           complexity_score?: number | null
           content_quality_score?: number | null
           content_warnings?: string[] | null
-          created_at?: string | null
+          created_at?: string
           cultural_elements?: string[] | null
           id?: string
           keyword_density?: Json | null
           mood_analysis?: Json | null
+          pitch_analysis?: Json | null
           plot_elements?: string[] | null
+          processed_by?: string | null
+          processing_confidence?: number | null
+          reading_time_minutes?: number | null
           search_boost_factor?: number | null
-          semantic_tags?: string[] | null
+          semantic_tags?: Json | null
           target_demographics?: Json | null
           title_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
+          accessibility_features?: string[] | null
+          analysis_version?: string | null
           character_types?: string[] | null
           complexity_score?: number | null
           content_quality_score?: number | null
           content_warnings?: string[] | null
-          created_at?: string | null
+          created_at?: string
           cultural_elements?: string[] | null
           id?: string
           keyword_density?: Json | null
           mood_analysis?: Json | null
+          pitch_analysis?: Json | null
           plot_elements?: string[] | null
+          processed_by?: string | null
+          processing_confidence?: number | null
+          reading_time_minutes?: number | null
           search_boost_factor?: number | null
-          semantic_tags?: string[] | null
+          semantic_tags?: Json | null
           target_demographics?: Json | null
           title_id?: string
-          updated_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "title_content_analysis_title_id_fkey"
+            columns: ["title_id"]
+            isOneToOne: true
+            referencedRelation: "titles"
+            referencedColumns: ["title_id"]
+          },
+        ]
+      }
+      title_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          external_url: string | null
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          shareable_with_nda: boolean | null
+          title_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          external_url?: string | null
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          shareable_with_nda?: boolean | null
+          title_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          external_url?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          shareable_with_nda?: boolean | null
+          title_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "title_documents_title_id_fkey"
+            columns: ["title_id"]
+            isOneToOne: false
+            referencedRelation: "titles"
+            referencedColumns: ["title_id"]
+          },
+        ]
+      }
+      title_drafts: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          creator_id: string
+          current_step: number | null
+          draft_data: Json
+          id: string
+          last_saved_at: string
+          rejected_at: string | null
+          rejection_reason: string | null
+          status: string | null
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          creator_id: string
+          current_step?: number | null
+          draft_data?: Json
+          id?: string
+          last_saved_at?: string
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          creator_id?: string
+          current_step?: number | null
+          draft_data?: Json
+          id?: string
+          last_saved_at?: string
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string
         }
         Relationships: []
+      }
+      title_marketing_assets: {
+        Row: {
+          approved: boolean | null
+          approved_at: string | null
+          approved_by_email: string | null
+          asset_category: string
+          asset_format: string | null
+          asset_type: string
+          created_at: string | null
+          description: string
+          error_message: string | null
+          generation_api: string | null
+          generation_attempts: number | null
+          generation_cost: number | null
+          generation_model: string | null
+          id: string
+          image_url: string | null
+          prompt_template: string
+          prompt_used: string | null
+          status: string
+          title_id: string
+          title_name: string
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by_email?: string | null
+          asset_category: string
+          asset_format?: string | null
+          asset_type: string
+          created_at?: string | null
+          description: string
+          error_message?: string | null
+          generation_api?: string | null
+          generation_attempts?: number | null
+          generation_cost?: number | null
+          generation_model?: string | null
+          id?: string
+          image_url?: string | null
+          prompt_template: string
+          prompt_used?: string | null
+          status?: string
+          title_id: string
+          title_name: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by_email?: string | null
+          asset_category?: string
+          asset_format?: string | null
+          asset_type?: string
+          created_at?: string | null
+          description?: string
+          error_message?: string | null
+          generation_api?: string | null
+          generation_attempts?: number | null
+          generation_cost?: number | null
+          generation_model?: string | null
+          id?: string
+          image_url?: string | null
+          prompt_template?: string
+          prompt_used?: string | null
+          status?: string
+          title_id?: string
+          title_name?: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      title_platforms: {
+        Row: {
+          created_at: string
+          id: string
+          other_metrics: Json | null
+          platform_name: string
+          platform_url: string
+          subscribers: number | null
+          title_id: string
+          updated_at: string
+          views: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          other_metrics?: Json | null
+          platform_name: string
+          platform_url: string
+          subscribers?: number | null
+          title_id: string
+          updated_at?: string
+          views?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          other_metrics?: Json | null
+          platform_name?: string
+          platform_url?: string
+          subscribers?: number | null
+          title_id?: string
+          updated_at?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "title_platforms_title_id_fkey"
+            columns: ["title_id"]
+            isOneToOne: false
+            referencedRelation: "titles"
+            referencedColumns: ["title_id"]
+          },
+        ]
       }
       titles: {
         Row: {
           age_rating: string | null
           art_author: string | null
           art_author_kr: string | null
+          art_title_en: string | null
+          art_title_kr: string | null
           audience: string | null
+          awards: string[] | null
+          celebrity_endorsements: string | null
           chapters: number | null
+          character_details: Json | null
           combined_embedding: string | null
           completed: string | null
           comps: string[] | null
@@ -540,28 +817,47 @@ export type Database = {
           content_format: Database["public"]["Enums"]["content_format"] | null
           cp: string | null
           created_at: string
+          creator_achievements: Json | null
           creator_id: string
           description_embedding: string | null
           description_kr: string | null
           embedding_created_at: string | null
           embedding_model: string | null
           embedding_updated_at: string | null
+          english_title_type: string | null
           genre: string[] | null
           genre_kr: string[] | null
+          important_issues: string | null
+          inspiration: string | null
+          is_official_english_title: boolean | null
           keywords: string[] | null
           likes: number | null
+          media_coverage: string | null
+          merchandise_deals: string | null
+          narrative_arc: string | null
           note: string | null
           note_kr: string | null
           original_author: string | null
           original_author_kr: string | null
           perfect_for: string | null
           pitch: string | null
+          planned_ending: string | null
+          print_edition_details: string | null
+          print_editions: boolean | null
           priority: Database["public"]["Enums"]["priority"]
           rating: number | null
           rating_count: number | null
           rights: string | null
+          rights_holder_company: string | null
+          rights_holder_name: string | null
+          sales_records: string | null
+          script_title_en: string | null
+          script_title_kr: string | null
+          setting_description: string | null
           story_author: string | null
           story_author_kr: string | null
+          story_structure: string | null
+          supernatural_concepts: string | null
           synopsis: string | null
           synopsis_embedding: string | null
           tagline: string | null
@@ -573,16 +869,24 @@ export type Database = {
           title_name_kr: string | null
           title_url: string | null
           tone: string | null
+          underlying_novel_en: string | null
+          underlying_novel_kr: string | null
           updated_at: string
           verified: boolean | null
           views: number | null
+          world_lore: string | null
         }
         Insert: {
           age_rating?: string | null
           art_author?: string | null
           art_author_kr?: string | null
+          art_title_en?: string | null
+          art_title_kr?: string | null
           audience?: string | null
+          awards?: string[] | null
+          celebrity_endorsements?: string | null
           chapters?: number | null
+          character_details?: Json | null
           combined_embedding?: string | null
           completed?: string | null
           comps?: string[] | null
@@ -590,28 +894,47 @@ export type Database = {
           content_format?: Database["public"]["Enums"]["content_format"] | null
           cp?: string | null
           created_at?: string
+          creator_achievements?: Json | null
           creator_id: string
           description_embedding?: string | null
           description_kr?: string | null
           embedding_created_at?: string | null
           embedding_model?: string | null
           embedding_updated_at?: string | null
+          english_title_type?: string | null
           genre?: string[] | null
           genre_kr?: string[] | null
+          important_issues?: string | null
+          inspiration?: string | null
+          is_official_english_title?: boolean | null
           keywords?: string[] | null
           likes?: number | null
+          media_coverage?: string | null
+          merchandise_deals?: string | null
+          narrative_arc?: string | null
           note?: string | null
           note_kr?: string | null
           original_author?: string | null
           original_author_kr?: string | null
           perfect_for?: string | null
           pitch?: string | null
+          planned_ending?: string | null
+          print_edition_details?: string | null
+          print_editions?: boolean | null
           priority?: Database["public"]["Enums"]["priority"]
           rating?: number | null
           rating_count?: number | null
           rights?: string | null
+          rights_holder_company?: string | null
+          rights_holder_name?: string | null
+          sales_records?: string | null
+          script_title_en?: string | null
+          script_title_kr?: string | null
+          setting_description?: string | null
           story_author?: string | null
           story_author_kr?: string | null
+          story_structure?: string | null
+          supernatural_concepts?: string | null
           synopsis?: string | null
           synopsis_embedding?: string | null
           tagline?: string | null
@@ -623,16 +946,24 @@ export type Database = {
           title_name_kr?: string | null
           title_url?: string | null
           tone?: string | null
+          underlying_novel_en?: string | null
+          underlying_novel_kr?: string | null
           updated_at?: string
           verified?: boolean | null
           views?: number | null
+          world_lore?: string | null
         }
         Update: {
           age_rating?: string | null
           art_author?: string | null
           art_author_kr?: string | null
+          art_title_en?: string | null
+          art_title_kr?: string | null
           audience?: string | null
+          awards?: string[] | null
+          celebrity_endorsements?: string | null
           chapters?: number | null
+          character_details?: Json | null
           combined_embedding?: string | null
           completed?: string | null
           comps?: string[] | null
@@ -640,28 +971,47 @@ export type Database = {
           content_format?: Database["public"]["Enums"]["content_format"] | null
           cp?: string | null
           created_at?: string
+          creator_achievements?: Json | null
           creator_id?: string
           description_embedding?: string | null
           description_kr?: string | null
           embedding_created_at?: string | null
           embedding_model?: string | null
           embedding_updated_at?: string | null
+          english_title_type?: string | null
           genre?: string[] | null
           genre_kr?: string[] | null
+          important_issues?: string | null
+          inspiration?: string | null
+          is_official_english_title?: boolean | null
           keywords?: string[] | null
           likes?: number | null
+          media_coverage?: string | null
+          merchandise_deals?: string | null
+          narrative_arc?: string | null
           note?: string | null
           note_kr?: string | null
           original_author?: string | null
           original_author_kr?: string | null
           perfect_for?: string | null
           pitch?: string | null
+          planned_ending?: string | null
+          print_edition_details?: string | null
+          print_editions?: boolean | null
           priority?: Database["public"]["Enums"]["priority"]
           rating?: number | null
           rating_count?: number | null
           rights?: string | null
+          rights_holder_company?: string | null
+          rights_holder_name?: string | null
+          sales_records?: string | null
+          script_title_en?: string | null
+          script_title_kr?: string | null
+          setting_description?: string | null
           story_author?: string | null
           story_author_kr?: string | null
+          story_structure?: string | null
+          supernatural_concepts?: string | null
           synopsis?: string | null
           synopsis_embedding?: string | null
           tagline?: string | null
@@ -673,9 +1023,12 @@ export type Database = {
           title_name_kr?: string | null
           title_url?: string | null
           tone?: string | null
+          underlying_novel_en?: string | null
+          underlying_novel_kr?: string | null
           updated_at?: string
           verified?: boolean | null
           views?: number | null
+          world_lore?: string | null
         }
         Relationships: []
       }
@@ -793,6 +1146,7 @@ export type Database = {
         Row: {
           created_at: string | null
           current_step: number | null
+          has_seen_welcome_video: boolean | null
           id: string
           onboarding_completed: boolean | null
           onboarding_completed_at: string | null
@@ -805,6 +1159,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           current_step?: number | null
+          has_seen_welcome_video?: boolean | null
           id?: string
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
@@ -817,6 +1172,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           current_step?: number | null
+          has_seen_welcome_video?: boolean | null
           id?: string
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
@@ -978,16 +1334,9 @@ export type Database = {
         Args: { p_message: Json; p_session_id: string }
         Returns: boolean
       }
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
-      cleanup_old_webhook_events: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      cleanup_old_webhook_events: { Args: never; Returns: number }
       create_missing_creator_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           action: string
           email: string
@@ -1004,7 +1353,7 @@ export type Database = {
         Returns: boolean
       }
       fix_missing_oauth_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           account_type: string
           profile_created: boolean
@@ -1035,38 +1384,6 @@ export type Database = {
           user_id: string
         }[]
       }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
       hybrid_search_titles: {
         Args: {
           match_count?: number
@@ -1085,26 +1402,6 @@ export type Database = {
           vector_score: number
         }[]
       }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
-      }
       match_titles_by_embedding: {
         Args: {
           match_count?: number
@@ -1120,6 +1417,8 @@ export type Database = {
           description: string
           genre: string[]
           perfect_for: string
+          pitch_analysis: Json
+          processing_confidence: number
           similarity: number
           story_author: string
           synopsis: string
@@ -1133,49 +1432,10 @@ export type Database = {
         Args: { target_title_id: string }
         Returns: undefined
       }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      test_admin_connectivity: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      test_admin_connectivity: { Args: never; Returns: Json }
       update_session_messages: {
         Args: { p_messages: Json; p_session_id: string }
         Returns: boolean
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
       }
     }
     Enums: {
@@ -1331,9 +1591,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       account_type: ["creator", "buyer"],

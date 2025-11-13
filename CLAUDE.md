@@ -1,6 +1,8 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-11-11
+
+> 📜 For historical changes and system evolution, see [CHANGELOG.md](CHANGELOG.md)
 
 ## 🔄 Development Workflow (UPDATED 2025-11-02)
 
@@ -305,34 +307,26 @@ A: No. Both projects read the SAME file. Use branch-based keys in `git.deploymen
 
 ---
 
-## 🔐 Authentication Flow (UPDATED 2025-11-04)
+## 🔐 Authentication Flow
 
-### Current User Flow (Simplified 2025-11-04)
+### Current User Flow
 1. Users visit **Website** (`kstorybridge.com`) for marketing
 2. Website redirects based on account type:
    - **Buyers** → **Dashboard** app for authentication
-     - `/signup/buyer` - Buyer signup
-     - `/signin` - Buyer signin
-     - `/auth/callback` - OAuth callback (no parameters in URL)
-   - **Creators** → **Creator** app for authentication (`creator.kstorybridge.com`)
-     - `/signup` - Creator signup
-     - `/signin` - Creator signin
-     - `/auth/callback` - OAuth callback
+   - **Creators** → **Creator** app for authentication
 3. After auth:
    - **Buyers**: Dashboard app `/buyers/chat`
    - **Creators**: Creator app `/home`
 
-### Auth Simplification (Completed 2025-11-04)
-- ✅ **Dashboard app**: BUYER auth only (~215 lines removed, 50% complexity reduction)
-- ✅ **Creator app**: CREATOR auth only (complete separation)
-- ✅ **No shared auth pages**: Each app handles its own user type
-- ✅ **Tests**: 100% pass rate (99/99 tests passing in dashboard)
-
 ### Account Types
 - **buyer** - Media buyers with tier system (basic/pro/suite)
-- **creator** - Content creators (standardized from 'ip_owner')
+- **creator** - Content creators
 
-**See**: [AUTH_DOCUMENTATION.md](AUTH_DOCUMENTATION.md) for complete details
+**See**:
+- [AUTH_DOCUMENTATION.md](AUTH_DOCUMENTATION.md) - Complete auth system reference
+- [apps/dashboard/CLAUDE.md](apps/dashboard/CLAUDE.md) - Buyer auth implementation
+- [apps/creator/CLAUDE.md](apps/creator/CLAUDE.md) - Creator auth implementation
+- [CHANGELOG.md](CHANGELOG.md) - Auth system evolution history
 
 ---
 
@@ -399,76 +393,13 @@ A: No. Both projects read the SAME file. Use branch-based keys in `git.deploymen
 
 ---
 
-## 🤖 AI Chatbot System (UPDATED 2025-10-21)
+## 🎯 App-Specific Features
 
-**Status**: ✅ Phases 1-4 Complete (Contextual Response Generation ACTIVE)
+### AI Chatbot (Dashboard Only)
+Dashboard includes an AI-powered chatbot for title discovery with vector search, pitch analytics integration, and contextual response generation. See [apps/dashboard/CLAUDE.md](apps/dashboard/CLAUDE.md) and [docs/features/chatbot/](docs/features/chatbot/) for complete documentation.
 
-### Deployed Improvements
-
-**Phase 1: Quick Wins** (Completed 2025-10-04)
-1. ✅ **Vector Search Increase** (5→10 results) - +100% coverage
-2. ✅ **Anti-Hallucination Validation** - <5% false recommendations
-3. ✅ **Fuzzy Title Matching** - 80% similarity threshold, +40% link success
-
-**Phase 2: Prompt Engineering** (Completed 2025-10-04)
-4. ✅ **Intent Classification** - 5 types (discovery, comparison, information, recommendation, follow-up)
-5. ✅ **Conversation Context Weighting** - Recent message prioritization, title mention tracking
-6. ✅ **Fallback Keyword Search** - PostgreSQL full-text search when vector fails
-
-**Phase 3: Pitch Analytics Integration** (Deployed 2025-10-21)
-7. ✅ **Database Migration** - Added `pitch_analysis` JSONB field to vector search results
-8. ✅ **Edge Function Enhancement** - Integrated pitch analytics formatting and context
-9. ✅ **Feature Flag Control** - `ENABLE_PITCH_CONTEXT` for gradual rollout
-
-**Phase 4: Contextual Response Generation** (Deployed & Active 2025-10-21)
-10. ✅ **Smart Follow-up Detection** - Analyzes last 3 messages for title mentions
-11. ✅ **Focused Response Generation** - Section-specific responses (characters, plot, themes, market)
-12. ✅ **Anti-Repetition Logic** - Prevents repeating information already shared
-13. ✅ **Feature Flag Control** - `ENABLE_CONTEXTUAL_RESPONSES=true` (ACTIVE)
-
-**Enhanced Capabilities** (Phase 3 + 4):
-- 60+ enhanced query types across 9 categories (character, story, theme, market, cultural, IP value, production, content, creative team)
-- Character details with archetypes and relationships
-- Story loglines, conflicts, and narrative structure
-- Market positioning and comparable titles
-- Source material metrics (views, chapters, platform)
-- Korean cultural elements analysis
-- **Smart follow-up responses**: 50% token reduction on multi-turn conversations, zero repetition
-- Quality threshold: Only uses data with processing_confidence >= 0.70
-
-### Implementation Files
-- **Edge Function**: `apps/dashboard/supabase/functions/chat-orchestrator/index.ts`
-- **Database Migration**: `apps/dashboard/supabase/migrations/20250130000000_add_pitch_to_vector_search.sql`
-- **Frontend**: `apps/dashboard/src/pages/Chat.tsx`
-- **Test Suite**: `apps/dashboard/test-chatbot-improvements.js`
-
-### Performance Metrics (Updated with Phase 4)
-- **Search Results**: 10 titles with >0.8 similarity scores
-- **Response Times**: 3-5 seconds average (with pitch analytics)
-- **Hallucination Rate**: <5%
-- **Intent Accuracy**: 100%
-- **Zero-Results Rate**: ~2%
-- **Pitch Coverage**: 30-50% of queries use pitch data (when available)
-- **Token Efficiency** (Phase 4): 50% reduction on multi-turn conversations
-- **Repetition Rate** (Phase 4): 0% (down from ~70% on follow-ups)
-- **Contextual Activation** (Phase 4): ~20-30% of queries use focused responses
-
-### Documentation
-- **[Chatbot Overview](docs/features/chatbot/OVERVIEW.md)** - Complete system overview (Phases 1-4)
-- **[Phase 1 & 2 Summary](docs/features/chatbot/PHASE_1_2_SUMMARY.md)** - Test results with log evidence
-- **[Pitch Analytics](docs/features/chatbot/PITCH_ANALYTICS.md)** - Phase 3 implementation plan
-- **[Contextual Responses](docs/features/chatbot/PHASE_4_CONTEXTUAL_RESPONSES.md)** - Phase 4 implementation & testing
-- **[Testing Guide](docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures and log interpretation
-- **[AI Chatbot Docs](apps/dashboard/public/docs/AI_CHATBOT_DOCUMENTATION.md)** - User-facing documentation
-
-### Monitoring
-- Monitor edge function logs for contextual response activation (`🎯 Contextual Response Analysis`)
-- Track token costs (current: $0.015-0.018/query on follow-ups, down from $0.02)
-- Review focused response quality and user satisfaction
-- Gather user feedback on conversation flow improvements
-
-**Future Phases** (Planned):
-- Phase 5: Hybrid search, response caching, analytics dashboard, multi-turn memory (beyond 3 messages)
+### Content Management (Creator Only)
+Creator app provides comprehensive title management with multi-step questionnaire, document uploads, and platform metrics. See [apps/creator/CLAUDE.md](apps/creator/CLAUDE.md) for complete documentation.
 
 ---
 
@@ -495,35 +426,17 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 
 **user_buyers** (query by `email`):
 - `tier`: basic (default) | invited | pro | suite
-- Default tier: `basic` (changed 2025-08-21)
 - Tier hierarchy: basic(1) < pro(2) < suite(3)
+- **See**: [apps/dashboard/CLAUDE.md](apps/dashboard/CLAUDE.md) for tier system implementation
 
 **user_creators** (query by `email`):
 - `pen_name`: Always use this field (not `pen_name_or_studio`)
 - `ip_owner_role`: REQUIRED (author | agent)
 - `invitation_status`: invited (default) | active | pending
 
-### Tier System (Buyers)
-```typescript
-import { useTierAccess } from '@/hooks/useTierAccess';
-
-const { hasAccess, tier } = useTierAccess();
-// Automatically synced with Stripe subscriptions
-```
-
-### Cache System
-```typescript
-import { useDataCache } from '@/contexts/DataCacheContext';
-
-const { getData, setData, isSessionValid, isFresh } = useDataCache();
-
-// Session-based only (1-hour expiry)
-if (isSessionValid() && isFresh('data')) {
-  return getData();
-}
-```
-
-**See**: [CACHE_POLICY.md](CACHE_POLICY.md) for implementation details
+### Dashboard-Specific Patterns
+- **Tier System**: See [apps/dashboard/CLAUDE.md](apps/dashboard/CLAUDE.md)
+- **Cache System**: See [apps/dashboard/CLAUDE.md](apps/dashboard/CLAUDE.md) and [CACHE_POLICY.md](CACHE_POLICY.md)
 
 ---
 
@@ -645,60 +558,26 @@ interface CreatorFormData {
 
 ## 📚 Content Management (Titles Table)
 
-### Complete Field List
+### Key Fields (Quick Reference)
+- `title_id`, `title_name_kr`, `title_name_en` - Title identification
+- `synopsis`, `description_kr` - Story summaries
+- `story_author`, `art_author` - Creator credits
+- `genre` (array), `content_format`, `tone` - Content classification
+- `rights`, `rights_holder_name` - Business & rights
+- `views`, `rating`, `chapters` - Metrics
+- `title_image`, `title_url` - Media
+- `created_at`, `updated_at` - System fields
+- Vector embeddings (1536-dim) - AI search
 
-**Core Fields**:
-- `title_id`, `title_name_kr`, `title_name_en`, `is_official_english_title`, `english_title_type`
-- `synopsis`, `tagline`, `tagline_kr`, `description_kr`, `note`, `note_kr`
+### Related Tables
+- `title_platforms` - Platform-specific metrics
+- `title_documents` - Document attachments
+- `title_drafts` - Multi-step questionnaire drafts
+- `title_content_analysis` - AI-generated analysis
 
-**Authors & Credits**:
-- `story_author`, `story_author_kr`, `art_author`, `art_author_kr`
-- `original_author`, `original_author_kr`
-- `script_title_kr`, `script_title_en`, `art_title_kr`, `art_title_en`
-- `underlying_novel_kr`, `underlying_novel_en`, `creator_id`
-
-**Rights & Business**:
-- `rights`, `rights_holder_name`, `rights_holder_company`, `cp`, `pitch`
-
-**Content Classification**:
-- `genre` (array), `genre_kr` (array), `content_format`, `tone`, `audience`, `age_rating`
-- `keywords` (array), `comps` (array)
-
-**Story Details** (Questionnaire - Added 2025-10-24):
-- `inspiration`, `important_issues`, `setting_description`
-- `world_lore`, `supernatural_concepts`, `character_details` (jsonb)
-- `story_structure`, `planned_ending`, `narrative_arc`
-
-**Achievements & Recognition** (Added 2025-10-24):
-- `awards` (array), `sales_records`, `merchandise_deals`
-- `print_editions`, `print_edition_details`
-- `media_coverage`, `celebrity_endorsements`, `creator_achievements` (jsonb)
-
-**Metrics**:
-- `views`, `likes`, `rating`, `rating_count`, `chapters`, `completed`, `perfect_for`
-
-**Media**:
-- `title_image`, `title_url`
-
-**System**:
-- `priority`, `verified`, `created_at`, `updated_at`
-- Vector embeddings (1536-dim): `title_embedding`, `synopsis_embedding`, `description_embedding`, `content_embedding`, `combined_embedding`
-
-### Related Tables (Added 2025-10-24)
-
-**title_platforms**: Platform-specific metrics (Naver, Kakao, Lezhin, etc.)
-- Fields: `platform_name`, `platform_url`, `views`, `subscribers`, `other_metrics` (jsonb)
-
-**title_documents**: Document attachments (PDFs, scripts, press releases, etc.)
-- Fields: `document_type`, `file_url`, `file_name`, `file_size`, `shareable_with_nda`, `external_url`
-
-**title_drafts**: Multi-step questionnaire draft storage
-- Fields: `creator_id`, `draft_data` (jsonb), `current_step` (1-5), `last_saved_at`
-
-**title_content_analysis**: AI-generated content analysis (includes `pitch_analysis` for Phase 3 chatbot)
-- Fields: `semantic_tags`, `character_types`, `plot_elements`, `cultural_elements`, `pitch_analysis` (jsonb), `processing_confidence`
-
-**See**: [docs/active/DATABASE_SCHEMA.md](docs/active/DATABASE_SCHEMA.md) for complete schema
+**See**:
+- [apps/creator/CLAUDE.md](apps/creator/CLAUDE.md) - Complete field list and creator workflow
+- [docs/active/DATABASE_SCHEMA.md](docs/active/DATABASE_SCHEMA.md) - Complete schema reference
 
 ---
 

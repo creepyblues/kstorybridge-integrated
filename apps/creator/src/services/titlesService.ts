@@ -25,7 +25,8 @@ export interface Title {
   chapters?: number | null
   completed?: boolean | null
   rights_owner?: string | null
-  rights?: string | null
+  rights?: string | null // @deprecated - Use rights_available instead
+  rights_available?: string[] | null // Multi-select rights: film_tv, animation, publication, merchandising, game, other
   perfect_for?: string | null
   audience?: string | null
   comps?: string[] | null

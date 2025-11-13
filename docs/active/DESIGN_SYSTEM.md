@@ -1,6 +1,6 @@
 # Design System - KStoryBridge
 
-**Last Updated**: 2025-10-26
+**Last Updated**: 2025-11-12
 
 This document defines the visual design standards for all KStoryBridge applications.
 
@@ -103,6 +103,124 @@ This document defines the visual design standards for all KStoryBridge applicati
 - Add shadows (`shadow-sm`, `shadow-lg`, etc.)
 - Use heavy or dark borders
 - Create visual "weight" or depth effects
+
+## 📄 Standard Page Structure
+
+All pages in the Creator app MUST follow this consistent structure pattern.
+
+### Page Container
+```jsx
+<MainLayout>
+  <div className="max-w-7xl mx-auto">
+    {/* Page content */}
+  </div>
+</MainLayout>
+```
+
+### Page Header
+```jsx
+<div className="mb-6 sm:mb-8">
+  <h1 className="text-2xl sm:text-3xl font-bold text-black">Page Title</h1>
+  <p className="text-gray-600 mt-2">Optional subtitle or description</p>
+</div>
+```
+
+### Loading State
+```jsx
+{loading && (
+  <div className="text-center py-12">
+    <p className="text-gray-500">Loading...</p>
+  </div>
+)}
+```
+
+### Error State
+```jsx
+{error && (
+  <div className="text-center py-12">
+    <p className="text-red-500">{error}</p>
+    <Button
+      onClick={handleRetry}
+      variant="outline"
+      className="mt-4 border-gray-300 hover:bg-gray-100"
+    >
+      Retry
+    </Button>
+  </div>
+)}
+```
+
+### Empty State
+```jsx
+{!loading && !error && items.length === 0 && (
+  <div className="text-center py-12">
+    <p className="text-gray-500">No items found...</p>
+  </div>
+)}
+```
+
+### Page Structure Requirements
+- **Container**: `max-w-7xl mx-auto` - Wide container with centered content
+- **Page Title**: `text-2xl sm:text-3xl font-bold text-black` - Responsive typography
+- **Title Margin**: `mb-6 sm:mb-8` - Responsive spacing
+- **Title Color**: `text-black` - Not `text-gray-900`
+- **Loading State**: Simple text message, no spinners or cards
+- **Error State**: Red text (`text-red-500`), standard borders (not `border-red-300`)
+- **Error Cards**: Use `border-gray-300`, not colored borders
+- **Empty State**: Simple centered gray text
+
+### ✅ Complete Example
+```jsx
+export default function MyPage() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [items, setItems] = useState([])
+
+  return (
+    <MainLayout>
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">My Page</h1>
+          <p className="text-gray-600 mt-2">Page description</p>
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-500">{error}</p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && items.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No items found</p>
+          </div>
+        )}
+
+        {/* Content */}
+        {!loading && !error && items.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Cards or content */}
+          </div>
+        )}
+      </div>
+    </MainLayout>
+  )
+}
+```
+
+### Design References
+- **✅ Standard Pages**: `/titles`, `/home`, `/profile`, `/titles/add-title`, `/titles/:id/edit`
+- **✅ Visual Reference**: All creator app pages follow this pattern
 
 ## 🔤 Typography
 

@@ -74,6 +74,7 @@ const UniversalHeader = () => {
             >
               ABOUT
             </button>
+            {/* Pricing link hidden per requirements
             <button
               onClick={() => navigate('/creators/pricing')}
               className={`font-medium transition-colors ${
@@ -84,6 +85,7 @@ const UniversalHeader = () => {
             >
               PRICING
             </button>
+            */}
 
             {/* Auth Buttons */}
             <Button
@@ -167,6 +169,7 @@ const UniversalHeader = () => {
               >
                 ABOUT
               </button>
+              {/* Pricing link hidden per requirements
               <button
                 onClick={() => {
                   navigate('/creators/pricing');
@@ -180,6 +183,7 @@ const UniversalHeader = () => {
               >
                 PRICING
               </button>
+              */}
             </div>
 
             {/* Auth Buttons - Full width on mobile */}

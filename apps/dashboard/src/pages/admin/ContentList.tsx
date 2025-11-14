@@ -10,6 +10,7 @@ import { listPosts, deletePost, type ContentPost } from '@/services/contentServi
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge } from '@kstorybridge/ui';
 import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 export const ContentList = () => {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ export const ContentList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<{ id: string; title: string } | null>(null);
 
   // Fetch posts with filters
   const { data, isLoading, refetch } = useQuery({
@@ -30,16 +33,19 @@ export const ContentList = () => {
       }),
   });
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) {
-      return;
-    }
+  const openDeleteDialog = (id: string, title: string) => {
+    setPostToDelete({ id, title });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!postToDelete) return;
 
     try {
-      await deletePost(id);
+      await deletePost(postToDelete.id);
       toast({
         title: 'Post deleted',
-        description: `"${title}" has been deleted successfully.`,
+        description: `"${postToDelete.title}" has been deleted successfully.`,
       });
       refetch();
     } catch (error) {
@@ -49,6 +55,8 @@ export const ContentList = () => {
         description: 'Failed to delete post. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setPostToDelete(null);
     }
   };
 
@@ -195,7 +203,7 @@ export const ContentList = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(post.id, post.title)}
+                            onClick={() => openDeleteDialog(post.id, post.title)}
                             title="Delete"
                             className="text-red-500 hover:text-red-700"
                           >
@@ -218,6 +226,17 @@ export const ContentList = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Delete Post"
+        description={`Are you sure you want to delete "${postToDelete?.title}"? This action cannot be undone.`}
+        confirmText="Delete Post"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

@@ -64,17 +64,27 @@ const UniversalHeader = () => {
             >
               NEWS
             </button>
-            <button 
+            <button
               onClick={() => navigate('/about')}
               className={`font-medium transition-colors ${
-                isActive('/about') 
-                  ? 'text-hanok-teal' 
+                isActive('/about')
+                  ? 'text-hanok-teal'
                   : 'text-midnight-ink hover:text-hanok-teal'
               }`}
             >
               ABOUT
             </button>
-            
+            <button
+              onClick={() => navigate('/creators/pricing')}
+              className={`font-medium transition-colors ${
+                isActive('/creators/pricing') || isActive('/pricing')
+                  ? 'text-hanok-teal'
+                  : 'text-midnight-ink hover:text-hanok-teal'
+              }`}
+            >
+              PRICING
+            </button>
+
             {/* Auth Buttons */}
             <Button
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
@@ -144,7 +154,7 @@ const UniversalHeader = () => {
               >
                 NEWS
               </button>
-              <button 
+              <button
                 onClick={() => {
                   navigate('/about');
                   setMobileMenuOpen(false);
@@ -157,8 +167,21 @@ const UniversalHeader = () => {
               >
                 ABOUT
               </button>
+              <button
+                onClick={() => {
+                  navigate('/creators/pricing');
+                  setMobileMenuOpen(false);
+                }}
+                className={`block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors ${
+                  isActive('/creators/pricing') || isActive('/pricing')
+                    ? 'bg-hanok-teal/10 text-hanok-teal'
+                    : 'text-midnight-ink hover:bg-gray-50'
+                }`}
+              >
+                PRICING
+              </button>
             </div>
-            
+
             {/* Auth Buttons - Full width on mobile */}
             <div className="pt-6 border-t border-gray-200 space-y-3">
               <Button

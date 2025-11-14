@@ -57,3 +57,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Hide editor control buttons in published content */
+  .prose button,
+  .prose [data-type="imageUpload"] {
+    display: none !important;
+  }
+}

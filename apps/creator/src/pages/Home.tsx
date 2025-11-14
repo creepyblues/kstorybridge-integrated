@@ -65,7 +65,7 @@ export default function Home() {
         {/* Two-column grid layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 sm:mb-8 lg:mb-12">
           {/* Updates Section - News Posts */}
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+          <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{t('navigation:sidebar.updates')}</CardTitle>
@@ -105,19 +105,11 @@ export default function Home() {
                   ))}
                 </div>
               )}
-              {newsPosts.length > 0 && (
-                <button
-                  onClick={() => navigate('/news')}
-                  className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline text-sm font-medium mt-4 block"
-                >
-                  View All News
-                </button>
-              )}
             </CardContent>
           </Card>
 
           {/* Titles Section */}
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+          <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{t('titles:list.title')}</CardTitle>
@@ -175,7 +167,7 @@ export default function Home() {
         </div>
 
         {/* Learning Center Section */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+        <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
           <CardHeader>
             <CardTitle>{t('navigation:pageHeaders.learningCenter')}</CardTitle>
             <CardDescription>Resources and guides to help you succeed</CardDescription>
@@ -191,14 +183,16 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {learningPosts.map((post) => (
                     <LearningCard
                       key={post.id}
                       title={post.title}
-                      description={post.excerpt || ''}
-                      imageUrl={post.featured_image_url || undefined}
-                      tags={post.tags || []}
+                      excerpt={post.excerpt || ''}
+                      featuredImageUrl={post.featured_image_url || undefined}
+                      authorName={post.author_name}
+                      publishedAt={post.published_at}
+                      category={post.category as 'learning' | 'news'}
                       onClick={() => navigate(`/learning-center/${post.slug}`)}
                     />
                   ))}

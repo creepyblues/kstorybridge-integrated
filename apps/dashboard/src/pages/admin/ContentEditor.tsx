@@ -3,12 +3,13 @@
  * Create or edit a CMS content post
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import DOMPurify from 'dompurify';
 import {
   getPost,
   createPost,
@@ -137,29 +138,33 @@ export const ContentEditor = () => {
         author_name: user?.user_metadata?.full_name || user?.email || 'Admin',
       };
 
-      // Debug logging
-      console.log('📝 Content Editor - Preparing to submit post:', {
-        id: id,
-        mode: isEditMode ? 'UPDATE' : 'CREATE',
-        title: postData.title,
-        slug: postData.slug,
-        status: postData.status,
-        category: postData.category,
-        contentLength: postData.content?.length || 0,
-        contentPreview: postData.content ? postData.content.substring(0, 100) + '...' : 'NO CONTENT',
-        hasExcerpt: !!postData.excerpt,
-        hasFeaturedImage: !!postData.featured_image_url,
-        tagsCount: postData.tags?.length || 0,
-      });
+      // Debug logging (development only)
+      if (import.meta.env.DEV) {
+        console.log('📝 Content Editor - Preparing to submit post:', {
+          id: id,
+          mode: isEditMode ? 'UPDATE' : 'CREATE',
+          title: postData.title,
+          slug: postData.slug,
+          status: postData.status,
+          category: postData.category,
+          contentLength: postData.content?.length || 0,
+          contentPreview: postData.content ? postData.content.substring(0, 100) + '...' : 'NO CONTENT',
+          hasExcerpt: !!postData.excerpt,
+          hasFeaturedImage: !!postData.featured_image_url,
+          tagsCount: postData.tags?.length || 0,
+        });
+      }
 
       if (isEditMode) {
-        console.log('🔄 Content Editor - Calling updatePost with:', {
-          id: id,
-          postData: {
-            ...postData,
-            content: `[${postData.content?.length || 0} chars] ${postData.content?.substring(0, 50)}...`
-          }
-        });
+        if (import.meta.env.DEV) {
+          console.log('🔄 Content Editor - Calling updatePost with:', {
+            id: id,
+            postData: {
+              ...postData,
+              content: `[${postData.content?.length || 0} chars] ${postData.content?.substring(0, 50)}...`
+            }
+          });
+        }
         await updatePost(id!, postData);
         toast({
           title: 'Post updated',
@@ -194,6 +199,21 @@ export const ContentEditor = () => {
       throw error;
     }
   };
+
+  // Sanitize content for preview to prevent XSS attacks
+  const sanitizedContent = useMemo(() => {
+    if (!watchContent) return '';
+
+    return DOMPurify.sanitize(watchContent, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'u', 's', 'code', 'pre',
+        'h1', 'h2', 'h3', 'ul', 'ol', 'li',
+        'blockquote', 'a', 'img', 'hr'
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel'],
+      ALLOW_DATA_ATTR: false,
+    });
+  }, [watchContent]);
 
   if (isLoading) {
     return (
@@ -391,7 +411,7 @@ export const ContentEditor = () => {
               <h2 className="text-3xl font-bold mb-4">{watchTitle || 'Untitled'}</h2>
               <div
                 className="prose prose-sm sm:prose lg:prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: watchContent }}
+                dangerouslySetInnerHTML={{ __html: sanitizedContent }}
               />
             </div>
           )}

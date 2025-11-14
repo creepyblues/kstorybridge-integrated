@@ -11,6 +11,9 @@ interface ContentPost {
   excerpt: string | null;
   featured_image_url: string | null;
   tags: string[] | null;
+  author_name: string;
+  published_at: string | null;
+  category: string;
 }
 
 export default function LearningCenter() {
@@ -24,7 +27,7 @@ export default function LearningCenter() {
       try {
         const { data, error } = await supabase
           .from('content_posts')
-          .select('id, title, slug, excerpt, featured_image_url, tags')
+          .select('id, title, slug, excerpt, featured_image_url, tags, author_name, published_at, category')
           .eq('category', 'learning')
           .eq('status', 'published')
           .order('published_at', { ascending: false });
@@ -67,14 +70,16 @@ export default function LearningCenter() {
 
         {/* Learning Materials Grid */}
         {!loading && !error && posts.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {posts.map((post) => (
               <LearningCard
                 key={post.id}
                 title={post.title}
-                description={post.excerpt || ''}
-                imageUrl={post.featured_image_url || undefined}
-                tags={post.tags || []}
+                excerpt={post.excerpt || ''}
+                featuredImageUrl={post.featured_image_url || undefined}
+                authorName={post.author_name}
+                publishedAt={post.published_at}
+                category={post.category as 'learning' | 'news'}
                 onClick={() => navigate(`/learning-center/${post.slug}`)}
               />
             ))}

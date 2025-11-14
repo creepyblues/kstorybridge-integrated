@@ -180,20 +180,22 @@ export const updatePost = async (
       updates.published_at = new Date().toISOString();
     }
 
-    // Debug logging
-    console.log('🔄 contentService.updatePost - Received update request:', {
-      id: id,
-      updateFields: Object.keys(updates),
-      title: updates.title,
-      slug: updates.slug,
-      status: updates.status,
-      category: updates.category,
-      hasContent: !!updates.content,
-      contentLength: updates.content?.length || 0,
-      contentPreview: updates.content
-        ? `[${updates.content.length} chars] ${updates.content.substring(0, 50)}...`
-        : 'NO CONTENT IN UPDATE',
-    });
+    // Debug logging (development only)
+    if (import.meta.env.DEV) {
+      console.log('🔄 contentService.updatePost - Received update request:', {
+        id: id,
+        updateFields: Object.keys(updates),
+        title: updates.title,
+        slug: updates.slug,
+        status: updates.status,
+        category: updates.category,
+        hasContent: !!updates.content,
+        contentLength: updates.content?.length || 0,
+        contentPreview: updates.content
+          ? `[${updates.content.length} chars] ${updates.content.substring(0, 50)}...`
+          : 'NO CONTENT IN UPDATE',
+      });
+    }
 
     const { data, error } = await supabase
       .from('content_posts')
@@ -207,14 +209,16 @@ export const updatePost = async (
       throw error;
     }
 
-    console.log('✅ contentService.updatePost - Update successful:', {
-      id: data.id,
-      title: data.title,
-      status: data.status,
-      contentLength: data.content?.length || 0,
-      contentPreview: data.content ? `${data.content.substring(0, 50)}...` : 'NO CONTENT',
-      updated_at: data.updated_at,
-    });
+    if (import.meta.env.DEV) {
+      console.log('✅ contentService.updatePost - Update successful:', {
+        id: data.id,
+        title: data.title,
+        status: data.status,
+        contentLength: data.content?.length || 0,
+        contentPreview: data.content ? `${data.content.substring(0, 50)}...` : 'NO CONTENT',
+        updated_at: data.updated_at,
+      });
+    }
 
     return data;
   } catch (error) {
@@ -252,6 +256,25 @@ export const uploadImage = async (
   postId?: string
 ): Promise<string> => {
   try {
+    // Validate file size (max 10 MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB in bytes
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`File size exceeds 10 MB limit. Current size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+    }
+
+    // Validate file type (only images)
+    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      throw new Error(`Invalid file type: ${file.type}. Allowed types: JPEG, PNG, WebP, GIF`);
+    }
+
+    // Additional validation: Check file extension
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    if (!fileExtension || !ALLOWED_EXTENSIONS.includes(fileExtension)) {
+      throw new Error(`Invalid file extension: ${fileExtension}. Allowed extensions: jpg, jpeg, png, webp, gif`);
+    }
+
     // Generate unique filename
     const timestamp = Date.now();
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -268,8 +291,7 @@ export const uploadImage = async (
       });
 
     if (error) {
-      console.error('Error uploading image:', error);
-      throw error;
+      throw new Error(`Upload failed: ${error.message}`);
     }
 
     // Get public URL
@@ -279,8 +301,11 @@ export const uploadImage = async (
 
     return publicUrl;
   } catch (error) {
-    console.error('Exception in uploadImage:', error);
-    throw error;
+    // Re-throw with meaningful error message
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Failed to upload image. Please try again.');
   }
 };
 

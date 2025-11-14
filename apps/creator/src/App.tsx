@@ -21,6 +21,7 @@ import Requests from '@/pages/Requests'
 import News from '@/pages/News'
 import LearningCenter from '@/pages/LearningCenter'
 import PostDetail from '@/pages/PostDetail'
+import Plan from '@/pages/Plan'
 
 function App() {
   return (
@@ -82,6 +83,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/plan"
+              element={
+                <ProtectedRoute>
+                  <Plan />
                 </ProtectedRoute>
               }
             />

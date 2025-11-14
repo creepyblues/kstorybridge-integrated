@@ -189,7 +189,8 @@ export default function PostDetail() {
                 prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-6 prose-blockquote:my-8 prose-blockquote:italic prose-blockquote:text-gray-600
                 prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-base prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
                 prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:p-4 prose-pre:rounded-lg prose-pre:my-6
-                prose-hr:border-gray-200 prose-hr:my-12"
+                prose-hr:border-gray-200 prose-hr:my-12
+                [&_ul]:my-0 [&_ol]:my-0 [&_li]:my-0 [&_li_p]:my-0"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </div>

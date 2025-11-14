@@ -23,7 +23,7 @@ Implement Stripe payment processing for creator subscriptions in the Creator app
 - ✅ **Discount coupon system** for bundle discounts (manual issue/redeem process)
 - ✅ Tier-based feature gating for creators
 - ✅ Domain-specific payment flows (creator.kstorybridge.com)
-- ✅ **10% commission agreement** on title upload for free tier
+- ✅ **10% commission** for Packaging and Premium tiers (no commission for free tier)
 
 ---
 
@@ -33,8 +33,8 @@ Implement Stripe payment processing for creator subscriptions in the Creator app
 
 #### Tier 1: Free "Listing" Plan
 - **Price**: $0 forever
-- **Limits**: Up to 2 titles
-- **Commission**: 10% on gross receipts (option payments, purchase prices, production bonuses, license fees)
+- **Limits**: Up to 1 title
+- **Commission**: None
 - **Features**:
   - List titles in curated marketplace
   - Searchable by verified buyers (Netflix, Amazon, Disney)
@@ -45,6 +45,7 @@ Implement Stripe payment processing for creator subscriptions in the Creator app
 - **Regular Price**: $200/month or $2,000/year per title
 - **Launch Promo**: $100/month or $1,000/year per title (50% off - manual pricing)
 - **Launch Duration**: Until Dec 31, 2025 (extendable by decision)
+- **Commission**: 10% on gross receipts (option payments, purchase prices, production bonuses, license fees)
 - **Features**:
   - Professional Adaptation Pitch Deck (worth $3-5K)
   - Deep Analytics Dashboard: readership trends, genre benchmarks
@@ -56,6 +57,7 @@ Implement Stripe payment processing for creator subscriptions in the Creator app
 - **Regular Price**: $400/month or $4,000/year per title
 - **Launch Promo**: $200/month or $2,000/year per title (50% off - manual pricing)
 - **Launch Duration**: Until Dec 31, 2025 (extendable by decision)
+- **Commission**: 10% on gross receipts (option payments, purchase prices, production bonuses, license fees)
 - **Features**:
   - Everything in Packaging, PLUS:
   - Personal pitching to 20+ buyers per year
@@ -74,9 +76,10 @@ Implement Stripe payment processing for creator subscriptions in the Creator app
 - **No automation**: Manual tracking and approval process
 
 ### Commission Structure
-- **10% on gross receipts** for free tier creators
-- Applies to: option payments, purchase prices, production bonuses, license fees
-- **Agreement**: Accepted by creator during title upload
+- **Free Tier**: No commission
+- **Packaging Tier**: 10% on gross receipts (option payments, purchase prices, production bonuses, license fees)
+- **Premium Tier**: 10% on gross receipts (option payments, purchase prices, production bonuses, license fees)
+- **Agreement**: Commission terms accepted during subscription activation
 - **Compare to**: Traditional agents (20-40%), Other platforms (15-20%)
 
 ---
@@ -110,7 +113,8 @@ Implement Stripe payment processing for creator subscriptions in the Creator app
 **Tables**:
 - `creator_subscriptions` (separate from dashboard `subscriptions`)
 - `creator_stripe_customers` (separate from dashboard `stripe_customers`)
-- Optional: `creator_payments` for payment tracking
+- `creator_payments` (optional) - For transaction history tracking
+  - Alternative: Fetch transaction history directly from Stripe API via edge function
 
 ---
 
@@ -153,9 +157,10 @@ Implement Stripe payment processing for creator subscriptions in the Creator app
 **Rationale**: Clean domain separation, professional experience
 **Implications**:
 - Checkout success URL: `https://creator.kstorybridge.com/payment/success`
-- Checkout cancel URL: `https://creator.kstorybridge.com/pricing`
+- Checkout cancel URL: `https://creator.kstorybridge.com/plan`
 - Billing portal: Creator-branded
 - No cross-domain payment flows needed
+- Payment journey starts from `/plan` page (central pricing hub)
 
 ---
 
@@ -190,11 +195,14 @@ Implement Stripe payment processing for creator subscriptions in the Creator app
 - View applied discounts in billing summary
 - See available bundle discount tiers (informational)
 
-**UI Location**: `/creator/pricing` (checkout flow)
+**UI Location**: `/plan` page → upgrade button click → checkout modal
 
 **Workflow**:
-1. Creator clicks "Subscribe" on pricing page
-2. Before Stripe checkout, coupon input field appears
+1. Creator clicks "Go Packaging" or "Go Premium" on `/plan` page
+2. Before Stripe checkout, modal appears with:
+   - Title selection (per-title model)
+   - Billing period selection (monthly/yearly)
+   - Coupon code input field
 3. Creator enters coupon code (e.g., "BUNDLE25")
 4. System validates and applies discount
 5. Discount shown in checkout summary
@@ -295,6 +303,30 @@ CREATE TABLE public.creator_stripe_customers (
 );
 ```
 
+**Table: `creator_payments` (Optional)**
+```sql
+CREATE TABLE public.creator_payments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  creator_email text NOT NULL,
+  subscription_id text REFERENCES creator_subscriptions(stripe_subscription_id),
+  stripe_payment_intent_id text UNIQUE,
+  stripe_invoice_id text,
+  amount numeric NOT NULL,
+  currency text DEFAULT 'usd',
+  status text NOT NULL CHECK (status IN ('succeeded', 'failed', 'pending', 'refunded')),
+  invoice_url text,
+  receipt_url text,
+  description text,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Index for fast lookups
+CREATE INDEX idx_creator_payments_email ON creator_payments(creator_email);
+CREATE INDEX idx_creator_payments_sub ON creator_payments(subscription_id);
+```
+
+**Note**: The `creator_payments` table is optional. Transaction history can alternatively be fetched directly from Stripe API via the `get-creator-billing-history` edge function.
+
 ---
 
 ### Edge Functions (Creator-Specific)
@@ -306,7 +338,7 @@ CREATE TABLE public.creator_stripe_customers (
 - Applies discount to checkout session
 - Returns checkout URL
 - Success URL: `https://creator.kstorybridge.com/payment/success?session_id={CHECKOUT_SESSION_ID}`
-- Cancel URL: `https://creator.kstorybridge.com/pricing`
+- Cancel URL: `https://creator.kstorybridge.com/plan`
 
 **Function 2: `creator-stripe-webhook`**
 - Handles Stripe webhook events for creator subscriptions
@@ -324,6 +356,51 @@ CREATE TABLE public.creator_stripe_customers (
 - Validates coupon exists, is active, not expired
 - Checks usage limits
 - Returns discount details or error
+
+**Function 5: `get-creator-billing-history`**
+- Input: `{ creator_email }`
+- Fetches active subscriptions from database
+- Fetches transaction history from Stripe API or database
+- Fetches payment method details from Stripe
+- Returns combined billing data (subscriptions, transactions, payment method)
+
+---
+
+## 🎯 Current Implementation Status
+
+### Existing Plan Page (`/plan`)
+**Status**: ✅ Live in Creator App
+**Location**: `/apps/creator/src/pages/Plan.tsx`
+**Route**: `/plan`
+
+**Current Features**:
+- 3-tier pricing display (Free, Packaging $100, Premium $200)
+- Launch pricing prominently displayed (50% off)
+- "Start Free" button → navigates to `/titles/add-title`
+- "Go Packaging" button → shows alert (payment integration TODO)
+- "Go Premium" button → shows alert (payment integration TODO)
+- Commission section (10% disclosure)
+- Bundle pricing section (25% for 5+ titles, 40% for 10+ titles)
+- Value comparison section
+- Professional layout with PricingCard components
+
+**What Needs Integration**:
+- Replace alert handlers with actual Stripe checkout flow
+- Add checkout modal with:
+  - Title selection (per-title model)
+  - Billing period selection (monthly/yearly)
+  - Coupon code input (optional)
+- Integrate with `createCheckoutSession()` service
+- Update commission disclosure to clarify "Packaging & Premium only"
+
+**Payment Journey**:
+1. Creator visits `/plan` page
+2. Reviews pricing tiers and features
+3. Clicks "Go Packaging" or "Go Premium"
+4. Checkout modal appears with title/period/coupon selection
+5. Clicks "Subscribe" → redirects to Stripe Checkout
+6. After payment → redirects to `/payment/success`
+7. If canceled → redirects back to `/plan`
 
 ---
 
@@ -343,6 +420,9 @@ CREATE TABLE public.creator_stripe_customers (
 - [ ] Create `creator_stripe_customers` table
 - [ ] Create `discount_coupons` table
 - [ ] Create `coupon_redemptions` table
+- [ ] Create `creator_payments` table (optional - for transaction history)
+  - Alternative: Skip this table and fetch directly from Stripe API
+  - Fields: payment_id, creator_email, subscription_id, amount, status, invoice_url, created_at
 - [ ] Add RLS policies for creator access
 - [ ] Create indexes for performance
 - [ ] Run migration locally: `npx supabase db reset`
@@ -488,6 +568,12 @@ Location: `/supabase/functions/creator-stripe-webhook/index.ts`
   - Update subscription status
 - [ ] Handle `customer.subscription.deleted` event
   - Mark subscription as canceled
+- [ ] Handle `invoice.payment_succeeded` event (optional)
+  - Record payment in `creator_payments` table if implemented
+  - Include amount, invoice_url, receipt_url
+- [ ] Handle `invoice.payment_failed` event (optional)
+  - Record failed payment in `creator_payments` table if implemented
+  - Update subscription status to 'past_due'
 - [ ] Test with Stripe CLI: `stripe listen --forward-to localhost:54321/functions/v1/creator-stripe-webhook`
 - [ ] Deploy: `npx supabase functions deploy creator-stripe-webhook`
 - [ ] Add webhook endpoint to Stripe Dashboard
@@ -509,11 +595,38 @@ Location: `/supabase/functions/validate-coupon/index.ts`
 - [ ] Test locally
 - [ ] Deploy
 
+---
+
+**Create Edge Function: `get-creator-billing-history`**
+
+Location: `/supabase/functions/get-creator-billing-history/index.ts`
+
+**Tasks**:
+- [ ] Create `/supabase/functions/get-creator-billing-history/index.ts`
+- [ ] Accept creator_email as parameter
+- [ ] Fetch active subscriptions from `creator_subscriptions` table
+- [ ] For each subscription, enrich with title details
+- [ ] Fetch transaction history:
+  - Option A: From `creator_payments` table (if implemented)
+  - Option B: From Stripe API using `stripe.invoices.list({ customer })`
+- [ ] Fetch payment method from Stripe customer
+- [ ] Return combined billing data:
+  ```typescript
+  {
+    subscriptions: [{ title_id, title_name, plan_type, status, ... }],
+    transactions: [{ date, amount, status, invoice_url, ... }],
+    payment_method: { last4, brand, exp_month, exp_year }
+  }
+  ```
+- [ ] Test locally
+- [ ] Deploy
+
 **Success Criteria**:
 - [ ] All edge functions deployed
 - [ ] Webhook successfully receives events
 - [ ] Checkout session creation works
 - [ ] Coupon validation works correctly
+- [ ] Billing history fetches correctly from Stripe
 - [ ] Zero TypeScript errors
 
 ---
@@ -554,20 +667,23 @@ Create: `/apps/dashboard/src/pages/admin/CouponManagement.tsx`
 
 **Creator Interface (Creator App)**:
 
-Modify: `/apps/creator/src/pages/Pricing.tsx`
+Modify: `/apps/creator/src/pages/Plan.tsx`
 
 **Features**:
-- [ ] Coupon input field in pricing page
-- [ ] "Have a coupon code?" expandable section
+- [ ] Checkout modal with coupon input field
+- [ ] "Have a coupon code?" expandable section in modal
 - [ ] Real-time validation on blur
 - [ ] Show discount preview
 - [ ] Pass coupon to checkout function
 
 **Tasks**:
-- [ ] Add coupon input component
+- [ ] Create checkout modal component (triggered by "Go Packaging"/"Go Premium" buttons)
+- [ ] Add title selection dropdown to modal
+- [ ] Add billing period selection (monthly/yearly) to modal
+- [ ] Add coupon input component to modal
 - [ ] Call `validate-coupon` edge function
 - [ ] Display validation errors/success
-- [ ] Pass `coupon_code` to checkout
+- [ ] Pass all options (title_id, billing_period, coupon_code) to checkout
 - [ ] Test coupon application flow
 
 **Success Criteria**:
@@ -615,13 +731,21 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] Error handling
 - [ ] Redirects to Stripe Checkout
 
-#### 4. Update Pricing Page
-- [ ] Modify `src/pages/CreatorsPricingPage.tsx` (if exists) OR create new
-- [ ] Add title selection dropdown (for per-title model)
-- [ ] Monthly/yearly toggle
-- [ ] PaymentButton integration
-- [ ] Coupon input section
-- [ ] Show launch vs regular pricing (until Dec 31, 2025)
+#### 4. Update Plan Page
+- [ ] Modify `src/pages/Plan.tsx` (existing page at `/plan`)
+- [ ] Replace TODO alert handlers with actual payment integration
+- [ ] Update `handleUpgrade()` function to:
+  - Show title selection modal (for per-title model)
+  - Show monthly/yearly billing period selection
+  - Show coupon input field (optional)
+  - Call `createCheckoutSession()` with selected options
+  - Redirect to Stripe Checkout
+- [ ] Update "Start Free" button flow (currently goes to `/titles/add-title`)
+- [ ] Ensure launch pricing is displayed (until Dec 31, 2025)
+- [ ] Update commission section to clarify:
+  - "10% commission applies only to Packaging and Premium tiers"
+  - "Free tier: No commission"
+  - Ensure clarity in the "Our 10% Commission Covers" section
 
 #### 5. Success/Cancel Pages
 - [ ] Create `src/pages/PaymentSuccess.tsx`
@@ -632,13 +756,56 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] Create `src/pages/PaymentCancel.tsx`
   - "Payment canceled" message
   - Reassurance
-  - Return to pricing link
+  - Return to plan page link (`/plan`)
 
-#### 6. Routes
+#### 6. Billing Page
+- [ ] Create `src/pages/Billing.tsx`
+  - List all active subscriptions with details:
+    - Title name
+    - Plan type (Packaging/Premium)
+    - Billing period (monthly/yearly)
+    - Status (active/canceled/past_due)
+    - Current period dates
+    - Next billing date
+    - Amount
+  - Transaction history table:
+    - Date
+    - Description (e.g., "Packaging Plan - Title Name")
+    - Amount
+    - Status (paid/failed/refunded)
+    - Invoice link
+  - Payment method section:
+    - Current card (last 4 digits)
+    - Link to Stripe billing portal for updates
+  - Quick actions:
+    - "Manage Billing" → Opens Stripe billing portal
+    - "View Invoice" links for each transaction
+  - Empty state: "No active subscriptions"
+
+#### 7. Billing Service
+- [ ] Create `src/services/billingService.ts`
+  ```typescript
+  export const getSubscriptionHistory = async (creatorEmail: string) => {
+    // Fetch from creator_subscriptions table
+  }
+
+  export const getTransactionHistory = async (creatorEmail: string) => {
+    // Fetch from creator_payments table (if implemented)
+    // OR call edge function to fetch from Stripe API
+  }
+  ```
+
+#### 8. Routes
 - [ ] Add routes in `src/App.tsx`:
-  - `/pricing` - Pricing page
-  - `/payment/success` - Success page
-  - `/payment/cancel` - Cancel page
+  - `/plan` - ✅ Already exists (central pricing page)
+  - `/billing` - Billing history and subscriptions (new)
+  - `/payment/success` - Success page (new)
+  - `/payment/cancel` - Cancel page (new)
+
+#### 9. Navigation
+- [ ] Add "Plan" link to creator sidebar navigation (if not already present)
+- [ ] Add "Billing" link to creator sidebar navigation
+- [ ] Add "Billing" link to profile dropdown
 
 **Success Criteria**:
 - [ ] Creator can select plan and title
@@ -646,6 +813,8 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] Payment succeeds in test mode
 - [ ] Redirects to success page
 - [ ] Subscription appears in database
+- [ ] Creator can view all subscriptions on billing page
+- [ ] Transaction history displays correctly
 
 ---
 
@@ -656,18 +825,19 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 **Blocking**: None
 
 **Free Tier Features** (0 active subscriptions):
-- [ ] Title limit enforcement: Max 2 titles
+- [ ] Title limit enforcement: Max 1 title
   - Check before allowing title creation
   - Show upgrade prompt at limit
-  - Error: "Free plan limited to 2 titles. Upgrade to unlock unlimited."
-- [ ] 10% commission agreement checkbox on title upload
+  - Error: "Free plan limited to 1 title. Upgrade to unlock unlimited."
 - [ ] Basic messaging and notifications
+- [ ] No commission fees
 
 **Packaging Tier Features** (1+ packaging subscriptions):
 - [ ] Remove title limit (unlimited titles)
 - [ ] Enable pitch deck features (when built)
 - [ ] Show "Verified Creator" badge
 - [ ] Enable analytics dashboard (when built)
+- [ ] 10% commission agreement (accepted during subscription)
 
 **Premium Tier Features** (1+ premium subscriptions):
 - [ ] All Packaging features
@@ -675,6 +845,7 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] Priority in search results (boost ranking)
 - [ ] Access to premium reports (when built)
 - [ ] Priority support badge
+- [ ] 10% commission agreement (accepted during subscription)
 
 **Implementation**:
 
@@ -708,7 +879,7 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 #### 2. Title Limit Enforcement
 - [ ] Modify `src/pages/AddTitle.tsx`
   - Check subscription count before allowing creation
-  - If free tier (0 subs) and ≥2 titles exist, block creation
+  - If free tier (0 subs) and ≥1 title exists, block creation
   - Show upgrade modal
 
 #### 3. Feature Access Guards
@@ -725,7 +896,7 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
   ```
 
 **Success Criteria**:
-- [ ] Free tier blocked at 2 titles
+- [ ] Free tier blocked at 1 title
 - [ ] Packaging tier unlocks unlimited titles
 - [ ] Premium features correctly gated
 - [ ] Tier checks efficient (cached)
@@ -740,10 +911,9 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 
 **Subscription Workflow Tests**:
 - [ ] Free creator creates 1st title (success)
-- [ ] Free creator creates 2nd title (success)
-- [ ] Free creator tries to create 3rd title (blocked with upgrade prompt)
+- [ ] Free creator tries to create 2nd title (blocked with upgrade prompt)
 - [ ] Creator subscribes to Packaging plan for Title 1 (success)
-- [ ] Creator can now create 3rd, 4th, 5th titles (unlimited)
+- [ ] Creator can now create 2nd, 3rd, 4th titles (unlimited)
 - [ ] Creator subscribes to Premium for Title 2 (success)
 - [ ] Creator now has 2 active subscriptions (1 Packaging, 1 Premium)
 
@@ -754,7 +924,17 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] Premium yearly payment succeeds
 - [ ] Payment with valid coupon applies discount
 - [ ] Payment with invalid coupon shows error
-- [ ] Payment cancellation returns to pricing page
+- [ ] Payment cancellation returns to plan page (`/plan`)
+
+**Billing Page Tests**:
+- [ ] Billing page displays all active subscriptions
+- [ ] Each subscription shows correct title name, plan type, and billing period
+- [ ] Transaction history displays correctly
+- [ ] "Manage Billing" button opens Stripe billing portal
+- [ ] Empty state shows when no subscriptions exist
+- [ ] Payment method displays correctly (last 4 digits)
+- [ ] Invoice links are clickable and valid
+- [ ] Next billing date calculated correctly
 
 **Webhook Tests**:
 - [ ] `checkout.session.completed` creates subscription record
@@ -773,7 +953,7 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] Creator cancels subscription (title still exists, tier reverts)
 - [ ] Expired card during renewal (webhook handles)
 - [ ] Multiple concurrent subscriptions for one creator
-- [ ] Free tier with 2 titles, subscribes, creates 3rd, then cancels subscription
+- [ ] Free tier with 1 title, subscribes, creates 2nd, then cancels subscription
 - [ ] Checkout session timeout handling
 
 **Dashboard Regression** (CRITICAL):
@@ -816,6 +996,7 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] Create `docs/CREATOR_PAYMENT_FLOW.md`
   - User journey diagrams
   - Technical architecture diagrams
+  - Billing page feature documentation
   - Troubleshooting guide for common issues
 
 **Production Deployment**:
@@ -848,7 +1029,7 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] **Payment Success Rate**: >95% in production
 - [ ] **Webhook Processing Time**: <5 seconds average
 - [ ] **Checkout Session Creation**: <2 seconds
-- [ ] **Page Load Time**: <3 seconds for pricing page
+- [ ] **Page Load Time**: <3 seconds for plan page (`/plan`)
 - [ ] **Zero Downtime**: No impact to dashboard/buyer payments
 
 ### Business Metrics (Post-Launch)
@@ -894,7 +1075,8 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 | 2025-11-13 | Separate subscription infrastructure | Cleaner app separation, reduces coupling | Creator & dashboard maintain own tables |
 | 2025-11-13 | Discount coupon system (no automation) | Simpler initial implementation | Manual admin process for bundle discounts |
 | 2025-11-13 | Manual launch promo handling | Easy to extend deadline, no code complexity | Manual UI switch on Jan 1, 2026 |
-| 2025-11-13 | 10% commission for free tier | Industry-leading low rate | Agreement required on title upload |
+| 2025-11-13 | 10% commission for Packaging/Premium only | Free tier has no commission to attract creators | Commission agreement during paid subscription activation |
+| 2025-11-13 | Free tier limit: 1 title (not 2) | Encourages early upgrades | Creators must subscribe for additional titles |
 
 ---
 
@@ -935,10 +1117,11 @@ Modify: `/apps/creator/src/pages/Pricing.tsx`
 - [ ] Rollback plan tested
 
 **Business Readiness**:
-- [ ] Pricing page live
+- [x] Plan page live (`/plan`) - ✅ Already created
+- [ ] Plan page integrated with payment system
 - [ ] Email templates ready (subscription confirmations)
 - [ ] FAQ section updated
-- [ ] Terms of service updated (10% commission)
+- [ ] Terms of service updated (10% commission for Packaging/Premium tiers)
 - [ ] Launch announcement prepared
 
 ---

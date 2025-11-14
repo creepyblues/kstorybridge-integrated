@@ -145,7 +145,7 @@ export const RichTextEditor = ({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-lg focus:outline-none min-h-[400px] px-6 py-4',
+        class: 'prose prose-lg focus:outline-none min-h-[400px] px-6 py-4 [&_ul]:my-0 [&_ol]:my-0 [&_li]:my-0 [&_li_p]:my-0',
       },
     },
   });

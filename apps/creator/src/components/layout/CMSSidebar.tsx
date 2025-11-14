@@ -23,6 +23,7 @@ export function CMSSidebar() {
   const menuItems: MenuItem[] = [
     { title: t('navigation:sidebar.home'), href: '/home' },
     { title: t('navigation:sidebar.myTitles'), href: '/titles' },
+    { title: t('navigation:sidebar.plan'), href: '/plan' },
     { title: t('navigation:sidebar.news'), href: '/news' },
     { title: t('navigation:sidebar.learningCenter'), href: '/learning-center' },
   ]

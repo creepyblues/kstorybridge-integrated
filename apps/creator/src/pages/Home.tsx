@@ -39,7 +39,7 @@ export default function Home() {
       const [titlesData, draftsData, newsData, learningData] = await Promise.all([
         titlesService.getTitlesByCreator(user.id),
         draftService.getAllDrafts(user.id, 'draft'),
-        listPosts({ category: 'news', status: 'published', limit: 3 }),
+        listPosts({ category: 'news', status: 'published', limit: 1 }),
         listPosts({ category: 'learning', status: 'published', limit: 3 }),
       ])
 
@@ -67,12 +67,7 @@ export default function Home() {
           {/* Updates Section - News Posts */}
           <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{t('navigation:sidebar.updates')}</CardTitle>
-                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sunrise-coral-100 text-sunrise-coral-700">
-                  {newsPosts.length}
-                </span>
-              </div>
+              <CardTitle>{t('navigation:sidebar.updates')}</CardTitle>
               <CardDescription>Latest news and announcements</CardDescription>
             </CardHeader>
             <CardContent>
@@ -85,23 +80,18 @@ export default function Home() {
                   <p className="text-gray-600 text-sm">No news updates at the moment</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div>
                   {newsPosts.map((post) => (
-                    <div
+                    <LearningCard
                       key={post.id}
+                      title={post.title}
+                      excerpt={post.excerpt || ''}
+                      featuredImageUrl={post.featured_image_url || undefined}
+                      authorName={post.author_name}
+                      publishedAt={post.published_at}
+                      category={post.category as 'learning' | 'news'}
                       onClick={() => navigate(`/news/${post.slug}`)}
-                      className="p-3 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors cursor-pointer"
-                    >
-                      <h3 className="font-semibold text-black text-sm mb-1">{post.title}</h3>
-                      {post.excerpt && (
-                        <p className="text-gray-600 text-xs line-clamp-2">{post.excerpt}</p>
-                      )}
-                      {post.published_at && (
-                        <p className="text-gray-500 text-xs mt-2">
-                          {new Date(post.published_at).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
+                    />
                   ))}
                 </div>
               )}
@@ -111,12 +101,7 @@ export default function Home() {
           {/* Titles Section */}
           <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{t('titles:list.title')}</CardTitle>
-                <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-sunrise-coral-100 text-sunrise-coral-700">
-                  {titles.length + drafts.length}
-                </span>
-              </div>
+              <CardTitle>{t('titles:list.title')}</CardTitle>
               <CardDescription>{t('titles:list.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent>

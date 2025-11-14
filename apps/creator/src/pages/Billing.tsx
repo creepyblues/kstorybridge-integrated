@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { MainLayout } from '@/components/layout/MainLayout'
@@ -54,6 +55,7 @@ interface BillingData {
 
 export default function Billing() {
   const { user } = useAuth()
+  const { t } = useTranslation(['billing', 'common'])
   const [billingData, setBillingData] = useState<BillingData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -128,9 +130,12 @@ export default function Billing() {
       trialing: 'bg-blue-100 text-blue-700',
     }
 
+    const statusKey = status as 'active' | 'canceled' | 'past_due' | 'unpaid' | 'trialing'
+    const translatedStatus = t(`billing:subscriptions.status.${statusKey}`, status.replace('_', ' ').toUpperCase())
+
     return (
       <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${colors[status] || 'bg-gray-100 text-gray-700'}`}>
-        {status.replace('_', ' ').toUpperCase()}
+        {translatedStatus}
       </span>
     )
   }
@@ -141,7 +146,7 @@ export default function Billing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-20">
             <Loader2 className="w-12 h-12 animate-spin text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">Loading billing information...</p>
+            <p className="text-gray-500">{t('billing:loading.message')}</p>
           </div>
         </div>
       </MainLayout>
@@ -154,14 +159,14 @@ export default function Billing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-20">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-black mb-2">Failed to Load Billing Data</h2>
+            <h2 className="text-xl font-semibold text-black mb-2">{t('billing:error.title')}</h2>
             <p className="text-red-500 mb-6">{error}</p>
             <Button
               onClick={loadBillingData}
               variant="outline"
               className="border-gray-300 hover:bg-gray-100"
             >
-              Retry
+              {t('billing:error.retryButton')}
             </Button>
           </div>
         </div>
@@ -173,23 +178,23 @@ export default function Billing() {
     <MainLayout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-black">Billing & Subscriptions</h1>
-          <p className="text-gray-600 mt-2">Manage your subscriptions and view payment history</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('billing:pageHeader.title')}</h1>
+          <p className="text-gray-600 mt-2">{t('billing:pageHeader.subtitle')}</p>
         </div>
 
         {/* Active Subscriptions */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-black mb-4">Active Subscriptions</h2>
+          <h2 className="text-xl font-bold text-black mb-4">{t('billing:subscriptions.title')}</h2>
 
           {(!billingData?.subscriptions || billingData.subscriptions.length === 0) ? (
             <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
               <CardContent className="p-8 text-center">
-                <p className="text-gray-600 mb-4">You don't have any active subscriptions yet.</p>
+                <p className="text-gray-600 mb-4">{t('billing:subscriptions.emptyState')}</p>
                 <Button
                   onClick={() => window.location.href = '/plan'}
                   className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
                 >
-                  View Plans
+                  {t('billing:subscriptions.viewPlansButton')}
                 </Button>
               </CardContent>
             </Card>
@@ -215,17 +220,17 @@ export default function Billing() {
                             <p className="text-sm text-gray-600 mb-2">{subscription.titles.title_name_en}</p>
                           )}
                           <div className="flex flex-wrap items-center gap-3 text-sm">
-                            <span className="text-gray-700 font-medium capitalize">{subscription.plan_type} Plan</span>
+                            <span className="text-gray-700 font-medium capitalize">{subscription.plan_type} {t('billing:subscriptions.planLabel')}</span>
                             <span className="text-gray-500">•</span>
                             <span className="text-gray-700 capitalize">{subscription.billing_period}</span>
                             <span className="text-gray-500">•</span>
                             {getStatusBadge(subscription.status)}
                           </div>
                           <div className="mt-3 text-sm text-gray-600">
-                            <p>Next billing: {formatDate(subscription.current_period_end)}</p>
+                            <p>{t('billing:subscriptions.nextBilling')} {formatDate(subscription.current_period_end)}</p>
                             {subscription.cancel_at_period_end && (
                               <p className="text-amber-600 font-medium mt-1">
-                                Subscription will cancel at period end
+                                {t('billing:subscriptions.cancelNotice')}
                               </p>
                             )}
                           </div>
@@ -242,7 +247,7 @@ export default function Billing() {
         {/* Payment Method */}
         {billingData?.paymentMethod && (
           <section className="mb-8">
-            <h2 className="text-xl font-bold text-black mb-4">Payment Method</h2>
+            <h2 className="text-xl font-bold text-black mb-4">{t('billing:paymentMethod.title')}</h2>
             <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
@@ -252,10 +257,10 @@ export default function Billing() {
                   {billingData.paymentMethod.card && (
                     <div>
                       <p className="font-semibold text-black capitalize">
-                        {billingData.paymentMethod.card.brand} •••• {billingData.paymentMethod.card.last4}
+                        {billingData.paymentMethod.card.brand} {t('billing:paymentMethod.cardEnding')} {billingData.paymentMethod.card.last4}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Expires {billingData.paymentMethod.card.expMonth}/{billingData.paymentMethod.card.expYear}
+                        {t('billing:paymentMethod.expires')} {billingData.paymentMethod.card.expMonth}/{billingData.paymentMethod.card.expYear}
                       </p>
                     </div>
                   )}
@@ -267,12 +272,12 @@ export default function Billing() {
 
         {/* Transaction History */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-black mb-4">Transaction History</h2>
+          <h2 className="text-xl font-bold text-black mb-4">{t('billing:transactions.title')}</h2>
 
           {(!billingData?.transactions || billingData.transactions.length === 0) ? (
             <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
               <CardContent className="p-8 text-center">
-                <p className="text-gray-600">No transactions yet</p>
+                <p className="text-gray-600">{t('billing:transactions.emptyState')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -282,11 +287,11 @@ export default function Billing() {
                   <table className="w-full">
                     <thead className="border-b border-gray-200">
                       <tr>
-                        <th className="text-left p-4 text-sm font-semibold text-gray-700">Date</th>
-                        <th className="text-left p-4 text-sm font-semibold text-gray-700">Description</th>
-                        <th className="text-left p-4 text-sm font-semibold text-gray-700">Amount</th>
-                        <th className="text-left p-4 text-sm font-semibold text-gray-700">Status</th>
-                        <th className="text-left p-4 text-sm font-semibold text-gray-700">Invoice</th>
+                        <th className="text-left p-4 text-sm font-semibold text-gray-700">{t('billing:transactions.tableHeaders.date')}</th>
+                        <th className="text-left p-4 text-sm font-semibold text-gray-700">{t('billing:transactions.tableHeaders.description')}</th>
+                        <th className="text-left p-4 text-sm font-semibold text-gray-700">{t('billing:transactions.tableHeaders.amount')}</th>
+                        <th className="text-left p-4 text-sm font-semibold text-gray-700">{t('billing:transactions.tableHeaders.status')}</th>
+                        <th className="text-left p-4 text-sm font-semibold text-gray-700">{t('billing:transactions.tableHeaders.invoice')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -315,7 +320,7 @@ export default function Billing() {
                                 className="text-sunrise-coral-500 hover:text-sunrise-coral-600 text-sm flex items-center gap-1"
                               >
                                 <FileText className="w-4 h-4" />
-                                View
+                                {t('billing:transactions.viewInvoice')}
                               </a>
                             )}
                           </td>

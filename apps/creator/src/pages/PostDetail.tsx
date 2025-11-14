@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -28,6 +29,7 @@ interface ContentPost {
 export default function PostDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation(['content', 'common']);
   const { toast } = useToast();
   const [post, setPost] = useState<ContentPost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,8 +53,8 @@ export default function PostDetail() {
           if (error.code === 'PGRST116') {
             // Not found
             toast({
-              title: 'Post not found',
-              description: 'The requested post could not be found.',
+              title: t('content:postDetail.error.notFoundTitle'),
+              description: t('content:postDetail.error.notFoundMessage'),
               variant: 'destructive',
             });
             navigate('/');
@@ -65,8 +67,8 @@ export default function PostDetail() {
       } catch (err) {
         console.error('Error fetching post:', err);
         toast({
-          title: 'Error loading post',
-          description: 'Failed to load the post. Please try again.',
+          title: t('content:postDetail.error.loadErrorTitle'),
+          description: t('content:postDetail.error.loadErrorMessage'),
           variant: 'destructive',
         });
         navigate('/');
@@ -76,7 +78,7 @@ export default function PostDetail() {
     };
 
     fetchPost();
-  }, [slug, navigate, toast]);
+  }, [slug, navigate, toast, t]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '';
@@ -96,7 +98,7 @@ export default function PostDetail() {
       <MainLayout>
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading post...</p>
+            <p className="text-gray-500">{t('content:postDetail.loading')}</p>
           </div>
         </div>
       </MainLayout>
@@ -108,7 +110,7 @@ export default function PostDetail() {
       <MainLayout>
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <p className="text-gray-500">Post not found</p>
+            <p className="text-gray-500">{t('content:postDetail.notFound')}</p>
           </div>
         </div>
       </MainLayout>
@@ -144,7 +146,7 @@ export default function PostDetail() {
 
             {/* Meta Info - Simplified, subtle */}
             <div className="flex items-center gap-3 text-sm text-gray-500 mb-12">
-              <span className="font-medium">By {post.author_name}</span>
+              <span className="font-medium">{t('content:postDetail.byAuthor')} {post.author_name}</span>
               <span>•</span>
               <span>{formatDate(post.published_at || post.created_at)}</span>
             </div>

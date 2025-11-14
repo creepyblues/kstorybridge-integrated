@@ -1,0 +1,161 @@
+{
+  "hero": {
+    "title": "Three Clear Paths to Global Success",
+    "subtitle": "From free listing to active representation—choose what fits your goals"
+  },
+  "plans": {
+    "free": {
+      "title": "Free 'Listing' Plan",
+      "price": "$0",
+      "description": "Perfect for early-stage creators curious about Western interest",
+      "features": {
+        "feature1": "List one title for free in our curated Korean IP marketplace",
+        "feature2": "Your work becomes searchable by verified Netflix, Amazon, and Disney buyers",
+        "feature3": "Receive direct buyer inquiries",
+        "feature4": "Basic messaging and notification tools"
+      },
+      "buttonText": "Start Free"
+    },
+    "packaging": {
+      "title": "'Packaging' Plan",
+      "price": "$100",
+      "originalPrice": "$200",
+      "period": "/month",
+      "description": "Perfect for serious creators ready to compete professionally",
+      "features": {
+        "feature1": "Professional Adaptation Pitch Deck (normally costs $500-$2,000)",
+        "feature2": "Deep Analytics Dashboard: readership trends, genre benchmarks",
+        "feature3": "'Verified Creator' Badge: instant credibility with buyers",
+        "feature4": "Buyer Insights: track who's viewing your title, which regions show interest",
+        "feature5": "Adaptation Strategy Consultation: 60-minute session",
+        "feature6": "Regular: $200/month or $2,000/year per title",
+        "feature7": "🎉 Launch Promo: $100/month or $1,000/year (50% off first year)"
+      },
+      "buttonText": "Go Packaging",
+      "popularBadge": "Most Popular"
+    },
+    "premium": {
+      "title": "'Premium' Plan",
+      "price": "$200",
+      "originalPrice": "$400",
+      "period": "/month",
+      "description": "Perfect for creators who want dedicated representation without agency fees",
+      "features": {
+        "feature1": "Everything in Packaging, PLUS:",
+        "feature2": "We personally pitch your IP to 20+ carefully selected buyers per year",
+        "feature3": "Monthly Intelligence Reports with actual buyer feedback",
+        "feature4": "Featured in our industry newsletter reaching 1,000+ Western buyers",
+        "feature5": "Homepage spotlight positioning",
+        "feature6": "3 customized pitch versions (film, series, game)",
+        "feature7": "Producer coaching on how to present in meetings",
+        "feature8": "Regular: $400/month or $4,000/year per title",
+        "feature9": "🎉 Launch Promo: $200/month or $2,000/year (50% off first year)"
+      },
+      "buttonText": "Go Premium"
+    },
+    "commitmentNotice": "* Paid plans require 1 year commitment (because building momentum takes time)"
+  },
+  "differentiators": {
+    "title": "What Makes KStoryBridge Different?",
+    "curatedMarketplace": {
+      "title": "Curated Marketplace",
+      "description": "Unlike dumping your script on a generic platform where it gets lost among thousands, your IP enters a curated Korean adaptation marketplace. Buyers come here specifically seeking Korean stories—your work is already positioned as valuable cultural content, not just another PDF in the pile."
+    },
+    "professionalPackaging": {
+      "title": "Professional Packaging",
+      "description": "For the price of a single film market badge, you get an entire year of professional packaging, analytics, and marketplace presence. Your raw Korean story becomes a data-backed, professionally presented adaptation opportunity that speaks the language Hollywood understands."
+    },
+    "activeRepresentation": {
+      "title": "Active Representation",
+      "description": "Traditional agents charge 20-40% forever and might never pitch your project. We charge a flat fee and guarantee 20+ targeted pitches annually. You know exactly what you're paying for and what you're getting."
+    }
+  },
+  "commission": {
+    "title": "The Fairest Commission in the Industry",
+    "subtitle": "Just 10% When You Succeed",
+    "ourCommission": {
+      "title": "Our 10% Commission Covers:",
+      "item1": "Option payments",
+      "item2": "Purchase prices",
+      "item3": "Production bonuses",
+      "item4": "License fees"
+    },
+    "comparison": {
+      "title": "Compare This To:",
+      "traditionalAgents": {
+        "label": "Traditional agents",
+        "value": "20-40% commission"
+      },
+      "otherPlatforms": {
+        "label": "Other platforms",
+        "value": "15-20% commission"
+      },
+      "filmMarket": {
+        "label": "Film market + consultant",
+        "value": "Often $10,000+ with zero guarantee"
+      }
+    },
+    "bundle": {
+      "title": "Special Bundle Pricing",
+      "subtitle": "For Publishers and Studios with Multiple Titles",
+      "tier1": {
+        "discount": "25% OFF",
+        "requirement": "5+ Titles",
+        "description": "Additional discount on all plans"
+      },
+      "tier2": {
+        "discount": "40% OFF",
+        "requirement": "10+ Titles",
+        "description": "Maximum savings for publishers"
+      },
+      "contactButton": "Contact Us"
+    }
+  },
+  "comparisons": {
+    "title": "Why Creators Choose KStoryBridge",
+    "goingAlone": {
+      "title": "vs. Going It Alone",
+      "cons": {
+        "con1": "No industry connections, language barriers",
+        "con2": "Don't know market rates or best practices"
+      },
+      "pros": {
+        "pro1": "Direct access to verified buyers",
+        "pro2": "Bilingual support, market intelligence"
+      }
+    },
+    "traditionalAgents": {
+      "title": "vs. Traditional Agents",
+      "cons": {
+        "con1": "20-40% commission forever",
+        "con2": "Might never pitch your project, no transparency"
+      },
+      "pros": {
+        "pro1": "10% only on success, guaranteed pitches",
+        "pro2": "Full reporting, complete transparency"
+      }
+    },
+    "majorPlatforms": {
+      "title": "vs. Major Platforms (Naver/Kakao)",
+      "cons": {
+        "con1": "Lost in the crowd with millions of titles",
+        "con2": "Minimal revenue share, no direct buyer relationships"
+      },
+      "pros": {
+        "pro1": "Curated marketplace, keep 90% of your deal",
+        "pro2": "Build your own buyer network"
+      }
+    },
+    "filmMarkets": {
+      "title": "vs. Film Markets",
+      "cons": {
+        "con1": "$5,000-20,000 per event, exhausting",
+        "con2": "No follow-up system, connections fade quickly"
+      },
+      "pros": {
+        "pro1": "Year-round representation for less than one badge",
+        "pro2": "Continuous follow-up and relationship building"
+      }
+    }
+  }
+}

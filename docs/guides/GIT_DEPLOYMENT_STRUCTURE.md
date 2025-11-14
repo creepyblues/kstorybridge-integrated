@@ -1,6 +1,6 @@
 # Git Deployment Structure - KStoryBridge
 
-**Last Updated**: 2025-11-05
+**Last Updated**: 2025-10-22
 **Repository**: https://github.com/creepyblues/kstorybridge-integrated
 
 ## Overview
@@ -31,7 +31,7 @@ This document provides a comprehensive reference for the KStoryBridge Git deploy
 
 | Branch | Purpose | Deploys To | Status |
 |--------|---------|------------|--------|
-| **v2** | Staging/Development | dashboard-staging, creator-staging | Active development branch |
+| **v2** | Staging/Development | dashboard-staging, creator-v2-staging | Active development branch |
 | **main** | Production | All apps (dashboard, creator-v2, website) | Stable production code |
 
 ### Branch Workflow
@@ -40,16 +40,16 @@ This document provides a comprehensive reference for the KStoryBridge Git deploy
 Development Cycle:
 1. Work on v2 branch (primary working branch)
 2. Push to v2 → Auto-deploy to staging environments
-3. Test on staging.kstorybridge.com (dashboard V1) and creator-staging.kstorybridge.com (creator-v2)
-4. When stable: Create pull request v2 → main
-5. Get PR approval and merge → Auto-deploy to production
+3. Test on staging.kstorybridge.com (dashboard V1) and creator-v2.kstorybridge.com (creator-v2)
+4. When stable: Merge v2 → main
+5. Push to main → Auto-deploy to production
 ```
 
 ### Critical Rules
 - ✅ **Always develop on `v2` branch**
-- ✅ **Test on staging before creating PR to main**
-- ✅ **Create PR v2 → main only when staging is stable**
-- ❌ **Never push directly to main** (branch protection enabled - PRs required)
+- ✅ **Test on staging before merging to main**
+- ✅ **Merge v2 → main only when staging is stable**
+- ❌ **Never commit directly to main** (except hotfixes)
 - ❌ **Never force push to main**
 
 ---
@@ -58,14 +58,13 @@ Development Cycle:
 
 ### Vercel Projects Overview
 
-KStoryBridge uses **6 separate Vercel projects** for deploying 4 apps across 2 environments:
+KStoryBridge uses **5 separate Vercel projects** for deploying 3 apps across 2 environments:
 
-| Vercel Project | App | Environment | Domain | Builds From |
-|----------------|-----|-------------|--------|-------------|
-| **dashboard-staging** | Dashboard V1 | Staging | staging.kstorybridge.com | `v2` branch |
-| **creator-staging** | Creator V2 | Staging | creator-staging.kstorybridge.com | `v2` branch |
+| Vercel Project         | App | Environment | Domain | Builds From |
+|------------------------|-----|-------------|--------|-------------|
+| **dashboard-staging**  | Dashboard V1 | Staging | staging.kstorybridge.com | `v2` branch |
+| **creator-v2-staging** | Creator V2 | Staging | creator-v2.kstorybridge.com | `v2` branch |
 | **kstorybridge-dashboard** | Dashboard V1 | Production | dashboard.kstorybridge.com | `main` branch |
-| **kstorybridge-dashboard-v2** | Dashboard V2 | Production | dashboard-v2.kstorybridge.com | `main` branch |
 | **kstorybridge-creator** | Creator V2 | Production | creator.kstorybridge.com | `main` branch |
 | **kstorybridge-website** | Website | Production | kstorybridge.com | `main` branch |
 
@@ -98,17 +97,17 @@ VITE_OPENAI_ENABLED=true
 
 ---
 
-#### 2. creator-staging (Creator V2 Staging Environment)
+#### 2. creator-v2-staging (Creator V2 Staging Environment)
 
 **Purpose**: Testing ground for all creator-v2 changes before production
 
 **Configuration**:
 ```yaml
-Project Name: creator-staging
+Project Name: creator-v2-staging
 Production Branch: v2
-Root Directory: apps/creator
+Root Directory: apps/creator-v2
 Ignored Build Step: (empty - builds all v2 commits)
-Custom Domain: creator-staging.kstorybridge.com
+Custom Domain: creator-v2.kstorybridge.com
 ```
 
 **Environment Variables** (Key Settings):
@@ -152,54 +151,7 @@ VITE_OPENAI_ENABLED=true
 
 ---
 
-#### 4. kstorybridge-dashboard-v2 (Production Dashboard V2 App)
-
-**Purpose**: Next-generation buyer dashboard with enhanced chatbot features
-
-**Configuration**:
-```yaml
-Project Name: kstorybridge-dashboard-v2
-Production Branch: main
-Root Directory: apps/dashboard-v2
-Build Command: cd ../.. && npm run build:dashboard-v2
-Output Directory: apps/dashboard-v2/dist
-Install Command: npm install
-Ignored Build Step: cd ../.. && npx turbo-ignore
-Custom Domain: dashboard-v2.kstorybridge.com
-```
-
-**Turborepo Integration**:
-- Uses `turbo-ignore` for selective deployments
-- Only rebuilds when `apps/dashboard-v2/` files change
-- Requires `apps/dashboard-v2/turbo.json` configuration file
-
-**Environment Variables**:
-```env
-VITE_DASHBOARD_URL=https://dashboard-v2.kstorybridge.com
-VITE_SUPABASE_URL=https://dlrnrgcoguxlkkcitlpd.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
-```
-
-**Status**: ✅ Deployed to Production (November 2025)
-
-**Key Features**:
-- Session-based chat history persistence
-- Fuzzy title matching (80% similarity threshold)
-- ConversationalMessage with inline title linking
-- Suggested queries with database tracking
-- Analytics tracking (clicks, interactions, sessions)
-- Title cache (1,500+ titles)
-
-**Notes**:
-- Clean rebuild focused on buyer experience
-- Enhanced AI chatbot with database persistence
-- No staging environment (direct to production)
-- See `apps/dashboard-v2/CLAUDE.md` for architecture details
-
----
-
-#### 5. kstorybridge-creator (Production Creator V2 App)
+#### 4. kstorybridge-creator (Production Creator V2 App)
 
 **Purpose**: Production creator dashboard (content management, pitch uploads, analytics)
 
@@ -207,7 +159,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
 ```yaml
 Project Name: kstorybridge-creator
 Production Branch: main
-Root Directory: apps/creator
+Root Directory: apps/creator-v2
 Ignored Build Step: if [ "$VERCEL_GIT_COMMIT_REF" = "v2" ]; then exit 0; else exit 1; fi
 Custom Domain: creator.kstorybridge.com
 ```
@@ -318,7 +270,7 @@ git push origin v2
 1. GitHub receives push to `v2` branch
 2. Vercel webhook triggered for all 5 projects
 3. **dashboard-staging**: Builds and deploys (production branch = v2)
-4. **creator-staging**: Builds and deploys (production branch = v2)
+4. **creator-v2-staging**: Builds and deploys (production branch = v2)
 5. **kstorybridge-dashboard**: Skips build (ignored build step)
 6. **kstorybridge-creator**: Skips build (ignored build step)
 7. **kstorybridge-website**: Skips build (ignored build step)
@@ -348,41 +300,37 @@ git push origin v2
 
 ---
 
-### 3. Deploying to Production (main)
+### 3. Merging to Production (main)
 
 **Only proceed if staging tests pass 100%**
 
-**⚠️ Note**: The `main` branch has protection enabled. Direct pushes are blocked - you must use pull requests.
-
 ```bash
-# Option 1: GitHub CLI (Recommended)
-gh pr create --base main --head v2 \
-  --title "Deploy v2 to production" \
-  --body "Staging tests passed. Ready for production deployment."
+# Switch to main branch
+git checkout main
 
-# Review the PR URL provided
-# Get approval (if required by team settings)
-# Merge via GitHub UI or CLI: gh pr merge <pr-number>
+# Pull latest changes (in case of team updates)
+git pull origin main
 
-# Option 2: GitHub Web UI
-# 1. Go to https://github.com/creepyblues/kstorybridge-integrated
-# 2. Click "Pull requests" → "New pull request"
-# 3. Base: main, Compare: v2
-# 4. Review changes, create PR
-# 5. Get approval (if required)
-# 6. Merge pull request
+# Merge v2 into main
+git merge v2
+
+# Review changes
+git log --oneline -5
+
+# Push to production
+git push origin main
 ```
 
-**What Happens After PR Merge**:
-1. GitHub merges PR to `main` branch
+**What Happens**:
+1. GitHub receives push to `main` branch
 2. Vercel webhook triggered for all 5 projects
 3. **dashboard-staging**: Skips build (production branch = v2)
-4. **creator-staging**: Skips build (production branch = v2)
-5. **kstorybridge-dashboard**: Checks changes with turbo-ignore, builds if needed
-6. **kstorybridge-creator**: Checks changes with turbo-ignore, builds if needed
-7. **kstorybridge-website**: Checks changes with turbo-ignore, builds if needed
+4. **creator-v2-staging**: Skips build (production branch = v2)
+5. **kstorybridge-dashboard**: Builds and deploys
+6. **kstorybridge-creator**: Builds and deploys
+7. **kstorybridge-website**: Builds and deploys
 
-**Result**: Only changed production apps deploy (thanks to Turborepo selective deployment)
+**Result**: All production apps update simultaneously (dashboard V1 + creator-v2 + website)
 
 ---
 
@@ -421,60 +369,52 @@ git push origin v2
 
 ### Scenario 2: Hotfix to Production
 
-**⚠️ Note**: Direct pushes to main are blocked. Even hotfixes require PRs.
-
 ```bash
 # Critical bug in production requires immediate fix
 
-# Hotfix workflow (all hotfixes go through v2 → PR → main)
-git checkout v2
+# Option A: Hotfix directly to main (use sparingly)
+git checkout main
 # ... make minimal fix ...
 git add .
-git commit -m "hotfix: critical auth bug in production"
-git push origin v2  # Test on staging first (even for hotfixes)
+git commit -m "fix: critical auth bug in production"
+git push origin main
 
-# Create emergency PR
-gh pr create --base main --head v2 \
-  --title "HOTFIX: Critical auth bug" \
-  --body "Production critical fix. Staging tested."
+# Option B: Hotfix via v2 (recommended)
+git checkout v2
+# ... make fix ...
+git push origin v2  # Test on staging
+git checkout main
+git merge v2
+git push origin main
 
-# Get quick approval (contact team if needed)
-# Merge PR immediately after approval
-
-# No manual sync needed - v2 and main are now aligned after PR merge
+# CRITICAL: After hotfix, sync v2 with main
+git checkout v2
+git merge main  # Ensure v2 has the hotfix
+git push origin v2
 ```
-
-**For true emergencies**: If branch protection prevents immediate deployment, contact repository admin to temporarily disable protection or approve PR immediately.
 
 ---
 
 ### Scenario 3: Rolling Back Production
 
-**⚠️ Note**: Git rollbacks require PRs. For immediate rollback, use Vercel dashboard.
-
 ```bash
 # Production deployment has issues, need to rollback
 
-# Option 1: Revert via Git (requires PR)
-git checkout v2
+# Option 1: Revert via Git
+git checkout main
 git revert <bad-commit-hash>
-git add .
-git commit -m "Revert: rollback problematic change"
-git push origin v2
+git push origin main
 
-# Create rollback PR
-gh pr create --base main --head v2 \
-  --title "Rollback: Revert problematic deployment" \
-  --body "Rolling back due to production issues."
-
-# Get approval and merge
-
-# Option 2: Immediate Rollback via Vercel (recommended for emergencies)
+# Option 2: Revert via Vercel Dashboard
 # 1. Go to Vercel project → Deployments
 # 2. Find last good deployment
-# 3. Click "..." → "Promote to Production"
-# 4. This bypasses Git and immediately restores previous version
-# 5. Then sync v2 with the rollback via PR when ready
+# 3. Click "..." → "Redeploy"
+# 4. Confirm rollback
+
+# CRITICAL: After rollback, sync v2
+git checkout v2
+git merge main  # Or rebase to clean history
+git push origin v2
 ```
 
 ---
@@ -745,26 +685,22 @@ git commit -m "feat: your feature"
 git push origin v2
 
 # Deploy to production (after staging tests pass)
-# Create pull request v2 → main
-gh pr create --base main --head v2 --title "Deploy v2 to production"
-# Or use GitHub UI to create PR, get approval, and merge
+git checkout main
+git merge v2
+git push origin main
 ```
 
 ### Emergency Procedures
 ```bash
-# Hotfix production (requires PR even for emergencies)
-git checkout v2
+# Hotfix production
+git checkout main
 # ... make fix ...
-git add . && git commit -m "hotfix: critical fix"
-git push origin v2
-# Create emergency PR: gh pr create --base main --head v2 --title "HOTFIX: critical issue"
-# Get quick approval and merge
+git push origin main
 
-# Rollback production (requires PR)
-git checkout v2
+# Rollback production
+git checkout main
 git revert <commit>
-git push origin v2
-# Create rollback PR: gh pr create --base main --head v2 --title "Rollback: revert problematic change"
+git push origin main
 
 # Check deployment status
 # Visit Vercel dashboard or use:
@@ -816,97 +752,15 @@ cat .vercel/project.json
 
 ---
 
-## Turborepo Integration (ADDED 2025-11-02)
-
-### Overview
-
-The monorepo now uses **Turborepo** for intelligent build orchestration and selective deployments. This provides:
-
-- ✅ **~50x faster builds** with intelligent caching (4s → 80ms)
-- ✅ **Selective deployments** - Only build apps that changed
-- ✅ **Automatic dependency graph** - Packages build before apps
-- ✅ **Parallel builds** - Multiple apps build simultaneously
-- ✅ **Remote caching** - Share cache across team and CI/CD
-
-### Updated Vercel Configuration
-
-**All 6 Vercel projects now use `turbo-ignore`**:
-
-| Vercel Project | Old Ignored Build Step | New Ignored Build Step (Correct) |
-|----------------|------------------------|----------------------------------|
-| dashboard-staging | (empty) | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
-| dashboard-v2 | (empty) | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard-v2` |
-| creator-staging | (empty) | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
-| kstorybridge-dashboard | Branch check script | `cd ../.. && npx turbo-ignore @kstorybridge/dashboard` |
-| kstorybridge-creator | Branch check script | `cd ../.. && npx turbo-ignore @kstorybridge/creator` |
-| kstorybridge-website | Branch check script | `cd ../.. && npx turbo-ignore @kstorybridge/website` |
-
-**⚠️ CRITICAL - Both parts are required**:
-- `cd ../..` - Changes from `apps/[app]` to monorepo root (for full context)
-- `@kstorybridge/[workspace]` - Specifies which workspace to check for changes
-- **Without workspace argument**: turbo-ignore fails with error and deploys ALL apps (safety fallback)
-
-### How turbo-ignore Works
-
-**Selective Deployment Logic**:
-
-```
-turbo-ignore checks:
-1. App code changes (apps/dashboard/, apps/creator/, apps/website/)
-2. Shared package changes (packages/* that the app depends on)
-3. Root config changes (turbo.json, package.json)
-
-Result:
-- Changed: exit 1 (proceed with build)
-- Unchanged: exit 0 (skip build)
-```
-
-**Example Scenarios**:
-
-| Change | Dashboard Deploys? | Creator Deploys? | Website Deploys? |
-|--------|-------------------|------------------|------------------|
-| `apps/dashboard/src/pages/Home.tsx` | ✅ Yes | ❌ No | ❌ No |
-| `apps/creator/src/components/TitleCard.tsx` | ❌ No | ✅ Yes | ❌ No |
-| `packages/auth/src/index.ts` | ✅ Yes | ❌ No | ✅ Yes |
-| `turbo.json` (root) | ✅ Yes | ✅ Yes | ✅ Yes |
-
-**Why Creator is Special**:
-- Creator app has **no shared package dependencies**
-- Only deploys when `apps/creator/` or root configs change
-- Dashboard and Website share `@kstorybridge/auth` and `@kstorybridge/ui`
-
-### Configuration Files
-
-**Root-level**:
-- `/turbo.json` - Pipeline configuration, task definitions, caching rules
-- `/package.json` - Updated scripts to use `turbo run` commands
-
-**App-level**:
-- `/apps/dashboard/turbo.json` - Extends root config
-- `/apps/creator/turbo.json` - Extends root config
-- `/apps/website/turbo.json` - Extends root config
-
-### Complete Setup Guide
-
-See **[TURBOREPO_VERCEL_SETUP.md](./TURBOREPO_VERCEL_SETUP.md)** for:
-- Step-by-step Vercel configuration
-- Testing procedures
-- Troubleshooting guide
-- Remote cache setup
-
----
-
 ## Summary
 
-### Current State (2025-11-02)
+### Current State (2025-10-22)
 
 ✅ **Configured**:
 - Git repository: `kstorybridge-integrated`
 - Two-branch strategy: `v2` (staging) + `main` (production)
-- Five Vercel projects: 2 staging + 3 production
-- **Turborepo** for build orchestration and selective deployments
-- `turbo-ignore` in all Vercel projects for intelligent build skipping
-- Intelligent caching (~50x faster builds)
+- Four Vercel projects: 1 staging + 3 production
+- Ignored Build Step prevents duplicate builds
 - Vercel.json rewrite rules prevent module errors
 - Supabase OAuth callbacks configured for all domains
 
@@ -922,6 +776,6 @@ See **[TURBOREPO_VERCEL_SETUP.md](./TURBOREPO_VERCEL_SETUP.md)** for:
 
 ---
 
-**Last Reviewed**: 2025-11-02
+**Last Reviewed**: 2025-10-22
 **Maintainer**: Development Team
 **Status**: ✅ Production-ready documentation

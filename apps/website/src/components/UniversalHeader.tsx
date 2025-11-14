@@ -74,18 +74,6 @@ const UniversalHeader = () => {
             >
               ABOUT
             </button>
-            {/* Pricing link hidden per requirements
-            <button
-              onClick={() => navigate('/creators/pricing')}
-              className={`font-medium transition-colors ${
-                isActive('/creators/pricing') || isActive('/pricing')
-                  ? 'text-hanok-teal'
-                  : 'text-midnight-ink hover:text-hanok-teal'
-              }`}
-            >
-              PRICING
-            </button>
-            */}
 
             {/* Auth Buttons */}
             <Button
@@ -169,21 +157,6 @@ const UniversalHeader = () => {
               >
                 ABOUT
               </button>
-              {/* Pricing link hidden per requirements
-              <button
-                onClick={() => {
-                  navigate('/creators/pricing');
-                  setMobileMenuOpen(false);
-                }}
-                className={`block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors ${
-                  isActive('/creators/pricing') || isActive('/pricing')
-                    ? 'bg-hanok-teal/10 text-hanok-teal'
-                    : 'text-midnight-ink hover:bg-gray-50'
-                }`}
-              >
-                PRICING
-              </button>
-              */}
             </div>
 
             {/* Auth Buttons - Full width on mobile */}

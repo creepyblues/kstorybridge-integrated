@@ -19,8 +19,6 @@ const HomePagePreview1 = lazy(() => import("./pages/HomePagePreview1"));
 const HomePagePreview2 = lazy(() => import("./pages/HomePagePreview2"));
 const HomePagePreview3 = lazy(() => import("./pages/HomePagePreview3"));
 const BuyersOnboardingPage = lazy(() => import("./pages/BuyersOnboardingPage"));
-const PricingPage = lazy(() => import("./pages/PricingPage"));
-const CreatorsPricingPage = lazy(() => import("./pages/CreatorsPricingPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const SigninPage = lazy(() => import("./pages/SigninPage"));
 const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
@@ -59,8 +57,6 @@ const App = () => (
           {import.meta.env.DEV && <Route path="/home-preview2" element={<HomePagePreview2 />} />}
           {import.meta.env.DEV && <Route path="/home-preview3" element={<HomePagePreview3 />} />}
           <Route path="/buyers/onboarding" element={<BuyersOnboardingPage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/creators/pricing" element={<CreatorsPricingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />

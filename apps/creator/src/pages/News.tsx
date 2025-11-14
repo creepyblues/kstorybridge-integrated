@@ -254,7 +254,7 @@ export default function News() {
           {/* Page Header */}
           <div className="flex justify-between items-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-black">
-              {t('navigation:sidebar.news')}
+              {t('content:news.title')}
             </h1>
             <Button
               variant="outline"
@@ -264,7 +264,7 @@ export default function News() {
               className="border-gray-300 hover:bg-gray-100"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              {t('content:news.refreshButton')}
             </Button>
           </div>
 
@@ -284,7 +284,7 @@ export default function News() {
                 variant="outline"
                 className="mt-4 border-gray-300 hover:bg-gray-100"
               >
-                Retry
+                {t('content:news.retryButton')}
               </Button>
             </div>
           )}
@@ -294,7 +294,7 @@ export default function News() {
             <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
               <CardContent className="p-6">
                 <p className="text-center text-gray-500">
-                  No news sections available at the moment.
+                  {t('content:news.emptyState')}
                 </p>
               </CardContent>
             </Card>
@@ -339,7 +339,7 @@ export default function News() {
                     {/* Takeaway */}
                     {section.takeaway && (
                       <p className="text-left text-base text-gray-800 leading-relaxed mb-6">
-                        <span className="font-bold">Takeaway:</span>{' '}
+                        <span className="font-bold">{t('content:news.ipReference.takeaway')}</span>{' '}
                         {section.takeawayHtml ? (
                           <span dangerouslySetInnerHTML={{ __html: section.takeawayHtml }} />
                         ) : (
@@ -352,12 +352,12 @@ export default function News() {
                     {section.reference && Object.keys(section.reference).length > 0 && (
                       <div className="space-y-2">
                         <p className="text-left text-base font-bold text-gray-800">
-                          IP Reference
+                          {t('content:news.ipReference.title')}
                         </p>
                         <ul className="space-y-2 ml-4">
                           {section.reference.titleFormat && (
                             <li className="text-left text-base text-gray-800 leading-relaxed">
-                              <span className="font-bold">Title / Format:</span>{' '}
+                              <span className="font-bold">{t('content:news.ipReference.titleFormat')}</span>{' '}
                               {section.reference.titleFormatHtml ? (
                                 <span dangerouslySetInnerHTML={{ __html: section.reference.titleFormatHtml }} />
                               ) : (
@@ -367,12 +367,12 @@ export default function News() {
                           )}
                           {section.reference.keyNumbers && (
                             <li className="text-left text-base text-gray-800 leading-relaxed">
-                              <span className="font-bold">Key Numbers:</span> {section.reference.keyNumbers}
+                              <span className="font-bold">{t('content:news.ipReference.keyNumbers')}</span> {section.reference.keyNumbers}
                             </li>
                           )}
                           {section.reference.whyProducersCare && (
                             <li className="text-left text-base text-gray-800 leading-relaxed">
-                              <span className="font-bold">Why Producers Care:</span> {section.reference.whyProducersCare}
+                              <span className="font-bold">{t('content:news.ipReference.whyProducersCare')}</span> {section.reference.whyProducersCare}
                             </li>
                           )}
                         </ul>
@@ -387,7 +387,7 @@ export default function News() {
           {/* Last Updated Timestamp */}
           {lastUpdated && !loading && (
             <p className="text-center text-sm text-gray-500 mt-8">
-              Last updated: {lastUpdated.toLocaleString()}
+              {t('content:news.lastUpdated')} {lastUpdated.toLocaleString()}
             </p>
           )}
         </div>

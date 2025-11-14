@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,7 @@ import { CheckCircle, Loader2 } from 'lucide-react'
 
 export default function PaymentSuccess() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['payment', 'common'])
   const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(true)
 
@@ -28,9 +30,9 @@ export default function PaymentSuccess() {
           <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardContent className="p-12 text-center">
               <Loader2 className="w-16 h-16 animate-spin text-sunrise-coral-500 mx-auto mb-6" />
-              <h1 className="text-2xl font-bold text-black mb-3">Processing Your Payment...</h1>
+              <h1 className="text-2xl font-bold text-black mb-3">{t('payment:processing.title')}</h1>
               <p className="text-gray-600">
-                Please wait while we confirm your subscription
+                {t('payment:processing.message')}
               </p>
             </CardContent>
           </Card>
@@ -51,39 +53,39 @@ export default function PaymentSuccess() {
 
             {/* Success Message */}
             <h1 className="text-3xl font-bold text-black mb-3">
-              Payment Successful!
+              {t('payment:success.title')}
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              Your subscription has been activated successfully.
+              {t('payment:success.subtitle')}
             </p>
 
             {/* Session ID */}
             {sessionId && (
               <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500 mb-1">Transaction ID</p>
+                <p className="text-xs text-gray-500 mb-1">{t('payment:success.transactionIdLabel')}</p>
                 <p className="text-sm font-mono text-gray-700">{sessionId}</p>
               </div>
             )}
 
             {/* What's Next */}
             <div className="mb-8 text-left bg-sunrise-coral-50 p-6 rounded-lg">
-              <h2 className="text-lg font-semibold text-black mb-3">What's Next?</h2>
+              <h2 className="text-lg font-semibold text-black mb-3">{t('payment:success.whatsNext.title')}</h2>
               <ul className="space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                  <span>You'll receive a confirmation email with your invoice</span>
+                  <span>{t('payment:success.whatsNext.step1')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                  <span>Your title is now listed in our curated marketplace</span>
+                  <span>{t('payment:success.whatsNext.step2')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                  <span>We'll start working on your professional pitch deck</span>
+                  <span>{t('payment:success.whatsNext.step3')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                  <span>You'll be contacted by our team within 2-3 business days</span>
+                  <span>{t('payment:success.whatsNext.step4')}</span>
                 </li>
               </ul>
             </div>
@@ -94,14 +96,14 @@ export default function PaymentSuccess() {
                 onClick={() => navigate('/billing')}
                 className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
               >
-                View Billing Details
+                {t('payment:success.viewBillingButton')}
               </Button>
               <Button
                 onClick={() => navigate('/titles')}
                 variant="outline"
                 className="border-gray-300 hover:bg-gray-100"
               >
-                Go to My Titles
+                {t('payment:success.goToTitlesButton')}
               </Button>
             </div>
           </CardContent>

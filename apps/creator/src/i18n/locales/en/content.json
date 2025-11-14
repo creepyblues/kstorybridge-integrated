@@ -1,0 +1,32 @@
+{
+  "learningCenter": {
+    "title": "Learning Center",
+    "loading": "Loading learning materials...",
+    "emptyState": "No learning materials available yet. Check back soon!"
+  },
+  "news": {
+    "title": "K-content News",
+    "refreshButton": "Refresh",
+    "retryButton": "Retry",
+    "emptyState": "No news sections available at the moment.",
+    "lastUpdated": "Last updated:",
+    "ipReference": {
+      "title": "IP Reference",
+      "takeaway": "Takeaway:",
+      "titleFormat": "Title / Format:",
+      "keyNumbers": "Key Numbers:",
+      "whyProducersCare": "Why Producers Care:"
+    }
+  },
+  "postDetail": {
+    "loading": "Loading post...",
+    "notFound": "Post not found",
+    "byAuthor": "By",
+    "error": {
+      "notFoundTitle": "Post not found",
+      "notFoundMessage": "The requested post could not be found.",
+      "loadErrorTitle": "Error loading post",
+      "loadErrorMessage": "Failed to load the post. Please try again."
+    }
+  }
+}

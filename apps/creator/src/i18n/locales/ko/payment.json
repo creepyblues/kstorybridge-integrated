@@ -1,0 +1,20 @@
+{
+  "processing": {
+    "title": "결제 처리 중...",
+    "message": "구독 확인 중이니 잠시만 기다려 주세요"
+  },
+  "success": {
+    "title": "결제 성공!",
+    "subtitle": "구독이 성공적으로 활성화되었습니다.",
+    "transactionIdLabel": "거래 ID",
+    "whatsNext": {
+      "title": "다음 단계는?",
+      "step1": "청구서가 포함된 확인 이메일을 받으실 겁니다",
+      "step2": "작품이 이제 엄선된 마켓플레이스에 등록되었습니다",
+      "step3": "전문 피치 덱 작업을 시작하겠습니다",
+      "step4": "영업일 기준 2-3일 이내에 저희 팀이 연락드리겠습니다"
+    },
+    "viewBillingButton": "결제 내역 보기",
+    "goToTitlesButton": "내 작품으로 이동"
+  }
+}

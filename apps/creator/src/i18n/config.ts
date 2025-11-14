@@ -10,6 +10,10 @@ import profileEN from './locales/en/profile.json';
 import navigationEN from './locales/en/navigation.json';
 import surveyEN from './locales/en/survey.json';
 import validationEN from './locales/en/validation.json';
+import pricingEN from './locales/en/pricing.json';
+import billingEN from './locales/en/billing.json';
+import paymentEN from './locales/en/payment.json';
+import contentEN from './locales/en/content.json';
 
 import commonKO from './locales/ko/common.json';
 import authKO from './locales/ko/auth.json';
@@ -18,6 +22,10 @@ import profileKO from './locales/ko/profile.json';
 import navigationKO from './locales/ko/navigation.json';
 import surveyKO from './locales/ko/survey.json';
 import validationKO from './locales/ko/validation.json';
+import pricingKO from './locales/ko/pricing.json';
+import billingKO from './locales/ko/billing.json';
+import paymentKO from './locales/ko/payment.json';
+import contentKO from './locales/ko/content.json';
 
 // Define resources
 const resources = {
@@ -29,6 +37,10 @@ const resources = {
     navigation: navigationEN,
     survey: surveyEN,
     validation: validationEN,
+    pricing: pricingEN,
+    billing: billingEN,
+    payment: paymentEN,
+    content: contentEN,
   },
   ko: {
     common: commonKO,
@@ -38,6 +50,10 @@ const resources = {
     navigation: navigationKO,
     survey: surveyKO,
     validation: validationKO,
+    pricing: pricingKO,
+    billing: billingKO,
+    payment: paymentKO,
+    content: contentKO,
   },
 };
 
@@ -51,7 +67,7 @@ i18n
     resources,
     fallbackLng: 'en', // Fallback language
     defaultNS: 'common', // Default namespace
-    ns: ['common', 'auth', 'titles', 'profile', 'navigation', 'survey', 'validation'],
+    ns: ['common', 'auth', 'titles', 'profile', 'navigation', 'survey', 'validation', 'pricing', 'billing', 'payment', 'content'],
 
     interpolation: {
       escapeValue: false, // React already escapes by default

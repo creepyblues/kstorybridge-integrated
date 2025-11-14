@@ -1,0 +1,20 @@
+{
+  "processing": {
+    "title": "Processing Your Payment...",
+    "message": "Please wait while we confirm your subscription"
+  },
+  "success": {
+    "title": "Payment Successful!",
+    "subtitle": "Your subscription has been activated successfully.",
+    "transactionIdLabel": "Transaction ID",
+    "whatsNext": {
+      "title": "What's Next?",
+      "step1": "You'll receive a confirmation email with your invoice",
+      "step2": "Your title is now listed in our curated marketplace",
+      "step3": "We'll start working on your professional pitch deck",
+      "step4": "You'll be contacted by our team within 2-3 business days"
+    },
+    "viewBillingButton": "View Billing Details",
+    "goToTitlesButton": "Go to My Titles"
+  }
+}

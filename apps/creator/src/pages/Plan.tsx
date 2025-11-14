@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Check, X, Sparkles, TrendingUp, Rocket } from 'lucide-react'
@@ -9,6 +10,7 @@ import { CheckoutModal } from '@/components/CheckoutModal'
 
 export default function Plan() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['pricing', 'common'])
   const [checkoutModal, setCheckoutModal] = useState<{
     isOpen: boolean
     planType: 'packaging' | 'premium'
@@ -42,10 +44,10 @@ export default function Plan() {
         <section className="py-12 sm:py-16 lg:py-20">
           <div className="max-w-5xl mx-auto text-center">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6">
-              Three Clear Paths to Global Success
+              {t('pricing:hero.title')}
             </h1>
             <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto">
-              From free listing to active representation—choose what fits your goals
+              {t('pricing:hero.subtitle')}
             </p>
           </div>
         </section>
@@ -55,37 +57,37 @@ export default function Plan() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8">
             {/* Free Listing Plan */}
             <PricingCard
-              title="Free 'Listing' Plan"
-              price="$0"
-              description="Perfect for early-stage creators curious about Western interest"
+              title={t('pricing:plans.free.title')}
+              price={t('pricing:plans.free.price')}
+              description={t('pricing:plans.free.description')}
               features={[
-                'List one title for free in our curated Korean IP marketplace',
-                'Your work becomes searchable by verified Netflix, Amazon, and Disney buyers',
-                'Receive direct buyer inquiries',
-                'Basic messaging and notification tools'
+                t('pricing:plans.free.features.feature1'),
+                t('pricing:plans.free.features.feature2'),
+                t('pricing:plans.free.features.feature3'),
+                t('pricing:plans.free.features.feature4')
               ]}
-              buttonText="Start Free"
+              buttonText={t('pricing:plans.free.buttonText')}
               onButtonClick={handleStartFree}
               className="bg-transparent shadow-none rounded-2xl"
             />
 
             {/* Packaging Plan */}
             <PricingCard
-              title="'Packaging' Plan"
-              price="$100"
-              originalPrice="$200"
-              period="/month"
-              description="Perfect for serious creators ready to compete professionally"
+              title={t('pricing:plans.packaging.title')}
+              price={t('pricing:plans.packaging.price')}
+              originalPrice={t('pricing:plans.packaging.originalPrice')}
+              period={t('pricing:plans.packaging.period')}
+              description={t('pricing:plans.packaging.description')}
               features={[
-                'Professional Adaptation Pitch Deck (normally costs $500-$2,000)',
-                'Deep Analytics Dashboard: readership trends, genre benchmarks',
-                "'Verified Creator' Badge: instant credibility with buyers",
-                "Buyer Insights: track who's viewing your title, which regions show interest",
-                'Adaptation Strategy Consultation: 60-minute session',
-                'Regular: $200/month or $2,000/year per title',
-                <span className="text-sunrise-coral-600">🎉 Launch Promo: $100/month or $1,000/year (50% off first year)</span>
+                t('pricing:plans.packaging.features.feature1'),
+                t('pricing:plans.packaging.features.feature2'),
+                t('pricing:plans.packaging.features.feature3'),
+                t('pricing:plans.packaging.features.feature4'),
+                t('pricing:plans.packaging.features.feature5'),
+                t('pricing:plans.packaging.features.feature6'),
+                <span className="text-sunrise-coral-600">{t('pricing:plans.packaging.features.feature7')}</span>
               ]}
-              buttonText="Go Packaging"
+              buttonText={t('pricing:plans.packaging.buttonText')}
               onButtonClick={() => handleUpgrade('packaging')}
               popular={true}
               className="bg-transparent shadow-none rounded-2xl"
@@ -93,23 +95,23 @@ export default function Plan() {
 
             {/* Premium Plan */}
             <PricingCard
-              title="'Premium' Plan"
-              price="$200"
-              originalPrice="$400"
-              period="/month"
-              description="Perfect for creators who want dedicated representation without agency fees"
+              title={t('pricing:plans.premium.title')}
+              price={t('pricing:plans.premium.price')}
+              originalPrice={t('pricing:plans.premium.originalPrice')}
+              period={t('pricing:plans.premium.period')}
+              description={t('pricing:plans.premium.description')}
               features={[
-                'Everything in Packaging, PLUS:',
-                'We personally pitch your IP to 20+ carefully selected buyers per year',
-                'Monthly Intelligence Reports with actual buyer feedback',
-                'Featured in our industry newsletter reaching 1,000+ Western buyers',
-                'Homepage spotlight positioning',
-                '3 customized pitch versions (film, series, game)',
-                'Producer coaching on how to present in meetings',
-                'Regular: $400/month or $4,000/year per title',
-                <span className="text-sunrise-coral-600">🎉 Launch Promo: $200/month or $2,000/year (50% off first year)</span>
+                t('pricing:plans.premium.features.feature1'),
+                t('pricing:plans.premium.features.feature2'),
+                t('pricing:plans.premium.features.feature3'),
+                t('pricing:plans.premium.features.feature4'),
+                t('pricing:plans.premium.features.feature5'),
+                t('pricing:plans.premium.features.feature6'),
+                t('pricing:plans.premium.features.feature7'),
+                t('pricing:plans.premium.features.feature8'),
+                <span className="text-sunrise-coral-600">{t('pricing:plans.premium.features.feature9')}</span>
               ]}
-              buttonText="Go Premium"
+              buttonText={t('pricing:plans.premium.buttonText')}
               onButtonClick={() => handleUpgrade('premium')}
               className="bg-transparent shadow-none rounded-2xl"
             />
@@ -118,7 +120,7 @@ export default function Plan() {
           {/* Commitment Notice */}
           <div className="text-center">
             <p className="text-gray-600 text-xs sm:text-sm">
-              * Paid plans require 1 year commitment (because building momentum takes time)
+              {t('pricing:plans.commitmentNotice')}
             </p>
           </div>
         </section>
@@ -127,7 +129,7 @@ export default function Plan() {
         <section className="py-12 sm:py-16 lg:py-20">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-6 sm:mb-8 text-center">
-              What Makes KStoryBridge Different?
+              {t('pricing:differentiators.title')}
             </h2>
 
             <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8">
@@ -137,12 +139,9 @@ export default function Plan() {
                     <Sparkles className="w-6 h-6 text-sunrise-coral-500" />
                   </div>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-black mb-2">Curated Marketplace</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-black mb-2">{t('pricing:differentiators.curatedMarketplace.title')}</h3>
                     <p className="text-gray-600 text-sm sm:text-base">
-                      Unlike dumping your script on a generic platform where it gets lost among thousands,
-                      your IP enters a curated Korean adaptation marketplace. Buyers come here specifically
-                      seeking Korean stories—your work is already positioned as valuable cultural content,
-                      not just another PDF in the pile.
+                      {t('pricing:differentiators.curatedMarketplace.description')}
                     </p>
                   </div>
                 </div>
@@ -156,12 +155,9 @@ export default function Plan() {
                     <TrendingUp className="w-6 h-6 text-sunrise-coral-500" />
                   </div>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-black mb-2">Professional Packaging</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-black mb-2">{t('pricing:differentiators.professionalPackaging.title')}</h3>
                     <p className="text-gray-600 text-sm sm:text-base">
-                      For the price of a single film market badge, you get an entire year of professional
-                      packaging, analytics, and marketplace presence. Your raw Korean story becomes a
-                      data-backed, professionally presented adaptation opportunity that speaks the language
-                      Hollywood understands.
+                      {t('pricing:differentiators.professionalPackaging.description')}
                     </p>
                   </div>
                 </div>
@@ -175,11 +171,9 @@ export default function Plan() {
                     <Rocket className="w-6 h-6 text-sunrise-coral-500" />
                   </div>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-black mb-2">Active Representation</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-black mb-2">{t('pricing:differentiators.activeRepresentation.title')}</h3>
                     <p className="text-gray-600 text-sm sm:text-base">
-                      Traditional agents charge 20-40% forever and might never pitch your project. We charge
-                      a flat fee and guarantee 20+ targeted pitches annually. You know exactly what you're
-                      paying for and what you're getting.
+                      {t('pricing:differentiators.activeRepresentation.description')}
                     </p>
                   </div>
                 </div>
@@ -193,10 +187,10 @@ export default function Plan() {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-8 sm:mb-12">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-3 sm:mb-4">
-                The Fairest Commission in the Industry
+                {t('pricing:commission.title')}
               </h2>
               <p className="text-lg sm:text-xl text-sunrise-coral-600 font-semibold">
-                Just 10% When You Succeed
+                {t('pricing:commission.subtitle')}
               </p>
             </div>
 
@@ -205,14 +199,14 @@ export default function Plan() {
                 <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
                   <div>
                     <h3 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
-                      Our 10% Commission Covers:
+                      {t('pricing:commission.ourCommission.title')}
                     </h3>
                     <ul className="space-y-2 sm:space-y-3">
                       {[
-                        'Option payments',
-                        'Purchase prices',
-                        'Production bonuses',
-                        'License fees'
+                        t('pricing:commission.ourCommission.item1'),
+                        t('pricing:commission.ourCommission.item2'),
+                        t('pricing:commission.ourCommission.item3'),
+                        t('pricing:commission.ourCommission.item4')
                       ].map((item, i) => (
                         <li key={i} className="flex items-center gap-3">
                           <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0" />
@@ -224,13 +218,13 @@ export default function Plan() {
 
                   <div>
                     <h3 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
-                      Compare This To:
+                      {t('pricing:commission.comparison.title')}
                     </h3>
                     <ul className="space-y-2 sm:space-y-3">
                       {[
-                        { label: 'Traditional agents', value: '20-40% commission' },
-                        { label: 'Other platforms', value: '15-20% commission' },
-                        { label: 'Film market + consultant', value: 'Often $10,000+ with zero guarantee' }
+                        { label: t('pricing:commission.comparison.traditionalAgents.label'), value: t('pricing:commission.comparison.traditionalAgents.value') },
+                        { label: t('pricing:commission.comparison.otherPlatforms.label'), value: t('pricing:commission.comparison.otherPlatforms.value') },
+                        { label: t('pricing:commission.comparison.filmMarket.label'), value: t('pricing:commission.comparison.filmMarket.value') }
                       ].map((item, i) => (
                         <li key={i} className="flex items-start gap-3">
                           <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-1" />
@@ -251,27 +245,27 @@ export default function Plan() {
               <CardContent className="p-6 sm:p-8 lg:p-12">
                 <div className="text-center mb-6 sm:mb-8">
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black mb-2">
-                    Special Bundle Pricing
+                    {t('pricing:commission.bundle.title')}
                   </h3>
                   <p className="text-gray-600 text-sm sm:text-base">
-                    For Publishers and Studios with Multiple Titles
+                    {t('pricing:commission.bundle.subtitle')}
                   </p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto mb-6 sm:mb-8">
                   <Card className="bg-white border-gray-300 shadow-none rounded-xl">
                     <CardContent className="p-4 sm:p-6 text-center">
-                      <div className="text-3xl sm:text-4xl font-bold text-sunrise-coral-500 mb-2">25% OFF</div>
-                      <div className="text-base sm:text-lg font-semibold text-black mb-2">5+ Titles</div>
-                      <p className="text-gray-600 text-xs sm:text-sm">Additional discount on all plans</p>
+                      <div className="text-3xl sm:text-4xl font-bold text-sunrise-coral-500 mb-2">{t('pricing:commission.bundle.tier1.discount')}</div>
+                      <div className="text-base sm:text-lg font-semibold text-black mb-2">{t('pricing:commission.bundle.tier1.requirement')}</div>
+                      <p className="text-gray-600 text-xs sm:text-sm">{t('pricing:commission.bundle.tier1.description')}</p>
                     </CardContent>
                   </Card>
 
                   <Card className="bg-white border-gray-300 shadow-none rounded-xl">
                     <CardContent className="p-4 sm:p-6 text-center">
-                      <div className="text-3xl sm:text-4xl font-bold text-sunrise-coral-500 mb-2">40% OFF</div>
-                      <div className="text-base sm:text-lg font-semibold text-black mb-2">10+ Titles</div>
-                      <p className="text-gray-600 text-xs sm:text-sm">Maximum savings for publishers</p>
+                      <div className="text-3xl sm:text-4xl font-bold text-sunrise-coral-500 mb-2">{t('pricing:commission.bundle.tier2.discount')}</div>
+                      <div className="text-base sm:text-lg font-semibold text-black mb-2">{t('pricing:commission.bundle.tier2.requirement')}</div>
+                      <p className="text-gray-600 text-xs sm:text-sm">{t('pricing:commission.bundle.tier2.description')}</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -281,7 +275,7 @@ export default function Plan() {
                     onClick={() => window.location.href = 'mailto:sales@kstorybridge.com'}
                     className="bg-sunrise-coral-500 hover:bg-sunrise-coral-600 text-white px-6 sm:px-8 py-3 text-sm sm:text-base font-medium"
                   >
-                    Contact Us
+                    {t('pricing:commission.bundle.contactButton')}
                   </Button>
                 </div>
               </CardContent>
@@ -293,32 +287,32 @@ export default function Plan() {
         <section className="py-12 sm:py-16 lg:py-20">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-8 sm:mb-12 text-center">
-              Why Creators Choose KStoryBridge
+              {t('pricing:comparisons.title')}
             </h2>
 
             <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
               {/* vs Going It Alone */}
               <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl hover:border-gray-400 transition-colors">
                 <CardContent className="p-6 sm:p-8">
-                  <h3 className="text-lg sm:text-xl font-bold text-black mb-4">vs. Going It Alone</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-black mb-4">{t('pricing:comparisons.goingAlone.title')}</h3>
                   <div className="space-y-2 sm:space-y-3 mb-6">
                     <div className="flex items-start gap-2">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm">No industry connections, language barriers</span>
+                      <span className="text-gray-700 text-xs sm:text-sm">{t('pricing:comparisons.goingAlone.cons.con1')}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm">Don't know market rates or best practices</span>
+                      <span className="text-gray-700 text-xs sm:text-sm">{t('pricing:comparisons.goingAlone.cons.con2')}</span>
                     </div>
                   </div>
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm font-medium">Direct access to verified buyers</span>
+                      <span className="text-gray-700 text-xs sm:text-sm font-medium">{t('pricing:comparisons.goingAlone.pros.pro1')}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm font-medium">Bilingual support, market intelligence</span>
+                      <span className="text-gray-700 text-xs sm:text-sm font-medium">{t('pricing:comparisons.goingAlone.pros.pro2')}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -327,25 +321,25 @@ export default function Plan() {
               {/* vs Traditional Agents */}
               <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl hover:border-gray-400 transition-colors">
                 <CardContent className="p-6 sm:p-8">
-                  <h3 className="text-lg sm:text-xl font-bold text-black mb-4">vs. Traditional Agents</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-black mb-4">{t('pricing:comparisons.traditionalAgents.title')}</h3>
                   <div className="space-y-2 sm:space-y-3 mb-6">
                     <div className="flex items-start gap-2">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm">20-40% commission forever</span>
+                      <span className="text-gray-700 text-xs sm:text-sm">{t('pricing:comparisons.traditionalAgents.cons.con1')}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm">Might never pitch your project, no transparency</span>
+                      <span className="text-gray-700 text-xs sm:text-sm">{t('pricing:comparisons.traditionalAgents.cons.con2')}</span>
                     </div>
                   </div>
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm font-medium">10% only on success, guaranteed pitches</span>
+                      <span className="text-gray-700 text-xs sm:text-sm font-medium">{t('pricing:comparisons.traditionalAgents.pros.pro1')}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm font-medium">Full reporting, complete transparency</span>
+                      <span className="text-gray-700 text-xs sm:text-sm font-medium">{t('pricing:comparisons.traditionalAgents.pros.pro2')}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -354,25 +348,25 @@ export default function Plan() {
               {/* vs Major Platforms */}
               <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl hover:border-gray-400 transition-colors">
                 <CardContent className="p-6 sm:p-8">
-                  <h3 className="text-lg sm:text-xl font-bold text-black mb-4">vs. Major Platforms (Naver/Kakao)</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-black mb-4">{t('pricing:comparisons.majorPlatforms.title')}</h3>
                   <div className="space-y-2 sm:space-y-3 mb-6">
                     <div className="flex items-start gap-2">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm">Lost in the crowd with millions of titles</span>
+                      <span className="text-gray-700 text-xs sm:text-sm">{t('pricing:comparisons.majorPlatforms.cons.con1')}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm">Minimal revenue share, no direct buyer relationships</span>
+                      <span className="text-gray-700 text-xs sm:text-sm">{t('pricing:comparisons.majorPlatforms.cons.con2')}</span>
                     </div>
                   </div>
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm font-medium">Curated marketplace, keep 90% of your deal</span>
+                      <span className="text-gray-700 text-xs sm:text-sm font-medium">{t('pricing:comparisons.majorPlatforms.pros.pro1')}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm font-medium">Build your own buyer network</span>
+                      <span className="text-gray-700 text-xs sm:text-sm font-medium">{t('pricing:comparisons.majorPlatforms.pros.pro2')}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -381,25 +375,25 @@ export default function Plan() {
               {/* vs Film Markets */}
               <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl hover:border-gray-400 transition-colors">
                 <CardContent className="p-6 sm:p-8">
-                  <h3 className="text-lg sm:text-xl font-bold text-black mb-4">vs. Film Markets</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-black mb-4">{t('pricing:comparisons.filmMarkets.title')}</h3>
                   <div className="space-y-2 sm:space-y-3 mb-6">
                     <div className="flex items-start gap-2">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm">$5,000-20,000 per event, exhausting</span>
+                      <span className="text-gray-700 text-xs sm:text-sm">{t('pricing:comparisons.filmMarkets.cons.con1')}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm">No follow-up system, connections fade quickly</span>
+                      <span className="text-gray-700 text-xs sm:text-sm">{t('pricing:comparisons.filmMarkets.cons.con2')}</span>
                     </div>
                   </div>
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm font-medium">Year-round representation for less than one badge</span>
+                      <span className="text-gray-700 text-xs sm:text-sm font-medium">{t('pricing:comparisons.filmMarkets.pros.pro1')}</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs sm:text-sm font-medium">Continuous follow-up and relationship building</span>
+                      <span className="text-gray-700 text-xs sm:text-sm font-medium">{t('pricing:comparisons.filmMarkets.pros.pro2')}</span>
                     </div>
                   </div>
                 </CardContent>

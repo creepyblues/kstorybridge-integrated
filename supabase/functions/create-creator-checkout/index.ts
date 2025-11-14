@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.21.0'
+import { getStripeConfig } from '../_shared/stripe-config.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -122,8 +123,9 @@ serve(async (req) => {
       )
     }
 
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    // Initialize Stripe with environment-based configuration
+    const stripeConfig = getStripeConfig(req)
+    const stripe = new Stripe(stripeConfig.secretKey || '', {
       apiVersion: '2024-06-20',
     })
 
@@ -167,19 +169,15 @@ serve(async (req) => {
     }
 
     // Select price ID based on plan_type and billing_period
-    // Using LAUNCH PROMO prices for now
-    const priceMap: { [key: string]: string } = {
-      'packaging_monthly': 'price_1STHmPDrScgTb4BobwAFdnLQ',
-      'packaging_yearly': 'price_1STHsIDrScgTb4Bopkgtrz2a',
-      'premium_monthly': 'price_1STID2DrScgTb4BotMszm1Zn',
-      'premium_yearly': 'price_1STIKRDrScgTb4BoXWdU9vli',
-    }
-
-    const priceKey = `${plan_type}_${billing_period}`
-    const priceId = priceMap[priceKey]
+    // Using environment-specific prices (test mode for staging, live mode for production)
+    const priceKey = `${plan_type}_${billing_period}` as keyof typeof stripeConfig.priceIds
+    const priceId = stripeConfig.priceIds[priceKey]
 
     if (!priceId) {
-      console.error('❌ Price ID not found for:', priceKey)
+      console.error('❌ Price ID not found for:', {
+        priceKey,
+        environment: stripeConfig.environment
+      })
       return new Response(
         JSON.stringify({ error: 'Invalid plan configuration' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -189,7 +187,8 @@ serve(async (req) => {
     console.log('💰 Selected price:', {
       priceKey,
       priceId,
-      isLaunchPromo: true
+      environment: stripeConfig.environment,
+      isProduction: stripeConfig.isProduction
     })
 
     // Detect environment from request origin (supports localhost, staging, production)

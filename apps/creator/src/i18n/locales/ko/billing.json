@@ -1,0 +1,45 @@
+{
+  "pageHeader": {
+    "title": "결제 및 구독",
+    "subtitle": "구독 관리 및 결제 내역 조회"
+  },
+  "loading": {
+    "message": "결제 정보 로딩 중..."
+  },
+  "error": {
+    "title": "결제 데이터 로드 실패",
+    "retryButton": "재시도"
+  },
+  "subscriptions": {
+    "title": "활성 구독",
+    "emptyState": "아직 활성 구독이 없습니다.",
+    "viewPlansButton": "플랜 보기",
+    "planLabel": "플랜",
+    "nextBilling": "다음 결제:",
+    "cancelNotice": "구독이 기간 종료 시 취소됩니다",
+    "status": {
+      "active": "활성",
+      "canceled": "취소됨",
+      "past_due": "연체",
+      "unpaid": "미결제",
+      "trialing": "체험 중"
+    }
+  },
+  "paymentMethod": {
+    "title": "결제 수단",
+    "cardEnding": "••••",
+    "expires": "만료"
+  },
+  "transactions": {
+    "title": "거래 내역",
+    "emptyState": "아직 거래 내역이 없습니다",
+    "tableHeaders": {
+      "date": "날짜",
+      "description": "설명",
+      "amount": "금액",
+      "status": "상태",
+      "invoice": "청구서"
+    },
+    "viewInvoice": "보기"
+  }
+}

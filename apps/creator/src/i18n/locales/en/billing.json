@@ -1,0 +1,45 @@
+{
+  "pageHeader": {
+    "title": "Billing & Subscriptions",
+    "subtitle": "Manage your subscriptions and view payment history"
+  },
+  "loading": {
+    "message": "Loading billing information..."
+  },
+  "error": {
+    "title": "Failed to Load Billing Data",
+    "retryButton": "Retry"
+  },
+  "subscriptions": {
+    "title": "Active Subscriptions",
+    "emptyState": "You don't have any active subscriptions yet.",
+    "viewPlansButton": "View Plans",
+    "planLabel": "Plan",
+    "nextBilling": "Next billing:",
+    "cancelNotice": "Subscription will cancel at period end",
+    "status": {
+      "active": "ACTIVE",
+      "canceled": "CANCELED",
+      "past_due": "PAST DUE",
+      "unpaid": "UNPAID",
+      "trialing": "TRIALING"
+    }
+  },
+  "paymentMethod": {
+    "title": "Payment Method",
+    "cardEnding": "••••",
+    "expires": "Expires"
+  },
+  "transactions": {
+    "title": "Transaction History",
+    "emptyState": "No transactions yet",
+    "tableHeaders": {
+      "date": "Date",
+      "description": "Description",
+      "amount": "Amount",
+      "status": "Status",
+      "invoice": "Invoice"
+    },
+    "viewInvoice": "View"
+  }
+}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LearningCard } from '@/components/LearningCard';
 import { supabase } from '@/lib/supabase';
@@ -18,6 +19,7 @@ interface ContentPost {
 
 export default function LearningCenter() {
   const navigate = useNavigate();
+  const { t } = useTranslation(['content', 'common']);
   const [posts, setPosts] = useState<ContentPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,13 +53,13 @@ export default function LearningCenter() {
       <div className="max-w-7xl mx-auto">
         {/* Page Title */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-black">Learning Center</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('content:learningCenter.title')}</h1>
         </div>
 
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <p className="text-gray-500">Loading learning materials...</p>
+            <p className="text-gray-500">{t('content:learningCenter.loading')}</p>
           </div>
         )}
 
@@ -89,7 +91,7 @@ export default function LearningCenter() {
         {/* Empty State */}
         {!loading && !error && posts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No learning materials available yet. Check back soon!</p>
+            <p className="text-gray-500">{t('content:learningCenter.emptyState')}</p>
           </div>
         )}
       </div>

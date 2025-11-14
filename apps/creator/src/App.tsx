@@ -22,6 +22,8 @@ import News from '@/pages/News'
 import LearningCenter from '@/pages/LearningCenter'
 import PostDetail from '@/pages/PostDetail'
 import Plan from '@/pages/Plan'
+import Billing from '@/pages/Billing'
+import PaymentSuccess from '@/pages/PaymentSuccess'
 
 function App() {
   return (
@@ -91,6 +93,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Plan />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/billing"
+              element={
+                <ProtectedRoute>
+                  <Billing />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payment/success"
+              element={
+                <ProtectedRoute>
+                  <PaymentSuccess />
                 </ProtectedRoute>
               }
             />

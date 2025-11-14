@@ -1,21 +1,38 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Check, X, Sparkles, TrendingUp, Rocket } from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { PricingCard } from '@/components/PricingCard'
+import { CheckoutModal } from '@/components/CheckoutModal'
 
 export default function Plan() {
   const navigate = useNavigate()
+  const [checkoutModal, setCheckoutModal] = useState<{
+    isOpen: boolean
+    planType: 'packaging' | 'premium'
+    billingPeriod: 'monthly' | 'yearly'
+  }>({
+    isOpen: false,
+    planType: 'packaging',
+    billingPeriod: 'monthly',
+  })
 
   const handleStartFree = () => {
     navigate('/titles/add-title')
   }
 
-  const handleUpgrade = (plan: string) => {
-    // TODO: Integrate with payment system
-    console.log(`Upgrading to ${plan}`)
-    window.alert(`${plan} plan upgrade coming soon! Please contact us for early access.`)
+  const handleUpgrade = (planType: 'packaging' | 'premium') => {
+    setCheckoutModal({
+      isOpen: true,
+      planType,
+      billingPeriod: 'monthly', // Default to monthly, user can upgrade after seeing options
+    })
+  }
+
+  const closeCheckoutModal = () => {
+    setCheckoutModal((prev) => ({ ...prev, isOpen: false }))
   }
 
   return (
@@ -392,6 +409,14 @@ export default function Plan() {
         </section>
 
       </div>
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={checkoutModal.isOpen}
+        onClose={closeCheckoutModal}
+        planType={checkoutModal.planType}
+        billingPeriod={checkoutModal.billingPeriod}
+      />
     </MainLayout>
   )
 }

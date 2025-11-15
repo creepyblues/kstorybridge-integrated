@@ -8,7 +8,11 @@
       "Bash(chmod:*)",
       "Bash(npx supabase:*)",
       "Bash(apps/dashboard/src/integrations/supabase/types.ts)",
-      "Bash(/Users/sungholee/code/kstorybridge/apps/dashboard/src/integrations/supabase/types.ts)"
+      "Bash(/Users/sungholee/code/kstorybridge/apps/dashboard/src/integrations/supabase/types.ts)",
+      "WebFetch(domain:tiptap.dev)",
+      "Bash(cat:*)",
+      "WebSearch",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }

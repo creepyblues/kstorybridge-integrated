@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-11-11
+**Last Updated**: 2025-11-14
 
 > 📜 For historical changes and system evolution, see [CHANGELOG.md](CHANGELOG.md)
 
@@ -67,6 +67,10 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
 - **[PHASE_1_2_SUMMARY.md](docs/features/chatbot/PHASE_1_2_SUMMARY.md)** - Phase 1 & 2 test results
 - **[PITCH_ANALYTICS.md](docs/features/chatbot/PITCH_ANALYTICS.md)** - Phase 3 integration plan
 - **[TESTING_GUIDE.md](docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures
+
+**Stripe Payment Integration** (`docs/`):
+- **[STRIPE_PAYMENT_INTEGRATION.md](docs/STRIPE_PAYMENT_INTEGRATION.md)** - Complete implementation summary (✅ LIVE - 2025-11-14)
+- **[STRIPE_CONFIGURATION_REFERENCE.md](docs/STRIPE_CONFIGURATION_REFERENCE.md)** - Configuration guide and troubleshooting
 
 ### Setup Guides (`docs/guides/`)
 - **[TURBOREPO_VERCEL_SETUP.md](docs/guides/TURBOREPO_VERCEL_SETUP.md)** - Turborepo + Vercel selective deployment guide

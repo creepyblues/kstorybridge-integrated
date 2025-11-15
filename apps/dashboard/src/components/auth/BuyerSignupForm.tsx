@@ -44,7 +44,7 @@ export const BuyerSignupForm: React.FC<BuyerSignupFormProps> = ({
     } else if (!/[0-9]/.test(password)) {
       inputElement.setCustomValidity('Password must contain at least one number');
       return false;
-    } else if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]/.test(password)) {
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?~]/.test(password)) {
       inputElement.setCustomValidity('Password must contain at least one special character');
       return false;
     } else {

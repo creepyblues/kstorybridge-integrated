@@ -29,11 +29,9 @@ import { useAuth } from '@/hooks/useAuth';
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
   slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens only'),
-  excerpt: z.string().max(500, 'Excerpt must be less than 500 characters').optional(),
   content: z.string().min(1, 'Content is required'),
   category: z.enum(['learning', 'news']),
   tags: z.string(), // Comma-separated, will be split into array
-  featured_image_url: z.string().url().optional().or(z.literal('')),
   status: z.enum(['draft', 'published', 'archived']),
 });
 
@@ -69,11 +67,9 @@ export const ContentEditor = () => {
     defaultValues: {
       title: '',
       slug: '',
-      excerpt: '',
       content: '',
       category: 'learning',
       tags: '',
-      featured_image_url: '',
       status: 'draft',
     },
   });
@@ -86,11 +82,9 @@ export const ContentEditor = () => {
     if (existingPost) {
       setValue('title', existingPost.title);
       setValue('slug', existingPost.slug);
-      setValue('excerpt', existingPost.excerpt || '');
       setValue('content', existingPost.content);
       setValue('category', existingPost.category as 'learning' | 'news');
       setValue('tags', existingPost.tags?.join(', ') || '');
-      setValue('featured_image_url', existingPost.featured_image_url || '');
       setValue('status', existingPost.status as 'draft' | 'published' | 'archived');
     }
   }, [existingPost, setValue]);
@@ -128,11 +122,11 @@ export const ContentEditor = () => {
       const postData: ContentPostInsert = {
         title: data.title,
         slug: data.slug,
-        excerpt: data.excerpt || null,
+        excerpt: null,
         content: data.content,
         category: data.category,
         tags: tagsArray,
-        featured_image_url: data.featured_image_url || null,
+        featured_image_url: null,
         status: data.status,
         author_email: user?.email || 'unknown',
         author_name: user?.user_metadata?.full_name || user?.email || 'Admin',
@@ -224,26 +218,29 @@ export const ContentEditor = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/admin/content')}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <CardTitle className="text-2xl font-bold">
-              {isEditMode ? 'Edit Post' : 'Create New Post'}
-            </CardTitle>
-          </div>
-        </CardHeader>
+    <div className="h-screen flex flex-col overflow-hidden">
+      <div className="container mx-auto px-4 py-4 max-w-5xl flex-shrink-0">
+        <div className="flex items-center gap-4 mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/admin/content')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <h1 className="text-2xl font-bold">
+            {isEditMode ? 'Edit Post' : 'Create New Post'}
+          </h1>
+        </div>
+      </div>
 
-        <CardContent className="p-4 sm:p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="flex-1 overflow-hidden container mx-auto px-4 max-w-5xl">
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl h-full flex flex-col overflow-hidden">
+        <CardContent className="p-4 sm:p-6 flex-1 overflow-hidden flex flex-col">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden gap-6">
+            {/* Scrollable metadata fields */}
+            <div className="overflow-y-auto flex-shrink-0 space-y-6" style={{ maxHeight: '40vh' }}>
             {/* Title */}
             <div>
               <Label htmlFor="title">Title *</Label>
@@ -317,38 +314,6 @@ export const ContentEditor = () => {
               </div>
             </div>
 
-            {/* Excerpt */}
-            <div>
-              <Label htmlFor="excerpt">Excerpt (Optional)</Label>
-              <Textarea
-                id="excerpt"
-                {...register('excerpt')}
-                placeholder="Short description for card previews (max 500 characters)"
-                rows={3}
-                className={errors.excerpt ? 'border-red-500' : ''}
-              />
-              {errors.excerpt && (
-                <p className="text-sm text-red-500 mt-1">{errors.excerpt.message}</p>
-              )}
-            </div>
-
-            {/* Featured Image */}
-            <div>
-              <Label htmlFor="featured_image_url">Featured Image URL (Optional)</Label>
-              <Input
-                id="featured_image_url"
-                {...register('featured_image_url')}
-                placeholder="https://example.com/image.jpg"
-                className={errors.featured_image_url ? 'border-red-500' : ''}
-              />
-              {errors.featured_image_url && (
-                <p className="text-sm text-red-500 mt-1">{errors.featured_image_url.message}</p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                Upload images directly in the editor, or provide a URL here for the card preview.
-              </p>
-            </div>
-
             {/* Tags */}
             <div>
               <Label htmlFor="tags">Tags (Optional)</Label>
@@ -361,29 +326,32 @@ export const ContentEditor = () => {
                 Comma-separated tags for filtering and categorization.
               </p>
             </div>
+            </div>
 
-            {/* Content Editor */}
-            <div>
+            {/* Content Editor - fills remaining space */}
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0 gap-2">
               <Label>Content *</Label>
-              <Controller
-                name="content"
-                control={control}
-                render={({ field }) => (
-                  <RichTextEditor
-                    content={field.value}
-                    onChange={field.onChange}
-                    onImageUpload={handleImageUpload}
-                    placeholder="Start writing your post content..."
-                  />
-                )}
-              />
+              <div className="flex-1 overflow-hidden min-h-0">
+                <Controller
+                  name="content"
+                  control={control}
+                  render={({ field }) => (
+                    <RichTextEditor
+                      content={field.value}
+                      onChange={field.onChange}
+                      onImageUpload={handleImageUpload}
+                      placeholder="Start writing your post content..."
+                    />
+                  )}
+                />
+              </div>
               {errors.content && (
                 <p className="text-sm text-red-500 mt-1">{errors.content.message}</p>
               )}
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 flex-shrink-0">
               <Button
                 type="submit"
                 disabled={isSubmitting}
@@ -407,7 +375,7 @@ export const ContentEditor = () => {
 
           {/* Preview Mode */}
           {previewMode && (
-            <div className="mt-8 p-6 border border-gray-300 rounded-lg bg-white">
+            <div className="mt-4 p-6 border border-gray-300 rounded-lg bg-white overflow-y-auto" style={{ maxHeight: '60vh' }}>
               <h2 className="text-3xl font-bold mb-4">{watchTitle || 'Untitled'}</h2>
               <div
                 className="prose prose-sm sm:prose lg:prose-lg max-w-none"
@@ -416,7 +384,8 @@ export const ContentEditor = () => {
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };

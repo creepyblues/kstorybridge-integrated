@@ -122,6 +122,9 @@ React-based creator dashboard built from scratch to eliminate OAuth authenticati
 - `/titles/:titleId` - Title detail view
 - `/titles/:titleId/edit` - Edit title
 - `/profile` - Creator profile management
+- `/plan` - Subscription plans (Stripe checkout) - ✅ **LIVE**
+- `/billing` - Billing & subscriptions page - ✅ **LIVE**
+- `/payment/success` - Payment success redirect - ✅ **LIVE**
 - `/requests` - My requests (buyer inquiries) - **Skeleton**
 - `/news` - Platform news - **Skeleton**
 
@@ -167,7 +170,63 @@ React-based creator dashboard built from scratch to eliminate OAuth authenticati
 - Account creation date
 - Edit mode with form validation
 
-### 3. Authentication System
+### 3. Subscription & Billing (Stripe Integration)
+**Status**: ✅ LIVE (2025-11-14)
+**Location**: `src/pages/Billing.tsx`, `src/components/CheckoutModal.tsx`
+
+**Features**:
+- **Per-Title Subscriptions**: Each title requires separate subscription
+- **Two Plans**: Packaging ($100-200/mo) and Premium ($200-400/mo)
+- **Billing Options**: Monthly or yearly
+- **Environment-Based**: Staging uses test mode, production uses live mode
+
+**Plans**:
+- **Packaging Plan** (Launch Promo):
+  - Monthly: $100/month
+  - Yearly: $1,000/year
+  - Features: Basic packaging and distribution support
+
+- **Premium Plan** (Launch Promo):
+  - Monthly: $200/month
+  - Yearly: $2,000/year
+  - Features: Advanced packaging, priority support, analytics
+
+**Checkout Flow**:
+1. Creator goes to `/plan` page
+2. Selects plan (Packaging or Premium)
+3. Selects billing period (Monthly or Yearly)
+4. Selects title from dropdown
+5. Redirected to Stripe checkout
+6. Completes payment
+7. Webhook creates subscription record
+8. Returns to billing page to see active subscription
+
+**Billing Page**:
+- Active subscriptions by title
+- Transaction history
+- Payment method information
+- Next billing date
+
+**Environment Detection**:
+- Staging (creator-staging.kstorybridge.com) → Stripe Test Mode
+- Production (creator.kstorybridge.com) → Stripe Live Mode
+- Localhost (localhost:8083) → Stripe Test Mode
+
+**Edge Functions**:
+- `create-creator-checkout` - Creates Stripe checkout sessions
+- `creator-stripe-webhook` - Processes payment events
+- `get-creator-billing-history` - Fetches subscription/transaction data
+
+**Database Tables**:
+- `creator_subscriptions` - Subscription records (per-title)
+- `creator_stripe_customers` - Stripe customer mapping
+- `creator_payments` - Transaction history
+
+**See Also**:
+- [Stripe Payment Integration](../../docs/STRIPE_PAYMENT_INTEGRATION.md) - Complete implementation guide
+- [Stripe Configuration Reference](../../docs/STRIPE_CONFIGURATION_REFERENCE.md) - Configuration and troubleshooting
+
+### 4. Authentication System
 **Email Signup**:
 ```typescript
 // Sets account_type during signup (atomic operation)

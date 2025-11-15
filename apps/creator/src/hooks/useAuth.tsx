@@ -25,15 +25,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('🎯 AuthProvider: Initializing')
 
     // Distinguish between OAuth (Google) and email verification callbacks
-    // OAuth: has 'code=' but NOT 'type=' or 'token_hash=' → needs PKCE exchange
-    // Email verification: has 'token_hash=' and 'type=' → automatic session creation
+    // OAuth: has 'code=' + oauth_flow in sessionStorage → needs PKCE exchange
+    // Email verification: has 'type=signup' or 'type=email' or 'token_hash=' → automatic session creation
     const urlParams = new URLSearchParams(window.location.search)
     const hasCode = urlParams.has('code')
-    const hasType = urlParams.has('type')
+    const type = urlParams.get('type')
     const hasTokenHash = urlParams.has('token_hash')
+    const oauthFlowIntent = sessionStorage.getItem('oauth_flow')
 
-    const isOAuthCallback = window.location.pathname === '/auth/callback' && hasCode && !hasType && !hasTokenHash
-    const isEmailVerification = window.location.pathname === '/auth/callback' && (hasType || hasTokenHash)
+    const isEmailVerification = window.location.pathname === '/auth/callback' && (type === 'signup' || type === 'email' || hasTokenHash)
+    const isOAuthCallback = window.location.pathname === '/auth/callback' && hasCode && oauthFlowIntent && !isEmailVerification
 
     if (isOAuthCallback) {
       console.log('🔄 OAuth callback detected - skipping initial getSession() to allow PKCE exchange')

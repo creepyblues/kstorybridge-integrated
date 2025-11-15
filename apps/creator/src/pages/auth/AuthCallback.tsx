@@ -17,17 +17,24 @@ export default function AuthCallback() {
     try {
       const urlParams = new URLSearchParams(window.location.search)
       const hasCode = urlParams.has('code')
-      const hasType = urlParams.has('type')
+      const type = urlParams.get('type')
       const hasTokenHash = urlParams.has('token_hash')
 
-      const isEmailVerification = hasType || hasTokenHash
-      const isOAuthFlow = hasCode && !hasType && !hasTokenHash
+      // Check if this is an OAuth flow by looking for oauth_flow in sessionStorage
+      const oauthFlowIntent = sessionStorage.getItem('oauth_flow')
+
+      // Email verification: has type=signup or type=email (or sometimes just a code with no type)
+      // OAuth: has code + oauth_flow in sessionStorage
+      const isEmailVerification = type === 'signup' || type === 'email' || hasTokenHash
+      const isOAuthFlow = hasCode && oauthFlowIntent && !isEmailVerification
 
       console.log('🔐 Auth callback: Processing...', {
         pathname: window.location.pathname,
         isEmailVerification,
         isOAuthFlow,
-        type: urlParams.get('type'),
+        type,
+        hasTokenHash,
+        oauthFlowIntent,
         timestamp: new Date().toISOString()
       })
 
@@ -39,7 +46,7 @@ export default function AuthCallback() {
       let { data: { session } } = await supabase.auth.getSession()
 
       if (session) {
-        const flowType = isEmailVerification ? 'email verification' : 'OAuth'
+        const flowType = isEmailVerification ? 'email verification' : isOAuthFlow ? 'OAuth' : 'unknown'
         console.log(`✅ ${flowType} session found (automatic exchange):`, {
           email: session.user.email,
           provider: session.user.app_metadata?.provider
@@ -79,15 +86,24 @@ export default function AuthCallback() {
         }
 
         console.log('✅ OAuth session established (explicit PKCE exchange):', session.user.email)
-      } else if (isEmailVerification) {
-        // Email verification flow: Should have automatic session by now
-        console.error('❌ Email verification: No automatic session created')
-        setStatus('Email verification failed. Please try signing in.')
-        setTimeout(() => navigate('/signin'), 3000)
-        return
+      } else if (isEmailVerification || (hasCode && !session)) {
+        // Email verification flow: Wait a bit longer for automatic session
+        console.log('📧 Email verification flow: Waiting for automatic session...')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        const { data: { session: retrySession } } = await supabase.auth.getSession()
+        if (retrySession) {
+          session = retrySession
+          console.log('✅ Email verification session found after retry:', session.user.email)
+        } else {
+          console.error('❌ Email verification: No automatic session created')
+          setStatus('Email verification failed. Please try signing in.')
+          setTimeout(() => navigate('/signin'), 3000)
+          return
+        }
       } else {
         // Unknown flow type
-        console.error('❌ Unknown callback type: no code, type, or token_hash')
+        console.error('❌ Unknown callback type')
         setStatus('Invalid authentication request')
         setTimeout(() => navigate('/signin'), 2000)
         return

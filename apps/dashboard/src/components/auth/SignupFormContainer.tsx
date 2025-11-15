@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { isInOAuthFlow } from '@/utils/oauthUtils';
 import { trackSignupError, trackValidationError, trackProfileCreationError } from '@/services/authErrorTracking';
+import DOMPurify from 'dompurify';
 
 import type { AccountType, BuyerFormData, CreatorFormData, SignupState } from './types';
 import {
@@ -598,7 +599,15 @@ export const SignupFormContainer: React.FC<SignupFormContainerProps> = ({ accoun
           {state.rejectionAlert && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
               <strong className="block mb-1">Account Creation Blocked</strong>
-              <p className="text-sm">{state.rejectionAlert.message}</p>
+              <p
+                className="text-sm"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(state.rejectionAlert.message, {
+                    ALLOWED_TAGS: [], // Strip all HTML tags
+                    ALLOWED_ATTR: []  // Strip all attributes
+                  })
+                }}
+              />
             </div>
           )}
 

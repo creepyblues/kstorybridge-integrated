@@ -59,6 +59,15 @@ export const completeOAuthProfile = async (
   try {
     console.log('🔄 Completing OAuth buyer profile for:', user.email);
 
+    // Validate session before proceeding to prevent edge function calls with invalid sessions
+    if (!session?.access_token) {
+      console.error('❌ No valid session for OAuth profile creation');
+      return {
+        success: false,
+        error: 'Session expired. Please sign in again to complete your profile.'
+      };
+    }
+
     const buyerData = formData;
 
     // Use secure edge function for OAuth profile creation with retry for race conditions

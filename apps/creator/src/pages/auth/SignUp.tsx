@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
+import { trackSignup, trackAuthError } from '@/utils/analytics'
 
 export default function SignUp() {
   const { t } = useTranslation(['auth', 'common'])
@@ -69,6 +70,9 @@ export default function SignUp() {
 
       console.log('✅ Signup successful, showing confirmation message')
 
+      // Track successful signup
+      trackSignup('email')
+
       // Show success toast
       toast({
         title: "Account Created!",
@@ -83,6 +87,7 @@ export default function SignUp() {
     } catch (err: any) {
       console.error('❌ Signup error:', err)
       setError(err.message || 'Failed to sign up. Please try again.')
+      trackAuthError(err.message || 'Failed to sign up', 'email')
     } finally {
       setLoading(false)
     }
@@ -95,9 +100,11 @@ export default function SignUp() {
     try {
       await signInWithOAuth('signup')
       // User will be redirected to Google, then back to /auth/callback
+      // Tracking will happen in AuthCallback component
     } catch (err: any) {
       console.error('❌ OAuth signup error:', err)
       setError(err.message || 'Failed to initiate Google signup')
+      trackAuthError(err.message || 'Failed to initiate Google signup', 'google')
       setLoading(false)
     }
   }

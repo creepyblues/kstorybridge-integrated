@@ -532,8 +532,7 @@ function TitleListContent() {
   return (
     <PageContainer>
         {/* Header */}
-        <div>
-          <div className="mb-6 sm:mb-8">
+        <div className="mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-3xl font-bold text-midnight-ink leading-tight">Title Library</h2>
@@ -1178,7 +1177,6 @@ function TitleListContent() {
             </div>
           )}
         </div>
-      </div>
     </PageContainer>
   );
 }

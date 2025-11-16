@@ -12,7 +12,11 @@
       "WebFetch(domain:tiptap.dev)",
       "Bash(cat:*)",
       "WebSearch",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(psql:*)",
+      "Bash(find:*)",
+      "Bash(npm run build:dashboard:*)",
+      "Bash(./scripts/verify-stripe-webhook.sh:*)"
     ],
     "deny": []
   }

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { trackProfileComplete, trackSignup } from '@/utils/analytics'
 
 export default function CompleteProfile() {
   const { t } = useTranslation(['auth', 'common'])
@@ -54,6 +55,10 @@ export default function CompleteProfile() {
 
       console.log('✅ Profile completion successful')
 
+      // Track successful OAuth signup completion
+      trackProfileComplete()
+      trackSignup('google')
+
       // Send welcome email after OAuth profile completion (non-blocking)
       if (user?.email) {
         try {
@@ -88,11 +93,11 @@ export default function CompleteProfile() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>{t('auth:completeProfile.title')}</CardTitle>
-          <CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-porcelain-blue-50 p-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="space-y-1 pb-6">
+          <CardTitle className="text-3xl font-bold text-midnight-ink">{t('auth:completeProfile.title')}</CardTitle>
+          <CardDescription className="text-base text-midnight-ink-600">
             {t('auth:completeProfile.subtitle')}
           </CardDescription>
         </CardHeader>
@@ -105,7 +110,9 @@ export default function CompleteProfile() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="full_name">{t('auth:signUp.fullNameLabel')} *</Label>
+              <Label htmlFor="full_name" className="text-sm font-medium text-gray-900">
+                {t('auth:signUp.fullNameLabel')} <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="full_name"
                 name="full_name"
@@ -119,7 +126,9 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pen_name">{t('auth:completeProfile.penNameLabel')} *</Label>
+              <Label htmlFor="pen_name" className="text-sm font-medium text-gray-900">
+                {t('auth:completeProfile.penNameLabel')} <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="pen_name"
                 name="pen_name"
@@ -133,14 +142,16 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ip_owner_role">{t('auth:completeProfile.roleLabel')} *</Label>
+              <Label htmlFor="ip_owner_role" className="text-sm font-medium text-gray-900">
+                {t('auth:completeProfile.roleLabel')} <span className="text-red-500">*</span>
+              </Label>
               <select
                 id="ip_owner_role"
                 name="ip_owner_role"
                 value={formData.ip_owner_role}
                 onChange={handleInputChange}
                 disabled={loading}
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hanok-teal"
                 required
               >
                 <option value="author">{t('auth:completeProfile.roleAuthor')}</option>
@@ -149,7 +160,9 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ip_owner_company">{t('auth:completeProfile.companyLabel')}</Label>
+              <Label htmlFor="ip_owner_company" className="text-sm font-medium text-gray-900">
+                {t('auth:completeProfile.companyLabel')}
+              </Label>
               <Input
                 id="ip_owner_company"
                 name="ip_owner_company"
@@ -162,7 +175,9 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="website_url">{t('auth:completeProfile.websiteLabel')}</Label>
+              <Label htmlFor="website_url" className="text-sm font-medium text-gray-900">
+                {t('auth:completeProfile.websiteLabel')}
+              </Label>
               <Input
                 id="website_url"
                 name="website_url"
@@ -174,10 +189,36 @@ export default function CompleteProfile() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full h-14 bg-hanok-teal hover:bg-hanok-teal/90 text-white text-base font-medium"
+              disabled={loading}
+            >
               {loading ? t('auth:completeProfile.submitting') : t('auth:completeProfile.submitButton')}
             </Button>
           </form>
+
+          {/* Legal Links */}
+          <div className="text-center text-xs text-gray-600 pt-4 border-t border-gray-200">
+            By completing your profile, you agree to our{' '}
+            <a
+              href="https://kstorybridge.com/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline"
+            >
+              Terms of Use
+            </a>
+            {' '}and{' '}
+            <a
+              href="https://kstorybridge.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline"
+            >
+              Privacy Policy
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>

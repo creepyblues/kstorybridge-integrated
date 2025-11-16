@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { checkCreatorProfileExists } from '@/lib/auth'
 import { sendWelcomeEmail } from '@/services/emailService'
+import { trackLogin, trackSignup } from '@/utils/analytics'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
@@ -153,6 +154,10 @@ export default function AuthCallback() {
 
         // Existing user signing in
         console.log('✅ Existing user, redirecting to home')
+
+        // Track successful login (OAuth)
+        trackLogin('google')
+
         setStatus('Welcome back! Redirecting...')
         navigate('/home')
       } else {

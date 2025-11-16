@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
+import { trackLogin, trackAuthError } from '@/utils/analytics'
 
 export default function SignIn() {
   const { t } = useTranslation(['auth', 'common'])
@@ -58,6 +59,7 @@ export default function SignIn() {
     try {
       await signInWithEmail(formData.email, formData.password)
       console.log('✅ Signin successful, redirecting to home')
+      trackLogin('email')
       navigate('/home')
     } catch (err: any) {
       console.error('❌ Signin error:', err)
@@ -67,8 +69,10 @@ export default function SignIn() {
         setError('Please check your email and click the verification link before signing in.')
         setUnverifiedEmail(formData.email)
         setShowEmailVerificationAlert(true)
+        trackAuthError('Email not confirmed', 'email')
       } else {
         setError(err.message || 'Invalid email or password')
+        trackAuthError(err.message || 'Invalid email or password', 'email')
       }
     } finally {
       setLoading(false)
@@ -82,9 +86,11 @@ export default function SignIn() {
     try {
       await signInWithOAuth('signin')
       // User will be redirected to Google, then back to /auth/callback
+      // Tracking will happen in AuthCallback component
     } catch (err: any) {
       console.error('❌ OAuth signin error:', err)
       setError(err.message || 'Failed to initiate Google signin')
+      trackAuthError(err.message || 'Failed to initiate Google signin', 'google')
       setLoading(false)
     }
   }

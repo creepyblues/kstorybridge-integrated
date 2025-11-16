@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/hooks/useAuth'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import AnalyticsProvider from '@/components/AnalyticsProvider'
 import { Toaster } from '@/components/ui/toaster'
 
 // Auth pages
@@ -30,6 +31,7 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <Router>
+          <AnalyticsProvider />
           <Toaster />
           <Routes>
             {/* Public routes */}

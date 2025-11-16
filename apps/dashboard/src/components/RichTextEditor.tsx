@@ -145,7 +145,7 @@ export const RichTextEditor = ({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-lg focus:outline-none px-6 py-4 [&_ul]:my-0 [&_ol]:my-0 [&_li]:my-0 [&_li_p]:my-0',
+        class: 'prose prose-lg max-w-none focus:outline-none px-3 py-4 [&_ul]:my-0 [&_ol]:my-0 [&_li]:my-0 [&_li_p]:my-0 w-full',
       },
     },
   });
@@ -557,7 +557,7 @@ export const RichTextEditor = ({
       </div>
 
       {/* Editor */}
-      <div className="flex-1 overflow-y-auto bg-white">
+      <div className="flex-1 overflow-y-auto bg-white lg:h-auto h-[500px]">
         <EditorContent editor={editor} />
       </div>
 

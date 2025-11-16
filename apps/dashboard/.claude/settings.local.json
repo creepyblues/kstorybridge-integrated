@@ -16,7 +16,10 @@
       "Bash(psql:*)",
       "Bash(find:*)",
       "Bash(npm run build:dashboard:*)",
-      "Bash(./scripts/verify-stripe-webhook.sh:*)"
+      "Bash(./scripts/verify-stripe-webhook.sh:*)",
+      "Bash(node scripts/check-user-buyer.js:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:supabase.com)"
     ],
     "deny": []
   }

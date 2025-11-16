@@ -52,7 +52,7 @@ const STORAGE_KEY = 'sb-dlrnrgcoguxlkkcitlpd-auth-token';
 const CLIENT_CONFIG = {
   // Auth configuration with enhanced reliability
   auth: {
-    storage: localStorage,
+    storage: sessionStorage, // Use sessionStorage for browser-session-only persistence
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
@@ -303,19 +303,19 @@ const bootstrapCachedSession = () => {
   }
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    console.log('🧊 [BOOTSTRAP] localStorage check:', {
+    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    console.log('🧊 [BOOTSTRAP] sessionStorage check:', {
       storageKey: STORAGE_KEY,
       hasData: !!raw,
       dataLength: raw ? raw.length : 0
     });
 
     if (!raw) {
-      console.log('🧊 [BOOTSTRAP] No localStorage data found');
+      console.log('🧊 [BOOTSTRAP] No sessionStorage data found');
       return;
     }
 
-    // Parse Supabase's localStorage format correctly
+    // Parse Supabase's sessionStorage format correctly
     const authData = JSON.parse(raw);
 
     // Supabase stores auth data in a specific format, not directly as Session
@@ -331,7 +331,7 @@ const bootstrapCachedSession = () => {
       lastSessionUpdatedAt = Date.now();
 
       // Production-safe logging to diagnose session bootstrap issues
-      console.log('🧊 [BOOTSTRAP SUCCESS] Session cached from localStorage:', {
+      console.log('🧊 [BOOTSTRAP SUCCESS] Session cached from sessionStorage:', {
         hasAccessToken: !!authData.access_token,
         hasUser: !!authData.user,
         userEmail: authData.user?.email,
@@ -339,7 +339,7 @@ const bootstrapCachedSession = () => {
       });
     } else {
       // Production-safe logging for failed bootstrap attempts
-      console.log('🧊 [BOOTSTRAP FAILED] localStorage auth data inspection:', {
+      console.log('🧊 [BOOTSTRAP FAILED] sessionStorage auth data inspection:', {
         hasRawData: !!authData,
         hasAccessToken: !!authData?.access_token,
         hasExpiresAt: !!authData?.expires_at,

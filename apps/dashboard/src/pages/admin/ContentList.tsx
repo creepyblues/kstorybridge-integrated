@@ -34,8 +34,36 @@ export const ContentList = () => {
   });
 
   const openDeleteDialog = (id: string, title: string) => {
-    setPostToDelete({ id, title });
-    setDeleteDialogOpen(true);
+    console.log('🗑️ Delete button clicked:', { id, title });
+
+    // Use browser confirm as fallback if dialog doesn't work
+    const confirmed = window.confirm(`Are you sure you want to delete "${title}"?\n\nThis action cannot be undone.`);
+
+    if (confirmed) {
+      console.log('✅ User confirmed deletion');
+      // Directly call confirmDelete with the post info
+      handleDirectDelete(id, title);
+    } else {
+      console.log('❌ User cancelled deletion');
+    }
+  };
+
+  const handleDirectDelete = async (id: string, title: string) => {
+    try {
+      await deletePost(id);
+      toast({
+        title: 'Post deleted',
+        description: `"${title}" has been deleted successfully.`,
+      });
+      refetch();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete post. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const confirmDelete = async () => {
@@ -56,6 +84,7 @@ export const ContentList = () => {
         variant: 'destructive',
       });
     } finally {
+      setDeleteDialogOpen(false);
       setPostToDelete(null);
     }
   };

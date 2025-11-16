@@ -21,7 +21,7 @@ import {
 } from '@/services/contentService';
 import { Button, Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
 import { RichTextEditor } from '@/components/RichTextEditor';
-import { ArrowLeft, Save, Eye } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -172,12 +172,77 @@ export const ContentEditor = () => {
         });
       }
 
-      navigate('/admin/content');
+      // Don't navigate away - stay on the page
     } catch (error) {
       console.error('Error saving post:', error);
       toast({
         title: 'Error',
         description: 'Failed to save post. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    const data = watch();
+    setIsSubmitting(true);
+
+    try {
+      // Validate slug uniqueness
+      const slugIsUnique = await isSlugUnique(data.slug, id);
+      if (!slugIsUnique) {
+        toast({
+          title: 'Slug already exists',
+          description: 'Please choose a different slug.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Parse tags
+      const tagsArray = data.tags
+        ? data.tags.split(',').map((tag) => tag.trim()).filter((tag) => tag.length > 0)
+        : [];
+
+      // Prepare post data with status set to 'published'
+      const postData: ContentPostInsert = {
+        title: data.title,
+        slug: data.slug,
+        excerpt: null,
+        content: data.content,
+        category: data.category,
+        tags: tagsArray,
+        featured_image_url: null,
+        status: 'published', // Always set to published
+        author_email: user?.email || 'unknown',
+        author_name: user?.user_metadata?.full_name || user?.email || 'Admin',
+      };
+
+      if (isEditMode) {
+        await updatePost(id!, postData);
+        setValue('status', 'published'); // Update form status
+        toast({
+          title: 'Post published',
+          description: `"${data.title}" has been published successfully.`,
+        });
+      } else {
+        await createPost(postData);
+        setValue('status', 'published'); // Update form status
+        toast({
+          title: 'Post published',
+          description: `"${data.title}" has been created and published successfully.`,
+        });
+      }
+
+      // Don't navigate away - stay on the page
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to publish post. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -240,40 +305,38 @@ export const ContentEditor = () => {
         <CardContent className="p-4 sm:p-6 flex-1 overflow-hidden flex flex-col">
           <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col overflow-hidden gap-6">
             {/* Scrollable metadata fields */}
-            <div className="overflow-y-auto flex-shrink-0 space-y-6" style={{ maxHeight: '40vh' }}>
-            {/* Title */}
-            <div>
-              <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                {...register('title')}
-                placeholder="Enter post title"
-                className={errors.title ? 'border-red-500' : ''}
-              />
-              {errors.title && (
-                <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-              )}
-            </div>
-
-            {/* Slug */}
-            <div>
-              <Label htmlFor="slug">Slug (URL) *</Label>
-              <Input
-                id="slug"
-                {...register('slug')}
-                placeholder="url-friendly-slug"
-                className={errors.slug ? 'border-red-500' : ''}
-              />
-              {errors.slug && (
-                <p className="text-sm text-red-500 mt-1">{errors.slug.message}</p>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                Auto-generated from title. Use lowercase letters, numbers, and hyphens only.
-              </p>
-            </div>
-
-            {/* Category & Status Row */}
+            <div className="overflow-y-auto flex-shrink-0 space-y-6 max-h-[15vh] lg:max-h-[40vh]">
+            {/* Title & Slug Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="title">Title *</Label>
+                <Input
+                  id="title"
+                  {...register('title')}
+                  placeholder="Enter post title"
+                  className={errors.title ? 'border-red-500' : ''}
+                />
+                {errors.title && (
+                  <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="slug">Slug (URL) *</Label>
+                <Input
+                  id="slug"
+                  {...register('slug')}
+                  placeholder="url-friendly-slug"
+                  className={errors.slug ? 'border-red-500' : ''}
+                />
+                {errors.slug && (
+                  <p className="text-sm text-red-500 mt-1">{errors.slug.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Category, Status & Tags Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="category">Category *</Label>
                 <Controller
@@ -312,19 +375,15 @@ export const ContentEditor = () => {
                   )}
                 />
               </div>
-            </div>
 
-            {/* Tags */}
-            <div>
-              <Label htmlFor="tags">Tags (Optional)</Label>
-              <Input
-                id="tags"
-                {...register('tags')}
-                placeholder="tag1, tag2, tag3"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Comma-separated tags for filtering and categorization.
-              </p>
+              <div>
+                <Label htmlFor="tags">Tags (Optional)</Label>
+                <Input
+                  id="tags"
+                  {...register('tags')}
+                  placeholder="tag1, tag2, tag3"
+                />
+              </div>
             </div>
             </div>
 
@@ -363,6 +422,16 @@ export const ContentEditor = () => {
 
               <Button
                 type="button"
+                onClick={handlePublish}
+                disabled={isSubmitting}
+                className="bg-green-600 text-white hover:bg-green-700 flex-1"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Publish
+              </Button>
+
+              <Button
+                type="button"
                 variant="outline"
                 onClick={() => setPreviewMode(!previewMode)}
                 className="border-gray-300 hover:bg-gray-100"
@@ -375,12 +444,27 @@ export const ContentEditor = () => {
 
           {/* Preview Mode */}
           {previewMode && (
-            <div className="mt-4 p-6 border border-gray-300 rounded-lg bg-white overflow-y-auto" style={{ maxHeight: '60vh' }}>
-              <h2 className="text-3xl font-bold mb-4">{watchTitle || 'Untitled'}</h2>
-              <div
-                className="prose prose-sm sm:prose lg:prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-              />
+            <div className="mt-4 border border-gray-300 rounded-lg bg-white overflow-y-auto" style={{ maxHeight: '60vh' }}>
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-600">Preview Mode</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPreviewMode(false)}
+                  className="border-gray-300 hover:bg-gray-100"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Edit
+                </Button>
+              </div>
+              <div className="p-6">
+                <h2 className="text-3xl font-bold mb-4">{watchTitle || 'Untitled'}</h2>
+                <div
+                  className="prose prose-sm sm:prose lg:prose-lg max-w-none"
+                  dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+                />
+              </div>
             </div>
           )}
         </CardContent>

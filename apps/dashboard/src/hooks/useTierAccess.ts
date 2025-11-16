@@ -135,10 +135,11 @@ export const useTierAccess = (options?: UseTierAccessOptions): TierAccess => {
         }
 
         // Optimized query with specific field selection and timeout handling
+        // CRITICAL: Query by email (not id) per CLAUDE.md documentation to avoid RLS issues
         const queryPromise = supabase
           .from('user_buyers')
           .select('tier, id, email')  // Include additional fields for debugging
-          .eq('id', user.id)
+          .eq('email', user.email?.toLowerCase())
           .single();
 
         // Add timeout for tier lookup to prevent hanging

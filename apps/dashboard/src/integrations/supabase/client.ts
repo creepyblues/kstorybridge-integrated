@@ -545,7 +545,12 @@ supabase.auth.getSession = async () => {
   const isRecentOAuthFlow = () => {
     if (typeof window === 'undefined') return false;
     try {
+      // Check both oauth_completed_at (old) and oauth_signup_complete (new) for compatibility
       const lastOAuthTime = sessionStorage.getItem('oauth_completed_at');
+      const signupComplete = sessionStorage.getItem('oauth_signup_complete');
+
+      if (signupComplete === 'true') return true; // Immediate return if signup is active
+
       if (!lastOAuthTime) return false;
       const timeSinceOAuth = Date.now() - parseInt(lastOAuthTime);
       return timeSinceOAuth < 30000; // 30 seconds window

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
@@ -7,6 +7,7 @@ import { Check, X, Sparkles, TrendingUp, Rocket } from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { PricingCard } from '@/components/PricingCard'
 import { CheckoutModal } from '@/components/CheckoutModal'
+import { trackPlanView } from '@/utils/analytics'
 
 export default function Plan() {
   const navigate = useNavigate()
@@ -20,6 +21,11 @@ export default function Plan() {
     planType: 'packaging',
     billingPeriod: 'monthly',
   })
+
+  // Track plan page view
+  useEffect(() => {
+    trackPlanView()
+  }, [])
 
   const handleStartFree = () => {
     navigate('/titles/add-title')

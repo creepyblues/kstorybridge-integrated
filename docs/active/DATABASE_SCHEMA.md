@@ -1,8 +1,15 @@
 # Database Schema Reference
 
-**Last Updated**: 2025-10-26
+**Last Updated**: 2025-11-15
 
 **WARNING**: This schema is for context only and is not meant to be run directly. Table order and constraints may not be valid for execution.
+
+**Recent Updates (2025-11-15)**:
+- Added creator payment system tables: `creator_stripe_customers`, `creator_subscriptions`, `creator_payments`
+- Added discount system tables: `discount_coupons`, `coupon_redemptions`
+- Added content management tables: `content_posts`, `title_marketing_assets`
+- Updated `title_content_analysis` schema: `semantic_tags` changed from `text[]` to `jsonb`
+- Added CHECK constraints for numeric fields in `title_content_analysis`
 
 ---
 
@@ -497,49 +504,50 @@ AI-generated content analysis for enhanced search
 CREATE TABLE public.title_content_analysis (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   title_id uuid NOT NULL UNIQUE,
-  semantic_tags ARRAY DEFAULT '{}'::text[],
+  semantic_tags jsonb DEFAULT '[]'::jsonb,
   mood_analysis jsonb DEFAULT '{}'::jsonb,
   character_types ARRAY DEFAULT '{}'::text[],
   plot_elements ARRAY DEFAULT '{}'::text[],
   cultural_elements ARRAY DEFAULT '{}'::text[],
+  complexity_score numeric DEFAULT 5.0 CHECK (complexity_score >= 1.0 AND complexity_score <= 10.0),
+  reading_time_minutes integer,
+  content_quality_score numeric DEFAULT 5.0 CHECK (content_quality_score >= 0.0 AND content_quality_score <= 10.0),
   target_demographics jsonb DEFAULT '{}'::jsonb,
   content_warnings ARRAY DEFAULT '{}'::text[],
-  keyword_density jsonb DEFAULT '{}'::jsonb,
-  complexity_score numeric DEFAULT 5.0,
-  content_quality_score numeric DEFAULT 5.0,
-  search_boost_factor numeric DEFAULT 1.0,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
   accessibility_features ARRAY DEFAULT '{}'::text[],
-  analysis_version text,
-  processed_by text,
-  processing_confidence numeric CHECK (processing_confidence >= 0.0 AND processing_confidence <= 1.0),
-  reading_time_minutes integer,
+  keyword_density jsonb DEFAULT '{}'::jsonb,
+  search_boost_factor numeric DEFAULT 1.0 CHECK (search_boost_factor >= 0.5 AND search_boost_factor <= 2.0),
   pitch_analysis jsonb DEFAULT '{}'::jsonb,
-  CONSTRAINT title_content_analysis_pkey PRIMARY KEY (id)
+  analysis_version text DEFAULT '1.0'::text,
+  processed_by text DEFAULT 'openai-gpt-4'::text,
+  processing_confidence double precision DEFAULT 0.0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT title_content_analysis_pkey PRIMARY KEY (id),
+  CONSTRAINT title_content_analysis_title_id_fkey FOREIGN KEY (title_id) REFERENCES public.titles(title_id)
 );
 ```
 
 **Fields**:
 - `id`: UUID primary key
 - `title_id`: Unique title identifier (UUID)
-- `semantic_tags`: Array of semantic tags
+- `semantic_tags`: JSONB array of semantic tags (type changed from text[] to jsonb)
 - `mood_analysis`: JSONB mood analysis data
 - `character_types`: Array of character archetypes
 - `plot_elements`: Array of plot elements
 - `cultural_elements`: Array of cultural references
+- `complexity_score`: Content complexity (1.0-10.0, default: 5.0)
+- `reading_time_minutes`: Estimated reading time in minutes
+- `content_quality_score`: Quality rating (0.0-10.0, default: 5.0)
 - `target_demographics`: JSONB demographic data
 - `content_warnings`: Array of content warnings
-- `keyword_density`: JSONB keyword frequency data
-- `complexity_score`: Content complexity (0-10)
-- `content_quality_score`: Quality rating (0-10)
-- `search_boost_factor`: Search ranking boost
 - `accessibility_features`: Array of accessibility features (Added 2025-10-21)
-- `analysis_version`: Version of analysis algorithm used (Added 2025-10-21)
-- `processed_by`: Processing system identifier (Added 2025-10-21)
-- `processing_confidence`: Confidence score 0-1 (Added 2025-10-21, used for Phase 3 chatbot quality threshold)
-- `reading_time_minutes`: Estimated reading time (Added 2025-10-21)
+- `keyword_density`: JSONB keyword frequency data
+- `search_boost_factor`: Search ranking boost (0.5-2.0, default: 1.0)
 - `pitch_analysis`: JSONB pitch analytics data (Added 2025-10-21, **CRITICAL for Phase 3 chatbot**)
+- `analysis_version`: Version of analysis algorithm used (default: '1.0', Added 2025-10-21)
+- `processed_by`: Processing system identifier (default: 'openai-gpt-4', Added 2025-10-21)
+- `processing_confidence`: Confidence score 0.0-1.0 (Added 2025-10-21, used for Phase 3 chatbot quality threshold)
 - `created_at`: Analysis creation timestamp
 - `updated_at`: Last update timestamp
 
@@ -836,6 +844,282 @@ CREATE TABLE public.webhook_events (
 - `created_at`: Record creation timestamp
 
 **Purpose**: Prevents duplicate processing of Stripe webhook events by tracking which event IDs have already been handled
+
+### creator_stripe_customers
+Creator-specific Stripe customer tracking (Added 2025-11-14)
+
+```sql
+CREATE TABLE public.creator_stripe_customers (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  creator_email text NOT NULL UNIQUE,
+  stripe_customer_id text NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT creator_stripe_customers_pkey PRIMARY KEY (id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `creator_email`: Creator's email address (unique)
+- `stripe_customer_id`: Stripe customer ID (unique)
+- `created_at`: Record creation timestamp
+- `updated_at`: Last update timestamp
+
+**Purpose**: Tracks Stripe customer records for creators who purchase subscription plans for their titles
+
+### creator_subscriptions
+Creator subscription management (Added 2025-11-14)
+
+```sql
+CREATE TABLE public.creator_subscriptions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  creator_email text NOT NULL,
+  title_id uuid NOT NULL,
+  stripe_subscription_id text NOT NULL UNIQUE,
+  stripe_customer_id text NOT NULL,
+  plan_type text NOT NULL CHECK (plan_type = ANY (ARRAY['packaging'::text, 'premium'::text])),
+  billing_period text NOT NULL CHECK (billing_period = ANY (ARRAY['monthly'::text, 'yearly'::text])),
+  status text NOT NULL CHECK (status = ANY (ARRAY['active'::text, 'canceled'::text, 'past_due'::text, 'unpaid'::text, 'trialing'::text])),
+  current_period_start timestamp with time zone,
+  current_period_end timestamp with time zone,
+  cancel_at_period_end boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT creator_subscriptions_pkey PRIMARY KEY (id),
+  CONSTRAINT creator_subscriptions_title_id_fkey FOREIGN KEY (title_id) REFERENCES public.titles(title_id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `creator_email`: Creator's email address
+- `title_id`: References titles(title_id)
+- `stripe_subscription_id`: Stripe subscription ID (unique)
+- `stripe_customer_id`: Stripe customer ID
+- `plan_type`: Subscription plan type (packaging|premium)
+- `billing_period`: Billing frequency (monthly|yearly)
+- `status`: Subscription status (active|canceled|past_due|unpaid|trialing)
+- `current_period_start`: Current billing period start date
+- `current_period_end`: Current billing period end date
+- `cancel_at_period_end`: Whether subscription cancels at period end
+- `created_at`: Record creation timestamp
+- `updated_at`: Last update timestamp
+
+**Purpose**: Manages creator subscriptions for title-specific premium features (packaging, premium listing)
+
+### creator_payments
+Creator payment tracking (Added 2025-11-14)
+
+```sql
+CREATE TABLE public.creator_payments (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  creator_email text NOT NULL,
+  subscription_id text,
+  stripe_payment_intent_id text UNIQUE,
+  stripe_invoice_id text,
+  amount numeric NOT NULL,
+  currency text DEFAULT 'usd'::text,
+  status text NOT NULL CHECK (status = ANY (ARRAY['succeeded'::text, 'failed'::text, 'pending'::text, 'refunded'::text])),
+  invoice_url text,
+  receipt_url text,
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT creator_payments_pkey PRIMARY KEY (id),
+  CONSTRAINT creator_payments_subscription_id_fkey FOREIGN KEY (subscription_id) REFERENCES public.creator_subscriptions(stripe_subscription_id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `creator_email`: Creator's email address
+- `subscription_id`: References creator_subscriptions(stripe_subscription_id)
+- `stripe_payment_intent_id`: Stripe payment intent ID (unique)
+- `stripe_invoice_id`: Stripe invoice ID
+- `amount`: Payment amount
+- `currency`: Payment currency (default: 'usd')
+- `status`: Payment status (succeeded|failed|pending|refunded)
+- `invoice_url`: URL to Stripe invoice
+- `receipt_url`: URL to payment receipt
+- `description`: Payment description
+- `created_at`: Payment timestamp
+
+**Purpose**: Tracks individual payment transactions for creator subscriptions
+
+### discount_coupons
+Discount coupon management (Added 2025-11-14)
+
+```sql
+CREATE TABLE public.discount_coupons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  code text NOT NULL UNIQUE,
+  discount_type text NOT NULL CHECK (discount_type = ANY (ARRAY['percentage'::text, 'fixed_amount'::text])),
+  discount_value numeric NOT NULL,
+  valid_from timestamp with time zone DEFAULT now(),
+  valid_until timestamp with time zone,
+  usage_limit integer,
+  usage_count integer DEFAULT 0,
+  applicable_plans ARRAY,
+  created_by text,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT discount_coupons_pkey PRIMARY KEY (id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `code`: Coupon code (unique)
+- `discount_type`: Type of discount (percentage|fixed_amount)
+- `discount_value`: Discount value (percentage or amount)
+- `valid_from`: Coupon valid start date (default: now)
+- `valid_until`: Coupon expiration date
+- `usage_limit`: Maximum number of uses
+- `usage_count`: Current usage count (default: 0)
+- `applicable_plans`: Array of plan types this coupon applies to
+- `created_by`: Admin email who created the coupon
+- `is_active`: Whether coupon is currently active (default: true)
+- `created_at`: Record creation timestamp
+- `updated_at`: Last update timestamp
+
+**Purpose**: Manages discount coupons for creator subscription plans
+
+### coupon_redemptions
+Coupon redemption tracking (Added 2025-11-14)
+
+```sql
+CREATE TABLE public.coupon_redemptions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  coupon_id uuid,
+  creator_email text NOT NULL,
+  subscription_id text,
+  title_id uuid,
+  discount_applied numeric NOT NULL,
+  redeemed_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT coupon_redemptions_pkey PRIMARY KEY (id),
+  CONSTRAINT coupon_redemptions_coupon_id_fkey FOREIGN KEY (coupon_id) REFERENCES public.discount_coupons(id),
+  CONSTRAINT coupon_redemptions_subscription_id_fkey FOREIGN KEY (subscription_id) REFERENCES public.creator_subscriptions(stripe_subscription_id),
+  CONSTRAINT coupon_redemptions_title_id_fkey FOREIGN KEY (title_id) REFERENCES public.titles(title_id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `coupon_id`: References discount_coupons(id)
+- `creator_email`: Creator's email address
+- `subscription_id`: References creator_subscriptions(stripe_subscription_id)
+- `title_id`: References titles(title_id)
+- `discount_applied`: Actual discount amount applied
+- `redeemed_at`: Redemption timestamp (default: now)
+
+**Purpose**: Tracks coupon redemptions and links them to specific subscriptions
+
+---
+
+## Content Management
+
+### content_posts
+Content management for blog/learning articles (Added 2025-11-14)
+
+```sql
+CREATE TABLE public.content_posts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  excerpt text,
+  content text NOT NULL,
+  featured_image_url text,
+  category text NOT NULL CHECK (category = ANY (ARRAY['learning'::text, 'news'::text])),
+  tags ARRAY DEFAULT '{}'::text[],
+  author_email text NOT NULL,
+  author_name text NOT NULL,
+  status text NOT NULL DEFAULT 'draft'::text CHECK (status = ANY (ARRAY['draft'::text, 'published'::text, 'archived'::text])),
+  published_at timestamp with time zone,
+  meta_description text,
+  meta_keywords ARRAY,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT content_posts_pkey PRIMARY KEY (id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `title`: Article title
+- `slug`: URL-friendly slug (unique)
+- `excerpt`: Short excerpt/summary
+- `content`: Full article content
+- `featured_image_url`: URL to featured image
+- `category`: Article category (learning|news)
+- `tags`: Array of tags
+- `author_email`: Author's email address
+- `author_name`: Author's name
+- `status`: Publication status (draft|published|archived, default: 'draft')
+- `published_at`: Publication timestamp
+- `meta_description`: SEO meta description
+- `meta_keywords`: SEO keywords array
+- `created_at`: Record creation timestamp
+- `updated_at`: Last update timestamp
+
+**Purpose**: Manages blog posts and educational content for the platform
+
+### title_marketing_assets
+AI-generated marketing assets for titles (Added 2025-11-14)
+
+```sql
+CREATE TABLE public.title_marketing_assets (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title_id text NOT NULL,
+  title_name text NOT NULL,
+  asset_category text NOT NULL CHECK (asset_category = ANY (ARRAY['social_media'::text, 'ad_creative'::text, 'pitch_material'::text])),
+  asset_type text NOT NULL,
+  asset_format text,
+  description text NOT NULL,
+  prompt_template text NOT NULL,
+  prompt_used text,
+  image_url text,
+  video_url text,
+  generation_api text CHECK (generation_api = ANY (ARRAY['dall-e-3'::text, 'openai-video'::text])),
+  generation_model text,
+  generation_cost numeric DEFAULT 0,
+  generation_attempts integer DEFAULT 0,
+  error_message text,
+  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'generating'::text, 'completed'::text, 'failed'::text])),
+  approved boolean DEFAULT false,
+  approved_by_email text,
+  approved_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT title_marketing_assets_pkey PRIMARY KEY (id)
+);
+```
+
+**Fields**:
+- `id`: UUID primary key
+- `title_id`: Associated title identifier (text, not UUID foreign key)
+- `title_name`: Title name for reference
+- `asset_category`: Category of marketing asset (social_media|ad_creative|pitch_material)
+- `asset_type`: Specific type of asset
+- `asset_format`: File format of asset
+- `description`: Asset description
+- `prompt_template`: Template used for AI generation
+- `prompt_used`: Actual prompt sent to AI
+- `image_url`: URL to generated image
+- `video_url`: URL to generated video
+- `generation_api`: API used for generation (dall-e-3|openai-video)
+- `generation_model`: Specific model used
+- `generation_cost`: Cost of generation
+- `generation_attempts`: Number of generation attempts
+- `error_message`: Error message if generation failed
+- `status`: Generation status (pending|generating|completed|failed, default: 'pending')
+- `approved`: Whether asset is approved for use
+- `approved_by_email`: Email of approver
+- `approved_at`: Approval timestamp
+- `created_at`: Record creation timestamp
+- `updated_at`: Last update timestamp
+
+**Purpose**: Manages AI-generated marketing assets for titles (social media posts, ad creatives, pitch materials)
 
 ---
 

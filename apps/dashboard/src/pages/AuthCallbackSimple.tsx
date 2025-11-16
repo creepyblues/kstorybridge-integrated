@@ -56,53 +56,84 @@ const AuthCallbackSimple = () => {
 
       try {
         // 1. Exchange OAuth code for session with race condition protection
+        const startTime = Date.now();
         console.log('🔄 Exchanging OAuth code for session...');
+        console.log('⏱️ Start time:', new Date(startTime).toISOString());
 
         // Set up auth state change listener BEFORE exchange
         // This captures the SIGNED_IN event that we know fires successfully
         const authPromise = new Promise<{ user: User; session: Session }>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Auth event timeout')), 15000);
+          const authStartTime = Date.now();
+          const timeout = setTimeout(() => {
+            const duration = Date.now() - authStartTime;
+            console.error(`❌ Auth event timeout after ${duration}ms (45s limit)`);
+            reject(new Error(`Auth event timeout after ${duration}ms`));
+          }, 45000); // Increased from 15s to 45s
 
           const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session?.user) {
+              const duration = Date.now() - authStartTime;
               clearTimeout(timeout);
               subscription.unsubscribe();
-              console.log('✅ Auth event captured:', session.user.email);
+              console.log(`✅ Auth event captured: ${session.user.email} (took ${duration}ms)`);
               resolve({ user: session.user, session });
             }
           });
         });
 
-        // Start the exchange (may hang, but auth event will fire)
+        // Start the exchange
+        const exchangeStartTime = Date.now();
         const exchangePromise = supabase.auth.exchangeCodeForSession(code);
 
-        // Race: whichever completes first wins
+        // Race BOTH the exchange AND the auth event - whichever completes first wins
         let user, session;
+        let completionMethod = 'unknown';
+
         try {
-          // Try exchange first with 10-second timeout (OAuth PKCE can take 5-10s in production)
-          // Timeout is defensive - prevents indefinite hangs while allowing normal exchanges to complete
+          // Race between THREE outcomes:
+          // 1. Exchange completes successfully
+          // 2. Auth event fires (reliable fallback)
+          // 3. Both timeout after 45s (maximum wait time)
           const result = await Promise.race([
-            exchangePromise,
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Exchange timeout')), 10000))
+            // Option 1: Exchange promise
+            exchangePromise.then(result => {
+              const duration = Date.now() - exchangeStartTime;
+              console.log(`✅ Exchange completed first (${duration}ms)`);
+              completionMethod = 'exchange';
+              if (result.error || !result.data?.session?.user) {
+                throw new Error('Exchange succeeded but returned no session');
+              }
+              return { user: result.data.session.user, session: result.data.session };
+            }),
+
+            // Option 2: Auth event listener (already set up above)
+            authPromise.then(result => {
+              const duration = Date.now() - exchangeStartTime;
+              console.log(`✅ Auth event completed first (${duration}ms)`);
+              completionMethod = 'auth_event';
+              return result;
+            }),
+
+            // Option 3: Maximum timeout (45s) - should never happen with auth event
+            new Promise<never>((_, reject) => setTimeout(() => {
+              const duration = Date.now() - exchangeStartTime;
+              console.error(`❌ Both exchange and auth event timed out after ${duration}ms`);
+              reject(new Error(`Complete timeout after ${duration}ms`));
+            }, 45000))
           ]);
 
-          if (result.error || !result.data?.session?.user) {
-            throw new Error('Exchange failed or returned no session');
-          }
-
-          user = result.data.session.user;
-          session = result.data.session;
-          console.log('✅ Exchange promise resolved:', user.email);
-        } catch (exchangeError) {
-          // Exchange exceeded 10s timeout - use reliable auth event fallback (this is expected behavior)
-          console.log('ℹ️ Exchange took longer than 10s, using auth state change event (this is normal)...');
-          console.log('Exchange info:', exchangeError);
-          const result = await authPromise;
           user = result.user;
           session = result.session;
+          const totalDuration = Date.now() - exchangeStartTime;
+          console.log(`✅ Session obtained via ${completionMethod} (${totalDuration}ms)`);
+        } catch (error) {
+          const duration = Date.now() - exchangeStartTime;
+          console.error(`❌ All methods failed after ${duration}ms:`, error);
+          throw error;
         }
 
-        console.log('✅ OAuth session established for:', user.email);
+        const totalDuration = Date.now() - startTime;
+        console.log(`✅ OAuth session established for: ${user.email} (total time: ${totalDuration}ms)`);
 
         // 2. Determine account type - Dashboard app now only handles BUYER auth
         // NO URL parameters used (per CLAUDE.md critical rule)
@@ -148,90 +179,33 @@ const AuthCallbackSimple = () => {
           console.log('📝 OAuth signup - redirecting to:', signupPath);
           navigate(signupPath);
         } else {
-          // OAuth signin - VERIFY PROFILE EXISTS BEFORE REDIRECTING
-          // This prevents authenticated users without profiles from reaching dashboard
-          console.log('✅ OAuth signin - verifying profile existence before redirect');
+          // OAuth signin - redirect to dashboard directly
+          // Profile existence check will happen on the dashboard page itself via RootRedirect
+          // (Attempting to check during OAuth callback causes RLS timing issues in localhost/production)
+          console.log('✅ OAuth signin - redirecting to dashboard (profile check delegated to RootRedirect)');
 
-          try {
-            // Check if buyer profile exists in database
-            let profileExists = false;
-            let profileCheckError: string | null = null;
-
-            const { data, error } = await withRetry(
-              () => supabase
-                .from('user_buyers')
-                .select('id')
-                .eq('id', user.id)
-                .maybeSingle(),
-              { maxRetries: 2, delay: 500 }
-            );
-
-            if (error) {
-              console.error('❌ OAuth signin: Error checking buyer profile:', error);
-              profileCheckError = error.message;
-            } else {
-              profileExists = !!data;
-              console.log(profileExists ? '✅ Buyer profile found' : '❌ No buyer profile found');
-            }
-
-            if (profileCheckError) {
-              // Database error - show error and redirect to signin
-              console.error('❌ OAuth signin: Profile check failed with database error');
-              toast({
-                title: "Connection Error",
-                description: "Unable to verify your profile. Please try signing in again.",
-                variant: "destructive"
-              });
-              navigate('/signin?error=profile_check_error');
-              return;
-            }
-
-            if (!profileExists) {
-              // No profile found - this is first-time OAuth "signin" (should be signup)
-              // Redirect to signup to complete profile
-              console.log('❌ OAuth signin: No profile found - redirecting to signup');
-
-              toast({
-                title: "Welcome!",
-                description: "Please complete your profile to get started.",
-                variant: "default"
-              });
-
-              // Set signup completion flags (reuse signup flow)
-              sessionStorage.setItem('oauth_signup_complete', 'true');
-              sessionStorage.setItem('oauth_user_id', user.id);
-              sessionStorage.setItem('oauth_user_email', user.email);
-              sessionStorage.setItem('oauth_user_account_type', finalAccountType);
-
-              const signupPath = getSignupPath(finalAccountType);
-              console.log('📝 Redirecting to signup:', signupPath);
-              navigate(signupPath);
-              return;
-            }
-
-            // Profile exists - proceed to dashboard
-            console.log('✅ OAuth signin: Profile verified - proceeding to dashboard');
-
-            const dashboardPath = getDashboardPath(finalAccountType);
-            console.log('🔄 Redirecting to dashboard:', dashboardPath);
-            navigate(dashboardPath);
-
-          } catch (error) {
-            console.error('❌ OAuth signin: Unexpected error during profile check:', error);
-            toast({
-              title: "Authentication Error",
-              description: "Unable to verify your profile. Please try signing in again.",
-              variant: "destructive"
-            });
-            navigate('/signin?error=profile_check_exception');
-          }
+          const dashboardPath = getDashboardPath(finalAccountType);
+          console.log('🔄 Redirecting to dashboard:', dashboardPath);
+          navigate(dashboardPath);
         }
 
       } catch (error) {
+        const errorDuration = Date.now() - (error instanceof Error && error.message.includes('timeout') ? 0 : Date.now());
         console.error('❌ Unexpected error in OAuth callback:', error);
+
+        // Enhanced error message with timing context
+        let errorDescription = 'Unexpected error during authentication';
+        if (error instanceof Error) {
+          if (error.message.includes('timeout')) {
+            errorDescription = `Authentication timed out: ${error.message}. This may be due to slow network or high server load. Please try again.`;
+          } else {
+            errorDescription = error.message;
+          }
+        }
+
         toast({
           title: "Authentication Error",
-          description: error instanceof Error ? error.message : 'Unexpected error during authentication',
+          description: errorDescription,
           variant: "destructive"
         });
         navigate('/signin?error=callback_error');

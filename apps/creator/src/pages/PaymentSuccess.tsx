@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, Loader2 } from 'lucide-react'
+import { trackPaymentSuccess } from '@/utils/analytics'
 
 export default function PaymentSuccess() {
   const navigate = useNavigate()
@@ -13,15 +14,20 @@ export default function PaymentSuccess() {
   const [loading, setLoading] = useState(true)
 
   const sessionId = searchParams.get('session_id')
+  const planType = searchParams.get('plan_type') || 'unknown'
+  const billingPeriod = searchParams.get('billing_period') || 'monthly'
 
   useEffect(() => {
+    // Track successful payment
+    trackPaymentSuccess(planType, billingPeriod)
+
     // Simulate loading delay to allow webhook processing
     const timer = setTimeout(() => {
       setLoading(false)
     }, 2000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [planType, billingPeriod])
 
   if (loading) {
     return (

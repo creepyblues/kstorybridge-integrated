@@ -5,6 +5,7 @@ import { titlesService, type Title } from '@/services/titlesService'
 import { supabase } from '@/lib/supabase'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
+import { trackCheckoutStart } from '@/utils/analytics'
 
 interface CheckoutModalProps {
   isOpen: boolean
@@ -85,6 +86,9 @@ export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: Chec
       }
 
       const { url } = await response.json()
+
+      // Track checkout start
+      trackCheckoutStart(planType, billingPeriod, selectedTitleId)
 
       // Redirect to Stripe Checkout
       window.location.href = url

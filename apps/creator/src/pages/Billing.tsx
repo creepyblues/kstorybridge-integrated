@@ -6,6 +6,7 @@ import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, CreditCard, FileText, AlertCircle } from 'lucide-react'
+import { trackBillingView } from '@/utils/analytics'
 
 interface Subscription {
   id: string
@@ -61,6 +62,9 @@ export default function Billing() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Track billing page view
+    trackBillingView()
+
     if (user) {
       loadBillingData()
     }

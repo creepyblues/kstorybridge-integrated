@@ -66,17 +66,42 @@ export default function AuthCallback() {
   const handleCallback = async () => {
     try {
       const urlParams = new URLSearchParams(window.location.search)
-      const hasCode = urlParams.has('code')
+      const code = urlParams.get('code')
+      const hasCode = !!code
       const type = urlParams.get('type')
       const hasTokenHash = urlParams.has('token_hash')
 
       // Check if this is an OAuth flow by looking for oauth_flow in sessionStorage
       const oauthFlowIntent = sessionStorage.getItem('oauth_flow')
 
-      // Email verification: has type=signup or type=email (or sometimes just a code with no type)
-      // OAuth: has code + oauth_flow in sessionStorage
-      const isEmailVerification = type === 'signup' || type === 'email' || hasTokenHash
-      const isOAuthFlow = hasCode && oauthFlowIntent && !isEmailVerification
+      // Distinguish between email verification and OAuth by code length
+      // Email verification: token_hash is ~150+ characters
+      // OAuth: authorization code is ~40-60 characters
+      const codeLength = code?.length || 0
+      const isLikelyTokenHash = codeLength > 100 // token_hash is much longer
+
+      // Email verification indicators:
+      // - Explicit type params (signup, email, recovery, invite)
+      // - token_hash parameter present
+      // - Code is very long (token_hash format)
+      const isEmailVerification =
+        type === 'signup' ||
+        type === 'email' ||
+        type === 'recovery' ||
+        type === 'invite' ||
+        hasTokenHash ||
+        isLikelyTokenHash
+
+      // OAuth indicators (must have ALL of these):
+      // - Code parameter present
+      // - oauth_flow in sessionStorage (user initiated OAuth)
+      // - NOT email verification
+      // - Code is short (OAuth format)
+      const isOAuthFlow =
+        hasCode &&
+        oauthFlowIntent &&
+        !isEmailVerification &&
+        !isLikelyTokenHash
 
       const isDev = import.meta.env.DEV
       console.log('🔐 Auth callback: Processing...', {
@@ -84,8 +109,9 @@ export default function AuthCallback() {
         isEmailVerification,
         isOAuthFlow,
         type,
+        codeLength: isDev ? codeLength : (codeLength > 0 ? 'present' : 'none'),
         hasTokenHash: isDev ? hasTokenHash : !!hasTokenHash,
-        oauthFlowIntent,
+        oauthFlowIntent: isDev ? oauthFlowIntent : !!oauthFlowIntent,
         timestamp: new Date().toISOString()
       })
 

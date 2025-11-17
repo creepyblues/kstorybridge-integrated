@@ -19,6 +19,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Prevent concurrent URL session initialization (race condition protection)
+let urlInitInProgress = false;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -101,31 +104,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Check for URL parameters first
         const urlParams = new URLSearchParams(window.location.search);
         const hasAccessToken = urlParams.has('access_token');
-        
+
         if (hasAccessToken) {
+          // Prevent concurrent URL session initialization (race condition protection)
+          if (urlInitInProgress) {
+            console.log('⏳ AUTH: URL session initialization already in progress, skipping duplicate...');
+            return;
+          }
+
+          urlInitInProgress = true;
           console.log('🔗 AUTH: Found access token in URL, attempting secure session initialization...');
+
+          try {
+            const urlSessionResult = await initializeSessionFromUrl();
+
+            if (!mounted) return;
           
-          const urlSessionResult = await initializeSessionFromUrl();
-          
-          if (!mounted) return;
-          
-          if (urlSessionResult.success && urlSessionResult.session) {
-            console.log('✅ AUTH: Successfully initialized session from URL');
-            setSession(urlSessionResult.session);
-            setUser(urlSessionResult.session.user);
-            
-            // Perform health check on new session
-            const healthCheck = await performSessionHealthCheck();
-            if (!healthCheck.healthy) {
-              console.warn('⚠️ AUTH: New session failed health check:', healthCheck.issues);
+            if (urlSessionResult.success && urlSessionResult.session) {
+              console.log('✅ AUTH: Successfully initialized session from URL');
+              setSession(urlSessionResult.session);
+              setUser(urlSessionResult.session.user);
+
+              // Perform health check on new session
+              const healthCheck = await performSessionHealthCheck();
+              if (!healthCheck.healthy) {
+                console.warn('⚠️ AUTH: New session failed health check:', healthCheck.issues);
+              }
+            } else {
+              console.error('❌ AUTH: Failed to initialize session from URL:', urlSessionResult.error);
+
+              // Clear URL if recommended
+              if (urlSessionResult.shouldClearUrl) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+              }
             }
-          } else {
-            console.error('❌ AUTH: Failed to initialize session from URL:', urlSessionResult.error);
-            
-            // Clear URL if recommended
-            if (urlSessionResult.shouldClearUrl) {
-              window.history.replaceState({}, document.title, window.location.pathname);
-            }
+          } finally {
+            // Always reset the flag, even on error
+            urlInitInProgress = false;
           }
         } else {
           console.log('🔍 AUTH: No URL tokens, checking for existing session...');

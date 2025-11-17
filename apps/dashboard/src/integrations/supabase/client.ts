@@ -289,10 +289,16 @@ const SESSION_CACHE_MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes - increased from 
 let oauthCodeProcessed = false;
 
 const bootstrapCachedSession = () => {
-  console.log('🧊 [BOOTSTRAP] Starting session bootstrap from localStorage');
+  console.log('🧊 [BOOTSTRAP] Starting session bootstrap from sessionStorage');
 
   if (typeof window === 'undefined') {
     console.log('🧊 [BOOTSTRAP] Skipping - no window object');
+    return;
+  }
+
+  // Check if sessionStorage is available (fails in private browsing on some browsers)
+  if (!window.sessionStorage) {
+    console.warn('⚠️ [BOOTSTRAP] sessionStorage not available (private browsing mode?)');
     return;
   }
 
@@ -303,7 +309,15 @@ const bootstrapCachedSession = () => {
   }
 
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    // Try to access sessionStorage - may throw in private browsing mode
+    let raw: string | null = null;
+    try {
+      raw = window.sessionStorage.getItem(STORAGE_KEY);
+    } catch (storageError) {
+      console.warn('⚠️ [BOOTSTRAP] sessionStorage access failed:', storageError);
+      return;
+    }
+
     console.log('🧊 [BOOTSTRAP] sessionStorage check:', {
       storageKey: STORAGE_KEY,
       hasData: !!raw,
@@ -316,7 +330,19 @@ const bootstrapCachedSession = () => {
     }
 
     // Parse Supabase's sessionStorage format correctly
-    const authData = JSON.parse(raw);
+    let authData;
+    try {
+      authData = JSON.parse(raw);
+    } catch (parseError) {
+      console.warn('⚠️ [BOOTSTRAP] Failed to parse session data:', parseError);
+      // Clear corrupted data
+      try {
+        window.sessionStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      return;
+    }
 
     // Supabase stores auth data in a specific format, not directly as Session
     if (authData && authData.access_token && authData.expires_at) {

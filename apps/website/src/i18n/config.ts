@@ -78,6 +78,8 @@ i18n
     // React-specific settings
     react: {
       useSuspense: false, // Disable suspense for simpler setup
+      bindI18n: 'languageChanged', // Re-render on language change
+      bindI18nStore: 'added removed', // Re-render when translations added/removed
     },
   });
 

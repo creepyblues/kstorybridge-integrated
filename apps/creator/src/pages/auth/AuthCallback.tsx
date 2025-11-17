@@ -81,10 +81,15 @@ export default function AuthCallback() {
       const isLikelyTokenHash = codeLength > 100 // token_hash is much longer
 
       // Email verification indicators:
+      // - Has code parameter BUT NO oauth_flow in sessionStorage (fresh browser session)
       // - Explicit type params (signup, email, recovery, invite)
       // - token_hash parameter present
       // - Code is very long (token_hash format)
+      //
+      // KEY INSIGHT: Email verification starts with NO browser context (user clicks link in email)
+      // so absence of oauth_flow is a strong indicator
       const isEmailVerification =
+        (hasCode && !oauthFlowIntent) ||  // Fresh session with code = email verification
         type === 'signup' ||
         type === 'email' ||
         type === 'recovery' ||
@@ -94,14 +99,14 @@ export default function AuthCallback() {
 
       // OAuth indicators (must have ALL of these):
       // - Code parameter present
-      // - oauth_flow in sessionStorage (user initiated OAuth)
-      // - NOT email verification
+      // - oauth_flow in sessionStorage (user initiated OAuth - we stored this during OAuth initiation)
+      // - NOT detected as email verification by other indicators
       // - Code is short (OAuth format)
       const isOAuthFlow =
         hasCode &&
         oauthFlowIntent &&
-        !isEmailVerification &&
-        !isLikelyTokenHash
+        !isLikelyTokenHash &&
+        !(type === 'signup' || type === 'email' || type === 'recovery' || type === 'invite' || hasTokenHash)
 
       const isDev = import.meta.env.DEV
       console.log('🔐 Auth callback: Processing...', {
@@ -127,45 +132,75 @@ export default function AuthCallback() {
           provider: session.user.app_metadata?.provider
         })
       } else if (isEmailVerification) {
-        // Email verification: Manual verifyOtp required
-        // Supabase's detectSessionInUrl only handles OAuth codes, NOT token_hash
+        // Email verification: Two possible flows
+        // 1. Direct token_hash: URL has token_hash parameter (legacy/direct links)
+        // 2. Pre-processed code: Supabase /auth/v1/verify already processed token, redirects with code
         const tokenHash = urlParams.get('token_hash')
+        const code = urlParams.get('code')
         const type = urlParams.get('type') || 'email'
 
-        if (!tokenHash) {
-          console.error('❌ Email verification: No token_hash parameter found')
+        const isDev = import.meta.env.DEV
+
+        if (tokenHash) {
+          // Flow 1: Direct token_hash - manual verifyOtp required
+          console.log('📧 Email verification (token_hash): Calling verifyOtp...', {
+            type,
+            tokenHashLength: isDev ? tokenHash.length : '[REDACTED]'
+          })
+
+          const result = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: type as any, // 'email' | 'signup' | 'recovery' | 'email_change'
+          })
+
+          if (result.error) {
+            console.error('❌ Email verification error:', result.error.message)
+            setStatus('Email verification failed. Please try signing in with your password.')
+            setTimeout(() => navigate('/signin'), 3000)
+            return
+          }
+
+          if (!result.data.session) {
+            console.error('❌ Email verification: No session returned')
+            setStatus('Email verification failed. Please try signing in.')
+            setTimeout(() => navigate('/signin'), 3000)
+            return
+          }
+
+          session = result.data.session
+          console.log('✅ Email verification successful (manual verifyOtp)')
+        } else if (code) {
+          // Flow 2: Pre-processed code - Supabase already verified, use PKCE exchange
+          console.log('📧 Email verification (code): Attempting PKCE exchange...', {
+            codeLength: isDev ? code.length : '[REDACTED]'
+          })
+
+          const result = await supabase.auth.exchangeCodeForSession(code)
+
+          if (result.error) {
+            console.error('❌ Email verification PKCE exchange error:', result.error.message)
+            setStatus('Email verification failed. Please try signing in with your password.')
+            setTimeout(() => navigate('/signin'), 3000)
+            return
+          }
+
+          session = result.data.session
+
+          if (!session) {
+            console.error('❌ No session returned from email verification PKCE exchange')
+            setStatus('Email verification failed: No session')
+            setTimeout(() => navigate('/signin'), 2000)
+            return
+          }
+
+          console.log('✅ Email verification successful (PKCE exchange)')
+        } else {
+          // No token_hash or code - invalid verification link
+          console.error('❌ Email verification: No token_hash or code parameter found')
           setStatus('Email verification failed: Invalid verification link')
           setTimeout(() => navigate('/signin'), 3000)
           return
         }
-
-        const isDev = import.meta.env.DEV
-        console.log('📧 Email verification: Calling verifyOtp...', {
-          type,
-          tokenHashLength: isDev ? tokenHash.length : '[REDACTED]'
-        })
-
-        const result = await supabase.auth.verifyOtp({
-          token_hash: tokenHash,
-          type: type as any, // 'email' | 'signup' | 'recovery' | 'email_change'
-        })
-
-        if (result.error) {
-          console.error('❌ Email verification error:', result.error.message)
-          setStatus('Email verification failed. Please try signing in with your password.')
-          setTimeout(() => navigate('/signin'), 3000)
-          return
-        }
-
-        if (!result.data.session) {
-          console.error('❌ Email verification: No session returned')
-          setStatus('Email verification failed. Please try signing in.')
-          setTimeout(() => navigate('/signin'), 3000)
-          return
-        }
-
-        session = result.data.session
-        console.log('✅ Email verification successful (manual verifyOtp)')
       } else if (isOAuthFlow) {
         // OAuth flow: No automatic session, try explicit PKCE exchange as fallback
         const code = urlParams.get('code')

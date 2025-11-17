@@ -119,13 +119,53 @@ export default function AuthCallback() {
       let session = await waitForSession()
 
       if (session) {
-        // Automatic session exchange succeeded
+        // Automatic session exchange succeeded (typically OAuth)
         const flowType = isEmailVerification ? 'email verification' : isOAuthFlow ? 'OAuth' : 'unknown'
         const isDev = import.meta.env.DEV
         console.log(`✅ ${flowType} session found (automatic exchange):`, {
           email: isDev ? session.user.email : session.user.email?.substring(0, 3) + '***',
           provider: session.user.app_metadata?.provider
         })
+      } else if (isEmailVerification) {
+        // Email verification: Manual verifyOtp required
+        // Supabase's detectSessionInUrl only handles OAuth codes, NOT token_hash
+        const tokenHash = urlParams.get('token_hash')
+        const type = urlParams.get('type') || 'email'
+
+        if (!tokenHash) {
+          console.error('❌ Email verification: No token_hash parameter found')
+          setStatus('Email verification failed: Invalid verification link')
+          setTimeout(() => navigate('/signin'), 3000)
+          return
+        }
+
+        const isDev = import.meta.env.DEV
+        console.log('📧 Email verification: Calling verifyOtp...', {
+          type,
+          tokenHashLength: isDev ? tokenHash.length : '[REDACTED]'
+        })
+
+        const result = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type as any, // 'email' | 'signup' | 'recovery' | 'email_change'
+        })
+
+        if (result.error) {
+          console.error('❌ Email verification error:', result.error.message)
+          setStatus('Email verification failed. Please try signing in with your password.')
+          setTimeout(() => navigate('/signin'), 3000)
+          return
+        }
+
+        if (!result.data.session) {
+          console.error('❌ Email verification: No session returned')
+          setStatus('Email verification failed. Please try signing in.')
+          setTimeout(() => navigate('/signin'), 3000)
+          return
+        }
+
+        session = result.data.session
+        console.log('✅ Email verification successful (manual verifyOtp)')
       } else if (isOAuthFlow) {
         // OAuth flow: No automatic session, try explicit PKCE exchange as fallback
         const code = urlParams.get('code')

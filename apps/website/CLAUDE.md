@@ -2,11 +2,36 @@
 
 **App Scope**: Marketing website with basic authentication redirects to dashboard app. Focuses on content presentation and user acquisition.
 
-**Last Updated**: 2025-11-11
+**Last Updated**: 2025-11-17
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with the Website application.
+
+## 🌐 Internationalization (EN<>KO) - NEW
+
+**Status**: Phase 2 Complete (Infrastructure 100%, Content 12%)
+**Implementation**: i18next + react-i18next
+
+The website app now supports English and Korean translations. The infrastructure is fully set up and ready for content translation.
+
+**Documentation**:
+- **[I18N_IMPLEMENTATION.md](./I18N_IMPLEMENTATION.md)** - Complete progress tracking, all phases detailed
+- **[I18N_QUICK_START.md](./I18N_QUICK_START.md)** - Practical guide for translating pages
+
+**Quick Start**:
+```tsx
+import { useTranslation } from 'react-i18next';
+
+const MyPage = () => {
+  const { t } = useTranslation('pagename');
+  return <h1>{t('hero.title')}</h1>;
+};
+```
+
+**Translation Files**: `src/i18n/locales/{en,ko}/*.json`
+**Completed**: Navigation, language switcher, all infrastructure
+**Next**: Content extraction from 8 production pages (~1,500 keys to add)
 
 ## Development Commands
 
@@ -35,7 +60,7 @@ This is a React TypeScript web application built for K Story Bridge, a platform 
 - **Styling**: Tailwind CSS with shadcn/ui components
 - **Routing**: React Router DOM v6
 - **Backend**: Supabase for authentication and database
-- **State Management**: React Context (LanguageContext)
+- **Internationalization**: i18next + react-i18next (EN/KO support)
 - **UI Components**: Radix UI primitives with shadcn/ui
 
 ### Project Structure

@@ -49,3 +49,6 @@ temp/
 .tmp/
 .vercel
 .env.test
+
+# Turborepo
+.turbo

@@ -215,7 +215,7 @@ export const ContentList = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => window.open(`/${post.category === 'learning' ? 'learning-center' : 'news'}/${post.slug}`, '_blank')}
+                              onClick={() => window.open(`https://creator.kstorybridge.com/${post.category === 'learning' ? 'learning-center' : 'news'}/${post.slug}`, '_blank')}
                               title="View"
                             >
                               <Eye className="h-4 w-4" />

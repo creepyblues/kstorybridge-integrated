@@ -19,7 +19,10 @@
       "Bash(./scripts/verify-stripe-webhook.sh:*)",
       "Bash(node scripts/check-user-buyer.js:*)",
       "Bash(git push:*)",
-      "WebFetch(domain:supabase.com)"
+      "WebFetch(domain:supabase.com)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

@@ -17,6 +17,29 @@ export interface SignUpData extends CreatorProfile {
 }
 
 // ============================================================================
+// INPUT SANITIZATION HELPERS
+// ============================================================================
+
+/**
+ * Sanitize text input to prevent XSS
+ * Removes HTML tags and limits length
+ */
+function sanitizeText(text: string, maxLength: number = 100): string {
+  return text
+    .trim()
+    .replace(/[<>]/g, '') // Remove potential XSS chars
+    .substring(0, maxLength)
+}
+
+/**
+ * Validate email format with regex
+ */
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+// ============================================================================
 // EMAIL AUTHENTICATION
 // ============================================================================
 
@@ -32,17 +55,25 @@ export async function signUpWithEmail(data: SignUpData) {
   if (data.password.length < 6) {
     throw new Error('Password must be at least 6 characters')
   }
-  if (!data.email.includes('@')) {
+  if (!isValidEmail(data.email)) {
     throw new Error('Invalid email format')
   }
   if (!['author', 'agent'].includes(data.ip_owner_role)) {
     throw new Error('Invalid role')
   }
 
-  // Normalize email
+  // Normalize and sanitize inputs
   const normalizedEmail = data.email.toLowerCase().trim()
+  const sanitizedData = {
+    full_name: sanitizeText(data.full_name, 100),
+    pen_name: sanitizeText(data.pen_name, 100),
+    ip_owner_role: data.ip_owner_role,
+    ip_owner_company: data.ip_owner_company ? sanitizeText(data.ip_owner_company, 200) : undefined,
+    website_url: data.website_url ? sanitizeText(data.website_url, 500) : undefined,
+  }
 
-  console.log('🔐 Starting email signup for:', normalizedEmail)
+  const isDev = import.meta.env.DEV
+  console.log('🔐 Starting email signup for:', isDev ? normalizedEmail : normalizedEmail.substring(0, 3) + '***')
 
   // Step 1: Sign up with Supabase Auth
   // ✅ KEY IMPROVEMENT: Set account_type DURING signup
@@ -53,7 +84,7 @@ export async function signUpWithEmail(data: SignUpData) {
       emailRedirectTo: `${window.location.origin}/auth/callback`, // ✅ Redirect to creator app
       data: {
         account_type: 'creator', // ✅ Set during signup, not after
-        full_name: data.full_name,
+        full_name: sanitizedData.full_name,
       },
     },
   })
@@ -67,7 +98,7 @@ export async function signUpWithEmail(data: SignUpData) {
     throw new Error('No user returned from signup')
   }
 
-  console.log('✅ Auth signup successful, user ID:', authData.user.id)
+  console.log('✅ Auth signup successful, user ID:', isDev ? authData.user.id : authData.user.id.substring(0, 8) + '...')
 
   // Step 2: Create creator profile via edge function
   // Edge function uses service role key to bypass RLS timing issues
@@ -75,11 +106,11 @@ export async function signUpWithEmail(data: SignUpData) {
     const result = await createCreatorViaEdgeFunction({
       id: authData.user.id,
       email: normalizedEmail,
-      full_name: data.full_name,
-      pen_name: data.pen_name,
-      ip_owner_role: data.ip_owner_role,
-      ip_owner_company: data.ip_owner_company || null,
-      website_url: data.website_url || null,
+      full_name: sanitizedData.full_name,
+      pen_name: sanitizedData.pen_name,
+      ip_owner_role: sanitizedData.ip_owner_role,
+      ip_owner_company: sanitizedData.ip_owner_company || null,
+      website_url: sanitizedData.website_url || null,
     })
 
     if (!result.success) {
@@ -103,7 +134,8 @@ export async function signUpWithEmail(data: SignUpData) {
  * Sign in with email and password
  */
 export async function signInWithEmail(email: string, password: string) {
-  console.log('🔐 Starting email signin for:', email)
+  const isDev = import.meta.env.DEV
+  console.log('🔐 Starting email signin for:', isDev ? email : email.substring(0, 3) + '***')
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -172,6 +204,22 @@ export async function signInWithOAuth(flow: 'signup' | 'signin') {
 export async function completeOAuthProfile(profileData: CreatorProfile) {
   console.log('🔐 Completing OAuth profile')
 
+  // Validate and sanitize inputs
+  if (!profileData.full_name || !profileData.pen_name || !profileData.ip_owner_role) {
+    throw new Error('Missing required profile fields')
+  }
+  if (!['author', 'agent'].includes(profileData.ip_owner_role)) {
+    throw new Error('Invalid role')
+  }
+
+  const sanitizedData = {
+    full_name: sanitizeText(profileData.full_name, 100),
+    pen_name: sanitizeText(profileData.pen_name, 100),
+    ip_owner_role: profileData.ip_owner_role,
+    ip_owner_company: profileData.ip_owner_company ? sanitizeText(profileData.ip_owner_company, 200) : undefined,
+    website_url: profileData.website_url ? sanitizeText(profileData.website_url, 500) : undefined,
+  }
+
   // Get current user
   const {
     data: { user },
@@ -183,7 +231,8 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
     throw new Error('No authenticated user')
   }
 
-  console.log('👤 User found:', user.id)
+  const isDev = import.meta.env.DEV
+  console.log('👤 User found:', isDev ? user.id : user.id.substring(0, 8) + '...')
 
   // Step 1: Create creator profile via edge function
   // Edge function uses service role key to bypass any RLS issues
@@ -191,11 +240,11 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
     const result = await createCreatorViaEdgeFunction({
       id: user.id,
       email: user.email!,
-      full_name: profileData.full_name,
-      pen_name: profileData.pen_name,
-      ip_owner_role: profileData.ip_owner_role,
-      ip_owner_company: profileData.ip_owner_company || null,
-      website_url: profileData.website_url || null,
+      full_name: sanitizedData.full_name,
+      pen_name: sanitizedData.pen_name,
+      ip_owner_role: sanitizedData.ip_owner_role,
+      ip_owner_company: sanitizedData.ip_owner_company || null,
+      website_url: sanitizedData.website_url || null,
     })
 
     if (!result.success) {
@@ -235,13 +284,22 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
 // ============================================================================
 
 /**
- * Check if creator profile exists
+ * Check if creator profile exists for the currently authenticated user
+ * SECURITY: Uses authenticated user's ID only, no external userId parameter
  */
-export async function checkCreatorProfileExists(userId: string): Promise<boolean> {
+export async function checkCreatorProfileExists(): Promise<boolean> {
+  // Get current authenticated user
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    console.error('Error getting authenticated user:', userError)
+    throw new Error('Not authenticated')
+  }
+
   const { data, error } = await supabase
     .from('user_creators')
     .select('id')
-    .eq('id', userId)
+    .eq('id', user.id)
     .single()
 
   if (error && error.code !== 'PGRST116') {

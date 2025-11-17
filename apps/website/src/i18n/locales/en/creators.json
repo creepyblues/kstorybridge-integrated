@@ -1,26 +1,131 @@
 {
   "hero": {
-    "title": "For Creators: Get Your Story Discovered",
-    "subtitle": "Publish a verified pitch deck and reach decision-makers at Netflix, Skybound, and more.",
-    "cta": "Apply to List Your IP"
+    "title": "Your Story Deserves the ",
+    "titleHighlight": "Global Stage",
+    "subtitle": "Pitch directly to Hollywood IP scouts, writers, and producers",
+    "description": "From Korea to Hollywood. We open the doors. You keep creative control.",
+    "cta": "Join the Platform",
+    "trustSignal": "Free to join • No exclusivity required"
   },
-  "struggles": {
-    "title": "Tired of These Struggles?",
-    "subtitle": "You're not alone. Here's what creators face every day:"
+  "access": {
+    "title": "Stop Being Invisible to Hollywood",
+    "subtitle": "Direct access to the buyers who greenlight global hits",
+    "studios": {
+      "stat": "50+",
+      "statLabel": "Hollywood studios and global streamers"
+    },
+    "features": {
+      "direct": {
+        "title": "Direct to Decision-Makers",
+        "description": "Your work reaches executives who actually greenlight projects"
+      },
+      "active": {
+        "title": "Active Buyers Searching Now",
+        "description": "Hollywood buyers log in daily searching for their next Korean hit"
+      },
+      "noGatekeepers": {
+        "title": "No Gatekeepers",
+        "description": "You pitch directly. They respond directly. No one filters your voice."
+      }
+    },
+    "cta": "See Who's Waiting"
   },
-  "help": {
-    "title": "How K Story Bridge Helps"
+  "guarantees": {
+    "title": "Everything You Need to Succeed Globally",
+    "access": {
+      "badge": "50+ STUDIOS",
+      "title": "Hollywood Connections",
+      "description": "Pitch to Netflix, Disney, Sony Pictures, and 50+ major platforms"
+    },
+    "expert": {
+      "badge": "20+ YEARS EXPERIENCE",
+      "title": "Hollywood Veterans Develop Your Pitch",
+      "description": "Professional pitch decks developed by Hollywood showrunners"
+    },
+    "deal": {
+      "badge": "YOUR TERMS",
+      "title": "Expert Deal Support",
+      "description": "Fair deals, legal protection, negotiation support every step"
+    }
   },
-  "success": {
-    "title": "Average Time to First Executive View: 5 Days",
-    "subtitle": "vs. 6+ months through traditional channels"
+  "expertDeepDive": {
+    "title": "Your Korean Story, Packaged for Hollywood Minds",
+    "subtitle": "Professional pitch development by Hollywood veterans",
+    "challenge": {
+      "bold": "Korean storytelling has unique strengths. Hollywood has specific expectations.",
+      "description": "We bridge the gap so your vision shines through."
+    },
+    "process": {
+      "cultural": {
+        "title": "Cultural Translation",
+        "description": "We translate not just language, but cultural context, storytelling conventions, and market positioning"
+      },
+      "pitch": {
+        "title": "Professional Pitch Decks",
+        "description": "Hollywood-standard pitch materials: loglines, comp titles, character breakdowns, adaptation roadmap"
+      },
+      "veteran": {
+        "title": "Veteran Guidance",
+        "description": "Direct support from Hollywood producer with 20+ years of development experience"
+      }
+    },
+    "cta": "Get Your Pitch Developed"
   },
-  "pricing": {
-    "title": "Simple, Creator-Friendly Pricing"
+  "comparison": {
+    "title": "Why Creators Choose KStoryBridge",
+    "subtitle": "The traditional route vs. the KStoryBridge path",
+    "traditional": {
+      "title": "❌ Traditional Route",
+      "items": [
+        "Send emails to generic studio addresses → No response",
+        "Pitch in English without cultural context → Misunderstood",
+        "DIY contracts and negotiation → Exploited or overwhelmed",
+        "Weeks of research to find the right contact → Still invisible"
+      ]
+    },
+    "kstorybridge": {
+      "title": "✅ KStoryBridge",
+      "items": [
+        "Direct access to 50+ verified Hollywood buyers",
+        "Professional pitch developed by Hollywood veterans",
+        "Legal protection and deal negotiation support",
+        "Buyers come to you, see your work on day 1",
+        "Keep creative control, fair commission structure"
+      ]
+    }
   },
-  "cta": {
-    "title": "Ready to Get Your Story Discovered?",
-    "subtitle": "Join hundreds of creators already connecting with Hollywood executives.",
-    "button": "List My IP Now"
+  "steps": {
+    "title": "Your Journey from Korea to Hollywood",
+    "subtitle": "Three simple steps",
+    "step1": {
+      "number": "01",
+      "title": "Join & Showcase",
+      "description": "Create your profile, upload your webtoon/novel, tell us your vision",
+      "tagline": "5-minute setup"
+    },
+    "step2": {
+      "number": "02",
+      "title": "Get Hollywood-Ready",
+      "description": "Our team develops your professional pitch deck with Hollywood veteran guidance",
+      "tagline": "1-2 weeks turnaround"
+    },
+    "step3": {
+      "number": "03",
+      "title": "Connect & Close",
+      "description": "Hollywood buyers see your pitch, reach out directly, and we support you through deal closure",
+      "tagline": "We're with you every step"
+    },
+    "cta": "Get Started"
+  },
+  "finalCta": {
+    "title": "Your Story Is Ready. Hollywood Is Waiting.",
+    "subtitle": "Join the platform connecting Korean creators with global studios",
+    "cta": "Create Your Profile",
+    "trustSignals": {
+      "free": "✓ Free to join",
+      "noExclusivity": "✓ No exclusivity required",
+      "creativeControl": "✓ Keep creative control"
+    },
+    "disclaimer": "Free platform • No upfront fees • Commission only on successful deals • Keep IP rights"
   }
 }

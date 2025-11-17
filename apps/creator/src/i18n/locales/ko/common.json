@@ -87,5 +87,12 @@
   "navigation": {
     "backToTitles": "작품으로 돌아가기",
     "retry": "다시 시도"
+  },
+  "home": {
+    "updatesDescription": "최신 뉴스 및 공지사항",
+    "learningCenterDescription": "성공을 위한 리소스 및 가이드",
+    "viewAllLearning": "모든 학습 자료 보기",
+    "noNewsYet": "현재 뉴스 업데이트가 없습니다",
+    "noLearningYet": "아직 학습 자료가 없습니다"
   }
 }

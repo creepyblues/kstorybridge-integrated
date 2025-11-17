@@ -68,7 +68,7 @@ export default function Home() {
           <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl">
             <CardHeader>
               <CardTitle>{t('navigation:sidebar.updates')}</CardTitle>
-              <CardDescription>Latest news and announcements</CardDescription>
+              <CardDescription>{t('common:home.updatesDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -77,7 +77,7 @@ export default function Home() {
                 </div>
               ) : newsPosts.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600 text-sm">No news updates at the moment</p>
+                  <p className="text-gray-600 text-sm">{t('common:home.noNewsYet')}</p>
                 </div>
               ) : (
                 <div>
@@ -155,7 +155,7 @@ export default function Home() {
         <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
           <CardHeader>
             <CardTitle>{t('navigation:pageHeaders.learningCenter')}</CardTitle>
-            <CardDescription>Resources and guides to help you succeed</CardDescription>
+            <CardDescription>{t('common:home.learningCenterDescription')}</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -164,7 +164,7 @@ export default function Home() {
               </div>
             ) : learningPosts.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600 text-sm">No learning resources available yet</p>
+                <p className="text-gray-600 text-sm">{t('common:home.noLearningYet')}</p>
               </div>
             ) : (
               <>
@@ -187,7 +187,7 @@ export default function Home() {
                     onClick={() => navigate('/learning-center')}
                     className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline text-sm font-medium mt-6 block mx-auto"
                   >
-                    View All Learning Resources
+                    {t('common:home.viewAllLearning')}
                   </button>
                 )}
               </>

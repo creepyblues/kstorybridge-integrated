@@ -170,13 +170,24 @@ serve(async (req) => {
 function getEmailTemplates() {
   return {
     welcome: (data: WelcomeTemplateData) => {
-      const { userName, userEmail, accountType, dashboardUrl = 'https://dashboard.kstorybridge.com', loginUrl = 'https://dashboard.kstorybridge.com/signin' } = data
+      const { userName, userEmail, accountType, dashboardUrl, loginUrl } = data
+
+      // Use account-type specific URLs if not explicitly provided
+      const defaultDashboardUrl = accountType === 'creator'
+        ? 'https://creator.kstorybridge.com/home'
+        : 'https://dashboard.kstorybridge.com'
+      const defaultLoginUrl = accountType === 'creator'
+        ? 'https://creator.kstorybridge.com/signin'
+        : 'https://dashboard.kstorybridge.com/signin'
+
+      const finalDashboardUrl = dashboardUrl || defaultDashboardUrl
+      const finalLoginUrl = loginUrl || defaultLoginUrl
       
       const accountTypeText = accountType === 'buyer' ? 'Content Buyer' : 'Content Creator'
-      const welcomeMessage = accountType === 'buyer' 
+      const welcomeMessage = accountType === 'buyer'
         ? 'You now have access to premium Korean content for your business needs.'
-        : 'You can now share your creative work with global buyers.'
-      
+        : 'Welcome to the global marketplace for Korean content. Your stories deserve a worldwide audience, and we\'re here to help you reach international media buyers and partners.'
+
       const nextSteps = accountType === 'buyer'
         ? [
           'Browse our catalog of premium Korean content',
@@ -185,10 +196,10 @@ function getEmailTemplates() {
           'Connect directly with creators and rights holders'
         ]
         : [
-          'Add your titles to our global catalog',
-          'Create detailed profiles for your content',
-          'Connect with international buyers',
-          'Track interest and requests for your work'
+          'Add your first title to our global catalog',
+          'Complete your creator profile to build trust',
+          'Explore subscription plans for enhanced visibility',
+          'Connect with international media buyers seeking Korean content'
         ]
 
       const html = `
@@ -385,7 +396,7 @@ function getEmailTemplates() {
             </div>
 
             <div class="cta-section">
-                <a href="${dashboardUrl}" class="cta-button">Get Started Now</a>
+                <a href="${finalDashboardUrl}" class="cta-button">Get Started Now</a>
             </div>
 
             <div class="main-text">
@@ -400,7 +411,7 @@ function getEmailTemplates() {
             
             <div class="footer-links">
                 <a href="https://kstorybridge.com">Visit our website</a> |
-                <a href="${loginUrl}">Dashboard Login</a>
+                <a href="${finalLoginUrl}">Dashboard Login</a>
             </div>
             
             <div class="footer-address">
@@ -431,7 +442,7 @@ ${welcomeMessage}
 What's Next?
 ${nextSteps.map((step, index) => `${index + 1}. ${step}`).join('\n')}
 
-Get started: ${dashboardUrl}
+Get started: ${finalDashboardUrl}
 
 If you have any questions or need assistance, don't hesitate to reach out to our support team at support@kstorybridge.com
 

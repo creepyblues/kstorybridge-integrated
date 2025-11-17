@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 interface NavigationProps {
   isLoggedIn: boolean;
@@ -9,14 +9,14 @@ interface NavigationProps {
 }
 
 const Navigation = ({ isLoggedIn, isMobile = false, onLinkClick }: NavigationProps) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation('common');
   const location = useLocation();
 
   const navItems = [
     { name: t('nav.creators'), path: '/creators' },
     { name: t('nav.buyers'), path: '/buyers' },
-    { name: 'News', path: '/news' },
-    { name: 'About', path: '/about' },
+    { name: t('nav.news'), path: '/news' },
+    { name: t('nav.about'), path: '/about' },
   ];
 
   const isActive = (path: string) => location.pathname === path;

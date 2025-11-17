@@ -65,7 +65,7 @@ i18n
   // Initialize i18next
   .init({
     resources,
-    fallbackLng: 'en', // Fallback language
+    fallbackLng: 'ko', // Fallback language (default: Korean)
     defaultNS: 'common', // Default namespace
     ns: ['common', 'auth', 'titles', 'profile', 'navigation', 'survey', 'validation', 'pricing', 'billing', 'payment', 'content'],
 

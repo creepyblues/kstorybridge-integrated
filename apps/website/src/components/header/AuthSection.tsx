@@ -3,7 +3,7 @@ import { trackButtonClick } from '@/utils/analytics';
 import { Button } from '@kstorybridge/ui';
 import { User } from '@supabase/supabase-js';
 import { getDashboardUrl } from '../../config/urls';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 interface AuthSectionProps {
   user: User | null;
@@ -13,7 +13,7 @@ interface AuthSectionProps {
 }
 
 const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSectionProps) => {
-  const { t } = useLanguage();
+  const { t } = useTranslation('common');
 
   const formatAccountType = (accountType: string) => {
     if (accountType === 'creator') return 'Creator';
@@ -44,7 +44,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
           size="sm"
           className={`border-gray-300 text-gray-700 hover:bg-gray-50 ${isMobile ? "w-full" : ""}`}
         >
-          Sign Out
+          {t('nav.signin')}
         </Button>
       </div>
     );
@@ -65,7 +65,7 @@ const AuthSection = ({ user, userProfile, onSignOut, isMobile = false }: AuthSec
         className={`border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white transition-colors rounded-md px-4 py-2 font-medium ${buttonClasses}`}
         onClick={handleSignInClick}
       >
-        Sign In
+        {t('nav.signin')}
       </Button>
     </div>
   );

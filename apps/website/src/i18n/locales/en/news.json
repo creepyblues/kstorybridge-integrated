@@ -1,0 +1,14 @@
+{
+  "hero": {
+    "title": "Latest News",
+    "subtitle": "Stay updated with the latest from K Story Bridge"
+  },
+  "categories": {
+    "all": "All",
+    "announcements": "Announcements",
+    "features": "Features",
+    "success": "Success Stories"
+  },
+  "readMore": "Read More",
+  "noArticles": "No articles available yet"
+}

@@ -1,0 +1,16 @@
+{
+  "welcome": {
+    "title": "Welcome to K Story Bridge",
+    "subtitle": "Let's get you started"
+  },
+  "steps": {
+    "profile": "Complete Profile",
+    "preferences": "Set Preferences",
+    "explore": "Explore Content"
+  },
+  "actions": {
+    "skip": "Skip",
+    "continue": "Continue",
+    "finish": "Finish"
+  }
+}

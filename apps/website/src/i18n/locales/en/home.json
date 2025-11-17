@@ -1,0 +1,30 @@
+{
+  "hero": {
+    "title": "Where Korean Stories Meet Global Screens",
+    "subtitle": "List, discover, and license verified IP—fast.",
+    "creatorCta": "I'm a Creator",
+    "buyerCta": "I'm a Buyer"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "step1": "Verify Rights",
+    "step1Desc": "Upload proof of ownership",
+    "step2": "Publish Pitch",
+    "step2Desc": "AI-generated pitch decks",
+    "step3": "Match & Meet",
+    "step3Desc": "Connect with executives",
+    "step4": "Close Deal",
+    "step4Desc": "Secure licensing terms"
+  },
+  "socialProof": "Trusted by industry leaders from",
+  "creators": {
+    "title": "For Creators",
+    "description": "Get your webtoons, novels, and games in front of Hollywood executives with verified pitch decks and analytics.",
+    "cta": "Learn More for Creators"
+  },
+  "buyers": {
+    "title": "For Buyers",
+    "description": "Scout verified Korean IP with confidence. Filter by genre, performance metrics, and rights availability.",
+    "cta": "Learn More for Buyers"
+  }
+}

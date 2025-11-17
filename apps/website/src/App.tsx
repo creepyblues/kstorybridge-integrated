@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster, TooltipProvider } from "@kstorybridge/ui";
 import { lazy, Suspense } from "react";
 
-import { LanguageProvider } from "./contexts/LanguageContext";
 import AnalyticsProvider from "./components/AnalyticsProvider";
 import SessionTracker from "./components/SessionTracker";
 import CookieBanner from "./components/CookieBanner";
@@ -36,10 +35,9 @@ const PageLoader = () => (
 );
 
 const App = () => (
-  <LanguageProvider>
-    <TooltipProvider>
-      <Toaster />
-      <BrowserRouter>
+  <TooltipProvider>
+    <Toaster />
+    <BrowserRouter>
         <AnalyticsProvider />
         <SessionTracker />
         <CookieBanner />
@@ -73,7 +71,6 @@ const App = () => (
         </Suspense>
       </BrowserRouter>
     </TooltipProvider>
-  </LanguageProvider>
 );
 
 export default App;

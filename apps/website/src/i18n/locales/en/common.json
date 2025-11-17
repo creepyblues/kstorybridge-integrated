@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "Home",
+    "creators": "Creators",
+    "buyers": "Buyers",
+    "pricing": "Pricing",
+    "signup": "Signup",
+    "signin": "Sign In",
+    "about": "About",
+    "news": "News"
+  },
+  "footer": {
+    "company": "Company",
+    "about": "About Us",
+    "careers": "Careers",
+    "contact": "Contact",
+    "resources": "Resources",
+    "blog": "Blog",
+    "help": "Help Center",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "© 2024 K Story Bridge. All rights reserved.",
+    "followUs": "Follow Us"
+  },
+  "cta": {
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "signUp": "Sign Up",
+    "tryForFree": "Try For Free",
+    "contactUs": "Contact Us",
+    "viewDemo": "View Demo",
+    "startFreeTrial": "Start Free Trial"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "viewAll": "View All",
+    "showMore": "Show More",
+    "showLess": "Show Less"
+  }
+}

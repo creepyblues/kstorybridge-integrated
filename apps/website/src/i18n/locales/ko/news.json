@@ -1,0 +1,14 @@
+{
+  "hero": {
+    "title": "최신 소식",
+    "subtitle": "K Story Bridge의 최신 소식을 확인하세요"
+  },
+  "categories": {
+    "all": "전체",
+    "announcements": "공지사항",
+    "features": "기능",
+    "success": "성공 스토리"
+  },
+  "readMore": "더 읽기",
+  "noArticles": "아직 기사가 없습니다"
+}

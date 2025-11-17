@@ -1,0 +1,27 @@
+{
+  "detail": {
+    "overview": "Overview",
+    "synopsis": "Synopsis",
+    "creator": "Creator",
+    "genre": "Genre",
+    "format": "Format",
+    "rating": "Rating",
+    "views": "Views",
+    "chapters": "Chapters",
+    "status": "Status",
+    "completed": "Completed",
+    "ongoing": "Ongoing",
+    "rights": "Rights Available",
+    "contactCreator": "Contact Creator",
+    "viewPitch": "View Pitch Deck"
+  },
+  "filters": {
+    "genre": "Genre",
+    "format": "Format",
+    "rights": "Rights",
+    "sort": "Sort By",
+    "popularity": "Popularity",
+    "newest": "Newest",
+    "rating": "Rating"
+  }
+}

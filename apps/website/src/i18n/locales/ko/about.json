@@ -1,0 +1,19 @@
+{
+  "hero": {
+    "title": "K Story Bridge 소개",
+    "subtitle": "한국의 창의성과 글로벌 관객을 연결합니다"
+  },
+  "mission": {
+    "title": "우리의 사명",
+    "description": "한국 콘텐츠 크리에이터와 국제 미디어 바이어 사이의 다리를 만들고 있습니다."
+  },
+  "team": {
+    "title": "우리 팀"
+  },
+  "contact": {
+    "title": "연락하기",
+    "email": "이메일",
+    "phone": "전화",
+    "address": "주소"
+  }
+}

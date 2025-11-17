@@ -1,0 +1,19 @@
+{
+  "hero": {
+    "title": "About K Story Bridge",
+    "subtitle": "Connecting Korean creativity with global audiences"
+  },
+  "mission": {
+    "title": "Our Mission",
+    "description": "We're building the bridge between Korean content creators and international media buyers."
+  },
+  "team": {
+    "title": "Our Team"
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address"
+  }
+}

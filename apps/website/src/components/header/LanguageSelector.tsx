@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@kstorybridge/ui';
 import { Globe } from 'lucide-react';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { trackLanguageChange } from '@/utils/analytics';
 
 interface LanguageSelectorProps {
@@ -15,11 +15,13 @@ interface LanguageSelectorProps {
 }
 
 const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
-  const { language, setLanguage } = useLanguage();
+  const { i18n } = useTranslation();
+  const language = i18n.language.toUpperCase(); // 'en' -> 'EN'
 
   const handleLanguageChange = (newLanguage: 'EN' | 'KR') => {
     const oldLanguage = language;
-    setLanguage(newLanguage);
+    const langCode = newLanguage.toLowerCase(); // 'EN' -> 'en'
+    i18n.changeLanguage(langCode);
     trackLanguageChange(oldLanguage, newLanguage);
   };
 

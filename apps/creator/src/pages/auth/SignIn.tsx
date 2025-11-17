@@ -64,15 +64,23 @@ export default function SignIn() {
     } catch (err: any) {
       console.error('❌ Signin error:', err)
 
-      // Check for email not confirmed error
-      if (err.message?.includes('Email not confirmed')) {
-        setError('Please check your email and click the verification link before signing in.')
+      // Check for email not confirmed error (robust detection)
+      const isEmailNotConfirmed =
+        err.message?.toLowerCase().includes('email') &&
+        (err.message?.toLowerCase().includes('not confirmed') ||
+         err.message?.toLowerCase().includes('verification') ||
+         err.message?.toLowerCase().includes('verify')) ||
+        err.status === 400
+
+      if (isEmailNotConfirmed) {
+        setError('Please verify your email address before signing in.')
         setUnverifiedEmail(formData.email)
         setShowEmailVerificationAlert(true)
         trackAuthError('Email not confirmed', 'email')
       } else {
-        setError(err.message || 'Invalid email or password')
-        trackAuthError(err.message || 'Invalid email or password', 'email')
+        // Generic error for security (don't leak if email exists)
+        setError('Invalid email or password')
+        trackAuthError('Login failed', 'email')
       }
     } finally {
       setLoading(false)
@@ -249,6 +257,28 @@ export default function SignIn() {
               {loading ? t('auth:signIn.submitting') : t('auth:signIn.submitButton')}
             </Button>
           </form>
+
+          {/* Resend verification link (always visible) */}
+          <div className="text-center text-sm">
+            <button
+              type="button"
+              onClick={() => {
+                if (formData.email) {
+                  setUnverifiedEmail(formData.email)
+                  setShowEmailVerificationAlert(true)
+                } else {
+                  toast({
+                    title: "Email required",
+                    description: "Please enter your email address first",
+                    variant: "destructive"
+                  })
+                }
+              }}
+              className="text-gray-600 hover:text-hanok-teal underline"
+            >
+              Didn't receive verification email?
+            </button>
+          </div>
 
           <div className="text-center text-sm text-gray-600">
             {t('auth:signIn.noAccount')}{' '}

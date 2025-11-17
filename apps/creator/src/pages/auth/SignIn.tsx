@@ -26,17 +26,28 @@ export default function SignIn() {
     password: '',
   })
 
-  // Check if user is coming from signup and show verification reminder
+  // Check if user is coming from signup or email verification
   useEffect(() => {
     const fromSignup = searchParams.get('from') === 'signup'
     const emailParam = searchParams.get('email')
+    const verified = searchParams.get('verified') === 'true'
 
+    // Show success message after email verification
+    if (verified) {
+      toast({
+        title: "Email verified!",
+        description: "Your email has been verified. Please sign in with your password.",
+        duration: 5000
+      })
+    }
+
+    // Show verification reminder after signup
     if (fromSignup && emailParam) {
       setUnverifiedEmail(emailParam)
       setFormData(prev => ({ ...prev, email: emailParam }))
       setShowEmailVerificationAlert(true)
     }
-  }, [searchParams])
+  }, [searchParams, toast])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

@@ -409,15 +409,13 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
           if (segment.titleId) {
             return (
               <span key={segmentIdx} className="inline-flex items-center gap-1">
-                <a
-                  href={`/buyers/titles/${segment.titleId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
+                <button
+                  onClick={() => navigate(`/buyers/titles/${segment.titleId}`)}
+                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer bg-transparent border-0 p-0"
                   title={`View "${segment.content}" details`}
                 >
                   "{segment.content}"
-                </a>
+                </button>
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -437,15 +435,13 @@ const ConversationalMessage = ({ content, navigate, titleData, allMessages, titl
           if (segment.titleId) {
             return (
               <span key={segmentIdx} className="inline-flex items-center gap-1">
-                <a
-                  href={`/buyers/titles/${segment.titleId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
+                <button
+                  onClick={() => navigate(`/buyers/titles/${segment.titleId}`)}
+                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer bg-transparent border-0 p-0"
                   title={`View "${segment.content}" details`}
                 >
                   {segment.content}
-                </a>
+                </button>
                 <button
                   onClick={(e) => {
                     e.preventDefault();
@@ -1438,7 +1434,7 @@ Please try again.`,
         });
       }
 
-      window.open(`/buyers/titles/${title.title_id}`, '_blank');
+      navigate(`/buyers/titles/${title.title_id}`);
     };
 
     return (

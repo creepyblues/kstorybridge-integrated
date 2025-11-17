@@ -127,6 +127,7 @@ export async function signUpWithEmail(data: SignUpData) {
   }
 
   // Note: Welcome email will be sent after email verification (in AuthCallback)
+  // See AuthCallback.tsx for centralized welcome email logic
   return { user: authData.user, session: authData.session }
 }
 
@@ -275,7 +276,8 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
     throw error
   }
 
-  // Note: Welcome email will be sent after OAuth redirect completes (in AuthCallback)
+  // Note: Welcome email will be sent after returning from CompleteProfile (in AuthCallback)
+  // See AuthCallback.tsx for centralized welcome email logic
   return user
 }
 

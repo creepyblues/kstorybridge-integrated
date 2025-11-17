@@ -87,5 +87,12 @@
   "navigation": {
     "backToTitles": "Back to Titles",
     "retry": "Retry"
+  },
+  "home": {
+    "updatesDescription": "Latest news and announcements",
+    "learningCenterDescription": "Resources and guides to help you succeed",
+    "viewAllLearning": "View All Learning Resources",
+    "noNewsYet": "No news updates at the moment",
+    "noLearningYet": "No learning resources available yet"
   }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { checkCreatorProfileExists } from '@/lib/auth'
 import { trackLogin } from '@/utils/analytics'
+import { sendWelcomeEmail } from '@/services/emailService'
 
 /**
  * Auth Callback Handler
@@ -10,7 +11,43 @@ import { trackLogin } from '@/utils/analytics'
  * Handles TWO distinct flows:
  * 1. **OAuth (Google)**: Auto-login after OAuth redirect
  * 2. **Email Verification**: Just verify email, then redirect to signin
+ *
+ * CENTRALIZED WELCOME EMAIL:
+ * - OAuth new users: After returning from CompleteProfile
+ * - Email new users: After email verification (if profile just created)
  */
+
+/**
+ * Send welcome email with deduplication check
+ * Uses sessionStorage to prevent duplicate emails within same session
+ */
+const sendWelcomeEmailOnce = async (userName: string, userEmail: string) => {
+  const welcomeEmailKey = `welcome_email_sent_${userEmail}`
+
+  // Check if already sent in this session
+  if (sessionStorage.getItem(welcomeEmailKey)) {
+    console.log('⚠️ Welcome email already sent in this session, skipping')
+    return
+  }
+
+  try {
+    await sendWelcomeEmail({
+      userName,
+      userEmail,
+      accountType: 'creator',
+      dashboardUrl: `${window.location.origin}/home`,
+      loginUrl: `${window.location.origin}/signin`,
+    })
+    console.log('✅ Welcome email sent successfully')
+
+    // Mark as sent in this session
+    sessionStorage.setItem(welcomeEmailKey, 'true')
+  } catch (emailError) {
+    // Log but don't block flow if email fails
+    console.warn('⚠️ Welcome email failed (non-blocking):', emailError)
+  }
+}
+
 export default function AuthCallback() {
   const navigate = useNavigate()
   const [status, setStatus] = useState<string>('Processing...')
@@ -49,6 +86,8 @@ export default function AuthCallback() {
       if (isEmailVerification) {
         console.log('📧 Email verification flow detected')
 
+        let verifiedSession = null
+
         if (tokenHash) {
           // Manual verification with token_hash
           const result = await supabase.auth.verifyOtp({
@@ -64,9 +103,33 @@ export default function AuthCallback() {
           }
 
           console.log('✅ Email verified successfully')
+          verifiedSession = result.data.session
         } else {
           // Let detectSessionInUrl handle automatic verification
           console.log('📧 Email verification (automatic)')
+          const { data: { session } } = await supabase.auth.getSession()
+          verifiedSession = session
+        }
+
+        // Send welcome email for new email signup users
+        if (verifiedSession?.user) {
+          const { data: profile } = await supabase
+            .from('user_creators')
+            .select('full_name, created_at')
+            .eq('email', verifiedSession.user.email)
+            .single()
+
+          // Check if profile was just created (within last 5 minutes = new signup)
+          if (profile) {
+            const createdAt = new Date(profile.created_at)
+            const now = new Date()
+            const minutesSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60)
+
+            if (minutesSinceCreation < 5) {
+              console.log('📧 New email signup user, sending welcome email')
+              await sendWelcomeEmailOnce(profile.full_name, verifiedSession.user.email!)
+            }
+          }
         }
 
         // Email verified - redirect to signin
@@ -105,6 +168,25 @@ export default function AuthCallback() {
       const profileExists = await checkCreatorProfileExists()
 
       if (profileExists) {
+        // Check if this is a new user returning from profile completion
+        const justCompletedProfile = sessionStorage.getItem('profile_completed')
+
+        if (justCompletedProfile) {
+          // New user just completed profile - send welcome email
+          console.log('📧 New user completed profile, sending welcome email')
+          sessionStorage.removeItem('profile_completed')
+
+          const { data: profile } = await supabase
+            .from('user_creators')
+            .select('full_name')
+            .eq('email', session.user.email)
+            .single()
+
+          if (profile?.full_name && session.user.email) {
+            await sendWelcomeEmailOnce(profile.full_name, session.user.email)
+          }
+        }
+
         // Existing user - redirect to home
         console.log('✅ Existing user, redirecting to home')
         trackLogin('google')

@@ -16,11 +16,11 @@ interface LanguageSelectorProps {
 
 const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
   const { i18n } = useTranslation();
-  const language = i18n.language.toUpperCase(); // 'en' -> 'EN'
+  const language = i18n.language === 'ko' ? 'KR' : i18n.language.toUpperCase(); // 'ko' -> 'KR', 'en' -> 'EN'
 
   const handleLanguageChange = (newLanguage: 'EN' | 'KR') => {
     const oldLanguage = language;
-    const langCode = newLanguage.toLowerCase(); // 'EN' -> 'en'
+    const langCode = newLanguage === 'KR' ? 'ko' : 'en'; // 'KR' -> 'ko', 'EN' -> 'en'
     i18n.changeLanguage(langCode);
     trackLanguageChange(oldLanguage, newLanguage);
   };

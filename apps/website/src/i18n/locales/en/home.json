@@ -1,30 +1,60 @@
 {
   "hero": {
-    "title": "Where Korean Stories Meet Global Screens",
-    "subtitle": "List, discover, and license verified IP—fast.",
-    "creatorCta": "I'm a Creator",
-    "buyerCta": "I'm a Buyer"
+    "title": "Meet Jinu",
+    "subtitle": "The AI Assistant That Connects Korean Stories with Hollywood",
+    "tagline": "AI discovery • Verified rights • Expert support",
+    "buyerCta": "I'm a Buyer",
+    "creatorCta": "I'm a Creator"
   },
-  "howItWorks": {
-    "title": "How It Works",
-    "step1": "Verify Rights",
-    "step1Desc": "Upload proof of ownership",
-    "step2": "Publish Pitch",
-    "step2Desc": "AI-generated pitch decks",
-    "step3": "Match & Meet",
-    "step3Desc": "Connect with executives",
-    "step4": "Close Deal",
-    "step4Desc": "Secure licensing terms"
+  "aiDemo": {
+    "userMessage": "I'm looking for Korean romantic comedies with strong female leads similar to Crash Landing on You",
+    "jinuIntro": "Perfect! I found 10 titles that match your criteria...",
+    "jinuDetail": "I've found some delightful recommendations that capture that playful spirit! \"You Get Me Going\" is a fantastic choice! It features Youngwon, who is quite the character with his overbearing nature leading to amusing clashes with his work counterpart, Hyunwoo. Their dynamic kicks off with a business trip that turns into a romantic adventure, laced with humor and unexpected moments of connection. What hooked me is how the story balances playful banter with deeper emotional undertones, making it a great fit for fans of light-hearted comedy!",
+    "rightsVerified": "Rights Verified",
+    "tryJinu": "Try Jinu Now"
   },
-  "socialProof": "Trusted by industry leaders from",
-  "creators": {
-    "title": "For Creators",
-    "description": "Get your webtoons, novels, and games in front of Hollywood executives with verified pitch decks and analytics.",
-    "cta": "Learn More for Creators"
+  "stats": {
+    "studios": "Hollywood Studios",
+    "titles": "Korean Titles",
+    "faster": "Faster Discovery",
+    "verified": "Rights Verified"
   },
-  "buyers": {
-    "title": "For Buyers",
-    "description": "Scout verified Korean IP with confidence. Filter by genre, performance metrics, and rights availability.",
-    "cta": "Learn More for Buyers"
+  "pillars": {
+    "title": "Three Pillars. One Platform.",
+    "subtitle": "Everything you need to discover, verify, and acquire Korean content",
+    "aiDiscovery": {
+      "title": "AI Discovery",
+      "description": "Jinu finds perfect matches in seconds with intelligent recommendations based on story craft, character arcs, and market fit.",
+      "tagline": "10x faster than traditional sourcing"
+    },
+    "rightsVerified": {
+      "title": "Rights Verified",
+      "description": "Clean chain of title with verified ownership documentation. Direct access to rights holders with deal authority.",
+      "tagline": "Zero ownership surprises"
+    },
+    "expertSupport": {
+      "title": "Expert Support",
+      "description": "Hollywood veterans guide every deal with cultural bridging, pitch development, and negotiation expertise.",
+      "tagline": "Close deals faster"
+    }
+  },
+  "paths": {
+    "title": "Choose Your Path",
+    "creator": {
+      "title": "Are You a Creator?",
+      "description": "Get your Korean story in front of 50+ Hollywood studios with professional pitch development and expert deal support.",
+      "benefit1": "Direct access to Netflix, Disney, Sony Pictures",
+      "benefit2": "Hollywood veterans develop your pitch",
+      "benefit3": "Keep creative control and IP rights",
+      "cta": "Learn More"
+    },
+    "buyer": {
+      "title": "Are You an IP Scout or Producer?",
+      "description": "Find your next Korean hit with AI-powered discovery, verified rights chain, and comprehensive pitch materials.",
+      "benefit1": "AI finds perfect matches in seconds",
+      "benefit2": "Verified rights, zero ownership surprises",
+      "benefit3": "Expert support for every deal",
+      "cta": "Learn More"
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
@@ -23,6 +24,8 @@ import {
  */
 
 const HomePage = () => {
+  const { t } = useTranslation('home');
+
   // Load Beehiiv script for newsletter
   useEffect(() => {
     const script = document.createElement('script');
@@ -59,16 +62,16 @@ const HomePage = () => {
                 <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
                   <Bot className="h-12 w-12 text-hanok-teal" />
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-midnight-ink">
-                    Meet Jinu
+                    {t('hero.title')}
                   </h1>
                 </div>
 
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-6 leading-tight">
-                  The AI Assistant That Connects Korean Stories with Hollywood
+                  {t('hero.subtitle')}
                 </h2>
 
                 <p className="text-lg text-midnight-ink-600 mb-8 leading-relaxed">
-                  AI discovery • Verified rights • Expert support
+                  {t('hero.tagline')}
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -76,13 +79,13 @@ const HomePage = () => {
                     className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full"
                     onClick={() => window.location.href = '/buyers'}
                   >
-                    I'm a Buyer
+                    {t('hero.buyerCta')}
                   </Button>
                   <Button
                     className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-6 text-lg rounded-full"
                     onClick={() => window.location.href = '/creators'}
                   >
-                    I'm a Creator
+                    {t('hero.creatorCta')}
                   </Button>
                 </div>
               </div>
@@ -94,7 +97,7 @@ const HomePage = () => {
                     <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0"></div>
                     <div className="flex-1">
                       <div className="bg-gray-100 rounded-lg p-4 text-sm text-gray-700">
-                        "I'm looking for Korean romantic comedies with strong female leads similar to Crash Landing on You"
+                        "{t('aiDemo.userMessage')}"
                       </div>
                     </div>
                   </div>
@@ -105,13 +108,13 @@ const HomePage = () => {
                     </div>
                     <div className="flex-1">
                       <div className="bg-hanok-teal/10 rounded-lg p-4 text-sm text-midnight-ink">
-                        <p className="font-semibold mb-2">Perfect! I found 10 titles that match your criteria...</p>
+                        <p className="font-semibold mb-2">{t('aiDemo.jinuIntro')}</p>
                         <p className="text-xs text-midnight-ink-600 mb-3">
-                          I've found some delightful recommendations that capture that playful spirit! "You Get Me Going" is a fantastic choice! It features Youngwon, who is quite the character with his overbearing nature leading to amusing clashes with his work counterpart, Hyunwoo. Their dynamic kicks off with a business trip that turns into a romantic adventure, laced with humor and unexpected moments of connection. What hooked me is how the story balances playful banter with deeper emotional undertones, making it a great fit for fans of light-hearted comedy!
+                          {t('aiDemo.jinuDetail')}
                         </p>
                         <div className="flex items-center gap-2 text-xs">
                           <CheckCircle2 className="h-4 w-4 text-green-600" />
-                          <span className="text-green-700 font-semibold">Rights Verified</span>
+                          <span className="text-green-700 font-semibold">{t('aiDemo.rightsVerified')}</span>
                         </div>
                       </div>
                     </div>
@@ -123,7 +126,7 @@ const HomePage = () => {
                       className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
                       onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
                     >
-                      Try Jinu Now
+                      {t('aiDemo.tryJinu')}
                     </Button>
                   </div>
                 </div>
@@ -144,22 +147,22 @@ const HomePage = () => {
 
               <div>
                 <div className="text-3xl sm:text-4xl font-bold text-hanok-teal mb-2">50+</div>
-                <p className="text-sm text-midnight-ink-600">Hollywood Studios</p>
+                <p className="text-sm text-midnight-ink-600">{t('stats.studios')}</p>
               </div>
 
               <div>
                 <div className="text-3xl sm:text-4xl font-bold text-hanok-teal mb-2">200+</div>
-                <p className="text-sm text-midnight-ink-600">Korean Titles</p>
+                <p className="text-sm text-midnight-ink-600">{t('stats.titles')}</p>
               </div>
 
               <div>
                 <div className="text-3xl sm:text-4xl font-bold text-hanok-teal mb-2">10x</div>
-                <p className="text-sm text-midnight-ink-600">Faster Discovery</p>
+                <p className="text-sm text-midnight-ink-600">{t('stats.faster')}</p>
               </div>
 
               <div>
                 <div className="text-3xl sm:text-4xl font-bold text-hanok-teal mb-2">100%</div>
-                <p className="text-sm text-midnight-ink-600">Rights Verified</p>
+                <p className="text-sm text-midnight-ink-600">{t('stats.verified')}</p>
               </div>
 
             </div>
@@ -174,10 +177,10 @@ const HomePage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-4">
-                Three Pillars. One Platform.
+                {t('pillars.title')}
               </h2>
               <p className="text-lg text-midnight-ink-600 max-w-2xl mx-auto">
-                Everything you need to discover, verify, and acquire Korean content
+                {t('pillars.subtitle')}
               </p>
             </div>
 
@@ -190,13 +193,13 @@ const HomePage = () => {
                     <Bot className="h-10 w-10 text-hanok-teal" />
                   </div>
                   <h3 className="text-2xl font-bold text-midnight-ink mb-4">
-                    AI Discovery
+                    {t('pillars.aiDiscovery.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
-                    Jinu finds perfect matches in seconds with intelligent recommendations based on story craft, character arcs, and market fit.
+                    {t('pillars.aiDiscovery.description')}
                   </p>
                   <p className="text-sm text-hanok-teal font-semibold">
-                    10x faster than traditional sourcing
+                    {t('pillars.aiDiscovery.tagline')}
                   </p>
                 </CardContent>
               </Card>
@@ -208,13 +211,13 @@ const HomePage = () => {
                     <Shield className="h-10 w-10 text-hanok-teal" />
                   </div>
                   <h3 className="text-2xl font-bold text-midnight-ink mb-4">
-                    Rights Verified
+                    {t('pillars.rightsVerified.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
-                    Clean chain of title with verified ownership documentation. Direct access to rights holders with deal authority.
+                    {t('pillars.rightsVerified.description')}
                   </p>
                   <p className="text-sm text-hanok-teal font-semibold">
-                    Zero ownership surprises
+                    {t('pillars.rightsVerified.tagline')}
                   </p>
                 </CardContent>
               </Card>
@@ -226,13 +229,13 @@ const HomePage = () => {
                     <Users className="h-10 w-10 text-hanok-teal" />
                   </div>
                   <h3 className="text-2xl font-bold text-midnight-ink mb-4">
-                    Expert Support
+                    {t('pillars.expertSupport.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
-                    Hollywood veterans guide every deal with cultural bridging, pitch development, and negotiation expertise.
+                    {t('pillars.expertSupport.description')}
                   </p>
                   <p className="text-sm text-hanok-teal font-semibold">
-                    Close deals faster
+                    {t('pillars.expertSupport.tagline')}
                   </p>
                 </CardContent>
               </Card>
@@ -249,7 +252,7 @@ const HomePage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-4">
-                Choose Your Path
+                {t('paths.title')}
               </h2>
             </div>
 
@@ -271,25 +274,25 @@ const HomePage = () => {
                       <Globe className="h-8 w-8 text-sunrise-coral" />
                     </div>
                     <h3 className="text-2xl font-bold text-midnight-ink mb-4">
-                      Are You a Creator?
+                      {t('paths.creator.title')}
                     </h3>
                     <p className="text-midnight-ink-600 leading-relaxed mb-6">
-                      Get your Korean story in front of 50+ Hollywood studios with professional pitch development and expert deal support.
+                      {t('paths.creator.description')}
                     </p>
                   </div>
 
                   <ul className="space-y-3 mb-8 text-left">
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-sunrise-coral mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-midnight-ink-600">Direct access to Netflix, Disney, Sony Pictures</span>
+                      <span className="text-sm text-midnight-ink-600">{t('paths.creator.benefit1')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-sunrise-coral mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-midnight-ink-600">Hollywood veterans develop your pitch</span>
+                      <span className="text-sm text-midnight-ink-600">{t('paths.creator.benefit2')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-sunrise-coral mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-midnight-ink-600">Keep creative control and IP rights</span>
+                      <span className="text-sm text-midnight-ink-600">{t('paths.creator.benefit3')}</span>
                     </li>
                   </ul>
 
@@ -297,7 +300,7 @@ const HomePage = () => {
                     className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white rounded-full text-lg py-6"
                     onClick={() => window.location.href = '/creators'}
                   >
-                    Learn More <ArrowRight className="ml-2 h-5 w-5" />
+                    {t('paths.creator.cta')} <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </CardContent>
               </Card>
@@ -318,25 +321,25 @@ const HomePage = () => {
                       <TrendingUp className="h-8 w-8 text-hanok-teal" />
                     </div>
                     <h3 className="text-2xl font-bold text-midnight-ink mb-4">
-                      Are You an IP Scout or Producer?
+                      {t('paths.buyer.title')}
                     </h3>
                     <p className="text-midnight-ink-600 leading-relaxed mb-6">
-                      Find your next Korean hit with AI-powered discovery, verified rights chain, and comprehensive pitch materials.
+                      {t('paths.buyer.description')}
                     </p>
                   </div>
 
                   <ul className="space-y-3 mb-8 text-left">
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-midnight-ink-600">AI finds perfect matches in seconds</span>
+                      <span className="text-sm text-midnight-ink-600">{t('paths.buyer.benefit1')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-midnight-ink-600">Verified rights, zero ownership surprises</span>
+                      <span className="text-sm text-midnight-ink-600">{t('paths.buyer.benefit2')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-hanok-teal mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-midnight-ink-600">Expert support for every deal</span>
+                      <span className="text-sm text-midnight-ink-600">{t('paths.buyer.benefit3')}</span>
                     </li>
                   </ul>
 
@@ -344,7 +347,7 @@ const HomePage = () => {
                     className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white rounded-full text-lg py-6"
                     onClick={() => window.location.href = '/buyers'}
                   >
-                    Learn More <ArrowRight className="ml-2 h-5 w-5" />
+                    {t('paths.buyer.cta')} <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </CardContent>
               </Card>

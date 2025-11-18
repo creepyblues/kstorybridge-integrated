@@ -28,21 +28,21 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
   if (isMobile) {
     return (
       <div className="flex space-x-2">
-        <Button 
+        <Button
           id="mobile-language-en-btn"
-          variant={language === 'EN' ? 'outline' : 'ghost'} 
+          variant={language === 'EN' ? 'outline' : 'ghost'}
           size="sm"
           onClick={() => handleLanguageChange('EN')}
-          className={language === 'EN' ? 'bg-hanok-teal text-white border-hanok-teal hover:bg-hanok-teal/90' : ''}
+          className={language === 'EN' ? 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}
         >
           EN
         </Button>
-        <Button 
+        <Button
           id="mobile-language-kr-btn"
-          variant={language === 'KR' ? 'outline' : 'ghost'} 
+          variant={language === 'KR' ? 'outline' : 'ghost'}
           size="sm"
           onClick={() => handleLanguageChange('KR')}
-          className={language === 'KR' ? 'bg-hanok-teal text-white border-hanok-teal hover:bg-hanok-teal/90' : ''}
+          className={language === 'KR' ? 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}
         >
           KR
         </Button>

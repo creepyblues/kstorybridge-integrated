@@ -78,9 +78,6 @@ const UniversalHeader = () => {
               {t('nav.about').toUpperCase()}
             </button>
 
-            {/* Language Selector */}
-            <LanguageSelector />
-
             {/* Auth Buttons */}
             <Button
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
@@ -88,6 +85,9 @@ const UniversalHeader = () => {
             >
               {t('cta.getStarted').toUpperCase()}
             </Button>
+
+            {/* Language Selector */}
+            <LanguageSelector />
           </div>
           
           {/* Mobile menu button - improved touch target */}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
@@ -18,6 +19,8 @@ import CreatorComingSoonDialog from '../components/CreatorComingSoonDialog';
  */
 
 const SigninPage = () => {
+  const { t } = useTranslation('auth');
+
   // State for "Coming Soon" dialog
   const [showComingSoon, setShowComingSoon] = useState(false);
 
@@ -37,10 +40,10 @@ const SigninPage = () => {
             {/* Page Title */}
             <div className="text-center mb-12">
               <h1 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-4">
-                Welcome to K Story Bridge
+                {t('signinPage.title')}
               </h1>
               <p className="text-lg text-midnight-ink-600 max-w-2xl mx-auto">
-                Choose your account type to continue
+                {t('signinPage.subtitle')}
               </p>
             </div>
 
@@ -57,12 +60,12 @@ const SigninPage = () => {
 
                   {/* Title */}
                   <h2 className="text-2xl font-bold text-midnight-ink mb-3">
-                    I'm a Creator
+                    {t('signinPage.creator.title')}
                   </h2>
 
                   {/* Description */}
                   <p className="text-midnight-ink-600 mb-8">
-                    Webtoon artists, web novel authors, and content creators looking to bring their stories to global audiences.
+                    {t('signinPage.creator.description')}
                   </p>
 
                   {/* Sign Up Button (Primary) */}
@@ -72,7 +75,7 @@ const SigninPage = () => {
                       size="lg"
                       className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-                      Sign Up as Creator
+                      {t('signinPage.creator.signupButton')}
                     </Button>
                   </div>
 
@@ -81,7 +84,7 @@ const SigninPage = () => {
                     onClick={() => setShowComingSoon(true)}
                     className="w-full flex items-center justify-center text-black hover:text-gray-700 transition-colors text-sm"
                   >
-                    Already have an account? Sign In
+                    {t('signinPage.creator.signinLink')}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </button>
                 </CardContent>
@@ -97,12 +100,12 @@ const SigninPage = () => {
 
                   {/* Title */}
                   <h2 className="text-2xl font-bold text-midnight-ink mb-3">
-                    I'm a Buyer
+                    {t('signinPage.buyer.title')}
                   </h2>
 
                   {/* Description */}
                   <p className="text-midnight-ink-600 mb-8">
-                    Hollywood studios, streaming platforms, and media buyers seeking premium Korean content with verified rights.
+                    {t('signinPage.buyer.description')}
                   </p>
 
                   {/* Sign Up Button (Primary) */}
@@ -111,7 +114,7 @@ const SigninPage = () => {
                       size="lg"
                       className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-                      Sign Up as Buyer
+                      {t('signinPage.buyer.signupButton')}
                     </Button>
                   </a>
 
@@ -120,7 +123,7 @@ const SigninPage = () => {
                     href={`${dashboardUrl}/signin/buyer`}
                     className="flex items-center justify-center text-black hover:text-gray-700 transition-colors text-sm"
                   >
-                    Already have an account? Sign In
+                    {t('signinPage.buyer.signinLink')}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </a>
                 </CardContent>
@@ -131,9 +134,9 @@ const SigninPage = () => {
             {/* Help Text */}
             <div className="text-center mt-12">
               <p className="text-midnight-ink-600 text-sm">
-                Not sure which account type you need?{' '}
+                {t('signinPage.help.text')}{' '}
                 <a href="/about" className="text-black hover:text-gray-700 underline">
-                  Learn more about K Story Bridge
+                  {t('signinPage.help.link')}
                 </a>
               </p>
             </div>

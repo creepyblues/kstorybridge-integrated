@@ -27,10 +27,10 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
         variant="outline"
         size="sm"
         onClick={handleLanguageToggle}
-        className="bg-gray-900 text-white border-gray-900 hover:bg-gray-800"
+        className="bg-gray-900 text-white border-gray-900 hover:bg-gray-800 hover:text-white"
       >
-        <Globe className="w-4 h-4 mr-1" />
-        {language}
+        <Globe className="w-4 h-4 mr-1 text-white" />
+        <span className="text-white">{language}</span>
       </Button>
     );
   }
@@ -41,10 +41,10 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
       variant="outline"
       size="sm"
       onClick={handleLanguageToggle}
-      className="flex items-center space-x-1 bg-gray-900 border-gray-900 text-white hover:bg-gray-800"
+      className="flex items-center space-x-1 bg-gray-900 border-gray-900 text-white hover:bg-gray-800 hover:text-white"
     >
-      <Globe className="w-4 h-4" />
-      <span>{language}</span>
+      <Globe className="w-4 h-4 text-white" />
+      <span className="text-white">{language}</span>
     </Button>
   );
 };

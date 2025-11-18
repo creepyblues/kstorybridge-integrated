@@ -1,18 +1,128 @@
 {
   "hero": {
-    "title": "For Buyers: Discover Premium Korean IP",
-    "subtitle": "Access verified content with confidence. Filter by genre, performance, and rights availability.",
-    "cta": "Start Exploring"
+    "title": "Find Your Next Hit with ",
+    "titleHighlight": "AI Assistant",
+    "subtitle": "AI assistant + verified rights chain + expert deal support = Korean hits discovered faster",
+    "cta": "Try AI Assistant →",
+    "trust": "No credit card required • Free to start"
   },
-  "features": {
-    "title": "Why Choose K Story Bridge"
+  "aiAssistant": {
+    "badge": "Meet Jinu",
+    "title": "Meet Jinu: Your AI Story Expert",
+    "subtitle": "Your collaborative AI Assistant who specializes in Korean storytelling with Hollywood showrunner's mind",
+    "features": {
+      "recommend": {
+        "title": "Recommend titles that cleared rights",
+        "description": "AI recommendations focus on titles with verified rights documentation, reducing legal risks."
+      },
+      "intelligence": {
+        "title": "Story Craft + Market Fit Intelligence",
+        "description": "Discusses character arcs, narrative structure, and platform fit based on your goals."
+      },
+      "details": {
+        "title": "Deep details including pitch deck",
+        "description": "Access comprehensive pitch decks with story analysis, market positioning, and adaptation potential."
+      }
+    },
+    "demo": {
+      "userQuery": "Show me romantic comedy webtoons with strong female leads",
+      "aiResponseTitle": "Great choice! Let me tell you why these stories work...",
+      "aiResponseBody": "I found some delightful titles that really blend those elements well! \"You Get Me Going\" is a standout choice! It features Youngwon, whose overbearing nature leads to humorous clashes with Hyunwoo, who is his polar opposite. Their relationship takes an unexpected turn during a business trip, where the playful banter not only drives the comedy but also deepens their character arcs. What I love here is how the humor is rooted in their evolving dynamics, making it a fun and engaging read.",
+      "cta": "Chat with Jinu"
+    }
+  },
+  "pillars": {
+    "title": "Three Pillars. Three Problems Solved.",
+    "subtitle": "Everything you need to discover, verify, and acquire Korean content",
+    "aiDiscovery": {
+      "title": "AI-Powered Discovery",
+      "description": "Stop endless browsing. Jinu finds what you need in seconds with intelligent recommendations and story expertise.",
+      "stat": "10x faster discovery"
+    },
+    "rightsChain": {
+      "title": "Verified Rights Chain",
+      "description": "No more surprises. Every title has clear ownership documentation and direct access to rights holders.",
+      "stat": "Zero ownership surprises"
+    },
+    "expertSupport": {
+      "title": "Expert Deal Support",
+      "description": "Navigate complex Korean deals with confidence. Cultural bridging, pitch decks, and negotiation expertise.",
+      "stat": "Close deals faster"
+    }
+  },
+  "rightsDeepDive": {
+    "title": "Verified Rights. Zero Surprises.",
+    "subtitle": "Clear ownership chain from creator to you",
+    "chain": {
+      "step1": {
+        "title": "1. Creator Profile",
+        "description": "Verified identity & work history"
+      },
+      "step2": {
+        "title": "2. Rights Documentation",
+        "description": "Clear ownership records"
+      },
+      "step3": {
+        "title": "3. Direct Connection",
+        "description": "No intermediaries"
+      },
+      "step4": {
+        "title": "4. Deal Closed",
+        "description": "Clean chain of title"
+      }
+    },
+    "comparison": {
+      "traditional": {
+        "title": "❌ Traditional Process",
+        "items": [
+          "Unclear rights ownership",
+          "Multiple intermediaries delay deals",
+          "Surprise ownership disputes mid-deal",
+          "No authority to make decisions",
+          "Deals fall apart after months of work"
+        ]
+      },
+      "kstorybridge": {
+        "title": "✅ KStoryBridge Process",
+        "items": [
+          "Verified rights documentation upfront",
+          "Direct access to rights holders",
+          "Clear chain of title documented",
+          "Deal authority confirmed before discussions",
+          "Deals close in weeks, not months"
+        ]
+      }
+    }
+  },
+  "process": {
+    "title": "Three Simple Steps",
+    "subtitle": "From discovery to closed deal",
+    "step1": {
+      "number": "01",
+      "title": "Discover with AI",
+      "description": "Chat with Jinu to find titles that match your audience and vision. Get 10 smart recommendations instantly."
+    },
+    "step2": {
+      "number": "02",
+      "title": "Verify Rights",
+      "description": "Review verified ownership chain and connect directly with rights holders who have deal authority."
+    },
+    "step3": {
+      "number": "03",
+      "title": "Close with Support",
+      "description": "Navigate cultural and legal complexities with expert guidance. Get pitch decks, contract review, and mediation."
+    },
+    "cta": "Get Started"
   },
   "catalog": {
-    "title": "Explore Our Catalog"
+    "title": "The Biggest IP Catalog",
+    "subtitle": "Get access to verified Korean content with proven market performance",
+    "cta": "Join to View Full Catalog"
   },
-  "cta": {
-    "title": "Ready to Find Your Next Hit?",
-    "subtitle": "Join leading studios and producers discovering Korean content.",
-    "button": "Get Started"
+  "finalCta": {
+    "title": "Start Discovering Today",
+    "subtitle": "Join hundreds of buyers discovering Korean hits with AI-powered search, verified rights, and expert support",
+    "cta": "Try Free",
+    "trust": "No credit card required • Upgrade anytime • Cancel anytime"
   }
 }

@@ -4,6 +4,7 @@ import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
 import FeaturedTitlesCarousel from '../components/FeaturedTitlesCarousel';
 import Footer from '../components/Footer';
+import { useTranslation } from 'react-i18next';
 import {
   Bot,
   Shield,
@@ -40,6 +41,8 @@ import {
  */
 
 const BuyersPage = () => {
+  const { t } = useTranslation('buyers');
+
   // Load Beehiiv script for newsletter
   useEffect(() => {
     const script = document.createElement('script');
@@ -70,12 +73,12 @@ const BuyersPage = () => {
             <div className="max-w-4xl mx-auto text-center">
               {/* NEW: AI-first headline */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 sm:mb-8 text-midnight-ink leading-tight">
-                Find Your Next Hit with <span className="text-hanok-teal">AI Assistant</span>
+                {t('hero.title')}<span className="text-hanok-teal">{t('hero.titleHighlight')}</span>
               </h1>
 
               {/* NEW: 3-pillar subheadline */}
               <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto">
-                AI assistant + verified rights chain + expert deal support = Korean hits discovered faster
+                {t('hero.subtitle')}
               </p>
 
               {/* NEW: Primary CTA emphasis on AI */}
@@ -85,11 +88,11 @@ const BuyersPage = () => {
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
               >
-                Try AI Assistant →
+                {t('hero.cta')}
               </Button>
 
               <p className="mt-4 text-sm text-midnight-ink-400">
-                No credit card required • Free to start
+                {t('hero.trust')}
               </p>
             </div>
           </div>
@@ -125,11 +128,11 @@ const BuyersPage = () => {
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Bot className="h-10 w-10 text-hanok-teal" />
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink">
-                  Meet Jinu: Your AI Story Expert
+                  {t('aiAssistant.title')}
                 </h2>
               </div>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                Your collaborative AI Assistant who specializes in Korean storytelling with Hollywood showrunner's mind
+                {t('aiAssistant.subtitle')}
               </p>
             </div>
 
@@ -145,10 +148,10 @@ const BuyersPage = () => {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                          Recommend titles that cleared rights
+                          {t('aiAssistant.features.recommend.title')}
                         </h3>
                         <p className="text-midnight-ink-600">
-                          AI recommendations focus on titles with verified rights documentation, reducing legal risks.
+                          {t('aiAssistant.features.recommend.description')}
                         </p>
                       </div>
                     </div>
@@ -163,10 +166,10 @@ const BuyersPage = () => {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                          Story Craft + Market Fit Intelligence
+                          {t('aiAssistant.features.intelligence.title')}
                         </h3>
                         <p className="text-midnight-ink-600">
-                          Discusses character arcs, narrative structure, and platform fit based on your goals.
+                          {t('aiAssistant.features.intelligence.description')}
                         </p>
                       </div>
                     </div>
@@ -181,10 +184,10 @@ const BuyersPage = () => {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                          Deep details including pitch deck
+                          {t('aiAssistant.features.details.title')}
                         </h3>
                         <p className="text-midnight-ink-600">
-                          Access comprehensive pitch decks with story analysis, market positioning, and adaptation potential.
+                          {t('aiAssistant.features.details.description')}
                         </p>
                       </div>
                     </div>
@@ -199,7 +202,7 @@ const BuyersPage = () => {
                     <div className="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0"></div>
                     <div className="flex-1">
                       <div className="bg-gray-100 rounded-lg p-3 text-sm text-gray-700">
-                        "Show me romantic comedy webtoons with strong female leads"
+                        "{t('aiAssistant.demo.userQuery')}"
                       </div>
                     </div>
                   </div>
@@ -209,9 +212,9 @@ const BuyersPage = () => {
                     </div>
                     <div className="flex-1">
                       <div className="bg-hanok-teal/10 rounded-lg p-3 text-sm text-midnight-ink">
-                        <p className="font-semibold mb-2">Great choice! Let me tell you why these stories work...</p>
+                        <p className="font-semibold mb-2">{t('aiAssistant.demo.aiResponseTitle')}</p>
                         <p className="text-xs text-midnight-ink-600">
-                          I found some delightful titles that really blend those elements well! "You Get Me Going" is a standout choice! It features Youngwon, whose overbearing nature leads to humorous clashes with Hyunwoo, who is his polar opposite. Their relationship takes an unexpected turn during a business trip, where the playful banter not only drives the comedy but also deepens their character arcs. What I love here is how the humor is rooted in their evolving dynamics, making it a fun and engaging read.
+                          {t('aiAssistant.demo.aiResponseBody')}
                         </p>
                       </div>
                     </div>
@@ -222,7 +225,7 @@ const BuyersPage = () => {
                       className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
                       onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
                     >
-                      Chat with Jinu
+                      {t('aiAssistant.demo.cta')}
                     </Button>
                   </div>
                 </div>
@@ -240,10 +243,10 @@ const BuyersPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                Three Pillars. Three Problems Solved.
+                {t('pillars.title')}
               </h2>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                Everything you need to discover, verify, and acquire Korean content
+                {t('pillars.subtitle')}
               </p>
             </div>
 
@@ -255,13 +258,13 @@ const BuyersPage = () => {
                     <Bot className="h-8 w-8 text-hanok-teal" />
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    AI-Powered Discovery
+                    {t('pillars.aiDiscovery.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
-                    Stop endless browsing. Jinu finds what you need in seconds with intelligent recommendations and story expertise.
+                    {t('pillars.aiDiscovery.description')}
                   </p>
                   <p className="text-sm text-hanok-teal font-semibold">
-                    10x faster discovery
+                    {t('pillars.aiDiscovery.stat')}
                   </p>
                 </CardContent>
               </Card>
@@ -273,13 +276,13 @@ const BuyersPage = () => {
                     <Shield className="h-8 w-8 text-[#4C9C9B]" />
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    Verified Rights Chain
+                    {t('pillars.rightsChain.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
-                    No more surprises. Every title has clear ownership documentation and direct access to rights holders.
+                    {t('pillars.rightsChain.description')}
                   </p>
                   <p className="text-sm text-[#4C9C9B] font-semibold">
-                    Zero ownership surprises
+                    {t('pillars.rightsChain.stat')}
                   </p>
                 </CardContent>
               </Card>
@@ -291,13 +294,13 @@ const BuyersPage = () => {
                     <Users className="h-8 w-8 text-porcelain-blue-600" />
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    Expert Deal Support
+                    {t('pillars.expertSupport.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed mb-4">
-                    Navigate complex Korean deals with confidence. Cultural bridging, pitch decks, and negotiation expertise.
+                    {t('pillars.expertSupport.description')}
                   </p>
                   <p className="text-sm text-porcelain-blue-600 font-semibold">
-                    Close deals faster
+                    {t('pillars.expertSupport.stat')}
                   </p>
                 </CardContent>
               </Card>
@@ -315,11 +318,11 @@ const BuyersPage = () => {
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Shield className="h-10 w-10 text-sunrise-coral" />
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink">
-                  Verified Rights. Zero Surprises.
+                  {t('rightsDeepDive.title')}
                 </h2>
               </div>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                Clear ownership chain from creator to you
+                {t('rightsDeepDive.subtitle')}
               </p>
             </div>
 
@@ -331,8 +334,8 @@ const BuyersPage = () => {
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">
                     <FileCheck className="h-10 w-10 text-green-600 flex-shrink-0" />
                   </div>
-                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">1. Creator Profile</h4>
-                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">Verified identity & work history</p>
+                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">{t('rightsDeepDive.chain.step1.title')}</h4>
+                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">{t('rightsDeepDive.chain.step1.description')}</p>
                 </div>
 
                 <ArrowRight className="hidden md:block h-6 w-6 text-gray-400 flex-shrink-0 self-start mt-8" />
@@ -342,8 +345,8 @@ const BuyersPage = () => {
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">
                     <Shield className="h-10 w-10 text-green-600 flex-shrink-0" />
                   </div>
-                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">2. Rights Documentation</h4>
-                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">Clear ownership records</p>
+                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">{t('rightsDeepDive.chain.step2.title')}</h4>
+                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">{t('rightsDeepDive.chain.step2.description')}</p>
                 </div>
 
                 <ArrowRight className="hidden md:block h-6 w-6 text-gray-400 flex-shrink-0 self-start mt-8" />
@@ -353,8 +356,8 @@ const BuyersPage = () => {
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">
                     <Handshake className="h-10 w-10 text-green-600 flex-shrink-0" />
                   </div>
-                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">3. Direct Connection</h4>
-                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">No intermediaries</p>
+                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">{t('rightsDeepDive.chain.step3.title')}</h4>
+                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">{t('rightsDeepDive.chain.step3.description')}</p>
                 </div>
 
                 <ArrowRight className="hidden md:block h-6 w-6 text-gray-400 flex-shrink-0 self-start mt-8" />
@@ -364,8 +367,8 @@ const BuyersPage = () => {
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">
                     <CheckCircle2 className="h-10 w-10 text-green-600 flex-shrink-0" />
                   </div>
-                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">4. Deal Closed</h4>
-                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">Clean chain of title</p>
+                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">{t('rightsDeepDive.chain.step4.title')}</h4>
+                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">{t('rightsDeepDive.chain.step4.description')}</p>
                 </div>
               </div>
             </div>
@@ -375,28 +378,14 @@ const BuyersPage = () => {
               {/* Traditional Process */}
               <Card className="bg-red-50 border-red-200 shadow-none rounded-2xl">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-red-800 mb-4">❌ Traditional Process</h3>
+                  <h3 className="text-lg font-bold text-red-800 mb-4">{t('rightsDeepDive.comparison.traditional.title')}</h3>
                   <ul className="space-y-3 text-sm text-red-900">
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>Unclear rights ownership</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>Multiple intermediaries delay deals</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>Surprise ownership disputes mid-deal</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>No authority to make decisions</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>Deals fall apart after months of work</span>
-                    </li>
+                    {(t('rightsDeepDive.comparison.traditional.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-red-600 mt-0.5">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
                   </ul>
                 </CardContent>
               </Card>
@@ -404,28 +393,14 @@ const BuyersPage = () => {
               {/* KStoryBridge Process */}
               <Card className="bg-green-50 border-green-200 shadow-none rounded-2xl">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-green-800 mb-4">✅ KStoryBridge Process</h3>
+                  <h3 className="text-lg font-bold text-green-800 mb-4">{t('rightsDeepDive.comparison.kstorybridge.title')}</h3>
                   <ul className="space-y-3 text-sm text-green-900">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Verified rights documentation upfront</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Direct access to rights holders</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Clear chain of title documented</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Deal authority confirmed before discussions</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Deals close in weeks, not months</span>
-                    </li>
+                    {(t('rightsDeepDive.comparison.kstorybridge.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
                   </ul>
                 </CardContent>
               </Card>
@@ -442,10 +417,10 @@ const BuyersPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                Three Simple Steps
+                {t('process.title')}
               </h2>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                From discovery to closed deal
+                {t('process.subtitle')}
               </p>
             </div>
 
@@ -453,33 +428,33 @@ const BuyersPage = () => {
               {/* Step 1: Discover */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-hanok-teal text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  01
+                  {t('process.step1.number')}
                 </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">Discover with AI</h3>
+                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('process.step1.title')}</h3>
                 <p className="text-midnight-ink-600 leading-relaxed">
-                  Chat with Jinu to find titles that match your audience and vision. Get 10 smart recommendations instantly.
+                  {t('process.step1.description')}
                 </p>
               </div>
 
               {/* Step 2: Verify */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-[#4C9C9B] text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  02
+                  {t('process.step2.number')}
                 </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">Verify Rights</h3>
+                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('process.step2.title')}</h3>
                 <p className="text-midnight-ink-600 leading-relaxed">
-                  Review verified ownership chain and connect directly with rights holders who have deal authority.
+                  {t('process.step2.description')}
                 </p>
               </div>
 
               {/* Step 3: Close */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-porcelain-blue-600 text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  03
+                  {t('process.step3.number')}
                 </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">Close with Support</h3>
+                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('process.step3.title')}</h3>
                 <p className="text-midnight-ink-600 leading-relaxed">
-                  Navigate cultural and legal complexities with expert guidance. Get pitch decks, contract review, and mediation.
+                  {t('process.step3.description')}
                 </p>
               </div>
             </div>
@@ -490,7 +465,7 @@ const BuyersPage = () => {
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
               >
-                Get Started
+                {t('process.cta')}
               </Button>
             </div>
           </div>
@@ -504,10 +479,10 @@ const BuyersPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                The Biggest IP Catalog
+                {t('catalog.title')}
               </h2>
               <p className="text-xl text-midnight-ink-600 leading-relaxed max-w-2xl mx-auto">
-                Get access to verified Korean content with proven market performance
+                {t('catalog.subtitle')}
               </p>
             </div>
 
@@ -522,7 +497,7 @@ const BuyersPage = () => {
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
               >
-                Join to View Full Catalog
+                {t('catalog.cta')}
               </Button>
             </div>
           </div>
@@ -538,10 +513,10 @@ const BuyersPage = () => {
             {/* Final CTA Section */}
             <div className="text-center bg-gradient-to-br from-hanok-teal/10 to-porcelain-blue-100 rounded-3xl p-8 sm:p-12 max-w-4xl mx-auto">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-4">
-                Start Discovering Today
+                {t('finalCta.title')}
               </h2>
               <p className="text-lg text-midnight-ink-600 mb-8 max-w-2xl mx-auto">
-                Join hundreds of buyers discovering Korean hits with AI-powered search, verified rights, and expert support
+                {t('finalCta.subtitle')}
               </p>
 
               <Button
@@ -549,11 +524,11 @@ const BuyersPage = () => {
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
               >
-                Try Free
+                {t('finalCta.cta')}
               </Button>
 
               <p className="mt-6 text-sm text-midnight-ink-400">
-                No credit card required • Upgrade anytime • Cancel anytime
+                {t('finalCta.trust')}
               </p>
             </div>
 

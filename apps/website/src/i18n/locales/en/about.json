@@ -1,19 +1,31 @@
 {
   "hero": {
-    "title": "About K Story Bridge",
-    "subtitle": "Connecting Korean creativity with global audiences"
+    "title": "About KStoryBridge",
+    "subtitle": "Connecting Korean content creators with global entertainment buyers"
+  },
+  "whatIs": {
+    "title": "What is KStoryBridge?",
+    "intro": "KStoryBridge is a revolutionary platform that connects Korean content creators with global entertainment buyers, streamlining the process of discovering and licensing premium Korean content.",
+    "ecosystem": "Our platform serves as the bridge between the vibrant Korean content creation ecosystem and international markets hungry for fresh, innovative storytelling. We specialize in webtoons, web novels, light novels, games, manhwa, and other Korean digital content that has proven audience engagement.",
+    "aiPowered": "Through our AI-powered verification system and comprehensive analytics, we help creators showcase their work professionally while providing buyers with the insights they need to make informed licensing decisions. Our goal is to make the IP licensing process transparent, efficient, and accessible to creators and buyers worldwide."
+  },
+  "team": {
+    "title": "Who's Behind KStoryBridge?",
+    "members": {
+      "kevin": {
+        "name": "Kevin Nicklaus",
+        "linkedinLabel": "LinkedIn Profile",
+        "bio": "Kevin Nicklaus brings 20+ years of experience in global content development, production, and talent management, making him uniquely suited to lead cross-cultural storytelling initiatives. He's led cross-border projects with RIDI and Manta, including the global adaptation of Korean webtoons like The Beginning After the End. As co-founder of Sandstone Artists and former executive at major studios, he bridges Hollywood and Korean creators with deep industry insight and a strong creative vision. His track record in IP development, localization, and global partnerships makes him uniquely equipped to connect Korean stories with the world."
+      },
+      "sungho": {
+        "name": "Sungho Lee",
+        "linkedinLabel": "LinkedIn Profile",
+        "bio": "Sungho combines deep expertise in global partnerships, content licensing, and go-to-market strategy, making him uniquely equipped to lead KStoryBridge. At RIDI, he secured Hollywood adaptation deals, launched bestselling print titles like Under The Oak Tree, and led game and media partnerships. His past roles at Netflix and LG saw him drive international growth through innovative deals across APAC and global product launches. With startup experience as a founder and fractional GTM advisor, Sungho brings both strategic vision and executional rigor to connect Korean creators with global opportunities."
+      }
+    }
   },
   "mission": {
     "title": "Our Mission",
-    "description": "We're building the bridge between Korean content creators and international media buyers."
-  },
-  "team": {
-    "title": "Our Team"
-  },
-  "contact": {
-    "title": "Get in Touch",
-    "email": "Email",
-    "phone": "Phone",
-    "address": "Address"
+    "statement": "To empower Korean content creators by providing them with a global platform to showcase their work, while helping international buyers discover the next generation of compelling stories that will captivate audiences worldwide."
   }
 }

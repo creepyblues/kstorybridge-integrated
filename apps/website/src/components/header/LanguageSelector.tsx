@@ -25,10 +25,9 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
     return (
       <Button
         id="mobile-language-toggle-btn"
-        variant="outline"
         size="sm"
         onClick={toggleLanguage}
-        className="border-gray-300 hover:bg-gray-100"
+        className="bg-yellow-400 hover:bg-yellow-500 text-black border-0"
       >
         <Globe className="w-4 h-4 mr-2" />
         {currentLanguage}
@@ -39,10 +38,9 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
   return (
     <Button
       id="header-language-toggle-btn"
-      variant="outline"
       size="sm"
       onClick={toggleLanguage}
-      className="border-gray-300 hover:bg-gray-100"
+      className="bg-yellow-400 hover:bg-yellow-500 text-black border-0"
     >
       <Globe className="w-4 h-4 mr-2" />
       {currentLanguage}

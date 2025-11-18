@@ -59,10 +59,16 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg">
-        <DropdownMenuItem onClick={() => handleLanguageChange('EN')}>
+        <DropdownMenuItem
+          onClick={() => handleLanguageChange('EN')}
+          className={language === 'EN' ? 'bg-gray-100 text-gray-900 focus:bg-gray-100' : 'text-gray-900 hover:bg-gray-50 focus:bg-gray-50'}
+        >
           English
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleLanguageChange('KR')}>
+        <DropdownMenuItem
+          onClick={() => handleLanguageChange('KR')}
+          className={language === 'KR' ? 'bg-gray-100 text-gray-900 focus:bg-gray-100' : 'text-gray-900 hover:bg-gray-50 focus:bg-gray-50'}
+        >
           한국어
         </DropdownMenuItem>
       </DropdownMenuContent>

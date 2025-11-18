@@ -61,15 +61,15 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
       <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg">
         <DropdownMenuItem
           onClick={() => handleLanguageChange('EN')}
-          className={language === 'EN' ? 'bg-gray-100 text-gray-900 focus:bg-gray-100' : 'text-gray-900 hover:bg-gray-50 focus:bg-gray-50'}
+          className={language === 'EN' ? 'bg-gray-100 text-gray-900 focus:bg-gray-100 focus:text-gray-900' : 'text-gray-900 hover:bg-gray-50 focus:bg-gray-50 focus:text-gray-900'}
         >
-          English
+          <span className="text-gray-900">English</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleLanguageChange('KR')}
-          className={language === 'KR' ? 'bg-gray-100 text-gray-900 focus:bg-gray-100' : 'text-gray-900 hover:bg-gray-50 focus:bg-gray-50'}
+          className={language === 'KR' ? 'bg-gray-100 text-gray-900 focus:bg-gray-100 focus:text-gray-900' : 'text-gray-900 hover:bg-gray-50 focus:bg-gray-50 focus:text-gray-900'}
         >
-          한국어
+          <span className="text-gray-900">한국어</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

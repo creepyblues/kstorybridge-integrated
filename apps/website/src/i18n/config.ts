@@ -5,6 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 // Import translation files
 import commonEN from './locales/en/common.json';
 import homeEN from './locales/en/home.json';
+import homePreview4EN from './locales/en/homePreview4.json';
 import creatorsEN from './locales/en/creators.json';
 import buyersEN from './locales/en/buyers.json';
 import aboutEN from './locales/en/about.json';
@@ -15,6 +16,7 @@ import authEN from './locales/en/auth.json';
 
 import commonKO from './locales/ko/common.json';
 import homeKO from './locales/ko/home.json';
+import homePreview4KO from './locales/ko/homePreview4.json';
 import creatorsKO from './locales/ko/creators.json';
 import buyersKO from './locales/ko/buyers.json';
 import aboutKO from './locales/ko/about.json';
@@ -28,6 +30,7 @@ const resources = {
   en: {
     common: commonEN,
     home: homeEN,
+    homePreview4: homePreview4EN,
     creators: creatorsEN,
     buyers: buyersEN,
     about: aboutEN,
@@ -39,6 +42,7 @@ const resources = {
   ko: {
     common: commonKO,
     home: homeKO,
+    homePreview4: homePreview4KO,
     creators: creatorsKO,
     buyers: buyersKO,
     about: aboutKO,
@@ -59,7 +63,7 @@ i18n
     resources,
     fallbackLng: 'en', // Fallback language
     defaultNS: 'common', // Default namespace
-    ns: ['common', 'home', 'creators', 'buyers', 'about', 'news', 'titles', 'onboarding', 'auth'],
+    ns: ['common', 'home', 'homePreview4', 'creators', 'buyers', 'about', 'news', 'titles', 'onboarding', 'auth'],
 
     interpolation: {
       escapeValue: false, // React already escapes by default

@@ -17,6 +17,7 @@ const CreatorsPagePreview = lazy(() => import("./pages/CreatorsPagePreview"));
 const HomePagePreview1 = lazy(() => import("./pages/HomePagePreview1"));
 const HomePagePreview2 = lazy(() => import("./pages/HomePagePreview2"));
 const HomePagePreview3 = lazy(() => import("./pages/HomePagePreview3"));
+const HomePagePreview4 = lazy(() => import("./pages/HomePagePreview4"));
 const BuyersOnboardingPage = lazy(() => import("./pages/BuyersOnboardingPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const SigninPage = lazy(() => import("./pages/SigninPage"));
@@ -54,6 +55,7 @@ const App = () => (
           {import.meta.env.DEV && <Route path="/home-preview1" element={<HomePagePreview1 />} />}
           {import.meta.env.DEV && <Route path="/home-preview2" element={<HomePagePreview2 />} />}
           {import.meta.env.DEV && <Route path="/home-preview3" element={<HomePagePreview3 />} />}
+          {import.meta.env.DEV && <Route path="/home-preview4" element={<HomePagePreview4 />} />}
           <Route path="/buyers/onboarding" element={<BuyersOnboardingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

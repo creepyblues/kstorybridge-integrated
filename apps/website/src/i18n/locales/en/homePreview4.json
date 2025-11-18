@@ -1,0 +1,51 @@
+{
+  "hero": {
+    "title": "Connecting Korean Stories to Global Audiences",
+    "subtitle": "KStoryBridge plays a critical role in connecting Korean creators and producers to create much bigger value together",
+    "ctaCreator": "I'm a Creator",
+    "ctaBuyer": "I'm a Producer"
+  },
+  "coreValues": {
+    "sectionTitle": "Three Core Values",
+    "subtitle": "How we connect creators and producers to unlock exceptional opportunities",
+    "discovery": {
+      "title": "Intelligent Discovery",
+      "description": "AI-powered matching connects the right stories with the right audiences, cutting through noise to find perfect fits",
+      "forCreators": "Get discovered by producers actively seeking your genre and format",
+      "forBuyers": "Find hidden gems tailored to your acquisition criteria"
+    },
+    "trusted": {
+      "title": "Trusted Connection",
+      "description": "100% verified rights and thorough content analysis ensure every connection is built on solid ground",
+      "forCreators": "Showcase verified ownership to attract serious producers",
+      "forBuyers": "Access pre-vetted titles with clear rights information"
+    },
+    "expertise": {
+      "title": "Transmedia Expertise",
+      "description": "Deep understanding of Korean storytelling and global market dynamics guides every successful adaptation",
+      "forCreators": "Navigate international markets with expert guidance",
+      "forBuyers": "Leverage cultural expertise for authentic adaptations"
+    }
+  },
+  "paths": {
+    "title": "Choose Your Path",
+    "creator": {
+      "title": "Are You a Creator?",
+      "description": "Join a curated network where your Korean story connects with global partners who value authentic storytelling",
+      "benefit1": "Get discovered through AI-powered matching with Hollywood producers",
+      "benefit2": "Showcase verified rights to build trust with serious partners",
+      "benefit3": "Navigate international markets with transmedia experts",
+      "benefit4": "Join a community creating global impact together",
+      "cta": "Learn More"
+    },
+    "buyer": {
+      "title": "Are You a Producer?",
+      "description": "Access exclusive Korean IP through a trusted platform that connects you with verified creators and expert support",
+      "benefit1": "Discover perfect matches through intelligent AI recommendations",
+      "benefit2": "Work with 100% verified rights and thorough content analysis",
+      "benefit3": "Gain cultural expertise for authentic adaptations",
+      "benefit4": "Partner with a network dedicated to your success",
+      "cta": "Learn More"
+    }
+  }
+}

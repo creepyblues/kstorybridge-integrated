@@ -53,7 +53,7 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button id="header-language-selector-btn" variant="outline" size="sm" className="flex items-center space-x-1 border-gray-300 text-gray-700 hover:bg-gray-50">
+        <Button id="header-language-selector-btn" variant="outline" size="sm" className="flex items-center space-x-1 bg-gray-900 border-gray-900 text-white hover:bg-gray-800">
           <Globe className="w-4 h-4" />
           <span>{language}</span>
         </Button>

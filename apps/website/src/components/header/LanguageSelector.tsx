@@ -10,15 +10,16 @@ interface LanguageSelectorProps {
 
 const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
   const { i18n } = useTranslation();
-  const language = i18n.language === 'ko' ? 'KR' : i18n.language.toUpperCase(); // 'ko' -> 'KR', 'en' -> 'EN'
 
-  const handleLanguageToggle = () => {
-    const newLanguage = language === 'EN' ? 'KR' : 'EN';
-    const oldLanguage = language;
-    const langCode = newLanguage === 'KR' ? 'ko' : 'en';
-    i18n.changeLanguage(langCode);
-    trackLanguageChange(oldLanguage, newLanguage);
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'ko' : 'en';
+    const oldLang = i18n.language === 'en' ? 'EN' : 'KR';
+    const newLangDisplay = newLang === 'en' ? 'EN' : 'KR';
+    i18n.changeLanguage(newLang);
+    trackLanguageChange(oldLang, newLangDisplay);
   };
+
+  const currentLanguage = i18n.language === 'ko' ? '한국어' : 'English';
 
   if (isMobile) {
     return (
@@ -26,11 +27,11 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
         id="mobile-language-toggle-btn"
         variant="outline"
         size="sm"
-        onClick={handleLanguageToggle}
-        className="bg-gray-900 text-white border-gray-900 hover:bg-gray-800 hover:text-white"
+        onClick={toggleLanguage}
+        className="border-gray-300 hover:bg-gray-100"
       >
-        <Globe className="w-4 h-4 mr-1 text-white" />
-        <span className="text-white">{language}</span>
+        <Globe className="w-4 h-4 mr-2" />
+        {currentLanguage}
       </Button>
     );
   }
@@ -40,11 +41,11 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
       id="header-language-toggle-btn"
       variant="outline"
       size="sm"
-      onClick={handleLanguageToggle}
-      className="flex items-center space-x-1 bg-gray-900 border-gray-900 text-white hover:bg-gray-800 hover:text-white"
+      onClick={toggleLanguage}
+      className="border-gray-300 hover:bg-gray-100"
     >
-      <Globe className="w-4 h-4 text-white" />
-      <span className="text-white">{language}</span>
+      <Globe className="w-4 h-4 mr-2" />
+      {currentLanguage}
     </Button>
   );
 };

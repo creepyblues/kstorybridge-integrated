@@ -27,7 +27,7 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
         id="mobile-language-toggle-btn"
         size="sm"
         onClick={toggleLanguage}
-        className="bg-yellow-400 hover:bg-yellow-500 text-black border-0 w-32"
+        className="bg-gray-800 hover:bg-gray-700 text-white border-0 w-32"
       >
         <Globe className="w-4 h-4 mr-2" />
         {currentLanguage}
@@ -40,7 +40,7 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
       id="header-language-toggle-btn"
       size="sm"
       onClick={toggleLanguage}
-      className="bg-yellow-400 hover:bg-yellow-500 text-black border-0 w-32"
+      className="bg-gray-800 hover:bg-gray-700 text-white border-0 w-32"
     >
       <Globe className="w-4 h-4 mr-2" />
       {currentLanguage}

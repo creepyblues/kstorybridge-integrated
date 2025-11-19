@@ -1,3 +1,6 @@
+# IMPORTANT: Keep scripts/ directory for Ignored Build Step
+!../../scripts/
+
 # Dependencies
 node_modules
 package-lock.json

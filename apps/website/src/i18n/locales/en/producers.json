@@ -1,0 +1,154 @@
+{
+  "hero": {
+    "title": "Find Your Next Hit with ",
+    "titleHighlight": "AI Assistant",
+    "subtitle": "AI assistant + verified rights + expert deal support = Korean hits discovered faster",
+    "cta": "Try AI Assistant →",
+    "trust": "No credit card required • Free to start"
+  },
+  "aiAssistant": {
+    "badge": "Meet Jinu",
+    "title": "Meet Jinu: Your AI Story Expert",
+    "subtitle": "Your collaborative AI Assistant who specializes in Korean storytelling with Hollywood showrunner's mind",
+    "features": {
+      "recommend": {
+        "title": "Recommend titles that cleared rights",
+        "description": "AI recommendations focus on titles with verified rights documentation, reducing legal risks."
+      },
+      "intelligence": {
+        "title": "Story Craft + Market Fit Intelligence",
+        "description": "Discusses character arcs, narrative structure, and platform fit based on your goals."
+      },
+      "details": {
+        "title": "Deep details including pitch deck",
+        "description": "Access comprehensive pitch decks with story analysis, market positioning, and adaptation potential."
+      }
+    },
+    "demo": {
+      "userQuery": "Show me romantic comedy webtoons with strong female leads",
+      "aiResponseTitle": "Great choice! Let me tell you why these stories work...",
+      "aiResponseBody": "I found some delightful titles that really blend those elements well! \"You Get Me Going\" is a standout choice! It features Youngwon, whose overbearing nature leads to humorous clashes with Hyunwoo, who is his polar opposite. Their relationship takes an unexpected turn during a business trip, where the playful banter not only drives the comedy but also deepens their character arcs. What I love here is how the humor is rooted in their evolving dynamics, making it a fun and engaging read.",
+      "cta": "Chat with Jinu"
+    }
+  },
+  "pillars": {
+    "title": "Why KStoryBridge Works for You",
+    "subtitle": "Everything you need to discover, verify, and acquire Korean content",
+    "aiDiscovery": {
+      "title": "AI-Powered Discovery",
+      "description": "Stop endless browsing. Jinu finds what you need in seconds with intelligent recommendations and story expertise."
+    },
+    "rightsChain": {
+      "title": "Verified Rights",
+      "description": "No more surprises. Every title has clear ownership documentation and direct access to rights holders."
+    },
+    "expertSupport": {
+      "title": "Expert Curation",
+      "description": "We don't just send you titles—we curate perfect matches for your mandate and present each with a custom pitch deck, complete with story arcs, character breakdowns, comps, and everything needed to evaluate its potential."
+    }
+  },
+  "rightsDeepDive": {
+    "title": "Verified Rights, Zero Surprises",
+    "subtitle": "Clear ownership chain from creator to you",
+    "chain": {
+      "step1": {
+        "title": "1. Creator Profile",
+        "description": "Verified identity & work history"
+      },
+      "step2": {
+        "title": "2. Rights Documentation",
+        "description": "Clear ownership records"
+      },
+      "step3": {
+        "title": "3. Direct Connection",
+        "description": "No intermediaries"
+      },
+      "step4": {
+        "title": "4. Deal Closed",
+        "description": "Clean chain of title"
+      }
+    },
+    "comparison": {
+      "traditional": {
+        "title": "❌ Traditional Process",
+        "items": [
+          "Unclear rights ownership",
+          "Multiple intermediaries delay deals",
+          "Surprise ownership disputes mid-deal",
+          "No authority to make decisions",
+          "Deals fall apart after months of work"
+        ]
+      },
+      "kstorybridge": {
+        "title": "✅ KStoryBridge Process",
+        "items": [
+          "Verified rights documentation upfront",
+          "Direct access to rights holders",
+          "Clear chain of title documented",
+          "Deal authority confirmed before discussions",
+          "Deals close in weeks, not months"
+        ]
+      }
+    }
+  },
+  "expertCuration": {
+    "title": "Expert Curation",
+    "headline": "Every Title Comes Battle-Tested",
+    "subtitle": "We don't just send you titles—we curate perfect matches for your mandate and present each with a custom pitch deck",
+    "benefits": {
+      "research": {
+        "title": "Save Weeks of Research",
+        "description": "Skip the endless browsing. Every title is pre-vetted and matched to your specific mandate."
+      },
+      "decisions": {
+        "title": "Make Confident Decisions Faster",
+        "description": "Complete pitch decks with story analysis, comps, and market positioning give you everything needed to evaluate potential."
+      },
+      "ready": {
+        "title": "Ready to Pitch Internally",
+        "description": "Present opportunities to your team with professional materials that answer all key questions upfront."
+      },
+      "matched": {
+        "title": "Matched to Your Mandate",
+        "description": "Each recommendation is tailored to your audience, platform, and content goals—no wasted time on bad fits."
+      }
+    },
+    "example": {
+      "badge": "Sample Pitch Deck",
+      "storyArc": {
+        "label": "Story Arc",
+        "value": "Revenge-driven protagonist faces moral dilemmas"
+      },
+      "characters": {
+        "label": "Character Breakdown",
+        "value": "3 leads, ensemble cast, strong female lead"
+      },
+      "comps": {
+        "label": "Comp Titles",
+        "value": "Squid Game meets Succession"
+      },
+      "market": {
+        "label": "Market Positioning",
+        "value": "Premium drama, global appeal, proven IP"
+      }
+    },
+    "cta": "See How It Works"
+  },
+  "catalog": {
+    "title": "The Biggest Verified IP Catalog",
+    "subtitle": "Get access to verified Korean content with proven market performance",
+    "cta": "Join to View Full Catalog"
+  },
+  "finalCta": {
+    "title": "Ready to Find Your Next Hit?",
+    "subtitle": "Join producers discovering Korean hits with AI-powered search, verified rights, and expert curation",
+    "primaryCta": "Try AI Assistant Free",
+    "secondaryCta": "View IP Catalog",
+    "tertiaryCta": "Talk to Our Team",
+    "trustSignals": {
+      "noCard": "✓ No credit card required",
+      "access": "✓ Access to 500+ verified titles",
+      "support": "✓ Expert support included"
+    }
+  }
+}

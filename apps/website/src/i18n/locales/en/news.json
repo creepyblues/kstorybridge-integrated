@@ -1,0 +1,23 @@
+{
+  "hero": {
+    "title": "K-Content News",
+    "subtitle": "The latest hot K-content news you don't want to miss"
+  },
+  "search": {
+    "placeholder": "Search news sections...",
+    "button": "Search",
+    "clear": "Clear",
+    "resultsCount": "Found {{count}} section",
+    "resultsCount_plural": "Found {{count}} sections",
+    "matching": "matching \"{{term}}\"",
+    "noResults": "No news sections found matching \"{{term}}\"",
+    "noSections": "No news sections available at the moment."
+  },
+  "section": {
+    "takeaway": "Takeaway:",
+    "ipReference": "IP Reference",
+    "titleFormat": "Title / Format:",
+    "keyNumbers": "Key Numbers:",
+    "whyProducersCare": "Why Producers Care:"
+  }
+}

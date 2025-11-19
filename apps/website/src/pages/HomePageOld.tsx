@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Button } from '@kstorybridge/ui';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { ArrowRight } from 'lucide-react';
 import UniversalHeader from '../components/UniversalHeader';
 import FeaturedTitlesCarousel from '../components/FeaturedTitlesCarousel';
 import Footer from '../components/Footer';
 
 const HomePage = () => {
-  const { t } = useLanguage();
+  const { t } = useTranslation(['home', 'common']);
   const navigate = useNavigate();
 
 

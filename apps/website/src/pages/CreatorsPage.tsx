@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
@@ -11,15 +12,12 @@ import {
   Users,
   MessageSquare,
   FileCheck,
-  Handshake,
-  TrendingUp,
   CheckCircle2,
-  ArrowRight,
-  Star,
-  Target
+  Star
 } from 'lucide-react';
 
 const CreatorsPage = () => {
+  const { t } = useTranslation('creators');
   const [showComingSoon, setShowComingSoon] = useState(false);
 
   return (
@@ -37,16 +35,12 @@ const CreatorsPage = () => {
             <div className="max-w-4xl mx-auto text-center">
               {/* Aspirational headline */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 sm:mb-8 text-midnight-ink leading-tight">
-                Your Story Deserves the <span className="text-sunrise-coral">Global Stage</span>
+                {t('hero.title')}<span className="text-sunrise-coral">{t('hero.titleHighlight')}</span>
               </h1>
 
               {/* Hollywood access hook */}
-              <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 mb-4 leading-relaxed max-w-3xl mx-auto">
-                Pitch directly to Hollywood IP scouts, writers, and producers
-              </p>
-
-              <p className="text-base sm:text-lg text-midnight-ink-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto">
-                From Korea to Hollywood. We open the doors. You keep creative control.
+              <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto">
+                {t('hero.subtitle')}
               </p>
 
               {/* Primary CTA */}
@@ -56,12 +50,8 @@ const CreatorsPage = () => {
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => setShowComingSoon(true)}
               >
-                Join the Platform
+                {t('hero.cta')}
               </Button>
-
-              <p className="mt-4 text-sm text-midnight-ink-400">
-                Free to join • No exclusivity required
-              </p>
             </div>
           </div>
         </section>
@@ -70,18 +60,15 @@ const CreatorsPage = () => {
             SECTION 2: ACCESS SHOWCASE (NEW)
             Priority #1 - 30% page focus
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-              <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="flex items-center justify-center gap-3">
                 <Globe className="h-10 w-10 text-sunrise-coral" />
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink">
-                  Stop Being Invisible to Hollywood
+                  {t('access.title')}
                 </h2>
               </div>
-              <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                Direct access to the buyers who greenlight global hits
-              </p>
             </div>
 
             {/* Studio Logo Grid */}
@@ -131,67 +118,10 @@ const CreatorsPage = () => {
 
                 {/* 50+ Studios Stat Card */}
                 <div className="bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow p-6 flex flex-col items-center justify-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-sunrise-coral mb-1">50+</div>
-                  <p className="text-midnight-ink-600 text-center text-xs leading-tight">Hollywood studios and global streamers</p>
+                  <div className="text-2xl sm:text-3xl font-bold text-sunrise-coral mb-1">{t('access.studios.stat')}</div>
+                  <p className="text-midnight-ink-600 text-center text-xs leading-tight">{t('access.studios.statLabel')}</p>
                 </div>
               </div>
-            </div>
-
-            {/* 3 Feature Cards */}
-            <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-sunrise-coral/10 rounded-lg flex items-center justify-center">
-                      <Target className="h-6 w-6 text-sunrise-coral" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        Direct to Decision-Makers
-                      </h3>
-                      <p className="text-midnight-ink-600">
-                        Your work reaches executives who actually greenlight projects
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-sunrise-coral/10 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="h-6 w-6 text-sunrise-coral" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        Active Buyers Searching Now
-                      </h3>
-                      <p className="text-midnight-ink-600">
-                        Hollywood buyers log in daily searching for their next Korean hit
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-sunrise-coral/10 rounded-lg flex items-center justify-center">
-                      <Shield className="h-6 w-6 text-sunrise-coral" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        No Gatekeepers
-                      </h3>
-                      <p className="text-midnight-ink-600">
-                        You pitch directly. They respond directly. No one filters your voice.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             <div className="text-center mt-12">
@@ -200,7 +130,7 @@ const CreatorsPage = () => {
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
                 onClick={() => setShowComingSoon(true)}
               >
-                See Who's Waiting
+                {t('access.cta')}
               </Button>
             </div>
           </div>
@@ -210,11 +140,11 @@ const CreatorsPage = () => {
             SECTION 3: THREE GUARANTEES GRID
             3 Core Pillars
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-50">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-porcelain-blue-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                Everything You Need to Succeed Globally
+                {t('guarantees.title')}
               </h2>
             </div>
 
@@ -227,14 +157,14 @@ const CreatorsPage = () => {
                   </div>
                   <div className="mb-4">
                     <span className="px-3 py-1 bg-sunrise-coral/10 text-sunrise-coral text-xs font-semibold rounded-full">
-                      50+ STUDIOS
+                      {t('guarantees.access.badge')}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    Hollywood Connections
+                    {t('guarantees.access.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed">
-                    Pitch to Netflix, Disney, Sony Pictures, and 50+ major platforms
+                    {t('guarantees.access.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -247,14 +177,14 @@ const CreatorsPage = () => {
                   </div>
                   <div className="mb-4">
                     <span className="px-3 py-1 bg-hanok-teal/10 text-hanok-teal text-xs font-semibold rounded-full">
-                      20+ YEARS EXPERIENCE
+                      {t('guarantees.expert.badge')}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    Hollywood Veterans Develop Your Pitch
+                    {t('guarantees.expert.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed">
-                    Professional pitch decks developed by Hollywood showrunners
+                    {t('guarantees.expert.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -267,14 +197,14 @@ const CreatorsPage = () => {
                   </div>
                   <div className="mb-4">
                     <span className="px-3 py-1 bg-porcelain-blue-600/10 text-porcelain-blue-600 text-xs font-semibold rounded-full">
-                      YOUR TERMS
+                      {t('guarantees.deal.badge')}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-midnight-ink mb-4">
-                    Expert Deal Support
+                    {t('guarantees.deal.title')}
                   </h3>
                   <p className="text-midnight-ink-600 leading-relaxed">
-                    Fair deals, legal protection, negotiation support every step
+                    {t('guarantees.deal.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -286,17 +216,17 @@ const CreatorsPage = () => {
             SECTION 4: EXPERT DEEP DIVE (NEW)
             Priority #2 - 30% page focus
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Star className="h-10 w-10 text-hanok-teal" />
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink">
-                  Your Korean Story, Packaged for Hollywood Minds
+                  {t('expertDeepDive.title')}
                 </h2>
               </div>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                Professional pitch development by Hollywood veterans
+                {t('expertDeepDive.subtitle')}
               </p>
             </div>
 
@@ -313,7 +243,7 @@ const CreatorsPage = () => {
               >
                 <CardContent className="p-6 sm:p-8">
                   <p className="text-lg text-midnight-ink-600 leading-relaxed text-center">
-                    <span className="font-semibold text-midnight-ink">Korean storytelling has unique strengths. Hollywood has specific expectations.</span><br />We bridge the gap so your vision shines through.
+                    <span className="font-semibold text-midnight-ink">{t('expertDeepDive.challenge.bold')}</span><br />{t('expertDeepDive.challenge.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -329,10 +259,10 @@ const CreatorsPage = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        Cultural Translation
+                        {t('expertDeepDive.process.cultural.title')}
                       </h3>
                       <p className="text-midnight-ink-600">
-                        We translate not just language, but cultural context, storytelling conventions, and market positioning
+                        {t('expertDeepDive.process.cultural.description')}
                       </p>
                     </div>
                   </div>
@@ -347,10 +277,10 @@ const CreatorsPage = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        Professional Pitch Decks
+                        {t('expertDeepDive.process.pitch.title')}
                       </h3>
                       <p className="text-midnight-ink-600">
-                        Hollywood-standard pitch materials: loglines, comp titles, character breakdowns, adaptation roadmap
+                        {t('expertDeepDive.process.pitch.description')}
                       </p>
                     </div>
                   </div>
@@ -365,10 +295,10 @@ const CreatorsPage = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        Veteran Guidance
+                        {t('expertDeepDive.process.veteran.title')}
                       </h3>
                       <p className="text-midnight-ink-600">
-                        Direct support from Hollywood producer with 20+ years of development experience
+                        {t('expertDeepDive.process.veteran.description')}
                       </p>
                     </div>
                   </div>
@@ -382,7 +312,7 @@ const CreatorsPage = () => {
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
                 onClick={() => setShowComingSoon(true)}
               >
-                Get Your Pitch Developed
+                {t('expertDeepDive.cta')}
               </Button>
             </div>
           </div>
@@ -391,14 +321,14 @@ const CreatorsPage = () => {
         {/* ========================================
             SECTION 5: BEFORE/AFTER COMPARISON
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-50">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-porcelain-blue-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                Why Creators Choose KStoryBridge
+                {t('comparison.title')}
               </h2>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                The traditional route vs. the KStoryBridge path
+                {t('comparison.subtitle')}
               </p>
             </div>
 
@@ -407,24 +337,14 @@ const CreatorsPage = () => {
               {/* Traditional Route */}
               <Card className="bg-red-50 border-red-200 shadow-none rounded-2xl">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-red-800 mb-4">❌ Traditional Route</h3>
+                  <h3 className="text-lg font-bold text-red-800 mb-4">{t('comparison.traditional.title')}</h3>
                   <ul className="space-y-3 text-sm text-red-900">
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>Send emails to generic studio addresses → No response</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>Pitch in English without cultural context → Misunderstood</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>DIY contracts and negotiation → Exploited or overwhelmed</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-600 mt-0.5">•</span>
-                      <span>Weeks of research to find the right contact → Still invisible</span>
-                    </li>
+                    {t('comparison.traditional.items', { returnObjects: true }).map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-red-600 mt-0.5">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
                   </ul>
                 </CardContent>
               </Card>
@@ -432,28 +352,14 @@ const CreatorsPage = () => {
               {/* KStoryBridge Process */}
               <Card className="bg-green-50 border-green-200 shadow-none rounded-2xl">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-green-800 mb-4">✅ KStoryBridge</h3>
+                  <h3 className="text-lg font-bold text-green-800 mb-4">{t('comparison.kstorybridge.title')}</h3>
                   <ul className="space-y-3 text-sm text-green-900">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Direct access to 50+ verified Hollywood buyers</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Professional pitch developed by Hollywood veterans</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Legal protection and deal negotiation support</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Buyers come to you, see your work on day 1</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Keep creative control, fair commission structure</span>
-                    </li>
+                    {t('comparison.kstorybridge.items', { returnObjects: true }).map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
                   </ul>
                 </CardContent>
               </Card>
@@ -465,14 +371,14 @@ const CreatorsPage = () => {
             SECTION 6: THREE STEPS
             Simplified journey
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                Your Journey from Korea to Hollywood
+                {t('steps.title')}
               </h2>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                Three simple steps
+                {t('steps.subtitle')}
               </p>
             </div>
 
@@ -480,42 +386,33 @@ const CreatorsPage = () => {
               {/* Step 1: Join & Showcase */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-hanok-teal text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  01
+                  {t('steps.step1.number')}
                 </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">Join & Showcase</h3>
-                <p className="text-midnight-ink-600 leading-relaxed mb-3">
-                  Create your profile, upload your webtoon/novel, tell us your vision
-                </p>
-                <p className="text-sm text-hanok-teal font-semibold">
-                  5-minute setup
+                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step1.title')}</h3>
+                <p className="text-midnight-ink-600 leading-relaxed">
+                  {t('steps.step1.description')}
                 </p>
               </div>
 
               {/* Step 2: Get Hollywood-Ready */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-hanok-teal text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  02
+                  {t('steps.step2.number')}
                 </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">Get Hollywood-Ready</h3>
-                <p className="text-midnight-ink-600 leading-relaxed mb-3">
-                  Our team develops your professional pitch deck with Hollywood veteran guidance
-                </p>
-                <p className="text-sm text-hanok-teal font-semibold">
-                  1-2 weeks turnaround
+                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step2.title')}</h3>
+                <p className="text-midnight-ink-600 leading-relaxed">
+                  {t('steps.step2.description')}
                 </p>
               </div>
 
               {/* Step 3: Connect & Close */}
               <div className="text-center">
                 <div className="w-16 h-16 bg-porcelain-blue-600 text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  03
+                  {t('steps.step3.number')}
                 </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">Connect & Close</h3>
-                <p className="text-midnight-ink-600 leading-relaxed mb-3">
-                  Hollywood buyers see your pitch, reach out directly, and we support you through deal closure
-                </p>
-                <p className="text-sm text-porcelain-blue-600 font-semibold">
-                  We're with you every step
+                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step3.title')}</h3>
+                <p className="text-midnight-ink-600 leading-relaxed">
+                  {t('steps.step3.description')}
                 </p>
               </div>
             </div>
@@ -526,7 +423,7 @@ const CreatorsPage = () => {
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => setShowComingSoon(true)}
               >
-                Get Started
+                {t('steps.cta')}
               </Button>
             </div>
           </div>
@@ -542,10 +439,10 @@ const CreatorsPage = () => {
             {/* Final CTA */}
             <div className="text-center bg-gradient-to-br from-sunrise-coral/10 to-hanok-teal/10 rounded-3xl p-8 sm:p-12 max-w-4xl mx-auto mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-midnight-ink mb-4">
-                Your Story Is Ready. Hollywood Is Waiting.
+                {t('finalCta.title')}
               </h2>
               <p className="text-lg text-midnight-ink-600 mb-8 max-w-2xl mx-auto">
-                Join the platform connecting Korean creators with global studios
+                {t('finalCta.subtitle')}
               </p>
 
               <Button
@@ -553,19 +450,15 @@ const CreatorsPage = () => {
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 mb-6"
                 onClick={() => setShowComingSoon(true)}
               >
-                Create Your Profile
+                {t('finalCta.cta')}
               </Button>
 
               {/* Trust signals */}
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-midnight-ink-600 mb-4">
-                <span>✓ Free to join</span>
-                <span>✓ No exclusivity required</span>
-                <span>✓ Keep creative control</span>
+              <div className="flex flex-wrap justify-center gap-4 text-sm text-midnight-ink-600">
+                <span>{t('finalCta.trustSignals.free')}</span>
+                <span>{t('finalCta.trustSignals.noExclusivity')}</span>
+                <span>{t('finalCta.trustSignals.creativeControl')}</span>
               </div>
-
-              <p className="text-xs text-midnight-ink-400">
-                Free platform • No upfront fees • Commission only on successful deals • Keep IP rights
-              </p>
             </div>
 
           </div>

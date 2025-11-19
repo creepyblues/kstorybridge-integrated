@@ -1,0 +1,16 @@
+{
+  "welcome": {
+    "title": "K Story Bridge에 오신 것을 환영합니다",
+    "subtitle": "시작해볼까요"
+  },
+  "steps": {
+    "profile": "프로필 완성",
+    "preferences": "환경설정",
+    "explore": "콘텐츠 탐색"
+  },
+  "actions": {
+    "skip": "건너뛰기",
+    "continue": "계속",
+    "finish": "완료"
+  }
+}

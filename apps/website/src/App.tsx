@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster, TooltipProvider } from "@kstorybridge/ui";
 import { lazy, Suspense } from "react";
 
-import { LanguageProvider } from "./contexts/LanguageContext";
 import AnalyticsProvider from "./components/AnalyticsProvider";
 import SessionTracker from "./components/SessionTracker";
 import CookieBanner from "./components/CookieBanner";
@@ -12,13 +11,14 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const HomePageOld = lazy(() => import("./pages/HomePageOld"));
 const HomePageNew = lazy(() => import("./pages/HomePageNew"));
 const CreatorsPage = lazy(() => import("./pages/CreatorsPage"));
-const BuyersPage = lazy(() => import("./pages/BuyersPage"));
-const BuyersPagePreview = lazy(() => import("./pages/BuyersPagePreview"));
+const ProducersPage = lazy(() => import("./pages/ProducersPage"));
+const ProducersPagePreview = lazy(() => import("./pages/ProducersPagePreview"));
 const CreatorsPagePreview = lazy(() => import("./pages/CreatorsPagePreview"));
 const HomePagePreview1 = lazy(() => import("./pages/HomePagePreview1"));
 const HomePagePreview2 = lazy(() => import("./pages/HomePagePreview2"));
 const HomePagePreview3 = lazy(() => import("./pages/HomePagePreview3"));
-const BuyersOnboardingPage = lazy(() => import("./pages/BuyersOnboardingPage"));
+const HomePagePreview4 = lazy(() => import("./pages/HomePagePreview4"));
+const ProducersOnboardingPage = lazy(() => import("./pages/ProducersOnboardingPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const SigninPage = lazy(() => import("./pages/SigninPage"));
 const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
@@ -36,10 +36,9 @@ const PageLoader = () => (
 );
 
 const App = () => (
-  <LanguageProvider>
-    <TooltipProvider>
-      <Toaster />
-      <BrowserRouter>
+  <TooltipProvider>
+    <Toaster />
+    <BrowserRouter>
         <AnalyticsProvider />
         <SessionTracker />
         <CookieBanner />
@@ -49,14 +48,15 @@ const App = () => (
           <Route path="/home-old" element={<HomePageOld />} />
           <Route path="/new-design" element={<HomePageNew />} />
           <Route path="/creators" element={<CreatorsPage />} />
-          <Route path="/buyers" element={<BuyersPage />} />
+          <Route path="/producers" element={<ProducersPage />} />
           {/* PREVIEW ROUTES - Only available in development */}
-          {import.meta.env.DEV && <Route path="/buyers-preview" element={<BuyersPagePreview />} />}
+          {import.meta.env.DEV && <Route path="/producers-preview" element={<ProducersPagePreview />} />}
           {import.meta.env.DEV && <Route path="/creators-preview" element={<CreatorsPagePreview />} />}
           {import.meta.env.DEV && <Route path="/home-preview1" element={<HomePagePreview1 />} />}
           {import.meta.env.DEV && <Route path="/home-preview2" element={<HomePagePreview2 />} />}
           {import.meta.env.DEV && <Route path="/home-preview3" element={<HomePagePreview3 />} />}
-          <Route path="/buyers/onboarding" element={<BuyersOnboardingPage />} />
+          {import.meta.env.DEV && <Route path="/home-preview4" element={<HomePagePreview4 />} />}
+          <Route path="/producers/onboarding" element={<ProducersOnboardingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
@@ -73,7 +73,6 @@ const App = () => (
         </Suspense>
       </BrowserRouter>
     </TooltipProvider>
-  </LanguageProvider>
 );
 
 export default App;

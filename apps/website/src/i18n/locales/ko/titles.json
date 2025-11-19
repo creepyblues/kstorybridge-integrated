@@ -1,0 +1,27 @@
+{
+  "detail": {
+    "overview": "개요",
+    "synopsis": "시놉시스",
+    "creator": "크리에이터",
+    "genre": "장르",
+    "format": "포맷",
+    "rating": "평점",
+    "views": "조회수",
+    "chapters": "회차",
+    "status": "상태",
+    "completed": "완결",
+    "ongoing": "연재중",
+    "rights": "라이선스 가능 권리",
+    "contactCreator": "크리에이터 연락",
+    "viewPitch": "피치 덱 보기"
+  },
+  "filters": {
+    "genre": "장르",
+    "format": "포맷",
+    "rights": "권리",
+    "sort": "정렬 기준",
+    "popularity": "인기순",
+    "newest": "최신순",
+    "rating": "평점순"
+  }
+}

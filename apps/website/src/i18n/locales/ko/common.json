@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "홈",
+    "creators": "작가",
+    "producers": "프로듀서",
+    "pricing": "가격",
+    "signup": "회원가입",
+    "signin": "로그인",
+    "about": "소개",
+    "news": "소식"
+  },
+  "footer": {
+    "company": "회사",
+    "about": "회사 소개",
+    "careers": "채용",
+    "contact": "연락처",
+    "resources": "리소스",
+    "blog": "블로그",
+    "help": "고객 지원",
+    "legal": "법률",
+    "privacy": "개인정보 처리방침",
+    "terms": "이용약관",
+    "copyright": "© 2024 K Story Bridge. All rights reserved.",
+    "followUs": "팔로우"
+  },
+  "cta": {
+    "getStarted": "시작하기",
+    "learnMore": "자세히 보기",
+    "signUp": "회원가입",
+    "tryForFree": "무료 체험",
+    "contactUs": "문의하기",
+    "viewDemo": "데모 보기",
+    "startFreeTrial": "무료 체험 시작"
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "success": "성공",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집",
+    "back": "뒤로",
+    "next": "다음",
+    "submit": "제출",
+    "search": "검색",
+    "filter": "필터",
+    "sort": "정렬",
+    "viewAll": "전체 보기",
+    "showMore": "더 보기",
+    "showLess": "간략히 보기"
+  }
+}

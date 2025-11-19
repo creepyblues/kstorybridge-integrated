@@ -11,17 +11,17 @@ import {
 } from 'lucide-react';
 
 /**
- * HOMEPAGE - "BRIDGE-FIRST" DESIGN
+ * HOMEPAGE PREVIEW 4 - "BRIDGE-FIRST" DESIGN
  *
  * Visual Concept: Lead with connection/partnership value proposition
- * Focus: KStoryBridge connects creators + producers to create bigger value
+ * Focus: KStoryBridge connects creators + buyers to create bigger value
  * Appeal: Both audiences equally, emphasize relationship and expertise
  *
- * Updated: 2025-11-18
+ * Created: 2025-11-17
  */
 
-const HomePage = () => {
-  const { t } = useTranslation('home');
+const HomePagePreview4 = () => {
+  const { t } = useTranslation('homePreview4');
 
   // Load Beehiiv script for newsletter
   useEffect(() => {
@@ -40,6 +40,24 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-white">
 
+      {/* Preview Banner */}
+      <div className="bg-yellow-50 border-b-2 border-yellow-400 py-3 px-4 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-yellow-900">⚠️ PREVIEW MODE</span>
+            <span className="text-sm text-yellow-800">
+              This is a preview of the new "Bridge-First" homepage design
+            </span>
+          </div>
+          <a
+            href="/"
+            className="text-sm text-yellow-900 hover:text-yellow-700 font-semibold underline"
+          >
+            View Production →
+          </a>
+        </div>
+      </div>
+
       {/* Navigation */}
       <UniversalHeader />
 
@@ -49,46 +67,45 @@ const HomePage = () => {
             SECTION 1: HERO - THE BRIDGE MESSAGE
             Connection & partnership value proposition
             ======================================== */}
-        <section className="py-16 sm:py-20 lg:py-28 bg-gradient-to-b from-white to-porcelain-blue-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <section
+          className="py-16 sm:py-20 lg:py-28 bg-gray-50 relative overflow-hidden"
+          style={{
+            backgroundImage: 'url(https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/KSB-main_bridge.png)',
+            backgroundSize: 'contain',
+            backgroundPosition: 'right center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-50 via-gray-50/50 to-transparent"></div>
 
-              {/* Left: Text Content */}
-              <div className="text-center lg:text-left">
-                {/* Main Headline */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-midnight-ink mb-6 leading-tight">
-                  {t('hero.title')}
-                </h1>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="max-w-2xl">
 
-                {/* Subheadline */}
-                <p className="text-xl sm:text-2xl text-midnight-ink-600 mb-10 leading-relaxed">
-                  {t('hero.subtitle')}
-                </p>
+              {/* Main Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-midnight-ink mb-6 leading-tight">
+                {t('hero.title')}
+              </h1>
 
-                {/* Dual CTAs */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Button
-                    className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-6 text-lg rounded-full"
-                    onClick={() => window.location.href = '/creators'}
-                  >
-                    {t('hero.ctaCreator')}
-                  </Button>
-                  <Button
-                    className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full"
-                    onClick={() => window.location.href = '/producers'}
-                  >
-                    {t('hero.ctaBuyer')}
-                  </Button>
-                </div>
-              </div>
+              {/* Subheadline */}
+              <p className="text-xl sm:text-2xl text-midnight-ink-600 mb-10 leading-relaxed">
+                {t('hero.subtitle')}
+              </p>
 
-              {/* Right: Bridge Image */}
-              <div className="flex items-center justify-center">
-                <img
-                  src="https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/main.png"
-                  alt="KStoryBridge connecting Korean stories to global audiences"
-                  className="w-full h-auto max-w-lg rounded-2xl shadow-lg"
-                />
+              {/* Dual CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-6 text-lg rounded-full"
+                  onClick={() => window.location.href = '/creators'}
+                >
+                  {t('hero.ctaCreator')}
+                </Button>
+                <Button
+                  className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full"
+                  onClick={() => window.location.href = '/buyers'}
+                >
+                  {t('hero.ctaBuyer')}
+                </Button>
               </div>
 
             </div>
@@ -99,7 +116,7 @@ const HomePage = () => {
             SECTION 2: THREE CORE VALUES
             Intelligent Discovery, Trusted Connection, Transmedia Expertise
             ======================================== */}
-        <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-porcelain-blue-50 to-white">
+        <section className="py-16 sm:py-20 lg:py-24 bg-white border-y border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             {/* Section Title */}
@@ -115,7 +132,7 @@ const HomePage = () => {
             <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
 
               {/* Value 1: Intelligent Discovery */}
-              <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow duration-300">
+              <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
                 <CardContent className="p-8">
                   <div className="w-12 h-12 bg-hanok-teal/10 rounded-lg flex items-center justify-center mb-6">
                     <Sparkles className="h-6 w-6 text-hanok-teal" />
@@ -132,7 +149,7 @@ const HomePage = () => {
               </Card>
 
               {/* Value 2: Trusted Connection */}
-              <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow duration-300">
+              <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
                 <CardContent className="p-8">
                   <div className="w-12 h-12 bg-hanok-teal/10 rounded-lg flex items-center justify-center mb-6">
                     <ShieldCheck className="h-6 w-6 text-hanok-teal" />
@@ -149,7 +166,7 @@ const HomePage = () => {
               </Card>
 
               {/* Value 3: Transmedia Expertise */}
-              <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow duration-300">
+              <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
                 <CardContent className="p-8">
                   <div className="w-12 h-12 bg-hanok-teal/10 rounded-lg flex items-center justify-center mb-6">
                     <Network className="h-6 w-6 text-hanok-teal" />
@@ -172,7 +189,7 @@ const HomePage = () => {
         {/* ========================================
             SECTION 3: NEWSLETTER
             ======================================== */}
-        <section className="py-16 sm:py-20 lg:py-24 bg-porcelain-blue-50">
+        <section className="py-16 sm:py-20 lg:py-24 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
               <iframe
@@ -203,4 +220,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default HomePagePreview4;

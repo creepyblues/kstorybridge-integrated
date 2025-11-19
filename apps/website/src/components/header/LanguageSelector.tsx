@@ -1,13 +1,7 @@
 
 import { Button } from '@kstorybridge/ui';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@kstorybridge/ui';
 import { Globe } from 'lucide-react';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { trackLanguageChange } from '@/utils/analytics';
 
 interface LanguageSelectorProps {
@@ -15,56 +9,42 @@ interface LanguageSelectorProps {
 }
 
 const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
-  const { language, setLanguage } = useLanguage();
+  const { i18n } = useTranslation();
 
-  const handleLanguageChange = (newLanguage: 'EN' | 'KR') => {
-    const oldLanguage = language;
-    setLanguage(newLanguage);
-    trackLanguageChange(oldLanguage, newLanguage);
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'ko' : 'en';
+    const oldLang = i18n.language === 'en' ? 'EN' : 'KR';
+    const newLangDisplay = newLang === 'en' ? 'EN' : 'KR';
+    i18n.changeLanguage(newLang);
+    trackLanguageChange(oldLang, newLangDisplay);
   };
+
+  const currentLanguage = i18n.language === 'ko' ? '한글' : 'EN';
 
   if (isMobile) {
     return (
-      <div className="flex space-x-2">
-        <Button 
-          id="mobile-language-en-btn"
-          variant={language === 'EN' ? 'outline' : 'ghost'} 
-          size="sm"
-          onClick={() => handleLanguageChange('EN')}
-          className={language === 'EN' ? 'bg-hanok-teal text-white border-hanok-teal hover:bg-hanok-teal/90' : ''}
-        >
-          EN
-        </Button>
-        <Button 
-          id="mobile-language-kr-btn"
-          variant={language === 'KR' ? 'outline' : 'ghost'} 
-          size="sm"
-          onClick={() => handleLanguageChange('KR')}
-          className={language === 'KR' ? 'bg-hanok-teal text-white border-hanok-teal hover:bg-hanok-teal/90' : ''}
-        >
-          KR
-        </Button>
-      </div>
+      <Button
+        id="mobile-language-toggle-btn"
+        size="sm"
+        onClick={toggleLanguage}
+        className="bg-gray-500 hover:bg-gray-600 text-white border-0 px-2 py-1"
+      >
+        <Globe className="w-4 h-4 mr-1" />
+        {currentLanguage}
+      </Button>
     );
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button id="header-language-selector-btn" variant="outline" size="sm" className="flex items-center space-x-1 border-gray-300 text-gray-700 hover:bg-gray-50">
-          <Globe className="w-4 h-4" />
-          <span>{language}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg">
-        <DropdownMenuItem onClick={() => handleLanguageChange('EN')}>
-          English
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleLanguageChange('KR')}>
-          한국어
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      id="header-language-toggle-btn"
+      size="sm"
+      onClick={toggleLanguage}
+      className="bg-gray-500 hover:bg-gray-600 text-white border-0 px-2 py-1"
+    >
+      <Globe className="w-4 h-4 mr-1" />
+      {currentLanguage}
+    </Button>
   );
 };
 

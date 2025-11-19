@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@kstorybridge/ui';
 import { Menu, X } from 'lucide-react';
 import { getDashboardUrl } from '../config/urls';
+import LanguageSelector from './header/LanguageSelector';
 
 const UniversalHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useTranslation('common');
 
   // Check if current page is in the nav
   const isActive = (path: string) => {
@@ -34,35 +37,35 @@ const UniversalHeader = () => {
           
           {/* Desktop Navigation and Auth Buttons */}
           <div className="hidden md:flex items-center space-x-8">
-            <button 
+            <button
               onClick={() => navigate('/creators')}
               className={`font-medium transition-colors ${
-                isActive('/creators') 
-                  ? 'text-hanok-teal' 
+                isActive('/creators')
+                  ? 'text-hanok-teal'
                   : 'text-midnight-ink hover:text-hanok-teal'
               }`}
             >
-              CREATORS
+              {t('nav.creators').toUpperCase()}
             </button>
-            <button 
-              onClick={() => navigate('/buyers')}
+            <button
+              onClick={() => navigate('/producers')}
               className={`font-medium transition-colors ${
-                isActive('/buyers') 
-                  ? 'text-hanok-teal' 
+                isActive('/producers')
+                  ? 'text-hanok-teal'
                   : 'text-midnight-ink hover:text-hanok-teal'
               }`}
             >
-              BUYERS
+              {t('nav.producers').toUpperCase()}
             </button>
-            <button 
+            <button
               onClick={() => navigate('/news')}
               className={`font-medium transition-colors ${
-                isActive('/news') 
-                  ? 'text-hanok-teal' 
+                isActive('/news')
+                  ? 'text-hanok-teal'
                   : 'text-midnight-ink hover:text-hanok-teal'
               }`}
             >
-              NEWS
+              {t('nav.news').toUpperCase()}
             </button>
             <button
               onClick={() => navigate('/about')}
@@ -72,7 +75,7 @@ const UniversalHeader = () => {
                   : 'text-midnight-ink hover:text-hanok-teal'
               }`}
             >
-              ABOUT
+              {t('nav.about').toUpperCase()}
             </button>
 
             {/* Auth Buttons */}
@@ -80,8 +83,11 @@ const UniversalHeader = () => {
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
               onClick={() => navigate('/signin')}
             >
-              GET STARTED
+              {t('cta.getStarted').toUpperCase()}
             </Button>
+
+            {/* Language Selector */}
+            <LanguageSelector />
           </div>
           
           {/* Mobile menu button - improved touch target */}
@@ -105,7 +111,7 @@ const UniversalHeader = () => {
           <div className="px-4 py-6 space-y-6">
             {/* Navigation Links */}
             <div className="space-y-1">
-              <button 
+              <button
                 onClick={() => {
                   navigate('/creators');
                   setMobileMenuOpen(false);
@@ -116,22 +122,22 @@ const UniversalHeader = () => {
                     : 'text-midnight-ink hover:bg-gray-50'
                 }`}
               >
-                CREATORS
+                {t('nav.creators').toUpperCase()}
               </button>
-              <button 
+              <button
                 onClick={() => {
-                  navigate('/buyers');
+                  navigate('/producers');
                   setMobileMenuOpen(false);
                 }}
                 className={`block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors ${
-                  isActive('/buyers')
+                  isActive('/producers')
                     ? 'bg-hanok-teal/10 text-hanok-teal'
                     : 'text-midnight-ink hover:bg-gray-50'
                 }`}
               >
-                BUYERS
+                {t('nav.producers').toUpperCase()}
               </button>
-              <button 
+              <button
                 onClick={() => {
                   navigate('/news');
                   setMobileMenuOpen(false);
@@ -142,7 +148,7 @@ const UniversalHeader = () => {
                     : 'text-midnight-ink hover:bg-gray-50'
                 }`}
               >
-                NEWS
+                {t('nav.news').toUpperCase()}
               </button>
               <button
                 onClick={() => {
@@ -155,12 +161,15 @@ const UniversalHeader = () => {
                     : 'text-midnight-ink hover:bg-gray-50'
                 }`}
               >
-                ABOUT
+                {t('nav.about').toUpperCase()}
               </button>
             </div>
 
-            {/* Auth Buttons - Full width on mobile */}
+            {/* Language Selector & Auth Buttons - Full width on mobile */}
             <div className="pt-6 border-t border-gray-200 space-y-3">
+              <div className="flex justify-center">
+                <LanguageSelector isMobile={true} />
+              </div>
               <Button
                 className="w-full border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-3 rounded-full font-medium transition-colors"
                 onClick={() => {
@@ -168,7 +177,7 @@ const UniversalHeader = () => {
                   setMobileMenuOpen(false);
                 }}
               >
-                GET STARTED
+                {t('cta.getStarted').toUpperCase()}
               </Button>
             </div>
           </div>

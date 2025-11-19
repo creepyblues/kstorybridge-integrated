@@ -27,10 +27,10 @@ import {
 
 // Existing Services
 import FeaturedTitlesCarouselNew from '../components/FeaturedTitlesCarouselNew';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 const HomePageNew = () => {
-  const { t } = useLanguage();
+  const { t } = useTranslation(['home', 'common']);
   const navigate = useNavigate();
   
   // No local authentication - redirect to dashboard

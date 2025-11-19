@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
@@ -18,44 +18,48 @@ import {
 } from 'lucide-react';
 
 /**
- * BUYERS PAGE
+ * PRODUCERS PAGE PREVIEW
  *
- * Main landing page for Hollywood buyers and media scouts.
+ * This is a PREVIEW/TEST page for the redesigned /producers page.
+ * DO NOT deploy to production without removing the preview banner.
  *
  * Design Strategy: AI-first messaging with clear rights chain and expert support
  * Documentation: /apps/dashboard/public/docs/BUYERS_PAGE_OVERHAUL.md
  *
  * Sections:
- * 1. Hero (AI-first messaging)
- * 2. Video Showcase
- * 3. AI Assistant Showcase (Priority #1)
- * 4. Value Props Grid (3 pillars)
- * 5. Rights Deep Dive (Priority #2)
- * 6. Streamlined Process (3 steps)
- * 7. Catalog Preview
- * 8. Final CTA (simplified)
- * 9. Newsletter
+ * 1. Hero (revised messaging)
+ * 2. AI Assistant Showcase (NEW - Priority #1)
+ * 3. Value Props Grid (NEW - 3 pillars)
+ * 4. Rights Deep Dive (NEW - Priority #2)
+ * 5. Streamlined Process (3 steps instead of 4)
+ * 6. Catalog Preview (existing with minor updates)
+ * 7. Pricing + Final CTA (combined and simplified)
  *
- * Updated: 2025-10-20
+ * Created: 2025-10-13
  */
 
-const BuyersPage = () => {
-  // Load Beehiiv script for newsletter
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://subscribe-forms.beehiiv.com/embed.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
-
+const ProducersPagePreview = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
+
+      {/* ========================================
+          PREVIEW BANNER - REMOVE BEFORE PRODUCTION
+          ======================================== */}
+      <div className="bg-yellow-50 border-b-2 border-yellow-400 py-3 px-4 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 bg-yellow-400 text-yellow-900 font-bold text-sm rounded">
+              PREVIEW MODE
+            </span>
+            <span className="text-yellow-900 text-sm">
+              Testing redesigned /producers page. <Link to="/producers" className="underline hover:text-yellow-700">View current page</Link> | <a href="http://localhost:8081/docs/view/BUYERS_PAGE_OVERHAUL.md" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-700">View strategy doc</a>
+            </span>
+          </div>
+          <span className="text-yellow-700 text-xs">
+            Preview created: 2025-10-13
+          </span>
+        </div>
+      </div>
 
       {/* Navigation */}
       <UniversalHeader />
@@ -83,7 +87,7 @@ const BuyersPage = () => {
                 id="buyers-hero-try-ai-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
                 Try AI Assistant →
               </Button>
@@ -96,27 +100,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 2: VIDEO SHOWCASE
-            ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-5xl mx-auto">
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  className="absolute top-0 left-0 w-full h-full rounded-2xl shadow-lg"
-                  src="https://www.youtube.com/embed/BJS2m-MfOFg"
-                  title="KStoryBridge Video"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================
-            SECTION 3: AI ASSISTANT SHOWCASE (NEW)
+            SECTION 2: AI ASSISTANT SHOWCASE (NEW)
             Priority #1 - 30% page focus
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -220,7 +204,7 @@ const BuyersPage = () => {
                     <Button
                       size="sm"
                       className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
-                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
                     >
                       Chat with Jinu
                     </Button>
@@ -233,7 +217,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 4: VALUE PROPS GRID (NEW)
+            SECTION 3: VALUE PROPS GRID (NEW)
             3 Core Pillars
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-50">
@@ -306,7 +290,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 5: RIGHTS DEEP DIVE (NEW)
+            SECTION 4: RIGHTS DEEP DIVE (NEW)
             Priority #2 - 25% page focus
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -325,47 +309,47 @@ const BuyersPage = () => {
 
             {/* Visual Rights Chain Diagram */}
             <div className="max-w-5xl mx-auto mb-12">
-              <div className="flex flex-col md:flex-row items-center justify-evenly gap-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 {/* Step 1 */}
-                <div className="flex-1 text-center max-w-[200px] w-full">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">
-                    <FileCheck className="h-10 w-10 text-green-600 flex-shrink-0" />
+                <div className="flex-1 text-center">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileCheck className="h-10 w-10 text-green-600" />
                   </div>
-                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">1. Creator Profile</h4>
-                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">Verified identity & work history</p>
+                  <h4 className="font-semibold text-midnight-ink mb-2">1. Creator Profile</h4>
+                  <p className="text-sm text-midnight-ink-600">Verified identity & work history</p>
                 </div>
 
-                <ArrowRight className="hidden md:block h-6 w-6 text-gray-400 flex-shrink-0 self-start mt-8" />
+                <ArrowRight className="hidden md:block h-6 w-6 text-gray-400" />
 
                 {/* Step 2 */}
-                <div className="flex-1 text-center max-w-[200px] w-full">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">
-                    <Shield className="h-10 w-10 text-green-600 flex-shrink-0" />
+                <div className="flex-1 text-center">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Shield className="h-10 w-10 text-green-600" />
                   </div>
-                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">2. Rights Documentation</h4>
-                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">Clear ownership records</p>
+                  <h4 className="font-semibold text-midnight-ink mb-2">2. Rights Documentation</h4>
+                  <p className="text-sm text-midnight-ink-600">Clear ownership records</p>
                 </div>
 
-                <ArrowRight className="hidden md:block h-6 w-6 text-gray-400 flex-shrink-0 self-start mt-8" />
+                <ArrowRight className="hidden md:block h-6 w-6 text-gray-400" />
 
                 {/* Step 3 */}
-                <div className="flex-1 text-center max-w-[200px] w-full">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">
-                    <Handshake className="h-10 w-10 text-green-600 flex-shrink-0" />
+                <div className="flex-1 text-center">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Handshake className="h-10 w-10 text-green-600" />
                   </div>
-                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">3. Direct Connection</h4>
-                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">No intermediaries</p>
+                  <h4 className="font-semibold text-midnight-ink mb-2">3. Direct Connection</h4>
+                  <p className="text-sm text-midnight-ink-600">No intermediaries</p>
                 </div>
 
-                <ArrowRight className="hidden md:block h-6 w-6 text-gray-400 flex-shrink-0 self-start mt-8" />
+                <ArrowRight className="hidden md:block h-6 w-6 text-gray-400" />
 
                 {/* Step 4 */}
-                <div className="flex-1 text-center max-w-[200px] w-full">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mx-auto mb-4">
-                    <CheckCircle2 className="h-10 w-10 text-green-600 flex-shrink-0" />
+                <div className="flex-1 text-center">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="h-10 w-10 text-green-600" />
                   </div>
-                  <h4 className="font-semibold text-midnight-ink mb-2 min-h-[3rem] flex items-center justify-center">4. Deal Closed</h4>
-                  <p className="text-sm text-midnight-ink-600 min-h-[2.5rem]">Clean chain of title</p>
+                  <h4 className="font-semibold text-midnight-ink mb-2">4. Deal Closed</h4>
+                  <p className="text-sm text-midnight-ink-600">Clean chain of title</p>
                 </div>
               </div>
             </div>
@@ -435,7 +419,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 6: STREAMLINED PROCESS
+            SECTION 5: STREAMLINED PROCESS
             Simplified to 3 steps
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -488,7 +472,7 @@ const BuyersPage = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
                 Get Started
               </Button>
@@ -497,7 +481,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 7: CATALOG PREVIEW
+            SECTION 6: CATALOG PREVIEW
             Keep existing with minor updates
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-100">
@@ -520,7 +504,7 @@ const BuyersPage = () => {
                 id="buyers-catalog-join-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
                 Join to View Full Catalog
               </Button>
@@ -529,7 +513,7 @@ const BuyersPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 8: PRICING + FINAL CTA
+            SECTION 7: PRICING + FINAL CTA
             Combined and simplified
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -547,7 +531,7 @@ const BuyersPage = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
                 Try Free
               </Button>
@@ -560,34 +544,6 @@ const BuyersPage = () => {
           </div>
         </section>
 
-        {/* ========================================
-            SECTION 9: NEWSLETTER
-            KStoryBridge Newsletter signup
-            ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-              <iframe
-                src="https://subscribe-forms.beehiiv.com/44fe1ec1-b67e-4431-9ed2-84a8bb05dbbc"
-                className="beehiiv-embed"
-                data-test-id="beehiiv-embed"
-                frameBorder="0"
-                scrolling="no"
-                style={{
-                  width: '1014px',
-                  height: '288px',
-                  margin: '0 auto',
-                  borderRadius: '0px',
-                  backgroundColor: 'transparent',
-                  boxShadow: '0 0 #0000',
-                  maxWidth: '100%',
-                  display: 'block'
-                }}
-              />
-            </div>
-          </div>
-        </section>
-
       </main>
 
       <Footer />
@@ -595,4 +551,4 @@ const BuyersPage = () => {
   );
 };
 
-export default BuyersPage;
+export default ProducersPagePreview;

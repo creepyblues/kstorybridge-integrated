@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
@@ -6,7 +5,6 @@ import { Card, CardContent } from '../components/ui/card';
 import Footer from '../components/Footer';
 import { ArrowRight, Palette, ShoppingCart } from 'lucide-react';
 import { getDashboardUrl, getCreatorUrl } from '../config/urls';
-import CreatorComingSoonDialog from '../components/CreatorComingSoonDialog';
 
 /**
  * SIGNIN PAGE - Authentication Entry Point
@@ -20,9 +18,6 @@ import CreatorComingSoonDialog from '../components/CreatorComingSoonDialog';
 
 const SigninPage = () => {
   const { t } = useTranslation('auth');
-
-  // State for "Coming Soon" dialog
-  const [showComingSoon, setShowComingSoon] = useState(false);
 
   // Get environment-aware URLs
   const dashboardUrl = getDashboardUrl();
@@ -69,24 +64,23 @@ const SigninPage = () => {
                   </p>
 
                   {/* Sign Up Button (Primary) */}
-                  <div className="block mb-4">
+                  <a href={`${creatorUrl}/signup`} className="block mb-4">
                     <Button
-                      onClick={() => setShowComingSoon(true)}
                       size="lg"
                       className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       {t('signinPage.creator.signupButton')}
                     </Button>
-                  </div>
+                  </a>
 
                   {/* Sign In Link */}
-                  <button
-                    onClick={() => setShowComingSoon(true)}
-                    className="w-full flex items-center justify-center text-black hover:text-gray-700 transition-colors text-sm"
+                  <a
+                    href={`${creatorUrl}/signin`}
+                    className="flex items-center justify-center text-black hover:text-gray-700 transition-colors text-sm"
                   >
                     {t('signinPage.creator.signinLink')}
                     <ArrowRight className="w-4 h-4 ml-1" />
-                  </button>
+                  </a>
                 </CardContent>
               </Card>
 
@@ -146,12 +140,6 @@ const SigninPage = () => {
 
       {/* Footer */}
       <Footer />
-
-      {/* Creator Coming Soon Dialog */}
-      <CreatorComingSoonDialog
-        open={showComingSoon}
-        onOpenChange={setShowComingSoon}
-      />
     </div>
   );
 };

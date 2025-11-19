@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
 import Footer from '../components/Footer';
-import CreatorComingSoonDialog from '../components/CreatorComingSoonDialog';
+import { getCreatorUrl } from '../config/urls';
 import {
   Globe,
   Shield,
@@ -18,7 +17,6 @@ import {
 
 const CreatorsPage = () => {
   const { t } = useTranslation('creators');
-  const [showComingSoon, setShowComingSoon] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
@@ -48,7 +46,7 @@ const CreatorsPage = () => {
                 id="creators-hero-join-btn"
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => setShowComingSoon(true)}
+                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
               >
                 {t('hero.cta')}
               </Button>
@@ -128,7 +126,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
-                onClick={() => setShowComingSoon(true)}
+                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
               >
                 {t('access.cta')}
               </Button>
@@ -310,7 +308,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
-                onClick={() => setShowComingSoon(true)}
+                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
               >
                 {t('expertDeepDive.cta')}
               </Button>
@@ -421,7 +419,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => setShowComingSoon(true)}
+                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
               >
                 {t('steps.cta')}
               </Button>
@@ -448,7 +446,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 mb-6"
-                onClick={() => setShowComingSoon(true)}
+                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
               >
                 {t('finalCta.cta')}
               </Button>
@@ -467,11 +465,6 @@ const CreatorsPage = () => {
       </main>
 
       <Footer />
-
-      <CreatorComingSoonDialog
-        open={showComingSoon}
-        onOpenChange={setShowComingSoon}
-      />
     </div>
   );
 };

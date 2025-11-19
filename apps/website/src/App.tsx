@@ -11,14 +11,14 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const HomePageOld = lazy(() => import("./pages/HomePageOld"));
 const HomePageNew = lazy(() => import("./pages/HomePageNew"));
 const CreatorsPage = lazy(() => import("./pages/CreatorsPage"));
-const BuyersPage = lazy(() => import("./pages/BuyersPage"));
-const BuyersPagePreview = lazy(() => import("./pages/BuyersPagePreview"));
+const ProducersPage = lazy(() => import("./pages/ProducersPage"));
+const ProducersPagePreview = lazy(() => import("./pages/ProducersPagePreview"));
 const CreatorsPagePreview = lazy(() => import("./pages/CreatorsPagePreview"));
 const HomePagePreview1 = lazy(() => import("./pages/HomePagePreview1"));
 const HomePagePreview2 = lazy(() => import("./pages/HomePagePreview2"));
 const HomePagePreview3 = lazy(() => import("./pages/HomePagePreview3"));
 const HomePagePreview4 = lazy(() => import("./pages/HomePagePreview4"));
-const BuyersOnboardingPage = lazy(() => import("./pages/BuyersOnboardingPage"));
+const ProducersOnboardingPage = lazy(() => import("./pages/ProducersOnboardingPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const SigninPage = lazy(() => import("./pages/SigninPage"));
 const TitleDetailPage = lazy(() => import("./pages/TitleDetailPage"));
@@ -48,15 +48,15 @@ const App = () => (
           <Route path="/home-old" element={<HomePageOld />} />
           <Route path="/new-design" element={<HomePageNew />} />
           <Route path="/creators" element={<CreatorsPage />} />
-          <Route path="/buyers" element={<BuyersPage />} />
+          <Route path="/producers" element={<ProducersPage />} />
           {/* PREVIEW ROUTES - Only available in development */}
-          {import.meta.env.DEV && <Route path="/buyers-preview" element={<BuyersPagePreview />} />}
+          {import.meta.env.DEV && <Route path="/producers-preview" element={<ProducersPagePreview />} />}
           {import.meta.env.DEV && <Route path="/creators-preview" element={<CreatorsPagePreview />} />}
           {import.meta.env.DEV && <Route path="/home-preview1" element={<HomePagePreview1 />} />}
           {import.meta.env.DEV && <Route path="/home-preview2" element={<HomePagePreview2 />} />}
           {import.meta.env.DEV && <Route path="/home-preview3" element={<HomePagePreview3 />} />}
           {import.meta.env.DEV && <Route path="/home-preview4" element={<HomePagePreview4 />} />}
-          <Route path="/buyers/onboarding" element={<BuyersOnboardingPage />} />
+          <Route path="/producers/onboarding" element={<ProducersOnboardingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />

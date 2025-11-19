@@ -3,13 +3,10 @@
     "title": "Your Story Deserves the ",
     "titleHighlight": "Global Stage",
     "subtitle": "Pitch directly to Hollywood IP scouts, writers, and producers",
-    "description": "From Korea to Hollywood. We open the doors. You keep creative control.",
-    "cta": "Join the Platform",
-    "trustSignal": "Free to join • No exclusivity required"
+    "cta": "Join the Platform"
   },
   "access": {
     "title": "Stop Being Invisible to Hollywood",
-    "subtitle": "Direct access to the buyers who greenlight global hits",
     "studios": {
       "stat": "50+",
       "statLabel": "Hollywood studios and global streamers"
@@ -100,20 +97,17 @@
     "step1": {
       "number": "01",
       "title": "Join & Showcase",
-      "description": "Create your profile, upload your webtoon/novel, tell us your vision",
-      "tagline": "5-minute setup"
+      "description": "Create your profile, upload your webtoon/novel, tell us your idea and vision"
     },
     "step2": {
       "number": "02",
       "title": "Get Hollywood-Ready",
-      "description": "Our team develops your professional pitch deck with Hollywood veteran guidance",
-      "tagline": "1-2 weeks turnaround"
+      "description": "Our team develops your professional pitch deck with Hollywood veteran guidance"
     },
     "step3": {
       "number": "03",
       "title": "Connect & Close",
-      "description": "Hollywood buyers see your pitch, reach out directly, and we support you through deal closure",
-      "tagline": "We're with you every step"
+      "description": "Hollywood producers see your pitch and connect with you. We support you through deal closure"
     },
     "cta": "Get Started"
   },
@@ -124,8 +118,7 @@
     "trustSignals": {
       "free": "✓ Free to join",
       "noExclusivity": "✓ No exclusivity required",
-      "creativeControl": "✓ Keep creative control"
-    },
-    "disclaimer": "Free platform • No upfront fees • Commission only on successful deals • Keep IP rights"
+      "creativeControl": "✓ Keep your rights"
+    }
   }
 }

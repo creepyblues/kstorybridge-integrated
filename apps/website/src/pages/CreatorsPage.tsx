@@ -12,12 +12,8 @@ import {
   Users,
   MessageSquare,
   FileCheck,
-  Handshake,
-  TrendingUp,
   CheckCircle2,
-  ArrowRight,
-  Star,
-  Target
+  Star
 } from 'lucide-react';
 
 const CreatorsPage = () => {
@@ -43,12 +39,8 @@ const CreatorsPage = () => {
               </h1>
 
               {/* Hollywood access hook */}
-              <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 mb-4 leading-relaxed max-w-3xl mx-auto">
+              <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto">
                 {t('hero.subtitle')}
-              </p>
-
-              <p className="text-base sm:text-lg text-midnight-ink-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto">
-                {t('hero.description')}
               </p>
 
               {/* Primary CTA */}
@@ -60,10 +52,6 @@ const CreatorsPage = () => {
               >
                 {t('hero.cta')}
               </Button>
-
-              <p className="mt-4 text-sm text-midnight-ink-400">
-                {t('hero.trustSignal')}
-              </p>
             </div>
           </div>
         </section>
@@ -72,18 +60,15 @@ const CreatorsPage = () => {
             SECTION 2: ACCESS SHOWCASE (NEW)
             Priority #1 - 30% page focus
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-              <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="flex items-center justify-center gap-3">
                 <Globe className="h-10 w-10 text-sunrise-coral" />
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink">
                   {t('access.title')}
                 </h2>
               </div>
-              <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                {t('access.subtitle')}
-              </p>
             </div>
 
             {/* Studio Logo Grid */}
@@ -139,63 +124,6 @@ const CreatorsPage = () => {
               </div>
             </div>
 
-            {/* 3 Feature Cards */}
-            <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-sunrise-coral/10 rounded-lg flex items-center justify-center">
-                      <Target className="h-6 w-6 text-sunrise-coral" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        {t('access.features.direct.title')}
-                      </h3>
-                      <p className="text-midnight-ink-600">
-                        {t('access.features.direct.description')}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-sunrise-coral/10 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="h-6 w-6 text-sunrise-coral" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        {t('access.features.active.title')}
-                      </h3>
-                      <p className="text-midnight-ink-600">
-                        {t('access.features.active.description')}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-sunrise-coral/10 rounded-lg flex items-center justify-center">
-                      <Shield className="h-6 w-6 text-sunrise-coral" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-midnight-ink mb-2">
-                        {t('access.features.noGatekeepers.title')}
-                      </h3>
-                      <p className="text-midnight-ink-600">
-                        {t('access.features.noGatekeepers.description')}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             <div className="text-center mt-12">
               <Button
                 size="lg"
@@ -212,7 +140,7 @@ const CreatorsPage = () => {
             SECTION 3: THREE GUARANTEES GRID
             3 Core Pillars
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-50">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-porcelain-blue-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
@@ -288,7 +216,7 @@ const CreatorsPage = () => {
             SECTION 4: EXPERT DEEP DIVE (NEW)
             Priority #2 - 30% page focus
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -393,7 +321,7 @@ const CreatorsPage = () => {
         {/* ========================================
             SECTION 5: BEFORE/AFTER COMPARISON
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-porcelain-blue-50">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-porcelain-blue-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
@@ -443,7 +371,7 @@ const CreatorsPage = () => {
             SECTION 6: THREE STEPS
             Simplified journey
             ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
@@ -461,11 +389,8 @@ const CreatorsPage = () => {
                   {t('steps.step1.number')}
                 </div>
                 <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step1.title')}</h3>
-                <p className="text-midnight-ink-600 leading-relaxed mb-3">
+                <p className="text-midnight-ink-600 leading-relaxed">
                   {t('steps.step1.description')}
-                </p>
-                <p className="text-sm text-hanok-teal font-semibold">
-                  {t('steps.step1.tagline')}
                 </p>
               </div>
 
@@ -475,11 +400,8 @@ const CreatorsPage = () => {
                   {t('steps.step2.number')}
                 </div>
                 <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step2.title')}</h3>
-                <p className="text-midnight-ink-600 leading-relaxed mb-3">
+                <p className="text-midnight-ink-600 leading-relaxed">
                   {t('steps.step2.description')}
-                </p>
-                <p className="text-sm text-hanok-teal font-semibold">
-                  {t('steps.step2.tagline')}
                 </p>
               </div>
 
@@ -489,11 +411,8 @@ const CreatorsPage = () => {
                   {t('steps.step3.number')}
                 </div>
                 <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step3.title')}</h3>
-                <p className="text-midnight-ink-600 leading-relaxed mb-3">
+                <p className="text-midnight-ink-600 leading-relaxed">
                   {t('steps.step3.description')}
-                </p>
-                <p className="text-sm text-porcelain-blue-600 font-semibold">
-                  {t('steps.step3.tagline')}
                 </p>
               </div>
             </div>
@@ -535,15 +454,11 @@ const CreatorsPage = () => {
               </Button>
 
               {/* Trust signals */}
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-midnight-ink-600 mb-4">
+              <div className="flex flex-wrap justify-center gap-4 text-sm text-midnight-ink-600">
                 <span>{t('finalCta.trustSignals.free')}</span>
                 <span>{t('finalCta.trustSignals.noExclusivity')}</span>
                 <span>{t('finalCta.trustSignals.creativeControl')}</span>
               </div>
-
-              <p className="text-xs text-midnight-ink-400">
-                {t('finalCta.disclaimer')}
-              </p>
             </div>
 
           </div>

@@ -48,14 +48,14 @@ const UniversalHeader = () => {
               {t('nav.creators').toUpperCase()}
             </button>
             <button
-              onClick={() => navigate('/buyers')}
+              onClick={() => navigate('/producers')}
               className={`font-medium transition-colors ${
-                isActive('/buyers')
+                isActive('/producers')
                   ? 'text-hanok-teal'
                   : 'text-midnight-ink hover:text-hanok-teal'
               }`}
             >
-              {t('nav.buyers').toUpperCase()}
+              {t('nav.producers').toUpperCase()}
             </button>
             <button
               onClick={() => navigate('/news')}
@@ -126,16 +126,16 @@ const UniversalHeader = () => {
               </button>
               <button
                 onClick={() => {
-                  navigate('/buyers');
+                  navigate('/producers');
                   setMobileMenuOpen(false);
                 }}
                 className={`block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors ${
-                  isActive('/buyers')
+                  isActive('/producers')
                     ? 'bg-hanok-teal/10 text-hanok-teal'
                     : 'text-midnight-ink hover:bg-gray-50'
                 }`}
               >
-                {t('nav.buyers').toUpperCase()}
+                {t('nav.producers').toUpperCase()}
               </button>
               <button
                 onClick={() => {

@@ -67,9 +67,20 @@ const HomePagePreview4 = () => {
             SECTION 1: HERO - THE BRIDGE MESSAGE
             Connection & partnership value proposition
             ======================================== */}
-        <section className="py-16 sm:py-20 lg:py-28 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-4xl mx-auto">
+        <section
+          className="py-16 sm:py-20 lg:py-28 bg-gray-50 relative overflow-hidden"
+          style={{
+            backgroundImage: 'url(https://dlrnrgcoguxlkkcitlpd.supabase.co/storage/v1/object/public/images/KSB-main_bridge.png)',
+            backgroundSize: 'contain',
+            backgroundPosition: 'right center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-50 via-gray-50/50 to-transparent"></div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="max-w-2xl">
 
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-midnight-ink mb-6 leading-tight">
@@ -82,7 +93,7 @@ const HomePagePreview4 = () => {
               </p>
 
               {/* Dual CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-6 text-lg rounded-full"
                   onClick={() => window.location.href = '/creators'}

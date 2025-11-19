@@ -19,7 +19,7 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
     trackLanguageChange(oldLang, newLangDisplay);
   };
 
-  const currentLanguage = i18n.language === 'ko' ? '한국어' : 'English';
+  const currentLanguage = i18n.language === 'ko' ? '한글' : 'EN';
 
   if (isMobile) {
     return (
@@ -27,9 +27,9 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
         id="mobile-language-toggle-btn"
         size="sm"
         onClick={toggleLanguage}
-        className="bg-gray-500 hover:bg-gray-600 text-white border-0 w-32"
+        className="bg-gray-500 hover:bg-gray-600 text-white border-0 px-2 py-1"
       >
-        <Globe className="w-4 h-4 mr-2" />
+        <Globe className="w-4 h-4 mr-1" />
         {currentLanguage}
       </Button>
     );
@@ -40,9 +40,9 @@ const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
       id="header-language-toggle-btn"
       size="sm"
       onClick={toggleLanguage}
-      className="bg-gray-500 hover:bg-gray-600 text-white border-0 w-32"
+      className="bg-gray-500 hover:bg-gray-600 text-white border-0 px-2 py-1"
     >
-      <Globe className="w-4 h-4 mr-2" />
+      <Globe className="w-4 h-4 mr-1" />
       {currentLanguage}
     </Button>
   );

@@ -2,7 +2,7 @@
   "hero": {
     "title": "Find Your Next Hit with ",
     "titleHighlight": "AI Assistant",
-    "subtitle": "AI assistant + verified rights chain + expert deal support = Korean hits discovered faster",
+    "subtitle": "AI assistant + verified rights + expert deal support = Korean hits discovered faster",
     "cta": "Try AI Assistant →",
     "trust": "No credit card required • Free to start"
   },
@@ -32,26 +32,23 @@
     }
   },
   "pillars": {
-    "title": "Three Pillars. Three Problems Solved.",
+    "title": "Why KStoryBridge Works for You",
     "subtitle": "Everything you need to discover, verify, and acquire Korean content",
     "aiDiscovery": {
       "title": "AI-Powered Discovery",
-      "description": "Stop endless browsing. Jinu finds what you need in seconds with intelligent recommendations and story expertise.",
-      "stat": "10x faster discovery"
+      "description": "Stop endless browsing. Jinu finds what you need in seconds with intelligent recommendations and story expertise."
     },
     "rightsChain": {
-      "title": "Verified Rights Chain",
-      "description": "No more surprises. Every title has clear ownership documentation and direct access to rights holders.",
-      "stat": "Zero ownership surprises"
+      "title": "Verified Rights",
+      "description": "No more surprises. Every title has clear ownership documentation and direct access to rights holders."
     },
     "expertSupport": {
-      "title": "Expert Deal Support",
-      "description": "Navigate complex Korean deals with confidence. Cultural bridging, pitch decks, and negotiation expertise.",
-      "stat": "Close deals faster"
+      "title": "Expert Curation",
+      "description": "We don't just send you titles—we curate perfect matches for your mandate and present each with a custom pitch deck, complete with story arcs, character breakdowns, comps, and everything needed to evaluate its potential."
     }
   },
   "rightsDeepDive": {
-    "title": "Verified Rights. Zero Surprises.",
+    "title": "Verified Rights, Zero Surprises",
     "subtitle": "Clear ownership chain from creator to you",
     "chain": {
       "step1": {
@@ -94,35 +91,64 @@
       }
     }
   },
-  "process": {
-    "title": "Three Simple Steps",
-    "subtitle": "From discovery to closed deal",
-    "step1": {
-      "number": "01",
-      "title": "Discover with AI",
-      "description": "Chat with Jinu to find titles that match your audience and vision. Get 10 smart recommendations instantly."
+  "expertCuration": {
+    "title": "Expert Curation",
+    "headline": "Every Title Comes Battle-Tested",
+    "subtitle": "We don't just send you titles—we curate perfect matches for your mandate and present each with a custom pitch deck",
+    "benefits": {
+      "research": {
+        "title": "Save Weeks of Research",
+        "description": "Skip the endless browsing. Every title is pre-vetted and matched to your specific mandate."
+      },
+      "decisions": {
+        "title": "Make Confident Decisions Faster",
+        "description": "Complete pitch decks with story analysis, comps, and market positioning give you everything needed to evaluate potential."
+      },
+      "ready": {
+        "title": "Ready to Pitch Internally",
+        "description": "Present opportunities to your team with professional materials that answer all key questions upfront."
+      },
+      "matched": {
+        "title": "Matched to Your Mandate",
+        "description": "Each recommendation is tailored to your audience, platform, and content goals—no wasted time on bad fits."
+      }
     },
-    "step2": {
-      "number": "02",
-      "title": "Verify Rights",
-      "description": "Review verified ownership chain and connect directly with rights holders who have deal authority."
+    "example": {
+      "badge": "Sample Pitch Deck",
+      "storyArc": {
+        "label": "Story Arc",
+        "value": "Revenge-driven protagonist faces moral dilemmas"
+      },
+      "characters": {
+        "label": "Character Breakdown",
+        "value": "3 leads, ensemble cast, strong female lead"
+      },
+      "comps": {
+        "label": "Comp Titles",
+        "value": "Squid Game meets Succession"
+      },
+      "market": {
+        "label": "Market Positioning",
+        "value": "Premium drama, global appeal, proven IP"
+      }
     },
-    "step3": {
-      "number": "03",
-      "title": "Close with Support",
-      "description": "Navigate cultural and legal complexities with expert guidance. Get pitch decks, contract review, and mediation."
-    },
-    "cta": "Get Started"
+    "cta": "See How It Works"
   },
   "catalog": {
-    "title": "The Biggest IP Catalog",
+    "title": "The Biggest Verified IP Catalog",
     "subtitle": "Get access to verified Korean content with proven market performance",
     "cta": "Join to View Full Catalog"
   },
   "finalCta": {
-    "title": "Start Discovering Today",
-    "subtitle": "Join hundreds of buyers discovering Korean hits with AI-powered search, verified rights, and expert support",
-    "cta": "Try Free",
-    "trust": "No credit card required • Upgrade anytime • Cancel anytime"
+    "title": "Ready to Find Your Next Hit?",
+    "subtitle": "Join producers discovering Korean hits with AI-powered search, verified rights, and expert curation",
+    "primaryCta": "Try AI Assistant Free",
+    "secondaryCta": "View IP Catalog",
+    "tertiaryCta": "Talk to Our Team",
+    "trustSignals": {
+      "noCard": "✓ No credit card required",
+      "access": "✓ Access to 500+ verified titles",
+      "support": "✓ Expert support included"
+    }
   }
 }

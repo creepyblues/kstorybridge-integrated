@@ -18,9 +18,9 @@ import {
 } from 'lucide-react';
 
 /**
- * BUYERS PAGE PREVIEW
+ * PRODUCERS PAGE PREVIEW
  *
- * This is a PREVIEW/TEST page for the redesigned /buyers page.
+ * This is a PREVIEW/TEST page for the redesigned /producers page.
  * DO NOT deploy to production without removing the preview banner.
  *
  * Design Strategy: AI-first messaging with clear rights chain and expert support
@@ -38,7 +38,7 @@ import {
  * Created: 2025-10-13
  */
 
-const BuyersPagePreview = () => {
+const ProducersPagePreview = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
 
@@ -52,7 +52,7 @@ const BuyersPagePreview = () => {
               PREVIEW MODE
             </span>
             <span className="text-yellow-900 text-sm">
-              Testing redesigned /buyers page. <Link to="/buyers" className="underline hover:text-yellow-700">View current page</Link> | <a href="http://localhost:8081/docs/view/BUYERS_PAGE_OVERHAUL.md" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-700">View strategy doc</a>
+              Testing redesigned /producers page. <Link to="/producers" className="underline hover:text-yellow-700">View current page</Link> | <a href="http://localhost:8081/docs/view/BUYERS_PAGE_OVERHAUL.md" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-700">View strategy doc</a>
             </span>
           </div>
           <span className="text-yellow-700 text-xs">
@@ -87,7 +87,7 @@ const BuyersPagePreview = () => {
                 id="buyers-hero-try-ai-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
                 Try AI Assistant →
               </Button>
@@ -204,7 +204,7 @@ const BuyersPagePreview = () => {
                     <Button
                       size="sm"
                       className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
-                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
                     >
                       Chat with Jinu
                     </Button>
@@ -472,7 +472,7 @@ const BuyersPagePreview = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
                 Get Started
               </Button>
@@ -504,7 +504,7 @@ const BuyersPagePreview = () => {
                 id="buyers-catalog-join-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-12 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
                 Join to View Full Catalog
               </Button>
@@ -531,7 +531,7 @@ const BuyersPagePreview = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/buyer`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
                 Try Free
               </Button>
@@ -551,4 +551,4 @@ const BuyersPagePreview = () => {
   );
 };
 
-export default BuyersPagePreview;
+export default ProducersPagePreview;

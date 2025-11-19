@@ -1,14 +1,23 @@
 {
   "hero": {
-    "title": "최신 소식",
-    "subtitle": "K Story Bridge의 최신 소식을 확인하세요"
+    "title": "K-콘텐츠 뉴스",
+    "subtitle": "놓치면 안 될 최신 K-콘텐츠 소식"
   },
-  "categories": {
-    "all": "전체",
-    "announcements": "공지사항",
-    "features": "기능",
-    "success": "성공 스토리"
+  "search": {
+    "placeholder": "뉴스 섹션 검색...",
+    "button": "검색",
+    "clear": "지우기",
+    "resultsCount": "{{count}}개 섹션 발견",
+    "resultsCount_plural": "{{count}}개 섹션 발견",
+    "matching": "\"{{term}}\" 검색 결과",
+    "noResults": "\"{{term}}\"과 일치하는 뉴스 섹션을 찾을 수 없습니다",
+    "noSections": "현재 사용 가능한 뉴스 섹션이 없습니다."
   },
-  "readMore": "더 읽기",
-  "noArticles": "아직 기사가 없습니다"
+  "section": {
+    "takeaway": "핵심 요약:",
+    "ipReference": "IP 참조",
+    "titleFormat": "타이틀 / 포맷:",
+    "keyNumbers": "주요 수치:",
+    "whyProducersCare": "프로듀서가 주목하는 이유:"
+  }
 }

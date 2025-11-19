@@ -35,10 +35,10 @@ const SigninPage = () => {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-16 lg:py-24">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="py-12 sm:py-16 lg:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Page Title */}
-            <div className="text-center mb-12">
+            <div className="text-center mb-8 sm:mb-12">
               <h1 className="text-4xl lg:text-5xl font-bold text-midnight-ink mb-4">
                 {t('signinPage.title')}
               </h1>
@@ -51,7 +51,7 @@ const SigninPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
 
               {/* Creator Section */}
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+              <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow duration-300">
                 <CardContent className="p-8">
                   {/* Icon */}
                   <div className="w-16 h-16 bg-sunrise-coral/10 rounded-2xl flex items-center justify-center mb-6">
@@ -91,7 +91,7 @@ const SigninPage = () => {
               </Card>
 
               {/* Buyer Section */}
-              <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+              <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow duration-300">
                 <CardContent className="p-8">
                   {/* Icon */}
                   <div className="w-16 h-16 bg-hanok-teal/10 rounded-2xl flex items-center justify-center mb-6">

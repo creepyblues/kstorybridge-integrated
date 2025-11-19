@@ -6,7 +6,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { ArrowRight, CheckCircle, Play } from 'lucide-react';
 import Footer from '../components/Footer';
 
-const BuyersOnboardingPage = () => {
+const ProducersOnboardingPage = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -85,7 +85,7 @@ const BuyersOnboardingPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-midnight-ink leading-tight">
-                How <span className="text-hanok-teal">KStoryBridge</span> Works for Buyers
+                How <span className="text-hanok-teal">KStoryBridge</span> Works for Producers
               </h1>
               <p className="text-lg sm:text-xl text-midnight-ink-600 mb-8 leading-relaxed max-w-3xl mx-auto">
                 From discovery to deal closure - your complete guide to acquiring Korean IP
@@ -220,7 +220,7 @@ const BuyersOnboardingPage = () => {
               Ready to Find Your Next Hit?
             </h2>
             <p className="text-xl text-hanok-teal-100 mb-8 max-w-2xl mx-auto">
-              Join hundreds of content buyers already using KStoryBridge to discover and acquire Korean IP.
+              Join hundreds of content producers already using KStoryBridge to discover and acquire Korean IP.
             </p>
             <Button 
               onClick={handleGetStarted}
@@ -238,4 +238,4 @@ const BuyersOnboardingPage = () => {
   );
 };
 
-export default BuyersOnboardingPage;
+export default ProducersOnboardingPage;

@@ -1,60 +1,24 @@
 {
   "hero": {
-    "title": "Meet Jinu",
-    "subtitle": "The AI Assistant That Connects Korean Stories with Hollywood",
-    "tagline": "AI discovery • Verified rights • Expert support",
-    "buyerCta": "I'm a Buyer",
-    "creatorCta": "I'm a Creator"
+    "title": "Connecting Korean Stories to Global Audiences",
+    "subtitle": "KStoryBridge doesn't just connect—it catalyzes Korean stories into a global movement, powered by the world's leading producers",
+    "ctaCreator": "I'm a Creator",
+    "ctaBuyer": "I'm a Producer"
   },
-  "aiDemo": {
-    "userMessage": "I'm looking for Korean romantic comedies with strong female leads similar to Crash Landing on You",
-    "jinuIntro": "Perfect! I found 10 titles that match your criteria...",
-    "jinuDetail": "I've found some delightful recommendations that capture that playful spirit! \"You Get Me Going\" is a fantastic choice! It features Youngwon, who is quite the character with his overbearing nature leading to amusing clashes with his work counterpart, Hyunwoo. Their dynamic kicks off with a business trip that turns into a romantic adventure, laced with humor and unexpected moments of connection. What hooked me is how the story balances playful banter with deeper emotional undertones, making it a great fit for fans of light-hearted comedy!",
-    "rightsVerified": "Rights Verified",
-    "tryJinu": "Try Jinu Now"
-  },
-  "stats": {
-    "studios": "Hollywood Studios",
-    "titles": "Korean Titles",
-    "faster": "Faster Discovery",
-    "verified": "Rights Verified"
-  },
-  "pillars": {
-    "title": "Three Pillars. One Platform.",
-    "subtitle": "Everything you need to discover, verify, and acquire Korean content",
-    "aiDiscovery": {
-      "title": "AI Discovery",
-      "description": "Jinu finds perfect matches in seconds with intelligent recommendations based on story craft, character arcs, and market fit.",
-      "tagline": "10x faster than traditional sourcing"
+  "coreValues": {
+    "sectionTitle": "Three Core Values",
+    "subtitle": "How we connect creators and producers to unlock exceptional opportunities",
+    "discovery": {
+      "title": "Intelligent Discovery",
+      "description": "AI-powered matching connects the right stories with the right audiences, cutting through noise to find perfect fits"
     },
-    "rightsVerified": {
-      "title": "Rights Verified",
-      "description": "Clean chain of title with verified ownership documentation. Direct access to rights holders with deal authority.",
-      "tagline": "Zero ownership surprises"
+    "trusted": {
+      "title": "Trusted Connection",
+      "description": "100% verified rights and thorough content analysis ensure every connection is built on solid ground"
     },
-    "expertSupport": {
-      "title": "Expert Support",
-      "description": "Hollywood veterans guide every deal with cultural bridging, pitch development, and negotiation expertise.",
-      "tagline": "Close deals faster"
-    }
-  },
-  "paths": {
-    "title": "Choose Your Path",
-    "creator": {
-      "title": "Are You a Creator?",
-      "description": "Get your Korean story in front of 50+ Hollywood studios with professional pitch development and expert deal support.",
-      "benefit1": "Direct access to Netflix, Disney, Sony Pictures",
-      "benefit2": "Hollywood veterans develop your pitch",
-      "benefit3": "Keep creative control and IP rights",
-      "cta": "Learn More"
-    },
-    "buyer": {
-      "title": "Are You an IP Scout or Producer?",
-      "description": "Find your next Korean hit with AI-powered discovery, verified rights chain, and comprehensive pitch materials.",
-      "benefit1": "AI finds perfect matches in seconds",
-      "benefit2": "Verified rights, zero ownership surprises",
-      "benefit3": "Expert support for every deal",
-      "cta": "Learn More"
+    "expertise": {
+      "title": "Transmedia Expertise",
+      "description": "Deep understanding of Korean storytelling and global market dynamics guides every successful adaptation"
     }
   }
 }

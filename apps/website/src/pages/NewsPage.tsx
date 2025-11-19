@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Search, RefreshCw } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 import UniversalHeader from "../components/UniversalHeader";
 import Footer from "../components/Footer";
 import { useToast } from "../hooks/use-toast";
-import { Button } from "@kstorybridge/ui";
+import { Button, Card, CardContent } from "@kstorybridge/ui";
 
 interface NewsSection {
   title: string;
@@ -21,6 +22,7 @@ interface NewsSection {
 }
 
 export default function NewsPage() {
+  const { t } = useTranslation('news');
   const { toast } = useToast();
   const [sections, setSections] = useState<NewsSection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -251,46 +253,48 @@ export default function NewsPage() {
           text-decoration: none;
         }
       `}</style>
-      <div className="min-h-screen bg-gradient-to-br from-porcelain-blue-50 via-white to-sunset-orange-50">
+      <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
         <UniversalHeader />
-        
-        <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+
+        <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
           {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-midnight-ink mb-4">
-              K-Content News
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-midnight-ink mb-4 lg:mb-6">
+              {t('hero.title')}
             </h1>
-            <p className="text-lg md:text-xl text-midnight-ink-600 max-w-3xl mx-auto">
-              The latest hot K-content news you don't want to miss
+            <p className="text-base sm:text-lg md:text-xl text-midnight-ink-600 max-w-3xl mx-auto">
+              {t('hero.subtitle')}
             </p>
           </div>
 
 
           {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-8">
+          <form onSubmit={handleSearchSubmit} className="relative mb-6 sm:mb-8">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-midnight-ink-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search news sections..."
+              placeholder={t('search.placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-32 py-4 text-lg bg-white border-0 rounded-2xl shadow-md outline-none focus:ring-2 focus:ring-hanok-teal text-midnight-ink"
+              className="w-full pl-12 pr-32 sm:pr-40 py-3 sm:py-4 text-base sm:text-lg bg-white border border-gray-300 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-hanok-teal focus:border-hanok-teal text-midnight-ink"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
               <Button
                 type="submit"
-                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-4 py-2 rounded-lg font-medium"
+                size="sm"
+                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white rounded-lg font-medium"
               >
-                Search
+                {t('search.button')}
               </Button>
               {searchTerm && (
                 <Button
                   type="button"
                   onClick={handleClearSearch}
+                  size="sm"
                   variant="outline"
-                  className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 px-4 py-2 rounded-lg font-medium"
+                  className="border-gray-300 text-midnight-ink hover:bg-gray-100 rounded-lg font-medium"
                 >
-                  Clear
+                  {t('search.clear')}
                 </Button>
               )}
             </div>
@@ -299,8 +303,8 @@ export default function NewsPage() {
           {/* Results count */}
           {searchTerm && (
             <div className="mb-6 text-sm text-midnight-ink-600 text-center">
-              Found {filteredSections.length} section{filteredSections.length !== 1 ? 's' : ''} 
-              {searchTerm && ` matching "${searchTerm}"`}
+              {t('search.resultsCount', { count: filteredSections.length })}
+              {searchTerm && ` ${t('search.matching', { term: searchTerm })}`}
             </div>
           )}
 
@@ -312,89 +316,99 @@ export default function NewsPage() {
           ) : filteredSections.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-md p-12 text-center">
               <p className="text-gray-500">
-                {searchTerm 
-                  ? `No news sections found matching "${searchTerm}"`
-                  : "No news sections available at the moment."}
+                {searchTerm
+                  ? t('search.noResults', { term: searchTerm })
+                  : t('search.noSections')}
               </p>
             </div>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-6 lg:space-y-8">
               {filteredSections.map((section, index) => (
-                <div
-                  key={`section-${index}`} 
-                  className="rounded-[20px] p-8 newsletter-section"
-                  style={{ backgroundColor: '#BCDFF4' }}
+                <Card
+                  key={`section-${index}`}
+                  className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow duration-300 newsletter-section"
                 >
-                  {/* Tags */}
-                  {section.tags && section.tags.length > 0 && (
-                    <div className="text-left mb-4">
-                      <h6 className="text-base font-normal text-gray-800">
-                        {section.tags.map(tag => `#${tag}`).join(' ')}
-                      </h6>
-                    </div>
-                  )}
-                  
-                  {/* Title */}
-                  <h1 className="text-left text-2xl md:text-3xl font-bold italic text-gray-800 leading-tight mb-6">
-                    {section.title}
-                  </h1>
-                  
-                  {/* Main Content */}
-                  {section.contentHtml && (
-                    <div className="text-left text-base text-gray-800 leading-relaxed space-y-4 mb-6">
-                      {section.contentHtml.split('\n\n').filter(p => p.trim()).map((paragraph, pIndex) => (
-                        <p 
-                          key={pIndex} 
-                          className="text-gray-800"
-                          dangerouslySetInnerHTML={{ __html: paragraph }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Takeaway */}
-                  {section.takeaway && (
-                    <p className="text-left text-base text-gray-800 leading-relaxed mb-6">
-                      <span className="font-bold">Takeaway:</span>{' '}
-                      {section.takeawayHtml ? (
-                        <span dangerouslySetInnerHTML={{ __html: section.takeawayHtml }} />
-                      ) : (
-                        section.takeaway
-                      )}
-                    </p>
-                  )}
-                  
-                  {/* IP Reference Section */}
-                  {section.reference && Object.keys(section.reference).length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-left text-base font-bold text-gray-800">
-                        IP Reference
-                      </p>
-                      <ul className="space-y-2 ml-4">
-                        {section.reference.titleFormat && (
-                          <li className="text-left text-base text-gray-800 leading-relaxed">
-                            <span className="font-bold">Title / Format:</span>{' '}
-                            {section.reference.titleFormatHtml ? (
-                              <span dangerouslySetInnerHTML={{ __html: section.reference.titleFormatHtml }} />
-                            ) : (
-                              section.reference.titleFormat
-                            )}
-                          </li>
-                        )}
-                        {section.reference.keyNumbers && (
-                          <li className="text-left text-base text-gray-800 leading-relaxed">
-                            <span className="font-bold">Key Numbers:</span> {section.reference.keyNumbers}
-                          </li>
-                        )}
-                        {section.reference.whyProducersCare && (
-                          <li className="text-left text-base text-gray-800 leading-relaxed">
-                            <span className="font-bold">Why Producers Care:</span> {section.reference.whyProducersCare}
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+                  <CardContent className="p-6 sm:p-8">
+                    {/* Tags */}
+                    {section.tags && section.tags.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex flex-wrap gap-2">
+                          {section.tags.map((tag, tagIndex) => (
+                            <span
+                              key={tagIndex}
+                              className="px-3 py-1 text-xs sm:text-sm font-medium rounded-full bg-hanok-teal/10 text-hanok-teal"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Title */}
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-midnight-ink leading-tight mb-4 sm:mb-6">
+                      {section.title}
+                    </h2>
+
+                    {/* Main Content */}
+                    {section.contentHtml && (
+                      <div className="text-base text-midnight-ink-600 leading-relaxed space-y-4 mb-6">
+                        {section.contentHtml.split('\n\n').filter(p => p.trim()).map((paragraph, pIndex) => (
+                          <p
+                            key={pIndex}
+                            className="text-midnight-ink-600"
+                            dangerouslySetInnerHTML={{ __html: paragraph }}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Takeaway */}
+                    {section.takeaway && (
+                      <div className="bg-porcelain-blue-50 border-l-4 border-hanok-teal rounded-lg p-4 mb-6">
+                        <p className="text-sm sm:text-base text-midnight-ink-600 leading-relaxed">
+                          <span className="font-bold text-midnight-ink">{t('section.takeaway')}</span>{' '}
+                          {section.takeawayHtml ? (
+                            <span dangerouslySetInnerHTML={{ __html: section.takeawayHtml }} />
+                          ) : (
+                            section.takeaway
+                          )}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* IP Reference Section */}
+                    {section.reference && Object.keys(section.reference).length > 0 && (
+                      <div className="space-y-3 bg-gray-50 rounded-lg p-4">
+                        <p className="text-sm sm:text-base font-bold text-midnight-ink">
+                          {t('section.ipReference')}
+                        </p>
+                        <ul className="space-y-2 ml-4">
+                          {section.reference.titleFormat && (
+                            <li className="text-sm sm:text-base text-midnight-ink-600 leading-relaxed">
+                              <span className="font-bold text-midnight-ink">{t('section.titleFormat')}</span>{' '}
+                              {section.reference.titleFormatHtml ? (
+                                <span dangerouslySetInnerHTML={{ __html: section.reference.titleFormatHtml }} />
+                              ) : (
+                                section.reference.titleFormat
+                              )}
+                            </li>
+                          )}
+                          {section.reference.keyNumbers && (
+                            <li className="text-sm sm:text-base text-midnight-ink-600 leading-relaxed">
+                              <span className="font-bold text-midnight-ink">{t('section.keyNumbers')}</span> {section.reference.keyNumbers}
+                            </li>
+                          )}
+                          {section.reference.whyProducersCare && (
+                            <li className="text-sm sm:text-base text-midnight-ink-600 leading-relaxed">
+                              <span className="font-bold text-midnight-ink">{t('section.whyProducersCare')}</span> {section.reference.whyProducersCare}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}

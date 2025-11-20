@@ -1,6 +1,4 @@
 
-import { Button } from '@kstorybridge/ui';
-import { Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { trackLanguageChange } from '@/utils/analytics';
 
@@ -11,40 +9,40 @@ interface LanguageSelectorProps {
 const LanguageSelector = ({ isMobile = false }: LanguageSelectorProps) => {
   const { i18n } = useTranslation();
 
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'ko' : 'en';
+  const changeLanguage = (newLang: string) => {
+    if (i18n.language === newLang) return; // Don't change if already selected
+
     const oldLang = i18n.language === 'en' ? 'EN' : 'KR';
     const newLangDisplay = newLang === 'en' ? 'EN' : 'KR';
     i18n.changeLanguage(newLang);
     trackLanguageChange(oldLang, newLangDisplay);
   };
 
-  const currentLanguage = i18n.language === 'ko' ? '한글' : 'EN';
-
-  if (isMobile) {
-    return (
-      <Button
-        id="mobile-language-toggle-btn"
-        size="sm"
-        onClick={toggleLanguage}
-        className="bg-gray-500 hover:bg-gray-600 text-white border-0 px-2 py-1"
-      >
-        <Globe className="w-4 h-4 mr-1" />
-        {currentLanguage}
-      </Button>
-    );
-  }
-
   return (
-    <Button
-      id="header-language-toggle-btn"
-      size="sm"
-      onClick={toggleLanguage}
-      className="bg-gray-500 hover:bg-gray-600 text-white border-0 px-2 py-1"
-    >
-      <Globe className="w-4 h-4 mr-1" />
-      {currentLanguage}
-    </Button>
+    <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-full border border-gray-200">
+      <button
+        id={isMobile ? "mobile-language-en-btn" : "header-language-en-btn"}
+        onClick={() => changeLanguage('en')}
+        className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+          i18n.language === 'en'
+            ? 'bg-hanok-teal text-white shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
+        }`}
+      >
+        EN
+      </button>
+      <button
+        id={isMobile ? "mobile-language-ko-btn" : "header-language-ko-btn"}
+        onClick={() => changeLanguage('ko')}
+        className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+          i18n.language === 'ko'
+            ? 'bg-hanok-teal text-white shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
+        }`}
+      >
+        한
+      </button>
+    </div>
   );
 };
 

@@ -70,25 +70,18 @@
   },
   "comparison": {
     "title": "Why Creators Choose KStoryBridge",
-    "subtitle": "The traditional route vs. the KStoryBridge path",
-    "traditional": {
-      "title": "❌ Traditional Route",
-      "items": [
-        "Send emails to generic studio addresses → No response",
-        "Pitch in English without cultural context → Misunderstood",
-        "DIY contracts and negotiation → Exploited or overwhelmed",
-        "Weeks of research to find the right contact → Still invisible"
-      ]
+    "subtitle": "The complete solution for your Hollywood journey",
+    "problem": {
+      "title": "The Traditional Struggle",
+      "description": "Cold emails go unanswered. Generic pitches get misunderstood. DIY contracts leave you vulnerable. Finding the right contacts takes weeks—and you're still invisible to Hollywood."
     },
-    "kstorybridge": {
-      "title": "✅ KStoryBridge",
-      "items": [
-        "Direct access to 50+ verified Hollywood buyers",
-        "Professional pitch developed by Hollywood veterans",
-        "Legal protection and deal negotiation support",
-        "Buyers come to you, see your work on day 1",
-        "Keep creative control, fair commission structure"
-      ]
+    "bridge": {
+      "title": "The KStoryBridge Difference",
+      "description": "Direct access to 50+ verified Hollywood studios. Professional pitch development by industry veterans. Expert legal and negotiation support. Your work reaches decision-makers from day one."
+    },
+    "success": {
+      "title": "Your Success Story",
+      "description": "Keep creative control while we handle the business. Fair commission structure with full transparency. Legal protection at every step. Your Korean story, perfectly positioned for the global stage."
     }
   },
   "steps": {

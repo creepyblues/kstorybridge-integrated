@@ -12,7 +12,10 @@ import {
   MessageSquare,
   FileCheck,
   CheckCircle2,
-  Star
+  Star,
+  AlertCircle,
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 
 const CreatorsPage = () => {
@@ -61,12 +64,9 @@ const CreatorsPage = () => {
         <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-              <div className="flex items-center justify-center gap-3">
-                <Globe className="h-10 w-10 text-sunrise-coral" />
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink">
-                  {t('access.title')}
-                </h2>
-              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink">
+                {t('access.title')}
+              </h2>
             </div>
 
             {/* Studio Logo Grid */}
@@ -217,12 +217,9 @@ const CreatorsPage = () => {
         <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Star className="h-10 w-10 text-hanok-teal" />
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink">
-                  {t('expertDeepDive.title')}
-                </h2>
-              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
+                {t('expertDeepDive.title')}
+              </h2>
               <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
                 {t('expertDeepDive.subtitle')}
               </p>
@@ -317,7 +314,8 @@ const CreatorsPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 5: BEFORE/AFTER COMPARISON
+            SECTION 5: WHY CREATORS CHOOSE KSTORYBRIDGE
+            Three elegant cards with icons
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-porcelain-blue-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -330,35 +328,65 @@ const CreatorsPage = () => {
               </p>
             </div>
 
-            {/* Before/After Comparison */}
-            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              {/* Traditional Route */}
-              <Card className="bg-red-50 border-red-200 shadow-none rounded-2xl">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-red-800 mb-4">{t('comparison.traditional.title')}</h3>
-                  <ul className="space-y-3 text-sm text-red-900">
-                    {t('comparison.traditional.items', { returnObjects: true }).map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-red-600 mt-0.5">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+            {/* Three Elegant Cards */}
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+              {/* Card 1: The Problem */}
+              <Card className="bg-sunrise-coral-50 border-sunrise-coral-100 shadow-none hover:shadow-md transition-shadow rounded-2xl">
+                <CardContent className="p-6 sm:p-8">
+                  {/* Circular Icon */}
+                  <div className="w-16 h-16 bg-sunrise-coral/10 rounded-full flex items-center justify-center mb-6">
+                    <AlertCircle className="h-8 w-8 text-sunrise-coral" />
+                  </div>
+
+                  {/* Heading */}
+                  <h3 className="text-xl font-bold text-midnight-ink mb-3">
+                    {t('comparison.problem.title')}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-midnight-ink-600 leading-relaxed">
+                    {t('comparison.problem.description')}
+                  </p>
                 </CardContent>
               </Card>
 
-              {/* KStoryBridge Process */}
-              <Card className="bg-green-50 border-green-200 shadow-none rounded-2xl">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-green-800 mb-4">{t('comparison.kstorybridge.title')}</h3>
-                  <ul className="space-y-3 text-sm text-green-900">
-                    {t('comparison.kstorybridge.items', { returnObjects: true }).map((item: string, index: number) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+              {/* Card 2: The Bridge */}
+              <Card className="bg-white border-gray-200 shadow-none hover:shadow-md transition-shadow rounded-2xl">
+                <CardContent className="p-6 sm:p-8">
+                  {/* Circular Icon */}
+                  <div className="w-16 h-16 bg-hanok-teal/10 rounded-full flex items-center justify-center mb-6">
+                    <ArrowRight className="h-8 w-8 text-hanok-teal" />
+                  </div>
+
+                  {/* Heading */}
+                  <h3 className="text-xl font-bold text-midnight-ink mb-3">
+                    {t('comparison.bridge.title')}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-midnight-ink-600 leading-relaxed">
+                    {t('comparison.bridge.description')}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Card 3: The Success */}
+              <Card className="bg-porcelain-blue-50 border-porcelain-blue-200 shadow-none hover:shadow-md transition-shadow rounded-2xl">
+                <CardContent className="p-6 sm:p-8">
+                  {/* Circular Icon */}
+                  <div className="w-16 h-16 bg-hanok-teal/10 rounded-full flex items-center justify-center mb-6">
+                    <Sparkles className="h-8 w-8 text-hanok-teal" />
+                  </div>
+
+                  {/* Heading */}
+                  <h3 className="text-xl font-bold text-midnight-ink mb-3">
+                    {t('comparison.success.title')}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-midnight-ink-600 leading-relaxed">
+                    {t('comparison.success.description')}
+                  </p>
                 </CardContent>
               </Card>
             </div>

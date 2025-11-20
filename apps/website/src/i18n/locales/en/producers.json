@@ -50,22 +50,18 @@
   "rightsDeepDive": {
     "title": "Verified Rights, Zero Surprises",
     "subtitle": "Clear ownership chain from creator to you",
-    "chain": {
-      "step1": {
-        "title": "1. Creator Profile",
-        "description": "Verified identity & work history"
+    "benefits": {
+      "direct": {
+        "title": "Direct from Creator",
+        "description": "Every title is verified directly with the IP owner. No middlemen, no confusion about who owns what."
       },
-      "step2": {
-        "title": "2. Rights Documentation",
-        "description": "Clear ownership records"
+      "verified": {
+        "title": "Verified Documentation",
+        "description": "Full rights documentation reviewed before you see the pitch. Know exactly what rights are available upfront."
       },
-      "step3": {
-        "title": "3. Direct Connection",
-        "description": "No intermediaries"
-      },
-      "step4": {
-        "title": "4. Deal Closed",
-        "description": "Clean chain of title"
+      "clean": {
+        "title": "Clean Chain of Title",
+        "description": "No intermediaries, no hidden claims, no surprises. Clear ownership from creator to you."
       }
     },
     "comparison": {

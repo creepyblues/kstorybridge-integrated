@@ -28,6 +28,7 @@ const getDiscoverItems = (accountType: string | null): MenuItem[] => {
   } else if (accountType === "buyer") {
     return [
       { title: "Chat", href: "/buyers/chat" },
+      { title: "Comps Navigator", href: "/buyers/comps-navigator" },
       { title: "Featured", href: "/buyers/featured" },
       { title: "Title Library", href: "/buyers/titles" },
       { title: "Saved Titles", href: "/buyers/saved" },

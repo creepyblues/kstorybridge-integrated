@@ -71,8 +71,19 @@ class EnhancedTitleSearchService {
       if (useVectorSearch) {
         console.log('🔍 Attempting vector search with progressive threshold fallback');
 
+        // Detect if query is a single genre word (for genre-aware boosting)
+        const isGenreQuery = query.trim().split(/\s+/).length === 1;
+        const genreQueryWord = isGenreQuery ? query.trim().toLowerCase() : null;
+
+        if (isGenreQuery) {
+          console.log(`🎭 Detected genre query: "${genreQueryWord}"`);
+        }
+
         // Progressive threshold fallback - try higher thresholds first, then lower if insufficient results
-        const fallbackThresholds = [vectorThreshold, vectorThreshold * 0.8, vectorThreshold * 0.6, 0.3, 0.2];
+        // For genre queries, start with lower threshold since exact genre matches may have lower similarity
+        const fallbackThresholds = isGenreQuery
+          ? [0.5, 0.4, 0.3, 0.2]  // Genre queries: start lower (0.5)
+          : [vectorThreshold, vectorThreshold * 0.8, vectorThreshold * 0.6, 0.3, 0.2];  // Normal queries
         const minResultsThreshold = 3; // Try lower thresholds if we get fewer than 3 results
 
         for (const threshold of fallbackThresholds) {
@@ -83,7 +94,7 @@ class EnhancedTitleSearchService {
             session_id: `search-${Date.now()}`,
           }, {
             threshold,
-            limit: maxResults,
+            limit: maxResults * 2,  // Get more results for genre boosting
             includeAnalysis: true
           }) || [];
 
@@ -127,14 +138,33 @@ class EnhancedTitleSearchService {
                   return null;
                 }
 
+                // Genre-aware boosting: if query is a genre word, boost titles with matching genre
+                let boostedSimilarity = result.similarity;
+                if (genreQueryWord && title.genre && Array.isArray(title.genre)) {
+                  const hasMatchingGenre = title.genre.some(g =>
+                    g.toLowerCase().includes(genreQueryWord) || genreQueryWord.includes(g.toLowerCase())
+                  );
+
+                  if (hasMatchingGenre) {
+                    boostedSimilarity = Math.min(1.0, result.similarity * 1.15); // 15% boost
+                    console.log(`🎯 Genre boost: "${title.title_name_en || title.title_name_kr}" (${result.similarity.toFixed(3)} → ${boostedSimilarity.toFixed(3)})`);
+                  }
+                }
+
                 return {
                   title,
-                  score: Math.round(result.similarity * 100),
+                  score: Math.round(boostedSimilarity * 100),
                   matchType: 'vector' as const,
-                  similarity: result.similarity
+                  similarity: boostedSimilarity
                 };
               })
               .filter(Boolean) as SearchResult[];
+
+            // Sort by boosted similarity
+            vectorResults.sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
+
+            // Trim to requested limit
+            vectorResults = vectorResults.slice(0, maxResults);
 
             // If we have enough results, stop trying lower thresholds
             if (vectorResults.length >= minResultsThreshold) {
@@ -160,13 +190,19 @@ class EnhancedTitleSearchService {
     );
 
     // Convert traditional results to SearchResult format with quality thresholds
-    const convertToSearchResults = (matches: Title[], matchType: 'exact' | 'phrase' | 'expanded'): SearchResult[] => {
+    const convertToSearchResults = (matches: Title[] | undefined, matchType: 'exact' | 'phrase' | 'expanded'): SearchResult[] => {
+      // Safety check for undefined matches
+      if (!matches || !Array.isArray(matches)) {
+        console.warn(`⚠️ ${matchType} matches is undefined or not an array`);
+        return [];
+      }
+
       const scoreMap = {
         'exact': 100,
         'phrase': 80,
         'expanded': 60
       };
-      
+
       // Removed harsh minimum score threshold that was blocking valid results
       // All traditional search results are now included for better coverage
 
@@ -188,18 +224,28 @@ class EnhancedTitleSearchService {
     let finalResults: SearchResult[];
     let searchType: 'vector' | 'traditional' | 'hybrid';
 
+    console.log('🔍 Search strategy decision:', {
+      vectorSearchUsed,
+      vectorResultsCount: vectorResults.length,
+      traditionalResultsCount: traditionalResults.length,
+      hybridMode
+    });
+
     if (vectorSearchUsed && hybridMode && traditionalResults.length > 0) {
       // Hybrid mode: combine and boost titles that appear in both results
       finalResults = this.combineHybridResults(vectorResults, traditionalResults);
       searchType = 'hybrid';
+      console.log(`🔀 Using HYBRID search (${vectorResults.length} vector + ${traditionalResults.length} traditional)`);
     } else if (vectorSearchUsed && vectorResults.length > 0) {
       // Pure vector search
       finalResults = vectorResults.slice(0, maxResults);
       searchType = 'vector';
+      console.log(`🎯 Using PURE VECTOR search (${vectorResults.length} results)`);
     } else {
       // Traditional search
       finalResults = traditionalResults.slice(0, maxResults);
       searchType = 'traditional';
+      console.log(`📚 Using TRADITIONAL search (${traditionalResults.length} results)`);
     }
 
     const searchTime = Date.now() - startTime;

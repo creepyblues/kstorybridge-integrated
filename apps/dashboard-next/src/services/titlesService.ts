@@ -52,7 +52,8 @@ class TitlesService {
 
       // Apply filters
       if (filters?.genre) {
-        query = query.eq('genre', filters.genre);
+        // Use contains operator for array field
+        query = query.contains('genre', [filters.genre]);
       }
 
       if (filters?.format) {
@@ -60,9 +61,10 @@ class TitlesService {
       }
 
       if (filters?.search) {
-        // Search in English name, Korean name, or synopsis
+        // Search in English name, Korean name, synopsis, and genre array
+        // For genre search, we need to cast array to text for ILIKE matching
         query = query.or(
-          `title_name_en.ilike.%${filters.search}%,title_name_kr.ilike.%${filters.search}%,synopsis.ilike.%${filters.search}%`
+          `title_name_en.ilike.%${filters.search}%,title_name_kr.ilike.%${filters.search}%,synopsis.ilike.%${filters.search}%,genre.cs.{${filters.search}}`
         );
       }
 
@@ -104,7 +106,8 @@ class TitlesService {
 
       // Apply filters (same as getTitles)
       if (filters?.genre) {
-        query = query.eq('genre', filters.genre);
+        // Use contains operator for array field
+        query = query.contains('genre', [filters.genre]);
       }
 
       if (filters?.format) {
@@ -112,9 +115,10 @@ class TitlesService {
       }
 
       if (filters?.search) {
-        // Search in English name, Korean name, or synopsis
+        // Search in English name, Korean name, synopsis, and genre array
+        // For genre search, we need to cast array to text for ILIKE matching
         query = query.or(
-          `title_name_en.ilike.%${filters.search}%,title_name_kr.ilike.%${filters.search}%,synopsis.ilike.%${filters.search}%`
+          `title_name_en.ilike.%${filters.search}%,title_name_kr.ilike.%${filters.search}%,synopsis.ilike.%${filters.search}%,genre.cs.{${filters.search}}`
         );
       }
 
@@ -198,6 +202,8 @@ class TitlesService {
       } catch (analysisError: any) {
         // Pitch analysis is optional - don't fail the entire request
         console.log('ℹ️ Pitch analysis query failed (optional data):', analysisError.message);
+      }
+
       // Flatten the nested title_content_analysis data
       if (data && data.title_content_analysis) {
         const analysis = Array.isArray(data.title_content_analysis)

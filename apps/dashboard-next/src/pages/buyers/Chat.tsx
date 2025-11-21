@@ -394,8 +394,12 @@ export default function Chat() {
                       Found {message.titles.length} title{message.titles.length !== 1 ? 's' : ''}:
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {message.titles.slice(0, 6).map((title: any) => (
-                        <div key={title.id} onClick={() => handleTitleClick(title.id, title.nameEn || title.nameKr)} className="cursor-pointer">
+                      {message.titles.slice(0, 6).map((title: any, titleIndex: number) => (
+                        <div
+                          key={`${message.id}-title-${title.id || titleIndex}`}
+                          onClick={() => handleTitleClick(title.id, title.nameEn || title.nameKr)}
+                          className="cursor-pointer"
+                        >
                           <TitleCard title={title} variant="compact" />
                         </div>
                       ))}

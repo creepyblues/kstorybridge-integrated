@@ -59,10 +59,6 @@ export const chatOrchestratorService = {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`, // ✅ Explicit auth token
-      const { data, error } = await supabase.functions.invoke('chat-orchestrator', {
-        body: {
-          messages,
-          userId,
         },
         body: JSON.stringify({
           messages,
@@ -76,23 +72,49 @@ export const chatOrchestratorService = {
         throw new Error(`Chatbot error: ${response.statusText || 'Unknown error'}`);
       }
 
-      const data = await response.json();
+      // Parse SSE streaming response
+      const text = await response.text();
+      console.log('📦 Raw response received:', text.substring(0, 200));
 
-      if (!data) {
-        throw new Error('No response from chatbot');
+      let fullResponse = '';
+      let titles: any[] = [];
+      let suggestedQueries: string[] = [];
+      let conversationId: string | undefined;
+
+      // Parse SSE format: "data: {...}\n\n"
+      const lines = text.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const jsonStr = line.slice(6); // Remove "data: " prefix
+            const data = JSON.parse(jsonStr);
+
+            if (data.type === 'text') {
+              fullResponse += data.text;
+            } else if (data.type === 'titles') {
+              titles = data.titles || [];
+            } else if (data.type === 'suggestions' || data.type === 'suggested_queries') {
+              suggestedQueries = data.suggestedQueries || data.suggested_queries || [];
+            } else if (data.type === 'complete') {
+              conversationId = data.conversationId;
+            }
+          } catch (parseError) {
+            console.log('⚠️ Skipping unparseable line:', line.substring(0, 100));
+          }
+        }
       }
 
-      console.log('✅ Chatbot response received', {
-        responseLength: data.response?.length || 0,
-        titleCount: data.titles?.length || 0,
-        suggestedQueries: data.suggested_queries?.length || 0,
+      console.log('✅ Chatbot response parsed', {
+        responseLength: fullResponse.length,
+        titleCount: titles.length,
+        suggestedQueriesCount: suggestedQueries.length,
       });
 
       return {
-        response: data.response || '',
-        titles: data.titles || [],
-        suggestedQueries: data.suggested_queries || [],
-        conversationId: data.conversation_id,
+        response: fullResponse,
+        titles,
+        suggestedQueries,
+        conversationId,
       };
     } catch (error: any) {
       console.error('❌ Chat service error', error);

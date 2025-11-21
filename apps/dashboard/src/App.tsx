@@ -54,6 +54,7 @@ const SendMessage = lazy(() => import("./pages/SendMessage"));
 const Chat = lazy(() => import("./pages/Chat"));
 const ChatTest = lazy(() => import("./pages/ChatTest"));
 const ChatHistory = lazy(() => import("./pages/ChatHistory"));
+const CompsNavigator = lazy(() => import("./pages/buyers/CompsNavigator"));
 const VectorSearchManager = lazy(() => import("./pages/VectorSearchManager"));
 const OpenAITest = lazy(() => import("./pages/OpenAITest"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
@@ -73,6 +74,7 @@ const PitchExtractionTest = lazy(() => import("./pages/admin/PitchExtractionTest
 const AdminDraftApproval = lazy(() => import("./pages/admin/DraftApproval"));
 const AdminDraftDetail = lazy(() => import("./pages/admin/DraftDetail"));
 const AssetGeneration = lazy(() => import("./pages/admin/AssetGeneration"));
+const CompsAnalytics = lazy(() => import("./pages/admin/CompsAnalytics"));
 const ContentList = lazy(() => import("./pages/admin/ContentList").then(m => ({ default: m.ContentList })));
 const ContentEditor = lazy(() => import("./pages/admin/ContentEditor").then(m => ({ default: m.ContentEditor })));
 
@@ -148,6 +150,9 @@ const App = () => (
                 <Route path="/buyers/home" element={<Navigate to="/buyers/chat" replace />} />
                 <Route path="/buyers/chat" element={
                   <BuyerProtectedLayout><Chat /></BuyerProtectedLayout>
+                } />
+                <Route path="/buyers/comps-navigator" element={
+                  <BuyerProtectedLayout><CompsNavigator /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/featured" element={
                   <BuyerProtectedLayout><BuyerHome /></BuyerProtectedLayout>
@@ -326,6 +331,9 @@ const App = () => (
                 } />
                 <Route path="/admin/asset-generation" element={
                   <AdminProtectedRoute><AdminLayout><AssetGeneration /></AdminLayout></AdminProtectedRoute>
+                } />
+                <Route path="/admin/comps-analytics" element={
+                  <AdminProtectedRoute><AdminLayout><CompsAnalytics /></AdminLayout></AdminProtectedRoute>
                 } />
                 <Route path="/admin/experiment" element={
                   <AdminProtectedRoute><AdminLayout><Experiment /></AdminLayout></AdminProtectedRoute>

@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Dashboard Next** is a clean rebuild of the buyer-focused dashboard for KStoryBridge, featuring:
 - AI chatbot (Jinu) with GPT-4 + vector search
+- **Comps Navigator** - AI-powered Korean title discovery using Hollywood comps
 - Tier system (basic/pro/suite) with content gating
 - Title discovery with search, filters, and favorites
 - Stripe subscription integration
@@ -182,6 +183,19 @@ if (!hasAccess('pro')) {
 - **Edge Function**: `supabase/functions/chat-orchestrator/` (deployed separately)
 - **Components**: ChatMessage, ChatInput, ChatEmptyState, TitleCard
 - **Features**: GPT-4 + vector search, conversation history, suggested queries
+
+### Comps Navigator (NEW)
+- **Location**: `src/pages/buyers/CompsNavigator.tsx`
+- **Service**: `src/services/compsNavigatorService.ts`
+- **Edge Function**: `supabase/functions/comp-navigator/` (shared with dashboard app)
+- **Components**: CompSelector, RefinementInput, ResultsGrid, TitleMatchCard, MatchDetailModal, SavedSearchesSidebar
+- **Features**: AI-powered hybrid search using 1-3 Hollywood/global comparable titles
+  - **Phase 1**: Semantic retrieval via OpenAI embeddings + vector search (2-3 sec)
+  - **Phase 2**: GPT-4o-mini re-ranking with match explanations (3-8 sec)
+  - **Phase 3**: Search history with bookmarking
+- **Database**: Uses `comp_searches` and `comp_title_cache` tables
+- **Performance**: 5-10 seconds response time, ~$0.002 per search
+- **Route**: `/buyers/comps-navigator`
 
 ### Title Discovery
 - **Browse**: `src/pages/buyers/Titles.tsx` - Search, filter by genre/format

@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated**: 2025-11-02
+**Last Updated**: 2025-11-21
 
 This is the master index of all active documentation for the KStoryBridge project.
 
@@ -47,6 +47,18 @@ This is the master index of all active documentation for the KStoryBridge projec
 | **[TESTING_GUIDE.md](features/chatbot/TESTING_GUIDE.md)** | Testing procedures and log interpretation |
 
 **Related**: [AI_CHATBOT_DOCUMENTATION.md](../apps/dashboard/public/docs/AI_CHATBOT_DOCUMENTATION.md) (user-facing)
+
+### Comps Navigator System (`docs/features/comps-navigator/`)
+
+| Document | Description |
+|----------|-------------|
+| **[OPTIMIZATION_COMPLETE.md](features/comps-navigator/OPTIMIZATION_COMPLETE.md)** | ⭐ Complete optimization documentation (95-98% faster) |
+| **[COMPS_NAVIGATOR_PLAN.md](features/COMPS_NAVIGATOR_PLAN.md)** | Original feature plan and architecture |
+| **[COMPS_NAVIGATOR_EMBEDDING_FIX.md](COMPS_NAVIGATOR_EMBEDDING_FIX.md)** | Embedding null safety review |
+| **[COMPS_NAVIGATOR_OPTIMIZATION_SUMMARY.md](COMPS_NAVIGATOR_OPTIMIZATION_SUMMARY.md)** | Phase 1 optimization summary |
+| **[COMPS_NAVIGATOR_PHASE2_OPTIMIZATION.md](COMPS_NAVIGATOR_PHASE2_OPTIMIZATION.md)** | Phase 2 optimization summary |
+
+**Related**: [COMPS_NAVIGATOR_USER_GUIDE.md](../apps/dashboard/public/docs/COMPS_NAVIGATOR_USER_GUIDE.md) (user-facing)
 
 ---
 

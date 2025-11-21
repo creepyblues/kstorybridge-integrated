@@ -205,13 +205,17 @@ export async function withRetry<T>(
       // Record error for monitoring
       recordError(error, operationName);
 
-      // Always log errors as they indicate real problems
-      console.error(`❌ ${operationName} failed on attempt ${attempt}:`, {
-        message: error.message,
-        code: error.code,
-        status: error.status,
-        duration: Date.now() - startTime
-      });
+      // Only log errors that won't be recovered by cache fallback
+      // Reduces console noise for transient network issues
+      const hasCachedFallback = lastKnownSession && (operationName === 'getSession' || operationName === 'refreshSession');
+      if (!hasCachedFallback || isVerboseLogging) {
+        console.error(`❌ ${operationName} failed on attempt ${attempt}:`, {
+          message: error.message,
+          code: error.code,
+          status: error.status,
+          duration: Date.now() - startTime
+        });
+      }
 
       const isRetryable = retryCondition(error);
 
@@ -645,8 +649,8 @@ supabase.auth.getSession = async () => {
 
   try {
     // Context-aware timeout: OAuth callbacks AND OAuth completion need more time for session operations
-    // TIMEOUT FIX: Balanced timeout for regular flows (10s) to prevent false timeouts while still failing fast during outages
-    const timeoutMs = needsExtendedTimeout ? 90000 : 10000; // OAuth 90s, regular 10s
+    // TIMEOUT FIX: Reduced timeout for regular flows (5s) to fail faster and rely on cached session fallback
+    const timeoutMs = needsExtendedTimeout ? 90000 : 5000; // OAuth 90s, regular 5s (reduced from 10s)
 
     // 🔧 RUNTIME DEBUG: Verify enhanced timeout configuration is working
     if (isDev && import.meta.env.VITE_SESSION_DEBUG === 'true') {

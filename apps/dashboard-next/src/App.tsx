@@ -14,6 +14,7 @@ import CompleteProfile from '@/pages/auth/CompleteProfile';
 
 // Buyer pages
 import Chat from '@/pages/buyers/Chat';
+import CompsNavigator from '@/pages/buyers/CompsNavigator';
 import Titles from '@/pages/buyers/Titles';
 import TitleDetail from '@/pages/buyers/TitleDetail';
 import Saved from '@/pages/buyers/Saved';
@@ -54,6 +55,16 @@ function App() {
               <TierProvider>
                 <ProtectedRoute>
                   <Chat />
+                </ProtectedRoute>
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/comps-navigator"
+            element={
+              <TierProvider>
+                <ProtectedRoute>
+                  <CompsNavigator />
                 </ProtectedRoute>
               </TierProvider>
             }

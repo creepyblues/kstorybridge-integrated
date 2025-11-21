@@ -14,9 +14,10 @@ import { useToast } from '@/hooks/use-toast';
 interface SavedSearchesSidebarProps {
   userEmail: string;
   onLoadSearch: (search: CompSearch) => void;
+  refreshTrigger?: number; // Optional prop to trigger refresh
 }
 
-export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedSearchesSidebarProps) {
+export default function SavedSearchesSidebar({ userEmail, onLoadSearch, refreshTrigger }: SavedSearchesSidebarProps) {
   const [recentSearches, setRecentSearches] = useState<CompSearch[]>([]);
   const [bookmarkedSearches, setBookmarkedSearches] = useState<CompSearch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,7 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
 
   useEffect(() => {
     loadSearches();
-  }, [userEmail]);
+  }, [userEmail, refreshTrigger]);
 
   const loadSearches = async () => {
     try {

@@ -255,147 +255,179 @@ export function CMSSidebar() {
       )}
 
       {/* Desktop Sidebar - hidden on mobile */}
-      <div className="hidden lg:block fixed left-0 top-0 w-72 bg-gray-100 h-screen flex flex-col z-30">
-      {/* Logo and Title Section */}
-      <div className="p-4 pt-6">
-        <Link
-          to={accountType === "creator" ? "/creators/home" : "/buyers/chat"}
-          className="flex items-center justify-center mb-6"
-          onClick={() => trackLogoClick('sidebar', accountType as 'buyer' | 'creator')}
-          data-track-button="true"
-          data-button-id="sidebar-logo"
-        >
-          <img
-            src="/kstorybridge-logo.png"
-            alt="KStoryBridge"
-            className="h-10 w-auto object-contain hover:opacity-80 transition-opacity cursor-pointer"
-          />
-        </Link>
-      </div>
+      <div className="hidden lg:block fixed left-0 top-0 w-72 bg-gray-100 h-screen z-30">
+        <div className="flex flex-col h-full">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto">
+          {/* Logo and Title Section */}
+          <div className="p-4 pt-6">
+            <Link
+              to={accountType === "creator" ? "/creators/home" : "/buyers/chat"}
+              className="flex items-center justify-center mb-6"
+              onClick={() => trackLogoClick('sidebar', accountType as 'buyer' | 'creator')}
+              data-track-button="true"
+              data-button-id="sidebar-logo"
+            >
+              <img
+                src="/kstorybridge-logo.png"
+                alt="KStoryBridge"
+                className="h-10 w-auto object-contain hover:opacity-80 transition-opacity cursor-pointer"
+              />
+            </Link>
+          </div>
 
-      <nav className="px-4 flex-1">
-        {/* DISCOVER Section */}
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-midnight-ink-400 uppercase tracking-wider mb-3 px-3">
-            DISCOVER
-          </h3>
-          <div className="space-y-2">
-            {discoverItems.map((item) => {
-              const isActive = location.pathname === item.href;
+          <nav className="px-4">
+            {/* DISCOVER Section */}
+            <div className="mb-6">
+              <h3 className="text-xs font-semibold text-midnight-ink-400 uppercase tracking-wider mb-3 px-3">
+                DISCOVER
+              </h3>
+              <div className="space-y-2">
+                {discoverItems.map((item) => {
+                  const isActive = location.pathname === item.href;
 
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => trackNavigationClick(item.title, item.href, 'sidebar', accountType as 'buyer' | 'creator')}
-                  className={cn(
-                    "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors",
-                    isActive
-                      ? "bg-hanok-teal text-white"
-                      : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
-                  )}
-                  data-track-button="true"
-                  data-button-id={`sidebar-nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  <div className="flex items-center gap-2">
-                    {item.icon && <span className="text-base">{item.icon}</span>}
-                    <span>{item.title}</span>
-                  </div>
-                  {item.badge && (
-                    <span
+                  return (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => trackNavigationClick(item.title, item.href, 'sidebar', accountType as 'buyer' | 'creator')}
                       className={cn(
-                        "px-2.5 py-0.5 text-xs font-semibold rounded-full",
-                        item.badge === 'admin'
-                          ? "bg-purple-500 text-white"
-                          : item.badge === 'beta'
-                          ? "text-white"
-                          : "bg-red-500 text-white"
+                        "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors",
+                        isActive
+                          ? "bg-hanok-teal text-white"
+                          : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
                       )}
-                      style={item.badge === 'beta' ? { backgroundColor: '#FF6B6B' } : undefined}
+                      data-track-button="true"
+                      data-button-id={`sidebar-nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                     >
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+                      <div className="flex items-center gap-2">
+                        {item.icon && <span className="text-base">{item.icon}</span>}
+                        <span>{item.title}</span>
+                      </div>
+                      {item.badge && (
+                        <span
+                          className={cn(
+                            "px-2.5 py-0.5 text-xs font-semibold rounded-full",
+                            item.badge === 'admin'
+                              ? "bg-purple-500 text-white"
+                              : item.badge === 'beta'
+                              ? "text-white"
+                              : "bg-red-500 text-white"
+                          )}
+                          style={item.badge === 'beta' ? { backgroundColor: '#FF6B6B' } : undefined}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SETTINGS Section */}
+            <div className="mb-6">
+              <h3 className="text-xs font-semibold text-midnight-ink-400 uppercase tracking-wider mb-3 px-3">
+                SETTINGS
+              </h3>
+              <div className="space-y-2">
+                {settingsItems.map((item) => {
+                  const isActive = location.pathname === item.href;
+
+                  return (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => trackNavigationClick(item.title, item.href, 'sidebar', accountType as 'buyer' | 'creator')}
+                      className={cn(
+                        "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors",
+                        isActive
+                          ? "bg-hanok-teal text-white"
+                          : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
+                      )}
+                      data-track-button="true"
+                      data-button-id={`sidebar-settings-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {item.icon && <span className="text-base">{item.icon}</span>}
+                        <span>{item.title}</span>
+                      </div>
+                      {item.badge && (
+                        <span
+                          className={cn(
+                            "px-2.5 py-0.5 text-xs font-semibold rounded-full",
+                            item.badge === 'admin'
+                              ? "bg-purple-500 text-white"
+                              : item.badge === 'beta'
+                              ? "text-white"
+                              : "bg-red-500 text-white"
+                          )}
+                          style={item.badge === 'beta' ? { backgroundColor: '#FF6B6B' } : undefined}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </nav>
           </div>
-        </div>
-      </nav>
 
-      {/* SETTINGS Section */}
-      <div className="p-4">
-        <h3 className="text-xs font-semibold text-midnight-ink-400 uppercase tracking-wider mb-3 px-3">
-          SETTINGS
-        </h3>
-        <div className="space-y-2">
-          {settingsItems.map((item) => {
-            const isActive = location.pathname === item.href;
-
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                onClick={() => trackNavigationClick(item.title, item.href, 'sidebar', accountType as 'buyer' | 'creator')}
-                className={cn(
-                  "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors",
-                  isActive
-                    ? "bg-hanok-teal text-white"
-                    : "text-midnight-ink-600 hover:bg-porcelain-blue-100 hover:text-midnight-ink"
-                )}
-                data-track-button="true"
-                data-button-id={`sidebar-settings-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-              >
+          {/* User Info Section */}
+          {displayUser && (
+            <div className="p-4 border-t border-gray-300 bg-gray-100">
+              <div className="flex items-center justify-between px-3 py-2">
                 <div className="flex items-center gap-2">
-                  {item.icon && <span className="text-base">{item.icon}</span>}
-                  <span>{item.title}</span>
-                </div>
-                {item.badge && (
-                  <span
-                    className={cn(
-                      "px-2.5 py-0.5 text-xs font-semibold rounded-full",
-                      item.badge === 'admin'
-                        ? "bg-purple-500 text-white"
-                        : item.badge === 'beta'
-                        ? "text-white"
-                        : "bg-red-500 text-white"
-                    )}
-                    style={item.badge === 'beta' ? { backgroundColor: '#FF6B6B' } : undefined}
-                  >
-                    {item.badge}
+                  <User className="w-4 h-4 text-midnight-ink-400" />
+                  <span className="text-sm font-medium text-midnight-ink truncate max-w-[120px]">
+                    {displayUser.user_metadata?.full_name || displayUser.email}
                   </span>
+                </div>
+                {/* Tier badge for buyers only */}
+                {accountType === "buyer" && (
+                  <div
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${tierDisplay.className}`}
+                    onClick={() => trackTierBadgeClick(displayTier || 'unknown', 'sidebar', accountType as 'buyer' | 'creator')}
+                    data-track-button="true"
+                    data-button-id="sidebar-tier-badge"
+                  >
+                    {tierDisplay.label}
+                  </div>
                 )}
-              </Link>
-            );
-          })}
+              </div>
+            </div>
+          )}
+
+          {/* Footer - sits at absolute bottom */}
+          <div className="px-4 pb-3 pt-3 border-t border-gray-300 bg-gray-100">
+            <div className="text-xs text-gray-500 leading-tight mb-1">
+              © 2025 KStoryBridge
+            </div>
+            <div className="flex items-center gap-1 text-xs text-gray-500 leading-tight">
+              <a
+                href="https://kstorybridge.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-black transition-colors"
+              >
+                Privacy
+              </a>
+              <span>|</span>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('kstorybridge_cookie_consent');
+                  window.location.reload();
+                }}
+                className="hover:text-black transition-colors"
+              >
+                Cookie
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* User Info Section - Fixed at Bottom */}
-      {displayUser && (
-        <div className="p-4 border-t border-gray-300 mt-auto">
-          <div className="flex items-center justify-between px-3 py-2">
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-midnight-ink-400" />
-              <span className="text-sm font-medium text-midnight-ink truncate max-w-[120px]">
-                {displayUser.user_metadata?.full_name || displayUser.email}
-              </span>
-            </div>
-            {/* Tier badge for buyers only */}
-            {accountType === "buyer" && (
-              <div
-                className={`inline-block px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${tierDisplay.className}`}
-                onClick={() => trackTierBadgeClick(displayTier || 'unknown', 'sidebar', accountType as 'buyer' | 'creator')}
-                data-track-button="true"
-                data-button-id="sidebar-tier-badge"
-              >
-                {tierDisplay.label}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
     </>
   );
 }

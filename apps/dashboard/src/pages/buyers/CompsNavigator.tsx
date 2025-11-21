@@ -14,6 +14,7 @@ import CompSelector from '@/components/comps-navigator/CompSelector';
 import RefinementInput from '@/components/comps-navigator/RefinementInput';
 import ResultsGrid from '@/components/comps-navigator/ResultsGrid';
 import SavedSearchesSidebar from '@/components/comps-navigator/SavedSearchesSidebar';
+import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
 import { Button, Card, CardContent } from '@kstorybridge/ui';
 
 type LoadingPhase = 'semantic' | 'reranking' | null;
@@ -28,6 +29,7 @@ export default function CompsNavigator() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState<LoadingPhase>(null);
   const [searchInfo, setSearchInfo] = useState<{ time: number; cost: number } | null>(null);
+  const [sidebarRefreshTrigger, setSidebarRefreshTrigger] = useState(0);
 
   const handleSearch = async () => {
     if (compTitles.length === 0) {
@@ -74,6 +76,9 @@ export default function CompsNavigator() {
         cost: response.cost_estimate
       });
 
+      // Trigger sidebar refresh to show new search in recent list
+      setSidebarRefreshTrigger(prev => prev + 1);
+
       toast({
         title: "Matches Found",
         description: `Found ${response.results.length} titles matching your comp combination`
@@ -112,11 +117,18 @@ export default function CompsNavigator() {
     setSearchInfo(null);
   };
 
+  const handleTryExample = (comps: string[], refinement?: string) => {
+    setCompTitles(comps);
+    if (refinement) {
+      setRefinementText(refinement);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto bg-gray-50">
-        <div className="max-w-6xl mx-auto p-6 space-y-8">
+        <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
           {/* Header */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -196,38 +208,9 @@ export default function CompsNavigator() {
             </CardContent>
           </Card>
 
-          {/* Example Searches */}
+          {/* Example Searches - Only show when no results */}
           {results.length === 0 && !isLoading && (
-            <Card className="bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 shadow-sm rounded-2xl">
-              <CardContent className="p-6 md:p-8">
-                <h3 className="text-base font-bold text-gray-900 mb-2">
-                  Popular Comp Combinations
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Try these example searches to discover Korean titles with similar themes and tones
-                </p>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => setCompTitles(['Squid Game', 'Parasite', 'Black Mirror'])}
-                    className="block w-full text-left px-4 py-3 bg-white rounded-lg text-sm font-medium text-gray-900 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border border-cyan-200"
-                  >
-                    <span className="text-cyan-600">→</span> Squid Game + Parasite + Black Mirror
-                  </button>
-                  <button
-                    onClick={() => setCompTitles(['Stranger Things', 'Dark'])}
-                    className="block w-full text-left px-4 py-3 bg-white rounded-lg text-sm font-medium text-gray-900 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border border-cyan-200"
-                  >
-                    <span className="text-cyan-600">→</span> Stranger Things + Dark
-                  </button>
-                  <button
-                    onClick={() => setCompTitles(['Money Heist', 'Breaking Bad', 'Ozark'])}
-                    className="block w-full text-left px-4 py-3 bg-white rounded-lg text-sm font-medium text-gray-900 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border border-cyan-200"
-                  >
-                    <span className="text-cyan-600">→</span> Money Heist + Breaking Bad + Ozark
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
+            <ExamplesSection onTryExample={handleTryExample} />
           )}
 
           {/* Results */}
@@ -237,12 +220,15 @@ export default function CompsNavigator() {
         </div>
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar - Hidden on mobile */}
       {user?.email && (
-        <SavedSearchesSidebar
-          userEmail={user.email}
-          onLoadSearch={handleLoadSearch}
-        />
+        <div className="hidden md:block">
+          <SavedSearchesSidebar
+            userEmail={user.email}
+            onLoadSearch={handleLoadSearch}
+            refreshTrigger={sidebarRefreshTrigger}
+          />
+        </div>
       )}
     </div>
   );

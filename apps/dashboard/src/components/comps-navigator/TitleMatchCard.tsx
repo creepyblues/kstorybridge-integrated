@@ -8,6 +8,8 @@
  * - Professional typography and spacing
  */
 
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { TitleMatch } from '@/services/compsNavigatorService';
 
@@ -16,6 +18,8 @@ interface TitleMatchCardProps {
 }
 
 export default function TitleMatchCard({ match }: TitleMatchCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const handleCardClick = () => {
     // Open title detail page in new tab
     window.open(`/buyers/titles/${match.title_id}`, '_blank');
@@ -105,10 +109,45 @@ export default function TitleMatchCard({ match }: TitleMatchCardProps) {
               )}
             </div>
 
-            {/* Match Explanation */}
-            <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-              {match.explanation}
-            </p>
+            {/* AI Match Explanation - Chat Bubble Style */}
+            <div className="mb-4">
+              <div className="flex gap-3">
+                {/* AI Icon */}
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-hanok-teal to-cyan-600 flex items-center justify-center shadow-sm">
+                    <Sparkles className="h-4 w-4 text-white" />
+                  </div>
+                </div>
+
+                {/* Chat Bubble */}
+                <div className="flex-1">
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-2xl rounded-tl-sm p-4 shadow-sm">
+                    <p className={`text-sm text-gray-700 leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
+                      {match.explanation}
+                    </p>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsExpanded(!isExpanded);
+                    }}
+                    className="text-xs text-hanok-teal hover:text-hanok-teal/80 font-medium mt-2 ml-2 flex items-center gap-1 transition-colors"
+                  >
+                    {isExpanded ? (
+                      <>
+                        <span>Show Less</span>
+                        <ChevronUp className="h-3 w-3" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Show More</span>
+                        <ChevronDown className="h-3 w-3" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {/* Comp Alignments */}
             {match.comp_alignments && match.comp_alignments.length > 0 && (

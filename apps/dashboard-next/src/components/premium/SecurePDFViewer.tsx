@@ -275,7 +275,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
           }
 
           // Create blob from chunks
-          const blob = new Blob(chunks, { type: 'application/pdf' });
+          const blob = new Blob(chunks as BlobPart[], { type: 'application/pdf' });
           console.log('🔍 SECURE PDF: Blob created, size:', blob.size, 'bytes');
 
           // Additional security: verify blob size (prevent extremely large files)

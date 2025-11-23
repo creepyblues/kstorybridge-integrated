@@ -124,10 +124,10 @@ export default function CompsNavigator() {
 
   return (
     <BuyerLayout>
-      <div className="flex h-screen -m-4 sm:-m-6 lg:-m-8">
+      <div className="flex h-[calc(100vh-2rem)] sm:h-[calc(100vh-3rem)] lg:h-[calc(100vh-4rem)] -mx-4 sm:-mx-6 lg:-mx-8">
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto md:pr-80 pr-0">
-          <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
             {/* Header */}
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center gap-3">

@@ -5,10 +5,10 @@
  * Designed to help producers quickly understand why each title is featured.
  */
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, ExternalLink } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import VerifiedBadge from '@/components/common/VerifiedBadge';
 
 interface PitchAnalysis {
@@ -62,6 +62,7 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
   const navigate = useNavigate();
   const title = featured.titles;
   const pitchAnalysis = title.title_content_analysis?.[0]?.pitch_analysis;
+  const [synopsisExpanded, setSynopsisExpanded] = useState(false);
 
   const handleCardClick = () => {
     navigate(`/buyers/titles/${title.title_id}`);
@@ -86,20 +87,20 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
   return (
     <Card className="bg-white border border-gray-300 rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group">
       <CardContent className="p-0">
-        <div className="flex flex-col md:flex-row">
+        <div className="flex flex-col md:flex-row md:min-h-[24rem]">
           {/* Left: Image Section (35%) */}
-          <div className="relative w-full md:w-[35%] h-64 md:h-full bg-gray-100 overflow-hidden flex-shrink-0">
+          <div className="relative w-full md:w-[35%] h-80 md:h-auto bg-white flex-shrink-0 overflow-hidden">
             {title.title_image ? (
               <img
                 src={title.title_image}
                 alt={title.title_name_en || title.title_name_kr}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
                   e.currentTarget.src = 'https://via.placeholder.com/400x600?text=No+Image';
                 }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center bg-gray-100">
                 <span className="text-gray-400 text-sm">No Image</span>
               </div>
             )}
@@ -156,7 +157,20 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
                   {title.synopsis && (
                     <div>
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Synopsis</p>
-                      <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">{title.synopsis}</p>
+                      <p className={`text-sm text-gray-700 leading-relaxed ${synopsisExpanded ? '' : 'line-clamp-3'}`}>
+                        {title.synopsis}
+                      </p>
+                      {title.synopsis.length > 150 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSynopsisExpanded(!synopsisExpanded);
+                          }}
+                          className="text-xs text-hanok-teal hover:text-hanok-teal/80 font-semibold mt-1 underline"
+                        >
+                          {synopsisExpanded ? 'Show less' : 'Show more'}
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -182,24 +196,43 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
                     </div>
                   )}
 
-                  {/* Mood/Tone Keywords */}
-                  {(title.tone || (pitchAnalysis?.themes_and_tone?.primary_themes && pitchAnalysis.themes_and_tone.primary_themes.length > 0)) && (
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Mood & Themes</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {title.tone && (
-                          <span className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-2 py-1 rounded-md text-xs font-medium border border-purple-200">
-                            {title.tone}
-                          </span>
-                        )}
-                        {pitchAnalysis?.themes_and_tone?.primary_themes?.slice(0, 3).map((theme, idx) => (
-                          <span key={idx} className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-2 py-1 rounded-md text-xs font-medium border border-purple-200">
-                            {theme}
-                          </span>
-                        ))}
-                      </div>
+                  {/* Genre & Mood/Tone Keywords - Side by Side */}
+                  {(title.genre && title.genre.length > 0) || title.tone || (pitchAnalysis?.themes_and_tone?.primary_themes && pitchAnalysis.themes_and_tone.primary_themes.length > 0) ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Genre */}
+                      {title.genre && title.genre.length > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Genre</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {title.genre.slice(0, 4).map((g, idx) => (
+                              <span key={idx} className="bg-gradient-to-r from-cyan-100 to-cyan-50 text-cyan-800 px-2 py-1 rounded-md text-xs font-medium border border-cyan-200">
+                                {g}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mood & Themes */}
+                      {(title.tone || (pitchAnalysis?.themes_and_tone?.primary_themes && pitchAnalysis.themes_and_tone.primary_themes.length > 0)) && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Mood & Themes</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {title.tone && (
+                              <span className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-2 py-1 rounded-md text-xs font-medium border border-purple-200">
+                                {title.tone}
+                              </span>
+                            )}
+                            {pitchAnalysis?.themes_and_tone?.primary_themes?.slice(0, 3).map((theme, idx) => (
+                              <span key={idx} className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-2 py-1 rounded-md text-xs font-medium border border-purple-200">
+                                {theme}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Target Audience */}
                   {pitchAnalysis?.market_positioning?.target_audience && (
@@ -235,20 +268,6 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
                 </div>
               </div>
             </div>
-
-            {/* Genre Tags */}
-            {title.genre && title.genre.length > 0 && (
-              <div className="mb-6">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Genre</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {title.genre.slice(0, 4).map((g, idx) => (
-                    <span key={idx} className="bg-gradient-to-r from-cyan-100 to-cyan-50 text-cyan-800 px-2 py-1 rounded-md text-xs font-medium border border-cyan-200">
-                      {g}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
 
           </div>
         </div>

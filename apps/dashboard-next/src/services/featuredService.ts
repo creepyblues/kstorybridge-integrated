@@ -17,7 +17,15 @@ export const featuredService = {
   async getAllFeatured(): Promise<FeaturedWithTitle[]> {
     const { data, error } = await supabase
       .from('featured')
-      .select('*, titles (*)')
+      .select(`
+        *,
+        titles (
+          *,
+          title_content_analysis (
+            pitch_analysis
+          )
+        )
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {

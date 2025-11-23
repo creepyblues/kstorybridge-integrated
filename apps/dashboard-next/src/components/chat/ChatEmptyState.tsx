@@ -46,22 +46,6 @@ export function ChatEmptyState({ onQuerySelect, suggestedQueries }: ChatEmptySta
             ))}
           </div>
         </div>
-
-        {/* Features */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 text-sm">
-          <div className="space-y-1">
-            <div className="font-semibold text-black">🔍 Smart Search</div>
-            <div className="text-gray-500">Vector search with 10+ results per query</div>
-          </div>
-          <div className="space-y-1">
-            <div className="font-semibold text-black">🎯 Context Aware</div>
-            <div className="text-gray-500">Remembers conversation context</div>
-          </div>
-          <div className="space-y-1">
-            <div className="font-semibold text-black">📊 Rich Details</div>
-            <div className="text-gray-500">Pitch analytics when available</div>
-          </div>
-        </div>
       </div>
     </div>
   );

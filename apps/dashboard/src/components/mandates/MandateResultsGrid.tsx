@@ -23,7 +23,7 @@ export default function MandateResultsGrid({
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
         <p className="text-gray-600 text-sm">Finding titles that match your mandate...</p>
-        <p className="text-gray-500 text-xs mt-2">This may take a few seconds</p>
+        <p className="text-gray-400 text-xs mt-2">This may take a few seconds</p>
       </div>
     );
   }
@@ -69,27 +69,6 @@ export default function MandateResultsGrid({
 
   return (
     <div className="space-y-6">
-      {/* User's Mandate Prompt */}
-      {mandateText && (
-        <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 shadow-lg">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                <span className="text-lg font-bold text-gray-700">You</span>
-              </div>
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                Your Mandate
-              </p>
-              <p className="text-base text-gray-800 leading-relaxed">
-                {mandateText}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Results Header */}
       <div className="flex items-center justify-between">
         <div>

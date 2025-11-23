@@ -48,7 +48,8 @@
       "Bash(node scripts/test-comps-exact-dashboard.js:*)",
       "Bash(node scripts/test-horror-search.js:*)",
       "Bash(node:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(env)"
     ],
     "deny": []
   }

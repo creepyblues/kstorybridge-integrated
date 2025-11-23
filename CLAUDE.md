@@ -68,6 +68,12 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
 - **[PITCH_ANALYTICS.md](docs/features/chatbot/PITCH_ANALYTICS.md)** - Phase 3 integration plan
 - **[TESTING_GUIDE.md](docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures
 
+**Mandate Matcher** (✅ LIVE - 2025-11-22):
+- AI-powered title recommendations based on production mandates
+- Vector search using OpenAI embeddings (text-embedding-ada-002)
+- Cost: ~$0.0015 per search, returns top 15 matches
+- Route: `/buyers/mandates`
+
 **Stripe Payment Integration** (`docs/`):
 - **[STRIPE_PAYMENT_INTEGRATION.md](docs/STRIPE_PAYMENT_INTEGRATION.md)** - Complete implementation summary (✅ LIVE - 2025-11-14)
 - **[STRIPE_CONFIGURATION_REFERENCE.md](docs/STRIPE_CONFIGURATION_REFERENCE.md)** - Configuration guide and troubleshooting

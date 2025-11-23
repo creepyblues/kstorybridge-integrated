@@ -55,6 +55,7 @@ const Chat = lazy(() => import("./pages/Chat"));
 const ChatTest = lazy(() => import("./pages/ChatTest"));
 const ChatHistory = lazy(() => import("./pages/ChatHistory"));
 const CompsNavigator = lazy(() => import("./pages/buyers/CompsNavigator"));
+const Mandates = lazy(() => import("./pages/buyers/Mandates"));
 const VectorSearchManager = lazy(() => import("./pages/VectorSearchManager"));
 const OpenAITest = lazy(() => import("./pages/OpenAITest"));
 const SearchResults = lazy(() => import("./pages/SearchResults"));
@@ -153,6 +154,9 @@ const App = () => (
                 } />
                 <Route path="/buyers/comps-navigator" element={
                   <BuyerProtectedLayout><CompsNavigator /></BuyerProtectedLayout>
+                } />
+                <Route path="/buyers/mandates" element={
+                  <BuyerProtectedLayout><Mandates /></BuyerProtectedLayout>
                 } />
                 <Route path="/buyers/featured" element={
                   <BuyerProtectedLayout><BuyerHome /></BuyerProtectedLayout>

@@ -29,6 +29,7 @@ const getDiscoverItems = (accountType: string | null): MenuItem[] => {
     return [
       { title: "Chat", href: "/buyers/chat" },
       { title: "Comps Navigator", href: "/buyers/comps-navigator" },
+      { title: "Mandate Matcher", href: "/buyers/mandates" },
       { title: "Featured", href: "/buyers/featured" },
       { title: "Title Library", href: "/buyers/titles" },
       { title: "Saved Titles", href: "/buyers/saved" },
@@ -377,7 +378,7 @@ export function CMSSidebar() {
 
           {/* User Info Section */}
           {displayUser && (
-            <div className="p-4 border-t border-gray-300 bg-gray-100">
+            <div className="p-4 bg-gray-100">
               <div className="flex items-center justify-between px-3 py-2">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-midnight-ink-400" />
@@ -401,11 +402,11 @@ export function CMSSidebar() {
           )}
 
           {/* Footer - sits at absolute bottom */}
-          <div className="px-4 pb-3 pt-3 border-t border-gray-300 bg-gray-100">
-            <div className="text-xs text-gray-500 leading-tight mb-1">
+          <div className="px-4 pb-3 pt-3 bg-gray-100">
+            <div className="text-xs text-gray-500 leading-tight mb-1 text-center">
               © 2025 KStoryBridge
             </div>
-            <div className="flex items-center gap-1 text-xs text-gray-500 leading-tight">
+            <div className="flex items-center justify-center gap-1 text-xs text-gray-500 leading-tight">
               <a
                 href="https://kstorybridge.com/privacy"
                 target="_blank"

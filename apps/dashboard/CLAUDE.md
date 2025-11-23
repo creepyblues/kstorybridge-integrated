@@ -342,6 +342,132 @@ AI-powered chatbot for title discovery with vector search, pitch analytics integ
 
 ---
 
+## 🎯 Mandate Matcher
+
+**Status**: ✅ LIVE (Deployed 2025-11-22)
+
+### Overview
+
+AI-powered title recommendation system that matches producer mandates to titles using semantic vector search. Producers describe their requirements in natural language, and the system returns ranked title matches with similarity scores.
+
+### Key Features
+
+**Input**:
+- Full-sentence mandate descriptions (max 1000 characters)
+- Natural language processing (e.g., "Looking for action-thriller with strong female lead, Korean setting, suitable for streaming")
+- Keyboard shortcuts (⌘+Enter to submit)
+- Character counter with visual feedback
+
+**Search**:
+- OpenAI embeddings (text-embedding-ada-002) for semantic understanding
+- Vector similarity search against 245 titles with `combined_embedding`
+- Similarity threshold: 0.3 (30% minimum match)
+- Returns top 15 most relevant titles
+
+**Results**:
+- Beautiful card grid (2-column responsive layout)
+- Match score badges with color coding:
+  - 🟢 Emerald (85%+): Excellent matches
+  - 🔵 Blue (70-84%): Good matches
+  - 🟣 Purple (<70%): Fair matches
+- Title details: image, genre, tone, synopsis, creators
+- Click-to-view full title details
+
+**History Management**:
+- Persistent search history (stored in `mandate_searches` table)
+- Sidebar with recent searches (chronological, newest first)
+- Click to reload previous results
+- Delete searches with hover action
+- RLS-protected (users only see their own searches)
+
+### Technical Architecture
+
+**Database**:
+- Table: `mandate_searches`
+- Fields: `mandate_text`, `search_results` (cached JSONB), `result_count`, `avg_match_score`
+- RLS policies: User-scoped access
+- Migration: `20251121000000_add_mandate_searches_table.sql`
+
+**Edge Function**: `mandate-matcher`
+- Location: `supabase/functions/mandate-matcher/index.ts`
+- Embedding model: `text-embedding-ada-002` (same as title embeddings)
+- RPC: `match_titles_by_embedding_optimized(query_embedding, 0.3, 15)`
+- Returns: Top 15 titles with similarity scores
+
+**Service Layer**: `src/services/mandateService.ts`
+- Methods: `searchMandates()`, `getRecentMandates()`, `getMandateById()`, `deleteMandate()`
+- TypeScript interfaces for type safety
+
+**Components**:
+- `MandateInput` - Textarea with character counter, keyboard shortcuts
+- `MandateHistorySidebar` - Previous searches with click-to-reload
+- `MandateTitleCard` - Title card with match score badge
+- `MandateResultsGrid` - 2-column responsive grid
+
+### Performance & Cost
+
+**Performance**:
+- Search time: 2-3 seconds average
+- Processing: Embedding generation + vector search + database save
+- Cached results: Instant reload from history
+
+**Cost Per Search**:
+- Embedding: ~$0.0015 (text-embedding-ada-002: $0.0001 per 1K tokens)
+- Average mandate: ~15 tokens
+- No GPT-4 re-ranking (unlike comps-navigator)
+- Very cost-effective for value provided
+
+**Monthly Estimates** (1000 searches):
+- Total: ~$1.50/month
+- Per user: Negligible (<$0.10/month for active users)
+
+### Route & Navigation
+
+- **Route**: `/buyers/mandates`
+- **Navigation**: "Mandate Matcher" in buyer sidebar (between "Comps Navigator" and "Featured")
+- **Access**: Buyer accounts only (via `BuyerProtectedLayout`)
+
+### Implementation Files
+
+**Frontend**:
+- Page: `src/pages/buyers/Mandates.tsx`
+- Components: `src/components/mandates/`
+  - `MandateInput.tsx`
+  - `MandateHistorySidebar.tsx`
+  - `MandateTitleCard.tsx`
+  - `MandateResultsGrid.tsx`
+- Service: `src/services/mandateService.ts`
+
+**Backend**:
+- Edge function: `supabase/functions/mandate-matcher/index.ts`
+- Migration: `supabase/migrations/20251121000000_add_mandate_searches_table.sql`
+- RPC: Uses existing `match_titles_by_embedding_optimized` function
+
+### Common Issues & Solutions
+
+**Issue**: 0 results returned
+- **Cause**: Using wrong embedding model or threshold too high
+- **Solution**: Ensure `text-embedding-ada-002` model (same as title embeddings) and threshold ≤ 0.3
+
+**Issue**: Titles don't have embeddings
+- **Cause**: `combined_embedding` field is NULL
+- **Solution**: Run embedding generation scripts (see `scripts/regenerate-embeddings.js`)
+
+**Issue**: Different embedding models
+- **Cause**: Mandate uses different model than titles
+- **Solution**: Both must use `text-embedding-ada-002` (1536 dimensions)
+
+### Future Enhancements
+
+- Bookmark favorite mandates
+- Name/label mandates for organization
+- Share mandate results with team
+- Export recommendations as PDF/Excel
+- Mandate templates for common scenarios
+- AI-generated mandate suggestions
+
+---
+
 ## 📄 Pitch Deck Extraction
 
 **Status**: ✅ v2.0 Enhanced Comprehensive Extraction

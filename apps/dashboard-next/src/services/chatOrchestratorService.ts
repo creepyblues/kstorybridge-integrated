@@ -124,15 +124,80 @@ export const chatOrchestratorService = {
 
   /**
    * Get suggested queries for empty state
+   * Returns 5 random prompts from a pool of 50 comprehensive suggestions
    */
   getSuggestedQueries(): string[] {
-    return [
+    const allPrompts = [
+      // Genre-specific searches
       "Show me romance webtoons with strong female leads",
       "I'm looking for action stories with great art",
       "What are some popular fantasy web novels?",
+      "Find me psychological thriller webtoons",
+      "Show me slice-of-life stories with heartwarming moments",
+      "I want dark fantasy with complex worldbuilding",
+      "Find horror webtoons with unique art styles",
+      "Show me comedy webtoons that are actually funny",
+      "I'm looking for sci-fi stories set in space",
+      "Find historical dramas with romance elements",
+
+      // Comparison searches
       "Find me stories similar to Solo Leveling",
+      "Show me webtoons like Tower of God",
+      "I want something similar to Omniscient Reader's Viewpoint",
+      "Find stories with vibes like True Beauty",
+      "Show me web novels similar to The Legendary Moonlight Sculptor",
+      "I'm looking for stories like Remarried Empress",
+      "Find action series like The God of High School",
+      "Show me romance like What's Wrong with Secretary Kim",
+      "I want fantasy like The Beginning After The End",
+      "Find stories similar to Lore Olympus",
+
+      // Specific characteristics
       "Show me completed series with high ratings",
+      "Find ongoing series with weekly updates",
+      "I want stories with overpowered protagonists",
+      "Show me webtoons with revenge plots",
+      "Find stories with time travel or regression themes",
+      "I'm looking for underdog to hero storylines",
+      "Show me stories with complex female characters",
+      "Find webtoons with found family dynamics",
+      "I want stories with enemies-to-lovers romance",
+      "Show me series with plot twists and mysteries",
+
+      // Platform and popularity
+      "What are the most popular webtoons right now?",
+      "Show me top-rated web novels from Korea",
+      "Find hidden gems that deserve more attention",
+      "What are the best completed series to binge?",
+      "Show me award-winning Korean content",
+      "Find trending stories on Naver and Kakao",
+      "What are the highest-rated romance webtoons?",
+      "Show me the best action series available",
+      "Find critically acclaimed web novels",
+      "What are the most viewed webtoons this year?",
+
+      // Target audience and tone
+      "I'm looking for mature, adult-oriented stories",
+      "Show me family-friendly webtoons",
+      "Find stories with serious, dark themes",
+      "I want lighthearted, feel-good content",
+      "Show me thought-provoking narratives",
+      "Find fast-paced, action-packed stories",
+      "I'm looking for slow-burn character development",
+      "Show me epic fantasy with multiple storylines",
+      "Find short, binge-worthy series under 100 chapters",
+      "I want long-running series with deep lore",
     ];
+
+    // Fisher-Yates shuffle algorithm for true randomization
+    const shuffled = [...allPrompts];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Return first 5 from shuffled array
+    return shuffled.slice(0, 5);
   },
 
   /**

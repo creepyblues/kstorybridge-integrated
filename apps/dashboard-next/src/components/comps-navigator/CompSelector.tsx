@@ -116,11 +116,6 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
       )}
 
       {/* Helper Text */}
-      {compTitles.length === 0 && (
-        <p className="text-xs text-gray-600 bg-hanok-teal/5 border border-hanok-teal/20 rounded-lg p-3">
-          💡 <span className="font-medium">Tip:</span> Add 2-3 comparable titles for best results. Use well-known Hollywood/global titles.
-        </p>
-      )}
       {compTitles.length === maxComps && (
         <p className="text-xs font-medium text-hanok-teal bg-hanok-teal/10 border border-hanok-teal/30 rounded-lg p-3">
           ✓ Maximum {maxComps} comps selected. Click "Find Matches" to search.

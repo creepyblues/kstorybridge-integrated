@@ -34,10 +34,6 @@ export default function RefinementInput({ value, onChange, maxLength = 500 }: Re
         className="min-h-[100px] resize-none border-gray-300 focus:border-hanok-teal focus:ring-hanok-teal"
         maxLength={maxLength}
       />
-
-      <p className="text-xs text-gray-500">
-        💡 Tip: Be specific about themes, tone, or production requirements to get more targeted matches
-      </p>
     </div>
   );
 }

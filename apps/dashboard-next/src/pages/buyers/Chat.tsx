@@ -401,7 +401,7 @@ export default function Chat() {
     <BuyerLayout>
       <div className="flex h-screen">
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pr-80">
           <div className="max-w-3xl mx-auto p-6 pb-32 space-y-6">
             {isLoadingHistory ? (
               <div className="flex items-center justify-center h-[calc(100vh-200px)]">

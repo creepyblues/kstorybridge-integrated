@@ -126,7 +126,7 @@ export default function CompsNavigator() {
     <BuyerLayout>
       <div className="flex h-screen">
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pr-80">
           <div className="max-w-6xl mx-auto p-6 space-y-8">
             {/* Header */}
             <div className="space-y-4">

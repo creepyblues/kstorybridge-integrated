@@ -126,8 +126,8 @@ export default function CompsNavigator() {
     <BuyerLayout>
       <div className="flex h-screen">
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto pr-80">
-          <div className="max-w-6xl mx-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto md:pr-80 pr-0">
+          <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
             {/* Header */}
             <div className="space-y-4">
               <div className="flex items-center gap-4">
@@ -135,8 +135,8 @@ export default function CompsNavigator() {
                   <Compass className="h-8 w-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold text-hanok-teal">Comps Navigator</h1>
-                  <p className="text-lg text-gray-600 mt-1">AI-Powered Korean Title Discovery</p>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Comps Navigator</h1>
+                  <p className="text-base sm:text-lg text-gray-600 mt-1">AI-Powered Korean Title Discovery</p>
                 </div>
               </div>
               <p className="text-gray-600 text-base leading-relaxed">

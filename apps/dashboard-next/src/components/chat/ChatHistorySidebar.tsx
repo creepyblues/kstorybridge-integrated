@@ -98,7 +98,7 @@ export default function ChatHistorySidebar({
   }
 
   return (
-    <div className="fixed right-0 top-0 h-screen w-80 bg-white shadow-2xl flex flex-col z-40">
+    <div className="hidden md:flex fixed right-0 top-0 h-screen w-80 bg-white shadow-2xl flex-col z-40">
       {/* Header */}
       <div className="bg-gradient-to-r from-hanok-teal/5 to-hanok-teal/10 border-b border-gray-200 px-6 py-5">
         <div className="flex items-center gap-3 mb-4">

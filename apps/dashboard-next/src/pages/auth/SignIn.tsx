@@ -74,15 +74,15 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Sign In</CardTitle>
-          <CardDescription>
-            Welcome back to KStoryBridge
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-porcelain-blue-50 px-4">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="space-y-1 pb-6">
+          <CardTitle className="text-3xl font-bold text-midnight-ink">Producer Sign In</CardTitle>
+          <CardDescription className="text-base text-midnight-ink-600">
+            Welcome back! Sign in to your producer account.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -110,9 +110,13 @@ export default function SignIn() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full h-14 bg-hanok-teal hover:bg-hanok-teal/90 text-white text-base font-medium"
+              disabled={loading}
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In with Email
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 
@@ -120,19 +124,18 @@ export default function SignIn() {
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-300" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-3 text-gray-500">or</span>
             </div>
           </div>
 
           <Button
             type="button"
-            variant="outline"
-            className="w-full"
+            className="w-full h-14 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm text-base font-medium"
             onClick={handleOAuthSignIn}
             disabled={loading}
           >
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -150,19 +153,25 @@ export default function SignIn() {
                 fill="#EA4335"
               />
             </svg>
-            Sign In with Google
+            Continue with Google
           </Button>
 
-          <div className="text-center text-sm text-gray-600">
-            <Link to="/forgot-password" className="underline hover:text-black">
-              Forgot password?
+          <div className="text-center">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-hanok-teal hover:text-hanok-teal/80"
+            >
+              Forgot your password?
             </Link>
           </div>
 
           <div className="text-center text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/signup" className="underline hover:text-black">
-              Sign up
+            Don't have a producer account?{' '}
+            <Link
+              to="/signup"
+              className="text-hanok-teal hover:text-hanok-teal/80 font-medium"
+            >
+              Sign up here
             </Link>
           </div>
         </CardContent>

@@ -124,29 +124,29 @@ export default function CompsNavigator() {
 
   return (
     <BuyerLayout>
-      <div className="flex h-screen">
+      <div className="flex h-screen -m-4 sm:-m-6 lg:-m-8">
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto md:pr-80 pr-0">
           <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
             {/* Header */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                  <Compass className="h-8 w-8 text-white" />
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl shadow-lg">
+                  <Compass className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Comps Navigator</h1>
-                  <p className="text-base sm:text-lg text-gray-600 mt-1">AI-Powered Korean Title Discovery</p>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-hanok-teal">Comps Navigator</h1>
+                  <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-0.5 sm:mt-1">AI-Powered Korean Title Discovery</p>
                 </div>
               </div>
-              <p className="text-gray-600 text-base leading-relaxed">
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 Find Korean titles similar to your favorite shows and films. Select up to 3 comps to discover the perfect match using advanced semantic search.
               </p>
             </div>
 
             {/* Search Form */}
-            <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-2xl">
-              <CardContent className="p-6 md:p-8 space-y-6">
+            <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-xl sm:rounded-2xl">
+              <CardContent className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
                 <CompSelector
                   compTitles={compTitles}
                   onChange={setCompTitles}
@@ -177,7 +177,8 @@ export default function CompsNavigator() {
                     ) : (
                       <>
                         <Search className="h-4 w-4" />
-                        <span>Find Matches</span>
+                        <span className="hidden sm:inline">Find Matches</span>
+                        <span className="sm:hidden">Find</span>
                       </>
                     )}
                   </Button>
@@ -187,7 +188,7 @@ export default function CompsNavigator() {
                       onClick={handleClear}
                       disabled={isLoading}
                       variant="outline"
-                      className="border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30"
+                      className="border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30 h-11 sm:h-10 px-3 sm:px-4"
                     >
                       Clear
                     </Button>

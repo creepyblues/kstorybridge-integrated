@@ -19,7 +19,7 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
 import DOMPurify from 'dompurify';
-import { Button } from '@kstorybridge/ui';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
   Bold,

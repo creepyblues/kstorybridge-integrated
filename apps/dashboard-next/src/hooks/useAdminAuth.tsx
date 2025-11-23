@@ -2,13 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 
-export interface AdminProfile {
-  id: string;
-  email: string;
-  full_name: string;
-  active: boolean | null;
-  created_at: string | null;
-}
+type AdminProfile = any; // TODO: Define admin profile type
 
 interface UseAdminAuthReturn {
   isAdmin: boolean;
@@ -56,7 +50,7 @@ export function useAdminAuth(): UseAdminAuthReturn {
         throw error;
       }
 
-      return data as AdminProfile;
+      return data;
     },
     enabled: !!user?.email,
     staleTime: 5 * 60 * 1000, // 5 minutes

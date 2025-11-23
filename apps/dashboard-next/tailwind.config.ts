@@ -52,6 +52,7 @@ export default {
           foreground: 'hsl(var(--card-foreground))',
         },
         'hanok-teal': '#4C9C9B',
+        'sunrise-coral': '#E63946',
         'pro-purple': '#AF52DE',
       },
       borderRadius: {

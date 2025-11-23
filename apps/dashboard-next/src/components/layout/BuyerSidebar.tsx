@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import { User, Menu, X, MessageSquare, Compass, Star, BookOpen, Heart, UserCircle, CreditCard } from 'lucide-react';
+import { User, Menu, X, MessageSquare, Compass, Sparkles, Star, BookOpen, Heart, CreditCard } from 'lucide-react';
 
 interface MenuItem {
   title: string;
@@ -14,12 +14,13 @@ interface MenuItem {
 // Buyer menu items (with /buyers prefix)
 const getDiscoverItems = (): MenuItem[] => {
   return [
-    { title: 'Chat', href: '/buyers/chat', icon: <MessageSquare className="h-4 w-4" /> },
-    { title: 'Comps Navigator', href: '/buyers/comps-navigator', icon: <Compass className="h-4 w-4" /> },
-    { title: 'Featured', href: '/buyers/featured', icon: <Star className="h-4 w-4" /> },
-    { title: 'Titles', href: '/buyers/titles', icon: <BookOpen className="h-4 w-4" /> },
-    { title: 'Saved', href: '/buyers/saved', icon: <Heart className="h-4 w-4" /> },
-    { title: 'Plan', href: '/buyers/plan', icon: <CreditCard className="h-4 w-4" /> },
+    { title: 'Chat', href: '/buyers/chat', icon: <MessageSquare className="h-5 w-5" /> },
+    { title: 'Comps Navigator', href: '/buyers/comps-navigator', icon: <Compass className="h-5 w-5" /> },
+    { title: 'Mandate Matcher', href: '/buyers/mandates', icon: <Sparkles className="h-5 w-5" /> },
+    { title: 'Featured', href: '/buyers/featured', icon: <Star className="h-5 w-5" /> },
+    { title: 'Titles', href: '/buyers/titles', icon: <BookOpen className="h-5 w-5" /> },
+    { title: 'Saved', href: '/buyers/saved', icon: <Heart className="h-5 w-5" /> },
+    { title: 'Plan', href: '/buyers/plan', icon: <CreditCard className="h-5 w-5" /> },
   ];
 };
 
@@ -44,19 +45,15 @@ export function BuyerSidebar() {
       {/* Mobile menu button */}
       <button
         onClick={handleMobileMenuToggle}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white border border-red-200 shadow-lg"
       >
-        {isMobileMenuOpen ? (
-          <X className="h-6 w-6 text-gray-900" />
-        ) : (
-          <Menu className="h-6 w-6 text-gray-900" />
-        )}
+        {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
 
       {/* Overlay for mobile */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-30"
+          className="fixed inset-0 bg-black/20 z-30 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -64,20 +61,17 @@ export function BuyerSidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 transition-transform md:translate-x-0',
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          'fixed left-0 top-0 z-40 h-screen w-64 bg-white shadow-xl transition-transform duration-300 ease-in-out',
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-gray-200">
-            <Link
-              to="/buyers/chat"
-              className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
-            >
+            <h1 className="text-2xl font-bold text-hanok-teal">
               KStoryBridge
-            </Link>
-            <p className="text-sm text-gray-500 mt-1">Buyer Dashboard</p>
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">Dashboard for Producers</p>
           </div>
 
           {/* Navigation */}
@@ -94,10 +88,10 @@ export function BuyerSidebar() {
                       to={item.href}
                       onClick={handleLinkClick}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                        'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',
                         location.pathname === item.href
-                          ? 'bg-gray-100 text-gray-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          ? 'bg-hanok-teal/10 text-hanok-teal shadow-sm border border-hanok-teal/20'
+                          : 'text-gray-700 hover:bg-hanok-teal/5'
                       )}
                     >
                       {item.icon}
@@ -119,11 +113,9 @@ export function BuyerSidebar() {
             <Link
               to="/buyers/profile"
               onClick={handleLinkClick}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-hanok-teal/5 transition-colors"
             >
-              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-gray-600">
-                <User className="h-4 w-4" />
-              </div>
+              <User className="h-5 w-5 text-gray-400" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {user?.user_metadata?.full_name || 'Buyer'}

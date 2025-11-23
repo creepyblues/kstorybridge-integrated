@@ -10,7 +10,7 @@ import { useTierAccess } from '@/contexts/TierContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Heart, ExternalLink, Loader2, FileText, X, Eye, BookOpen, Calendar } from 'lucide-react';
+import { ArrowLeft, Heart, ExternalLink, Loader2, X, Eye, BookOpen, Calendar } from 'lucide-react';
 import SecurePDFViewer from '@/components/premium/SecurePDFViewer';
 import PitchDeckThumbnail from '@/components/premium/PitchDeckThumbnail';
 
@@ -228,7 +228,7 @@ export default function TitleDetail() {
 
             {/* Mobile: Content section */}
             <div className="sm:hidden">
-              <h2 className="text-2xl font-bold text-black mb-2 leading-tight text-center">
+              <h2 className="text-2xl font-bold text-hanok-teal mb-2 leading-tight text-center">
                 {title.title_name_en || title.title_name_kr}
               </h2>
               {title.title_name_kr && title.title_name_en && (
@@ -281,7 +281,7 @@ export default function TitleDetail() {
               onClick={handleFavoriteToggle}
               disabled={favoriteLoading}
               variant="outline"
-              className={`flex-1 lg:flex-none border-gray-300 hover:bg-gray-100 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base transition-colors ${
+              className={`flex-1 lg:flex-none border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base transition-colors ${
                 isFavorited ? 'bg-red-50 text-red-600 hover:bg-red-100' : ''
               }`}
             >
@@ -292,7 +292,7 @@ export default function TitleDetail() {
             {title.title_url && (
               <Button
                 variant="outline"
-                className="flex-1 lg:flex-none border-gray-300 hover:bg-gray-100 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base transition-colors"
+                className="flex-1 lg:flex-none border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30 px-3 sm:px-5 py-2 sm:py-3 text-sm sm:text-base transition-colors"
                 onClick={() => window.open(title.title_url, '_blank')}
               >
                 <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
@@ -400,14 +400,11 @@ export default function TitleDetail() {
                   </div>
 
                   {/* Genre */}
-                  {title.genre && (
+                  {title.genre && Array.isArray(title.genre) && title.genre.length > 0 && (
                     <div className="flex items-center justify-between">
                       <h5 className="font-medium text-gray-700">Genre</h5>
                       <span className="font-bold text-[#4C9C9B] uppercase text-xs truncate max-w-[60%] text-right">
-                        {Array.isArray(title.genre)
-                          ? title.genre.slice(0, 2).map((g: string) => g.replace('_', ' ')).join(', ')
-                          : title.genre.replace('_', ' ')
-                        }
+                        {title.genre.slice(0, 2).map((g: string) => g.replace('_', ' ')).join(', ')}
                       </span>
                     </div>
                   )}
@@ -491,7 +488,7 @@ export default function TitleDetail() {
         {/* KStoryBridge Analysis Section - Full Width */}
         {pitchAnalysis && (
           <div className="mt-8 sm:mt-10 lg:mt-12">
-            <h2 className="text-2xl font-bold text-black mb-6">KStoryBridge Analysis</h2>
+            <h2 className="text-2xl font-bold text-hanok-teal mb-6">KStoryBridge Analysis</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 

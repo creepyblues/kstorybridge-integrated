@@ -57,10 +57,10 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-semibold text-gray-900">
+        <label className="block text-sm font-semibold text-hanok-teal">
           Select up to {maxComps} comparable titles
         </label>
-        <span className="text-xs font-medium text-gray-500">
+        <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
           {compTitles.length} / {maxComps}
         </span>
       </div>
@@ -71,12 +71,12 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
           {compTitles.map((title, index) => (
             <div
               key={index}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-cyan-100 to-cyan-50 border border-cyan-200 rounded-lg text-sm font-medium text-cyan-800"
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-hanok-teal/10 to-hanok-teal/5 border border-hanok-teal/30 rounded-lg text-sm font-medium text-hanok-teal shadow-sm"
             >
               <span>{title}</span>
               <button
                 onClick={() => handleRemoveComp(index)}
-                className="hover:bg-cyan-200 rounded-full p-0.5 transition-colors"
+                className="hover:bg-hanok-teal/20 rounded-full p-0.5 transition-colors"
                 aria-label={`Remove ${title}`}
               >
                 <X className="h-3.5 w-3.5" />
@@ -101,14 +101,14 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
                 ? 'Add another comp (optional)'
                 : 'Add final comp (optional)'
             }
-            className="flex-1 border-gray-300 focus:border-hanok-teal focus:ring-hanok-teal"
+            className="flex-1 border-gray-200 focus:border-hanok-teal focus:ring-hanok-teal/20"
             maxLength={100}
           />
           <Button
             onClick={handleAddComp}
             disabled={!inputValue.trim()}
             variant="outline"
-            className="border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+            className="border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30 disabled:opacity-50"
           >
             Add
           </Button>
@@ -117,12 +117,12 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
 
       {/* Helper Text */}
       {compTitles.length === 0 && (
-        <p className="text-xs text-gray-500">
-          💡 Tip: Add 2-3 comparable titles for best results. Use well-known Hollywood/global titles.
+        <p className="text-xs text-gray-600 bg-hanok-teal/5 border border-hanok-teal/20 rounded-lg p-3">
+          💡 <span className="font-medium">Tip:</span> Add 2-3 comparable titles for best results. Use well-known Hollywood/global titles.
         </p>
       )}
       {compTitles.length === maxComps && (
-        <p className="text-xs font-medium text-gray-600">
+        <p className="text-xs font-medium text-hanok-teal bg-hanok-teal/10 border border-hanok-teal/30 rounded-lg p-3">
           ✓ Maximum {maxComps} comps selected. Click "Find Matches" to search.
         </p>
       )}

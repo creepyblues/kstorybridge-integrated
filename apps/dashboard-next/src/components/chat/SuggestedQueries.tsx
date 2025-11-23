@@ -1,5 +1,3 @@
-import { Button } from "@kstorybridge/ui";
-
 interface SuggestedQueriesProps {
   queries: string[];
   onQueryClick: (query: string) => void;

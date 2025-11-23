@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   error: string | null;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   error: null,
+  signOut: async () => {},
 });
 
 // 🚨 AUTH ISOLATION BOUNDARY
@@ -94,8 +96,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, error }}>
+    <AuthContext.Provider value={{ user, session, loading, error, signOut }}>
       {children}
     </AuthContext.Provider>
   );

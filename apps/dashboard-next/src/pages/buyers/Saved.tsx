@@ -65,11 +65,21 @@ export default function Saved() {
 
   return (
     <BuyerLayout>
-      <div className="max-w-7xl mx-auto">
-        {/* Page Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">Saved Titles</h1>
-          <p className="text-sm text-gray-600 mt-1">Your favorite Korean content</p>
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
+              <Heart className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold text-hanok-teal">Saved Titles</h1>
+              <p className="text-lg text-gray-600 mt-1">Your Favorites</p>
+            </div>
+          </div>
+          <p className="text-gray-600 text-base">
+            Access your saved Korean content and manage your favorite titles in one place.
+          </p>
         </div>
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -85,7 +95,7 @@ export default function Saved() {
             <Button
               variant="outline"
               onClick={() => navigate('/buyers/titles')}
-              className="border-gray-300"
+              className="border-gray-200"
             >
               Browse Titles
             </Button>

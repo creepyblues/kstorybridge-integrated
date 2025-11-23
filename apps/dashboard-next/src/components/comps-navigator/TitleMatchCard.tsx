@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import { Bot } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TitleMatch } from '@/services/compsNavigatorService';
 import MatchDetailModal from './MatchDetailModal';
@@ -105,14 +106,23 @@ export default function TitleMatchCard({ match }: TitleMatchCardProps) {
               )}
             </div>
 
-            {/* Match Explanation */}
-            <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-              {match.explanation}
-            </p>
+            {/* Match Explanation - AI Chat Bubble */}
+            <div className="flex gap-3 mb-4">
+              <div className="flex-shrink-0">
+                <div className="bg-hanok-teal/10 rounded-full p-2">
+                  <Bot className="h-5 w-5 text-hanok-teal" />
+                </div>
+              </div>
+              <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-3">
+                <p className="text-sm text-gray-700">
+                  {match.explanation}
+                </p>
+              </div>
+            </div>
 
             {/* Comp Alignments */}
             {match.comp_alignments && match.comp_alignments.length > 0 && (
-              <div className="space-y-2 mb-4">
+              <div className="space-y-2">
                 <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Comp Alignments</div>
                 {match.comp_alignments.slice(0, 2).map((alignment, idx) => (
                   <div key={idx} className="flex items-center justify-between">
@@ -131,17 +141,6 @@ export default function TitleMatchCard({ match }: TitleMatchCardProps) {
                 )}
               </div>
             )}
-
-            {/* View Details Link */}
-            <button
-              className="w-full text-sm text-center text-blue-600 hover:text-blue-700 font-semibold group-hover:underline transition-all"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowModal(true);
-              }}
-            >
-              View Full Analysis →
-            </button>
           </div>
         </CardContent>
       </Card>

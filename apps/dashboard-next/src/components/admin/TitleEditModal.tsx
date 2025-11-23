@@ -1,8 +1,8 @@
 import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Title } from '@/services/titlesService';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { X } from 'lucide-react';
 
 interface TitleEditModalProps {

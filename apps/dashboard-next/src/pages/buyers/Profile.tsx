@@ -104,10 +104,10 @@ export default function Profile() {
 
   return (
     <BuyerLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
         {/* Page Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">Profile</h1>
+          <h1 className="text-3xl lg:text-4xl font-bold text-hanok-teal">Profile</h1>
           <p className="text-sm text-gray-600 mt-1">Manage your account and subscription</p>
         </div>
         {/* Profile Header */}
@@ -119,7 +119,7 @@ export default function Profile() {
                   <User className="h-12 w-12 text-hanok-teal" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-black mb-1">
+                  <h2 className="text-3xl lg:text-4xl font-bold text-hanok-teal mb-1">
                     {profile.full_name}
                   </h2>
                   <div className="flex items-center gap-2 text-gray-600">
@@ -136,7 +136,7 @@ export default function Profile() {
         {/* Account Information */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <h3 className="text-lg font-bold text-black mb-4">Account Information</h3>
+            <h3 className="text-lg font-bold text-hanok-teal mb-4">Account Information</h3>
             <div className="space-y-4">
               {/* Company */}
               {profile.buyer_company && (
@@ -199,11 +199,11 @@ export default function Profile() {
         {/* Tier Information */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <h3 className="text-lg font-bold text-black mb-4">Subscription Tier</h3>
+            <h3 className="text-lg font-bold text-hanok-teal mb-4">Subscription Tier</h3>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl font-bold text-black capitalize">{tier}</span>
+                  <span className="text-3xl lg:text-4xl font-bold text-hanok-teal capitalize">{tier}</span>
                   <ProBadge tier={tier} size="md" />
                 </div>
                 <p className="text-sm text-gray-600">
@@ -275,14 +275,14 @@ export default function Profile() {
         {/* Account Actions */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <h3 className="text-lg font-bold text-black mb-4">Account Actions</h3>
+            <h3 className="text-lg font-bold text-hanok-teal mb-4">Account Actions</h3>
             <p className="text-sm text-gray-600 mb-4">
               Sign out of your account. You'll need to sign in again to access your dashboard.
             </p>
             <Button
               variant="outline"
               onClick={handleSignOut}
-              className="border-gray-300 hover:bg-gray-100"
+              className="border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out

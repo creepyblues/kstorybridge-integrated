@@ -1,29 +1,14 @@
 import { useState, useEffect } from 'react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
-import { useToast } from '@/hooks/use-toast';
+import { Star, Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { featuredService, type FeaturedWithTitle } from '@/services/featuredService';
 import { titlesService, type Title } from '@/services/titlesService';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Star, Plus, Trash2, Loader2, Save, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-export default function Featured() {
+export default function AdminFeatured() {
   const { toast } = useToast();
   const [featured, setFeatured] = useState<FeaturedWithTitle[]>([]);
   const [allTitles, setAllTitles] = useState<Title[]>([]);
@@ -43,16 +28,15 @@ export default function Featured() {
       setLoading(true);
       const [featuredData, titlesData] = await Promise.all([
         featuredService.getAllFeatured(),
-        titlesService.getTitles(),
+        titlesService.getTitles()
       ]);
       setFeatured(featuredData);
       setAllTitles(titlesData);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error loading data:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to load data',
-        variant: 'destructive',
+        description: 'Failed to load data'
       });
     } finally {
       setLoading(false);
@@ -63,8 +47,7 @@ export default function Featured() {
     if (!selectedTitleId) {
       toast({
         title: 'Error',
-        description: 'Please select a title',
-        variant: 'destructive',
+        description: 'Please select a title'
       });
       return;
     }
@@ -77,8 +60,7 @@ export default function Featured() {
       if (isAlreadyFeatured) {
         toast({
           title: 'Error',
-          description: 'This title is already featured',
-          variant: 'destructive',
+          description: 'This title is already featured'
         });
         return;
       }
@@ -87,19 +69,18 @@ export default function Featured() {
 
       toast({
         title: 'Success',
-        description: 'Title added to featured',
+        description: 'Title added to featured'
       });
 
       // Reset form and reload data
       setSelectedTitleId('');
       setNewNote('');
       await loadData();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding featured:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to add featured title',
-        variant: 'destructive',
+        description: 'Failed to add featured title'
       });
     } finally {
       setAdding(false);
@@ -120,26 +101,25 @@ export default function Featured() {
     try {
       await featuredService.updateFeaturedNote(featuredId, editNoteValue);
 
-      // Update local state
-      setFeatured((prev) =>
-        prev.map((item) =>
-          item.id === featuredId ? { ...item, note: editNoteValue } : item
-        )
-      );
+      // Update only the changed item in state (no reload needed)
+      setFeatured(prev => prev.map(item =>
+        item.id === featuredId
+          ? { ...item, note: editNoteValue }
+          : item
+      ));
 
       toast({
         title: 'Success',
-        description: 'Note updated successfully',
+        description: 'Note updated successfully'
       });
 
       setEditingNoteId(null);
       setEditNoteValue('');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating note:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update note',
-        variant: 'destructive',
+        description: 'Failed to update note'
       });
     }
   }
@@ -152,16 +132,15 @@ export default function Featured() {
 
       toast({
         title: 'Success',
-        description: 'Title removed from featured',
+        description: 'Title removed from featured'
       });
 
       await loadData();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting featured:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to remove featured title',
-        variant: 'destructive',
+        description: 'Failed to remove featured title'
       });
     }
   }
@@ -170,108 +149,117 @@ export default function Featured() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric',
+      day: 'numeric'
     });
   }
 
   // Get titles that are not already featured
   const availableTitles = allTitles.filter(
-    (title) => !featured.some((f) => f.title_id === title.title_id)
+    title => !featured.some(f => f.title_id === title.title_id)
   );
 
   return (
-    <AdminLayout>
-      <div className="p-6 space-y-6">
+    <PageContainer>
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <Star className="h-8 w-8 text-hanok-teal" />
-            <h1 className="text-3xl font-bold text-black">Featured Titles Management</h1>
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Star className="h-8 w-8 text-purple-600" />
+            <h1 className="text-3xl font-bold text-midnight-ink">Featured Titles Management</h1>
+            <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-purple-500 text-white">
+              ADMIN ONLY
+            </span>
           </div>
-          <p className="text-gray-600">Manage featured titles displayed on the homepage</p>
+          <p className="text-gray-600">
+            Manage featured titles displayed on the homepage
+          </p>
           {!loading && (
             <p className="text-sm text-gray-500 mt-2">
-              <span className="font-medium text-hanok-teal">{featured.length} featured</span>
+              <span className="font-medium text-purple-600">
+                {featured.length} featured titles
+              </span>
               {' / '}
-              <span className="font-medium text-gray-700">{allTitles.length} total titles</span>
+              <span className="font-medium text-gray-700">
+                {allTitles.length} total titles
+              </span>
             </p>
           )}
         </div>
 
         {/* Add New Featured Title */}
-        <Card className="bg-transparent border-gray-300 shadow-none">
-          <CardHeader>
-            <CardTitle className="text-black flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Add Featured Title
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Select Title
-              </label>
-              <Select
-                value={selectedTitleId}
-                onValueChange={setSelectedTitleId}
-                disabled={adding || loading}
-              >
-                <SelectTrigger className="border-gray-300">
-                  <SelectValue placeholder="Choose a title to feature..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTitles.map((title) => (
-                    <SelectItem key={title.title_id} value={title.title_id}>
+        <Card className="mb-8 bg-white border-gray-300 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-bold">
+                <Plus className="h-4 w-4" />
+              </span>
+              <h2 className="text-xl font-semibold text-midnight-ink">Add Featured Title</h2>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Title
+                </label>
+                <select
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  value={selectedTitleId}
+                  onChange={(e) => setSelectedTitleId(e.target.value)}
+                  disabled={adding || loading}
+                >
+                  <option value="">Choose a title to feature...</option>
+                  {availableTitles.map(title => (
+                    <option key={title.title_id} value={title.title_id}>
                       {title.title_name_en || title.title_name_kr}
-                    </SelectItem>
+                    </option>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Note (Optional)
-              </label>
-              <Textarea
-                rows={3}
-                placeholder="Add a note about why this title is featured..."
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-                disabled={adding || loading}
-                className="border-gray-300"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Note (Optional)
+                </label>
+                <textarea
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  rows={3}
+                  placeholder="Add a note about why this title is featured..."
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                  disabled={adding || loading}
+                />
+              </div>
 
-            <Button
-              onClick={handleAddFeatured}
-              disabled={!selectedTitleId || adding || loading}
-              className="bg-hanok-teal hover:bg-hanok-teal/90"
-            >
-              {adding ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Featured Title
-                </>
-              )}
-            </Button>
+              <Button
+                onClick={handleAddFeatured}
+                disabled={!selectedTitleId || adding || loading}
+                variant="outline"
+                className="border-purple-300 hover:bg-purple-50"
+              >
+                {adding ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Featured Title
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
         {/* Featured Titles Table */}
-        <Card className="bg-transparent border-gray-300 shadow-none">
-          <CardHeader>
-            <CardTitle className="text-black">Current Featured Titles</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="bg-white border-gray-300 shadow-sm">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold text-midnight-ink mb-4">Current Featured Titles</h2>
+
             {loading ? (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
               </div>
             ) : featured.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
@@ -294,36 +282,32 @@ export default function Featured() {
                     {featured.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">
-                          {item.titles?.title_name_en ||
-                            item.titles?.title_name_kr ||
-                            'Unknown Title'}
+                          {item.titles?.title_name_en || item.titles?.title_name_kr || 'Unknown Title'}
                         </TableCell>
                         <TableCell>
                           {editingNoteId === item.id ? (
                             <div className="space-y-2">
-                              <Textarea
+                              <textarea
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
                                 rows={2}
                                 value={editNoteValue}
                                 onChange={(e) => setEditNoteValue(e.target.value)}
                                 autoFocus
-                                className="border-gray-300"
                               />
                               <div className="flex gap-2">
                                 <Button
                                   size="sm"
                                   onClick={() => saveNote(item.id)}
-                                  className="bg-green-600 hover:bg-green-700"
+                                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 text-xs"
                                 >
-                                  <Save className="h-3 w-3 mr-1" />
                                   Save
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   onClick={cancelEditingNote}
-                                  className="border-gray-300"
+                                  className="px-3 py-1 text-xs"
                                 >
-                                  <X className="h-3 w-3 mr-1" />
                                   Cancel
                                 </Button>
                               </div>
@@ -333,9 +317,7 @@ export default function Featured() {
                               className="max-w-md text-gray-600 cursor-pointer hover:bg-gray-50 p-2 rounded"
                               onClick={() => startEditingNote(item.id, item.note)}
                             >
-                              {item.note || (
-                                <span className="italic text-gray-400">Click to add note</span>
-                              )}
+                              {item.note || <span className="italic text-gray-400">Click to add note</span>}
                             </div>
                           )}
                         </TableCell>
@@ -345,16 +327,12 @@ export default function Featured() {
                         <TableCell className="text-right">
                           <Button
                             size="sm"
-                            variant="ghost"
-                            onClick={() =>
-                              handleDelete(
-                                item.id,
-                                item.titles?.title_name_en ||
-                                  item.titles?.title_name_kr ||
-                                  'Unknown Title'
-                              )
-                            }
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            variant="outline"
+                            onClick={() => handleDelete(
+                              item.id,
+                              item.titles?.title_name_en || item.titles?.title_name_kr || 'Unknown Title'
+                            )}
+                            className="border-red-300 hover:bg-red-50 text-red-600"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -367,7 +345,8 @@ export default function Featured() {
             )}
           </CardContent>
         </Card>
+
       </div>
-    </AdminLayout>
+    </PageContainer>
   );
 }

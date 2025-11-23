@@ -1,9 +1,9 @@
 import React from 'react';
 
-interface Message {
+interface ConversationalMessage {
   id: string;
+  role: 'user' | 'assistant';
   content: string;
-  sender: 'user' | 'bot';
   timestamp: Date;
   titles?: any[];
   suggestedQueries?: string[];
@@ -14,7 +14,7 @@ interface ConversationalMessageProps {
   content: string;
   navigate: any;
   titleData?: any[];
-  allMessages?: Message[];
+  allMessages?: ConversationalMessage[];
   titleCache?: any[];
   handleSuggestedQuery?: (query: string) => void;
   onTitleCardClick?: (title: any) => void;
@@ -32,12 +32,10 @@ interface ConversationalMessageProps {
  */
 export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
   content,
-  navigate,
   titleData,
   allMessages,
   titleCache,
   handleSuggestedQuery,
-  onTitleCardClick
 }) => {
 
   // Levenshtein distance for fuzzy string matching

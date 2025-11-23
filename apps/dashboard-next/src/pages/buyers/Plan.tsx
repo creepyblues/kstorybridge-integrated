@@ -4,7 +4,7 @@ import { useTierAccess } from '@/contexts/TierContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
-import { Check, Sparkles, Crown } from 'lucide-react';
+import { Check, Sparkles, Crown, CreditCard } from 'lucide-react';
 
 interface TierPlan {
   tier: 'basic' | 'pro' | 'suite';
@@ -104,19 +104,20 @@ export default function Plan() {
 
   return (
     <BuyerLayout>
-      <div className="max-w-7xl mx-auto">
-        {/* Page Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">Choose Your Plan</h1>
-          <p className="text-sm text-gray-600 mt-1">Upgrade or downgrade anytime</p>
-        </div>
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-black mb-3">
-            Unlock the Full Power of KStoryBridge
-          </h2>
-          <p className="text-lg text-gray-600">
-            Choose the plan that's right for you. Upgrade or downgrade anytime.
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
+              <CreditCard className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold text-hanok-teal">Choose Your Plan</h1>
+              <p className="text-lg text-gray-600 mt-1">Flexible Subscription Options</p>
+            </div>
+          </div>
+          <p className="text-gray-600 text-base">
+            Unlock the full power of KStoryBridge with our flexible plans. Upgrade or downgrade anytime to match your needs.
           </p>
         </div>
 
@@ -161,7 +162,7 @@ export default function Plan() {
                     )}
                     <h3 className="text-2xl font-bold text-black mb-2">{plan.name}</h3>
                     <p className="text-sm text-gray-600 mb-4">{plan.description}</p>
-                    <div className="text-3xl font-bold text-black">{plan.price}</div>
+                    <div className="text-3xl font-bold text-hanok-teal">{plan.price}</div>
                     {plan.price !== 'Free' && (
                       <div className="text-sm text-gray-500">per month</div>
                     )}

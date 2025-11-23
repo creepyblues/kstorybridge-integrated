@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { type PitchAnalysis } from '@/types/pitchAnalysis';
+import { vectorSearchService, type VectorSearchResult } from './vectorSearchService';
 
 export interface Title {
   title_id: string;
@@ -8,6 +9,8 @@ export interface Title {
   synopsis?: string;
   tagline?: string;
   author?: string;
+  story_author?: string;
+  art_author?: string;
   genre?: string[];
   content_format?: string;
   title_image?: string;
@@ -18,12 +21,16 @@ export interface Title {
   chapters?: number;
   completed?: boolean;
   tags?: string[];
+  keywords?: string[];
   perfect_for?: string;
   comps?: string[];
   tone?: string;
   audience?: string;
   pitch?: string;
   verified?: boolean;
+  rights?: string;
+  rights_holder_name?: string;
+  rights_holder_company?: string;
   created_at?: string;
   updated_at?: string;
   // Pitch analysis data from title_content_analysis table
@@ -388,6 +395,63 @@ class TitlesService {
     } catch (error) {
       console.error('❌ Formats service error:', error);
       return [];
+    }
+  }
+
+  /**
+   * Semantic vector search for titles
+   * Uses OpenAI embeddings for natural language queries
+   *
+   * @param query - Natural language search query (e.g., "romantic comedy set in Seoul")
+   * @param limit - Maximum number of results (default: 30)
+   * @returns Array of matching titles sorted by semantic relevance
+   */
+  async searchTitlesVector(query: string, limit: number = 30): Promise<Title[]> {
+    try {
+      console.log(`🔍 Vector search: "${query}"`);
+
+      // Perform vector search
+      const vectorResults = await vectorSearchService.vectorSearch(query, {
+        limit,
+        threshold: 0.4 // Minimum similarity score
+      });
+
+      if (vectorResults.length === 0) {
+        console.log('ℹ️ No vector search results found');
+        return [];
+      }
+
+      // Extract title IDs from vector search results
+      const titleIds = vectorResults.map((result: VectorSearchResult) => result.title_id);
+
+      // Fetch full title data from database
+      const { data, error } = await supabase
+        .from('titles')
+        .select('*')
+        .in('title_id', titleIds);
+
+      if (error) {
+        console.error('❌ Error fetching title details:', error);
+        throw new Error(`Failed to fetch title details: ${error.message}`);
+      }
+
+      // Sort results by vector similarity order (preserve relevance ranking)
+      const sortedTitles = titleIds
+        .map(id => data?.find(title => title.title_id === id))
+        .filter(Boolean) as Title[];
+
+      console.log(`✅ Vector search returned ${sortedTitles.length} titles`);
+
+      return sortedTitles;
+    } catch (error: any) {
+      console.error('❌ Vector search service error:', error);
+
+      // Provide user-friendly error messages
+      if (error.message.includes('OpenAI') || error.message.includes('quota') || error.message.includes('rate_limit')) {
+        throw error; // Re-throw OpenAI errors as-is (already user-friendly)
+      }
+
+      throw new Error('Search failed. Please try again.');
     }
   }
 

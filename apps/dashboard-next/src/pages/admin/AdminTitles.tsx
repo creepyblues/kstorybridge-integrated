@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import AdminLayout from '@/components/layout/AdminLayout';
 import { TitleEditModal } from '@/components/admin/TitleEditModal';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { Search, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 
 export default function AdminTitles() {

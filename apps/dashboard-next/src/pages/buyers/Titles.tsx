@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TitleCard } from '@/components/title/TitleCard';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, BookOpen } from 'lucide-react';
 
 const PAGE_SIZE = 12;
 
@@ -49,20 +49,47 @@ export default function Titles() {
       setLoading(true);
       setOffset(0); // Reset offset when filters change
       try {
-        const filters: TitleFilters = {
-          search: searchQuery || undefined,
-          genre: selectedGenre || undefined,
-          format: selectedFormat || undefined,
-        };
+        // Use vector search if there's a search query
+        if (searchQuery && searchQuery.trim().length > 0) {
+          console.log('🔍 Using vector search for:', searchQuery);
 
-        const { data, hasMore: more } = await titlesService.getTitlesPaginated(
-          filters,
-          0,
-          PAGE_SIZE
-        );
-        setTitles(data);
-        setHasMore(more);
-        setOffset(PAGE_SIZE);
+          // Vector search returns all results at once (no pagination)
+          const vectorResults = await titlesService.searchTitlesVector(searchQuery, 30);
+
+          // Apply genre/format filters to vector results
+          let filteredResults = vectorResults;
+
+          if (selectedGenre) {
+            filteredResults = filteredResults.filter(
+              title => title.genre?.includes(selectedGenre)
+            );
+          }
+
+          if (selectedFormat) {
+            filteredResults = filteredResults.filter(
+              title => title.content_format === selectedFormat
+            );
+          }
+
+          setTitles(filteredResults);
+          setHasMore(false); // Vector search returns all results at once
+          setOffset(0);
+        } else {
+          // Use traditional pagination when no search query
+          const filters: TitleFilters = {
+            genre: selectedGenre || undefined,
+            format: selectedFormat || undefined,
+          };
+
+          const { data, hasMore: more } = await titlesService.getTitlesPaginated(
+            filters,
+            0,
+            PAGE_SIZE
+          );
+          setTitles(data);
+          setHasMore(more);
+          setOffset(PAGE_SIZE);
+        }
       } catch (error: any) {
         console.error('Error fetching titles:', error);
         toast({
@@ -75,17 +102,26 @@ export default function Titles() {
       }
     };
 
-    fetchTitles();
+    // Debounce search to avoid excessive API calls
+    const debounceTimer = setTimeout(() => {
+      fetchTitles();
+    }, searchQuery ? 500 : 0); // 500ms debounce for search, instant for filters
+
+    return () => clearTimeout(debounceTimer);
   }, [searchQuery, selectedGenre, selectedFormat, toast]);
 
-  // Load more titles on scroll
+  // Load more titles on scroll (only works for non-vector search)
   const loadMoreTitles = useCallback(async () => {
     if (loadingMore || !hasMore) return;
+
+    // Don't paginate vector search results (all results returned at once)
+    if (searchQuery && searchQuery.trim().length > 0) {
+      return;
+    }
 
     setLoadingMore(true);
     try {
       const filters: TitleFilters = {
-        search: searchQuery || undefined,
         genre: selectedGenre || undefined,
         format: selectedFormat || undefined,
       };
@@ -136,15 +172,25 @@ export default function Titles() {
 
   return (
     <BuyerLayout>
-      <div className="max-w-7xl mx-auto">
-        {/* Page Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">Discover Titles</h1>
-          <p className="text-sm text-gray-600 mt-1">Browse and search Korean content</p>
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
+              <BookOpen className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold text-hanok-teal">Discover Titles</h1>
+              <p className="text-lg text-gray-600 mt-1">Browse & Search Korean Content</p>
+            </div>
+          </div>
+          <p className="text-gray-600 text-base">
+            Explore our catalog of Korean webtoons, web novels, and stories with intelligent search and filtering.
+          </p>
         </div>
         {/* Search and Filters */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
+        <Card className="mb-8 bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg">
+          <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Search */}
               <div className="md:col-span-2">
@@ -152,7 +198,7 @@ export default function Titles() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     type="text"
-                    placeholder="Search titles..."
+                    placeholder="Search titles (e.g., 'romantic comedy in Seoul')..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -165,7 +211,7 @@ export default function Titles() {
                 <select
                   value={selectedGenre}
                   onChange={(e) => setSelectedGenre(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-hanok-teal/20 focus:border-hanok-teal"
                 >
                   <option value="">All Genres</option>
                   {genres.map((genre) => (
@@ -181,7 +227,7 @@ export default function Titles() {
                 <select
                   value={selectedFormat}
                   onChange={(e) => setSelectedFormat(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-hanok-teal/20 focus:border-hanok-teal"
                 >
                   <option value="">All Formats</option>
                   {formats.map((format) => (
@@ -195,20 +241,20 @@ export default function Titles() {
 
             {/* Active Filters */}
             {(searchQuery || selectedGenre || selectedFormat) && (
-              <div className="mt-3 flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-gray-600">Active filters:</span>
+              <div className="mt-4 flex items-center gap-2 flex-wrap">
+                <span className="text-sm text-gray-600 font-medium">Active filters:</span>
                 {searchQuery && (
-                  <span className="px-2 py-1 bg-hanok-teal/10 text-hanok-teal text-xs rounded-full">
+                  <span className="px-3 py-1 bg-hanok-teal/10 text-hanok-teal text-xs font-medium rounded-full border border-hanok-teal/20">
                     Search: "{searchQuery}"
                   </span>
                 )}
                 {selectedGenre && (
-                  <span className="px-2 py-1 bg-hanok-teal/10 text-hanok-teal text-xs rounded-full">
+                  <span className="px-3 py-1 bg-hanok-teal/10 text-hanok-teal text-xs font-medium rounded-full border border-hanok-teal/20">
                     {selectedGenre}
                   </span>
                 )}
                 {selectedFormat && (
-                  <span className="px-2 py-1 bg-hanok-teal/10 text-hanok-teal text-xs rounded-full">
+                  <span className="px-3 py-1 bg-hanok-teal/10 text-hanok-teal text-xs font-medium rounded-full border border-hanok-teal/20">
                     {selectedFormat}
                   </span>
                 )}
@@ -220,7 +266,7 @@ export default function Titles() {
                     setSelectedGenre('');
                     setSelectedFormat('');
                   }}
-                  className="h-6 px-2 text-xs"
+                  className="h-7 px-3 text-xs text-gray-600 hover:text-hanok-teal hover:bg-hanok-teal/5"
                 >
                   Clear all
                 </Button>
@@ -232,22 +278,22 @@ export default function Titles() {
         {/* Results */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-hanok-teal" />
           </div>
         ) : titles.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No titles found</p>
-            <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+          <div className="text-center py-12 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm">
+            <p className="text-gray-700 text-lg font-medium">No titles found</p>
+            <p className="text-gray-500 text-sm mt-2">Try adjusting your filters</p>
           </div>
         ) : (
           <>
-            <div className="mb-4 text-sm text-gray-600">
+            <div className="mb-6 text-sm text-gray-600 font-medium">
               Showing {titles.length} title{titles.length !== 1 ? 's' : ''}
               {hasMore && ' (scroll for more)'}
             </div>
 
             {/* Title Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {titles.map((title) => (
                 <TitleCard key={title.title_id} title={title} variant="grid" />
               ))}
@@ -257,12 +303,12 @@ export default function Titles() {
             <div ref={observerTarget} className="py-8">
               {loadingMore && (
                 <div className="flex items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                  <span className="ml-2 text-sm text-gray-500">Loading more...</span>
+                  <Loader2 className="h-6 w-6 animate-spin text-hanok-teal" />
+                  <span className="ml-2 text-sm text-gray-600">Loading more...</span>
                 </div>
               )}
               {!hasMore && titles.length > 0 && (
-                <div className="text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-gray-500 font-medium">
                   You've reached the end of the list
                 </div>
               )}

@@ -88,19 +88,19 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
 
   if (loading) {
     return (
-      <div className="w-80 border-l border-gray-200 p-4">
+      <div className="w-80 border-l border-gray-200 bg-white/50 backdrop-blur-sm p-4">
         <p className="text-sm text-gray-500">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="w-80 border-l border-gray-300 bg-gray-50 p-6 space-y-6 overflow-y-auto">
+    <div className="w-80 border-l border-gray-200 bg-white/50 backdrop-blur-sm p-6 space-y-6 overflow-y-auto">
       {/* Bookmarked Searches */}
       {bookmarkedSearches.length > 0 && (
         <div>
-          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2 uppercase tracking-wide">
-            <Bookmark className="h-4 w-4 text-hanok-teal" />
+          <h3 className="text-sm font-bold text-hanok-teal mb-4 flex items-center gap-2 uppercase tracking-wide">
+            <Bookmark className="h-4 w-4" />
             Bookmarked
           </h3>
           <div className="space-y-3">
@@ -120,8 +120,8 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
       {/* Recent Searches */}
       {recentSearches.length > 0 && (
         <div>
-          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2 uppercase tracking-wide">
-            <Clock className="h-4 w-4 text-hanok-teal" />
+          <h3 className="text-sm font-bold text-hanok-teal mb-4 flex items-center gap-2 uppercase tracking-wide">
+            <Clock className="h-4 w-4" />
             Recent
           </h3>
           <div className="space-y-3">
@@ -159,7 +159,7 @@ interface SearchItemProps {
 
 function SearchItem({ search, onLoad, onDelete, onToggleBookmark }: SearchItemProps) {
   return (
-    <div className="p-4 bg-white border border-gray-300 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer">
+    <div className="p-4 bg-white border border-gray-200 rounded-xl hover:shadow-lg hover:-translate-y-0.5 hover:border-hanok-teal/30 transition-all duration-200 group cursor-pointer">
       <div className="flex items-start justify-between mb-3" onClick={onLoad}>
         <div className="flex-1">
           <p className="text-sm font-bold text-gray-900 mb-1.5 line-clamp-2 group-hover:text-hanok-teal transition-colors">
@@ -169,7 +169,7 @@ function SearchItem({ search, onLoad, onDelete, onToggleBookmark }: SearchItemPr
             {search.comp_titles.map((title, idx) => (
               <span
                 key={idx}
-                className="bg-gradient-to-r from-cyan-100 to-cyan-50 text-cyan-800 px-2 py-0.5 rounded-md text-xs font-medium border border-cyan-200"
+                className="bg-gradient-to-r from-hanok-teal/10 to-hanok-teal/5 text-hanok-teal px-2 py-0.5 rounded-md text-xs font-medium border border-hanok-teal/30"
               >
                 {title}
               </span>
@@ -185,10 +185,10 @@ function SearchItem({ search, onLoad, onDelete, onToggleBookmark }: SearchItemPr
 
       <div className="flex items-center justify-between pt-3 border-t border-gray-200">
         <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
-          <span className="bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800 px-2 py-0.5 rounded-md border border-emerald-200">
+          <span className="bg-gradient-to-r from-hanok-teal/10 to-hanok-teal/5 text-hanok-teal px-2 py-0.5 rounded-md border border-hanok-teal/30">
             {search.result_count} matches
           </span>
-          <span>•</span>
+          <span className="text-gray-300">•</span>
           <span>{Math.round(search.avg_match_score)}%</span>
         </div>
 
@@ -198,7 +198,7 @@ function SearchItem({ search, onLoad, onDelete, onToggleBookmark }: SearchItemPr
               e.stopPropagation();
               onToggleBookmark();
             }}
-            className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-1.5 hover:bg-hanok-teal/10 rounded-md transition-colors"
             title={search.is_bookmarked ? 'Remove bookmark' : 'Bookmark'}
           >
             <Star

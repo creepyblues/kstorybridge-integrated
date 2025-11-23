@@ -1,7 +1,7 @@
-import { AdminLayout } from '@/components/layout/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AdminLayout from '@/components/layout/AdminLayout';
 import { TestTube } from 'lucide-react';
 
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 export default function ScraperTest() {
   return (
     <AdminLayout>

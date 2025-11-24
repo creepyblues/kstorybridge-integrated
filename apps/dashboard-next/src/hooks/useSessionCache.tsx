@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { useDataCache } from '@/contexts/DataCacheContext';
+import { debug } from '@/utils/debug';
 
 /**
  * Hook to manage session-based cache lifecycle
@@ -21,7 +22,7 @@ export function useSessionCache() {
     if (!loading && user && session) {
       // Initialize new cache session with Supabase session ID
       initializeSession(session.access_token);
-      console.log('🔐 Session cache initialized for user:', user.email);
+      debug.log('🔐 Session cache initialized for user:', user.email);
     }
   }, [user, session, loading, initializeSession]);
 
@@ -29,7 +30,7 @@ export function useSessionCache() {
   useEffect(() => {
     if (!loading && !user) {
       clearCache();
-      console.log('🧹 Cache cleared - user logged out');
+      debug.log('🧹 Cache cleared - user logged out');
     }
   }, [user, loading, clearCache]);
 
@@ -39,7 +40,7 @@ export function useSessionCache() {
 
     const checkSessionValidity = () => {
       if (!isSessionValid()) {
-        console.log('⏰ Session cache expired, clearing and logging out...');
+        debug.log('⏰ Session cache expired, clearing and logging out...');
         clearCache();
         // Note: We don't auto-logout here as that should be handled by auth system
       }

@@ -87,9 +87,9 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
   return (
     <Card className="bg-white border border-gray-300 rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group">
       <CardContent className="p-0">
-        <div className="flex flex-col md:flex-row md:min-h-[24rem]">
+        <div className="flex flex-col md:flex-row md:min-h-[24rem] overflow-hidden">
           {/* Left: Image Section (35%) */}
-          <div className="relative w-full md:w-[35%] h-80 md:h-auto bg-white flex-shrink-0 overflow-hidden">
+          <div className="relative w-full md:w-[35%] h-80 md:h-auto bg-white flex-shrink-0 overflow-hidden min-w-0">
             {title.title_image ? (
               <img
                 src={title.title_image}
@@ -119,7 +119,7 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
           </div>
 
           {/* Right: Content Section (65%) */}
-          <div className="flex-1 p-6 md:p-8 flex flex-col" onClick={handleCardClick}>
+          <div className="flex-1 p-6 md:p-8 flex flex-col min-w-0 overflow-hidden" onClick={handleCardClick}>
             {/* Title Header */}
             <div className="mb-4">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 group-hover:text-hanok-teal transition-colors line-clamp-2">
@@ -144,7 +144,7 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
                 </div>
 
                 {/* Chat Bubble Content */}
-                <div className="flex-1 bg-white border-2 border-gray-200 rounded-2xl p-4 space-y-3">
+                <div className="flex-1 bg-white border-2 border-gray-200 rounded-2xl p-4 space-y-3 min-w-0">
                   {/* Why This Title - Editor's Note */}
                   {featured.note && (
                     <div>
@@ -198,7 +198,7 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
 
                   {/* Genre & Mood/Tone Keywords - Side by Side */}
                   {(title.genre && title.genre.length > 0) || title.tone || (pitchAnalysis?.themes_and_tone?.primary_themes && pitchAnalysis.themes_and_tone.primary_themes.length > 0) ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
                       {/* Genre */}
                       {title.genre && title.genre.length > 0 && (
                         <div>

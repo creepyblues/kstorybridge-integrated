@@ -11,7 +11,9 @@ import MandateInput from '@/components/mandates/MandateInput';
 import MandateHistorySidebar from '@/components/mandates/MandateHistorySidebar';
 import MandateResultsGrid from '@/components/mandates/MandateResultsGrid';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, History } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 export default function Mandates() {
   const { user } = useAuth();
@@ -23,6 +25,7 @@ export default function Mandates() {
   const [currentMandateText, setCurrentMandateText] = useState('');
   const [selectedMandateId, setSelectedMandateId] = useState<string | undefined>();
   const [mandateHistory, setMandateHistory] = useState<MandateSearch[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Load mandate history on mount
   useEffect(() => {
@@ -139,52 +142,67 @@ export default function Mandates() {
 
   return (
     <BuyerLayout>
-      <div className="flex h-screen">
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto md:pr-80">
-          <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-            {/* Header */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                  <Sparkles className="h-8 w-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Mandate Matcher</h1>
-                  <p className="text-base sm:text-lg text-gray-600 mt-1">AI-Powered Title Recommendations</p>
-                </div>
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
+        {/* Header */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
+                <Sparkles className="h-8 w-8 text-white" />
               </div>
-              <p className="text-gray-600 text-base">
-                Find titles that match your production mandates using AI-powered semantic search. Describe what you're
-                looking for and get instant recommendations.
-              </p>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Mandate Matcher</h1>
+                <p className="text-base sm:text-lg text-gray-600 mt-1">AI-Powered Title Recommendations</p>
+              </div>
             </div>
+            {user?.email && (
+              <Button
+                onClick={() => setShowHistory(true)}
+                variant="outline"
+                size="sm"
+                className="border-gray-300 hover:bg-gray-100 flex-shrink-0"
+              >
+                <History className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">History</span>
+              </Button>
+            )}
+          </div>
+          <p className="text-sm sm:text-base text-gray-600">
+            Find titles that match your production mandates using AI-powered semantic search. Describe what you're looking for and get instant recommendations.
+          </p>
+        </div>
 
             {/* Input Section */}
             <MandateInput onSubmit={handleSubmitMandate} isLoading={isLoading} />
 
-            {/* Results Section */}
-            <MandateResultsGrid
-              results={currentResults}
-              isLoading={isLoading}
-              mandateText={currentMandateText}
-            />
-          </div>
-        </div>
+        {/* Results Section */}
+        <MandateResultsGrid
+          results={currentResults}
+          isLoading={isLoading}
+          mandateText={currentMandateText}
+        />
+      </div>
 
-        {/* Sidebar - Hidden on mobile */}
-        {user?.email && (
-          <div className="hidden md:block">
+      {/* History Dialog */}
+      {user?.email && (
+        <Dialog open={showHistory} onOpenChange={setShowHistory}>
+          <DialogContent className="max-w-md max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Mandate History</DialogTitle>
+            </DialogHeader>
             <MandateHistorySidebar
               mandates={mandateHistory}
               selectedMandateId={selectedMandateId}
-              onSelectMandate={handleSelectMandate}
+              onSelectMandate={(mandate) => {
+                handleSelectMandate(mandate);
+                setShowHistory(false);
+              }}
               onDeleteMandate={handleDeleteMandate}
               isLoading={isLoadingHistory}
             />
-          </div>
-        )}
-      </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </BuyerLayout>
   );
 }

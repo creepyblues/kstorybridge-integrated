@@ -12,19 +12,21 @@ export default function Featured() {
 
   return (
     <BuyerLayout>
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         {/* Header */}
         <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-              <Star className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-hanok-teal">Featured Titles</h1>
-              <p className="text-lg text-gray-600 mt-1">AI-Curated Korean Content</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
+                <Star className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Featured Titles</h1>
+                <p className="text-base sm:text-lg text-gray-600 mt-1">AI-Curated Korean Content</p>
+              </div>
             </div>
           </div>
-          <p className="text-gray-600 text-base">
+          <p className="text-sm sm:text-base text-gray-600">
             Discover our hand-picked selection of exceptional Korean IPs, carefully selected for market potential and storytelling excellence.
           </p>
         </div>

@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
-import { User, Menu, X } from 'lucide-react'
+import { useAdminAuth } from '@/hooks/useAdminAuth'
+import { User, Menu, X, Zap } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 interface MenuItem {
@@ -16,17 +17,24 @@ interface MenuItem {
 export function CMSSidebar() {
   const { t } = useTranslation(['navigation', 'common'])
   const { user } = useAuth()
+  const { isAdmin } = useAdminAuth()
   const location = useLocation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Creator-only menu items (no /creators prefix)
-  const menuItems: MenuItem[] = [
+  const baseMenuItems: MenuItem[] = [
     { title: t('navigation:sidebar.home'), href: '/home' },
     { title: t('navigation:sidebar.myTitles'), href: '/titles' },
     { title: t('navigation:sidebar.plan'), href: '/plan' },
     { title: 'Billing', href: '/billing' },
     { title: t('navigation:sidebar.news'), href: '/news' },
     { title: t('navigation:sidebar.learningCenter'), href: '/learning-center' },
+  ]
+
+  // Add admin-only menu items
+  const menuItems: MenuItem[] = [
+    ...baseMenuItems,
+    ...(isAdmin ? [{ title: '⚡ Tools', href: '/tools', icon: '⚡' }] : [])
   ]
 
   const userEmail = user?.email

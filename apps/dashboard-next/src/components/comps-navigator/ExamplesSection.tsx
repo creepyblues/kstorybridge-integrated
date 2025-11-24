@@ -21,7 +21,7 @@ export default function ExamplesSection({ onTryExample }: ExamplesSectionProps) 
 
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-2xl">
-      <CardContent className="p-6 md:p-8">
+      <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="mb-6">
           <h3 className="text-2xl font-bold text-hanok-teal mb-2">
@@ -33,13 +33,13 @@ export default function ExamplesSection({ onTryExample }: ExamplesSectionProps) 
         </div>
 
         {/* Category Tabs */}
-        <div className="mb-6 overflow-x-auto">
-          <div className="flex gap-2 min-w-max pb-2">
+        <div className="mb-6 overflow-x-auto -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0">
+          <div className="flex gap-2 pb-2">
             {EXAMPLE_CATEGORIES.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeCategory === category.id
                     ? 'bg-hanok-teal text-white shadow-md border border-hanok-teal'
                     : 'bg-white text-gray-700 hover:bg-hanok-teal/5 border border-gray-200 hover:border-hanok-teal/30'

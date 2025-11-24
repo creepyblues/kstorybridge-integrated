@@ -21,6 +21,7 @@ import CharacterCount from '@tiptap/extension-character-count';
 import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { debug } from '@/utils/debug';
 import {
   Bold,
   Italic,
@@ -150,11 +151,18 @@ export const RichTextEditor = ({
     },
   });
 
+  // Calculate word count (memoized for performance)
+  // ✅ MUST be before early return to avoid conditional hook call
+  const words = useMemo(() => {
+    if (!editor) return 0;
+    return editor.state.doc.textContent.split(/\s+/).filter(word => word.length > 0).length;
+  }, [editor?.state.doc.textContent]);
+
   // Sync content prop to editor when it changes (e.g., when loading existing post)
   useEffect(() => {
     if (editor && content && content !== editor.getHTML()) {
       if (import.meta.env.DEV) {
-        console.log('📝 RichTextEditor - Syncing content prop to editor:', {
+        debug.log('📝 RichTextEditor - Syncing content prop to editor:', {
           contentLength: content.length,
           contentPreview: content.substring(0, 100),
         });
@@ -240,11 +248,6 @@ export const RichTextEditor = ({
     // Update link with sanitized URL
     editor.chain().focus().extendMarkRange('link').setLink({ href: validatedUrl }).run();
   };
-
-  // Calculate word count (memoized for performance)
-  const words = useMemo(() => {
-    return editor.state.doc.textContent.split(/\s+/).filter(word => word.length > 0).length;
-  }, [editor.state.doc.textContent]);
 
   return (
     <div

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 import { Title } from '@/services/titlesService';
+import { debug } from '@/utils/debug';
 
 type FavoriteWithTitle = {
   id: string;
@@ -74,7 +75,7 @@ const loadFromStorage = (): DataCacheState => {
       const sessionAge = parsed.sessionStartTime ? now - parsed.sessionStartTime : Infinity;
 
       if (sessionAge < SESSION_EXPIRY_MS && parsed.sessionId) {
-        console.log(`📦 Loading valid session cache (${Math.round(sessionAge / (1000 * 60))} minutes old)`);
+        debug.log(`📦 Loading valid session cache (${Math.round(sessionAge / (1000 * 60))} minutes old)`);
         return {
           titles: parsed.titles || [],
           favorites: parsed.favorites || [],
@@ -88,12 +89,12 @@ const loadFromStorage = (): DataCacheState => {
           }
         };
       } else {
-        console.log('🕒 Session cache expired or invalid, clearing...');
+        debug.log('🕒 Session cache expired or invalid, clearing...');
         localStorage.removeItem(CACHE_KEY);
       }
     }
   } catch (error) {
-    console.warn('❌ Failed to load cache from localStorage:', error);
+    debug.warn('❌ Failed to load cache from localStorage:', error);
     localStorage.removeItem(CACHE_KEY);
   }
 
@@ -109,7 +110,7 @@ const saveToStorage = (cache: DataCacheState) => {
   // Check session expiry before saving
   const sessionAge = Date.now() - cache.sessionStartTime;
   if (sessionAge >= SESSION_EXPIRY_MS) {
-    console.log('🕒 Session expired, not saving cache');
+    debug.log('🕒 Session expired, not saving cache');
     localStorage.removeItem(CACHE_KEY);
     return;
   }
@@ -133,14 +134,14 @@ const saveToStorage = (cache: DataCacheState) => {
 
     // Session cache size limit
     if (sizeInMB > 0.5) { // 0.5MB limit
-      console.warn(`📦 Session cache size too large (${sizeInMB.toFixed(2)}MB), clearing...`);
+      debug.warn(`📦 Session cache size too large (${sizeInMB.toFixed(2)}MB), clearing...`);
       localStorage.removeItem(CACHE_KEY);
       return;
     }
 
     localStorage.setItem(CACHE_KEY, serialized);
   } catch (error) {
-    console.warn('❌ Failed to save session cache:', error);
+    debug.warn('❌ Failed to save session cache:', error);
     if ((error as any).name === 'QuotaExceededError') {
       localStorage.removeItem(CACHE_KEY);
     }
@@ -167,7 +168,7 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
     const checkSessionExpiry = () => {
       const sessionAge = Date.now() - cache.sessionStartTime!;
       if (sessionAge >= SESSION_EXPIRY_MS) {
-        console.log('🕒 Session expired due to inactivity, clearing cache...');
+        debug.log('🕒 Session expired due to inactivity, clearing cache...');
         setCache(getEmptyCache());
         localStorage.removeItem(CACHE_KEY);
       }
@@ -245,7 +246,7 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
   }, [cache.sessionId, cache.sessionStartTime]);
 
   const initializeSession = useCallback((sessionId: string) => {
-    console.log('🚀 Initializing new session cache:', sessionId.substring(0, 8) + '...');
+    debug.log('🚀 Initializing new session cache:', sessionId.substring(0, 8) + '...');
     setCache(prev => ({
       ...getEmptyCache(),
       sessionId,
@@ -267,7 +268,7 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
   const getDbConnectivityStatus = useCallback(() => cache.dbConnectivityStatus, [cache.dbConnectivityStatus]);
 
   const clearCache = useCallback(() => {
-    console.log('🧼 Clearing all cache data...');
+    debug.log('🧼 Clearing all cache data...');
     setCache(getEmptyCache());
     localStorage.removeItem(CACHE_KEY);
   }, []);

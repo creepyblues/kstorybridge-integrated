@@ -1,11 +1,12 @@
 import { supabase } from './supabase';
+import { debug } from '@/utils/debug';
 
 const DEBUG = import.meta.env.VITE_AUTH_DEBUG === 'true';
 const AUTH_TIMEOUT_MS = 10000; // 10 seconds for all auth operations
 
 const log = (message: string, data?: any) => {
   if (DEBUG) {
-    console.log(`[Auth Service] ${message}`, data || '');
+    debug.log(`[Auth Service] ${message}`, data || '');
   }
 };
 

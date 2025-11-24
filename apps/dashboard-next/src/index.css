@@ -1,9 +1,9 @@
+/* Import must come first */
+@import './styles/layout-variables.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Layout variables for PageContainer */
-@import './styles/layout-variables.css';
 
 @layer base {
   :root {
@@ -53,11 +53,24 @@
 }
 
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     @apply border-border;
+    box-sizing: border-box;
   }
+  html,
   body {
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+    position: relative;
+  }
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
   }
 }

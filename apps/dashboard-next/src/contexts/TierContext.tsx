@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 
@@ -46,7 +46,7 @@ export function TierProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTier = async () => {
+  const fetchTier = useCallback(async () => {
     if (!user || !session) {
       setTier('basic');
       setLoading(false);
@@ -95,11 +95,11 @@ export function TierProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, session]); // useCallback dependencies
 
   useEffect(() => {
     fetchTier();
-  }, [user, session]);
+  }, [fetchTier]); // Now includes fetchTier which is stable via useCallback
 
   const hasAccess = (requiredTier: UserTier): boolean => {
     return tierHierarchy[tier] >= tierHierarchy[requiredTier];

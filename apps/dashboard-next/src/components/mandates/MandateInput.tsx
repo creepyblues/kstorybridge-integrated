@@ -50,8 +50,8 @@ export default function MandateInput({ onSubmit, isLoading = false, disabled = f
   };
 
   return (
-    <Card className="bg-white border-hanok-teal/20 shadow-lg rounded-2xl">
-      <CardContent className="p-6 md:p-8 space-y-6">
+    <Card className="w-full bg-white border-hanok-teal/20 shadow-lg rounded-2xl">
+      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         <div className="space-y-4">
           {/* Header */}
           <div>

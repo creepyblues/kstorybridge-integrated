@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import { AdminProtectedRoute } from '@/components/AdminProtectedRoute'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import AnalyticsProvider from '@/components/AnalyticsProvider'
 import { Toaster } from '@/components/ui/toaster'
@@ -25,6 +26,9 @@ import PostDetail from '@/pages/PostDetail'
 import Plan from '@/pages/Plan'
 import Billing from '@/pages/Billing'
 import PaymentSuccess from '@/pages/PaymentSuccess'
+
+// Admin tools
+import { ToolsRouter } from '@/pages/tools/ToolsRouter'
 
 function App() {
   return (
@@ -152,6 +156,16 @@ function App() {
                 <ProtectedRoute>
                   <PostDetail />
                 </ProtectedRoute>
+              }
+            />
+
+            {/* Admin tools */}
+            <Route
+              path="/tools/*"
+              element={
+                <AdminProtectedRoute>
+                  <ToolsRouter />
+                </AdminProtectedRoute>
               }
             />
 

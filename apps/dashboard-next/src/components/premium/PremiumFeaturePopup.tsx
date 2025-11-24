@@ -8,6 +8,7 @@ import { trackPremiumFeatureRequest, trackTierUpgrade, trackPremiumPopupInteract
 import { EmailService } from "@/services/emailService";
 import { useTierAccess } from "@/contexts/TierContext";
 import { useEffect } from "react";
+import { debug } from '@/utils/debug';
 
 interface PremiumFeaturePopupProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export default function PremiumFeaturePopup({
 
   // Debug props received
   useEffect(() => {
-    console.log('🎯 PremiumFeaturePopup props received:', {
+    debug.log('🎯 PremiumFeaturePopup props received:', {
       isOpen,
       featureName,
       titleId,
@@ -115,7 +116,7 @@ export default function PremiumFeaturePopup({
       });
 
       // Slack notifications not yet implemented
-      console.log('💬 [Future] Slack notification would be sent:', {
+      debug.log('💬 [Future] Slack notification would be sent:', {
         userFullName: user.user_metadata?.full_name || user.email || 'Unknown User',
         userEmail: user.email || 'unknown@email.com',
         titleName: titleName,
@@ -160,7 +161,7 @@ export default function PremiumFeaturePopup({
 
       // Production: If we have titleId and requestType, try to save to request table
       if (titleId && requestType) {
-        console.log('💾 Attempting to save request to database:', {
+        debug.log('💾 Attempting to save request to database:', {
           user_id: user.id,
           title_id: titleId,
           type: requestType,
@@ -191,15 +192,15 @@ export default function PremiumFeaturePopup({
               return; // Exit early, don't continue with fallback
             }
 
-            console.warn('Error saving to request table, falling back to user_buyers:', requestError);
+            debug.warn('Error saving to request table, falling back to user_buyers:', requestError);
             // If request table has an error, fall back to user_buyers table
           } else {
-            console.log('✅ Request successfully saved to database:', requestData);
+            debug.log('✅ Request successfully saved to database:', requestData);
 
             // Send notifications for pitch and contact requests
             if ((requestType === 'pitch' || requestType === 'contact') && requestData?.id && titleName) {
               // Slack notifications not yet implemented
-              console.log('💬 [Future] Slack notification would be sent:', {
+              debug.log('💬 [Future] Slack notification would be sent:', {
                 userFullName: user.user_metadata?.full_name || user.email || 'Unknown User',
                 userEmail: user.email || 'unknown@email.com',
                 titleName: titleName,
@@ -220,14 +221,14 @@ export default function PremiumFeaturePopup({
                     requestDate: new Date().toLocaleString()
                   });
                 } catch (emailError) {
-                  console.warn('Failed to send pitch deck request email:', emailError);
+                  debug.warn('Failed to send pitch deck request email:', emailError);
                   // Don't fail the request if email fails
                 }
               }
             }
           }
         } catch (dbError) {
-          console.warn('Database operation failed for request table, falling back to user_buyers:', dbError);
+          debug.warn('Database operation failed for request table, falling back to user_buyers:', dbError);
           // Continue to fallback logic below
         }
       }
@@ -244,7 +245,7 @@ export default function PremiumFeaturePopup({
 
         if (fetchError && fetchError.code !== 'PGRST116') {
           // PGRST116 means "no rows found", which is expected for new users
-          console.warn('Could not access user_buyers table:', fetchError);
+          debug.warn('Could not access user_buyers table:', fetchError);
           // Don't throw error, just continue without database tracking
         } else if (!existingRecord) {
           // Create new user_buyers record
@@ -260,7 +261,7 @@ export default function PremiumFeaturePopup({
             });
 
           if (insertError) {
-            console.warn('Could not create user_buyers record:', insertError);
+            debug.warn('Could not create user_buyers record:', insertError);
             // Don't throw error, just continue without database tracking
           }
         } else {
@@ -271,12 +272,12 @@ export default function PremiumFeaturePopup({
             .eq('id', user.id);
 
           if (updateError) {
-            console.warn('Could not update user_buyers record:', updateError);
+            debug.warn('Could not update user_buyers record:', updateError);
             // Don't throw error, just continue without database tracking
           }
         }
       } catch (dbError) {
-        console.warn('Database operation failed, continuing without tracking:', dbError);
+        debug.warn('Database operation failed, continuing without tracking:', dbError);
         // Continue execution even if database operations fail
       }
 
@@ -286,7 +287,7 @@ export default function PremiumFeaturePopup({
       try {
         trackPremiumFeatureRequest(featureName);
       } catch (analyticsError) {
-        console.warn('Analytics tracking failed:', analyticsError);
+        debug.warn('Analytics tracking failed:', analyticsError);
       }
 
     } catch (error) {

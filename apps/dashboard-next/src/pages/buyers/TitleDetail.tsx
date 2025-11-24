@@ -134,7 +134,7 @@ export default function TitleDetail() {
   return (
     <BuyerLayout>
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6 overflow-x-hidden">
 
         {/* Hero Section - Full Width */}
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">

@@ -6,9 +6,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { trackUpgradeButtonClick } from '@/utils/analytics';
+import { debug } from '@/utils/debug';
 
 // PDF.js worker is now configured in centralized config (/src/lib/pdfConfig.ts)
-console.log('📄 SecurePDFViewer: Using centralized PDF.js worker configuration');
+debug.log('📄 SecurePDFViewer: Using centralized PDF.js worker configuration');
 
 interface SecurePDFViewerProps {
   pdfUrl: string;
@@ -35,53 +36,53 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
 
   // Validate user authentication and session
   const validateAuth = useCallback(async () => {
-    console.log('🔐 AUTH: Starting validateAuth...');
-    console.log('🔐 AUTH: User exists:', !!user);
+    debug.log('🔐 AUTH: Starting validateAuth...');
+    debug.log('🔐 AUTH: User exists:', !!user);
 
     try {
       // Check if user exists
       if (!user) {
-        console.log('❌ AUTH: No user authenticated');
+        debug.log('❌ AUTH: No user authenticated');
         setError('Authentication required to view PDF');
         setAuthValidated(false);
         return false;
       }
 
 
-      console.log('🔐 AUTH: Getting Supabase session...');
+      debug.log('🔐 AUTH: Getting Supabase session...');
       // Validate session with Supabase
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('🔐 AUTH: Session response:', { session: !!session, sessionError });
+      debug.log('🔐 AUTH: Session response:', { session: !!session, sessionError });
 
       if (sessionError || !session) {
-        console.log('❌ AUTH: No session or session error');
+        debug.log('❌ AUTH: No session or session error');
         setError('Session expired. Please sign in again.');
         setSessionExpired(true);
         setAuthValidated(false);
         return false;
       }
 
-      console.log('🔐 AUTH: Checking user ID match...');
+      debug.log('🔐 AUTH: Checking user ID match...');
       // Verify user session matches current user
       if (session.user.id !== user.id) {
-        console.log('❌ AUTH: User ID mismatch');
+        debug.log('❌ AUTH: User ID mismatch');
         setError('Authentication mismatch. Please sign in again.');
         setAuthValidated(false);
         return false;
       }
 
-      console.log('🔐 AUTH: Checking session expiry...');
+      debug.log('🔐 AUTH: Checking session expiry...');
       // Check session expiry
       const now = Math.floor(Date.now() / 1000);
       if (session.expires_at && session.expires_at < now) {
-        console.log('❌ AUTH: Session expired');
+        debug.log('❌ AUTH: Session expired');
         setError('Session expired. Please sign in again.');
         setSessionExpired(true);
         setAuthValidated(false);
         return false;
       }
 
-      console.log('✅ AUTH: Authentication validated successfully');
+      debug.log('✅ AUTH: Authentication validated successfully');
       setAuthValidated(true);
       return true;
     } catch (error) {
@@ -96,52 +97,52 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
   // Fetch PDF with enhanced authentication and security
   useEffect(() => {
     const fetchPDF = async () => {
-      console.log('🔍 SECURE PDF: Starting fetchPDF process...');
-      console.log('🔍 SECURE PDF: pdfUrl:', pdfUrl);
+      debug.log('🔍 SECURE PDF: Starting fetchPDF process...');
+      debug.log('🔍 SECURE PDF: pdfUrl:', pdfUrl);
 
       if (!pdfUrl) {
-        console.log('❌ SECURE PDF: No PDF URL provided');
+        debug.log('❌ SECURE PDF: No PDF URL provided');
         setError('No PDF URL provided');
         setLoading(false);
         return;
       }
 
       try {
-        console.log('🔍 SECURE PDF: Setting loading state...');
+        debug.log('🔍 SECURE PDF: Setting loading state...');
         setLoading(true);
         setError(null);
         setSessionExpired(false);
 
-        console.log('🔍 SECURE PDF: Starting authentication validation...');
+        debug.log('🔍 SECURE PDF: Starting authentication validation...');
 
 
         // First validate authentication
         const isAuthValid = await validateAuth();
-        console.log('🔍 SECURE PDF: Auth validation result:', isAuthValid);
+        debug.log('🔍 SECURE PDF: Auth validation result:', isAuthValid);
         if (!isAuthValid) {
-          console.log('❌ SECURE PDF: Authentication failed, stopping...');
+          debug.log('❌ SECURE PDF: Authentication failed, stopping...');
           setLoading(false);
           return;
         }
 
-        console.log('🔍 SECURE PDF: Starting URL processing...');
+        debug.log('🔍 SECURE PDF: Starting URL processing...');
         // Enhanced security validation with fallback for storage API issues
         let finalUrl = pdfUrl;
 
-        console.log('🔍 SECURE PDF: Checking if URL is Supabase storage...');
+        debug.log('🔍 SECURE PDF: Checking if URL is Supabase storage...');
         // Extract path from any Supabase storage URL (public or private)
         const pathMatch = pdfUrl.match(/\/storage\/v1\/object\/(?:public\/)?([^/]+)\/(.+)$/);
         if (pathMatch && pdfUrl.includes('supabase.co/storage')) {
-          console.log('🔍 SECURE PDF: URL is Supabase storage, extracting path...');
+          debug.log('🔍 SECURE PDF: URL is Supabase storage, extracting path...');
           const [, bucketName, filePath] = pathMatch;
-          console.log('🔍 SECURE PDF: Bucket:', bucketName, 'FilePath:', filePath);
+          debug.log('🔍 SECURE PDF: Bucket:', bucketName, 'FilePath:', filePath);
 
           // Enhanced security: validate file path format (must be UUID/pitch.pdf OR sample PDF)
           const pathRegex = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\/pitch\.pdf$/;
           const sampleRegex = /Sample\.pdf$/i;
 
           if (!pathRegex.test(filePath) && !sampleRegex.test(filePath)) {
-            console.log('❌ SECURE PDF: Invalid file path format');
+            debug.log('❌ SECURE PDF: Invalid file path format');
             throw new Error('Invalid file path format. Access denied.');
           }
 
@@ -150,49 +151,49 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
 
           if (!isSamplePdf) {
             const titleId = filePath.split('/')[0];
-            console.log('🔍 SECURE PDF: Title ID:', titleId);
+            debug.log('🔍 SECURE PDF: Title ID:', titleId);
 
             // Validate title exists in database (use real Supabase data)
-            console.log('🔍 SECURE PDF: Validating title exists in database...');
+            debug.log('🔍 SECURE PDF: Validating title exists in database...');
             const { data: titleExists, error: titleError } = await supabase
               .from('titles')
               .select('title_id')
               .eq('title_id', titleId)
               .single();
 
-            console.log('🔍 SECURE PDF: Database validation result:', { titleExists, titleError });
+            debug.log('🔍 SECURE PDF: Database validation result:', { titleExists, titleError });
             if (titleError || !titleExists) {
-              console.log('❌ SECURE PDF: Title not found in database');
+              debug.log('❌ SECURE PDF: Title not found in database');
               throw new Error('Content not found or access denied');
             }
           } else {
-            console.log('🔍 SECURE PDF: Skipping database validation for sample PDF');
+            debug.log('🔍 SECURE PDF: Skipping database validation for sample PDF');
           }
 
           // Try to create signed URL first, fallback to direct URL if storage API issues persist
           {
-            console.log('🔍 SECURE PDF: Attempting to create signed URL...');
+            debug.log('🔍 SECURE PDF: Attempting to create signed URL...');
             try {
               const { data: signedUrlData, error: urlError } = await supabase.storage
                 .from(bucketName)
                 .createSignedUrl(filePath, 1800); // 30 minutes expiry
 
-              console.log('🔍 SECURE PDF: Signed URL response:', { signedUrlData, urlError });
+              debug.log('🔍 SECURE PDF: Signed URL response:', { signedUrlData, urlError });
               if (urlError) {
-                console.warn('Signed URL creation failed, falling back to direct URL:', urlError.message);
+                debug.warn('Signed URL creation failed, falling back to direct URL:', urlError.message);
                 finalUrl = pdfUrl;
-                console.log('⚠️ Using direct URL fallback due to storage API issues');
+                debug.log('⚠️ Using direct URL fallback due to storage API issues');
               } else if (signedUrlData?.signedUrl) {
                 finalUrl = signedUrlData.signedUrl;
-                console.log('✅ Secure access granted with signed URL and validation');
+                debug.log('✅ Secure access granted with signed URL and validation');
               } else {
-                console.warn('No signed URL returned, using direct URL fallback');
+                debug.warn('No signed URL returned, using direct URL fallback');
                 finalUrl = pdfUrl;
               }
             } catch (storageError) {
-              console.warn('Storage API exception, using direct URL fallback:', storageError);
+              debug.warn('Storage API exception, using direct URL fallback:', storageError);
               finalUrl = pdfUrl;
-              console.log('⚠️ Using direct URL fallback due to storage API exception');
+              debug.log('⚠️ Using direct URL fallback due to storage API exception');
             }
           }
         } else if (!pdfUrl.includes('supabase.co/storage')) {
@@ -200,14 +201,14 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
           throw new Error('Only secure storage URLs are allowed');
         }
 
-        console.log('🔍 SECURE PDF: Starting PDF fetch process...');
-        console.log('🔍 SECURE PDF: Final URL to fetch:', finalUrl);
+        debug.log('🔍 SECURE PDF: Starting PDF fetch process...');
+        debug.log('🔍 SECURE PDF: Final URL to fetch:', finalUrl);
 
         // Add authentication headers and fetch PDF data
         {
-          console.log('🔍 SECURE PDF: Fetching with authentication...');
+          debug.log('🔍 SECURE PDF: Fetching with authentication...');
           const { data: { session } } = await supabase.auth.getSession();
-          console.log('🔍 SECURE PDF: Session exists:', !!session);
+          debug.log('🔍 SECURE PDF: Session exists:', !!session);
 
           const headers: HeadersInit = {
             'Authorization': `Bearer ${session?.access_token}`,
@@ -216,14 +217,14 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
 
           // For signed URLs, we don't need additional auth headers
           if (finalUrl.includes('token=')) {
-            console.log('🔍 SECURE PDF: Signed URL detected, removing auth headers');
+            debug.log('🔍 SECURE PDF: Signed URL detected, removing auth headers');
             delete headers['Authorization'];
             delete headers['X-User-ID'];
           }
 
-          console.log('🔍 SECURE PDF: Making fetch request...');
+          debug.log('🔍 SECURE PDF: Making fetch request...');
           const response = await fetch(finalUrl, { headers });
-          console.log('🔍 SECURE PDF: Fetch response status:', response.status, response.statusText);
+          debug.log('🔍 SECURE PDF: Fetch response status:', response.status, response.statusText);
 
           if (!response.ok) {
             if (response.status === 401 || response.status === 403) {
@@ -234,17 +235,17 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
 
           // Verify content type
           const contentType = response.headers.get('content-type');
-          console.log('🔍 SECURE PDF: Content type:', contentType);
+          debug.log('🔍 SECURE PDF: Content type:', contentType);
           if (!contentType?.includes('application/pdf')) {
             throw new Error('Invalid file type. Only PDF files are allowed.');
           }
 
-          console.log('🔍 SECURE PDF: Starting streaming download with progress tracking...');
+          debug.log('🔍 SECURE PDF: Starting streaming download with progress tracking...');
 
           // Get total file size for progress calculation
           const contentLength = response.headers.get('content-length');
           const total = contentLength ? parseInt(contentLength, 10) : 0;
-          console.log('🔍 SECURE PDF: Total file size:', total, 'bytes');
+          debug.log('🔍 SECURE PDF: Total file size:', total, 'bytes');
 
           // Read response body as stream
           const reader = response.body?.getReader();
@@ -256,6 +257,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
           let receivedLength = 0;
 
           // Read chunks and track progress
+          // eslint-disable-next-line no-constant-condition
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
@@ -266,17 +268,17 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
             // Update progress (network download progress)
             if (total > 0) {
               const progress = Math.round((receivedLength / total) * 100);
-              console.log(`🔍 SECURE PDF: Download progress: ${progress}% (${receivedLength}/${total} bytes)`);
+              debug.log(`🔍 SECURE PDF: Download progress: ${progress}% (${receivedLength}/${total} bytes)`);
               setLoadingProgress(progress);
             } else {
               // If content-length is not available, show indeterminate progress
-              console.log(`🔍 SECURE PDF: Downloaded ${receivedLength} bytes (size unknown)`);
+              debug.log(`🔍 SECURE PDF: Downloaded ${receivedLength} bytes (size unknown)`);
             }
           }
 
           // Create blob from chunks
           const blob = new Blob(chunks as BlobPart[], { type: 'application/pdf' });
-          console.log('🔍 SECURE PDF: Blob created, size:', blob.size, 'bytes');
+          debug.log('🔍 SECURE PDF: Blob created, size:', blob.size, 'bytes');
 
           // Additional security: verify blob size (prevent extremely large files)
           if (blob.size > 50 * 1024 * 1024) { // 50MB limit
@@ -285,16 +287,16 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
 
           // Verify blob type
           if (!blob.type.includes('pdf')) {
-            console.warn('🔍 SECURE PDF: Blob type is not PDF:', blob.type);
+            debug.warn('🔍 SECURE PDF: Blob type is not PDF:', blob.type);
           }
 
-          console.log('🔍 SECURE PDF: Creating object URL...');
+          debug.log('🔍 SECURE PDF: Creating object URL...');
           const dataUrl = URL.createObjectURL(blob);
-          console.log('🔍 SECURE PDF: Setting PDF data:', dataUrl);
+          debug.log('🔍 SECURE PDF: Setting PDF data:', dataUrl);
           setPdfData(dataUrl);
         }
 
-        console.log('✅ SECURE PDF: PDF fetch completed successfully!');
+        debug.log('✅ SECURE PDF: PDF fetch completed successfully!');
         setLoading(false);
       } catch (err) {
         console.error('Error loading PDF:', err);
@@ -429,7 +431,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
     const preventPrint = (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
-      console.warn('Printing is disabled for this secure document');
+      debug.warn('Printing is disabled for this secure document');
       return false;
     };
 
@@ -498,7 +500,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
   }, []);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    console.log('📄 REACT-PDF: Document loaded successfully, pages:', numPages);
+    debug.log('📄 REACT-PDF: Document loaded successfully, pages:', numPages);
     setNumPages(numPages);
     setLoading(false);
   };

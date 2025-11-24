@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Document, Page } from '@/lib/pdfConfig'; // Use centralized config
 import { Loader2, FileText } from 'lucide-react';
+import { debug } from '@/utils/debug';
 
 interface PitchDeckThumbnailProps {
   pdfUrl: string;
@@ -44,7 +45,7 @@ export default function PitchDeckThumbnail({
       observerRef.current = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
-            console.log('📄 PitchDeckThumbnail: Component visible, loading PDF...');
+            debug.log('📄 PitchDeckThumbnail: Component visible, loading PDF...');
             setIsVisible(true);
             observerRef.current?.disconnect(); // Load only once
           }
@@ -57,7 +58,7 @@ export default function PitchDeckThumbnail({
       }
     } catch (error) {
       // Fallback: If IntersectionObserver fails (e.g., in tests), load immediately
-      console.warn('📄 PitchDeckThumbnail: IntersectionObserver not available, loading immediately');
+      debug.warn('📄 PitchDeckThumbnail: IntersectionObserver not available, loading immediately');
       setIsVisible(true);
     }
 
@@ -72,7 +73,7 @@ export default function PitchDeckThumbnail({
 
     const fetchPDF = async () => {
       try {
-        console.log('📄 PitchDeckThumbnail: Fetching PDF...', pdfUrl);
+        debug.log('📄 PitchDeckThumbnail: Fetching PDF...', pdfUrl);
         setLoading(true);
         setError(false);
 
@@ -84,7 +85,7 @@ export default function PitchDeckThumbnail({
         const blob = await response.blob();
         const dataUrl = URL.createObjectURL(blob);
         setPdfData(dataUrl);
-        console.log('✅ PitchDeckThumbnail: PDF loaded successfully');
+        debug.log('✅ PitchDeckThumbnail: PDF loaded successfully');
       } catch (err) {
         console.error('❌ PitchDeckThumbnail: Error loading PDF:', err);
         setError(true);
@@ -99,14 +100,14 @@ export default function PitchDeckThumbnail({
   useEffect(() => {
     return () => {
       if (pdfData && pdfData.startsWith('blob:')) {
-        console.log('🧹 PitchDeckThumbnail: Cleaning up blob URL');
+        debug.log('🧹 PitchDeckThumbnail: Cleaning up blob URL');
         URL.revokeObjectURL(pdfData);
       }
     };
   }, [pdfData]);
 
   const handleClick = () => {
-    console.log('📄 PitchDeckThumbnail: Thumbnail clicked');
+    debug.log('📄 PitchDeckThumbnail: Thumbnail clicked');
     onClick();
   };
 
@@ -162,7 +163,7 @@ export default function PitchDeckThumbnail({
             <Document
               file={pdfData}
               onLoadSuccess={() => {
-                console.log('✅ PitchDeckThumbnail: Document loaded');
+                debug.log('✅ PitchDeckThumbnail: Document loaded');
                 setLoading(false);
               }}
               onLoadError={(err) => {

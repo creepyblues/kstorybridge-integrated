@@ -60,7 +60,7 @@ export function BuyerSidebar() {
       {/* Mobile menu button */}
       <button
         onClick={handleMobileMenuToggle}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white border border-red-200 shadow-lg"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white border border-red-200 shadow-lg"
       >
         {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
@@ -68,7 +68,7 @@ export function BuyerSidebar() {
       {/* Overlay for mobile */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/20 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/20 z-30 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -77,7 +77,7 @@ export function BuyerSidebar() {
       <aside
         className={cn(
           'fixed left-0 top-0 z-40 h-screen w-64 bg-white shadow-xl transition-transform duration-300 ease-in-out',
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
         <div className="flex flex-col h-full">

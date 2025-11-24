@@ -1,4 +1,5 @@
 import React from 'react';
+import { debug } from '@/utils/debug';
 
 interface ConversationalMessage {
   id: string;
@@ -83,7 +84,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
 
     // Debug logging in development for markdown links and specific cases
     if (import.meta.env.DEV && (titleName.includes('[') || titleName.toLowerCase().includes('first love'))) {
-      console.log('🔍 Title matching debug:', {
+      debug.log('🔍 Title matching debug:', {
         originalTitle: titleName,
         cleanedName,
         wasMarkdownLink: titleName.includes('[') && titleName.includes(']('),
@@ -165,7 +166,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
     if (titleCache && titleCache.length > 0) {
       // Only log for actual title searches, not genre names
       if (cleanedName.length > 2 && !['romantasy', 'fantasy', 'romance'].includes(cleanedName.toLowerCase())) {
-        console.log('🔍 Searching title cache as fallback:', {
+        debug.log('🔍 Searching title cache as fallback:', {
           searchTerm: cleanedName,
           cacheSize: titleCache.length,
           firstFewCacheTitles: titleCache.slice(0, 3).map(t => t.title_name_en || t.title_name_kr)
@@ -180,7 +181,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
       });
 
       if (exactCacheMatch) {
-        console.log('✅ Found exact match in title cache:', exactCacheMatch.title_name_en || exactCacheMatch.title_name_kr);
+        debug.log('✅ Found exact match in title cache:', exactCacheMatch.title_name_en || exactCacheMatch.title_name_kr);
         return exactCacheMatch.title_id;
       }
 
@@ -193,7 +194,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
       });
 
       if (caseInsensitiveCacheMatch) {
-        console.log('✅ Found case-insensitive match in title cache:', caseInsensitiveCacheMatch.title_name_en || caseInsensitiveCacheMatch.title_name_kr);
+        debug.log('✅ Found case-insensitive match in title cache:', caseInsensitiveCacheMatch.title_name_en || caseInsensitiveCacheMatch.title_name_kr);
         return caseInsensitiveCacheMatch.title_id;
       }
 
@@ -214,7 +215,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
 
       if (fuzzyMatches.length > 0) {
         const bestMatch = fuzzyMatches[0];
-        console.log('✅ Found fuzzy match in title cache:', {
+        debug.log('✅ Found fuzzy match in title cache:', {
           titleName: bestMatch.title.title_name_en || bestMatch.title.title_name_kr,
           similarity: (bestMatch.similarity * 100).toFixed(1) + '%',
           searchTerm: cleanedName
@@ -228,7 +229,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
                           !['romantasy', 'fantasy', 'romance', 'thriller', 'horror', 'comedy', 'drama', 'action'].includes(cleanedName.toLowerCase());
 
     if (isLikelyTitle) {
-      console.log('⚠️ Title not found in database:', cleanedName, '(AI may have generated a fictional example)');
+      debug.log('⚠️ Title not found in database:', cleanedName, '(AI may have generated a fictional example)');
     }
     return null;
   };

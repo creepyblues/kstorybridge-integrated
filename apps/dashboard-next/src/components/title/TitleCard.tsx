@@ -142,20 +142,20 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
         </div>
 
         {/* Content Section */}
-        <div className="p-4 md:p-6 flex flex-col">
+        <div className="p-4 md:p-6 flex flex-col overflow-hidden">
           {/* Title */}
           <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-hanok-teal transition-colors">
             {title.title_name_en || title.title_name_kr}
           </h3>
           {title.title_name_kr && title.title_name_en && (
-            <p className="text-sm text-gray-500 mb-3">{title.title_name_kr}</p>
+            <p className="text-sm text-gray-500 mb-3 truncate">{title.title_name_kr}</p>
           )}
 
           {/* Divider */}
           <div className="w-full h-px bg-gray-300 mb-3"></div>
 
           {/* Genre and Format Tags */}
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-3 max-w-full">
             {title.genre && typeof title.genre === 'string' && (
               <span className="bg-gradient-to-r from-cyan-100 to-cyan-50 text-cyan-800 px-2 py-1 rounded-md text-xs font-medium border border-cyan-200">
                 {title.genre}
@@ -183,7 +183,7 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
 
           {/* Synopsis */}
           {title.synopsis && (
-            <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-3">
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-3 break-words">
               {title.synopsis}
             </p>
           )}

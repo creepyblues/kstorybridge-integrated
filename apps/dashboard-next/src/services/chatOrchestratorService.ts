@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { debug } from '@/utils/debug';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -31,7 +32,7 @@ export const chatOrchestratorService = {
     userId?: string
   ): Promise<ChatResponse> {
     try {
-      console.log('🤖 Sending message to chatbot', { query, historyLength: conversationHistory.length });
+      debug.log('🤖 Sending message to chatbot', { query, historyLength: conversationHistory.length });
 
       // Get current session with auth token
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -74,7 +75,7 @@ export const chatOrchestratorService = {
 
       // Parse SSE streaming response
       const text = await response.text();
-      console.log('📦 Raw response received:', text.substring(0, 200));
+      debug.log('📦 Raw response received:', text.substring(0, 200));
 
       let fullResponse = '';
       let titles: any[] = [];
@@ -99,12 +100,12 @@ export const chatOrchestratorService = {
               conversationId = data.conversationId;
             }
           } catch (parseError) {
-            console.log('⚠️ Skipping unparseable line:', line.substring(0, 100));
+            debug.log('⚠️ Skipping unparseable line:', line.substring(0, 100));
           }
         }
       }
 
-      console.log('✅ Chatbot response parsed', {
+      debug.log('✅ Chatbot response parsed', {
         responseLength: fullResponse.length,
         titleCount: titles.length,
         suggestedQueriesCount: suggestedQueries.length,

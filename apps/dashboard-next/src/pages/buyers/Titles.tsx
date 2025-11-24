@@ -172,19 +172,21 @@ export default function Titles() {
 
   return (
     <BuyerLayout>
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         {/* Header */}
         <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-              <BookOpen className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-hanok-teal">Discover Titles</h1>
-              <p className="text-lg text-gray-600 mt-1">Browse & Search Korean Content</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
+                <BookOpen className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Discover Titles</h1>
+                <p className="text-base sm:text-lg text-gray-600 mt-1">Browse & Search Korean Content</p>
+              </div>
             </div>
           </div>
-          <p className="text-gray-600 text-base">
+          <p className="text-sm sm:text-base text-gray-600">
             Explore our catalog of Korean webtoons, web novels, and stories with intelligent search and filtering.
           </p>
         </div>
@@ -295,7 +297,9 @@ export default function Titles() {
             {/* Title Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {titles.map((title) => (
-                <TitleCard key={title.title_id} title={title} variant="grid" />
+                <div key={title.title_id} className="min-w-0">
+                  <TitleCard title={title} variant="grid" />
+                </div>
               ))}
             </div>
 

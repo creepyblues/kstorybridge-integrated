@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { checkBuyerProfileExists } from '@/lib/auth';
@@ -21,7 +21,6 @@ function clearOAuthStorage() {
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
 
@@ -39,49 +38,38 @@ export default function AuthCallback() {
 
   async function handleOAuthCallback() {
     try {
-      // Get code from URL
-      const code = searchParams.get('code');
-
       // 🚨 CRITICAL: Only use sessionStorage (no URL parameters per CLAUDE.md)
       const accountType = sessionStorage.getItem('oauth_account_type');
       const flow = sessionStorage.getItem('oauth_flow');
 
-      if (!code) {
-        clearOAuthStorage();
-        setError('No authorization code found');
-        return;
-      }
-
       console.log('🔄 OAuth callback processing', { accountType, flow });
 
-      // Exchange code for session
-      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      // Wait for Supabase's detectSessionInUrl to process the hash fragment
+      // This is the production-proven pattern from Creator app
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (exchangeError) {
-        console.error('❌ Code exchange error', exchangeError);
+      // Get session (should be created by detectSessionInUrl)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        console.error('❌ OAuth session error:', sessionError);
         clearOAuthStorage();
-        setError(exchangeError.message);
+        setError('Authentication failed. Please try again.');
         return;
       }
 
-      if (!data.session) {
-        clearOAuthStorage();
-        setError('No session returned from OAuth');
-        return;
-      }
-
-      const user = data.session.user;
+      const user = session.user;
       console.log('✅ OAuth session established', { userId: user.id, email: user.email });
 
-      // Validate account type
-      if (!accountType || accountType !== 'buyer') {
-        clearOAuthStorage();
-        setError('Invalid account type');
-        return;
-      }
+      // If sessionStorage was cleared (e.g., browser behavior), default to signin flow
+      // This is safe because we check profile existence anyway
+      const effectiveAccountType = accountType || 'buyer';
+      const effectiveFlow = flow || 'signin';
+
+      console.log('🔄 Using effective flow', { effectiveAccountType, effectiveFlow });
 
       // Handle based on flow
-      if (flow === 'signin') {
+      if (effectiveFlow === 'signin') {
         // Check if buyer profile exists
         const profileExists = await checkBuyerProfileExists(user.id);
 

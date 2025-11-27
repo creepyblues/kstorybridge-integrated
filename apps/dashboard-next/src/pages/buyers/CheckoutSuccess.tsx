@@ -12,24 +12,25 @@ export default function CheckoutSuccess() {
   const tier = searchParams.get('tier') || 'pro';
 
   useEffect(() => {
-    // Refetch tier to get updated subscription status
+    // Refetch tier once on mount to get updated subscription status
     refetch();
-  }, [refetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);  // Empty deps - only run once on mount
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50/40 via-teal-50/20 to-cyan-50/30 flex items-center justify-center p-4">
+      <Card className="max-w-md w-full border border-gray-200 shadow-sm">
         <CardContent className="p-8 text-center space-y-6">
           {/* Success Icon */}
           <div className="flex justify-center">
-            <div className="bg-green-50 rounded-full p-4">
-              <CheckCircle className="h-16 w-16 text-green-500" />
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 shadow-lg">
+              <CheckCircle className="h-12 w-12 text-white" />
             </div>
           </div>
 
           {/* Title */}
           <div>
-            <h2 className="text-2xl font-bold text-black mb-2">Payment Successful!</h2>
+            <h2 className="text-2xl font-bold text-hanok-teal mb-2">Payment Successful!</h2>
             <p className="text-gray-600">
               Welcome to <span className="font-semibold capitalize">{tier}</span> tier
             </p>

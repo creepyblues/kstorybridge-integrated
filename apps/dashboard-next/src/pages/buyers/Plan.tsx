@@ -60,7 +60,7 @@ const plans: TierPlan[] = [
     priceId: 'price_suite_monthly', // TODO: Replace with actual Stripe Price ID
     description: 'Full access with priority support',
     icon: Crown,
-    color: 'border-yellow-500',
+    color: 'border-hanok-teal',
     features: [
       'Everything in Pro',
       'Early access to new titles',
@@ -143,7 +143,7 @@ export default function Plan() {
                 key={plan.tier}
                 className={`relative ${plan.color} ${
                   plan.popular ? 'border-2' : ''
-                } ${isCurrentTier ? 'bg-gray-50' : 'bg-white'}`}
+                }`}
               >
                 {/* Popular Badge */}
                 {plan.popular && (
@@ -158,8 +158,12 @@ export default function Plan() {
                   {/* Icon & Name */}
                   <div className="text-center mb-6">
                     {Icon && (
-                      <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
-                        <Icon className="h-6 w-6 text-gray-700" />
+                      <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
+                        plan.tier === 'pro' ? 'bg-pro-purple/10' : 'bg-hanok-teal/10'
+                      }`}>
+                        <Icon className={`h-6 w-6 ${
+                          plan.tier === 'pro' ? 'text-pro-purple' : 'text-hanok-teal'
+                        }`} />
                       </div>
                     )}
                     <h3 className="text-2xl font-bold text-black mb-2">{plan.name}</h3>
@@ -205,9 +209,9 @@ export default function Plan() {
         </div>
 
         {/* FAQ Section */}
-        <Card className="max-w-3xl mx-auto">
+        <Card className="max-w-3xl mx-auto mb-6">
           <CardContent className="p-6">
-            <h3 className="text-lg font-bold text-black mb-4">Frequently Asked Questions</h3>
+            <h3 className="text-lg font-bold text-hanok-teal mb-4">Frequently Asked Questions</h3>
             <div className="space-y-4">
               <div>
                 <div className="font-medium text-black mb-1">Can I change plans anytime?</div>

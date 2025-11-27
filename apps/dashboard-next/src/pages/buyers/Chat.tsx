@@ -403,7 +403,7 @@ export default function Chat() {
 
   return (
     <BuyerLayout>
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-32 space-y-4 sm:space-y-6 overflow-x-hidden">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mb-40 space-y-4 sm:space-y-6 overflow-x-hidden">
         {/* Header */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -520,7 +520,7 @@ export default function Chat() {
       </div>
 
       {/* Fixed Input Area at Bottom with Gradient Fade */}
-      <div className="fixed bottom-0 left-0 md:left-64 right-0 bg-gradient-to-t from-white/90 via-white/80 to-transparent backdrop-blur-sm pt-8 pb-6 px-6">
+      <div className="fixed bottom-0 left-0 md:left-64 right-0 pt-8 pb-6 px-6 bg-gradient-to-br from-teal-50/40 via-teal-50/20 to-cyan-50/30">
         <div className="max-w-3xl mx-auto">
           <ChatInput
             onSendMessage={handleSendMessage}

@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Lock } from 'lucide-react';
+
+// Initialize Stripe.js with publishable key
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 /**
  * Checkout Page - Stripe Integration
@@ -57,17 +61,43 @@ export default function Checkout() {
 
       if (functionError) {
         console.error('❌ Checkout session error:', functionError);
-        throw new Error(functionError.message || 'Failed to create checkout session');
+        // Try to get error details from the response
+        const errorMessage = data?.error || functionError.message || 'Failed to create checkout session';
+        console.error('❌ Error details:', data);
+        throw new Error(errorMessage);
       }
 
-      if (!data?.url) {
-        throw new Error('No checkout URL returned');
+      if (data?.error) {
+        console.error('❌ API Error:', data.error);
+        throw new Error(data.error);
+      }
+
+      if (!data?.url && !data?.sessionId) {
+        console.error('❌ Unexpected response:', data);
+        throw new Error('No checkout URL or session ID returned');
       }
 
       console.log('✅ Redirecting to Stripe Checkout:', data.sessionId);
 
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
+      // Use direct URL redirect if available (more reliable), otherwise use Stripe.js
+      if (data.url) {
+        console.log('🔗 Using direct checkout URL');
+        window.location.href = data.url;
+      } else {
+        // Fallback to Stripe.js redirect
+        const stripe = await stripePromise;
+        if (!stripe) {
+          throw new Error('Stripe failed to load. Please check your configuration.');
+        }
+
+        const { error: stripeError } = await stripe.redirectToCheckout({
+          sessionId: data.sessionId,
+        });
+
+        if (stripeError) {
+          throw new Error(stripeError.message);
+        }
+      }
     } catch (error: any) {
       console.error('❌ Checkout error:', error);
       setError(error.message);
@@ -88,20 +118,26 @@ export default function Checkout() {
   // If there's an error, show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50/40 via-teal-50/20 to-cyan-50/30 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border border-gray-200 shadow-sm">
           <CardContent className="p-8 text-center space-y-6">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="text-sm font-medium text-red-800 mb-2">
-                Checkout Error
+            {/* Error Icon */}
+            <div className="flex justify-center">
+              <div className="bg-red-100 rounded-2xl p-4">
+                <Lock className="h-12 w-12 text-red-500" />
               </div>
-              <div className="text-xs text-red-700">{error}</div>
+            </div>
+
+            {/* Title */}
+            <div>
+              <h2 className="text-2xl font-bold text-hanok-teal mb-2">Checkout Error</h2>
+              <p className="text-sm text-gray-600">{error}</p>
             </div>
 
             <div className="space-y-3">
               <Button
                 onClick={() => window.location.reload()}
-                className="w-full bg-black hover:bg-gray-800"
+                className="w-full bg-pro-purple hover:bg-pro-purple/90"
               >
                 Try Again
               </Button>
@@ -121,19 +157,19 @@ export default function Checkout() {
 
   // Loading state while creating session
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50/40 via-teal-50/20 to-cyan-50/30 flex items-center justify-center p-4">
+      <Card className="max-w-md w-full border border-gray-200 shadow-sm">
         <CardContent className="p-8 text-center space-y-6">
           {/* Lock Icon */}
           <div className="flex justify-center">
-            <div className="bg-pro-purple/10 rounded-full p-4">
-              <Lock className="h-12 w-12 text-pro-purple" />
+            <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 rounded-2xl p-4 shadow-lg">
+              <Lock className="h-12 w-12 text-white" />
             </div>
           </div>
 
           {/* Title */}
           <div>
-            <h2 className="text-2xl font-bold text-black mb-2">Secure Checkout</h2>
+            <h2 className="text-2xl font-bold text-hanok-teal mb-2">Secure Checkout</h2>
             <p className="text-gray-600">
               Upgrading to <span className="font-semibold capitalize">{tier}</span> tier
             </p>
@@ -141,7 +177,7 @@ export default function Checkout() {
 
           {/* Loading State */}
           <div className="flex items-center justify-center gap-2 text-gray-500 py-4">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin text-hanok-teal" />
             <span>
               {loading ? 'Creating checkout session...' : 'Redirecting to Stripe...'}
             </span>

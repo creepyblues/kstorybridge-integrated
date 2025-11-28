@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@kstorybridge/ui';
 import { Star, Plus, Trash2 } from 'lucide-react';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AdminLayout from '@/components/layout/AdminLayout';
 import { featuredService, type FeaturedWithTitle } from '@/services/featuredService';
 import { titlesService, type Title } from '@/services/titlesService';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +28,7 @@ export default function AdminFeatured() {
       setLoading(true);
       const [featuredData, titlesData] = await Promise.all([
         featuredService.getAllFeatured(),
-        titlesService.getAllTitles()
+        titlesService.getTitles()
       ]);
       setFeatured(featuredData);
       setAllTitles(titlesData);
@@ -157,8 +159,8 @@ export default function AdminFeatured() {
   );
 
   return (
-    <PageContainer>
-      <div className="max-w-7xl mx-auto">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
@@ -343,8 +345,7 @@ export default function AdminFeatured() {
             )}
           </CardContent>
         </Card>
-
       </div>
-    </PageContainer>
+    </AdminLayout>
   );
 }

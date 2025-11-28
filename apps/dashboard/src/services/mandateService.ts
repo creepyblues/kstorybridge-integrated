@@ -2,7 +2,7 @@
 // Created: 2025-11-21
 // Description: Service layer for mandate-based title recommendations
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 export interface TitleMatch {
   title_id: string;

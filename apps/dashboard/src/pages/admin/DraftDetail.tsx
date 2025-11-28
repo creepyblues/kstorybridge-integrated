@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@kstorybridge/ui";
-import { Button } from '@kstorybridge/ui';
-import { Badge } from '@kstorybridge/ui';
-import { Textarea } from '@kstorybridge/ui';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@kstorybridge/ui';
 import { ArrowLeft, CheckCircle, XCircle, User, FileEdit, Calendar } from "lucide-react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { draftService, type DraftWithCreator } from "@/services/draftService";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function AdminDraftDetail() {
   const { toast } = useToast();
@@ -466,7 +466,7 @@ export default function AdminDraftDetail() {
               </label>
               <Textarea
                 value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
+                onChange={(e: React.FormEvent) => setRejectionReason((e as React.ChangeEvent<HTMLTextAreaElement>).target.value)}
                 placeholder="Explain why this draft is being rejected..."
                 rows={4}
                 className="w-full"

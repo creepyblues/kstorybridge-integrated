@@ -1,7 +1,8 @@
 import React from 'react';
 import { X, Download, CheckCircle2, XCircle, Calendar, DollarSign } from 'lucide-react';
-import { Button, Badge } from '@kstorybridge/ui';
 import type { MarketingAsset } from '@/types/asset-generation';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface AssetPreviewModalProps {
   asset: MarketingAsset;

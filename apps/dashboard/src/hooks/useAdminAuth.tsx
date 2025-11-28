@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import type { Tables } from '@/integrations/supabase/types';
 
-type AdminProfile = Tables<'admin'>;
+type AdminProfile = any; // TODO: Define admin profile type
 
 interface UseAdminAuthReturn {
   isAdmin: boolean;

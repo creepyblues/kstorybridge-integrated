@@ -7,7 +7,8 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { Button, Input } from '@kstorybridge/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface CompSelectorProps {
   compTitles: string[];
@@ -55,35 +56,12 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
 
   return (
     <div className="space-y-4">
-      {/* Input Field First */}
-      {canAddMore && (
-        <div className="flex gap-3">
-          <Input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Enter a comparable title (e.g., Squid Game, Parasite, Black Mirror)"
-            className="flex-1 border-gray-300 focus:border-hanok-teal focus:ring-hanok-teal text-base h-12"
-            maxLength={100}
-          />
-          <Button
-            onClick={handleAddComp}
-            disabled={!inputValue.trim()}
-            className="bg-hanok-teal hover:bg-hanok-teal/90 text-white h-12 px-6 font-medium disabled:opacity-50 disabled:bg-gray-300"
-          >
-            Add
-          </Button>
-        </div>
-      )}
-
-      {/* Title and Counter */}
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-semibold text-hanok-teal">
           Select up to {maxComps} comparable titles
         </label>
-        <span className="text-xs font-medium text-gray-500">
-          {compTitles.length} / {maxComps} selected
+        <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
+          {compTitles.length} / {maxComps}
         </span>
       </div>
 
@@ -93,25 +71,54 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
           {compTitles.map((title, index) => (
             <div
               key={index}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-100 to-cyan-50 border border-cyan-200 rounded-lg text-sm font-medium text-cyan-800 shadow-sm"
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-hanok-teal/10 to-hanok-teal/5 border border-hanok-teal/30 rounded-lg text-sm font-medium text-hanok-teal shadow-sm"
             >
               <span>{title}</span>
               <button
                 onClick={() => handleRemoveComp(index)}
-                className="hover:bg-cyan-200 rounded-full p-1 transition-colors"
+                className="hover:bg-hanok-teal/20 rounded-full p-0.5 transition-colors"
                 aria-label={`Remove ${title}`}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </div>
           ))}
         </div>
       )}
 
+      {/* Input Field */}
+      {canAddMore && (
+        <div className="flex gap-3">
+          <Input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder={
+              compTitles.length === 0
+                ? 'e.g., Squid Game, Parasite, Black Mirror...'
+                : compTitles.length === 1
+                ? 'Add another comp (optional)'
+                : 'Add final comp (optional)'
+            }
+            className="flex-1 border-gray-200 focus:border-hanok-teal focus:ring-hanok-teal/20"
+            maxLength={100}
+          />
+          <Button
+            onClick={handleAddComp}
+            disabled={!inputValue.trim()}
+            variant="outline"
+            className="border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30 disabled:opacity-50"
+          >
+            Add
+          </Button>
+        </div>
+      )}
+
       {/* Helper Text */}
       {compTitles.length === maxComps && (
-        <p className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-          ✓ Ready to search with {maxComps} comps
+        <p className="text-xs font-medium text-hanok-teal bg-hanok-teal/10 border border-hanok-teal/30 rounded-lg p-3">
+          ✓ Maximum {maxComps} comps selected. Click "Find Matches" to search.
         </p>
       )}
     </div>

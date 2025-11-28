@@ -1,7 +1,7 @@
 import React from 'react';
 import { TrendingUp, DollarSign, CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
-import { Card, CardContent } from '@kstorybridge/ui';
 import type { MarketingAsset, GenerationStatsData } from '@/types/asset-generation';
+import { Card, CardContent } from "@/components/ui/card";
 
 interface GenerationStatsProps {
   assets: MarketingAsset[];

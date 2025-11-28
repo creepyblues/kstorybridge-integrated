@@ -1,283 +1,76 @@
+/* Import must come first */
+@import './styles/layout-variables.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* SF Pro Font Stack for Headers */
-.font-sf-pro {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-}
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
-  /* SF Pro is now the default sans-serif font via Tailwind config */
-
   :root {
-    /* KStoryBridge Brand Colors */
-    --hanok-teal: 180 34% 45%;
-    --hanok-teal-50: 180 38% 92%;
-    --hanok-teal-100: 180 38% 84%;
-    --hanok-teal-200: 180 34% 68%;
-    --hanok-teal-300: 180 34% 60%;
-    --hanok-teal-400: 180 34% 45%;
-    --hanok-teal-500: 180 34% 37%;
-    --hanok-teal-600: 180 34% 28%;
-    --hanok-teal-700: 180 34% 19%;
-    --hanok-teal-800: 180 34% 10%;
-    --hanok-teal-900: 0 0% 0%;
-
-    --midnight-ink: 0 0% 11%;
-    --midnight-ink-50: 0 0% 96%;
-    --midnight-ink-100: 0 0% 92%;
-    --midnight-ink-200: 0 0% 84%;
-    --midnight-ink-300: 0 0% 76%;
-    --midnight-ink-400: 0 0% 69%;
-    --midnight-ink-500: 0 0% 61%;
-    --midnight-ink-600: 0 0% 53%;
-    --midnight-ink-700: 0 0% 45%;
-    --midnight-ink-800: 0 0% 37%;
-    --midnight-ink-900: 0 0% 11%;
-
-    --snow-white: 0 0% 100%;
-
-    --porcelain-blue: 179 28% 83%;
-    --porcelain-blue-50: 180 50% 97%;
-    --porcelain-blue-100: 179 43% 95%;
-    --porcelain-blue-200: 179 28% 83%;
-    --porcelain-blue-300: 179 28% 73%;
-    --porcelain-blue-400: 179 28% 63%;
-    --porcelain-blue-500: 179 28% 53%;
-    --porcelain-blue-600: 179 28% 43%;
-    --porcelain-blue-700: 179 28% 33%;
-    --porcelain-blue-800: 179 28% 23%;
-    --porcelain-blue-900: 179 28% 18%;
-
-    --sunrise-coral: 0 100% 71%;
-    --sunrise-coral-50: 0 100% 97%;
-    --sunrise-coral-100: 0 100% 94%;
-    --sunrise-coral-200: 0 100% 88%;
-    --sunrise-coral-300: 0 100% 82%;
-    --sunrise-coral-400: 0 100% 76%;
-    --sunrise-coral-500: 0 100% 71%;
-    --sunrise-coral-600: 0 100% 65%;
-    --sunrise-coral-700: 0 100% 59%;
-    --sunrise-coral-800: 0 100% 53%;
-    --sunrise-coral-900: 0 100% 47%;
-
-    --warm-sand: 41 41% 90%;
-    --warm-sand-50: 50 75% 98%;
-    --warm-sand-100: 45 60% 96%;
-    --warm-sand-200: 43 50% 93%;
-    --warm-sand-300: 41 41% 90%;
-    --warm-sand-400: 39 37% 87%;
-    --warm-sand-500: 37 33% 84%;
-    --warm-sand-600: 35 29% 81%;
-    --warm-sand-700: 33 25% 78%;
-    --warm-sand-800: 31 21% 75%;
-    --warm-sand-900: 29 17% 72%;
-
-    /* Pro tier purple (#AF52DE) */
-    --pro-purple: 286 67% 58%;
-    --pro-purple-50: 286 67% 95%;
-    --pro-purple-100: 286 67% 88%;
-    --pro-purple-200: 286 67% 81%;
-    --pro-purple-300: 286 67% 74%;
-    --pro-purple-400: 286 67% 66%;
-    --pro-purple-500: 286 67% 58%;
-    --pro-purple-600: 286 67% 50%;
-    --pro-purple-700: 286 67% 42%;
-    --pro-purple-800: 286 67% 34%;
-    --pro-purple-900: 286 67% 26%;
-
-    /* shadcn/ui system colors */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
   }
 }
 
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     @apply border-border;
+    box-sizing: border-box;
   }
-
+  html,
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+    position: relative;
   }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.2;
-    font-weight: 700;
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
   }
-
-  .serif-display {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  }
-
-  .sans-body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  }
-
-  .korean-text {
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  }
-}
-
-/* Force sidebar navigation text to be visible */
-.sidebar-nav-link,
-.sidebar-nav-link *,
-.sidebar-nav-link svg,
-.sidebar-nav-link span,
-[data-sidebar] .sidebar-nav-link,
-[data-sidebar] .sidebar-nav-link *,
-[data-sidebar] .sidebar-nav-link svg,
-[data-sidebar] .sidebar-nav-link span,
-.sidebar .sidebar-nav-link,
-.sidebar .sidebar-nav-link *,
-button .sidebar-nav-link,
-button .sidebar-nav-link * {
-  color: #000000 !important;
-  fill: #000000 !important;
-}
-
-.sidebar-nav-link[data-active="true"],
-.sidebar-nav-link[data-active="true"] *,
-.sidebar-nav-link[data-active="true"] svg,
-.sidebar-nav-link[data-active="true"] span {
-  color: #000000 !important;
-  fill: #000000 !important;
-}
-
-.sidebar-nav-link:hover:not([data-active="true"]),
-.sidebar-nav-link:hover:not([data-active="true"]) *,
-.sidebar-nav-link:hover:not([data-active="true"]) svg,
-.sidebar-nav-link:hover:not([data-active="true"]) span {
-  color: #4C9C9B !important;
-  fill: #4C9C9B !important;
-}
-
-/* ========================================
-   Pitch Deck Thumbnail Styles
-   ======================================== */
-
-/* Prevent layout shifts during PDF rendering */
-.pitch-thumbnail-container {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-/* Ensure PDF canvas fits container responsively */
-.pitch-thumbnail-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.pitch-thumbnail-page canvas {
-  max-width: 100%;
-  height: auto !important;
-  object-fit: contain;
-  display: block;
-}
-
-/* Prevent text selection on thumbnail */
-.pitch-thumbnail-container,
-.pitch-thumbnail-page {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
 }

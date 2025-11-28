@@ -241,10 +241,18 @@ export default function TitleDetail() {
               value={title.title_name_kr}
             />
             <FieldDisplay
-              label={t('survey:step1.titleUrl', 'Title URL')}
+              label={t('titles:detail.titleUrlKr', 'Title URL (Korean)')}
               value={title.title_url && (
-                <a href={title.title_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                <a href={title.title_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
                   {title.title_url}
+                </a>
+              )}
+            />
+            <FieldDisplay
+              label={t('titles:detail.titleUrlEn', 'Title URL (English)')}
+              value={title.title_url_en && (
+                <a href={title.title_url_en} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
+                  {title.title_url_en}
                 </a>
               )}
             />
@@ -252,6 +260,10 @@ export default function TitleDetail() {
               label={t('survey:step1.isOfficialEnglish', 'Official English Title')}
               value={title.is_official_english_title ? 'Yes' : 'No'}
               isEmpty={title.is_official_english_title === null || title.is_official_english_title === undefined}
+            />
+            <FieldDisplay
+              label={t('titles:detail.englishTitleType', 'English Title Type')}
+              value={title.english_title_type && formatContentFormat(title.english_title_type)}
             />
             <FieldDisplay
               label={t('survey:step1.genre', 'Genre')}
@@ -274,12 +286,40 @@ export default function TitleDetail() {
               value={title.story_author}
             />
             <FieldDisplay
+              label={t('titles:detail.storyAuthorKr', 'Story Author (Korean)')}
+              value={title.story_author_kr}
+            />
+            <FieldDisplay
               label={t('survey:step1.artAuthor', 'Art Author')}
               value={title.art_author}
             />
             <FieldDisplay
+              label={t('titles:detail.artAuthorKr', 'Art Author (Korean)')}
+              value={title.art_author_kr}
+            />
+            <FieldDisplay
               label={t('survey:step1.originalAuthor', 'Original Author')}
               value={title.original_author}
+            />
+            <FieldDisplay
+              label={t('titles:detail.originalAuthorKr', 'Original Author (Korean)')}
+              value={title.original_author_kr}
+            />
+            <FieldDisplay
+              label={t('titles:detail.scriptTitleKr', 'Script Title (Korean)')}
+              value={title.script_title_kr}
+            />
+            <FieldDisplay
+              label={t('titles:detail.scriptTitleEn', 'Script Title (English)')}
+              value={title.script_title_en}
+            />
+            <FieldDisplay
+              label={t('titles:detail.artTitleKr', 'Art Title (Korean)')}
+              value={title.art_title_kr}
+            />
+            <FieldDisplay
+              label={t('titles:detail.artTitleEn', 'Art Title (English)')}
+              value={title.art_title_en}
             />
             <FieldDisplay
               label={t('survey:step1.rightsHolderName', 'Rights Holder')}
@@ -313,6 +353,49 @@ export default function TitleDetail() {
               )}
               fullWidth
             />
+            <FieldDisplay
+              label={t('titles:detail.rightsAvailable', 'Rights Available')}
+              value={title.rights_available && title.rights_available.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {title.rights_available.map((right: string, i: number) => (
+                    <Badge key={i} variant="outline" className="text-xs border-gray-300 text-gray-700">
+                      {right.replace('_', ' & ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              fullWidth
+            />
+            <FieldDisplay
+              label={t('titles:detail.tone', 'Tone')}
+              value={title.tone && formatContentFormat(title.tone)}
+            />
+            <FieldDisplay
+              label={t('titles:detail.audience', 'Target Audience')}
+              value={title.audience}
+            />
+            <FieldDisplay
+              label={t('titles:detail.ageRating', 'Age Rating')}
+              value={title.age_rating}
+            />
+            <FieldDisplay
+              label={t('titles:detail.perfectFor', 'Perfect For')}
+              value={title.perfect_for}
+            />
+            <FieldDisplay
+              label={t('titles:detail.contentProvider', 'Content Provider')}
+              value={title.cp}
+            />
+            <FieldDisplay
+              label={t('titles:detail.note', 'Notes')}
+              value={title.note}
+              fullWidth
+            />
+            <FieldDisplay
+              label={t('titles:detail.noteKr', 'Notes (Korean)')}
+              value={title.note_kr}
+              fullWidth
+            />
           </div>
         </TitleDetailSection>
 
@@ -335,6 +418,11 @@ export default function TitleDetail() {
                   fullWidth
                 />
                 <FieldDisplay
+                  label={t('titles:detail.taglineKr', 'Tagline (Korean)')}
+                  value={title.tagline_kr}
+                  fullWidth
+                />
+                <FieldDisplay
                   label={t('survey:step2.synopsis', 'Synopsis')}
                   value={title.synopsis && (
                     <p className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
@@ -344,11 +432,24 @@ export default function TitleDetail() {
                   fullWidth
                 />
                 <FieldDisplay
-                  label={t('survey:step2.description', 'Description')}
-                  value={title.description && (
+                  label={t('titles:detail.descriptionKr', 'Description (Korean)')}
+                  value={title.description_kr && (
                     <p className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
-                      {title.description}
+                      {title.description_kr}
                     </p>
+                  )}
+                  fullWidth
+                />
+                <FieldDisplay
+                  label={t('titles:detail.genreKr', 'Genre (Korean)')}
+                  value={title.genre_kr && title.genre_kr.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {title.genre_kr.map((g: string, i: number) => (
+                        <Badge key={i} variant="outline" className="text-xs border-gray-300 text-gray-700">
+                          {g}
+                        </Badge>
+                      ))}
+                    </div>
                   )}
                   fullWidth
                 />
@@ -503,9 +604,32 @@ export default function TitleDetail() {
           isEmpty={!hasStep4Data}
         >
           <div className="space-y-6">
+            {/* Overall Metrics */}
+            <div>
+              <h3 className="text-base font-semibold text-gray-900 mb-4">{t('titles:detail.overallMetrics', 'Overall Metrics')}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <FieldDisplay
+                  label={t('titles:detail.totalViews', 'Total Views')}
+                  value={title.views ? formatViews(title.views) : null}
+                />
+                <FieldDisplay
+                  label={t('titles:detail.totalLikes', 'Total Likes')}
+                  value={title.likes ? title.likes.toLocaleString() : null}
+                />
+                <FieldDisplay
+                  label={t('titles:detail.rating', 'Rating')}
+                  value={title.rating ? `${title.rating}/10` : null}
+                />
+                <FieldDisplay
+                  label={t('titles:detail.ratingCount', 'Rating Count')}
+                  value={title.rating_count ? title.rating_count.toLocaleString() : null}
+                />
+              </div>
+            </div>
+
             {/* Platform Metrics */}
             {title.platforms && title.platforms.length > 0 && (
-              <div>
+              <div className="border-t border-gray-200 pt-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Globe className="w-5 h-5 text-gray-700" />
                   {t('titles:detail.platformMetrics', 'Platform Metrics')}
@@ -516,7 +640,7 @@ export default function TitleDetail() {
 
             {/* Documents */}
             {title.documents && title.documents.length > 0 && (
-              <div className={title.platforms?.length > 0 ? 'border-t border-gray-200 pt-6' : ''}>
+              <div className="border-t border-gray-200 pt-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-gray-700" />
                   {t('titles:detail.documents', 'Documents')}

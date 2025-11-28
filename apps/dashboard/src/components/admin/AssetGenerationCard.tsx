@@ -1,6 +1,9 @@
 import React from 'react';
 import { Trash2, Wand2, CheckCircle2, XCircle, Clock, Loader2, Eye, Edit, RotateCcw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Button, Badge, Textarea } from '@kstorybridge/ui';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 import { useGenerateAsset, useDeleteAsset, useUpdateAssetApproval } from '@/hooks/useAssetGeneration';
 import { AssetPreviewModal } from './AssetPreviewModal';
@@ -163,7 +166,7 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
             <>
               <Textarea
                 value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomPrompt(e.target.value)}
                 className="text-xs font-mono border-gray-300"
                 rows={6}
               />

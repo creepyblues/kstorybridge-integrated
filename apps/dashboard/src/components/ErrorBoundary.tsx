@@ -1,9 +1,9 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Button } from '@kstorybridge/ui';
+import { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   children: ReactNode;
-  fallback?: ReactNode;
 }
 
 interface State {
@@ -13,12 +13,12 @@ interface State {
 }
 
 /**
- * Global Error Boundary
+ * ErrorBoundary Component
  *
- * Catches unhandled errors in React component tree and displays
- * a user-friendly error page instead of white screen.
+ * Catches JavaScript errors anywhere in the child component tree,
+ * logs those errors, and displays a fallback UI instead of crashing the whole app.
  */
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -28,16 +28,19 @@ export class ErrorBoundary extends Component<Props, State> {
     };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: Error): State {
+    // Update state so the next render will show the fallback UI
+    return {
+      hasError: true,
+      error,
+      errorInfo: null
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console for development
-    if (import.meta.env.DEV) {
-      console.error('❌ Error Boundary caught error:', error);
-      console.error('Component stack:', errorInfo.componentStack);
-    }
+    // Log error details to console
+    console.error('ErrorBoundary caught an error:', error);
+    console.error('Error info:', errorInfo);
 
     // Update state with error details
     this.setState({
@@ -45,8 +48,8 @@ export class ErrorBoundary extends Component<Props, State> {
       errorInfo
     });
 
-    // TODO: Send error to error tracking service (Sentry, etc.)
-    // Example: Sentry.captureException(error, { contexts: { react: { componentStack: errorInfo.componentStack } } });
+    // TODO: Send error to error reporting service (e.g., Sentry)
+    // Example: Sentry.captureException(error, { extra: errorInfo });
   }
 
   handleReset = () => {
@@ -56,98 +59,79 @@ export class ErrorBoundary extends Component<Props, State> {
       errorInfo: null
     });
 
-    // Reload page to reset app state
-    window.location.href = '/';
-  };
-
-  handleReload = () => {
-    window.location.reload();
+    // Reload the page to reset the app state
+    window.location.href = '/buyers/chat';
   };
 
   render() {
     if (this.state.hasError) {
-      // Use custom fallback if provided
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-
-      // Default error page
       return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-white rounded-2xl shadow-lg p-8">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
-                <svg
-                  className="w-8 h-8 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full">
+            <div className="bg-white border border-gray-300 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                    <AlertCircle className="w-6 h-6 text-red-600" />
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold text-black mb-2">
+                    Something went wrong
+                  </h2>
+
+                  <p className="text-sm text-gray-600 mb-4">
+                    We're sorry for the inconvenience. An unexpected error occurred while rendering this page.
+                  </p>
+
+                  {/* Error details (only in development) */}
+                  {import.meta.env.DEV && this.state.error && (
+                    <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <p className="text-xs font-mono text-red-600 mb-2">
+                        <strong>Error:</strong> {this.state.error.toString()}
+                      </p>
+                      {this.state.errorInfo && (
+                        <details className="text-xs font-mono text-gray-600">
+                          <summary className="cursor-pointer text-gray-700 font-semibold mb-1">
+                            Stack trace
+                          </summary>
+                          <pre className="whitespace-pre-wrap overflow-auto max-h-40 text-[10px]">
+                            {this.state.errorInfo.componentStack}
+                          </pre>
+                        </details>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={this.handleReset}
+                      variant="outline"
+                      className="border-gray-300 hover:bg-gray-100"
+                    >
+                      Go to Dashboard
+                    </Button>
+
+                    <Button
+                      onClick={() => window.location.reload()}
+                      variant="outline"
+                      className="border-gray-300 hover:bg-gray-100"
+                    >
+                      Reload Page
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Something Went Wrong
-              </h1>
-              <p className="text-gray-600">
-                We encountered an unexpected error. Please try refreshing the page.
-              </p>
             </div>
 
-            {/* Error details (only in development) */}
-            {import.meta.env.DEV && this.state.error && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h2 className="text-sm font-semibold text-gray-900 mb-2">
-                  Error Details (Development Only)
-                </h2>
-                <p className="text-xs text-red-600 font-mono mb-2">
-                  {this.state.error.toString()}
-                </p>
-                {this.state.errorInfo && (
-                  <details className="text-xs text-gray-600">
-                    <summary className="cursor-pointer font-medium mb-1">
-                      Component Stack
-                    </summary>
-                    <pre className="whitespace-pre-wrap bg-white p-2 rounded border border-gray-200 overflow-auto max-h-40">
-                      {this.state.errorInfo.componentStack}
-                    </pre>
-                  </details>
-                )}
-              </div>
-            )}
-
-            {/* Action buttons */}
-            <div className="flex gap-3 justify-center">
-              <Button
-                onClick={this.handleReload}
-                variant="outline"
-                className="border-gray-300 hover:bg-gray-100"
-              >
-                Refresh Page
-              </Button>
-              <Button
-                onClick={this.handleReset}
-                className="bg-hanok-teal hover:bg-hanok-teal/90 text-white"
-              >
-                Return to Home
-              </Button>
-            </div>
-
-            {/* Support link */}
-            <div className="mt-6 text-center text-sm text-gray-500">
-              If this problem persists, please{' '}
-              <a
-                href="/contact"
-                className="text-hanok-teal hover:underline font-medium"
-              >
-                contact support
+            {/* Help text */}
+            <p className="text-center text-xs text-gray-500 mt-4">
+              If this error persists, please contact support at{' '}
+              <a href="mailto:support@kstorybridge.com" className="text-black underline hover:no-underline">
+                support@kstorybridge.com
               </a>
-            </div>
+            </p>
           </div>
         </div>
       );
@@ -156,3 +140,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export default ErrorBoundary;

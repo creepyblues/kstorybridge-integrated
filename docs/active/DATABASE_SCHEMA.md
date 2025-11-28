@@ -180,7 +180,8 @@ CREATE TABLE public.titles (
   title_id uuid NOT NULL DEFAULT gen_random_uuid(),
   title_name_kr text,
   title_name_en text,
-  title_url text,
+  title_url text,        -- URL to the original Korean version of the title
+  title_url_en text,     -- URL to the English version of the title
   title_image text,
   views bigint,
   likes bigint,

@@ -7,7 +7,7 @@
  * - Cache and retrieve saved searches
  */
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 export interface CompAlignment {
   comp_title: string;
@@ -185,7 +185,7 @@ export const compsNavigatorService = {
    * Get a specific search by ID
    */
   async getSearchById(searchId: string): Promise<CompSearch | null> {
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('comp_searches')
       .select('*')
       .eq('id', searchId)

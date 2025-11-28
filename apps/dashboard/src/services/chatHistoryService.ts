@@ -1,7 +1,7 @@
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import { supabase } from '@/lib/supabase';
 
-type TitleRow = Database['public']['Tables']['titles']['Row'];
+// Simplified type - dashboard-v2 doesn't have auto-generated Database types
+type TitleRow = any;
 
 export interface ChatSession {
   id: string;
@@ -215,6 +215,27 @@ class ChatHistoryService {
     }
   }
 
+  async deleteSession(sessionId: string): Promise<boolean> {
+    try {
+      // Delete session (cascade will handle messages, recommendations, etc.)
+      const { error } = await supabase
+        .from('chat_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) {
+        console.error('Error deleting chat session:', error);
+        return false;
+      }
+
+      console.log(`✅ Session ${sessionId} deleted successfully`);
+      return true;
+    } catch (error) {
+      console.error('Exception deleting chat session:', error);
+      return false;
+    }
+  }
+
   // Message Management
   async recordMessage(data: CreateMessageData): Promise<ChatMessage | null> {
     try {
@@ -357,26 +378,6 @@ class ChatHistoryService {
           })
       ]);
 
-      // Extract unique title IDs and batch fetch all titles
-      const uniqueTitleIds = [...new Set(allRecommendations.map(rec => rec.title_id))];
-      let titleLookup: Record<string, TitleRow> = {};
-      
-      if (uniqueTitleIds.length > 0) {
-        const { titlesService } = await import('./titlesService');
-        const { data: titles, error } = await supabase
-          .from('titles')
-          .select('*')
-          .in('title_id', uniqueTitleIds);
-          
-        if (!error && titles) {
-          // Create lookup map for O(1) title access
-          titleLookup = titles.reduce((acc, title) => {
-            acc[title.title_id] = title;
-            return acc;
-          }, {} as Record<string, TitleRow>);
-        }
-      }
-
       // Group recommendations and queries by message ID for O(1) lookup
       const recsByMessageId: Record<string, (ChatTitleRecommendation & { title?: TitleRow })[]> = {};
       const queriesByMessageId: Record<string, string[]> = {};
@@ -396,50 +397,21 @@ class ChatHistoryService {
       });
 
       // Build enhanced messages with O(1) lookups
-      const enhancedMessages = messages.map((message) => {
-        const baseMessage = {
-          id: message.id,
-          content: message.content,
-          sender: message.message_type === 'user_prompt' ? 'user' : 'bot',
-          timestamp: new Date(message.created_at),
-          messageId: message.id
+      const enhancedMessages = messages.map((message): ChatMessage & {
+        recommendations: (ChatTitleRecommendation & { title?: TitleRow })[],
+        suggested_queries: string[]
+      } => {
+        const recommendations = recsByMessageId[message.id] || [];
+        const suggestedQueries = queriesByMessageId[message.id] || [];
+
+        return {
+          ...message,
+          recommendations,
+          suggested_queries: suggestedQueries
         };
-
-        // Only add related data for bot messages
-        if (message.message_type === 'ai_response') {
-          const recommendations = recsByMessageId[message.id] || [];
-          const suggestedQueries = queriesByMessageId[message.id] || [];
-
-          // Map recommendations to full title data using lookup
-          let fullTitles = undefined;
-          if (recommendations.length > 0) {
-            fullTitles = recommendations
-              .map(rec => {
-                const fullTitle = titleLookup[rec.title_id];
-                return fullTitle ? {
-                  ...fullTitle,
-                  score: rec.recommendation_score || 0
-                } : {
-                  title_id: rec.title_id,
-                  title_name_en: rec.title_name_en,
-                  title_name_kr: rec.title_name_kr,
-                  score: rec.recommendation_score || 0
-                };
-              })
-              .filter(Boolean);
-          }
-
-          return {
-            ...baseMessage,
-            titles: fullTitles,
-            suggestedQueries: suggestedQueries.length > 0 ? suggestedQueries : undefined
-          };
-        }
-
-        return baseMessage;
       });
 
-      console.log(`📚 Optimized batch load: ${messages.length} messages, ${allRecommendations.length} recommendations, ${uniqueTitleIds.length} unique titles`);
+      console.log(`📚 Optimized batch load: ${messages.length} messages, ${allRecommendations.length} recommendations`);
       return enhancedMessages;
     } catch (error) {
       console.error('Exception fetching enhanced session messages:', error);
@@ -598,7 +570,7 @@ class ChatHistoryService {
   }> {
     try {
       // Get basic counts
-      const [sessionsResult, messagesResult, interactionsResult, recommendationsResult] = await Promise.all([
+      const [sessionsResult, messagesResult, interactionsResult] = await Promise.all([
         supabase.from('chat_sessions').select('id', { count: 'exact' }).eq('user_id', userId),
         supabase.from('chat_messages').select('id', { count: 'exact' }).eq('user_id', userId),
         supabase.from('chat_interactions').select('id', { count: 'exact' }).eq('user_id', userId).eq('interaction_type', 'title_click'),
@@ -932,11 +904,11 @@ class ChatHistoryService {
 
       if (!data || data.length === 0) {
         return {
-          totalFeedbacks: 0,
+          totalFeedback: 0,
           averageRating: 0,
-          qualityBreakdown: {},
-          relevanceBreakdown: {},
-          feedbackOverTime: []
+          ratingDistribution: {},
+          qualityDistribution: {},
+          relevanceDistribution: {},
         };
       }
 
@@ -954,22 +926,12 @@ class ChatHistoryService {
         return acc;
       }, {} as Record<string, number>);
 
-      // Group by day for trend analysis
-      const feedbackOverTime = data.reduce((acc, f) => {
-        const date = new Date(f.created_at).toISOString().split('T')[0];
-        acc[date] = (acc[date] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-
       return {
-        totalFeedbacks,
+        totalFeedback: totalFeedbacks,
         averageRating: Math.round(averageRating * 100) / 100,
-        qualityBreakdown,
-        relevanceBreakdown,
-        feedbackOverTime: Object.entries(feedbackOverTime).map(([date, count]) => ({
-          date,
-          count
-        }))
+        ratingDistribution: {},
+        qualityDistribution: qualityBreakdown,
+        relevanceDistribution: relevanceBreakdown,
       };
     } catch (error) {
       console.error('Exception calculating feedback analytics:', error);
@@ -1006,7 +968,7 @@ class ChatHistoryService {
    */
   async updateSessionMessages(sessionId: string, messages: any[]): Promise<boolean> {
     try {
-      const { data, error } = await supabase.rpc('update_session_messages', {
+      const { error } = await supabase.rpc('update_session_messages', {
         p_session_id: sessionId,
         p_messages: JSON.stringify(messages)
       });
@@ -1028,7 +990,7 @@ class ChatHistoryService {
    */
   async appendSessionMessage(sessionId: string, message: any): Promise<boolean> {
     try {
-      const { data, error } = await supabase.rpc('append_session_message', {
+      const { error } = await supabase.rpc('append_session_message', {
         p_session_id: sessionId,
         p_message: JSON.stringify(message)
       });

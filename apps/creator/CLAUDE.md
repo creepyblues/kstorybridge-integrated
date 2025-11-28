@@ -397,7 +397,8 @@ interface CreatorFormData {
 
 **Media**:
 - `title_image` (text) - Cover/poster image URL
-- `title_url` (text) - External URL to original content
+- `title_url` (text) - URL to the original Korean version of the title
+- `title_url_en` (text) - URL to the English version of the title
 
 **System Fields**:
 - `priority` (integer) - Display priority/ranking

@@ -39,16 +39,73 @@ serve(async (req) => {
       )
     }
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    // Detect environment from request origin
+    const origin = req.headers.get('origin') || ''
+    const isProduction = origin.includes('dashboard.kstorybridge.com') && !origin.includes('staging')
+    const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1')
+    const isStaging = origin.includes('dashboard-staging') || origin.includes('dashboard-v2')
+
+    console.log('🔧 Environment detection:', {
+      origin,
+      isProduction,
+      isStaging,
+      isLocalhost,
+      mode: isProduction ? 'LIVE' : 'TEST'
+    })
+
+    // Use test mode for localhost/staging, live mode for production only
+    const stripeSecretKey = isProduction
+      ? (Deno.env.get('STRIPE_SECRET_KEY_LIVE') || Deno.env.get('STRIPE_SECRET_KEY'))
+      : Deno.env.get('STRIPE_SECRET_KEY_TEST')
+
+    if (!stripeSecretKey) {
+      console.error('❌ Stripe secret key not configured for environment:', isProduction ? 'LIVE' : 'TEST')
+      return new Response(
+        JSON.stringify({ error: 'Stripe configuration error: missing secret key' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2024-06-20',
     })
 
-    // Get the Pro tier price ID from environment variable
-    const proPriceId = Deno.env.get('STRIPE_PRICE_ID_PRO')
-    if (!proPriceId) {
-      console.error('STRIPE_PRICE_ID_PRO not configured')
+    // Parse request body to get tier (default to 'pro' for backward compatibility)
+    let requestedTier = 'pro'
+    try {
+      const body = await req.json()
+      if (body.tier === 'suite' || body.tier === 'pro') {
+        requestedTier = body.tier
+      }
+    } catch {
+      // No body or invalid JSON - use default tier
+    }
+
+    console.log('🎯 Requested tier:', requestedTier)
+
+    // Get the appropriate price ID based on tier AND environment
+    // For test mode: use *_TEST suffix, for live mode: use *_LIVE suffix or fallback to non-suffixed
+    const proPriceId = isProduction
+      ? (Deno.env.get('STRIPE_PRICE_ID_PRO_LIVE') || Deno.env.get('STRIPE_PRICE_ID_PRO'))
+      : Deno.env.get('STRIPE_PRICE_ID_PRO_TEST')
+
+    const suitePriceId = isProduction
+      ? (Deno.env.get('STRIPE_PRICE_ID_SUITE_LIVE') || Deno.env.get('STRIPE_PRICE_ID_SUITE'))
+      : Deno.env.get('STRIPE_PRICE_ID_SUITE_TEST')
+
+    const priceId = requestedTier === 'suite' ? suitePriceId : proPriceId
+
+    console.log('💰 Price ID selection:', {
+      requestedTier,
+      isProduction,
+      priceId: priceId ? `${priceId.substring(0, 20)}...` : 'NOT CONFIGURED'
+    })
+
+    if (!priceId) {
+      const envSuffix = isProduction ? 'LIVE' : 'TEST'
+      console.error(`❌ STRIPE_PRICE_ID_${requestedTier.toUpperCase()}_${envSuffix} not configured`)
       return new Response(
-        JSON.stringify({ error: 'Stripe configuration error' }),
+        JSON.stringify({ error: `Stripe configuration error: ${requestedTier} tier price not configured for ${envSuffix} mode` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -102,9 +159,22 @@ serve(async (req) => {
 
     // Get or create Stripe customer
     let stripeCustomer
+    let needToCreateCustomer = !existingStripeCustomer?.stripe_customer_id
+
+    // Try to retrieve existing customer (may fail if customer was created in different mode)
     if (existingStripeCustomer?.stripe_customer_id) {
-      stripeCustomer = await stripe.customers.retrieve(existingStripeCustomer.stripe_customer_id)
-    } else {
+      try {
+        stripeCustomer = await stripe.customers.retrieve(existingStripeCustomer.stripe_customer_id)
+        console.log('✅ Retrieved existing Stripe customer:', stripeCustomer.id)
+      } catch (customerError: any) {
+        // Customer doesn't exist in current mode (test vs live mismatch)
+        console.warn('⚠️ Could not retrieve customer (likely mode mismatch):', customerError.message)
+        console.log('🔄 Will create new customer in current mode')
+        needToCreateCustomer = true
+      }
+    }
+
+    if (needToCreateCustomer) {
       // Get user details from user_buyers table
       const { data: buyerProfile } = await supabase
         .from('user_buyers')
@@ -130,19 +200,19 @@ serve(async (req) => {
         })
     }
 
-    // Create checkout session for Pro tier
+    // Create checkout session for selected tier
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomer.id,
       payment_method_types: ['card'],
       line_items: [
         {
-          price: proPriceId,
+          price: priceId,
           quantity: 1,
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/buyers/pricing`,
+      success_url: `${req.headers.get('origin')}/buyers/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get('origin')}/buyers/checkout/cancel`,
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,
@@ -150,12 +220,17 @@ serve(async (req) => {
       },
       metadata: {
         user_id: user.id,
-        target_tier: 'pro',
+        target_tier: requestedTier,
       },
     })
 
+    console.log('✅ Checkout session created:', {
+      sessionId: session.id,
+      url: session.url ? 'present' : 'missing'
+    })
+
     return new Response(
-      JSON.stringify({ sessionId: session.id }),
+      JSON.stringify({ sessionId: session.id, url: session.url }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

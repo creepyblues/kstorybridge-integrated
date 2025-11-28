@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 import { Title } from '@/services/titlesService';
-import { FeaturedWithTitle } from '@/services/featuredService';
-import { RequestWithTitle } from '@/services/requestsService';
+import { debug } from '@/utils/debug';
 
 type FavoriteWithTitle = {
   id: string;
@@ -13,20 +12,14 @@ type FavoriteWithTitle = {
 
 interface DataCacheState {
   titles: Title[];
-  featuredTitles: FeaturedWithTitle[];
-  creatorTitles: Title[];
   favorites: FavoriteWithTitle[];
   titleDetails: { [key: string]: Title };
-  myRequests: RequestWithTitle[];
   sessionId: string | null; // Track current session
   sessionStartTime: number | null; // Track session start for expiry
   lastUpdated: {
     titles?: number;
-    featuredTitles?: number;
-    creatorTitles?: number;
     favorites?: number;
     titleDetails?: { [key: string]: number };
-    myRequests?: number;
   };
   dbConnectivityStatus: {
     isConnected: boolean;
@@ -38,17 +31,11 @@ interface DataCacheState {
 interface DataCacheContextType {
   cache: DataCacheState;
   setTitles: (titles: Title[]) => void;
-  setFeaturedTitles: (featured: FeaturedWithTitle[]) => void;
-  setCreatorTitles: (titles: Title[]) => void;
   setFavorites: (favorites: FavoriteWithTitle[]) => void;
   setTitleDetail: (titleId: string, title: Title) => void;
-  setMyRequests: (requests: RequestWithTitle[]) => void;
   getTitles: () => Title[];
-  getFeaturedTitles: () => FeaturedWithTitle[];
-  getCreatorTitles: () => Title[];
   getFavorites: () => FavoriteWithTitle[];
   getTitleDetail: (titleId: string) => Title | null;
-  getMyRequests: () => RequestWithTitle[];
   isFresh: (key: keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'> | string) => boolean;
   isSessionValid: () => boolean;
   clearCache: () => void;
@@ -66,11 +53,8 @@ const SESSION_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
 const getEmptyCache = (): DataCacheState => ({
   titles: [],
-  featuredTitles: [],
-  creatorTitles: [],
   favorites: [],
   titleDetails: {},
-  myRequests: [],
   sessionId: null,
   sessionStartTime: null,
   lastUpdated: {},
@@ -91,14 +75,11 @@ const loadFromStorage = (): DataCacheState => {
       const sessionAge = parsed.sessionStartTime ? now - parsed.sessionStartTime : Infinity;
 
       if (sessionAge < SESSION_EXPIRY_MS && parsed.sessionId) {
-        console.log(`📦 Loading valid session cache (${Math.round(sessionAge / (1000 * 60))} minutes old)`);
+        debug.log(`📦 Loading valid session cache (${Math.round(sessionAge / (1000 * 60))} minutes old)`);
         return {
           titles: parsed.titles || [],
-          featuredTitles: parsed.featuredTitles || [],
-          creatorTitles: parsed.creatorTitles || [],
           favorites: parsed.favorites || [],
           titleDetails: parsed.titleDetails || {},
-          myRequests: parsed.myRequests || [],
           sessionId: parsed.sessionId,
           sessionStartTime: parsed.sessionStartTime,
           lastUpdated: parsed.lastUpdated || {},
@@ -108,12 +89,12 @@ const loadFromStorage = (): DataCacheState => {
           }
         };
       } else {
-        console.log('🕒 Session cache expired or invalid, clearing...');
+        debug.log('🕒 Session cache expired or invalid, clearing...');
         localStorage.removeItem(CACHE_KEY);
       }
     }
   } catch (error) {
-    console.warn('❌ Failed to load cache from localStorage:', error);
+    debug.warn('❌ Failed to load cache from localStorage:', error);
     localStorage.removeItem(CACHE_KEY);
   }
 
@@ -129,22 +110,19 @@ const saveToStorage = (cache: DataCacheState) => {
   // Check session expiry before saving
   const sessionAge = Date.now() - cache.sessionStartTime;
   if (sessionAge >= SESSION_EXPIRY_MS) {
-    console.log('🕒 Session expired, not saving cache');
+    debug.log('🕒 Session expired, not saving cache');
     localStorage.removeItem(CACHE_KEY);
     return;
   }
 
   try {
-    // Limit stored data to prevent localStorage bloat - session-based cache per CLAUDE.md specs
-    const MAX_TITLES_TO_CACHE = 30; // As specified in CLAUDE.md
+    // Limit stored data to prevent localStorage bloat
+    const MAX_TITLES_TO_CACHE = 30;
     const limitedCache = {
       ...cache,
       titles: cache.titles.slice(0, MAX_TITLES_TO_CACHE),
-      creatorTitles: cache.creatorTitles.slice(0, MAX_TITLES_TO_CACHE),
-      featuredTitles: cache.featuredTitles.slice(0, 5), // Reduced from 10
       favorites: cache.favorites,
       titleDetails: cache.titleDetails,
-      myRequests: cache.myRequests,
       sessionId: cache.sessionId,
       sessionStartTime: cache.sessionStartTime,
       lastUpdated: cache.lastUpdated,
@@ -154,17 +132,17 @@ const saveToStorage = (cache: DataCacheState) => {
     const serialized = JSON.stringify(limitedCache);
     const sizeInMB = new Blob([serialized]).size / (1024 * 1024);
 
-    // Session cache size limit as per CLAUDE.md specifications
-    if (sizeInMB > 0.5) { // 0.5MB limit for session-based storage
-      console.warn(`📦 Session cache size too large (${sizeInMB.toFixed(2)}MB), clearing...`);
+    // Session cache size limit
+    if (sizeInMB > 0.5) { // 0.5MB limit
+      debug.warn(`📦 Session cache size too large (${sizeInMB.toFixed(2)}MB), clearing...`);
       localStorage.removeItem(CACHE_KEY);
       return;
     }
 
     localStorage.setItem(CACHE_KEY, serialized);
   } catch (error) {
-    console.warn('❌ Failed to save session cache:', error);
-    if (error.name === 'QuotaExceededError') {
+    debug.warn('❌ Failed to save session cache:', error);
+    if ((error as any).name === 'QuotaExceededError') {
       localStorage.removeItem(CACHE_KEY);
     }
   }
@@ -190,7 +168,7 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
     const checkSessionExpiry = () => {
       const sessionAge = Date.now() - cache.sessionStartTime!;
       if (sessionAge >= SESSION_EXPIRY_MS) {
-        console.log('🕒 Session expired due to inactivity, clearing cache...');
+        debug.log('🕒 Session expired due to inactivity, clearing cache...');
         setCache(getEmptyCache());
         localStorage.removeItem(CACHE_KEY);
       }
@@ -209,22 +187,6 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const setFeaturedTitles = useCallback((featuredTitles: FeaturedWithTitle[]) => {
-    setCache(prev => ({
-      ...prev,
-      featuredTitles,
-      lastUpdated: { ...prev.lastUpdated, featuredTitles: Date.now() }
-    }));
-  }, []);
-
-  const setCreatorTitles = useCallback((creatorTitles: Title[]) => {
-    setCache(prev => ({
-      ...prev,
-      creatorTitles,
-      lastUpdated: { ...prev.lastUpdated, creatorTitles: Date.now() }
-    }));
-  }, []);
-
   const setFavorites = useCallback((favorites: FavoriteWithTitle[]) => {
     setCache(prev => ({
       ...prev,
@@ -237,30 +199,19 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
     setCache(prev => ({
       ...prev,
       titleDetails: { ...prev.titleDetails, [titleId]: title },
-      lastUpdated: { 
-        ...prev.lastUpdated, 
-        titleDetails: { 
-          ...prev.lastUpdated.titleDetails, 
-          [titleId]: Date.now() 
+      lastUpdated: {
+        ...prev.lastUpdated,
+        titleDetails: {
+          ...prev.lastUpdated.titleDetails,
+          [titleId]: Date.now()
         }
       }
     }));
   }, []);
 
-  const setMyRequests = useCallback((myRequests: RequestWithTitle[]) => {
-    setCache(prev => ({
-      ...prev,
-      myRequests,
-      lastUpdated: { ...prev.lastUpdated, myRequests: Date.now() }
-    }));
-  }, []);
-
   const getTitles = useCallback(() => cache.titles, [cache.titles]);
-  const getFeaturedTitles = useCallback(() => cache.featuredTitles, [cache.featuredTitles]);
-  const getCreatorTitles = useCallback(() => cache.creatorTitles, [cache.creatorTitles]);
   const getFavorites = useCallback(() => cache.favorites, [cache.favorites]);
   const getTitleDetail = useCallback((titleId: string) => cache.titleDetails[titleId] || null, [cache.titleDetails]);
-  const getMyRequests = useCallback(() => cache.myRequests, [cache.myRequests]);
 
   const isFresh = useCallback((key: keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'> | string, maxAge = SESSION_EXPIRY_MS) => {
     // Check session validity first
@@ -295,7 +246,7 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
   }, [cache.sessionId, cache.sessionStartTime]);
 
   const initializeSession = useCallback((sessionId: string) => {
-    console.log('🚀 Initializing new session cache:', sessionId.substring(0, 8) + '...');
+    debug.log('🚀 Initializing new session cache:', sessionId.substring(0, 8) + '...');
     setCache(prev => ({
       ...getEmptyCache(),
       sessionId,
@@ -317,7 +268,7 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
   const getDbConnectivityStatus = useCallback(() => cache.dbConnectivityStatus, [cache.dbConnectivityStatus]);
 
   const clearCache = useCallback(() => {
-    console.log('🧼 Clearing all cache data...');
+    debug.log('🧼 Clearing all cache data...');
     setCache(getEmptyCache());
     localStorage.removeItem(CACHE_KEY);
   }, []);
@@ -325,38 +276,37 @@ export function DataCacheProvider({ children }: { children: ReactNode }) {
   const refreshData = useCallback((key: keyof Omit<DataCacheState['lastUpdated'], 'titleDetails'> | string) => {
     if (key.startsWith('titleDetail:')) {
       const titleId = key.split(':')[1];
-      setCache(prev => ({
-        ...prev,
-        lastUpdated: { 
-          ...prev.lastUpdated, 
-          titleDetails: {
-            ...prev.lastUpdated.titleDetails,
-            [titleId]: undefined
+      setCache(prev => {
+        const newTitleDetails = { ...prev.lastUpdated.titleDetails };
+        delete newTitleDetails[titleId];
+        return {
+          ...prev,
+          lastUpdated: {
+            ...prev.lastUpdated,
+            titleDetails: newTitleDetails
           }
-        }
-      }));
+        };
+      });
     } else {
-      setCache(prev => ({
-        ...prev,
-        lastUpdated: { ...prev.lastUpdated, [key]: undefined }
-      }));
+      setCache(prev => {
+        const newLastUpdated = { ...prev.lastUpdated };
+        delete (newLastUpdated as any)[key];
+        return {
+          ...prev,
+          lastUpdated: newLastUpdated
+        };
+      });
     }
   }, []);
 
   const value: DataCacheContextType = {
     cache,
     setTitles,
-    setFeaturedTitles,
-    setCreatorTitles,
     setFavorites,
     setTitleDetail,
-    setMyRequests,
     getTitles,
-    getFeaturedTitles,
-    getCreatorTitles,
     getFavorites,
     getTitleDetail,
-    getMyRequests,
     isFresh,
     isSessionValid,
     clearCache,

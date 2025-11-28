@@ -48,6 +48,21 @@ This is the master index of all active documentation for the KStoryBridge projec
 
 **Related**: [AI_CHATBOT_DOCUMENTATION.md](../apps/dashboard/public/docs/AI_CHATBOT_DOCUMENTATION.md) (user-facing)
 
+### Title Intelligence System (`docs/features/`)
+
+| Document | Description |
+|----------|-------------|
+| **[TITLE_INTELLIGENCE.md](features/TITLE_INTELLIGENCE.md)** | ⭐ Complete Title Intelligence documentation (2025-11-27) |
+| ~~TITLE_INTELLIGENCE_SYSTEM.md~~ | Deprecated - see TITLE_INTELLIGENCE.md |
+| ~~TITLE_INTELLIGENCE_IMPLEMENTATION.md~~ | Deprecated - see TITLE_INTELLIGENCE.md |
+| ~~TITLE_INTELLIGENCE_QUICKSTART.md~~ | Deprecated - see TITLE_INTELLIGENCE.md |
+
+Multi-platform scraping tool for collecting metadata and popularity signals:
+- Korean platforms: Naver Webtoon, Naver Series, Kakao Page, Kakao Webtoon
+- English platforms: Manta
+- Fan engagement: Reddit, AO3
+- Field-level ingestion with audit trail
+
 ### Comps Navigator System (`docs/features/comps-navigator/`)
 
 | Document | Description |

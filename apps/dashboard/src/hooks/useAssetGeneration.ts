@@ -4,8 +4,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import type {
-  TitleWithPitch,
-  MarketingAsset,
   AnalyzePitchRequest,
   GenerateAssetRequest,
 } from '@/types/asset-generation';

@@ -194,13 +194,13 @@ export default function SignUp() {
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-900">
-                {t('auth:signUp.passwordLabel')} <span className="text-red-500">*</span>
+                {t('auth:signUp.confirmPasswordLabel', 'Confirm Password')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
-                placeholder={t('auth:signUp.passwordPlaceholder')}
+                placeholder={t('auth:signUp.confirmPasswordPlaceholder', 'Re-enter your password')}
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 disabled={loading}

@@ -5,7 +5,7 @@
  * (e.g., "more comedic tone", "female lead", "lower budget")
  */
 
-import { Textarea } from '@kstorybridge/ui';
+import { Textarea } from '@/components/ui/textarea';
 
 interface RefinementInputProps {
   value: string;
@@ -19,7 +19,7 @@ export default function RefinementInput({ value, onChange, maxLength = 500 }: Re
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-semibold text-gray-900">
           Refinement <span className="text-gray-500 font-normal">(optional)</span>
         </label>
         <span className={`text-xs font-medium ${remaining < 50 ? 'text-red-500' : 'text-gray-500'}`}>
@@ -30,8 +30,8 @@ export default function RefinementInput({ value, onChange, maxLength = 500 }: Re
       <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Add specific requirements (e.g., 'more comedic tone', 'female lead', 'lower production budget')"
-        className="min-h-[100px] resize-none border-gray-300 focus:border-hanok-teal focus:ring-hanok-teal text-base"
+        placeholder="Add any refinements to narrow your search (e.g., 'more comedic tone', 'female lead', 'lower production budget')..."
+        className="min-h-[100px] resize-none border-gray-300 focus:border-hanok-teal focus:ring-hanok-teal"
         maxLength={maxLength}
       />
     </div>

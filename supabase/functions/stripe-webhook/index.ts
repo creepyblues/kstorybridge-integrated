@@ -19,15 +19,16 @@ async function sendTransactionNotifications(
   subscriptionId: string,
   price: number,
   tierUpdateSuccess: boolean,
-  errorDetails?: string
+  errorDetails?: string,
+  targetTier?: string
 ): Promise<void> {
   try {
-    console.log('📱 Sending transaction notification for:', { userId, subscriptionId, price, tierUpdateSuccess })
+    console.log('📱 Sending transaction notification for:', { userId, subscriptionId, price, tierUpdateSuccess, targetTier })
 
     // Get user details from database
     const { data: userData, error: userError } = await supabase
       .from('user_buyers')
-      .select('full_name, email')
+      .select('full_name, email, tier')
       .eq('id', userId)
       .single()
 
@@ -36,8 +37,9 @@ async function sendTransactionNotifications(
       return // Don't fail webhook if notification can't be sent
     }
 
-    // Determine plan name (simplified for now - can be enhanced later)
-    const planName = 'Pro Plan'
+    // Determine plan name based on target tier or current tier
+    const tier = targetTier || userData.tier || 'pro'
+    const planName = tier.toLowerCase() === 'suite' ? 'Suite' : 'Pro'
 
     // Send Slack notification
     try {
@@ -75,6 +77,54 @@ async function sendTransactionNotifications(
       }
     } catch (slackError) {
       console.error('⚠️ Error sending Slack notification:', slackError)
+    }
+
+    // Send customer confirmation email (only for successful Pro/Suite upgrades)
+    const isPaidTier = tier.toLowerCase() === 'pro' || tier.toLowerCase() === 'suite'
+    if (tierUpdateSuccess && isPaidTier) {
+      try {
+        console.log('📧 Sending customer confirmation email for', planName, 'tier...')
+
+        // Calculate next billing date (30 days from now)
+        const nextBillingDate = new Date()
+        nextBillingDate.setDate(nextBillingDate.getDate() + 30)
+        const formattedNextBillingDate = nextBillingDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+
+        const emailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+          },
+          body: JSON.stringify({
+            to: userData.email,
+            subject: `Welcome to KStoryBridge ${planName}! 🎉`,
+            template: 'payment_confirmation',
+            templateData: {
+              userName: userData.full_name || 'there',
+              userEmail: userData.email,
+              plan: planName,
+              price: price,
+              nextBillingDate: formattedNextBillingDate
+            }
+          })
+        })
+
+        if (emailResponse.ok) {
+          console.log('✅ Customer confirmation email sent successfully')
+        } else {
+          console.warn('⚠️ Customer confirmation email failed:', await emailResponse.text())
+        }
+      } catch (emailError) {
+        console.error('⚠️ Error sending customer confirmation email:', emailError)
+        // Non-blocking - don't fail webhook due to email error
+      }
+    } else if (tierUpdateSuccess && !isPaidTier) {
+      console.log('ℹ️ Skipping customer email for non-paid tier:', tier)
     }
 
     console.log('✅ Transaction notification processing complete')
@@ -265,9 +315,13 @@ const handler = async (request: Request): Promise<Response> => {
         // IMPORTANT: Check both possible metadata keys for consistency
         let userId = session.metadata?.user_id || session.metadata?.supabase_user_id
 
+        // Get target tier from session metadata (default to 'pro' for backward compatibility)
+        const targetTier = session.metadata?.target_tier || 'pro'
+
         console.log('🔍 Checking for user_id in session metadata:', {
           user_id: session.metadata?.user_id,
           supabase_user_id: session.metadata?.supabase_user_id,
+          target_tier: targetTier,
           all_metadata: session.metadata
         })
 
@@ -387,16 +441,16 @@ const handler = async (request: Request): Promise<Response> => {
           let tierError = null
 
           while (retryCount < maxRetries) {
-            console.log(`🔄 Attempting tier update (${retryCount + 1}/${maxRetries}) for user ${userId}...`)
+            console.log(`🔄 Attempting tier update to '${targetTier}' (${retryCount + 1}/${maxRetries}) for user ${userId}...`)
 
             const { error, data } = await supabase
               .from('user_buyers')
-              .update({ tier: 'pro' })
+              .update({ tier: targetTier })
               .eq('id', userId)
               .select('id, tier')
 
             if (!error) {
-              console.log(`✅ User ${userId} successfully upgraded to Pro tier (attempt ${retryCount + 1})`)
+              console.log(`✅ User ${userId} successfully upgraded to ${targetTier} tier (attempt ${retryCount + 1})`)
               console.log('✅ Updated user data:', data)
               tierError = null
 
@@ -438,7 +492,8 @@ const handler = async (request: Request): Promise<Response> => {
               subscription.id,
               priceAmount,
               false, // tierUpdateSuccess = false
-              `Failed to update tier after ${maxRetries} retries: ${tierError.message}`
+              `Failed to update tier after ${maxRetries} retries: ${tierError.message}`,
+              targetTier
             )
 
             return new Response(
@@ -457,7 +512,8 @@ const handler = async (request: Request): Promise<Response> => {
             subscription.id,
             priceAmount,
             true, // tierUpdateSuccess = true
-            undefined
+            undefined,
+            targetTier
           )
         } else {
           console.warn('⚠️ Subscription status is not active or trialing:', subscription.status)
@@ -547,7 +603,8 @@ const handler = async (request: Request): Promise<Response> => {
             subscription.id,
             priceAmount,
             false, // tierUpdateSuccess = false
-            `Subscription update - tier update failed: ${tierError.message}`
+            `Subscription update - tier update failed: ${tierError.message}`,
+            newTier
           )
 
           return new Response(
@@ -557,8 +614,8 @@ const handler = async (request: Request): Promise<Response> => {
         } else {
           console.log(`✅ User ${userId} tier updated to ${newTier}`)
 
-          // Send success notifications (only for upgrades to pro)
-          if (newTier === 'pro') {
+          // Send success notifications for paid tier upgrades (pro or suite)
+          if (newTier === 'pro' || newTier === 'suite') {
             const priceAmount = subscription.items?.data[0]?.price?.unit_amount
               ? subscription.items.data[0].price.unit_amount / 100
               : 0
@@ -568,7 +625,8 @@ const handler = async (request: Request): Promise<Response> => {
               subscription.id,
               priceAmount,
               true, // tierUpdateSuccess = true
-              undefined
+              undefined,
+              newTier
             )
           }
         }
@@ -697,7 +755,8 @@ const handler = async (request: Request): Promise<Response> => {
               subscription.id,
               priceAmount,
               true, // tierUpdateSuccess = true
-              undefined
+              undefined,
+              'pro'
             )
           } else {
             console.error(`❌ Failed to update user tier from invoice payment:`, tierError)
@@ -710,7 +769,8 @@ const handler = async (request: Request): Promise<Response> => {
               subscription.id,
               priceAmount,
               false, // tierUpdateSuccess = false
-              `Invoice payment - tier update failed: ${tierError.message}`
+              `Invoice payment - tier update failed: ${tierError.message}`,
+              'pro'
             )
 
             return new Response(
@@ -815,14 +875,15 @@ const handler = async (request: Request): Promise<Response> => {
           if (tierError) {
             console.error('❌ Failed to downgrade user tier on refund:', tierError)
 
-            // Send failure notification
+            // Send failure notification (no customer email for refunds - only Slack)
             await sendTransactionNotifications(
               supabase,
               userId,
               subscription?.id || 'unknown',
               charge.amount_refunded / 100,
               false, // tierUpdateSuccess = false
-              `Refund processed but tier downgrade failed: ${tierError.message}`
+              `Refund processed but tier downgrade failed: ${tierError.message}`,
+              'basic' // Downgrade tier - no customer email
             )
 
             return new Response(
@@ -832,20 +893,21 @@ const handler = async (request: Request): Promise<Response> => {
           } else {
             console.log(`✅ User ${userId} downgraded to basic tier due to full refund`)
 
-            // Send success notification
+            // Send success notification (no customer email for refunds - only Slack)
             await sendTransactionNotifications(
               supabase,
               userId,
               subscription?.id || 'unknown',
               charge.amount_refunded / 100,
               true, // tierUpdateSuccess = true
-              'Full refund issued - user downgraded to basic tier'
+              'Full refund issued - user downgraded to basic tier',
+              'basic' // Downgrade tier - no customer email
             )
           }
         } else {
           console.log(`ℹ️ Partial refund (${refundPercentage}%) - NOT downgrading user tier`)
 
-          // Log partial refund for audit trail but don't downgrade
+          // Log partial refund for audit trail but don't downgrade (no customer email)
           try {
             await sendTransactionNotifications(
               supabase,
@@ -853,7 +915,8 @@ const handler = async (request: Request): Promise<Response> => {
               subscription?.id || 'unknown',
               charge.amount_refunded / 100,
               true, // Not actually a tier update, but notification succeeded
-              `Partial refund issued (${refundPercentage}%) - subscription remains active`
+              `Partial refund issued (${refundPercentage}%) - subscription remains active`,
+              undefined // Keep existing tier
             )
           } catch (notificationError) {
             console.warn('⚠️ Failed to send partial refund notification:', notificationError)

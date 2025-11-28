@@ -1,836 +1,428 @@
-# CLAUDE.md - Dashboard App
+# CLAUDE.md
 
-**App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. **Authentication**: Handles BUYER auth only (creator auth moved to creator app as of 2025-11-04).
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated**: 2025-11-11
-
-> 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
-
-This file provides guidance to Claude Code (claude.ai/code) when working with the Dashboard application.
+**Last Updated**: 2025-11-27
 
 ---
 
-## 📚 Documentation Index
+## 📁 Project Overview
 
-### Essential Docs (Quick Links)
-- **[Toast System](docs/TOAST_SYSTEM.md)** - Toast notification implementation and troubleshooting
-- **[Pitch Deck System](docs/PITCH_DECK_SYSTEM.md)** - Automated pitch deck extraction (v2.0)
-- **[Design Standards](../../docs/active/DESIGN_SYSTEM.md)** - UI/UX standards (root-level)
-- **[Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md)** - Complete auth system reference (root-level)
+**Dashboard** is the primary buyer-focused dashboard for KStoryBridge (v2.0 - clean rebuild), featuring:
+- AI chatbot (Jinu) with GPT-4 + vector search
+- **Comps Navigator** - AI-powered Korean title discovery using Hollywood comps
+- Tier system (basic/pro/suite) with content gating
+- Title discovery with search, filters, and favorites
+- Stripe subscription integration
+- Admin panel for title management
+- **All email addresses allowed** (no work email restriction)
 
-### Extracted Documentation
-Large sections have been extracted to separate files for better organization:
-- Toast notifications → `docs/TOAST_SYSTEM.md`
-- Pitch deck extraction → `docs/PITCH_DECK_SYSTEM.md`
-- Design guidelines → Root `DESIGN_SYSTEM.md`
+**Port**: 8081 (development)
+**Production URL**: https://dashboard.kstorybridge.com
 
----
-
-## Development Commands
-
-**From app directory** (`apps/dashboard/`):
-- `npm run dev` - Start development server on port 8081
-- `npm run build` - Build for production
-- `npm run build:dev` - Development build
-- `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build
-
-**From root** (with Turborepo, ~50x faster cached builds):
-- `npm run dev:dashboard` - Start dashboard only (port 8081)
-- `npm run build:dashboard` - Build dashboard with intelligent caching
-- `npm run build` - Build all apps (if dashboard dependencies changed)
-
-**Note**: This app runs on port **8081**. Creator app runs on 8083, website on 5173.
+This is part of a monorepo with separate creator and website apps, all sharing the same Supabase database (`dlrnrgcoguxlkkcitlpd`).
 
 ---
 
-## Architecture Overview
+## 🚀 Development Commands
 
-React-based dashboard built with Vite, TypeScript, and shadcn/ui components. **Primary focus**: Buyer features (AI chatbot, tier system, premium content). Also serves creator dashboard routes temporarily (will migrate to separate creator app).
+### From this directory (`apps/dashboard/`)
+```bash
+npm install                # Install dependencies
+npm run dev                # Start dev server (port 8081)
+npm run build              # Production build
+npm run build:dev          # Development build
+npm run lint               # Run ESLint
+npm run preview            # Preview production build
+```
 
-### Tech Stack
-- **Frontend**: React 18 + TypeScript + Vite
-- **UI**: shadcn/ui + Radix UI + Tailwind CSS
-- **Backend**: Supabase (auth, database)
-- **State**: TanStack Query + React Context
+### From project root (`/Users/sungholee/code/kstorybridge/`)
+```bash
+npm run dev:dashboard      # Alternative way to start dev server
+npm run build:dashboard    # Build dashboard only
+npm run build:all          # Build all apps in monorepo
+npm run lint:all           # Lint all apps
+```
+
+---
+
+## 🏗️ Architecture
+
+### Technology Stack
+- **Frontend**: React 18 + TypeScript (strict mode) + Vite
+- **Styling**: Tailwind CSS + shadcn/ui + Radix UI
+- **Backend**: Supabase (shared project: `dlrnrgcoguxlkkcitlpd`)
+- **State**: TanStack Query + React Context (TierContext)
 - **Routing**: React Router v6
-- **Forms**: React Hook Form + Zod
+- **Forms**: React Hook Form + Zod validation
+- **Payments**: Stripe (test/live mode)
 
-### Key Patterns
+### Project Structure
+```
+apps/dashboard/
+├── src/
+│   ├── components/
+│   │   ├── chat/              # ChatMessage, ChatInput, ChatEmptyState, TitleCard
+│   │   ├── tier/              # ProBadge, TierGatedContent
+│   │   ├── layout/            # BuyerLayout, AdminLayout, BuyerSidebar
+│   │   ├── ui/                # shadcn/ui base components
+│   │   └── ProtectedRoute.tsx # Auth guard component
+│   ├── contexts/
+│   │   └── TierContext.tsx    # Tier access control (basic/pro/suite)
+│   ├── hooks/
+│   │   ├── useAuth.tsx        # Auth context & hook
+│   │   └── use-toast.tsx      # Toast notifications
+│   ├── lib/
+│   │   ├── supabase.ts        # Supabase client initialization
+│   │   └── auth.ts            # Auth service (~350 lines)
+│   ├── pages/
+│   │   ├── auth/              # SignIn, SignUp, AuthCallback, CompleteProfile
+│   │   ├── buyers/            # Chat, Titles, TitleDetail, Saved, Profile, Plan, Checkout
+│   │   └── admin/             # AdminTitles
+│   ├── services/
+│   │   ├── chatOrchestratorService.ts  # AI chatbot wrapper
+│   │   └── titlesService.ts            # Title CRUD operations
+│   ├── App.tsx                # Main router with all routes
+│   └── main.tsx               # React entry point
+├── supabase/functions/
+│   ├── create-checkout-session/   # Stripe checkout edge function
+│   └── stripe-webhook/             # Stripe webhook handler
+├── .env.local                 # Local environment variables
+├── package.json               # Dependencies (port 8081)
+├── vite.config.ts             # Vite config with @ path alias
+└── README.md                  # Detailed documentation
+```
 
-**Authentication** (CRITICAL - Updated 2025-11-04):
-- **This app ONLY handles BUYER authentication** (simplified as of 2025-11-04)
-- **Creator authentication** moved to creator app (`creator.kstorybridge.com`)
-- Website app redirects buyers here for authentication
-- Uses Supabase auth with custom AuthProvider (`src/hooks/useAuth.tsx`)
-- All auth flows default to `account_type: 'buyer'` in metadata
-- OAuth redirects to `/auth/callback` in THIS app
-- **Multi-environment OAuth**: Explicit domain detection for production, staging, and localhost
-  - Production: `dashboard.kstorybridge.com/auth/callback`
-  - Staging: `dashboard-v2.kstorybridge.com/auth/callback`
-  - Localhost: `localhost:8081/auth/callback`
-
-**Auth Pages** (Buyer-only):
-- `/signin` - Buyer sign in
-- `/signup/buyer` - Buyer signup
-- `/auth/callback` - OAuth callback handler (buyer-only)
-- `/forgot-password` - Password reset
-- ~~`/signup/creator`~~ - **REMOVED** (moved to creator app)
-- ~~`/signin/creator`~~ - **REMOVED** (moved to creator app)
-
-**Data Management**:
-- Supabase client: `src/integrations/supabase/client.ts`
-- Service layer: `src/services/`
-- TanStack Query for server state
-
-**Component Structure**:
-- shadcn/ui: `src/components/ui/` (auto-generated, avoid editing)
-- Custom: `src/components/`
-- Layouts: `src/components/layout/`
-- Pages: `src/pages/`
-
-### Import Aliases
-- `@/*` maps to `./src/*`
-
-### Database
-- Migrations: `supabase/migrations/`
-- Auto-generated types: `src/integrations/supabase/types.ts`
+### Path Aliases
+- `@/*` → `./src/*` (configured in `tsconfig.json` and `vite.config.ts`)
+- Example: `import { supabase } from '@/lib/supabase'`
 
 ---
 
-## Performance Optimization
+## 🔑 Core Patterns
 
-### Tier System Optimization
+### Authentication System
 
-**Problem**: Individual database queries per component caused slow page loads.
+**Key Principles**:
+- ✅ **Query by email, never by user_id**: Database tables don't have `user_id` field
+- ✅ **Profile existence = valid account**: No auto-profile creation
+- ✅ **Sequential operations**: No race conditions in signup flow
+- ✅ **Single auth listener**: Prevents competing listeners
+- ✅ **OAuth uses sessionStorage**: No URL parameters per CLAUDE.md rules
+- ✅ **All emails allowed**: Personal and work email domains accepted
 
-**Solution**: Centralized tier management with React Context.
+**Code Location**: `src/lib/auth.ts` (~350 lines of clean auth code)
 
-**Performance Gains**:
-- 70-80% faster loading
-- 99% fewer database queries (N → 1 per page)
+**Auth Flow**:
+1. User signs up → Email validation
+2. Edge function creates profile (bypasses RLS)
+3. Session created → Redirect to `/buyers/chat`
+4. `AuthProvider` wraps app → `useAuth()` hook available everywhere
 
-**Usage**:
-```jsx
-import { TierProvider } from '@/contexts/TierContext';
-import OptimizedTierGatedContent from '@/components/OptimizedTierGatedContent';
-
-export default function MyPage() {
-  return (
-    <TierProvider>
-      <MyPageContent />
-    </TierProvider>
-  );
-}
-
-<OptimizedTierGatedContent requiredTier="pro">
-  <PremiumContent />
-</OptimizedTierGatedContent>
-```
-
-**Migrated Pages**: Titles.tsx, TitleDetail.tsx
-
----
-
-## 📊 Essential Shared Patterns
-
-### Database Operations
-
-**Supabase Config**:
+**Example**:
 ```typescript
-const SUPABASE_URL = 'https://dlrnrgcoguxlkkcitlpd.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+import { useAuth } from '@/hooks/useAuth';
+
+const { user, profile, loading, signOut } = useAuth();
+
+// Query pattern (CORRECT)
+const { data } = await supabase
+  .from('user_buyers')
+  .select('*')
+  .eq('email', user.email?.toLowerCase())
+  .single();
+
+// NEVER use .eq('user_id', user.id) - field doesn't exist
 ```
 
-**Query Patterns** (CRITICAL):
-```typescript
-// ✅ CORRECT - Always query by email
-.eq('email', user.email?.toLowerCase())
+### Tier System
 
-// ❌ INCORRECT - user_id field doesn't exist
-.eq('user_id', user.id)
-```
+**Tier Hierarchy**: invited(0) < basic(1) < pro(2) < suite(3)
 
-### User Tables Structure
+**Implementation**:
+- `TierContext.tsx` provides `hasAccess(requiredTier)` function
+- Single database query on mount (cached in context)
+- Automatic tier display with `ProBadge` component
+- Tier-gated content with `TierGatedContent` wrapper
 
-**user_buyers** (query by `email`):
-- `tier`: basic (default) | invited | pro | suite
-- Tier hierarchy: basic(1) < pro(2) < suite(3)
-- `full_name`, `buyer_company`, `buyer_role`, `linkedin_url` (optional)
-
-**Field Naming** (CRITICAL):
-```typescript
-// ✅ CORRECT - Use snake_case matching database
-interface BuyerFormData {
-  full_name: string;        // NOT fullName
-  buyer_company: string;    // NOT buyerCompany
-  buyer_role: string;       // NOT buyerRole
-  linkedin_url?: string;    // NOT linkedinUrl
-  tier?: 'basic' | 'pro' | 'suite';
-  requested?: boolean;
-}
-```
-
-### Tier System Implementation
-
-**Hook Usage**:
+**Example**:
 ```typescript
 import { useTierAccess } from '@/hooks/useTierAccess';
 
 const { hasAccess, tier } = useTierAccess();
-// Automatically synced with Stripe subscriptions
-```
 
-**Context Pattern** (Optimized):
-```typescript
-import { TierProvider } from '@/contexts/TierContext';
-import OptimizedTierGatedContent from '@/components/OptimizedTierGatedContent';
-
-// Wrap page with TierProvider for optimal performance
-<TierProvider>
-  <OptimizedTierGatedContent requiredTier="pro">
-    <PremiumContent />
-  </OptimizedTierGatedContent>
-</TierProvider>
-```
-
-**Tier Levels**:
-- `basic` (1) - Free tier, limited access
-- `pro` (2) - Pro subscription
-- `suite` (3) - Full suite access
-
-### Cache System (Dashboard-Specific)
-
-**Implementation**:
-```typescript
-import { useDataCache } from '@/contexts/DataCacheContext';
-
-const { getData, setData, isSessionValid, isFresh } = useDataCache();
-
-// Session-based only (1-hour expiry)
-if (isSessionValid() && isFresh('data')) {
-  return getData();
+if (!hasAccess('pro')) {
+  return <TierGatedContent requiredTier="pro">
+    <PitchDeckContent />
+  </TierGatedContent>;
 }
 ```
 
-**Pattern**: Show errors to users, never use mock data fallback.
+### Database Queries
 
-**See**: [CACHE_POLICY.md](../../CACHE_POLICY.md) for complete implementation details
+**Always query by email**:
+```typescript
+// ✅ CORRECT
+.eq('email', user.email?.toLowerCase())
+
+// ❌ WRONG
+.eq('user_id', user.id)
+```
+
+**Tables Used**:
+- `user_buyers` - Buyer profiles with tier (basic/pro/suite)
+- `titles` - Content metadata (shared with creator app)
+- `user_favorites` - Saved titles (future feature)
+- `chat_history` - AI chatbot conversations (future feature)
 
 ---
 
-## 🤖 AI Chatbot System
+## 🧩 Key Features
 
-**Status**: ✅ Phases 1-4 Complete (Contextual Response Generation ACTIVE)
+### AI Chatbot (Jinu)
+- **Location**: `src/pages/buyers/Chat.tsx`
+- **Service**: `src/services/chatOrchestratorService.ts`
+- **Edge Function**: `supabase/functions/chat-orchestrator/` (deployed separately)
+- **Components**: ChatMessage, ChatInput, ChatEmptyState, TitleCard
+- **Features**: GPT-4 + vector search, conversation history, suggested queries
 
-### Overview
+### Comps Navigator (NEW)
+- **Location**: `src/pages/buyers/CompsNavigator.tsx`
+- **Service**: `src/services/compsNavigatorService.ts`
+- **Edge Function**: `supabase/functions/comp-navigator/` (shared with dashboard app)
+- **Components**: CompSelector, RefinementInput, ResultsGrid, TitleMatchCard, MatchDetailModal, SavedSearchesSidebar
+- **Features**: AI-powered hybrid search using 1-3 Hollywood/global comparable titles
+  - **Phase 1**: Semantic retrieval via OpenAI embeddings + vector search (2-3 sec)
+  - **Phase 2**: GPT-4o-mini re-ranking with match explanations (3-8 sec)
+  - **Phase 3**: Search history with bookmarking
+- **Database**: Uses `comp_searches` and `comp_title_cache` tables
+- **Performance**: 5-10 seconds response time, ~$0.002 per search
+- **Route**: `/buyers/comps-navigator`
 
-AI-powered chatbot for title discovery with vector search, pitch analytics integration, and contextual response generation. Phases 1-4 deployed with 50% token reduction on multi-turn conversations and zero repetition.
+### Title Discovery
+- **Browse**: `src/pages/buyers/Titles.tsx` - Search, filter by genre/format
+- **Detail**: `src/pages/buyers/TitleDetail.tsx` - Full metadata with tier-gated pitch
+- **Saved**: `src/pages/buyers/Saved.tsx` - Favorites management
+- **Service**: `src/services/titlesService.ts` - Complete CRUD operations
 
-### Deployed Improvements
+### Subscriptions (Stripe)
+- **Plan Selection**: `src/pages/buyers/Plan.tsx` - Tier comparison
+- **Checkout**: `src/pages/buyers/Checkout.tsx` - Stripe integration
+- **Edge Functions**:
+  - `create-checkout-session` - Creates Stripe Checkout session
+  - `stripe-webhook` - Handles subscription events (tier updates)
+- **Guide**: `STRIPE_SETUP_GUIDE.md` - Complete Stripe setup instructions
 
-**Phase 1: Quick Wins** (Completed 2025-10-04)
-1. ✅ **Vector Search Increase** (5→10 results) - +100% coverage
-2. ✅ **Anti-Hallucination Validation** - <5% false recommendations
-3. ✅ **Fuzzy Title Matching** - 80% similarity threshold, +40% link success
-
-**Phase 2: Prompt Engineering** (Completed 2025-10-04)
-4. ✅ **Intent Classification** - 5 types (discovery, comparison, information, recommendation, follow-up)
-5. ✅ **Conversation Context Weighting** - Recent message prioritization, title mention tracking
-6. ✅ **Fallback Keyword Search** - PostgreSQL full-text search when vector fails
-
-**Phase 3: Pitch Analytics Integration** (Deployed 2025-10-21)
-7. ✅ **Database Migration** - Added `pitch_analysis` JSONB field to vector search results
-8. ✅ **Edge Function Enhancement** - Integrated pitch analytics formatting and context
-9. ✅ **Feature Flag Control** - `ENABLE_PITCH_CONTEXT` for gradual rollout
-
-**Phase 4: Contextual Response Generation** (Deployed & Active 2025-10-21)
-10. ✅ **Smart Follow-up Detection** - Analyzes last 3 messages for title mentions
-11. ✅ **Focused Response Generation** - Section-specific responses (characters, plot, themes, market)
-12. ✅ **Anti-Repetition Logic** - Prevents repeating information already shared
-13. ✅ **Feature Flag Control** - `ENABLE_CONTEXTUAL_RESPONSES=true` (ACTIVE)
-
-### Enhanced Capabilities (Phase 3 + 4)
-
-**Query Types** (60+ types across 9 categories):
-- Character: Details, archetypes, relationships
-- Story: Loglines, conflicts, narrative structure
-- Theme: Genre, tone, cultural elements
-- Market: Positioning, comparable titles, audience
-- Cultural: Korean cultural elements analysis
-- IP Value: Rights, adaptability, marketability
-- Production: Budget, scope, requirements
-- Content: Format, chapters, completion status
-- Creative Team: Authors, artists, credentials
-
-**Quality Standards**:
-- Only uses data with `processing_confidence >= 0.70`
-- Source material metrics (views, chapters, platform)
-- Smart follow-up responses with 50% token reduction
-- Zero repetition on multi-turn conversations
-
-### Implementation Files
-
-**Edge Function**: `supabase/functions/chat-orchestrator/index.ts`
-- Vector search with pitch analytics
-- Intent classification
-- Contextual response generation
-- Anti-hallucination validation
-
-**Database Migration**: `supabase/migrations/20250130000000_add_pitch_to_vector_search.sql`
-- Added `pitch_analysis` JSONB field to vector search
-
-**Frontend**: `src/pages/Chat.tsx`
-- Chat interface
-- Message history
-- Title links with fuzzy matching
-
-**Test Suite**: `test-chatbot-improvements.js`
-- Comprehensive test coverage
-- Log interpretation utilities
-
-### Performance Metrics (Updated with Phase 4)
-
-- **Search Results**: 10 titles with >0.8 similarity scores
-- **Response Times**: 3-5 seconds average (with pitch analytics)
-- **Hallucination Rate**: <5%
-- **Intent Accuracy**: 100%
-- **Zero-Results Rate**: ~2%
-- **Pitch Coverage**: 30-50% of queries use pitch data (when available)
-- **Token Efficiency** (Phase 4): 50% reduction on multi-turn conversations
-- **Repetition Rate** (Phase 4): 0% (down from ~70% on follow-ups)
-- **Contextual Activation** (Phase 4): ~20-30% of queries use focused responses
-
-### Cost Analysis
-
-**Per Query Costs**:
-- Initial query: $0.02-0.025
-- Follow-up with context: $0.015-0.018 (50% reduction)
-- Vector search: Included in Supabase
-- Pitch analytics: No additional cost (data already in DB)
-
-**Monthly Estimates** (assuming 1000 queries):
-- Without optimization: $20-25/month
-- With Phase 4: $15-20/month (25-30% overall reduction)
-
-### Monitoring & Debugging
-
-**Edge Function Logs**:
-- Monitor for contextual response activation: `🎯 Contextual Response Analysis`
-- Track token costs and usage patterns
-- Review focused response quality
-- Gather user feedback on conversation flow
-
-**Key Metrics to Track**:
-- Token usage per query (should average $0.015-0.020)
-- Repetition detection (should be 0%)
-- User satisfaction with follow-up responses
-- Contextual activation rate (target: 20-30%)
-
-### Documentation
-
-- **[Chatbot Overview](../../docs/features/chatbot/OVERVIEW.md)** - Complete system overview (Phases 1-4)
-- **[Phase 1 & 2 Summary](../../docs/features/chatbot/PHASE_1_2_SUMMARY.md)** - Test results with log evidence
-- **[Pitch Analytics](../../docs/features/chatbot/PITCH_ANALYTICS.md)** - Phase 3 implementation plan
-- **[Contextual Responses](../../docs/features/chatbot/PHASE_4_CONTEXTUAL_RESPONSES.md)** - Phase 4 implementation & testing
-- **[Testing Guide](../../docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures and log interpretation
-- **[AI Chatbot Docs](public/docs/AI_CHATBOT_DOCUMENTATION.md)** - User-facing documentation
-
-### Future Phases (Planned)
-
-**Phase 5**: Hybrid search, response caching, analytics dashboard, multi-turn memory (beyond 3 messages)
+### Admin Panel
+- **Layout**: `src/components/layout/AdminLayout.tsx` - Sidebar navigation
+- **Titles**: `src/pages/admin/AdminTitles.tsx` - Title management table
 
 ---
 
-## 🎯 Mandate Matcher
+## 🎨 Design System
 
-**Status**: ✅ LIVE (Deployed 2025-11-22)
+### Colors
+- **Primary Text**: `text-black`
+- **Neutrals**: `gray-50`, `gray-100`, `gray-200`, `gray-300`, `gray-500`, `gray-900`
+- **Tier Colors**: `hanok-teal` (#4C9C9B), `pro-purple` (#AF52DE)
+- **Status**: `red-*` (error), `green-*` (success), `blue-*` (info)
+- ❌ **NEVER use yellow** (except Suite tier badge gradient)
 
-### Overview
+### Standard Components
+```tsx
+// Card
+<Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+  <CardContent className="p-4 sm:p-6">...</CardContent>
+</Card>
 
-AI-powered title recommendation system that matches producer mandates to titles using semantic vector search. Producers describe their requirements in natural language, and the system returns ranked title matches with similarity scores.
+// Button
+<Button variant="outline" className="border-gray-300 hover:bg-gray-100">
+  Button Text
+</Button>
 
-### Key Features
+// Tier Badge
+<ProBadge tier="pro" size="md" />
+```
 
-**Input**:
-- Full-sentence mandate descriptions (max 1000 characters)
-- Natural language processing (e.g., "Looking for action-thriller with strong female lead, Korean setting, suitable for streaming")
-- Keyboard shortcuts (⌘+Enter to submit)
-- Character counter with visual feedback
+### Typography
+- **Font**: SF Pro (system default, no class needed)
+- **Headings**: `font-bold text-black`
+- **Body**: `text-gray-600` or `text-gray-700`
 
-**Search**:
-- OpenAI embeddings (text-embedding-ada-002) for semantic understanding
-- Vector similarity search against 245 titles with `combined_embedding`
-- Similarity threshold: 0.3 (30% minimum match)
-- Returns top 15 most relevant titles
-
-**Results**:
-- Beautiful card grid (2-column responsive layout)
-- Match score badges with color coding:
-  - 🟢 Emerald (85%+): Excellent matches
-  - 🔵 Blue (70-84%): Good matches
-  - 🟣 Purple (<70%): Fair matches
-- Title details: image, genre, tone, synopsis, creators
-- Click-to-view full title details
-
-**History Management**:
-- Persistent search history (stored in `mandate_searches` table)
-- Sidebar with recent searches (chronological, newest first)
-- Click to reload previous results
-- Delete searches with hover action
-- RLS-protected (users only see their own searches)
-
-### Technical Architecture
-
-**Database**:
-- Table: `mandate_searches`
-- Fields: `mandate_text`, `search_results` (cached JSONB), `result_count`, `avg_match_score`
-- RLS policies: User-scoped access
-- Migration: `20251121000000_add_mandate_searches_table.sql`
-
-**Edge Function**: `mandate-matcher`
-- Location: `supabase/functions/mandate-matcher/index.ts`
-- Embedding model: `text-embedding-ada-002` (same as title embeddings)
-- RPC: `match_titles_by_embedding_optimized(query_embedding, 0.3, 15)`
-- Returns: Top 15 titles with similarity scores
-
-**Service Layer**: `src/services/mandateService.ts`
-- Methods: `searchMandates()`, `getRecentMandates()`, `getMandateById()`, `deleteMandate()`
-- TypeScript interfaces for type safety
-
-**Components**:
-- `MandateInput` - Textarea with character counter, keyboard shortcuts
-- `MandateHistorySidebar` - Previous searches with click-to-reload
-- `MandateTitleCard` - Title card with match score badge
-- `MandateResultsGrid` - 2-column responsive grid
-
-### Performance & Cost
-
-**Performance**:
-- Search time: 2-3 seconds average
-- Processing: Embedding generation + vector search + database save
-- Cached results: Instant reload from history
-
-**Cost Per Search**:
-- Embedding: ~$0.0015 (text-embedding-ada-002: $0.0001 per 1K tokens)
-- Average mandate: ~15 tokens
-- No GPT-4 re-ranking (unlike comps-navigator)
-- Very cost-effective for value provided
-
-**Monthly Estimates** (1000 searches):
-- Total: ~$1.50/month
-- Per user: Negligible (<$0.10/month for active users)
-
-### Route & Navigation
-
-- **Route**: `/buyers/mandates`
-- **Navigation**: "Mandate Matcher" in buyer sidebar (between "Comps Navigator" and "Featured")
-- **Access**: Buyer accounts only (via `BuyerProtectedLayout`)
-
-### Implementation Files
-
-**Frontend**:
-- Page: `src/pages/buyers/Mandates.tsx`
-- Components: `src/components/mandates/`
-  - `MandateInput.tsx`
-  - `MandateHistorySidebar.tsx`
-  - `MandateTitleCard.tsx`
-  - `MandateResultsGrid.tsx`
-- Service: `src/services/mandateService.ts`
-
-**Backend**:
-- Edge function: `supabase/functions/mandate-matcher/index.ts`
-- Migration: `supabase/migrations/20251121000000_add_mandate_searches_table.sql`
-- RPC: Uses existing `match_titles_by_embedding_optimized` function
-
-### Common Issues & Solutions
-
-**Issue**: 0 results returned
-- **Cause**: Using wrong embedding model or threshold too high
-- **Solution**: Ensure `text-embedding-ada-002` model (same as title embeddings) and threshold ≤ 0.3
-
-**Issue**: Titles don't have embeddings
-- **Cause**: `combined_embedding` field is NULL
-- **Solution**: Run embedding generation scripts (see `scripts/regenerate-embeddings.js`)
-
-**Issue**: Different embedding models
-- **Cause**: Mandate uses different model than titles
-- **Solution**: Both must use `text-embedding-ada-002` (1536 dimensions)
-
-### Future Enhancements
-
-- Bookmark favorite mandates
-- Name/label mandates for organization
-- Share mandate results with team
-- Export recommendations as PDF/Excel
-- Mandate templates for common scenarios
-- AI-generated mandate suggestions
+**Reference Page**: `/buyers/profile` page demonstrates all design standards
 
 ---
 
-## 📄 Pitch Deck Extraction
+## 🧪 Testing
 
-**Status**: ✅ v2.0 Enhanced Comprehensive Extraction
+### Local Testing
+1. Start dev server: `npm run dev`
+2. Visit: http://localhost:8081
+3. Test auth flows: `/signup`, `/signin`, OAuth
+4. Test buyer features: `/buyers/chat`, `/buyers/titles`, `/buyers/profile`
+5. Test admin panel: `/admin/titles`
 
-Automated pitch deck analysis extracting 50+ structured fields using GPT-4o.
-
-- **Admin UI**: `/admin/pitch-extraction-test`
-- **Edge Function**: `extract-pitch-test` (v7)
-- **Database**: `title_content_analysis` table
-- **Cost**: ~$0.15-0.20 per deck
-
-**See**: [Pitch Deck System Documentation](docs/PITCH_DECK_SYSTEM.md)
-
----
-
-## 🎨 Marketing Asset Generation (ADDED 2025-11-08)
-
-**Status**: ✅ Production-ready with full navigation support
-
-AI-powered marketing asset generation system using GPT-4 and DALL-E 3.
-
-### Overview
-Generates 10-15 marketing asset ideas per title (Instagram stories, posters, ad creatives, etc.) with AI-generated DALL-E prompts, then creates actual images on demand.
-
-### Admin Interface
-
-**Main Page**: `/admin/asset-generation`
-- Select title from dropdown (shows titles with pitch data)
-- Click "Analyze Pitch & Generate Ideas" to create asset concepts (~$0.10-0.15)
-- Click "Generate Image" on individual assets to create visuals (~$0.08 per image)
-- Approve/manage generated assets
-
-**Direct Navigation** (Added 2025-11-08):
-- From Title List (`/admin/titles`) → Click ⚡ Sparkles button
-- From Title Detail (`/admin/titles/:id`) → Click "View Assets" button
-- URL pattern: `/admin/asset-generation?titleId=xxx` (auto-selects title)
-
-### Technical Architecture
-
-**Database**: `title_marketing_assets` table
-- Isolated design (no foreign keys, stores all context)
-- Fields: asset type, category, format, prompt, image URL, status, approval
-- Supports both generated and pending assets
-
-**Edge Functions**:
-- `analyze-pitch-for-assets` - Analyzes pitch deck, generates asset ideas
-  - Version: 6 (deployed 2025-11-08)
-  - Cost limit: $0.15 per analysis
-  - Generates 15 asset ideas grouped by category
-- `generate-asset` - Creates actual DALL-E 3 images from prompts
-  - Cost: ~$0.04-0.12 per image depending on size/quality
-
-**Storage**: `marketing-assets` bucket
-- **Public** bucket for generated images
-- Location: Supabase Storage
-- RLS policies: Public read, authenticated upload, service role management
-- File types: PNG, JPEG, WebP (10 MB limit)
-
-### Asset Categories
-
-1. **Social Media** (5 assets)
-   - Instagram Story (1080x1920)
-   - Instagram Post (1080x1080)
-   - Facebook Post (1200x628)
-   - Twitter Post (1200x675)
-   - TikTok Video Thumbnail (1080x1920)
-
-2. **Ad Creative** (5 assets)
-   - Display Ad (300x250, 728x90)
-   - YouTube Thumbnail (1280x720)
-   - Video Ad Key Frame (1920x1080)
-   - Banner Ad
-
-3. **Pitch Material** (5 assets)
-   - Concept Art (1920x1080)
-   - Key Scene
-   - Character Cards
-   - Mood Board
-   - Poster
-
-### Navigation Flow
-
-**From Title List**:
-```
-/admin/titles → Click ⚡ button → /admin/asset-generation?titleId=xxx
-```
-
-**From Title Detail**:
-```
-/admin/titles/:id → Click "View Assets" → /admin/asset-generation?titleId=xxx
-```
-
-**Direct Access**:
-```
-/admin/asset-generation → Manual title selection from dropdown
-```
-
-### Common Issues & Solutions
-
-**Issue**: 400 Error - Cost limit exceeded
-- **Cause**: Analysis cost > $0.15
-- **Solution**: Cost limit increased to $0.15 (2025-11-08)
-- **Prevention**: Limit scales with reasonable pitch deck sizes
-
-**Issue**: Images show as corrupted/"Bucket not found"
-- **Cause**: Storage bucket was private
-- **Solution**: Bucket made public (2025-11-08)
-- **Prevention**: Diagnostic scripts in `/scripts/` directory
-
-**Issue**: Generic error messages
-- **Cause**: SDK wraps edge function errors
-- **Solution**: Enhanced error logging and extraction (2025-11-08)
-- **Debugging**: Check browser console for detailed error context
-
-### Diagnostic Tools
-
-Located in `/scripts/` directory:
-- `diagnose-asset.js` - Check asset status, test image URLs
-- `create-storage-bucket.js` - Create/configure storage buckets
-- `make-bucket-public.js` - Fix bucket permissions
-
-**Usage**:
+### Build Verification
 ```bash
-node scripts/diagnose-asset.js  # Check asset and image accessibility
-node scripts/make-bucket-public.js  # Fix storage permissions
+npm run build        # Should complete with 0 errors
+npm run lint         # Should pass with 0 warnings
+npm run preview      # Test production build locally
 ```
 
-### Service Functions
-
-**Location**: `src/services/assetGenerationService.ts`
-
-```typescript
-// Fetch titles with pitch data
-getTitlesWithPitch(): Promise<TitleWithPitch[]>
-
-// Get assets for specific title
-getAssetsByTitle(titleId: string): Promise<MarketingAsset[]>
-
-// Get asset count for badge display
-getAssetCountByTitle(titleId: string): Promise<number>
-
-// Analyze pitch and generate asset ideas
-analyzePitchForAssets(request: AnalyzePitchRequest): Promise<AnalyzePitchResponse>
-
-// Generate actual image with DALL-E 3
-generateAsset(request: GenerateAssetRequest): Promise<GenerateAssetResponse>
-
-// Update approval status
-updateAssetApproval(assetId, approved, adminEmail): Promise<void>
-
-// Delete asset
-deleteAsset(assetId: string): Promise<void>
-```
-
-### Components
-
-- `TitleSelector` - Dropdown for title selection
-- `AssetIdeaList` - Display generated assets grouped by category
-- `AssetGenerationCard` - Individual asset card with generate/approve/delete actions
-- `GenerationStats` - Summary statistics (total assets, cost, categories)
-
-### Cost Tracking
-
-**Analysis** (~$0.10-0.15):
-- GPT-4 Turbo: $0.01/1K input tokens, $0.03/1K output tokens
-- Typical analysis: 8,000-10,000 tokens total
-- Includes 15 detailed asset ideas with prompts
-
-**Image Generation** (~$0.04-0.12):
-- DALL-E 3 Standard: $0.04 per image
-- DALL-E 3 HD: $0.08 per image
-- Most assets use standard quality
-
-**Total Per Title**: ~$0.50-1.00 (analysis + 5-10 images)
-
-### Future Enhancements
-
-- Asset count badges on navigation buttons
-- Bulk image generation
-- Image editing/regeneration
-- Video asset support (OpenAI video API)
-- Asset templates and styles
-- Export/download functionality
+### Test Cards (Stripe Test Mode)
+- **Success**: 4242 4242 4242 4242
+- **Declined**: 4000 0000 0000 9995
+- **Requires Auth**: 4000 0000 0000 0341
 
 ---
 
-## Database Schema Guidelines
+## 🔧 Environment Setup
 
-### Account Types (UPDATED 2024-09-10)
-
-Standardized to `'buyer'` and `'creator'` only.
-
-- ✅ **Buyer**: `account_type: 'buyer'` → `/buyers/home`
-- ✅ **Creator**: `account_type: 'creator'` → `/creators/home`
-
-**Tables**:
-- `user_buyers` - Buyer profiles
-- `user_creators` - Creator profiles
-
-### User Profile Fields
-
-**Buyer Profiles**:
-- `tier`: basic (default) | invited | pro | suite
-- Default tier: `basic` (changed 2025-08-21)
-
-**Creator Profiles**:
-- `pen_name`: Pen name/studio field
-- `ip_owner_role`: REQUIRED (author | agent)
-- `invitation_status`: invited (default) | active | pending
-
-**Field Naming**: Always use snake_case matching database fields.
-
----
-
-## Page Access Controls
-
-### Account Type-Based Access (UPDATED 2025-01-14)
-
-**Buyer Access**:
-- `/chat` - AI chatbot (changed from admin-only 2025-01-14)
-- `/buyers/home`, `/buyers/titles`, `/buyers/saved`, `/buyers/news`
-
-**Admin-Only** (`sungho@dadble.com`, `kevin@sandstoneartists.com`):
-- `/experiment` - Feature testing (gateway to admin tools)
-
-**Creator Access**:
-- `/creators/home`, `/creators/titles`, `/creators/profile`
-
----
-
-## Toast Notification System
-
-**CRITICAL**: All dashboard pages MUST import `useToast` from local hook, NOT shared package.
-
-**✅ CORRECT**:
-```typescript
-import { useToast } from "@/hooks/use-toast";
-```
-
-**❌ INCORRECT**:
-```typescript
-import { useToast } from "@kstorybridge/ui"; // NEVER use in dashboard
-```
-
-**Always include both title AND description**:
-```typescript
-toast({
-  title: "Profile Updated",
-  description: "Your profile changes have been saved successfully"
-});
-```
-
-**See**: [Toast System Documentation](docs/TOAST_SYSTEM.md) for complete troubleshooting guide
-
----
-
-## Design Guidelines
-
-> 🎨 **See [Root DESIGN_SYSTEM.md](../../docs/active/DESIGN_SYSTEM.md)** for complete design standards:
-> - Card/Box Standard (transparent backgrounds, no shadows)
-> - Button Standard (light grey hover)
-> - Typography (SF Pro default)
-> - Color Policy (no yellow colors)
-> - Pro Tier Color (#AF52DE purple)
-
-**Standard Components**:
-- `StandardButton` (`@/components/StandardButton`)
-- `StandardCard` (`@/components/StandardCard`)
-- `ProBadge` (`@/components/ProBadge`)
-
-**Design System Components** (`@/components/design-system`):
-- `Surface` - Replaces `<div>`, semantic layout primitive
-- `Stack` / `Inline` - Layout with automatic spacing
-- `EmptyState` - Standardized empty states
-
-**Reference Page**: `/buyers/profile` for visual standard
-
----
-
-## Documentation System
-
-### Adding New Documentation Files
-
-**CRITICAL**: For docs viewable at `/docs/view/[filename].md`, place files in:
-
-**Required Location**: `/apps/dashboard/public/docs/[filename].md`
-
-**Why**: DocumentViewer fetches docs via HTTP from Vite dev server's `public/` directory.
-
-**Process**:
-1. Create: `/apps/dashboard/public/docs/your-doc.md`
-2. Add entry to: `/apps/dashboard/src/pages/Docs.tsx`
-3. Verify: `http://localhost:8081/docs/view/your-doc.md`
-
----
-
-## Project Tracking
-
-**Active Projects**:
-- **PRD 2.1**: Track in `/apps/dashboard/public/docs/project_KSB_2_1.md`
-
-**Guidelines**:
-1. Always update project files when completing tasks
-2. Use structured tables for status tracking (✅ Complete, 🔄 In Progress, ⏳ Pending)
-3. Update "Last Updated" date
-4. Verify web accessibility at `/docs/view/project_[NAME].md`
-
----
-
-## Local Testing Environment
-
-### Localhost OAuth Testing
-
-**Environment Variables**:
-- `VITE_SUPABASE_URL` - Local Supabase URL
-- `VITE_SUPABASE_ANON_KEY` - Local anon key
-- `VITE_LOCAL_TESTING=true` - Enable local mode
-- `VITE_OAUTH_TESTING=true` - OAuth debugging
-- `VITE_AUTH_DEBUG=true` - Auth debug logs
-
-**Local Supabase**:
+### Required Environment Variables (`.env.local`)
 ```bash
-cd supabase
-npx supabase start
-# Studio: http://localhost:54324
+# Supabase (shared project)
+VITE_SUPABASE_URL=https://dlrnrgcoguxlkkcitlpd.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Dashboard URL
+VITE_DASHBOARD_URL=http://localhost:8081
+
+# OAuth Testing (Development)
+VITE_OAUTH_REDIRECT_URL=http://localhost:8081/auth/callback
+VITE_OAUTH_TESTING=true
+
+# Auth Debug Mode (Development)
+VITE_AUTH_DEBUG=true
+
+# Stripe (Test Mode)
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_KEY_HERE
 ```
 
-**OAuth Config** (Local):
-- Site URL: `http://localhost:8081`
-- Redirect URLs: `http://localhost:8081/auth/callback`
+### Edge Function Secrets
+Set via Supabase CLI:
+```bash
+npx supabase secrets set STRIPE_SECRET_KEY=sk_test_...
+npx supabase secrets set STRIPE_PRICE_ID_PRO=price_...
+npx supabase secrets set STRIPE_PRICE_ID_SUITE=price_...
+npx supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...
+npx supabase secrets set DASHBOARD_URL=http://localhost:8081
+```
+
+**See**: `STRIPE_SETUP_GUIDE.md` for complete Stripe configuration
 
 ---
 
-## Development Notes
+## 🚨 Critical Rules
 
-- TypeScript config relaxed (noImplicitAny: false, strictNullChecks: false)
-- ESLint: React + TypeScript, unused vars disabled
-- Uses SWC for fast compilation
-- Lovable-tagger plugin for dev mode tagging
+### Security
+- ❌ **NEVER commit**: `.env.local`, API keys, service role keys
+- ✅ **Use**: Vercel for frontend env vars, Supabase CLI for edge function secrets
+- ❌ **NEVER use**: Parameters in OAuth callback URL (use URL search params)
 
----
+### Database
+- ✅ **Query pattern**: `.eq('email', user.email?.toLowerCase())`
+- ❌ **Never use**: `user_id` field (doesn't exist in user tables)
+- ✅ **Always**: Fail clean with clear error messages (no mock data fallback)
 
-## Quick Links
+### Design
+- ❌ **NEVER**: Yellow colors in UI (except Suite tier badge)
+- ✅ **Cards**: `bg-transparent border-gray-300 shadow-none rounded-2xl`
+- ✅ **Buttons**: `variant="outline" border-gray-300 hover:bg-gray-100`
 
-### Development
-- Dashboard: http://localhost:8081
-- Supabase: https://app.supabase.com/project/dlrnrgcoguxlkkcitlpd
-
-### Staging
-- Dashboard: https://dashboard-v2.kstorybridge.com
-
-### Production
-- Dashboard: https://dashboard.kstorybridge.com
-
-### Documentation
-- [Root CLAUDE.md](../../CLAUDE.md) - Monorepo documentation
-- [Toast System](docs/TOAST_SYSTEM.md) - Toast notifications
-- [Pitch Deck System](docs/PITCH_DECK_SYSTEM.md) - Pitch extraction
-- [Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md) - Complete auth reference
-- [Design System](../../docs/active/DESIGN_SYSTEM.md) - UI/UX standards
-- [Chatbot Overview](../../docs/features/chatbot/OVERVIEW.md) - AI chatbot system
+### Field Naming
+- ✅ **Always**: Use snake_case matching database (e.g., `full_name`, `buyer_company`)
+- ❌ **Never**: Convert to camelCase in forms (causes submission failures)
 
 ---
 
-**For complete design standards, see [Root DESIGN_SYSTEM.md](../../docs/active/DESIGN_SYSTEM.md)**
-**For auth flow details, see [Root AUTH_DOCUMENTATION.md](../../docs/active/AUTH_DOCUMENTATION.md)**
+## 📊 User Flows
+
+### Buyer Signup
+1. Visit `/signup` → Enter email/password, company, role
+2. All email addresses accepted → Profile created via edge function
+3. Redirect to `/buyers/chat` → Welcome to dashboard
+
+### OAuth Signup
+1. Click "Sign in with Google" → OAuth consent
+2. Callback to `/auth/callback` (context stored in sessionStorage)
+3. If new user → `/signup/complete` → Fill profile
+4. Edge function creates profile → Redirect to `/buyers/chat`
+
+### Title Discovery
+1. Browse at `/buyers/titles` → Search/filter
+2. Click title → `/buyers/titles/:id` → View details
+3. Click heart → Save to favorites
+4. View saved at `/buyers/saved`
+
+### Tier Upgrade
+1. View profile at `/buyers/profile` → Click "Upgrade to Pro"
+2. Navigate to `/buyers/plan` → Compare tiers
+3. Select tier → `/buyers/checkout` → Stripe Checkout
+4. Complete payment → Webhook updates tier
+5. Return to app → Pro features unlocked
+
+---
+
+## 🔗 Related Documentation
+
+- **[README.md](./README.md)** - Complete project documentation
+- **[PHASES_1-4_COMPLETE.md](./PHASES_1-4_COMPLETE.md)** - Development history
+- **[STRIPE_SETUP_GUIDE.md](./STRIPE_SETUP_GUIDE.md)** - Stripe integration guide
+- **[Root CLAUDE.md](../../CLAUDE.md)** - Monorepo documentation
+- **[Auth Documentation](../../docs/active/AUTH_DOCUMENTATION.md)** - System-wide auth reference
+- **[Database Schema](../../docs/active/DATABASE_SCHEMA.md)** - Complete schema
+
+---
+
+## 💡 Development Tips
+
+### Why This Dashboard Exists
+The previous dashboard (now archived as `dashboard-legacy`) had 279 files with mixed buyer/creator logic, complex fallbacks, and tight coupling. This is a clean rebuild with 82% fewer files (~50 total), buyer-only focus, and simpler patterns.
+
+### Shared Supabase Database
+All apps (dashboard, creator, website) share the same Supabase project. This means:
+- Database migrations affect all apps
+- Edge functions are shared
+- No data migration needed between apps
+
+### File Count Philosophy
+This app intentionally minimizes files by:
+- Colocating related components
+- Using services for shared logic
+- Avoiding premature abstraction
+- Keeping auth code in one place (~350 lines in `auth.ts`)
+
+### When to Add New Files
+Only create new files when:
+- A component is reused in 3+ places
+- A utility is shared across multiple features
+- A service encapsulates complex external logic (like Stripe)
+- Avoid creating files "just in case"
+
+---
+
+## 🐛 Common Issues
+
+### OAuth Hangs or Times Out
+- **Issue**: OAuth signup hangs in production
+- **Solution**: Edge function architecture (100% success rate)
+- **See**: `AUTH_DOCUMENTATION.md` - "OAuth signup hangs" section
+
+### Tier Not Updating After Payment
+- **Issue**: Stripe webhook fired but tier unchanged
+- **Check**:
+  1. Webhook endpoint URL is correct
+  2. Webhook secret is set in edge function
+  3. View edge function logs: `npx supabase functions logs stripe-webhook`
+  4. Verify RLS policies allow service role to update
+
+### Build Fails with Type Errors
+- **Issue**: TypeScript errors in strict mode
+- **Solution**: Fix type errors (no `any` types allowed)
+- **Run**: `npm run build` to see all errors at once
+
+---
+
+**Last Updated**: 2025-11-27
+**Version**: 2.0
+**Status**: ✅ Production Ready - Primary Buyer Dashboard

@@ -1,8 +1,9 @@
 // Component: MandateTitleCard
 // Created: 2025-11-21
-// Description: Simplified title card for mandate matches (no AI explanation for cost savings)
+// Description: Title card for mandate matches with AI explanation chat bubble
 
-import { Card, CardContent } from '@kstorybridge/ui';
+import { Card, CardContent } from '@/components/ui/card';
+import { Bot } from 'lucide-react';
 import { TitleMatch } from '@/services/mandateService';
 
 interface MandateTitleCardProps {
@@ -36,6 +37,20 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
       text: 'text-purple-800',
       border: 'border-purple-200',
     };
+  };
+
+  // Generate AI explanation based on match score and title metadata
+  const getAIExplanation = () => {
+    const score = match.match_score;
+    const genres = match.genre.slice(0, 2).join(' and ');
+
+    if (score >= 85) {
+      return `Excellent match! This ${match.content_format || 'title'} strongly aligns with your mandate. The ${genres} genre${match.tone ? ` with ${match.tone} tone` : ''} perfectly fits your requirements.`;
+    }
+    if (score >= 70) {
+      return `Strong match! This ${match.content_format || 'title'} fits well with your mandate. The ${genres} elements${match.tone ? ` and ${match.tone} atmosphere` : ''} align with what you're looking for.`;
+    }
+    return `Good match! This ${match.content_format || 'title'} shares key themes with your mandate. Consider the ${genres} aspects${match.tone ? ` and ${match.tone} tone` : ''} for your project.`;
   };
 
   const matchBadge = getMatchScoreBadge(match.match_score);
@@ -74,7 +89,7 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
         {/* Content Section */}
         <div className="p-4 md:p-6 flex flex-col">
           {/* Title */}
-          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-hanok-teal transition-colors">
+          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-[#4C9C9B] transition-colors">
             {match.title_name_en || match.title_name_kr}
           </h3>
           {match.title_name_en && match.title_name_kr && (
@@ -113,7 +128,7 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
 
           {/* Creator Info */}
           {(match.story_author || match.art_author) && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 mb-4">
               {match.story_author && (
                 <div>Story: {match.story_author}</div>
               )}
@@ -122,6 +137,24 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
               )}
             </div>
           )}
+
+          {/* AI Explanation Chat Bubble */}
+          <div className="flex gap-3 bg-hanok-teal/5 rounded-xl p-3 border border-hanok-teal/20">
+            {/* AI Profile Icon */}
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-hanok-teal flex items-center justify-center">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
+            </div>
+
+            {/* AI Explanation Text */}
+            <div className="flex-1">
+              <p className="text-xs font-medium text-hanok-teal mb-1">AI Analysis</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {getAIExplanation()}
+              </p>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

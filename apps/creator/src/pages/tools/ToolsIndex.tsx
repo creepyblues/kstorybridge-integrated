@@ -4,14 +4,16 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Zap, TrendingUp, Database, ArrowRight } from 'lucide-react';
-import { getIntelligenceRecords, type IntelligenceRecord } from '@/services/intelligenceService';
+import { getIntelligenceTitles, type IntelligenceTitle } from '@/services/intelligenceService';
 
 /**
  * Admin Tools Dashboard
  * Landing page showing available admin tools and recent intelligence collections
+ *
+ * Updated: Uses normalized intelligence_* schema
  */
 export function ToolsIndex() {
-  const [recentCollections, setRecentCollections] = useState<IntelligenceRecord[]>([]);
+  const [recentCollections, setRecentCollections] = useState<IntelligenceTitle[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export function ToolsIndex() {
 
   const loadRecentCollections = async () => {
     try {
-      const records = await getIntelligenceRecords();
+      const records = await getIntelligenceTitles();
       setRecentCollections(records.slice(0, 5)); // Show 5 most recent
     } catch (error) {
       console.error('Failed to load recent collections:', error);
@@ -29,16 +31,16 @@ export function ToolsIndex() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-500';
-      case 'partial_failure':
-        return 'bg-amber-500';
-      case 'failed':
-        return 'bg-red-500';
-      case 'in_progress':
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'webtoon':
         return 'bg-blue-500';
+      case 'webnovel':
+        return 'bg-purple-500';
+      case 'manga':
+        return 'bg-red-500';
+      case 'light_novel':
+        return 'bg-amber-500';
       default:
         return 'bg-gray-500';
     }
@@ -188,26 +190,29 @@ export function ToolsIndex() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-semibold text-black truncate">
-                            {record.title_name_input}
+                            {record.original_title_ko || record.slug}
                           </h3>
+                          {record.original_title_en && (
+                            <p className="text-xs text-gray-500 truncate">{record.original_title_en}</p>
+                          )}
                           <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
                             <span>
                               {new Date(record.created_at).toLocaleDateString()}
                             </span>
                             <span>•</span>
-                            <span>
-                              {record.sources_requested.length} source{record.sources_requested.length !== 1 ? 's' : ''}
+                            <span className="capitalize">
+                              {record.type}
                             </span>
-                            {record.ingested && (
+                            {record.original_language && (
                               <>
                                 <span>•</span>
-                                <span className="text-green-600 font-medium">Ingested</span>
+                                <span className="uppercase">{record.original_language}</span>
                               </>
                             )}
                           </div>
                         </div>
-                        <Badge className={`${getStatusColor(record.collection_status)} text-white ml-4`}>
-                          {record.collection_status}
+                        <Badge className={`${getTypeColor(record.type)} text-white ml-4 capitalize`}>
+                          {record.type}
                         </Badge>
                       </div>
                     </CardContent>

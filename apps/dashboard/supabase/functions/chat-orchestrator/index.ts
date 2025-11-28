@@ -692,6 +692,7 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
             throw new Error('No response stream available')
           }
 
+          // eslint-disable-next-line no-constant-condition
           while (true) {
             const { done, value } = await reader.read()
             if (done) break
@@ -2437,7 +2438,7 @@ function generateSuggestedQueries(context: {
 
   // Mix suggestions from different types for diversity
   // PRIORITY: Response-aware suggestions first (based on actual AI output)
-  let diverseSuggestions: string[] = [];
+  const diverseSuggestions: string[] = [];
 
   // Add response-aware suggestions first (highest priority)
   if (typeM1_responseAware.length > 0) {

@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TierGatedContent } from '@/components/tier/TierGatedContent';
 import { Title, CharacterDetail } from '@/services/titlesService';
+import { type PitchAnalysis } from '@/types/pitchAnalysis';
+import { AIInsightCard } from './AIInsightCard';
 import {
   Palette,
   Globe,
@@ -17,6 +19,7 @@ import {
 
 interface StoryDetailsTabProps {
   title: Title;
+  pitchAnalysis?: PitchAnalysis | null;
 }
 
 // Character card component
@@ -94,13 +97,32 @@ function CharacterCard({ character }: { character: CharacterDetail }) {
   );
 }
 
-export function StoryDetailsTab({ title }: StoryDetailsTabProps) {
+export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) {
   const [showAllCharacters, setShowAllCharacters] = useState(false);
 
   const hasThemesContent = title.tone || title.important_issues;
   const hasWorldContent = title.setting_description || title.world_lore || title.supernatural_concepts;
   const hasCharacters = title.character_details && title.character_details.length > 0;
   const hasNarrativeContent = title.story_structure || title.narrative_arc || title.planned_ending;
+
+  // AI Pitch Analysis availability checks
+  const hasAIStoryWorld = pitchAnalysis?.story_world && (
+    pitchAnalysis.story_world.setting ||
+    pitchAnalysis.story_world.time_period ||
+    pitchAnalysis.story_world.world_building?.length
+  );
+  const hasAICharacters = pitchAnalysis?.characters && pitchAnalysis.characters.length > 0;
+  const hasAIThemesTone = pitchAnalysis?.themes_and_tone && (
+    pitchAnalysis.themes_and_tone.primary_themes?.length ||
+    pitchAnalysis.themes_and_tone.emotional_tone ||
+    pitchAnalysis.themes_and_tone.visual_style
+  );
+  const hasAIStoryElements = pitchAnalysis?.story_elements && (
+    pitchAnalysis.story_elements.logline ||
+    pitchAnalysis.story_elements.plot_summary ||
+    pitchAnalysis.story_elements.genre_blend?.length
+  );
+  const hasAIKoreanCultural = pitchAnalysis?.korean_cultural_elements && pitchAnalysis.korean_cultural_elements.length > 0;
 
   const displayedCharacters = showAllCharacters
     ? title.character_details
@@ -266,8 +288,180 @@ export function StoryDetailsTab({ title }: StoryDetailsTabProps) {
         </TierGatedContent>
       )}
 
+      {/* AI Insight Cards Section */}
+      {(hasAIStoryWorld || hasAIStoryElements || hasAIThemesTone || hasAICharacters || hasAIKoreanCultural) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* AI Story World Card */}
+          {hasAIStoryWorld && (
+            <AIInsightCard
+              title="Story World"
+              icon={<Globe className="w-5 h-5 text-[#4C9C9B]" />}
+            >
+              <div className="space-y-3 text-gray-700">
+                {pitchAnalysis!.story_world.setting && (
+                  <div>
+                    <span className="font-semibold">Setting:</span> {pitchAnalysis!.story_world.setting}
+                  </div>
+                )}
+                {pitchAnalysis!.story_world.time_period && (
+                  <div>
+                    <span className="font-semibold">Time Period:</span> {pitchAnalysis!.story_world.time_period}
+                  </div>
+                )}
+                {pitchAnalysis!.story_world.world_building && pitchAnalysis!.story_world.world_building.length > 0 && (
+                  <div>
+                    <span className="font-semibold">World Building:</span>
+                    <ul className="list-disc ml-5 mt-1 text-sm">
+                      {pitchAnalysis!.story_world.world_building.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </AIInsightCard>
+          )}
+
+          {/* AI Story Elements Card */}
+          {hasAIStoryElements && (
+            <AIInsightCard
+              title="Story Elements"
+              icon={<BookOpen className="w-5 h-5 text-[#4C9C9B]" />}
+            >
+              <div className="space-y-3 text-gray-700">
+                {pitchAnalysis!.story_elements.logline && (
+                  <div className="p-3 bg-[#4C9C9B]/5 border-l-4 border-[#4C9C9B] rounded-r">
+                    <span className="font-semibold">Logline:</span> {pitchAnalysis!.story_elements.logline}
+                  </div>
+                )}
+                {pitchAnalysis!.story_elements.plot_summary && (
+                  <div>
+                    <span className="font-semibold">Plot:</span> {pitchAnalysis!.story_elements.plot_summary}
+                  </div>
+                )}
+                {pitchAnalysis!.story_elements.genre_blend && pitchAnalysis!.story_elements.genre_blend.length > 0 && (
+                  <div>
+                    <span className="font-semibold">Genre Blend:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {pitchAnalysis!.story_elements.genre_blend.map((genre, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {genre}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {pitchAnalysis!.story_elements.narrative_structure && (
+                  <div>
+                    <span className="font-semibold">Structure:</span> {pitchAnalysis!.story_elements.narrative_structure}
+                  </div>
+                )}
+              </div>
+            </AIInsightCard>
+          )}
+
+          {/* AI Themes & Tone Card */}
+          {hasAIThemesTone && (
+            <AIInsightCard
+              title="Themes & Tone"
+              icon={<Palette className="w-5 h-5 text-[#4C9C9B]" />}
+            >
+              <div className="space-y-3 text-gray-700">
+                {pitchAnalysis!.themes_and_tone.primary_themes && pitchAnalysis!.themes_and_tone.primary_themes.length > 0 && (
+                  <div>
+                    <span className="font-semibold">Primary Themes:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {pitchAnalysis!.themes_and_tone.primary_themes.map((theme, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {theme}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {pitchAnalysis!.themes_and_tone.emotional_tone && (
+                  <div>
+                    <span className="font-semibold">Emotional Tone:</span> {pitchAnalysis!.themes_and_tone.emotional_tone}
+                  </div>
+                )}
+                {pitchAnalysis!.themes_and_tone.visual_style && (
+                  <div>
+                    <span className="font-semibold">Visual Style:</span> {pitchAnalysis!.themes_and_tone.visual_style}
+                  </div>
+                )}
+                {pitchAnalysis!.themes_and_tone.mood_keywords && pitchAnalysis!.themes_and_tone.mood_keywords.length > 0 && (
+                  <div>
+                    <span className="font-semibold">Mood:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {pitchAnalysis!.themes_and_tone.mood_keywords.map((kw, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {kw}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AIInsightCard>
+          )}
+
+          {/* AI Characters Card */}
+          {hasAICharacters && (
+            <AIInsightCard
+              title="Characters"
+              icon={<Users className="w-5 h-5 text-[#4C9C9B]" />}
+            >
+              <div className="space-y-3">
+                {pitchAnalysis!.characters.map((char, idx) => (
+                  <div key={idx} className="p-3 bg-gray-50 rounded-lg">
+                    <div className="font-semibold text-black mb-1">{char.name}</div>
+                    <div className="text-sm space-y-1 text-gray-700">
+                      {char.role && (
+                        <Badge
+                          className={`text-xs ${
+                            char.role === 'protagonist'
+                              ? 'bg-blue-100 text-blue-700'
+                              : char.role === 'antagonist'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-green-100 text-green-700'
+                          }`}
+                        >
+                          {char.role}
+                        </Badge>
+                      )}
+                      {char.archetype && <div><span className="font-medium">Archetype:</span> {char.archetype}</div>}
+                      {char.description && <div className="mt-1 text-gray-600">{char.description}</div>}
+                      {char.key_traits && char.key_traits.length > 0 && (
+                        <div className="mt-1">
+                          <span className="font-medium">Traits:</span> {char.key_traits.join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </AIInsightCard>
+          )}
+
+          {/* AI Korean Cultural Elements Card */}
+          {hasAIKoreanCultural && (
+            <AIInsightCard
+              title="Korean Cultural Elements"
+              icon={<Sparkles className="w-5 h-5 text-[#4C9C9B]" />}
+            >
+              <ul className="list-disc ml-5 space-y-1 text-gray-700">
+                {pitchAnalysis!.korean_cultural_elements.map((element, idx) => (
+                  <li key={idx}>{element}</li>
+                ))}
+              </ul>
+            </AIInsightCard>
+          )}
+        </div>
+      )}
+
       {/* No content message */}
-      {!hasThemesContent && !hasWorldContent && !title.inspiration && !hasCharacters && !hasNarrativeContent && (
+      {!hasThemesContent && !hasWorldContent && !title.inspiration && !hasCharacters && !hasNarrativeContent &&
+       !hasAIStoryWorld && !hasAIStoryElements && !hasAIThemesTone && !hasAICharacters && !hasAIKoreanCultural && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-8 text-center">
             <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />

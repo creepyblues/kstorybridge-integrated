@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, History, MessageSquare } from 'lucide-react';
+import { Loader2, History } from 'lucide-react';
 import { ChatEmptyState } from '@/components/chat/ChatEmptyState';
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ConversationalMessage } from '@/components/chat/ConversationalMessage';

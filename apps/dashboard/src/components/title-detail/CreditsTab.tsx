@@ -1,6 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Title } from '@/services/titlesService';
+import { type PitchAnalysis } from '@/types/pitchAnalysis';
+import { AIInsightCard } from './AIInsightCard';
 import {
   Users,
   BookOpen,
@@ -8,13 +10,15 @@ import {
   Eye,
   Star,
   FileText,
+  Film,
 } from 'lucide-react';
 
 interface CreditsTabProps {
   title: Title;
+  pitchAnalysis?: PitchAnalysis | null;
 }
 
-export function CreditsTab({ title }: CreditsTabProps) {
+export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
   const hasCreativeTeam =
     title.story_author ||
     title.art_author ||
@@ -37,6 +41,22 @@ export function CreditsTab({ title }: CreditsTabProps) {
       title.creator_achievements.notable_works?.length ||
       title.creator_achievements.awards_received?.length ||
       title.creator_achievements.industry_recognition);
+
+  // AI Pitch Analysis availability checks
+  const hasAICreativeTeam = pitchAnalysis?.creative_team && (
+    pitchAnalysis.creative_team.author_writer ||
+    pitchAnalysis.creative_team.illustrator_artist ||
+    pitchAnalysis.creative_team.credentials?.length ||
+    pitchAnalysis.creative_team.studio_publisher
+  );
+  const hasAISourceMaterial = pitchAnalysis?.source_material && (
+    pitchAnalysis.source_material.original_platform ||
+    pitchAnalysis.source_material.metrics
+  );
+  const hasAIProductionDetails = pitchAnalysis?.production_details && (
+    pitchAnalysis.production_details.format ||
+    pitchAnalysis.production_details.adaptation_type
+  );
 
   return (
     <div className="space-y-6">
@@ -265,8 +285,150 @@ export function CreditsTab({ title }: CreditsTabProps) {
         </Card>
       )}
 
+      {/* AI Insight Cards Section */}
+      {(hasAICreativeTeam || hasAISourceMaterial || hasAIProductionDetails) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* AI Creative Team Card */}
+          {hasAICreativeTeam && (
+            <AIInsightCard
+              title="Creative Team"
+              icon={<Users className="w-5 h-5 text-[#4C9C9B]" />}
+            >
+              <div className="space-y-3 text-gray-700">
+                {pitchAnalysis!.creative_team.author_writer && (
+                  <div>
+                    <span className="font-semibold">Author/Writer:</span> {pitchAnalysis!.creative_team.author_writer}
+                  </div>
+                )}
+                {pitchAnalysis!.creative_team.illustrator_artist && (
+                  <div>
+                    <span className="font-semibold">Illustrator/Artist:</span> {pitchAnalysis!.creative_team.illustrator_artist}
+                  </div>
+                )}
+                {pitchAnalysis!.creative_team.studio_publisher && (
+                  <div>
+                    <span className="font-semibold">Studio/Publisher:</span> {pitchAnalysis!.creative_team.studio_publisher}
+                  </div>
+                )}
+                {pitchAnalysis!.creative_team.credentials && pitchAnalysis!.creative_team.credentials.length > 0 && (
+                  <div>
+                    <span className="font-semibold">Credentials:</span>
+                    <ul className="list-disc ml-5 mt-1 text-sm">
+                      {pitchAnalysis!.creative_team.credentials.map((cred, idx) => (
+                        <li key={idx}>{cred}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </AIInsightCard>
+          )}
+
+          {/* AI Source Material Card */}
+          {hasAISourceMaterial && (
+            <AIInsightCard
+              title="Source Material"
+              icon={<FileText className="w-5 h-5 text-[#4C9C9B]" />}
+            >
+              <div className="space-y-3 text-gray-700">
+                {pitchAnalysis!.source_material.original_platform && (
+                  <div>
+                    <span className="font-semibold">Original Platform:</span> {pitchAnalysis!.source_material.original_platform}
+                  </div>
+                )}
+                {pitchAnalysis!.source_material.serialization_status && (
+                  <div>
+                    <span className="font-semibold">Status:</span>{' '}
+                    <Badge
+                      className={
+                        pitchAnalysis!.source_material.serialization_status === 'completed'
+                          ? 'bg-green-100 text-green-700 border-green-200'
+                          : 'bg-blue-100 text-blue-700 border-blue-200'
+                      }
+                    >
+                      {pitchAnalysis!.source_material.serialization_status}
+                    </Badge>
+                  </div>
+                )}
+                {pitchAnalysis!.source_material.metrics && (
+                  <div className="grid grid-cols-3 gap-3 mt-2">
+                    {pitchAnalysis!.source_material.metrics.views && (
+                      <div className="p-2 bg-gray-50 rounded text-center">
+                        <div className="text-xs text-gray-500">Views</div>
+                        <div className="font-medium">{pitchAnalysis!.source_material.metrics.views}</div>
+                      </div>
+                    )}
+                    {pitchAnalysis!.source_material.metrics.chapters && (
+                      <div className="p-2 bg-gray-50 rounded text-center">
+                        <div className="text-xs text-gray-500">Chapters</div>
+                        <div className="font-medium">{pitchAnalysis!.source_material.metrics.chapters}</div>
+                      </div>
+                    )}
+                    {pitchAnalysis!.source_material.metrics.rating && (
+                      <div className="p-2 bg-gray-50 rounded text-center">
+                        <div className="text-xs text-gray-500">Rating</div>
+                        <div className="font-medium">{pitchAnalysis!.source_material.metrics.rating}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {pitchAnalysis!.source_material.awards_recognition && pitchAnalysis!.source_material.awards_recognition.length > 0 && (
+                  <div>
+                    <span className="font-semibold">Awards & Recognition:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {pitchAnalysis!.source_material.awards_recognition.map((award, idx) => (
+                        <Badge key={idx} className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                          {award}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AIInsightCard>
+          )}
+
+          {/* AI Production Details Card */}
+          {hasAIProductionDetails && (
+            <AIInsightCard
+              title="Production Details"
+              icon={<Film className="w-5 h-5 text-[#4C9C9B]" />}
+            >
+              <div className="space-y-3 text-gray-700">
+                {pitchAnalysis!.production_details.format && (
+                  <div>
+                    <span className="font-semibold">Format:</span> {pitchAnalysis!.production_details.format}
+                  </div>
+                )}
+                {pitchAnalysis!.production_details.adaptation_type && (
+                  <div>
+                    <span className="font-semibold">Adaptation Type:</span> {pitchAnalysis!.production_details.adaptation_type}
+                  </div>
+                )}
+                {pitchAnalysis!.production_details.estimated_episodes && (
+                  <div>
+                    <span className="font-semibold">Estimated Episodes:</span> {pitchAnalysis!.production_details.estimated_episodes}
+                  </div>
+                )}
+                {pitchAnalysis!.production_details.budget_range && (
+                  <div>
+                    <span className="font-semibold">Budget Range:</span> {pitchAnalysis!.production_details.budget_range}
+                  </div>
+                )}
+                {pitchAnalysis!.production_details.timeline && (
+                  <div>
+                    <span className="font-semibold">Timeline:</span> {pitchAnalysis!.production_details.timeline}
+                  </div>
+                )}
+              </div>
+            </AIInsightCard>
+          )}
+        </div>
+      )}
+
       {/* No credits message */}
-      {!hasCreativeTeam && !hasSourceMaterial && !hasCreatorAchievements && (
+      {!hasCreativeTeam && !hasSourceMaterial && !hasCreatorAchievements &&
+       !hasAICreativeTeam && !hasAISourceMaterial && !hasAIProductionDetails && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-8 text-center">
             <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />

@@ -1,434 +1,330 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { RefreshCw, Edit, ChevronUp, ChevronDown, ArrowUpDown, Sparkles } from "lucide-react";
-import { Button } from "@kstorybridge/ui";
-import { useToast } from "@/hooks/use-toast";
-import { titlesService, type Title } from "@/services/titlesService";
-import AdminLayout from "@/components/layout/AdminLayout";
-import { PitchBadge } from "@/components/PitchBadge";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import AdminLayout from '@/components/layout/AdminLayout';
+import { TitleEditModal } from '@/components/admin/TitleEditModal';
+import { useToast } from '@/hooks/use-toast';
+import { titlesService, Title } from '@/services/titlesService';
+import { Search, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 
 export default function AdminTitles() {
   const { toast } = useToast();
   const [titles, setTitles] = useState<Title[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [sortField, setSortField] = useState<string | null>('title');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTitles, setFilteredTitles] = useState<Title[]>([]);
+  const [editingTitle, setEditingTitle] = useState<Title | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadTitles();
+    fetchTitles();
   }, []);
 
-  const loadTitles = async () => {
+  useEffect(() => {
+    // Filter titles by search query
+    if (searchQuery) {
+      const filtered = titles.filter(
+        (title) =>
+          title.title_name_en?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          title.title_name_kr?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          title.title_id.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredTitles(filtered);
+    } else {
+      setFilteredTitles(titles);
+    }
+  }, [searchQuery, titles]);
+
+  const fetchTitles = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      console.log('📚 Loading all titles for admin...');
-
-      const allTitles = await titlesService.getAllTitles();
-      setTitles(allTitles);
-
-      console.log(`✅ Successfully loaded ${allTitles.length} titles`);
-    } catch (error) {
-      console.error("❌ Error loading titles:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
+      const data = await titlesService.getTitles();
+      setTitles(data);
+      setFilteredTitles(data);
+    } catch (error: any) {
+      console.error('Error fetching titles:', error);
       toast({
-        title: "Error Loading Titles",
-        description: errorMessage,
-        variant: "destructive"
+        title: 'Error',
+        description: error.message || 'Failed to fetch titles',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRefresh = () => {
-    loadTitles();
+  const handleEdit = (title: Title) => {
+    setEditingTitle(title);
   };
 
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
+  const handleSaveEdit = async (updates: Partial<Title>) => {
+    if (!editingTitle) return;
+
+    try {
+      await titlesService.updateTitle(editingTitle.title_id, updates);
+
+      // Refresh titles list
+      await fetchTitles();
+
+      toast({
+        title: 'Success',
+        description: 'Title updated successfully',
+      });
+    } catch (error: any) {
+      console.error('Error updating title:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update title',
+        variant: 'destructive',
+      });
     }
   };
 
-  const sortTitles = (titles: Title[]) => {
-    if (!sortField) return titles;
-
-    return [...titles].sort((a, b) => {
-      let aValue: string | string[] | null | undefined;
-      let bValue: string | string[] | null | undefined;
-
-      switch (sortField) {
-        case 'title':
-          aValue = a.title_name_en || a.title_name_kr || '';
-          bValue = b.title_name_en || b.title_name_kr || '';
-          break;
-        case 'genre':
-          aValue = Array.isArray(a.genre) ? a.genre.join(', ') : (a.genre || '');
-          bValue = Array.isArray(b.genre) ? b.genre.join(', ') : (b.genre || '');
-          break;
-        case 'tone':
-          aValue = a.tone || '';
-          bValue = b.tone || '';
-          break;
-        case 'keywords':
-          const aKeywords = (a as any).keywords || a.tags;
-          const bKeywords = (b as any).keywords || b.tags;
-          aValue = Array.isArray(aKeywords) ? aKeywords.join(', ') : (aKeywords || '');
-          bValue = Array.isArray(bKeywords) ? bKeywords.join(', ') : (bKeywords || '');
-          break;
-        case 'comps':
-          aValue = Array.isArray(a.comps) ? a.comps.join(', ') : (a.comps || '');
-          bValue = Array.isArray(b.comps) ? b.comps.join(', ') : (b.comps || '');
-          break;
-        default:
-          return 0;
-      }
-
-      const aStr = String(aValue).toLowerCase();
-      const bStr = String(bValue).toLowerCase();
-
-      if (aStr < bStr) {
-        return sortDirection === 'asc' ? -1 : 1;
-      }
-      if (aStr > bStr) {
-        return sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  };
-
-  const formatGenre = (genre: string | string[]) => {
-    if (Array.isArray(genre)) {
-      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ');
+  const handleDelete = async (titleId: string, titleName: string) => {
+    if (!confirm(`Are you sure you want to delete "${titleName}"? This action cannot be undone.`)) {
+      return;
     }
-    return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+    setDeletingId(titleId);
+    try {
+      await titlesService.deleteTitle(titleId);
+
+      // Remove from local state
+      setTitles((prev) => prev.filter((t) => t.title_id !== titleId));
+      setFilteredTitles((prev) => prev.filter((t) => t.title_id !== titleId));
+
+      toast({
+        title: 'Success',
+        description: 'Title deleted successfully',
+      });
+    } catch (error: any) {
+      console.error('Error deleting title:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete title',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
   };
-
-  const SortableHeader = ({ field, children, className = "" }: {
-    field: string;
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <button
-      onClick={() => handleSort(field)}
-      className={`flex items-center gap-1 hover:text-gray-900 transition-colors ${className}`}
-    >
-      {children}
-      {sortField === field ? (
-        sortDirection === 'asc' ? (
-          <ChevronUp className="w-4 h-4" />
-        ) : (
-          <ChevronDown className="w-4 h-4" />
-        )
-      ) : (
-        <ArrowUpDown className="w-4 h-4 text-gray-400 opacity-60" />
-      )}
-    </button>
-  );
-
-  const sortedTitles = sortTitles(titles);
 
   return (
     <AdminLayout>
-      <div className="p-6">
+      <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold text-midnight-ink">Title Management</h1>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-black">Titles Management</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Manage all titles in the system
+            </p>
+          </div>
+          <Button className="bg-hanok-teal hover:bg-hanok-teal/90">
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Title
+          </Button>
+        </div>
+
+        {/* Search & Filters */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Search by title name or ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
               <Button
-                onClick={handleRefresh}
-                disabled={loading}
                 variant="outline"
-                size="sm"
-                className="text-midnight-ink border-midnight-ink/20 hover:bg-midnight-ink/5 p-2"
-                title="Refresh"
+                onClick={fetchTitles}
+                className="border-gray-300"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
               </Button>
             </div>
-            <div className="text-sm text-gray-600">
-              Total: {sortedTitles.length} titles
-            </div>
-          </div>
-          <p className="text-gray-600">
-            View and edit all titles in the database
-          </p>
+          </CardContent>
+        </Card>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-gray-600">Total Titles</div>
+              <div className="text-2xl font-bold text-black mt-1">{titles.length}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-gray-600">With Pitch Decks</div>
+              <div className="text-2xl font-bold text-black mt-1">
+                {titles.filter((t) => t.pitch).length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-gray-600">Completed</div>
+              <div className="text-2xl font-bold text-black mt-1">
+                {titles.filter((t) => t.completed).length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-gray-600">Ongoing</div>
+              <div className="text-2xl font-bold text-black mt-1">
+                {titles.filter((t) => !t.completed).length}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          {/* Desktop Table Header */}
-          <div className="hidden lg:block bg-gray-50 px-6 py-4 border-b">
-            <div className="grid grid-cols-12 gap-4 items-center font-semibold text-gray-700 text-sm">
-              <div className="col-span-1">Image</div>
-              <div className="col-span-3">
-                <SortableHeader field="title">Title</SortableHeader>
-              </div>
-              <div className="col-span-2">
-                <SortableHeader field="genre">Genre</SortableHeader>
-              </div>
-              <div className="col-span-2">
-                <SortableHeader field="tone">Tone</SortableHeader>
-              </div>
-              <div className="col-span-2">
-                <SortableHeader field="keywords">Keywords</SortableHeader>
-              </div>
-              <div className="col-span-1">
-                <SortableHeader field="comps">Comps</SortableHeader>
-              </div>
-              <div className="col-span-1 text-center">Actions</div>
-            </div>
-          </div>
-
-          {/* Mobile Header */}
-          <div className="lg:hidden bg-gray-50 px-4 py-3 border-b">
-            <div className="text-sm font-semibold text-gray-700">
-              All Titles ({sortedTitles.length})
-            </div>
-          </div>
-
-          <div className="divide-y">
+        {/* Titles Table */}
+        <Card>
+          <CardContent className="p-0">
             {loading ? (
-              <div className="px-6 py-12 text-center text-gray-500">
-                <RefreshCw className="w-6 h-6 animate-spin text-hanok-teal mx-auto mb-2" />
-                Loading titles...
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
               </div>
-            ) : sortedTitles.length > 0 ? (
-              sortedTitles.map((title) => (
-                <div key={title.title_id}>
-                  {/* Desktop Table Row */}
-                  <div className="hidden lg:grid px-6 py-4 grid-cols-12 gap-4 items-center hover:bg-gray-50 transition-colors">
-                    <div className="col-span-1">
-                      {title.title_image ? (
-                        <div className="w-16 h-20 bg-gray-200 rounded-lg overflow-hidden">
-                          <img
-                            src={title.title_image}
-                            alt={title.title_name_en || title.title_name_kr}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
-                              e.currentTarget.parentElement!.innerHTML = '<span class="text-xs text-gray-400">No Image</span>';
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <span className="text-xs text-gray-400">No Image</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="col-span-3">
-                      {title.pitch && (
-                        <div className="mb-1">
-                          <PitchBadge size="sm" />
-                        </div>
-                      )}
-                      {title.verified && (
-                        <div className="mb-1">
-                          <VerifiedBadge size="sm" />
-                        </div>
-                      )}
-                      <div className="font-medium text-gray-800 line-clamp-1 text-sm">
-                        {title.title_name_en || title.title_name_kr}
-                      </div>
-                      {title.title_name_en && title.title_name_kr && (
-                        <div className="text-xs text-gray-500 line-clamp-1 mt-1">
-                          {title.title_name_kr}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="col-span-2">
-                      {title.genre && (Array.isArray(title.genre) ? title.genre.length > 0 : true) ? (
-                        <div className="flex flex-wrap gap-1 max-h-[3.5rem] overflow-hidden">
-                          {Array.isArray(title.genre) ? (
-                            title.genre.map((g, idx) => (
-                              <div key={`${title.title_id}-genre-${idx}`} className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={formatGenre(g)}>
-                                {formatGenre(g)}
-                              </div>
-                            ))
-                          ) : (
-                            <div className="inline-block bg-cyan-100 text-cyan-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={formatGenre(title.genre)}>
-                              {formatGenre(title.genre)}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </div>
-
-                    <div className="col-span-2">
-                      {title.tone ? (
-                        <div className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-xs font-medium">
-                          {title.tone}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </div>
-
-                    <div className="col-span-2">
-                      {((title as any).keywords || title.tags) && ((title as any).keywords || title.tags).length > 0 ? (
-                        <div className="flex flex-wrap gap-1 max-h-[3.5rem] overflow-hidden">
-                          {((title as any).keywords || title.tags).map((tag: string, idx: number) => (
-                            <div key={`${title.title_id}-keyword-${idx}`} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[120px]" title={tag}>
-                              {tag}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </div>
-
-                    <div className="col-span-1">
-                      {title.comps && title.comps.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {title.comps.slice(0, 2).map((comp, index) => (
-                            <div key={index} className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-medium truncate max-w-[100px]" title={comp}>
-                              {comp}
-                            </div>
-                          ))}
-                          {title.comps.length > 2 && (
-                            <span className="text-xs text-gray-500">+{title.comps.length - 2}</span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </div>
-
-                    <div className="col-span-1 flex justify-center gap-2">
-                      <Link to={`/admin/asset-generation?titleId=${title.title_id}`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-gray-300 hover:bg-gray-100"
-                          title="View Generated Assets"
-                        >
-                          <Sparkles className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                      <Link to={`/admin/titles/${title.title_id}/edit`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-gray-300 hover:bg-gray-100"
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Mobile Card Layout */}
-                  <div className="lg:hidden p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex gap-4">
-                      {/* Image */}
-                      <div className="flex-shrink-0">
-                        {title.title_image ? (
-                          <div className="w-20 h-24 bg-gray-200 rounded-lg overflow-hidden">
-                            <img
-                              src={title.title_image}
-                              alt={title.title_name_en || title.title_name_kr}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-20 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <span className="text-xs text-gray-400">No Image</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="mb-2">
-                          {title.pitch && (
-                            <PitchBadge size="sm" className="mr-2" />
-                          )}
-                          <h3 className="font-semibold text-gray-800 text-base line-clamp-2">
-                            {title.title_name_en || title.title_name_kr}
-                          </h3>
-                          {title.title_name_en && title.title_name_kr && (
-                            <p className="text-sm text-gray-500 mt-1 line-clamp-1">
-                              {title.title_name_kr}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-1 items-center mb-3">
-                          {title.genre && (
-                            Array.isArray(title.genre) ? (
-                              title.genre.slice(0, 2).map((g, idx) => (
-                                <span key={idx} className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
-                                  {formatGenre(g)}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="inline-block bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
-                                {formatGenre(title.genre)}
-                              </span>
-                            )
-                          )}
-                          {Array.isArray(title.genre) && title.genre.length > 2 && (
-                            <span className="text-xs text-gray-500">+{title.genre.length - 2}</span>
-                          )}
-
-                          {title.tone && (
-                            <span className="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-lg text-xs font-medium">
-                              {title.tone}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-2">
-                          <Link to={`/admin/asset-generation?titleId=${title.title_id}`} className="flex-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-gray-300 hover:bg-gray-100 w-full"
-                            >
-                              <Sparkles className="w-4 h-4 mr-2" />
-                              Assets
-                            </Button>
-                          </Link>
-                          <Link to={`/admin/titles/${title.title_id}/edit`} className="flex-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-gray-300 hover:bg-gray-100 w-full"
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="px-6 py-12 text-center text-gray-500">
+            ) : filteredTitles.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
                 No titles found
               </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Title
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Genre
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Format
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Views
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Rating
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredTitles.map((title) => (
+                      <tr key={title.title_id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {title.title_image && (
+                              <div className="flex-shrink-0 h-10 w-10 rounded overflow-hidden bg-gray-100 mr-3">
+                                <img
+                                  src={title.title_image}
+                                  alt={title.title_name_en || title.title_name_kr || ''}
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            <div>
+                              <div className="text-sm font-medium text-black">
+                                {title.title_name_en || title.title_name_kr}
+                              </div>
+                              {title.title_name_kr && title.title_name_en && (
+                                <div className="text-xs text-gray-500">
+                                  {title.title_name_kr}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {title.genre || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {title.content_format || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              title.completed
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}
+                          >
+                            {title.completed ? 'Completed' : 'Ongoing'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {title.views ? titlesService.formatNumber(title.views) : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {title.rating ? title.rating.toFixed(1) : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleEdit(title)}
+                            title="Edit"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() =>
+                              handleDelete(
+                                title.title_id,
+                                title.title_name_en || title.title_name_kr || 'this title'
+                              )
+                            }
+                            disabled={deletingId === title.title_id}
+                            title="Delete"
+                          >
+                            {deletingId === title.title_id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Edit Modal */}
+      {editingTitle && (
+        <TitleEditModal
+          title={editingTitle}
+          onSave={handleSaveEdit}
+          onClose={() => setEditingTitle(null)}
+        />
+      )}
     </AdminLayout>
   );
 }

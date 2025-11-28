@@ -1,15 +1,17 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Sparkles, AlertCircle, Wand2 } from 'lucide-react';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Alert, AlertDescription, AlertTitle } from '@kstorybridge/ui';
 import { useAuth } from '@/hooks/useAuth';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useAssetsByTitle, useAnalyzePitch } from '@/hooks/useAssetGeneration';
 import { TitleSelector } from '@/components/admin/TitleSelector';
 import { AssetIdeaList } from '@/components/admin/AssetIdeaList';
 import { GenerationStats } from '@/components/admin/GenerationStats';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import type { TitleWithPitch } from '@/types/asset-generation';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
  * AssetGeneration Page
@@ -20,7 +22,6 @@ export default function AssetGeneration() {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [selectedTitle, setSelectedTitle] = React.useState<TitleWithPitch | null>(null);
-  const [isLoadingTitle, setIsLoadingTitle] = React.useState(false);
 
   const { data: assets, isLoading: isLoadingAssets } = useAssetsByTitle(selectedTitle?.title_id || null);
   const analyzePitch = useAnalyzePitch();
@@ -31,7 +32,6 @@ export default function AssetGeneration() {
   // Auto-load title if titleId is in URL parameter
   React.useEffect(() => {
     if (titleIdFromUrl && !selectedTitle) {
-      setIsLoadingTitle(true);
 
       // Fetch the title from database
       supabase
@@ -50,7 +50,6 @@ export default function AssetGeneration() {
           } else if (data) {
             setSelectedTitle(data as TitleWithPitch);
           }
-          setIsLoadingTitle(false);
         });
     }
   }, [titleIdFromUrl, selectedTitle, toast]);

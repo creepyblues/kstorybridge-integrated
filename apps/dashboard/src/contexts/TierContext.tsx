@@ -1,45 +1,126 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useTierAccess } from '@/hooks/useTierAccess';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 
-type UserTier = 'basic' | 'pro' | 'suite';
+// 🚨 BUSINESS LOGIC - NOT AUTH
+// This context manages tier/billing features
+// It MUST NOT block authentication flow
+
+export type UserTier = 'basic' | 'invited' | 'pro' | 'suite';
 
 interface TierContextType {
-  tier: UserTier | null;
+  tier: UserTier;
   loading: boolean;
-  isBasic: boolean;
-  isPro: boolean;
-  isSuite: boolean;
-  hasMinimumTier: (requiredTier: UserTier) => boolean;
-  canAccessPremiumContent: boolean;
-  canAccessSuiteFeatures: boolean;
+  hasAccess: (requiredTier: UserTier) => boolean;
+  refetch: () => Promise<void>;
+  error: string | null;
 }
 
 const TierContext = createContext<TierContextType | undefined>(undefined);
 
+const tierHierarchy: Record<UserTier, number> = {
+  invited: 0,
+  basic: 1,
+  pro: 2,
+  suite: 3,
+};
+
+const TIER_FETCH_TIMEOUT_MS = 10000; // 10 seconds
+
 /**
- * TierProvider - Provides tier information to all child components
- * This prevents multiple database queries by fetching user tier once
- * at the page level and sharing it throughout the component tree.
+ * Timeout wrapper for async operations
+ * Fails fast to prevent blocking the app
  */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${operation} timed out after ${timeoutMs}ms`)), timeoutMs)
+    ),
+  ]);
+}
+
 export function TierProvider({ children }: { children: ReactNode }) {
-  const tierAccess = useTierAccess();
+  const { user, session } = useAuth();
+  const [tier, setTier] = useState<UserTier>('basic');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTier = useCallback(async () => {
+    if (!user || !session) {
+      setTier('basic');
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    try {
+      // Wrap database query with timeout protection
+      const result = await withTimeout(
+        supabase
+          .from('user_buyers')
+          .select('tier')
+          .eq('id', user.id)
+          .maybeSingle() as unknown as Promise<any>,
+        TIER_FETCH_TIMEOUT_MS,
+        'Tier fetch'
+      );
+
+      const { data, error: queryError } = result as any;
+
+      if (queryError) {
+        console.error('[TierProvider] Query error:', queryError);
+        // Fail-safe: Default to 'basic' tier on error, don't block app
+        setTier('basic');
+        setError('Unable to load subscription tier. Defaulting to basic access.');
+      } else if (data) {
+        setTier(data.tier as UserTier);
+        setError(null);
+      } else {
+        // Profile doesn't exist yet (e.g., during OAuth flow)
+        // Fail-safe: Default to 'basic', let profile creation complete
+        console.warn('[TierProvider] No buyer profile found, defaulting to basic tier');
+        setTier('basic');
+        setError(null);
+      }
+    } catch (err: any) {
+      console.error('[TierProvider] Fetch error:', err);
+      // Fail-safe: Always default to 'basic' on any error
+      setTier('basic');
+      setError(
+        err.message?.includes('timed out')
+          ? 'Tier check timed out. Using basic access.'
+          : 'Unable to load subscription tier. Using basic access.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [user, session]); // useCallback dependencies
+
+  useEffect(() => {
+    fetchTier();
+  }, [fetchTier]); // Now includes fetchTier which is stable via useCallback
+
+  const hasAccess = (requiredTier: UserTier): boolean => {
+    return tierHierarchy[tier] >= tierHierarchy[requiredTier];
+  };
+
+  const refetch = async () => {
+    setLoading(true);
+    await fetchTier();
+  };
 
   return (
-    <TierContext.Provider value={tierAccess}>
+    <TierContext.Provider value={{ tier, loading, hasAccess, refetch, error }}>
       {children}
     </TierContext.Provider>
   );
 }
 
-/**
- * useTier - Hook to access tier information from context
- * Use this instead of useTierAccess() in components to avoid
- * multiple database queries.
- */
-export function useTier(): TierContextType {
+export function useTierAccess() {
   const context = useContext(TierContext);
   if (context === undefined) {
-    throw new Error('useTier must be used within a TierProvider');
+    throw new Error('useTierAccess must be used within a TierProvider');
   }
   return context;
 }

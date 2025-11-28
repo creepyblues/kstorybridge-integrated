@@ -7,10 +7,16 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { listPosts, deletePost, type ContentPost } from '@/services/contentService';
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge } from '@kstorybridge/ui';
 import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Dialog } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const ContentList = () => {
   const navigate = useNavigate();
@@ -146,7 +152,7 @@ export const ContentList = () => {
               <Input
                 placeholder="Search by title or excerpt..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.FormEvent) => setSearchQuery((e as React.ChangeEvent<HTMLInputElement>).target.value)}
                 className="pl-10"
               />
             </div>
@@ -263,8 +269,6 @@ export const ContentList = () => {
         onConfirm={confirmDelete}
         title="Delete Post"
         description={`Are you sure you want to delete "${postToDelete?.title}"? This action cannot be undone.`}
-        confirmText="Delete Post"
-        cancelText="Cancel"
       />
     </div>
   );

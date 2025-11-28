@@ -46,8 +46,8 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
 > 🗂️ **[Master Documentation Index](docs/INDEX.md)** - Complete documentation catalog
 
 ### App-Specific Guides
-- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Buyer dashboard with tier system, premium content, AI chatbot (also serves auth pages for buyers and creators temporarily)
-- **[Dashboard Next](apps/dashboard-next/CLAUDE.md)** - Next generation buyer dashboard (v2.0, replacement for current dashboard)
+- **[Dashboard App](apps/dashboard/CLAUDE.md)** - Buyer dashboard with tier system, premium content, AI chatbot (v2.0 - clean rebuild, all emails allowed)
+- **[Dashboard Legacy](apps/dashboard-legacy/CLAUDE.md)** - 🗄️ ARCHIVED (Nov 2025) - Previous buyer dashboard (reference only)
 - **[Creator App](apps/creator/CLAUDE.md)** - Creator-focused dashboard for content management
 - **[Website App](apps/website/CLAUDE.md)** - Marketing pages, auth redirects
 
@@ -67,6 +67,12 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
 - **[PHASE_1_2_SUMMARY.md](docs/features/chatbot/PHASE_1_2_SUMMARY.md)** - Phase 1 & 2 test results
 - **[PITCH_ANALYTICS.md](docs/features/chatbot/PITCH_ANALYTICS.md)** - Phase 3 integration plan
 - **[TESTING_GUIDE.md](docs/features/chatbot/TESTING_GUIDE.md)** - Testing procedures
+
+**Mandate Matcher** (✅ LIVE - 2025-11-22):
+- AI-powered title recommendations based on production mandates
+- Vector search using OpenAI embeddings (text-embedding-ada-002)
+- Cost: ~$0.0015 per search, returns top 15 matches
+- Route: `/buyers/mandates`
 
 **Stripe Payment Integration** (`docs/`):
 - **[STRIPE_PAYMENT_INTEGRATION.md](docs/STRIPE_PAYMENT_INTEGRATION.md)** - Complete implementation summary (✅ LIVE - 2025-11-14)
@@ -132,13 +138,12 @@ npm run preview           # Preview production build
 ### Project Structure
 ```
 ├── apps/
-│   ├── dashboard/       # Buyer dashboard (port 8081)
-│   ├── dashboard-next/  # Next generation buyer dashboard v2.0 (port 8085)
-│   ├── creator-v2/      # Creator dashboard (port 8083)
-│   ├── creator-v1/      # 🗄️ ARCHIVED (Oct 2025) - Legacy creator app (reference only)
-│   └── website/         # Marketing website (port 5173)
-├── packages/            # Shared libraries
-└── docs/                # Documentation
+│   ├── dashboard/         # Buyer dashboard v2.0 (port 8081) - clean rebuild
+│   ├── dashboard-legacy/  # 🗄️ ARCHIVED (Nov 2025) - Previous buyer dashboard
+│   ├── creator/           # Creator dashboard (port 8083)
+│   └── website/           # Marketing website (port 5173)
+├── packages/              # Shared libraries
+└── docs/                  # Documentation
 ```
 
 ### Technology Stack

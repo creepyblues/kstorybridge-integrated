@@ -43,7 +43,7 @@ interface EditTitleFormData {
   underlying_novel_en?: string
   rights_holder_name?: string
   rights_holder_company?: string
-  rights?: string
+  rights_available?: string[]
   perfect_for?: string
   audience?: string
   platforms: Array<{
@@ -140,6 +140,7 @@ export default function EditTitle() {
       genre: [],
       is_official_english_title: true,
       english_title_type: 'official',
+      rights_available: [],
       platforms: [],
 
       // Step 2 defaults
@@ -208,7 +209,7 @@ export default function EditTitle() {
         underlying_novel_en: data.underlying_novel_en || '',
         rights_holder_name: data.rights_holder_name || '',
         rights_holder_company: data.rights_holder_company || '',
-        rights: data.rights || '',
+        rights_available: Array.isArray(data.rights_available) ? data.rights_available : [],
         perfect_for: data.perfect_for || '',
         audience: data.audience || '',
         platforms: data.platforms || [],
@@ -219,7 +220,7 @@ export default function EditTitle() {
         tagline_kr: data.tagline_kr || '',
         description_kr: data.description_kr || '',
         inspiration: data.inspiration || '',
-        comparables: data.comparables || [],
+        comparables: data.comps || [],
         important_issues: data.important_issues || '',
         setting_description: data.setting_description || '',
         world_lore: data.world_lore || '',
@@ -283,9 +284,6 @@ export default function EditTitle() {
           : null,
         tone: values.tone?.trim() || null,
         art_author: values.art_author?.trim() || null,
-        author: values.author?.trim() || null,
-        writer: values.writer?.trim() || null,
-        illustrator: values.illustrator?.trim() || null,
         is_official_english_title: values.is_official_english_title,
         english_title_type: values.english_title_type,
         script_title_kr: values.script_title_kr?.trim() || null,
@@ -296,7 +294,9 @@ export default function EditTitle() {
         underlying_novel_en: values.underlying_novel_en?.trim() || null,
         rights_holder_name: values.rights_holder_name?.trim() || null,
         rights_holder_company: values.rights_holder_company?.trim() || null,
-        rights: values.rights?.trim() || null,
+        rights_available: values.rights_available && values.rights_available.length > 0
+          ? values.rights_available
+          : null,
         perfect_for: values.perfect_for?.trim() || null,
         audience: values.audience?.trim() || null,
 
@@ -306,7 +306,7 @@ export default function EditTitle() {
         tagline_kr: values.tagline_kr?.trim() || null,
         description_kr: values.description_kr?.trim() || null,
         inspiration: values.inspiration?.trim() || null,
-        comparables: values.comparables && values.comparables.length > 0
+        comps: values.comparables && values.comparables.length > 0
           ? values.comparables
           : null,
         important_issues: values.important_issues?.trim() || null,

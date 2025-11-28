@@ -9,7 +9,7 @@
  */
 
 import { CompExample } from '@/data/examplesData';
-import { Card, CardContent } from '@kstorybridge/ui';
+import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Lightbulb } from 'lucide-react';
 
 interface ExampleCardProps {
@@ -26,7 +26,7 @@ export default function ExampleCard({ example, onTryExample }: ExampleCardProps)
     <Card className="bg-white border border-gray-300 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
       <CardContent className="p-5">
         {/* Title */}
-        <h4 className="text-base font-bold text-gray-900 mb-3 group-hover:text-hanok-teal transition-colors">
+        <h4 className="text-base font-bold text-gray-900 mb-3 group-hover:text-[#4C9C9B] transition-colors">
           {example.icon} {example.title}
         </h4>
 
@@ -51,7 +51,7 @@ export default function ExampleCard({ example, onTryExample }: ExampleCardProps)
         <div className="mb-4 space-y-1.5">
           {example.breakdown.map((item, idx) => (
             <div key={idx} className="flex items-start gap-2 text-xs text-gray-700">
-              <span className="text-hanok-teal mt-0.5">•</span>
+              <span className="text-[#4C9C9B] mt-0.5">•</span>
               <span className="flex-1">{item}</span>
             </div>
           ))}
@@ -82,7 +82,7 @@ export default function ExampleCard({ example, onTryExample }: ExampleCardProps)
         {/* Try Button */}
         <button
           onClick={handleTryExample}
-          className="w-full flex items-center justify-center gap-2 bg-hanok-teal hover:bg-hanok-teal/90 text-white rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-[#4C9C9B] hover:bg-[#4C9C9B]/90 text-white rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
         >
           <span>Try This Example</span>
           <ArrowRight className="h-4 w-4" />

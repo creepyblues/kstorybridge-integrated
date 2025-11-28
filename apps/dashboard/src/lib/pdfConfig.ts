@@ -1,4 +1,5 @@
 import { pdfjs } from 'react-pdf';
+import { debug } from '@/utils/debug';
 
 /**
  * Centralized PDF.js Configuration
@@ -20,7 +21,7 @@ import { pdfjs } from 'react-pdf';
 // Configure PDF.js worker (CDN with exact version to prevent cache conflicts)
 pdfjs.GlobalWorkerOptions.workerSrc =
   'https://unpkg.com/pdfjs-dist@5.3.31/build/pdf.worker.min.mjs';
-console.log('📄 PDF.js: Worker configured from unpkg CDN (v5.3.31)');
+debug.log('📄 PDF.js: Worker configured from unpkg CDN (v5.3.31)');
 
 // Export configured pdfjs instance
 export { pdfjs };

@@ -34,6 +34,14 @@ interface TransactionTemplateData {
   timestamp: string;
 }
 
+interface PaymentConfirmationData {
+  userName: string;
+  userEmail: string;
+  plan: string;
+  price: number;
+  nextBillingDate: string;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -658,6 +666,328 @@ ${tierUpdateSuccess ? '✅ User tier has been successfully updated in the databa
 ---
 This is an automated notification from KStoryBridge payment system.
 View transaction details in Stripe Dashboard: https://dashboard.stripe.com
+`
+
+      return { html, text }
+    },
+
+    payment_confirmation: (data: PaymentConfirmationData) => {
+      const { userName, userEmail, plan, price, nextBillingDate } = data
+
+      const planFeatures = plan.toLowerCase() === 'suite'
+        ? [
+          'Access to all pitch decks and materials',
+          'Premium title analytics and insights',
+          'Advanced search and discovery filters',
+          'Early access to new titles',
+          'Dedicated account manager',
+          '1-on-1 consultation calls',
+          'Custom reports and API access'
+        ]
+        : [
+          'Access to all pitch decks and materials',
+          'Premium title analytics and insights',
+          'Advanced search and discovery filters',
+          'Priority email support',
+          'Export title data'
+        ]
+
+      const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to KStoryBridge ${plan}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9fafb;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+            background: linear-gradient(135deg, #4C9C9B 0%, #3a7a79 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        .tagline {
+            opacity: 0.9;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        .subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 32px;
+            font-weight: 400;
+        }
+        .confirmation-box {
+            background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+            border: 1px solid #99f6e4;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        .confirmation-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f766e;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .confirmation-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #99f6e4;
+        }
+        .confirmation-row:last-child {
+            border-bottom: none;
+        }
+        .confirmation-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .confirmation-value {
+            color: #111827;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .price-highlight {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f766e;
+        }
+        .features-section {
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 32px 0;
+        }
+        .features-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .features-list li {
+            padding: 10px 0;
+            color: #4b5563;
+            position: relative;
+            padding-left: 28px;
+            font-size: 15px;
+        }
+        .features-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4C9C9B 0%, #3a7a79 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: 0.025em;
+        }
+        .help-section {
+            text-align: center;
+            margin: 32px 0;
+            padding: 24px;
+            background-color: #f9fafb;
+            border-radius: 12px;
+        }
+        .help-text {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .help-email {
+            color: #4C9C9B;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .footer {
+            background-color: #4C9C9B;
+            color: white;
+            padding: 32px 30px;
+            text-align: center;
+        }
+        .footer-content {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        .footer-links a {
+            color: white;
+            text-decoration: underline;
+            margin: 0 8px;
+        }
+        .footer-address {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .content {
+                padding: 30px 20px;
+            }
+            .header {
+                padding: 30px 20px;
+            }
+            .greeting {
+                font-size: 24px;
+            }
+            .cta-button {
+                padding: 14px 24px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">KStoryBridge</div>
+            <div class="tagline">Your Premium Subscription is Active</div>
+        </div>
+
+        <div class="content">
+            <h1 class="greeting">Welcome to ${plan}, ${userName}!</h1>
+            <p class="subtitle">Thank you for upgrading your account</p>
+
+            <div class="confirmation-box">
+                <div class="confirmation-title">
+                    ✅ Payment Confirmed
+                </div>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Plan</span>
+                    <span class="confirmation-value">${plan}</span>
+                </div>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Amount Charged</span>
+                    <span class="confirmation-value price-highlight">$${price.toFixed(2)}</span>
+                </div>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Next Billing Date</span>
+                    <span class="confirmation-value">${nextBillingDate}</span>
+                </div>
+                <div class="confirmation-row">
+                    <span class="confirmation-label">Account Email</span>
+                    <span class="confirmation-value">${userEmail}</span>
+                </div>
+            </div>
+
+            <div class="features-section">
+                <h3 class="features-title">🎉 Features Now Unlocked</h3>
+                <ul class="features-list">
+                    ${planFeatures.map(feature => `<li>${feature}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="cta-section">
+                <a href="https://dashboard.kstorybridge.com/buyers/titles" class="cta-button">Start Exploring Premium Content</a>
+            </div>
+
+            <div class="help-section">
+                <p class="help-text">Questions about your subscription?</p>
+                <a href="mailto:support@kstorybridge.com" class="help-email">support@kstorybridge.com</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-content">
+                Thank you for being a valued member of KStoryBridge.
+            </div>
+
+            <div class="footer-links">
+                <a href="https://dashboard.kstorybridge.com">Dashboard</a> |
+                <a href="https://kstorybridge.com">Website</a>
+            </div>
+
+            <div class="footer-address">
+                © 2025 KStoryBridge. All rights reserved.<br>
+                228 Park Ave S, #29976, New York, New York 10003, United States
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
+
+      const text = `
+Welcome to KStoryBridge ${plan}!
+
+Hello ${userName}!
+
+Thank you for upgrading your account. Your payment has been confirmed.
+
+PAYMENT DETAILS
+---------------
+Plan: ${plan}
+Amount Charged: $${price.toFixed(2)}
+Next Billing Date: ${nextBillingDate}
+Account Email: ${userEmail}
+
+FEATURES NOW UNLOCKED
+---------------------
+${planFeatures.map(feature => `✓ ${feature}`).join('\n')}
+
+Start exploring premium content: https://dashboard.kstorybridge.com/buyers/titles
+
+Questions about your subscription? Contact us at support@kstorybridge.com
+
+---
+© 2025 KStoryBridge. All rights reserved.
+Thank you for being a valued member of KStoryBridge.
 `
 
       return { html, text }

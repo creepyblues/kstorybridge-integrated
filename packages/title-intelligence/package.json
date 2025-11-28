@@ -1,0 +1,38 @@
+{
+  "name": "@kstorybridge/title-intelligence",
+  "version": "1.0.0",
+  "description": "Title intelligence data collection and normalization system",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "extract-title": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "extract": "tsx src/cli.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "webtoon",
+    "web-scraping",
+    "data-collection",
+    "title-intelligence"
+  ],
+  "author": "KStoryBridge",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^17.2.1",
+    "node-fetch": "^3.3.2",
+    "playwright": "^1.40.0",
+    "snoowrap": "^1.23.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

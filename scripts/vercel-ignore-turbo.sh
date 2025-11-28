@@ -47,8 +47,8 @@ case "$APP_NAME" in
   "dashboard")
     WORKSPACE="@kstorybridge/dashboard"
     ;;
-  "dashboard-next")
-    WORKSPACE="@kstorybridge/dashboard-next"
+  "dashboard-legacy")
+    WORKSPACE="@kstorybridge/dashboard-legacy"
     ;;
   "creator")
     WORKSPACE="@kstorybridge/creator"

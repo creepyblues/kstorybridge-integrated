@@ -1,22 +1,18 @@
 import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@kstorybridge/ui';
+import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
-  List,
   Star,
-  Users,
-  TestTube,
+  FileEdit,
+  BookOpen,
+  Sparkles,
   FileText,
   ArrowLeft,
   LogOut,
-  Zap,
-  MessageSquare,
-  FileEdit,
-  Sparkles,
-  BookOpen,
   Menu,
-  X
+  X,
+  Palette
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -29,7 +25,7 @@ interface AdminLayoutProps {
  * Admin layout with sidebar navigation
  *
  * Provides consistent layout and navigation for all admin pages.
- * Includes sidebar with links to all admin tools.
+ * Includes sidebar with links to 5 selected admin tools.
  * Responsive: hamburger menu on mobile, sidebar on desktop.
  */
 export default function AdminLayout({ children }: AdminLayoutProps) {
@@ -46,12 +42,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       description: 'Manage featured titles'
     },
     {
-      name: 'Titles',
-      href: '/admin/titles',
-      icon: List,
-      description: 'View and edit titles'
-    },
-    {
       name: 'Drafts',
       href: '/admin/drafts',
       icon: FileEdit,
@@ -64,35 +54,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       description: 'Learning & News CMS'
     },
     {
-      name: 'Users',
-      href: '/admin/users',
-      icon: Users,
-      description: 'User approval',
-      disabled: true
-    },
-    {
-      name: 'Scraper',
-      href: '/admin/scraper',
-      icon: TestTube,
-      description: 'Scraper testing'
-    },
-    {
-      name: 'Pitch Extraction',
-      href: '/admin/pitch-extraction-test',
-      icon: FileText,
-      description: 'Pitch deck analysis'
-    },
-    {
       name: 'Asset Generation',
       href: '/admin/asset-generation',
       icon: Sparkles,
       description: 'AI-powered marketing assets'
     },
     {
-      name: 'Chat Test',
-      href: '/admin/chat-test',
-      icon: MessageSquare,
-      description: 'Chat testing'
+      name: 'Pitch Extractor',
+      href: '/admin/pitch-extractor',
+      icon: FileText,
+      description: 'Pitch deck analysis'
     }
   ];
 
@@ -144,21 +115,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               return (
                 <Link
                   key={item.name}
-                  to={item.disabled ? '#' : item.href}
-                  onClick={(e) => {
-                    if (item.disabled) {
-                      e.preventDefault();
-                    } else {
-                      setIsMobileMenuOpen(false);
-                    }
-                  }}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 text-base font-normal transition-colors border-b border-gray-100 last:border-b-0",
-                    item.disabled
-                      ? "opacity-50 cursor-not-allowed"
-                      : isActive
-                        ? "bg-hanok-teal text-white"
-                        : "text-gray-900 hover:bg-gray-50"
+                    isActive
+                      ? "bg-hanok-teal text-white"
+                      : "text-gray-900 hover:bg-gray-50"
                   )}
                 >
                   <Icon className="w-5 h-5" />
@@ -207,7 +170,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
           {navigation.map((item) => {
             const isActive = location.pathname === item.href ||
                            location.pathname.startsWith(item.href + '/');
@@ -216,17 +179,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             return (
               <Link
                 key={item.name}
-                to={item.disabled ? '#' : item.href}
-                onClick={(e) => item.disabled && e.preventDefault()}
-                className={`
-                  flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                  ${item.disabled
-                    ? 'opacity-50 cursor-not-allowed'
-                    : isActive
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }
-                `}
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-gray-100 text-gray-900"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                )}
               >
                 <Icon className="w-5 h-5" />
                 <div className="flex-1">
@@ -236,6 +195,77 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </Link>
             );
           })}
+
+          {/* Design Previews Section - Development Only */}
+          {import.meta.env.DEV && (
+            <>
+              <div className="pt-4 mt-4 border-t border-gray-200">
+                <div className="flex items-center gap-2 px-3 py-2 mb-2">
+                  <Palette className="w-4 h-4 text-gray-500" />
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Design Previews
+                  </span>
+                </div>
+
+                {/* Design 1 */}
+                <div className="mb-3">
+                  <div className="px-3 py-1 text-xs font-medium text-gray-700">
+                    Design 1: Purple & Lavender
+                  </div>
+                  <Link
+                    to="/preview/design1"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:text-purple-700 hover:bg-purple-50 rounded transition-colors"
+                  >
+                    → Dashboard
+                  </Link>
+                  <Link
+                    to="/preview/design1/comps"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:text-purple-700 hover:bg-purple-50 rounded transition-colors"
+                  >
+                    → Comps Navigator
+                  </Link>
+                </div>
+
+                {/* Design 2 */}
+                <div className="mb-3">
+                  <div className="px-3 py-1 text-xs font-medium text-gray-700">
+                    Design 2: Hanok Teal & Sunrise Coral
+                  </div>
+                  <Link
+                    to="/preview/design2"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:text-hanok-teal hover:bg-hanok-teal/5 rounded transition-colors"
+                  >
+                    → Dashboard
+                  </Link>
+                  <Link
+                    to="/preview/design2/comps"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:text-hanok-teal hover:bg-hanok-teal/5 rounded transition-colors"
+                  >
+                    → Comps Navigator
+                  </Link>
+                </div>
+
+                {/* Design 3 */}
+                <div className="mb-3">
+                  <div className="px-3 py-1 text-xs font-medium text-gray-700">
+                    Design 3: Cool Slate & Cyan
+                  </div>
+                  <Link
+                    to="/preview/design3"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:text-cyan-700 hover:bg-cyan-50 rounded transition-colors"
+                  >
+                    → Dashboard
+                  </Link>
+                  <Link
+                    to="/preview/design3/comps"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:text-cyan-700 hover:bg-cyan-50 rounded transition-colors"
+                  >
+                    → Comps Navigator
+                  </Link>
+                </div>
+              </div>
+            </>
+          )}
         </nav>
 
         {/* Footer */}

@@ -6,8 +6,8 @@
  */
 
 import { useState } from 'react';
-import { Card, CardContent } from '@kstorybridge/ui';
-import { EXAMPLE_CATEGORIES, COMP_EXAMPLES, getExamplesByCategory } from '@/data/examplesData';
+import { Card, CardContent } from '@/components/ui/card';
+import { EXAMPLE_CATEGORIES, getExamplesByCategory } from '@/data/examplesData';
 import ExampleCard from './ExampleCard';
 
 interface ExamplesSectionProps {
@@ -18,32 +18,31 @@ export default function ExamplesSection({ onTryExample }: ExamplesSectionProps) 
   const [activeCategory, setActiveCategory] = useState('genre');
 
   const categoryExamples = getExamplesByCategory(activeCategory);
-  const activeCategoryLabel = EXAMPLE_CATEGORIES.find(c => c.id === activeCategory)?.label || 'Examples';
 
   return (
-    <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 shadow-sm rounded-2xl">
-      <CardContent className="p-6 md:p-8">
+    <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-2xl">
+      <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="mb-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <h3 className="text-2xl font-bold text-hanok-teal mb-2">
             Explore Example Combinations
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 leading-relaxed">
             Learn how to combine comps effectively by trying these curated examples
           </p>
         </div>
 
         {/* Category Tabs */}
-        <div className="mb-6 overflow-x-auto">
-          <div className="flex gap-2 min-w-max pb-2">
+        <div className="mb-6 overflow-x-auto -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0">
+          <div className="flex gap-2 pb-2">
             {EXAMPLE_CATEGORIES.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeCategory === category.id
-                    ? 'bg-hanok-teal text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                    ? 'bg-hanok-teal text-white shadow-md border border-hanok-teal'
+                    : 'bg-white text-gray-700 hover:bg-hanok-teal/5 border border-gray-200 hover:border-hanok-teal/30'
                 }`}
               >
                 {category.icon} {category.label}

@@ -1,18 +1,13 @@
-/**
- * DeleteConfirmDialog Component
- * Accessible confirmation dialog for delete operations
- * Replaces window.confirm with better UX and accessibility
- */
-
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Button,
-} from '@kstorybridge/ui';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface DeleteConfirmDialogProps {
   open: boolean;
@@ -20,46 +15,29 @@ interface DeleteConfirmDialogProps {
   onConfirm: () => void;
   title?: string;
   description?: string;
-  confirmText?: string;
-  cancelText?: string;
 }
 
-export const DeleteConfirmDialog = ({
+export function DeleteConfirmDialog({
   open,
   onOpenChange,
   onConfirm,
-  title = 'Are you sure?',
-  description = 'This action cannot be undone. This will permanently delete the item.',
-  confirmText = 'Delete',
-  cancelText = 'Cancel',
-}: DeleteConfirmDialogProps) => {
-  const handleConfirm = () => {
-    onConfirm();
-    onOpenChange(false);
-  };
-
+  title = "Are you sure?",
+  description = "This action cannot be undone.",
+}: DeleteConfirmDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            {cancelText}
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            {confirmText}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700">
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
-};
+}

@@ -1,280 +1,221 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
+import { debug } from '@/utils/debug';
 
-interface ChatMessage {
+export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp?: string;
 }
 
-interface OrchestratorResponse {
-  text?: string;
-  error?: string;
+export interface ChatResponse {
+  response: string;
   titles?: any[];
   suggestedQueries?: string[];
+  conversationId?: string;
 }
 
-interface SearchCompleteEvent {
-  type: 'search_complete';
-  resultsCount: number;
-  avgSimilarity: number;
-  topTitles: Array<{
-    title_id: string;
-    title_name_en?: string;
-    title_name_kr?: string;
-    title_image?: string;
-    genre?: string[];
-    tone?: string;
-    similarity: number;
-  }>;
-}
-
-interface StreamingChatOptions {
-  sessionId?: string;
-  onChunk?: (text: string) => void;
-  onSearchComplete?: (event: SearchCompleteEvent) => void;
-  onSuggestionsEarly?: (queries: string[]) => void;
-  onComplete?: (fullResponse: string, suggestedQueries?: string[]) => void;
-  onError?: (error: string) => void;
-  // Testing mode parameters
-  model?: string;
-  vectorSearchLimit?: number;
-  systemPrompt?: string;
-  formattingRules?: string;
-}
-
-class ChatOrchestratorService {
-  private baseUrl: string;
-
-  constructor() {
-    // Use the Supabase URL for edge functions
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
-    this.baseUrl = `${supabaseUrl}/functions/v1`;
-  }
-
+/**
+ * Chat Orchestrator Service
+ * Wraps the chat-orchestrator edge function
+ * Implements AI chatbot (Jinu) with vector search and GPT-4
+ */
+export const chatOrchestratorService = {
   /**
-   * Send a message to the chat orchestrator with streaming response
-   */
-  async sendMessageStream(
-    messages: ChatMessage[],
-    options: StreamingChatOptions = {}
-  ): Promise<string> {
-    const { sessionId, onChunk, onSearchComplete, onSuggestionsEarly, onComplete, onError, model, vectorSearchLimit, systemPrompt, formattingRules } = options;
-
-    try {
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No active session');
-      }
-
-      console.log('🔄 Orchestrator Request:', {
-        service: 'ChatOrchestratorService',
-        method: 'sendMessageStream',
-        targetAPI: 'OpenAI GPT-5-mini (via Supabase Edge Function)',
-        url: `${this.baseUrl}/chat-orchestrator`,
-        messagesCount: messages.length,
-        sessionId,
-        model: model || 'default',
-        vectorSearchLimit: vectorSearchLimit || 'default',
-        hasToken: !!session.access_token,
-        timestamp: new Date().toISOString()
-      });
-
-      const requestBody: any = {
-        messages,
-        sessionId
-      };
-
-      // Add testing parameters if provided
-      if (model) requestBody.model = model;
-      if (vectorSearchLimit) requestBody.vectorSearchLimit = vectorSearchLimit;
-      if (systemPrompt) requestBody.systemPrompt = systemPrompt;
-      if (formattingRules) requestBody.formattingRules = formattingRules;
-
-      const response = await fetch(`${this.baseUrl}/chat-orchestrator`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      console.log('📡 Orchestrator Response:', {
-        service: 'ChatOrchestratorService',
-        sourceAPI: 'OpenAI GPT-5-mini (via Supabase Edge Function)',
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        contentType: response.headers.get('content-type'),
-        timestamp: new Date().toISOString()
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      // Handle streaming response
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response stream available');
-      }
-
-      let fullResponse = '';
-      let suggestedQueries: string[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-
-            if (data === '[DONE]') {
-              onComplete?.(fullResponse, suggestedQueries);
-              return fullResponse;
-            }
-
-            try {
-              const parsed = JSON.parse(data);
-
-              if (parsed.error) {
-                throw new Error(parsed.error);
-              }
-
-              // Handle different event types
-              switch (parsed.type) {
-                case 'search_complete':
-                  console.log('✅ Search complete:', parsed);
-                  onSearchComplete?.(parsed as SearchCompleteEvent);
-                  break;
-
-                case 'suggestions':
-                  suggestedQueries = parsed.suggestedQueries || [];
-                  console.log('💡 Early suggestions received:', suggestedQueries);
-                  onSuggestionsEarly?.(suggestedQueries);
-                  break;
-
-                case 'text':
-                  fullResponse += parsed.text;
-                  onChunk?.(parsed.text);
-                  break;
-
-                default:
-                  // Legacy format support (no type field)
-                  if (parsed.text) {
-                    fullResponse += parsed.text;
-                    onChunk?.(parsed.text);
-                  }
-                  if (parsed.suggestedQueries) {
-                    suggestedQueries = parsed.suggestedQueries;
-                    console.log('💡 Suggested queries (legacy):', suggestedQueries);
-                  }
-              }
-            } catch (parseError) {
-              // Ignore parsing errors for non-JSON lines
-              console.debug('Non-JSON line:', data);
-            }
-          }
-        }
-      }
-
-      onComplete?.(fullResponse, suggestedQueries);
-      return fullResponse;
-
-    } catch (error) {
-      console.error('🚨 Chat orchestrator error:', {
-        error: error instanceof Error ? error.message : String(error),
-        fullError: error,
-        url: `${this.baseUrl}/chat-orchestrator`
-      });
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      onError?.(errorMessage);
-      throw error;
-    }
-  }
-
-  /**
-   * Send a simple message without streaming (fallback)
+   * Send a message to the chatbot
+   * @param query User's message
+   * @param conversationHistory Previous messages (optional)
+   * @param userId User ID for personalization (optional)
    */
   async sendMessage(
-    messages: ChatMessage[],
-    sessionId?: string
-  ): Promise<OrchestratorResponse> {
+    query: string,
+    conversationHistory: ChatMessage[] = [],
+    userId?: string
+  ): Promise<ChatResponse> {
     try {
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No active session');
+      debug.log('🤖 Sending message to chatbot', { query, historyLength: conversationHistory.length });
+
+      // Get current session with auth token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        console.error('❌ No active session', sessionError);
+        throw new Error('Please sign in to use the chatbot');
       }
 
-      const response = await fetch(`${this.baseUrl}/chat-orchestrator`, {
+      // Combine conversation history with new query into messages array
+      const messages: ChatMessage[] = [
+        ...conversationHistory,
+        { role: 'user', content: query }
+      ];
+
+      // Get Supabase URL from environment
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) {
+        throw new Error('VITE_SUPABASE_URL not configured');
+      }
+
+      // Use fetch with explicit Authorization header (like dashboard V1)
+      const response = await fetch(`${supabaseUrl}/functions/v1/chat-orchestrator`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`, // ✅ Explicit auth token
         },
         body: JSON.stringify({
           messages,
-          sessionId
+          userId,
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ Chat orchestrator error', { status: response.status, error: errorText });
+        throw new Error(`Chatbot error: ${response.statusText || 'Unknown error'}`);
       }
 
-      return await response.json();
+      // Parse SSE streaming response
+      const text = await response.text();
+      debug.log('📦 Raw response received:', text.substring(0, 200));
 
-    } catch (error) {
-      console.error('Chat orchestrator error:', error);
-      return {
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
-      };
-    }
-  }
+      let fullResponse = '';
+      let titles: any[] = [];
+      let suggestedQueries: string[] = [];
+      let conversationId: string | undefined;
 
-  /**
-   * Format conversation history for the orchestrator
-   */
-  formatConversationHistory(messages: any[]): ChatMessage[] {
-    return messages.map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'assistant',
-      content: msg.content,
-      timestamp: msg.timestamp?.toISOString() || new Date().toISOString()
-    }));
-  }
+      // Parse SSE format: "data: {...}\n\n"
+      const lines = text.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const jsonStr = line.slice(6); // Remove "data: " prefix
+            const data = JSON.parse(jsonStr);
 
-  /**
-   * Check if the orchestrator service is available
-   */
-  async healthCheck(): Promise<boolean> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        return false;
+            if (data.type === 'text') {
+              fullResponse += data.text;
+            } else if (data.type === 'titles') {
+              titles = data.titles || [];
+            } else if (data.type === 'suggestions' || data.type === 'suggested_queries') {
+              suggestedQueries = data.suggestedQueries || data.suggested_queries || [];
+            } else if (data.type === 'complete') {
+              conversationId = data.conversationId;
+            }
+          } catch (parseError) {
+            debug.log('⚠️ Skipping unparseable line:', line.substring(0, 100));
+          }
+        }
       }
 
-      const response = await fetch(`${this.baseUrl}/chat-orchestrator`, {
-        method: 'OPTIONS',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
+      debug.log('✅ Chatbot response parsed', {
+        responseLength: fullResponse.length,
+        titleCount: titles.length,
+        suggestedQueriesCount: suggestedQueries.length,
       });
 
-      return response.ok;
-    } catch (error) {
-      console.error('Health check failed:', error);
-      return false;
+      return {
+        response: fullResponse,
+        titles,
+        suggestedQueries,
+        conversationId,
+      };
+    } catch (error: any) {
+      console.error('❌ Chat service error', error);
+      throw error;
     }
-  }
-}
+  },
 
-export const chatOrchestratorService = new ChatOrchestratorService();
-export type { ChatMessage, OrchestratorResponse, StreamingChatOptions, SearchCompleteEvent };
+  /**
+   * Get suggested queries for empty state
+   * Returns 5 random prompts from a pool of 50 comprehensive suggestions
+   */
+  getSuggestedQueries(): string[] {
+    const allPrompts = [
+      // Genre-specific searches
+      "Show me romance webtoons with strong female leads",
+      "I'm looking for action stories with great art",
+      "What are some popular fantasy web novels?",
+      "Find me psychological thriller webtoons",
+      "Show me slice-of-life stories with heartwarming moments",
+      "I want dark fantasy with complex worldbuilding",
+      "Find horror webtoons with unique art styles",
+      "Show me comedy webtoons that are actually funny",
+      "I'm looking for sci-fi stories set in space",
+      "Find historical dramas with romance elements",
+
+      // Comparison searches
+      "Find me stories similar to Solo Leveling",
+      "Show me webtoons like Tower of God",
+      "I want something similar to Omniscient Reader's Viewpoint",
+      "Find stories with vibes like True Beauty",
+      "Show me web novels similar to The Legendary Moonlight Sculptor",
+      "I'm looking for stories like Remarried Empress",
+      "Find action series like The God of High School",
+      "Show me romance like What's Wrong with Secretary Kim",
+      "I want fantasy like The Beginning After The End",
+      "Find stories similar to Lore Olympus",
+
+      // Specific characteristics
+      "Show me completed series with high ratings",
+      "Find ongoing series with weekly updates",
+      "I want stories with overpowered protagonists",
+      "Show me webtoons with revenge plots",
+      "Find stories with time travel or regression themes",
+      "I'm looking for underdog to hero storylines",
+      "Show me stories with complex female characters",
+      "Find webtoons with found family dynamics",
+      "I want stories with enemies-to-lovers romance",
+      "Show me series with plot twists and mysteries",
+
+      // Platform and popularity
+      "What are the most popular webtoons right now?",
+      "Show me top-rated web novels from Korea",
+      "Find hidden gems that deserve more attention",
+      "What are the best completed series to binge?",
+      "Show me award-winning Korean content",
+      "Find trending stories on Naver and Kakao",
+      "What are the highest-rated romance webtoons?",
+      "Show me the best action series available",
+      "Find critically acclaimed web novels",
+      "What are the most viewed webtoons this year?",
+
+      // Target audience and tone
+      "I'm looking for mature, adult-oriented stories",
+      "Show me family-friendly webtoons",
+      "Find stories with serious, dark themes",
+      "I want lighthearted, feel-good content",
+      "Show me thought-provoking narratives",
+      "Find fast-paced, action-packed stories",
+      "I'm looking for slow-burn character development",
+      "Show me epic fantasy with multiple storylines",
+      "Find short, binge-worthy series under 100 chapters",
+      "I want long-running series with deep lore",
+    ];
+
+    // Fisher-Yates shuffle algorithm for true randomization
+    const shuffled = [...allPrompts];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Return first 5 from shuffled array
+    return shuffled.slice(0, 5);
+  },
+
+  /**
+   * Format title for display in chat
+   */
+  formatTitleForChat(title: any) {
+    return {
+      id: title.title_id,
+      nameEn: title.title_name_en || title.title_name_kr,
+      nameKr: title.title_name_kr,
+      genre: title.genre,
+      format: title.content_format,
+      views: title.views,
+      rating: title.rating,
+      image: title.title_image,
+      hasPitch: !!title.pitch,
+      similarity: title.similarity_score || title.similarity,
+    };
+  },
+};

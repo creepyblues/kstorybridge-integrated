@@ -1,0 +1,73 @@
+import { useState, KeyboardEvent, useRef, useEffect } from 'react';
+import { Send, Loader2 } from 'lucide-react';
+
+interface ChatInputProps {
+  onSendMessage: (message: string) => void;
+  loading?: boolean;
+  placeholder?: string;
+}
+
+export function ChatInput({ onSendMessage, loading, placeholder }: ChatInputProps) {
+  const [input, setInput] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
+
+  const handleSend = () => {
+    if (input.trim() && !loading) {
+      onSendMessage(input.trim());
+      setInput('');
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div className="w-full">
+      {/* Input container with ChatGPT-style design */}
+      <div className="relative bg-white border border-gray-200 rounded-3xl shadow-lg">
+        {/* Textarea */}
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder || "Ask me about Korean webtoons, web novels..."}
+          disabled={loading}
+          rows={1}
+          className="w-full resize-none border-0 bg-transparent py-4 px-5 pr-14 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 max-h-[200px] overflow-auto"
+        />
+
+        {/* Send button - absolute positioned inside textarea */}
+        <button
+          onClick={handleSend}
+          disabled={!input.trim() || loading}
+          className="absolute right-2 bottom-2 p-2.5 rounded-lg bg-hanok-teal hover:bg-hanok-teal/90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
+          aria-label="Send message"
+        >
+          {loading ? (
+            <Loader2 className="h-5 w-5 text-white animate-spin" />
+          ) : (
+            <Send className="h-5 w-5 text-white" />
+          )}
+        </button>
+      </div>
+
+      {/* Footer hint text */}
+      <p className="text-xs text-gray-500 text-center mt-3 px-4">
+        Press Enter to send, Shift+Enter for new line
+      </p>
+    </div>
+  );
+}

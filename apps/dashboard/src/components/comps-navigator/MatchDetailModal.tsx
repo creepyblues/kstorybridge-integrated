@@ -7,7 +7,7 @@
  * - Link to full title detail page
  */
 
-import { X, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { TitleMatch } from '@/services/compsNavigatorService';
 import {
@@ -15,8 +15,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  Button
-} from '@kstorybridge/ui';
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface MatchDetailModalProps {
   match: TitleMatch;

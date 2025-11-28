@@ -1,9 +1,22 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/hooks/useAuth'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import { AdminProtectedRoute } from '@/components/AdminProtectedRoute'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import AnalyticsProvider from '@/components/AnalyticsProvider'
 import { Toaster } from '@/components/ui/toaster'
+
+// Create QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+      retry: 1
+    }
+  }
+})
 
 // Auth pages
 import SignUp from '@/pages/auth/SignUp'
@@ -26,14 +39,18 @@ import Plan from '@/pages/Plan'
 import Billing from '@/pages/Billing'
 import PaymentSuccess from '@/pages/PaymentSuccess'
 
+// Admin tools
+import { ToolsRouter } from '@/pages/tools/ToolsRouter'
+
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <AnalyticsProvider />
-          <Toaster />
-          <Routes>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router>
+            <AnalyticsProvider />
+            <Toaster />
+            <Routes>
             {/* Public routes */}
             <Route path="/" element={<Navigate to="/signin" replace />} />
             <Route path="/signup" element={<SignUp />} />
@@ -155,11 +172,22 @@ function App() {
               }
             />
 
+            {/* Admin tools */}
+            <Route
+              path="/tools/*"
+              element={
+                <AdminProtectedRoute>
+                  <ToolsRouter />
+                </AdminProtectedRoute>
+              }
+            />
+
             {/* 404 */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Router>
       </AuthProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   )
 }

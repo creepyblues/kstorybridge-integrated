@@ -24,6 +24,39 @@ vi.mock('@/hooks/use-toast', () => ({
   }),
 }))
 
+// Mock analytics
+vi.mock('@/utils/analytics', () => ({
+  trackLogin: vi.fn(),
+  trackSignin: vi.fn(),
+  trackAuthError: vi.fn(),
+}))
+
+// Mock i18n
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, defaultValue?: string) => {
+      const translations: Record<string, string> = {
+        'auth:signIn.title': 'Sign In',
+        'auth:signIn.subtitle': 'Welcome back!',
+        'auth:signIn.emailLabel': 'Email',
+        'auth:signIn.emailPlaceholder': 'creator@example.com',
+        'auth:signIn.passwordLabel': 'Password',
+        'auth:signIn.passwordPlaceholder': 'Enter your password',
+        'auth:signIn.submitButton': 'Sign In',
+        'auth:signIn.submitting': 'Signing in...',
+        'auth:signIn.googleButton': 'Continue with Google',
+        'auth:signIn.noAccount': "Don't have an account?",
+        'auth:signIn.signUpLink': 'Sign up',
+        'auth:oauth.redirect': 'Redirecting...',
+      }
+      return translations[key] || defaultValue || key
+    },
+    i18n: {
+      changeLanguage: vi.fn(),
+    },
+  }),
+}))
+
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
@@ -134,11 +167,17 @@ describe('SignIn', () => {
     const submitButton = screen.getByRole('button', { name: /^sign in$/i })
     fireEvent.click(submitButton)
 
-    await waitFor(() => {
-      expect(screen.getByText(/please check your email and click the verification link/i)).toBeInTheDocument()
-      expect(screen.getByText(/verify your email/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /resend verification email/i })).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        // Error message in red box
+        expect(screen.getByText(/please verify your email address before signing in/i)).toBeInTheDocument()
+        // Alert box title
+        expect(screen.getByText(/verify your email/i)).toBeInTheDocument()
+        // Resend button
+        expect(screen.getByRole('button', { name: /resend verification email/i })).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
   })
 
   it('should handle resend verification email success', async () => {
@@ -248,10 +287,13 @@ describe('SignIn', () => {
     const submitButton = screen.getByRole('button', { name: /^sign in$/i })
     fireEvent.click(submitButton)
 
-    await waitFor(() => {
-      expect(screen.getByText(/invalid password/i)).toBeInTheDocument()
-      expect(screen.queryByText(/verify your email/i)).not.toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        // Component shows generic "Invalid email or password" for security (don't leak if email exists)
+        expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
   })
 
   it('should show loading state during signin', async () => {

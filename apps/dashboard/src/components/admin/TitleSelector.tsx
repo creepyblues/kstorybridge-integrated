@@ -1,11 +1,4 @@
-import React from 'react';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@kstorybridge/ui';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { useTitlesWithPitch } from '@/hooks/useAssetGeneration';
 import type { TitleWithPitch } from '@/types/asset-generation';
 

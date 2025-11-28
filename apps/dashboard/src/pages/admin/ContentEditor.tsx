@@ -19,11 +19,15 @@ import {
   isSlugUnique,
   type ContentPostInsert,
 } from '@/services/contentService';
-import { Button, Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle } from '@kstorybridge/ui';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { ArrowLeft, Save, Eye, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Form validation schema
 const postSchema = z.object({

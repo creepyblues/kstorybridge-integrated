@@ -3,12 +3,11 @@
  * Handles CRUD operations for CMS content posts (Learning Center & News)
  */
 
-import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { supabase } from "@/lib/supabase";
 
-export type ContentPost = Tables<"content_posts">;
-export type ContentPostInsert = TablesInsert<"content_posts">;
-export type ContentPostUpdate = TablesUpdate<"content_posts">;
+export type ContentPost = any; // TODO: Define content post type
+export type ContentPostInsert = any; // TODO: Define content post insert type
+export type ContentPostUpdate = any; // TODO: Define content post update type
 
 /**
  * Generate URL-friendly slug from title

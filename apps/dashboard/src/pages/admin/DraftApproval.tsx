@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@kstorybridge/ui";
-import { Button } from '@kstorybridge/ui';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@kstorybridge/ui";
 import { RefreshCw, Eye, FileEdit } from "lucide-react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { useToast } from "@/hooks/use-toast";
 import { draftService, type DraftWithCreator, type DraftStatus } from "@/services/draftService";
+// import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type FilterTab = 'all' | 'draft' | 'submitted' | 'approved' | 'rejected';
 
@@ -42,7 +43,7 @@ export default function AdminDraftApproval() {
       }
 
       setDrafts(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading drafts:', error);
 
       // Provide more helpful error message for RLS issues
@@ -66,7 +67,7 @@ export default function AdminDraftApproval() {
     try {
       const statsData = await draftService.getDraftStats();
       setStats(statsData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading stats:', error);
     }
   };
@@ -239,7 +240,7 @@ export default function AdminDraftApproval() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={(e) => {
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation();
                                   handleDraftClick(draft.id);
                                 }}
@@ -303,7 +304,7 @@ export default function AdminDraftApproval() {
                               size="sm"
                               variant="outline"
                               className="w-full border-gray-300 hover:bg-gray-100"
-                              onClick={(e) => {
+                              onClick={(e: React.MouseEvent) => {
                                 e.stopPropagation();
                                 handleDraftClick(draft.id);
                               }}

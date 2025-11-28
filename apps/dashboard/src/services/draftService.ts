@@ -1,4 +1,4 @@
-import { supabase, withRetry, isNetworkError } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export type DraftStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
@@ -67,18 +67,11 @@ export const draftService = {
    * Get all submitted drafts for admin review
    */
   async getAllSubmittedDrafts(): Promise<DraftWithCreator[]> {
-    const { data, error } = await withRetry(
-      () => supabase
-        .from('title_drafts')
-        .select('*')
-        .eq('status', 'submitted')
-        .order('submitted_at', { ascending: false }),
-      {
-        maxRetries: 2,
-        operationName: 'getAllSubmittedDrafts',
-        retryCondition: isNetworkError
-      }
-    );
+    const { data, error } = await supabase
+      .from('title_drafts')
+      .select('*')
+      .eq('status', 'submitted')
+      .order('submitted_at', { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch submitted drafts: ${error.message}`);
@@ -100,14 +93,7 @@ export const draftService = {
       query = query.eq('status', status);
     }
 
-    const { data, error } = await withRetry(
-      () => query.order('updated_at', { ascending: false }),
-      {
-        maxRetries: 2,
-        operationName: 'getAllDrafts',
-        retryCondition: isNetworkError
-      }
-    );
+    const { data, error } = await query.order('updated_at', { ascending: false });
 
     console.log('📊 getAllDrafts query result:', {
       status,
@@ -146,18 +132,11 @@ export const draftService = {
    * Get a single draft by ID with creator info
    */
   async getDraftById(draftId: string): Promise<DraftWithCreator | null> {
-    const { data, error } = await withRetry(
-      () => supabase
-        .from('title_drafts')
-        .select('*')
-        .eq('id', draftId)
-        .single(),
-      {
-        maxRetries: 2,
-        operationName: 'getDraftById',
-        retryCondition: isNetworkError
-      }
-    );
+    const { data, error } = await supabase
+      .from('title_drafts')
+      .select('*')
+      .eq('id', draftId)
+      .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -184,23 +163,16 @@ export const draftService = {
     draftId: string,
     adminUserId: string
   ): Promise<void> {
-    const { error } = await withRetry(
-      () => supabase
-        .from('title_drafts')
-        .update({
-          status: 'approved',
-          approved_at: new Date().toISOString(),
-          approved_by: adminUserId,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', draftId)
-        .eq('status', 'submitted'), // Only approve submitted drafts
-      {
-        maxRetries: 2,
-        operationName: 'approveDraft',
-        retryCondition: isNetworkError
-      }
-    );
+    const { error } = await supabase
+      .from('title_drafts')
+      .update({
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        approved_by: adminUserId,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', draftId)
+      .eq('status', 'submitted'); // Only approve submitted drafts
 
     if (error) {
       throw new Error(`Failed to approve draft: ${error.message}`);
@@ -225,24 +197,17 @@ export const draftService = {
       throw new Error('Rejection reason is required');
     }
 
-    const { error } = await withRetry(
-      () => supabase
-        .from('title_drafts')
-        .update({
-          status: 'rejected',
-          rejected_at: new Date().toISOString(),
-          approved_by: adminUserId,
-          rejection_reason: reason,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', draftId)
-        .eq('status', 'submitted'), // Only reject submitted drafts
-      {
-        maxRetries: 2,
-        operationName: 'rejectDraft',
-        retryCondition: isNetworkError
-      }
-    );
+    const { error } = await supabase
+      .from('title_drafts')
+      .update({
+        status: 'rejected',
+        rejected_at: new Date().toISOString(),
+        approved_by: adminUserId,
+        rejection_reason: reason,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', draftId)
+      .eq('status', 'submitted'); // Only reject submitted drafts
 
     if (error) {
       throw new Error(`Failed to reject draft: ${error.message}`);
@@ -259,16 +224,9 @@ export const draftService = {
     rejected: number;
     draft: number;
   }> {
-    const { data, error } = await withRetry(
-      () => supabase
-        .from('title_drafts')
-        .select('status'),
-      {
-        maxRetries: 2,
-        operationName: 'getDraftStats',
-        retryCondition: isNetworkError
-      }
-    );
+    const { data, error } = await supabase
+      .from('title_drafts')
+      .select('status');
 
     if (error) {
       throw new Error(`Failed to fetch draft stats: ${error.message}`);

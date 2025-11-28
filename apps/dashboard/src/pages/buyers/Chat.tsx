@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, History, MessageSquare } from 'lucide-react';
+import { Loader2, History } from 'lucide-react';
 import { ChatEmptyState } from '@/components/chat/ChatEmptyState';
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ConversationalMessage } from '@/components/chat/ConversationalMessage';
@@ -404,34 +404,20 @@ export default function Chat() {
   return (
     <BuyerLayout>
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 mb-40 space-y-4 sm:space-y-6 overflow-x-hidden">
-        {/* Header */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                <MessageSquare className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Chat with Jinu</h1>
-                <p className="text-base sm:text-lg text-gray-600 mt-1">AI-Powered Title Discovery</p>
-              </div>
-            </div>
-            {user?.id && (
-              <Button
-                onClick={() => setShowHistory(true)}
-                variant="outline"
-                size="sm"
-                className="border-gray-300 hover:bg-gray-100 flex-shrink-0"
-              >
-                <History className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">History</span>
-              </Button>
-            )}
+        {/* History Button */}
+        {user?.id && (
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setShowHistory(true)}
+              variant="outline"
+              size="sm"
+              className="border-gray-300 hover:bg-gray-100"
+            >
+              <History className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">History</span>
+            </Button>
           </div>
-          <p className="text-sm sm:text-base text-gray-600">
-            Ask Jinu about Korean titles, get personalized recommendations, and discover content that matches your needs.
-          </p>
-        </div>
+        )}
 
         {/* Main Content */}
         {isLoadingHistory ? (

@@ -8,7 +8,8 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { useTierAccess } from '@/contexts/TierContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Loader2, LayoutGrid, BookOpen, BarChart3, FolderOpen, Users } from 'lucide-react';
+import { ArrowLeft, Loader2, LayoutGrid, BookOpen, BarChart3, FolderOpen, Users, Bot } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 // Import new title detail components
 import {
@@ -18,7 +19,6 @@ import {
   PlatformDataTab,
   MaterialsTab,
   CreditsTab,
-  AIAnalysisSection,
 } from '@/components/title-detail';
 
 export default function TitleDetail() {
@@ -193,10 +193,23 @@ export default function TitleDetail() {
           onFavoriteToggle={handleFavoriteToggle}
         />
 
-        {/* Divider */}
-        <div className="py-2">
-          <hr className="border-gray-200" />
-        </div>
+        {/* AI Tagline Bubble - Standout Design */}
+        {title.tagline && (
+          <div className="flex gap-4 items-start p-5 bg-gradient-to-r from-hanok-teal/5 to-transparent border border-hanok-teal/20 rounded-2xl">
+            {/* AI Avatar */}
+            <div className="flex-shrink-0">
+              <div className="bg-hanok-teal rounded-full p-2.5 shadow-md">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            {/* Chat Bubble */}
+            <div className="flex-1">
+              <Card className="p-4 bg-white border-gray-200 shadow-sm">
+                <p className="text-base text-gray-800 leading-relaxed">"{title.tagline}"</p>
+              </Card>
+            </div>
+          </div>
+        )}
 
         {/* Tabbed Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -252,12 +265,12 @@ export default function TitleDetail() {
 
           <div className="mt-6">
             <TabsContent value="overview" className="mt-0">
-              <OverviewTab title={title} />
+              <OverviewTab title={title} pitchAnalysis={pitchAnalysis} userTier={tier} />
             </TabsContent>
 
             {hasStoryDetails && (
               <TabsContent value="story" className="mt-0">
-                <StoryDetailsTab title={title} />
+                <StoryDetailsTab title={title} pitchAnalysis={pitchAnalysis} />
               </TabsContent>
             )}
 
@@ -275,19 +288,12 @@ export default function TitleDetail() {
 
             {hasCredits && (
               <TabsContent value="credits" className="mt-0">
-                <CreditsTab title={title} />
+                <CreditsTab title={title} pitchAnalysis={pitchAnalysis} />
               </TabsContent>
             )}
           </div>
         </Tabs>
 
-        {/* AI Analysis Section - Collapsible at bottom */}
-        {pitchAnalysis && (
-          <AIAnalysisSection
-            pitchAnalysis={pitchAnalysis}
-            processingConfidence={title.processing_confidence}
-          />
-        )}
       </div>
     </BuyerLayout>
   );

@@ -4,4 +4,4 @@ export { StoryDetailsTab } from './StoryDetailsTab';
 export { PlatformDataTab } from './PlatformDataTab';
 export { MaterialsTab } from './MaterialsTab';
 export { CreditsTab } from './CreditsTab';
-export { AIAnalysisSection } from './AIAnalysisSection';
+export { AIInsightCard } from './AIInsightCard';

@@ -36,7 +36,7 @@ export function ChatInput({ onSendMessage, loading, placeholder }: ChatInputProp
   return (
     <div className="w-full">
       {/* Input container with ChatGPT-style design */}
-      <div className="relative bg-white border border-gray-200 rounded-3xl shadow-lg">
+      <div className="flex items-center bg-white border border-gray-200 rounded-3xl shadow-lg px-5 py-2">
         {/* Textarea */}
         <textarea
           ref={textareaRef}
@@ -46,14 +46,14 @@ export function ChatInput({ onSendMessage, loading, placeholder }: ChatInputProp
           placeholder={placeholder || "Ask me about Korean webtoons, web novels..."}
           disabled={loading}
           rows={1}
-          className="w-full resize-none border-0 bg-transparent py-4 px-5 pr-14 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 max-h-[200px] overflow-auto"
+          className="flex-1 resize-none border-0 bg-transparent py-2 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 max-h-[200px] overflow-auto"
         />
 
-        {/* Send button - absolute positioned inside textarea */}
+        {/* Send button */}
         <button
           onClick={handleSend}
           disabled={!input.trim() || loading}
-          className="absolute right-2 bottom-2 p-2.5 rounded-lg bg-hanok-teal hover:bg-hanok-teal/90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
+          className="ml-2 p-2.5 rounded-xl bg-hanok-teal hover:bg-hanok-teal/90 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 flex-shrink-0"
           aria-label="Send message"
         >
           {loading ? (

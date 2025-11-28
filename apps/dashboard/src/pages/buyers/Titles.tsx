@@ -1,12 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title, TitleFilters } from '@/services/titlesService';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TitleCard } from '@/components/title/TitleCard';
-import { Search, Loader2, BookOpen } from 'lucide-react';
+import { Search, Loader2, BookOpen, X } from 'lucide-react';
 
 const PAGE_SIZE = 12;
 
@@ -19,29 +16,9 @@ export default function Titles() {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState<string>('');
-  const [selectedFormat, setSelectedFormat] = useState<string>('');
-  const [genres, setGenres] = useState<string[]>([]);
-  const [formats, setFormats] = useState<string[]>([]);
 
   const observerTarget = useRef<HTMLDivElement>(null);
-
-  // Fetch genres and formats on mount
-  useEffect(() => {
-    const fetchMetadata = async () => {
-      try {
-        const [genresData, formatsData] = await Promise.all([
-          titlesService.getGenres(),
-          titlesService.getFormats(),
-        ]);
-        setGenres(genresData);
-        setFormats(formatsData);
-      } catch (error) {
-        console.error('Error fetching metadata:', error);
-      }
-    };
-    fetchMetadata();
-  }, []);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Fetch initial titles with filters
   useEffect(() => {
@@ -56,30 +33,12 @@ export default function Titles() {
           // Vector search returns all results at once (no pagination)
           const vectorResults = await titlesService.searchTitlesVector(searchQuery, 30);
 
-          // Apply genre/format filters to vector results
-          let filteredResults = vectorResults;
-
-          if (selectedGenre) {
-            filteredResults = filteredResults.filter(
-              title => title.genre?.includes(selectedGenre)
-            );
-          }
-
-          if (selectedFormat) {
-            filteredResults = filteredResults.filter(
-              title => title.content_format === selectedFormat
-            );
-          }
-
-          setTitles(filteredResults);
+          setTitles(vectorResults);
           setHasMore(false); // Vector search returns all results at once
           setOffset(0);
         } else {
           // Use traditional pagination when no search query
-          const filters: TitleFilters = {
-            genre: selectedGenre || undefined,
-            format: selectedFormat || undefined,
-          };
+          const filters: TitleFilters = {};
 
           const { data, hasMore: more } = await titlesService.getTitlesPaginated(
             filters,
@@ -90,11 +49,12 @@ export default function Titles() {
           setHasMore(more);
           setOffset(PAGE_SIZE);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error fetching titles:', error);
+        const message = error instanceof Error ? error.message : 'Failed to fetch titles';
         toast({
           title: 'Error',
-          description: error.message || 'Failed to fetch titles',
+          description: message,
           variant: 'destructive',
         });
       } finally {
@@ -108,7 +68,7 @@ export default function Titles() {
     }, searchQuery ? 500 : 0); // 500ms debounce for search, instant for filters
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery, selectedGenre, selectedFormat, toast]);
+  }, [searchQuery, toast]);
 
   // Load more titles on scroll (only works for non-vector search)
   const loadMoreTitles = useCallback(async () => {
@@ -121,10 +81,7 @@ export default function Titles() {
 
     setLoadingMore(true);
     try {
-      const filters: TitleFilters = {
-        genre: selectedGenre || undefined,
-        format: selectedFormat || undefined,
-      };
+      const filters: TitleFilters = {};
 
       const { data, hasMore: more } = await titlesService.getTitlesPaginated(
         filters,
@@ -135,7 +92,7 @@ export default function Titles() {
       setTitles((prev) => [...prev, ...data]);
       setHasMore(more);
       setOffset((prev) => prev + PAGE_SIZE);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading more titles:', error);
       toast({
         title: 'Error',
@@ -145,7 +102,7 @@ export default function Titles() {
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, offset, searchQuery, selectedGenre, selectedFormat, toast]);
+  }, [loadingMore, hasMore, offset, searchQuery, toast]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -190,92 +147,37 @@ export default function Titles() {
             Explore our catalog of Korean webtoons, web novels, and stories with intelligent search and filtering.
           </p>
         </div>
-        {/* Search and Filters */}
-        <Card className="mb-8 bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search titles (e.g., 'romantic comedy in Seoul')..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Genre Filter */}
-              <div>
-                <select
-                  value={selectedGenre}
-                  onChange={(e) => setSelectedGenre(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-hanok-teal/20 focus:border-hanok-teal"
-                >
-                  <option value="">All Genres</option>
-                  {genres.map((genre) => (
-                    <option key={genre} value={genre}>
-                      {genre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Format Filter */}
-              <div>
-                <select
-                  value={selectedFormat}
-                  onChange={(e) => setSelectedFormat(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-hanok-teal/20 focus:border-hanok-teal"
-                >
-                  <option value="">All Formats</option>
-                  {formats.map((format) => (
-                    <option key={format} value={format}>
-                      {format}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Active Filters */}
-            {(searchQuery || selectedGenre || selectedFormat) && (
-              <div className="mt-4 flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-gray-600 font-medium">Active filters:</span>
-                {searchQuery && (
-                  <span className="px-3 py-1 bg-hanok-teal/10 text-hanok-teal text-xs font-medium rounded-full border border-hanok-teal/20">
-                    Search: "{searchQuery}"
-                  </span>
-                )}
-                {selectedGenre && (
-                  <span className="px-3 py-1 bg-hanok-teal/10 text-hanok-teal text-xs font-medium rounded-full border border-hanok-teal/20">
-                    {selectedGenre}
-                  </span>
-                )}
-                {selectedFormat && (
-                  <span className="px-3 py-1 bg-hanok-teal/10 text-hanok-teal text-xs font-medium rounded-full border border-hanok-teal/20">
-                    {selectedFormat}
-                  </span>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedGenre('');
-                    setSelectedFormat('');
-                  }}
-                  className="h-7 px-3 text-xs text-gray-600 hover:text-hanok-teal hover:bg-hanok-teal/5"
-                >
-                  Clear all
-                </Button>
-              </div>
+        {/* Elegant Search Box */}
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center bg-white border border-gray-200 rounded-3xl shadow-lg px-5 py-2">
+            <Search className="h-5 w-5 text-gray-400 flex-shrink-0" />
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Search titles (e.g., 'romantic comedy in Seoul')..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 ml-3 py-2 text-[15px] text-gray-900 placeholder-gray-400 bg-transparent border-0 focus:outline-none focus:ring-0"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  inputRef.current?.focus();
+                }}
+                className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4 text-gray-400" />
+              </button>
             )}
-          </CardContent>
-        </Card>
+          </div>
+          {searchQuery && (
+            <p className="text-xs text-gray-500 text-center mt-2">
+              Using AI-powered semantic search
+            </p>
+          )}
+        </div>
 
         {/* Results */}
         {loading ? (

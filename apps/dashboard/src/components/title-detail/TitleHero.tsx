@@ -186,12 +186,6 @@ export function TitleHero({
           </div>
         </div>
 
-        {/* Tagline */}
-        {title.tagline && (
-          <div className="mt-4 p-3 bg-[#4C9C9B]/5 border-l-4 border-[#4C9C9B] rounded-r-lg">
-            <p className="text-gray-700 font-medium italic">"{title.tagline}"</p>
-          </div>
-        )}
       </div>
 
       {/* Action Buttons */}

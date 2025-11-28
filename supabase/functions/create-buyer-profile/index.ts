@@ -25,17 +25,18 @@ serve(async (req) => {
       }
     )
 
-    // Get request data
-    const {
-      userId,
-      email,
-      fullName,
-      buyerCompany,
-      buyerRole,
-      linkedinUrl,
-      tier,
-      requested
-    } = await req.json()
+    // Get request data - support both snake_case (frontend) and camelCase field names
+    const requestBody = await req.json()
+
+    // Extract fields with fallback for both naming conventions
+    const userId = requestBody.user_id || requestBody.userId
+    const email = requestBody.email
+    const fullName = requestBody.full_name || requestBody.fullName
+    const buyerCompany = requestBody.buyer_company || requestBody.buyerCompany
+    const buyerRole = requestBody.buyer_role || requestBody.buyerRole
+    const linkedinUrl = requestBody.linkedin_url || requestBody.linkedinUrl
+    const tier = requestBody.tier
+    const requested = requestBody.requested
 
     // Validate required fields
     if (!userId || !email || !fullName || !buyerCompany || !buyerRole) {

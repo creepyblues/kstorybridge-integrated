@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase';
-import { embeddingService } from './embeddingService';
 
 export interface VectorSearchResult {
   title_id: string;
@@ -19,11 +18,20 @@ export interface VectorSearchOptions {
   limit?: number; // Maximum number of results
 }
 
+interface VectorSearchResponse {
+  results: VectorSearchResult[];
+  query: string;
+  count: number;
+  processing_time_ms: number;
+  cost_estimate: number;
+  error?: string;
+}
+
 /**
- * Simplified Vector Search Service for Dashboard-Next
+ * Vector Search Service for Dashboard
  *
  * Provides semantic search for titles using OpenAI embeddings
- * and PostgreSQL vector similarity search.
+ * via the vector-search edge function.
  *
  * Performance: ~1-2 seconds (embedding generation + vector search)
  * Cost: ~$0.0001 per search
@@ -48,37 +56,40 @@ class VectorSearchService {
     try {
       console.log(`🔍 Starting vector search for: "${query}"`);
 
-      // Step 1: Generate embedding for the search query
-      console.log('🔄 Generating embedding for search query...');
-      const embeddingResult = await embeddingService.generateEmbedding(query);
-
-      if (!embeddingResult) {
-        throw new Error('Failed to generate query embedding');
-      }
-
-      console.log(`✅ Embedding generated (${embeddingResult.usage.total_tokens} tokens used)`);
-
-      // Step 2: Perform vector similarity search via RPC function
       const threshold = options?.threshold || this.DEFAULT_MATCH_THRESHOLD;
       const limit = options?.limit || this.DEFAULT_RESULT_COUNT;
 
-      console.log(`🔍 Searching with threshold=${threshold}, limit=${limit}...`);
+      console.log(`🔄 Calling vector-search edge function...`);
 
-      const { data: results, error } = await supabase.rpc('match_titles_by_embedding', {
-        query_embedding: embeddingResult.embedding,
-        match_threshold: threshold,
-        match_count: limit
+      // Call edge function (secure server-side embedding generation)
+      const { data, error } = await supabase.functions.invoke<VectorSearchResponse>('vector-search', {
+        body: {
+          query,
+          match_threshold: threshold,
+          match_count: limit,
+        },
       });
 
       if (error) {
-        console.error('❌ Vector search RPC error:', error);
+        console.error('❌ Vector search edge function error:', error);
         throw new Error(`Vector search failed: ${error.message}`);
       }
 
-      const searchResults = results || [];
+      if (data?.error) {
+        console.error('❌ Vector search returned error:', data.error);
+        throw new Error(data.error);
+      }
+
+      const searchResults = data?.results || [];
       const searchDuration = Date.now() - startTime;
 
       console.log(`✅ Vector search complete: ${searchResults.length} results in ${searchDuration}ms`);
+      if (data?.processing_time_ms) {
+        console.log(`📊 Server processing time: ${data.processing_time_ms}ms`);
+      }
+      if (data?.cost_estimate) {
+        console.log(`💰 Cost: $${data.cost_estimate.toFixed(6)}`);
+      }
 
       if (searchResults.length > 0) {
         console.log(`📊 Similarity range: ${searchResults[0]?.similarity?.toFixed(3)} to ${searchResults[searchResults.length - 1]?.similarity?.toFixed(3)}`);

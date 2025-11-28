@@ -32,6 +32,67 @@ export default function SignUp() {
     e.preventDefault();
     setLoading(true);
 
+    // Validate required fields
+    if (!formData.full_name.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Full name is required',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Email is required',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.password) {
+      toast({
+        title: 'Error',
+        description: 'Password is required',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: 'Error',
+        description: 'Password must be at least 6 characters',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.buyer_company.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Company is required',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.buyer_role) {
+      toast({
+        title: 'Error',
+        description: 'Role is required',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       await signUpWithEmail(formData.email, formData.password, {
         full_name: formData.full_name,
@@ -175,7 +236,7 @@ export default function SignUp() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="buyer_company">Company</Label>
+              <Label htmlFor="buyer_company">Company <span className="text-red-500">*</span></Label>
               <Input
                 id="buyer_company"
                 name="buyer_company"
@@ -188,7 +249,7 @@ export default function SignUp() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="buyer_role">Role</Label>
+              <Label htmlFor="buyer_role">Role <span className="text-red-500">*</span></Label>
               <select
                 id="buyer_role"
                 name="buyer_role"

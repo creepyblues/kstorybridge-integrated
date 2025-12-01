@@ -10,7 +10,7 @@ import { Compass, Search, History } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { compsNavigatorService, TitleMatch, CompSearch } from '@/services/compsNavigatorService';
-import CompSelector from '@/components/comps-navigator/CompSelector';
+import CompSelector, { CompTitle } from '@/components/comps-navigator/CompSelector';
 import RefinementInput from '@/components/comps-navigator/RefinementInput';
 import ResultsGrid from '@/components/comps-navigator/ResultsGrid';
 import SavedSearchesSidebar from '@/components/comps-navigator/SavedSearchesSidebar';
@@ -22,11 +22,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 
 type LoadingPhase = 'semantic' | 'reranking' | null;
 
+/**
+ * Helper to convert string[] to CompTitle[] (for loading from history/examples)
+ * Creates CompTitle objects without IMDB metadata
+ */
+const stringsToCompTitles = (titles: string[]): CompTitle[] =>
+  titles.map(title => ({
+    title,
+    imdbID: '',
+    year: '',
+    type: 'movie' as const
+  }));
+
+/**
+ * Helper to extract title strings from CompTitle[] (for API calls)
+ */
+const compTitlesToStrings = (compTitles: CompTitle[]): string[] =>
+  compTitles.map(c => c.title);
+
 export default function CompsNavigator() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [compTitles, setCompTitles] = useState<string[]>([]);
+  const [compTitles, setCompTitles] = useState<CompTitle[]>([]);
   const [refinementText, setRefinementText] = useState('');
   const [results, setResults] = useState<TitleMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,8 +79,11 @@ export default function CompsNavigator() {
       // Transition to reranking phase after semantic search completes
       const phaseTimer = setTimeout(() => setLoadingPhase('reranking'), 1500);
 
+      // Extract title strings for API call
+      const titleStrings = compTitlesToStrings(compTitles);
+
       const response = await compsNavigatorService.searchComps(
-        compTitles,
+        titleStrings,
         refinementText || undefined,
         user.email,
         true // Save search
@@ -94,7 +115,8 @@ export default function CompsNavigator() {
   };
 
   const handleLoadSearch = (search: CompSearch) => {
-    setCompTitles(search.comp_titles);
+    // Convert string[] from database to CompTitle[]
+    setCompTitles(stringsToCompTitles(search.comp_titles));
     setRefinementText(search.refinement_text || '');
 
     if (search.search_results && search.search_results.length > 0) {
@@ -114,7 +136,8 @@ export default function CompsNavigator() {
   };
 
   const handleTryExample = (comps: string[], refinement?: string) => {
-    setCompTitles(comps);
+    // Convert string[] from examples to CompTitle[]
+    setCompTitles(stringsToCompTitles(comps));
     if (refinement) {
       setRefinementText(refinement);
     }

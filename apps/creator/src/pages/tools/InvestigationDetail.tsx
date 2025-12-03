@@ -544,16 +544,6 @@ export function InvestigationDetail() {
                                 <span>Rating Count: {formatNumber(metrics.rating_votes || metrics.raw?.rating_count)}</span>
                               </label>
                             )}
-                            {/* Comment count */}
-                            {metrics.raw?.comment_count !== undefined && (
-                              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                                <Checkbox
-                                  checked={selectedFields['comment_count']?.source_id === source.id}
-                                  onCheckedChange={() => handleFieldToggle('comment_count', source, metrics.raw.comment_count)}
-                                />
-                                <span>Comment Count: {formatNumber(metrics.raw.comment_count)}</span>
-                              </label>
-                            )}
                             {/* Synopsis KR */}
                             {metrics.raw?.synopsis_kr && (
                               <label className="flex items-center gap-2 text-sm cursor-pointer">

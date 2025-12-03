@@ -21,6 +21,7 @@ import {
   Shield,
   FileText,
   X,
+  CheckCircle,
 } from 'lucide-react';
 
 interface OverviewTabProps {
@@ -73,6 +74,12 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
             <div className="flex items-center gap-2 mb-4">
               <Briefcase className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Rights Available</h3>
+              {title.verified && (
+                <Badge className="bg-green-500 text-white text-xs px-2 py-0.5">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Rights Verified
+                </Badge>
+              )}
             </div>
 
             {hasRightsAvailable ? (

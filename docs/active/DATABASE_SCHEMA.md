@@ -201,7 +201,7 @@ CREATE TABLE public.titles (
   tone text,
   audience text,
   rights text, -- DEPRECATED: Use rights_available instead
-  rights_available text[], -- Multi-select rights (film_tv, animation, publication, merchandising, game, other)
+  rights_available text[], -- Multi-select rights (film_tv, animation, publication, game, merchandising, audio, microdrama, other)
   art_author_kr text,
   story_author_kr text,
   note text,
@@ -301,7 +301,7 @@ CREATE TABLE public.titles (
 - `rights`: **DEPRECATED** (migrated 2025-11-12) - Use `rights_available` instead
 - `rights_available`: Multi-select array of available rights for licensing
   - Type: `text[]` (PostgreSQL array)
-  - Valid values: `film_tv`, `animation`, `publication`, `merchandising`, `game`, `other`
+  - Valid values: `film_tv`, `animation`, `publication`, `game`, `merchandising`, `audio`, `microdrama`, `other`
   - UI: Checkbox group in creator AddTitle/EditTitle forms
   - Migration: 244 titles migrated from old `rights` field
 - `rights_holder_name`: Rights holder's name

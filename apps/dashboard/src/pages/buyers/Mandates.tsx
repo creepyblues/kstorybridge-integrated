@@ -1,23 +1,29 @@
 // Page: Mandates
 // Created: 2025-11-21
+// Updated: 2025-12-02
 // Route: /buyers/mandates
 // Description: Producer mandate-based title recommendation system
+// Design: Follows BriefSearch pattern from Home page
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { mandateService, MandateSearch, TitleMatch } from '@/services/mandateService';
-import MandateInput from '@/components/mandates/MandateInput';
+import MandateSearchInput from '@/components/mandates/MandateSearchInput';
+import MandateExamples from '@/components/mandates/MandateExamples';
 import MandateHistorySidebar from '@/components/mandates/MandateHistorySidebar';
 import MandateResultsGrid from '@/components/mandates/MandateResultsGrid';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
-import { Sparkles, History } from 'lucide-react';
+import { History } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 export default function Mandates() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const hasTriggeredInitialSearch = useRef(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -26,11 +32,26 @@ export default function Mandates() {
   const [selectedMandateId, setSelectedMandateId] = useState<string | undefined>();
   const [mandateHistory, setMandateHistory] = useState<MandateSearch[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showExamples, setShowExamples] = useState(false);
+  const [initialBrief, setInitialBrief] = useState<string>('');
 
   // Load mandate history on mount
   useEffect(() => {
     loadMandateHistory();
   }, []);
+
+  // Handle URL parameter for initial search
+  useEffect(() => {
+    const briefParam = searchParams.get('brief');
+    if (briefParam && !hasTriggeredInitialSearch.current && user?.email) {
+      hasTriggeredInitialSearch.current = true;
+      setInitialBrief(briefParam);
+      // Clear the URL parameter
+      setSearchParams({}, { replace: true });
+      // Trigger search
+      handleSubmitMandate(briefParam);
+    }
+  }, [searchParams, user?.email]);
 
   const loadMandateHistory = async () => {
     if (!user?.email) return;
@@ -140,47 +161,53 @@ export default function Mandates() {
     }
   };
 
+  const handleClear = () => {
+    setCurrentResults([]);
+    setCurrentMandateText('');
+    setSelectedMandateId(undefined);
+  };
+
+  const handleTryExample = (mandateText: string) => {
+    setShowExamples(false);
+    handleSubmitMandate(mandateText);
+  };
+
   return (
     <BuyerLayout>
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
-        {/* Header */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                <Sparkles className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Mandate Matcher</h1>
-                <p className="text-base sm:text-lg text-gray-600 mt-1">AI-Powered Title Recommendations</p>
-              </div>
-            </div>
-            {user?.email && (
-              <Button
-                onClick={() => setShowHistory(true)}
-                variant="outline"
-                size="sm"
-                className="border-gray-300 hover:bg-gray-100 flex-shrink-0"
-              >
-                <History className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">History</span>
-              </Button>
-            )}
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8 overflow-x-hidden">
+        {/* History Button - Top Right */}
+        {user?.email && (
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setShowHistory(true)}
+              variant="outline"
+              size="sm"
+              className="border-gray-300 hover:bg-gray-100"
+            >
+              <History className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">History</span>
+            </Button>
           </div>
-          <p className="text-sm sm:text-base text-gray-600">
-            Find titles that match your production mandates using AI-powered semantic search. Describe what you're looking for and get instant recommendations.
-          </p>
-        </div>
+        )}
 
-            {/* Input Section */}
-            <MandateInput onSubmit={handleSubmitMandate} isLoading={isLoading} />
-
-        {/* Results Section */}
-        <MandateResultsGrid
-          results={currentResults}
+        {/* Search Input */}
+        <MandateSearchInput
+          onSearch={handleSubmitMandate}
+          onClear={handleClear}
+          onNeedHelp={() => setShowExamples(true)}
           isLoading={isLoading}
-          mandateText={currentMandateText}
+          hasResults={currentResults.length > 0}
+          initialValue={initialBrief}
         />
+
+        {/* Results */}
+        {(currentResults.length > 0 || isLoading) && (
+          <MandateResultsGrid
+            results={currentResults}
+            isLoading={isLoading}
+            mandateText={currentMandateText}
+          />
+        )}
       </div>
 
       {/* History Dialog */}
@@ -203,6 +230,26 @@ export default function Mandates() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Examples Modal */}
+      <Dialog open={showExamples} onOpenChange={setShowExamples}>
+        <DialogContent className="max-w-2xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col p-0">
+          <DialogHeader className="px-4 pt-4 pb-2 sm:px-6 sm:pt-6 border-b border-gray-100">
+            <DialogTitle className="text-lg sm:text-xl font-bold text-purple-600">
+              Example Mandates
+            </DialogTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              Learn how to write effective mandate descriptions with these examples
+            </p>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
+            <MandateExamples
+              onTryExample={handleTryExample}
+              isModal={true}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </BuyerLayout>
   );
 }

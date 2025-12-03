@@ -5,18 +5,18 @@
  * Allows buyers to search for Korean titles based on Hollywood/global comps.
  */
 
-import { useState } from 'react';
-import { Compass, Search, History } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { History } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { compsNavigatorService, TitleMatch, CompSearch } from '@/services/compsNavigatorService';
-import CompSelector, { CompTitle } from '@/components/comps-navigator/CompSelector';
-import RefinementInput from '@/components/comps-navigator/RefinementInput';
+import { CompTitle } from '@/components/comps-navigator/CompSelector';
+import CompsNavigatorInput from '@/components/comps-navigator/CompsNavigatorInput';
 import ResultsGrid from '@/components/comps-navigator/ResultsGrid';
 import SavedSearchesSidebar from '@/components/comps-navigator/SavedSearchesSidebar';
 import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -43,14 +43,91 @@ const compTitlesToStrings = (compTitles: CompTitle[]): string[] =>
 export default function CompsNavigator() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const hasTriggeredInitialSearch = useRef(false);
 
   const [compTitles, setCompTitles] = useState<CompTitle[]>([]);
-  const [refinementText, setRefinementText] = useState('');
   const [results, setResults] = useState<TitleMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState<LoadingPhase>(null);
   const [searchInfo, setSearchInfo] = useState<{ time: number; cost: number } | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [showExamples, setShowExamples] = useState(false);
+
+  // Handle URL parameter for initial search
+  useEffect(() => {
+    const showParam = searchParams.get('show');
+    if (showParam && !hasTriggeredInitialSearch.current && user?.email) {
+      hasTriggeredInitialSearch.current = true;
+      // Set the comp title and trigger search
+      const initialCompTitle: CompTitle = {
+        title: showParam,
+        imdbID: '',
+        year: '',
+        type: 'movie' as const
+      };
+      setCompTitles([initialCompTitle]);
+      // Clear the URL parameter
+      setSearchParams({}, { replace: true });
+      // Trigger search after state is set
+      setTimeout(() => {
+        handleSearchWithTitles([showParam]);
+      }, 100);
+    }
+  }, [searchParams, user?.email]);
+
+  const handleSearchWithTitles = async (titles: string[]) => {
+    if (titles.length === 0) {
+      return;
+    }
+
+    if (!user?.email) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to use Comps Navigator",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadingPhase('semantic');
+    setResults([]);
+
+    try {
+      const phaseTimer = setTimeout(() => setLoadingPhase('reranking'), 1500);
+
+      const response = await compsNavigatorService.searchComps(
+        titles,
+        undefined,
+        user.email,
+        true
+      );
+
+      clearTimeout(phaseTimer);
+
+      setResults(response.results);
+      setSearchInfo({
+        time: response.processing_time_ms,
+        cost: response.cost_estimate
+      });
+
+      toast({
+        title: "Matches Found",
+        description: `Found ${response.results.length} titles matching your comp combination`
+      });
+    } catch (error: any) {
+      console.error('Search error:', error);
+      toast({
+        title: "Search Failed",
+        description: error.message || "Failed to find matches. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+      setLoadingPhase(null);
+    }
+  };
 
   const handleSearch = async () => {
     if (compTitles.length === 0) {
@@ -84,7 +161,7 @@ export default function CompsNavigator() {
 
       const response = await compsNavigatorService.searchComps(
         titleStrings,
-        refinementText || undefined,
+        undefined,
         user.email,
         true // Save search
       );
@@ -117,7 +194,6 @@ export default function CompsNavigator() {
   const handleLoadSearch = (search: CompSearch) => {
     // Convert string[] from database to CompTitle[]
     setCompTitles(stringsToCompTitles(search.comp_titles));
-    setRefinementText(search.refinement_text || '');
 
     if (search.search_results && search.search_results.length > 0) {
       setResults(search.search_results);
@@ -130,120 +206,46 @@ export default function CompsNavigator() {
 
   const handleClear = () => {
     setCompTitles([]);
-    setRefinementText('');
     setResults([]);
     setSearchInfo(null);
   };
 
-  const handleTryExample = (comps: string[], refinement?: string) => {
+  const handleTryExample = (comps: string[]) => {
     // Convert string[] from examples to CompTitle[]
     setCompTitles(stringsToCompTitles(comps));
-    if (refinement) {
-      setRefinementText(refinement);
-    }
+    setShowExamples(false);
   };
 
   return (
     <BuyerLayout>
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
-        {/* Header */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                <Compass className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Comps Navigator</h1>
-                <p className="text-base sm:text-lg text-gray-600 mt-1">AI-Powered Korean Title Discovery</p>
-              </div>
-            </div>
-            {user?.email && (
-              <Button
-                onClick={() => setShowHistory(true)}
-                variant="outline"
-                size="sm"
-                className="border-gray-300 hover:bg-gray-100 flex-shrink-0"
-              >
-                <History className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">History</span>
-              </Button>
-            )}
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8 overflow-x-hidden">
+        {/* History Button - Top Right */}
+        {user?.email && (
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setShowHistory(true)}
+              variant="outline"
+              size="sm"
+              className="border-gray-300 hover:bg-gray-100"
+            >
+              <History className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">History</span>
+            </Button>
           </div>
-          <p className="text-sm sm:text-base text-gray-600">
-            Find Korean titles similar to your favorite shows and films. Select up to 3 comps to discover the perfect match using advanced semantic search.
-          </p>
-        </div>
+        )}
 
         {/* Search Form */}
-        <Card className="w-full bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-xl sm:rounded-2xl">
-          <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-x-hidden">
-            <CompSelector
-              compTitles={compTitles}
-              onChange={setCompTitles}
-              maxComps={3}
-            />
-
-            <RefinementInput
-              value={refinementText}
-              onChange={setRefinementText}
-              maxLength={500}
-            />
-
-            {/* Action Buttons */}
-            <div className="flex gap-2 sm:gap-3">
-              <Button
-                onClick={handleSearch}
-                disabled={isLoading || compTitles.length === 0}
-                className="flex-1 flex items-center justify-center gap-2 h-11 sm:h-10"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span className="text-xs sm:text-sm">
-                      {loadingPhase === 'semantic' && 'Finding matches...'}
-                      {loadingPhase === 'reranking' && 'Re-ranking...'}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Search className="h-4 w-4" />
-                    <span className="text-sm sm:text-base">Find Matches</span>
-                  </>
-                )}
-              </Button>
-
-              {(compTitles.length > 0 || refinementText || results.length > 0) && (
-                <Button
-                  onClick={handleClear}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30 h-11 sm:h-10 px-3 sm:px-4"
-                >
-                  Clear
-                </Button>
-              )}
-            </div>
-
-            {/* Search Info */}
-            {searchInfo && !isLoading && (
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 pt-3 border-t border-gray-200">
-                <span className="font-medium">
-                  {(searchInfo.time / 1000).toFixed(1)}s
-                </span>
-                <span className="text-gray-300">•</span>
-                <span className="font-medium">
-                  ${searchInfo.cost.toFixed(3)}
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Example Searches - Only show when no results */}
-        {results.length === 0 && !isLoading && (
-          <ExamplesSection onTryExample={handleTryExample} />
-        )}
+        <CompsNavigatorInput
+          compTitles={compTitles}
+          onChange={setCompTitles}
+          onSearch={handleSearch}
+          onClear={handleClear}
+          onNeedHelp={() => setShowExamples(true)}
+          isLoading={isLoading}
+          loadingPhase={loadingPhase}
+          searchInfo={searchInfo}
+          hasResults={results.length > 0}
+        />
 
         {/* Results */}
         {(results.length > 0 || isLoading) && (
@@ -268,6 +270,28 @@ export default function CompsNavigator() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Examples Modal */}
+      <Dialog open={showExamples} onOpenChange={setShowExamples}>
+        <DialogContent className="max-w-2xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col p-0">
+          <DialogHeader className="px-4 pt-4 pb-2 sm:px-6 sm:pt-6 border-b border-gray-100">
+            <DialogTitle className="text-lg sm:text-xl font-bold text-hanok-teal">
+              Explore Example Combinations
+            </DialogTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              Learn how to combine comps effectively by trying these curated examples
+            </p>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
+            <ExamplesSection
+              onTryExample={(comps) => {
+                handleTryExample(comps);
+              }}
+              isModal={true}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </BuyerLayout>
   );
 }

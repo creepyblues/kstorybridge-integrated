@@ -118,6 +118,7 @@ export default function TitleDetail() {
 
   // Check if tabs have content to determine which to show
   const hasStoryDetails =
+    title?.description_kr ||
     title?.tone ||
     title?.important_issues ||
     title?.setting_description ||
@@ -174,17 +175,6 @@ export default function TitleDetail() {
   return (
     <BuyerLayout>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6 overflow-x-hidden">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/buyers/titles')}
-          className="text-gray-600 hover:text-gray-900 -ml-2"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Titles
-        </Button>
-
         {/* Hero Section */}
         <TitleHero
           title={title}

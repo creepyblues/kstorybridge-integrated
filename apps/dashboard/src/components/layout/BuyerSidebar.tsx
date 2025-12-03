@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { User, Menu, X, MessageSquare, Compass, Sparkles, Star, BookOpen, Heart, CreditCard, Settings, FileText, Wand2, FileSearch } from 'lucide-react';
+import { User, Menu, X, Home, MessageSquare, Compass, Sparkles, Star, BookOpen, Heart, CreditCard, Settings, FileText, Wand2, FileSearch, TrendingUp } from 'lucide-react';
 
 interface MenuItem {
   title: string;
@@ -15,10 +15,11 @@ interface MenuItem {
 // Buyer menu items (with /buyers prefix)
 const getDiscoverItems = (): MenuItem[] => {
   return [
+    { title: 'Home', href: '/buyers/home', icon: <Home className="h-5 w-5" /> },
     { title: 'Chat', href: '/buyers/chat', icon: <MessageSquare className="h-5 w-5" /> },
     { title: 'Comps Navigator', href: '/buyers/comps-navigator', icon: <Compass className="h-5 w-5" /> },
     { title: 'Mandate Matcher', href: '/buyers/mandates', icon: <Sparkles className="h-5 w-5" /> },
-    { title: 'Featured', href: '/buyers/featured', icon: <Star className="h-5 w-5" /> },
+    { title: 'Trending', href: '/buyers/trending', icon: <TrendingUp className="h-5 w-5" /> },
     { title: 'Titles', href: '/buyers/titles', icon: <BookOpen className="h-5 w-5" /> },
     { title: 'Saved', href: '/buyers/saved', icon: <Heart className="h-5 w-5" /> },
     { title: 'Plan', href: '/buyers/plan', icon: <CreditCard className="h-5 w-5" /> },

@@ -71,13 +71,24 @@ function parseUrl(url: string): ParsedUrl | null {
       }
     }
 
-    // Kakao Page: page.kakao.com/content/XXX
+    // Kakao Page: page.kakao.com/content/XXX or page.kakao.com/home?seriesId=XXX
     if (parsed.hostname === 'page.kakao.com') {
+      // Try path pattern first: /content/63062046
       const pathMatch = parsed.pathname.match(/\/content\/(\d+)/);
       if (pathMatch) {
         return {
           platform: 'kakao',
           platformId: pathMatch[1],
+          originalUrl: trimmedUrl,
+          valid: true,
+        };
+      }
+      // Try query param: /home?seriesId=55929080
+      const seriesIdParam = parsed.searchParams.get('seriesId');
+      if (seriesIdParam) {
+        return {
+          platform: 'kakao',
+          platformId: seriesIdParam,
           originalUrl: trimmedUrl,
           valid: true,
         };
@@ -115,6 +126,32 @@ function parseUrl(url: string): ParsedUrl | null {
       if (pathMatch) {
         return {
           platform: 'manta',
+          platformId: pathMatch[1],
+          originalUrl: trimmedUrl,
+          valid: true,
+        };
+      }
+    }
+
+    // Ridibooks: ridibooks.com/books/{bookId}
+    if (parsed.hostname === 'ridibooks.com') {
+      const pathMatch = parsed.pathname.match(/\/books\/(\d+)/);
+      if (pathMatch) {
+        return {
+          platform: 'ridibooks',
+          platformId: pathMatch[1],
+          originalUrl: trimmedUrl,
+          valid: true,
+        };
+      }
+    }
+
+    // Bomtoon: bomtoon.com/comic/ep_list/{slug}
+    if (parsed.hostname === 'www.bomtoon.com' || parsed.hostname === 'bomtoon.com') {
+      const pathMatch = parsed.pathname.match(/\/comic\/ep_list\/([^/?]+)/);
+      if (pathMatch) {
+        return {
+          platform: 'bomtoon',
           platformId: pathMatch[1],
           originalUrl: trimmedUrl,
           valid: true,

@@ -149,7 +149,7 @@ export interface CollectIntelligenceResponse {
 // Types: URL-based Collection
 // ============================================================================
 
-export type SupportedPlatform = 'naver_webtoon' | 'naver_series' | 'kakao' | 'kakao_webtoon' | 'manta' | 'unknown';
+export type SupportedPlatform = 'naver_webtoon' | 'naver_series' | 'kakao' | 'kakao_webtoon' | 'manta' | 'ridibooks' | 'bomtoon' | 'unknown';
 
 export interface ParsedUrl {
   platform: SupportedPlatform
@@ -549,7 +549,6 @@ function mapIntelligenceFieldToTitle(fieldName: string): string | null {
     'author': 'story_author',
     'age_rating': 'age_rating',
     'thumbnail': 'title_image',  // Thumbnail maps to title_image
-    'comment_count': 'comment_count',  // Comment count (if field exists in titles)
     'tags': 'keywords',  // Map tags to keywords array
     'keywords': 'keywords',
   }

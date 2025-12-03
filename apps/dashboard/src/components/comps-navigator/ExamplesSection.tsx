@@ -12,13 +12,63 @@ import ExampleCard from './ExampleCard';
 
 interface ExamplesSectionProps {
   onTryExample: (comps: string[], refinement?: string) => void;
+  isModal?: boolean;
 }
 
-export default function ExamplesSection({ onTryExample }: ExamplesSectionProps) {
+export default function ExamplesSection({ onTryExample, isModal = false }: ExamplesSectionProps) {
   const [activeCategory, setActiveCategory] = useState('genre');
 
   const categoryExamples = getExamplesByCategory(activeCategory);
 
+  // Modal version - no card wrapper, no header
+  if (isModal) {
+    return (
+      <div className="space-y-4">
+        {/* Category Tabs - horizontal scroll on mobile */}
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-2 pb-2">
+            {EXAMPLE_CATEGORIES.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setActiveCategory(category.id)}
+                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                  activeCategory === category.id
+                    ? 'bg-hanok-teal text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-hanok-teal/10'
+                }`}
+              >
+                {category.icon} {category.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Category Description */}
+        <p className="text-sm text-gray-600">
+          {getCategoryDescription(activeCategory)}
+        </p>
+
+        {/* Example Cards - single column on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {categoryExamples.map((example) => (
+            <ExampleCard
+              key={example.id}
+              example={example}
+              onTryExample={onTryExample}
+              compact={true}
+            />
+          ))}
+        </div>
+
+        {/* Help Text */}
+        <p className="text-xs text-gray-400 text-center pt-2">
+          Click "Try This" to auto-populate the search form
+        </p>
+      </div>
+    );
+  }
+
+  // Default version with card wrapper
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-2xl">
       <CardContent className="p-4 sm:p-6">

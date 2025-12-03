@@ -42,13 +42,13 @@ export default function SignIn() {
         return;
       }
 
-      // Success - redirect to dashboard
+      // Success - redirect to homepage
       toast({
         title: 'Welcome back!',
         description: 'Successfully signed in',
       });
 
-      navigate('/buyers/chat');
+      navigate('/buyers/home');
     } catch (error: any) {
       toast({
         title: 'Sign In Failed',

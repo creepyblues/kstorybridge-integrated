@@ -105,7 +105,7 @@ export default function CompleteProfile() {
         description: 'Welcome to KStoryBridge',
       });
 
-      navigate('/buyers/chat');
+      navigate('/buyers/home');
     } catch (error: any) {
       toast({
         title: 'Profile Creation Failed',

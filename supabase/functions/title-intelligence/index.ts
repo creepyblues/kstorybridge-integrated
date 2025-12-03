@@ -29,6 +29,8 @@ import { scrapeNaverSeries } from './scrapers/naver-series.ts'
 import { scrapeKakao } from './scrapers/kakao.ts'
 import { scrapeKakaoWebtoon } from './scrapers/kakao-webtoon.ts'
 import { scrapeManta } from './scrapers/manta.ts'
+import { scrapeRidibooks } from './scrapers/ridibooks.ts'
+import { scrapeBomtoon } from './scrapers/bomtoon.ts'
 import { scrapeReddit } from './scrapers/reddit.ts'
 import { scrapeAO3 } from './scrapers/ao3.ts'
 
@@ -49,7 +51,7 @@ interface LegacyIntelligenceRequest {
 // New URL-based request format (can include fan engagement sources)
 interface UrlBasedRequest {
   urls: Array<{
-    platform: 'naver_webtoon' | 'naver_series' | 'kakao' | 'kakao_webtoon' | 'manta'
+    platform: 'naver_webtoon' | 'naver_series' | 'kakao' | 'kakao_webtoon' | 'manta' | 'ridibooks' | 'bomtoon'
     platformId: string
     originalUrl: string
   }>
@@ -75,6 +77,8 @@ const SOURCE_CATEGORIES: Record<string, string> = {
   'naver_series': 'official_platform',
   'kakao': 'official_platform',
   'kakao_webtoon': 'official_platform',
+  'ridibooks': 'official_platform',
+  'bomtoon': 'official_platform',
   'manta': 'official_platform_en',
   'webtoons': 'official_platform_en',
   'reddit': 'fandom_forum',
@@ -88,6 +92,8 @@ const SOURCE_DOMAINS: Record<string, string> = {
   'naver_series': 'series.naver.com',
   'kakao': 'page.kakao.com',
   'kakao_webtoon': 'webtoon.kakao.com',
+  'ridibooks': 'ridibooks.com',
+  'bomtoon': 'bomtoon.com',
   'manta': 'manta.net',
   'webtoons': 'webtoons.com',
   'reddit': 'reddit.com',
@@ -273,6 +279,22 @@ async function handleUrlBasedCollection(supabase: any, body: UrlBasedRequest) {
           scraperResult = await withRetry(
             () => scrapeManta(urlInfo.platformId),
             { operationName: `Manta scrape (${urlInfo.platformId})`, maxRetries: 2, baseDelayMs: 1000 }
+          )
+          break
+
+        case 'ridibooks':
+          // Use bookId with Ridibooks scraper (with retry)
+          scraperResult = await withRetry(
+            () => scrapeRidibooks(urlInfo.platformId),
+            { operationName: `Ridibooks scrape (${urlInfo.platformId})`, maxRetries: 2, baseDelayMs: 2000 }
+          )
+          break
+
+        case 'bomtoon':
+          // Use slug with Bomtoon scraper (with retry)
+          scraperResult = await withRetry(
+            () => scrapeBomtoon(urlInfo.platformId),
+            { operationName: `Bomtoon scrape (${urlInfo.platformId})`, maxRetries: 2, baseDelayMs: 2000 }
           )
           break
 

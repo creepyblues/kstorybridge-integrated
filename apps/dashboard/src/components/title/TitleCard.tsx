@@ -112,23 +112,23 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
   // Grid variant (default) - inspired by comps-navigator design
   return (
     <Card
-      className="bg-white border border-gray-300 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden cursor-pointer"
+      className="bg-white border border-gray-300 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden cursor-pointer h-full flex flex-col"
       onClick={handleClick}
     >
-      <CardContent className="p-0">
-        {/* Image Section with Hover Zoom */}
-        <div className="relative w-full h-64 bg-gray-100 overflow-hidden">
+      <CardContent className="p-0 flex flex-col h-full">
+        {/* Image Section with Hover Zoom - 16:9 aspect ratio */}
+        <div className="relative w-full aspect-video bg-gray-100 overflow-hidden flex-shrink-0">
           {title.title_image ? (
             <img
               src={title.title_image}
               alt={title.title_name_en || title.title_name_kr || 'Title'}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
               onError={(e) => {
                 e.currentTarget.src = 'https://via.placeholder.com/400x600?text=No+Image';
               }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
               <span className="text-gray-400 text-sm">No Image</span>
             </div>
           )}
@@ -142,7 +142,7 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
         </div>
 
         {/* Content Section */}
-        <div className="p-4 md:p-6 flex flex-col overflow-hidden">
+        <div className="p-4 md:p-6 flex flex-col overflow-hidden flex-grow">
           {/* Title */}
           <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-hanok-teal transition-colors">
             {title.title_name_en || title.title_name_kr}

@@ -1,39 +1,14 @@
 /**
  * FeaturedTitleCard Component
  *
- * Vertical list card displaying featured titles with rich pitch analytics.
- * Designed to help producers quickly understand why each title is featured.
+ * Vertical card displaying featured titles with mandate-style design.
+ * Matches MandateTitleCard design for consistency.
  */
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import VerifiedBadge from '@/components/common/VerifiedBadge';
-
-interface PitchAnalysis {
-  story_elements?: {
-    logline?: string;
-  };
-  market_positioning?: {
-    target_audience?: {
-      age_range?: string;
-      psychographics?: string;
-    };
-    platform_fit?: string[];
-    comparable_titles?: Array<{
-      title: string;
-      platform?: string;
-    }>;
-  };
-  ip_value?: {
-    franchise_potential?: 'high' | 'medium' | 'low';
-    unique_selling_points?: string[];
-  };
-  themes_and_tone?: {
-    primary_themes?: string[];
-  };
-}
 
 interface FeaturedTitle {
   id: string;
@@ -47,10 +22,10 @@ interface FeaturedTitle {
     synopsis?: string | null;
     genre?: string[];
     tone?: string | null;
+    content_format?: string | null;
     rating?: number | null;
-    title_content_analysis?: {
-      pitch_analysis: PitchAnalysis;
-    }[];
+    story_author?: string | null;
+    art_author?: string | null;
   };
 }
 
@@ -61,215 +36,122 @@ interface FeaturedTitleCardProps {
 export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) {
   const navigate = useNavigate();
   const title = featured.titles;
-  const pitchAnalysis = title.title_content_analysis?.[0]?.pitch_analysis;
-  const [synopsisExpanded, setSynopsisExpanded] = useState(false);
 
   const handleCardClick = () => {
     navigate(`/buyers/titles/${title.title_id}`);
   };
 
-  // Get franchise potential badge styling
-  const getFranchiseBadge = (potential?: string) => {
-    if (potential === 'high') {
-      return { bg: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-200', label: 'High Franchise Potential' };
-    }
-    if (potential === 'medium') {
-      return { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200', label: 'Medium Franchise Potential' };
-    }
-    if (potential === 'low') {
-      return { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200', label: 'Developing IP' };
-    }
-    return null;
-  };
-
-  const franchiseBadge = getFranchiseBadge(pitchAnalysis?.ip_value?.franchise_potential);
-
   return (
-    <Card className="bg-white border border-gray-300 rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group">
-      <CardContent className="p-0">
-        <div className="flex flex-col md:flex-row md:min-h-[24rem] overflow-hidden">
-          {/* Left: Image Section (35%) */}
-          <div className="relative w-full md:w-[35%] h-80 md:h-auto bg-white flex-shrink-0 overflow-hidden min-w-0">
-            {title.title_image ? (
-              <img
-                src={title.title_image}
-                alt={title.title_name_en || title.title_name_kr}
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                onError={(e) => {
-                  e.currentTarget.src = 'https://via.placeholder.com/400x600?text=No+Image';
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <span className="text-gray-400 text-sm">No Image</span>
-              </div>
-            )}
-
-            {/* Verified Badge (top-left) */}
-            <div className="absolute top-3 left-3">
-              <VerifiedBadge />
+    <Card
+      className="bg-white border border-gray-300 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden cursor-pointer h-full flex flex-col"
+      onClick={handleCardClick}
+    >
+      <CardContent className="p-0 flex flex-col h-full">
+        {/* Image Section with Hover Zoom */}
+        <div className="relative w-full aspect-video bg-gray-100 overflow-hidden flex-shrink-0">
+          {title.title_image ? (
+            <img
+              src={title.title_image}
+              alt={title.title_name_en || title.title_name_kr || 'Title'}
+              className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+              onError={(e) => {
+                e.currentTarget.src = 'https://via.placeholder.com/400x600?text=No+Image';
+              }}
+            />
+          ) : (
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
+              <span className="text-gray-400 text-sm">No Image</span>
             </div>
+          )}
 
-            {/* Rating Badge (top-right) */}
-            {title.rating && (
-              <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-100 to-amber-50 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm backdrop-blur-sm">
-                ★ {title.rating}
-              </div>
+          {/* Verified Badge - Top Left */}
+          <div className="absolute top-3 left-3">
+            <VerifiedBadge />
+          </div>
+
+          {/* Rating Badge - Top Right */}
+          {title.rating && (
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-100 to-amber-50 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm backdrop-blur-sm">
+              ★ {title.rating}
+            </div>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="p-4 md:p-6 flex flex-col flex-grow">
+          {/* Title */}
+          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-hanok-teal transition-colors">
+            {title.title_name_en || title.title_name_kr}
+          </h3>
+          {title.title_name_en && title.title_name_kr && (
+            <p className="text-sm text-gray-500 mb-3 truncate">{title.title_name_kr}</p>
+          )}
+
+          {/* Divider */}
+          <div className="w-full h-px bg-gray-300 mb-3"></div>
+
+          {/* Genre and Format Tags */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {title.genre?.slice(0, 3).map((g, idx) => (
+              <span
+                key={idx}
+                className="bg-gradient-to-r from-cyan-100 to-cyan-50 text-cyan-800 px-2 py-1 rounded-md text-xs font-medium border border-cyan-200"
+              >
+                {g}
+              </span>
+            ))}
+            {title.tone && (
+              <span className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-2 py-1 rounded-md text-xs font-medium border border-purple-200">
+                {title.tone}
+              </span>
+            )}
+            {title.content_format && (
+              <span className="bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-2 py-1 rounded-md text-xs font-medium border border-blue-200">
+                {title.content_format}
+              </span>
             )}
           </div>
 
-          {/* Right: Content Section (65%) */}
-          <div className="flex-1 p-6 md:p-8 flex flex-col min-w-0 overflow-hidden" onClick={handleCardClick}>
-            {/* Title Header */}
-            <div className="mb-4">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 group-hover:text-hanok-teal transition-colors line-clamp-2">
-                {title.title_name_en || title.title_name_kr}
-              </h2>
-              {title.title_name_en && title.title_name_kr && (
-                <p className="text-base text-gray-500">{title.title_name_kr}</p>
+          {/* Synopsis */}
+          {title.synopsis && (
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-3">
+              {title.synopsis}
+            </p>
+          )}
+
+          {/* Creator Info */}
+          {(title.story_author || title.art_author) && (
+            <div className="text-xs text-gray-500 mb-4">
+              {title.story_author && (
+                <div>Story: {title.story_author}</div>
+              )}
+              {title.art_author && title.art_author !== title.story_author && (
+                <div>Art: {title.art_author}</div>
               )}
             </div>
+          )}
 
-            {/* Divider */}
-            <div className="w-full h-px bg-gray-300 mb-4"></div>
-
-            {/* AI Chat Bubble - "Why This Title" */}
-            <div className="mb-6">
-              <div className="flex gap-3">
-                {/* AI Profile Icon */}
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-hanok-teal flex items-center justify-center">
-                    <Bot className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-
-                {/* Chat Bubble Content */}
-                <div className="flex-1 bg-white border-2 border-gray-200 rounded-2xl p-4 space-y-3 min-w-0">
-                  {/* Why This Title - Editor's Note */}
-                  {featured.note && (
-                    <div>
-                      <p className="text-xs font-semibold text-hanok-teal uppercase tracking-wide mb-1">Why This Title</p>
-                      <p className="text-sm text-gray-700 leading-relaxed mb-3">{featured.note}</p>
-                    </div>
-                  )}
-
-                  {/* Synopsis */}
-                  {title.synopsis && (
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Synopsis</p>
-                      <p className={`text-sm text-gray-700 leading-relaxed ${synopsisExpanded ? '' : 'line-clamp-3'}`}>
-                        {title.synopsis}
-                      </p>
-                      {title.synopsis.length > 150 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSynopsisExpanded(!synopsisExpanded);
-                          }}
-                          className="text-xs text-hanok-teal hover:text-hanok-teal/80 font-semibold mt-1 underline"
-                        >
-                          {synopsisExpanded ? 'Show less' : 'Show more'}
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Logline */}
-                  {pitchAnalysis?.story_elements?.logline && (
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Logline</p>
-                      <p className="text-sm font-bold text-gray-900">{pitchAnalysis.story_elements.logline}</p>
-                    </div>
-                  )}
-
-                  {/* Comparable Titles */}
-                  {pitchAnalysis?.market_positioning?.comparable_titles && pitchAnalysis.market_positioning.comparable_titles.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Comparable To</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {pitchAnalysis.market_positioning.comparable_titles.slice(0, 3).map((comp, idx) => (
-                          <span key={idx} className="bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800 px-2 py-1 rounded-md text-xs font-medium border border-emerald-200">
-                            {comp.title}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Genre & Mood/Tone Keywords - Side by Side */}
-                  {(title.genre && title.genre.length > 0) || title.tone || (pitchAnalysis?.themes_and_tone?.primary_themes && pitchAnalysis.themes_and_tone.primary_themes.length > 0) ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
-                      {/* Genre */}
-                      {title.genre && title.genre.length > 0 && (
-                        <div>
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Genre</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {title.genre.slice(0, 4).map((g, idx) => (
-                              <span key={idx} className="bg-gradient-to-r from-cyan-100 to-cyan-50 text-cyan-800 px-2 py-1 rounded-md text-xs font-medium border border-cyan-200">
-                                {g}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Mood & Themes */}
-                      {(title.tone || (pitchAnalysis?.themes_and_tone?.primary_themes && pitchAnalysis.themes_and_tone.primary_themes.length > 0)) && (
-                        <div>
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Mood & Themes</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {title.tone && (
-                              <span className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-2 py-1 rounded-md text-xs font-medium border border-purple-200">
-                                {title.tone}
-                              </span>
-                            )}
-                            {pitchAnalysis?.themes_and_tone?.primary_themes?.slice(0, 3).map((theme, idx) => (
-                              <span key={idx} className="bg-gradient-to-r from-purple-100 to-purple-50 text-purple-800 px-2 py-1 rounded-md text-xs font-medium border border-purple-200">
-                                {theme}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : null}
-
-                  {/* Target Audience */}
-                  {pitchAnalysis?.market_positioning?.target_audience && (
-                    <div className="text-xs text-gray-600">
-                      <span className="font-semibold">Target:</span>{' '}
-                      {pitchAnalysis.market_positioning.target_audience.age_range}
-                      {pitchAnalysis.market_positioning.target_audience.psychographics &&
-                        ` • ${pitchAnalysis.market_positioning.target_audience.psychographics}`
-                      }
-                    </div>
-                  )}
-
-                  {/* Platform Fit Badges */}
-                  {pitchAnalysis?.market_positioning?.platform_fit && pitchAnalysis.market_positioning.platform_fit.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Platform Fit</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {pitchAnalysis.market_positioning.platform_fit.slice(0, 4).map((platform, idx) => (
-                          <span key={idx} className="bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800 px-2 py-1 rounded-md text-xs font-medium border border-blue-200">
-                            {platform}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Franchise Potential */}
-                  {franchiseBadge && (
-                    <div className={`inline-flex items-center gap-1.5 ${franchiseBadge.bg} ${franchiseBadge.text} ${franchiseBadge.border} border px-2 py-1 rounded-md text-xs font-semibold`}>
-                      {franchiseBadge.label}
-                    </div>
-                  )}
+          {/* Expert Insight Chat Bubble */}
+          {featured.note && (
+            <div className="flex gap-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200 mt-auto">
+              {/* Expert Profile Icon */}
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-sm">
+                  <Sparkles className="h-4 w-4 text-white" />
                 </div>
               </div>
-            </div>
 
-          </div>
+              {/* Expert Explanation Text */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-amber-700 mb-1">
+                  Why "{title.title_name_en || title.title_name_kr || 'This Title'}"?
+                </p>
+                <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+                  {featured.note}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

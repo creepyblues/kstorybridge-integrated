@@ -85,13 +85,13 @@ export default function AuthCallback() {
           return;
         }
 
-        // Profile exists - redirect to dashboard
+        // Profile exists - redirect to homepage
         clearOAuthStorage();
         toast({
           title: 'Welcome back!',
           description: 'Successfully signed in',
         });
-        navigate('/buyers/chat');
+        navigate('/buyers/home');
       } else {
         // Signup flow - store user data in sessionStorage for CompleteProfile page
         sessionStorage.setItem('oauth_user_id', user.id);

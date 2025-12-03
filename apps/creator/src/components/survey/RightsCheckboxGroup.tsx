@@ -8,11 +8,13 @@ export interface RightsOption {
 }
 
 export const RIGHTS_OPTIONS: RightsOption[] = [
-  { value: 'film_tv', label: 'Film & TV' },
+  { value: 'film_tv', label: 'Film and TV' },
   { value: 'animation', label: 'Animation' },
   { value: 'publication', label: 'Publication' },
-  { value: 'merchandising', label: 'Merchandising' },
   { value: 'game', label: 'Game' },
+  { value: 'merchandising', label: 'Merchandising' },
+  { value: 'audio', label: 'Audio' },
+  { value: 'microdrama', label: 'Microdrama' },
   { value: 'other', label: 'Other' },
 ];
 

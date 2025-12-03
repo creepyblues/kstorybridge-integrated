@@ -614,14 +614,27 @@ class TitlesService {
    */
   async updateTitle(titleId: string, updates: Partial<Title>): Promise<void> {
     try {
-      const { error } = await supabase
+      console.log('📤 titlesService.updateTitle called');
+      console.log('   titleId:', titleId);
+      console.log('   updates:', JSON.stringify(updates, null, 2));
+
+      const { data, error } = await supabase
         .from('titles')
         .update(updates)
-        .eq('title_id', titleId);
+        .eq('title_id', titleId)
+        .select();
+
+      console.log('📥 Supabase response:');
+      console.log('   data:', data);
+      console.log('   error:', error);
 
       if (error) {
         console.error('❌ Error updating title:', error);
         throw new Error(`Failed to update title: ${error.message}`);
+      }
+
+      if (!data || data.length === 0) {
+        console.warn('⚠️ No rows updated - check RLS policies or title_id');
       }
     } catch (error: any) {
       console.error('❌ Update title service error:', error);

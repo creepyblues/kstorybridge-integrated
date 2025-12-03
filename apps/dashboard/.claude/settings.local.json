@@ -41,7 +41,12 @@
       "Bash(npm ls:*)",
       "Bash(npm view:*)",
       "Bash(claude:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "WebFetch(domain:developer.themoviedb.org)",
+      "WebFetch(domain:www.omdbapi.com)",
+      "Bash(curl -s \"https://dlrnrgcoguxlkkcitlpd.supabase.co/rest/v1/titles?select=title_id,title_name_en,title_name_kr,title_image,synopsis,genre,tone&limit=10\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjcxMTkzNjAsImV4cCI6MjA0MjY5NTM2MH0.8KxnHPbbUoqhM95Z5FpQKF3jfVIaNoECWX9fbVF2MTs\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjcxMTkzNjAsImV4cCI6MjA0MjY5NTM2MH0.8KxnHPbbUoqhM95Z5FpQKF3jfVIaNoECWX9fbVF2MTs\")",
+      "Bash(curl:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

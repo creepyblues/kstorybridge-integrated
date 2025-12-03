@@ -14,15 +14,15 @@ export const SuggestedQueries = ({ queries, onQueryClick, disabled = false }: Su
   }
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
-      <span className="text-xs text-gray-500">Try:</span>
+    <div className="mt-4">
+      <p className="text-sm text-gray-500 mb-3">Try these:</p>
       <div className="flex flex-wrap gap-2">
         {queries.map((query, idx) => (
           <button
             key={idx}
             onClick={() => onQueryClick(query)}
             disabled={disabled}
-            className="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-50"
+            className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {query}
           </button>

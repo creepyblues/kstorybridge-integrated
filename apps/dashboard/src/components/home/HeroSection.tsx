@@ -1,19 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Film, FileText, TrendingUp, ArrowRight, Search, Loader2, Tv, ExternalLink } from 'lucide-react';
 import { omdbService, OMDBSearchResult } from '@/services/omdbService';
-import type { HomeMode } from '@/pages/buyers/Home';
 
-interface HeroSectionProps {
-  onModeChange: (mode: HomeMode) => void;
-  onShowCompSearch?: (query: string) => void;
-  onBriefSearch?: (query: string) => void;
-}
+// Sample queries for each card
+const SAMPLE_SHOW = 'Stranger Things';
+const SAMPLE_BRIEF = 'Romantic comedy for streaming, completed series';
 
-export function HeroSection({ onModeChange, onShowCompSearch, onBriefSearch }: HeroSectionProps) {
+export function HeroSection() {
+  const navigate = useNavigate();
   const [showInput, setShowInput] = useState('');
   const [briefInput, setBriefInput] = useState('');
 
@@ -69,31 +68,32 @@ export function HeroSection({ onModeChange, onShowCompSearch, onBriefSearch }: H
   }, []);
 
   const handleSelectSuggestion = (result: OMDBSearchResult) => {
-    setShowInput(result.Title);
-    setShowDropdown(false);
-    setSuggestions([]);
-    // Trigger search immediately
-    if (onShowCompSearch) {
-      onShowCompSearch(result.Title);
-    } else {
-      onModeChange('show-comp');
-    }
+    // Navigate to comps-navigator with the selected show
+    navigate(`/buyers/comps-navigator?show=${encodeURIComponent(result.Title)}`);
   };
 
   const handleShowCompSubmit = () => {
-    if (showInput.trim() && onShowCompSearch) {
-      onShowCompSearch(showInput.trim());
-    } else if (showInput.trim()) {
-      onModeChange('show-comp');
+    if (showInput.trim()) {
+      navigate(`/buyers/comps-navigator?show=${encodeURIComponent(showInput.trim())}`);
     }
   };
 
   const handleBriefSubmit = () => {
-    if (briefInput.trim() && onBriefSearch) {
-      onBriefSearch(briefInput.trim());
-    } else if (briefInput.trim()) {
-      onModeChange('brief');
+    if (briefInput.trim()) {
+      navigate(`/buyers/mandates?brief=${encodeURIComponent(briefInput.trim())}`);
     }
+  };
+
+  const handleSampleShowClick = () => {
+    navigate(`/buyers/comps-navigator?show=${encodeURIComponent(SAMPLE_SHOW)}`);
+  };
+
+  const handleSampleBriefClick = () => {
+    navigate(`/buyers/mandates?brief=${encodeURIComponent(SAMPLE_BRIEF)}`);
+  };
+
+  const handleHotNowClick = () => {
+    navigate('/buyers/featured');
   };
 
   return (
@@ -184,11 +184,22 @@ export function HeroSection({ onModeChange, onShowCompSearch, onBriefSearch }: H
           {/* Button */}
           <Button
             onClick={handleShowCompSubmit}
-            className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white font-medium"
+            disabled={!showInput.trim()}
+            className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white font-medium disabled:opacity-50"
           >
             FIND SIMILAR IP
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
+
+          {/* Sample Link */}
+          <div className="mt-3 text-center">
+            <button
+              onClick={handleSampleShowClick}
+              className="text-xs text-gray-500 hover:text-hanok-teal transition-colors underline underline-offset-2"
+            >
+              Try: {SAMPLE_SHOW}
+            </button>
+          </div>
         </CardContent>
       </Card>
 
@@ -214,6 +225,12 @@ export function HeroSection({ onModeChange, onShowCompSearch, onBriefSearch }: H
           <Textarea
             value={briefInput}
             onChange={(e) => setBriefInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleBriefSubmit();
+              }
+            }}
             placeholder="e.g., 'Female-driven thriller'"
             className="mb-4 border-gray-300 focus:border-purple-500 focus:ring-purple-500 min-h-[42px] resize-none"
             rows={1}
@@ -222,11 +239,22 @@ export function HeroSection({ onModeChange, onShowCompSearch, onBriefSearch }: H
           {/* Button */}
           <Button
             onClick={handleBriefSubmit}
-            className="w-full bg-purple-500 hover:bg-purple-600 text-white font-medium"
+            disabled={!briefInput.trim()}
+            className="w-full bg-purple-500 hover:bg-purple-600 text-white font-medium disabled:opacity-50"
           >
             SEARCH BY BRIEF
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
+
+          {/* Sample Link */}
+          <div className="mt-3 text-center">
+            <button
+              onClick={handleSampleBriefClick}
+              className="text-xs text-gray-500 hover:text-purple-500 transition-colors underline underline-offset-2"
+            >
+              Try: {SAMPLE_BRIEF}
+            </button>
+          </div>
         </CardContent>
       </Card>
 
@@ -255,12 +283,22 @@ export function HeroSection({ onModeChange, onShowCompSearch, onBriefSearch }: H
 
           {/* Button */}
           <Button
-            onClick={() => onModeChange('hot-now')}
+            onClick={handleHotNowClick}
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
           >
             VIEW TRENDING
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
+
+          {/* Sample Link - go to same page */}
+          <div className="mt-3 text-center">
+            <button
+              onClick={handleHotNowClick}
+              className="text-xs text-gray-500 hover:text-orange-500 transition-colors underline underline-offset-2"
+            >
+              Browse featured titles
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>

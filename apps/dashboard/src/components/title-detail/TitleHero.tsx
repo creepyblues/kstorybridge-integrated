@@ -165,7 +165,9 @@ export function TitleHero({
           {title.views != null && (
             <div className="flex items-center gap-1.5">
               <Eye className="h-4 w-4" />
-              <span className="font-medium">{titlesService.formatNumber(title.views)} views</span>
+              <span className="font-medium">
+                {title.views === 0 ? 'Not Available' : `${titlesService.formatNumber(title.views)} views`}
+              </span>
             </div>
           )}
           {title.likes != null && (

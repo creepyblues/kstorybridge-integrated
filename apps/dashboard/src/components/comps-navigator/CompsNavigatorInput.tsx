@@ -1,0 +1,477 @@
+/**
+ * CompsNavigatorInput Component
+ *
+ * Multi-input component for selecting up to 3 comparable titles.
+ * Clean search-engine style design.
+ * Features OMDB autocomplete for each input.
+ */
+
+import { useState, useEffect, useRef } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Film,
+  Search,
+  Loader2,
+  Tv,
+  ExternalLink,
+  Plus,
+  X,
+  HelpCircle,
+} from 'lucide-react';
+import { omdbService, OMDBSearchResult } from '@/services/omdbService';
+import { CompTitle } from './CompSelector';
+
+interface CompsNavigatorInputProps {
+  compTitles: CompTitle[];
+  onChange: (titles: CompTitle[]) => void;
+  onSearch: () => void;
+  onClear: () => void;
+  onNeedHelp: () => void;
+  isLoading: boolean;
+  loadingPhase: 'semantic' | 'reranking' | null;
+  searchInfo: { time: number; cost: number } | null;
+  hasResults: boolean;
+}
+
+const EXAMPLE_SHOWS = ['The Bear', 'Squid Game', 'Succession', 'Emily in Paris'];
+
+export default function CompsNavigatorInput({
+  compTitles,
+  onChange,
+  onSearch,
+  onClear,
+  onNeedHelp,
+  isLoading,
+  loadingPhase,
+  searchInfo,
+  hasResults,
+}: CompsNavigatorInputProps) {
+  // Track how many input rows are visible (1-3)
+  const [activeInputCount, setActiveInputCount] = useState(1);
+
+  // Input values for each row
+  const [inputValues, setInputValues] = useState<string[]>(['', '', '']);
+
+  // Suggestions for each input
+  const [suggestions, setSuggestions] = useState<OMDBSearchResult[][]>([[], [], []]);
+
+  // Loading state for each input's suggestions
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState<boolean[]>([false, false, false]);
+
+  // Dropdown visibility for each input
+  const [showDropdown, setShowDropdown] = useState<boolean[]>([false, false, false]);
+
+  // Refs for click outside detection
+  const dropdownRefs = useRef<(HTMLDivElement | null)[]>([null, null, null]);
+
+  // Sync activeInputCount with compTitles length
+  useEffect(() => {
+    if (compTitles.length > activeInputCount) {
+      setActiveInputCount(compTitles.length);
+    }
+  }, [compTitles.length]);
+
+  // Debounced search effect for each input
+  useEffect(() => {
+    const timers: NodeJS.Timeout[] = [];
+
+    inputValues.forEach((value, index) => {
+      const trimmed = value.trim();
+
+      if (trimmed.length < 2) {
+        setSuggestions((prev) => {
+          const newSuggestions = [...prev];
+          newSuggestions[index] = [];
+          return newSuggestions;
+        });
+        setShowDropdown((prev) => {
+          const newShow = [...prev];
+          newShow[index] = false;
+          return newShow;
+        });
+        return;
+      }
+
+      const timer = setTimeout(async () => {
+        setIsLoadingSuggestions((prev) => {
+          const newLoading = [...prev];
+          newLoading[index] = true;
+          return newLoading;
+        });
+
+        const results = await omdbService.searchTitles(trimmed);
+
+        setSuggestions((prev) => {
+          const newSuggestions = [...prev];
+          newSuggestions[index] = results.slice(0, 6);
+          return newSuggestions;
+        });
+
+        setShowDropdown((prev) => {
+          const newShow = [...prev];
+          newShow[index] = results.length > 0;
+          return newShow;
+        });
+
+        setIsLoadingSuggestions((prev) => {
+          const newLoading = [...prev];
+          newLoading[index] = false;
+          return newLoading;
+        });
+      }, 300);
+
+      timers.push(timer);
+    });
+
+    return () => timers.forEach((timer) => clearTimeout(timer));
+  }, [inputValues]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      dropdownRefs.current.forEach((ref, index) => {
+        if (ref && !ref.contains(event.target as Node)) {
+          setShowDropdown((prev) => {
+            const newShow = [...prev];
+            newShow[index] = false;
+            return newShow;
+          });
+        }
+      });
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close dropdown on Escape
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowDropdown([false, false, false]);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
+  const handleSelectSuggestion = (index: number, result: OMDBSearchResult) => {
+    // Check for duplicates by IMDB ID
+    if (compTitles.some((c) => c.imdbID === result.imdbID)) {
+      setInputValues((prev) => {
+        const newValues = [...prev];
+        newValues[index] = '';
+        return newValues;
+      });
+      setShowDropdown((prev) => {
+        const newShow = [...prev];
+        newShow[index] = false;
+        return newShow;
+      });
+      return;
+    }
+
+    const newComp: CompTitle = {
+      title: result.Title,
+      imdbID: result.imdbID,
+      year: result.Year,
+      type: result.Type,
+    };
+
+    // Add or replace the comp at this index
+    const newCompTitles = [...compTitles];
+    newCompTitles[index] = newComp;
+
+    // Filter out undefined entries and compact the array
+    onChange(newCompTitles.filter(Boolean));
+
+    // Clear the input
+    setInputValues((prev) => {
+      const newValues = [...prev];
+      newValues[index] = '';
+      return newValues;
+    });
+
+    setSuggestions((prev) => {
+      const newSuggestions = [...prev];
+      newSuggestions[index] = [];
+      return newSuggestions;
+    });
+
+    setShowDropdown((prev) => {
+      const newShow = [...prev];
+      newShow[index] = false;
+      return newShow;
+    });
+  };
+
+  const handleRemoveComp = (index: number) => {
+    const newCompTitles = compTitles.filter((_, i) => i !== index);
+    onChange(newCompTitles);
+
+    // If we have fewer comps than active inputs, reduce active inputs
+    if (newCompTitles.length < activeInputCount && activeInputCount > 1) {
+      setActiveInputCount(Math.max(newCompTitles.length, 1));
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      if (showDropdown[index] && suggestions[index].length > 0) {
+        handleSelectSuggestion(index, suggestions[index][0]);
+      }
+    }
+  };
+
+  const handleTryExample = (example: string) => {
+    // Set the example in the first empty slot or first input
+    const emptySlotIndex = compTitles.length;
+    if (emptySlotIndex < 3) {
+      setInputValues((prev) => {
+        const newValues = [...prev];
+        newValues[emptySlotIndex] = example;
+        return newValues;
+      });
+    }
+  };
+
+  const handleAddInput = () => {
+    if (activeInputCount < 3) {
+      setActiveInputCount((prev) => prev + 1);
+    }
+  };
+
+  const canAddMore = activeInputCount < 3;
+  const hasAnyInput = compTitles.length > 0 || inputValues.some((v) => v.trim());
+  const showClear = hasAnyInput || hasResults;
+
+  return (
+    <div className="w-full max-w-2xl mx-auto space-y-4">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-50 to-blue-50 px-4 py-2 rounded-full mb-4">
+          <Film className="h-5 w-5 text-cyan-500" />
+          <span className="text-cyan-600 font-medium">Find Similar IP</span>
+        </div>
+        <h2 className="text-2xl md:text-3xl font-bold text-black">
+          What show do you love?
+        </h2>
+      </div>
+
+      {/* Input Rows */}
+      <div className="space-y-3">
+        {Array.from({ length: activeInputCount }).map((_, index) => {
+          const selectedComp = compTitles[index];
+          const inputValue = inputValues[index];
+          const inputSuggestions = suggestions[index];
+          const isLoadingInput = isLoadingSuggestions[index];
+          const isDropdownVisible = showDropdown[index];
+
+          return (
+            <div key={index} className="relative" ref={(el) => (dropdownRefs.current[index] = el)}>
+              {/* Selected Comp Chip */}
+              {selectedComp ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 flex items-center justify-between p-3 bg-gradient-to-r from-hanok-teal/10 to-hanok-teal/5 border border-hanok-teal/30 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      {selectedComp.type === 'series' ? (
+                        <Tv className="h-5 w-5 text-hanok-teal/70" />
+                      ) : (
+                        <Film className="h-5 w-5 text-hanok-teal/70" />
+                      )}
+                      <span className="font-medium text-hanok-teal">{selectedComp.title}</span>
+                      {selectedComp.year && (
+                        <span className="text-hanok-teal/60 text-sm">({selectedComp.year})</span>
+                      )}
+                      {selectedComp.imdbID && (
+                        <a
+                          href={omdbService.getIMDBUrl(selectedComp.imdbID)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-hanok-teal/50 hover:text-yellow-600 transition-colors"
+                          title="View on IMDB"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleRemoveComp(index)}
+                      className="p-1 hover:bg-hanok-teal/20 rounded-full transition-colors"
+                      aria-label={`Remove ${selectedComp.title}`}
+                    >
+                      <X className="h-4 w-4 text-hanok-teal" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Input Field */
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      value={inputValue}
+                      onChange={(e) => {
+                        setInputValues((prev) => {
+                          const newValues = [...prev];
+                          newValues[index] = e.target.value;
+                          return newValues;
+                        });
+                      }}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      onFocus={() => {
+                        if (inputSuggestions.length > 0) {
+                          setShowDropdown((prev) => {
+                            const newShow = [...prev];
+                            newShow[index] = true;
+                            return newShow;
+                          });
+                        }
+                      }}
+                      placeholder={
+                        index === 0
+                          ? 'Type a show you love (e.g., The Bear, Squid Game)'
+                          : `Add ${index === 1 ? 'second' : 'third'} show (optional)`
+                      }
+                      className="w-full text-sm sm:text-base py-5 sm:py-6 pr-12 rounded-xl border-gray-300 focus:border-hanok-teal focus:ring-hanok-teal"
+                      disabled={isLoading}
+                    />
+                    {isLoadingInput && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Suggestions Dropdown */}
+              {isDropdownVisible && inputSuggestions.length > 0 && !isLoading && !selectedComp && (
+                <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto" style={{ width: 'calc(100% - 60px)', maxWidth: 'calc(100% - 60px)' }}>
+                  {inputSuggestions.map((result) => (
+                    <div
+                      key={result.imdbID}
+                      onClick={() => handleSelectSuggestion(index, result)}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {result.Type === 'series' ? (
+                          <Tv className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                        ) : (
+                          <Film className="h-5 w-5 text-purple-500 flex-shrink-0" />
+                        )}
+                        <span className="font-medium text-gray-900 truncate">{result.Title}</span>
+                        <span className="text-gray-500 text-sm flex-shrink-0">({result.Year})</span>
+                      </div>
+                      <a
+                        href={omdbService.getIMDBUrl(result.imdbID)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-gray-400 hover:text-yellow-500 transition-colors flex-shrink-0 ml-2"
+                        title="View on IMDB"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </div>
+                  ))}
+                  <div className="px-4 py-2 text-xs text-gray-400 bg-gray-50 border-t border-gray-100">
+                    Click to select or press Enter for first result
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Add Another Button */}
+      {canAddMore && (
+        <button
+          onClick={handleAddInput}
+          disabled={isLoading}
+          className="flex items-center gap-2 text-sm text-hanok-teal hover:text-hanok-teal/80 transition-colors disabled:opacity-50"
+        >
+          <Plus className="h-4 w-4" />
+          Add another title
+        </button>
+      )}
+
+      {/* Find Matches and Clear Buttons */}
+      <div className="flex justify-end gap-2 mt-3">
+        {showClear && (
+          <Button
+            onClick={() => {
+              onClear();
+              setInputValues(['', '', '']);
+              setActiveInputCount(1);
+            }}
+            variant="outline"
+            disabled={isLoading}
+            className="border-gray-300 hover:bg-gray-100"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Clear
+          </Button>
+        )}
+        <Button
+          onClick={onSearch}
+          disabled={isLoading || compTitles.length === 0}
+          className="bg-gradient-to-r from-hanok-teal to-cyan-600 hover:from-hanok-teal/90 hover:to-cyan-700"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              {loadingPhase === 'semantic' ? 'Searching...' : 'Ranking...'}
+            </>
+          ) : (
+            <>
+              <Search className="h-4 w-4 mr-2" />
+              Find Matches
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Try Examples and Need Help */}
+      <div className="mt-6">
+        <p className="text-sm text-gray-500 mb-3">Try these examples:</p>
+        <div className="flex flex-wrap gap-2">
+          {EXAMPLE_SHOWS.map((example) => (
+            <button
+              key={example}
+              onClick={() => handleTryExample(example)}
+              disabled={isLoading || compTitles.length >= 3}
+              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {example}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Need help button */}
+      <div className="mt-4 text-center">
+        <button
+          onClick={onNeedHelp}
+          disabled={isLoading}
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-hanok-teal transition-colors"
+        >
+          <HelpCircle className="h-4 w-4" />
+          <span className="underline underline-offset-2">Need help?</span>
+        </button>
+      </div>
+
+      {/* Search Info */}
+      {searchInfo && !isLoading && (
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-gray-400">
+          <span>{(searchInfo.time / 1000).toFixed(1)}s</span>
+          <span>•</span>
+          <span>${searchInfo.cost.toFixed(3)}</span>
+        </div>
+      )}
+    </div>
+  );
+}

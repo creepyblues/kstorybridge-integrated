@@ -25,6 +25,7 @@ import AuthCallback from '@/pages/auth/AuthCallback';
 import CompleteProfile from '@/pages/auth/CompleteProfile';
 
 // Buyer pages
+import Home from '@/pages/buyers/Home';
 import Chat from '@/pages/buyers/Chat';
 import CompsNavigator from '@/pages/buyers/CompsNavigator';
 import Mandates from '@/pages/buyers/Mandates';
@@ -40,6 +41,7 @@ import Featured from '@/pages/buyers/Featured';
 
 // Admin pages
 import AdminTitles from '@/pages/admin/AdminTitles';
+import AdminTitleEdit from '@/pages/admin/AdminTitleEdit';
 import AdminFeatured from '@/pages/admin/Featured';
 import DraftApproval from '@/pages/admin/DraftApproval';
 import DraftDetail from '@/pages/admin/DraftDetail';
@@ -80,6 +82,16 @@ function App() {
           <Route path="/signup/complete" element={<CompleteProfile />} />
 
           {/* Protected buyer routes - TierProvider loaded on-demand */}
+          <Route
+            path="/buyers/home"
+            element={
+              <TierProvider>
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              </TierProvider>
+            }
+          />
           <Route
             path="/buyers/chat"
             element={
@@ -141,7 +153,7 @@ function App() {
             }
           />
           <Route
-            path="/buyers/featured"
+            path="/buyers/trending"
             element={
               <TierProvider>
                 <ProtectedRoute>
@@ -292,7 +304,7 @@ function App() {
             }
           />
 
-          {/* Titles (keep existing) */}
+          {/* Titles */}
           <Route
             path="/admin/titles"
             element={
@@ -301,6 +313,14 @@ function App() {
                   <AdminTitles />
                 </ProtectedRoute>
               </TierProvider>
+            }
+          />
+          <Route
+            path="/admin/titles/:titleId/edit"
+            element={
+              <AdminProtectedRoute>
+                <AdminTitleEdit />
+              </AdminProtectedRoute>
             }
           />
 

@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  Palette
+  Palette,
+  Library
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/featured',
       icon: Star,
       description: 'Manage featured titles'
+    },
+    {
+      name: 'Titles',
+      href: '/admin/titles',
+      icon: Library,
+      description: 'Manage all titles'
     },
     {
       name: 'Drafts',

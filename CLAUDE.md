@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-11-14
+**Last Updated**: 2025-12-01
 
 > 📜 For historical changes and system evolution, see [CHANGELOG.md](CHANGELOG.md)
 
@@ -73,6 +73,27 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
 - Vector search using OpenAI embeddings (text-embedding-ada-002)
 - Cost: ~$0.0015 per search, returns top 15 matches
 - Route: `/buyers/mandates`
+
+**Title Intelligence System** (✅ LIVE - 2025-12-01):
+- Platform data scraping for Korean webtoon/webnovel platforms
+- **Supported Platforms**: Naver Webtoon, Naver Series, Kakao Page, Kakao Webtoon, Manta
+- **Edge Function**: `supabase/functions/title-intelligence/` (shared across apps)
+- **Database Tables**: `intelligence_titles`, `intelligence_sources`, `intelligence_metrics`, `intelligence_aliases`
+- **Creator App**: Full TitleInvestigator tool at `/tools/title-investigator`
+- **Dashboard App**: "Collect Data" button in admin TitleEditModal for quick data collection
+- **Field Mapping** (Intelligence → Titles):
+  | Intelligence | Titles Table |
+  |--------------|--------------|
+  | views | views |
+  | subscribers | likes |
+  | rating_score | rating |
+  | episode_count | chapters |
+  | synopsis_kr | description_kr |
+  | genre | genre |
+  | author | story_author |
+  | thumbnail | title_image |
+  | tags | keywords |
+- **See**: [apps/creator/CLAUDE.md](apps/creator/CLAUDE.md) for full documentation
 
 **Stripe Payment Integration** (`docs/`):
 - **[STRIPE_PAYMENT_INTEGRATION.md](docs/STRIPE_PAYMENT_INTEGRATION.md)** - Complete implementation summary (✅ LIVE - 2025-11-14)

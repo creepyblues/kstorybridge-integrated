@@ -1,5 +1,4 @@
-import { Bot, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Bot } from 'lucide-react';
 
 interface ChatEmptyStateProps {
   onQuerySelect: (query: string) => void;
@@ -29,20 +28,16 @@ export function ChatEmptyState({ onQuerySelect, suggestedQueries }: ChatEmptySta
 
         {/* Suggested Queries */}
         <div className="space-y-3">
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-            <Sparkles className="h-4 w-4" />
-            <span>Try asking:</span>
-          </div>
-          <div className="grid grid-cols-1 gap-2">
+          <p className="text-sm text-gray-500">Try these examples:</p>
+          <div className="flex flex-wrap justify-center gap-2">
             {suggestedQueries.map((query, index) => (
-              <Button
+              <button
                 key={index}
-                variant="outline"
-                className="h-auto py-3 px-4 text-left justify-start border-gray-300 hover:bg-gray-50 hover:border-hanok-teal transition-colors"
                 onClick={() => onQuerySelect(query)}
+                className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
               >
-                <span className="text-gray-700">{query}</span>
-              </Button>
+                {query}
+              </button>
             ))}
           </div>
         </div>

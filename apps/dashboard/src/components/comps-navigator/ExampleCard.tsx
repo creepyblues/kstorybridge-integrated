@@ -10,18 +10,60 @@
 
 import { CompExample } from '@/data/examplesData';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Lightbulb } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface ExampleCardProps {
   example: CompExample;
   onTryExample: (comps: string[], refinement?: string) => void;
+  compact?: boolean;
 }
 
-export default function ExampleCard({ example, onTryExample }: ExampleCardProps) {
+export default function ExampleCard({ example, onTryExample, compact = false }: ExampleCardProps) {
   const handleTryExample = () => {
     onTryExample(example.comps);
   };
 
+  // Compact version for modal
+  if (compact) {
+    return (
+      <Card className="bg-white border border-gray-200 rounded-lg hover:shadow-md hover:border-hanok-teal/30 transition-all duration-200 group">
+        <CardContent className="p-3 sm:p-4">
+          {/* Title */}
+          <h4 className="text-sm font-bold text-gray-900 mb-2 group-hover:text-hanok-teal transition-colors">
+            {example.icon} {example.title}
+          </h4>
+
+          {/* Comp Pills */}
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {example.comps.map((comp, idx) => (
+              <span
+                key={idx}
+                className="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded text-xs font-medium border border-cyan-200"
+              >
+                {comp}
+              </span>
+            ))}
+          </div>
+
+          {/* Short Description */}
+          <p className="text-xs text-gray-500 mb-3 line-clamp-2">
+            {example.description}
+          </p>
+
+          {/* Try Button */}
+          <button
+            onClick={handleTryExample}
+            className="w-full flex items-center justify-center gap-1.5 bg-hanok-teal hover:bg-hanok-teal/90 text-white rounded-md px-3 py-2 text-xs font-semibold transition-colors"
+          >
+            <span>Try This</span>
+            <ArrowRight className="h-3 w-3" />
+          </button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Full version
   return (
     <Card className="bg-white border border-gray-300 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
       <CardContent className="p-5">
@@ -56,28 +98,6 @@ export default function ExampleCard({ example, onTryExample }: ExampleCardProps)
             </div>
           ))}
         </div>
-
-        {/* Refinement Tips */}
-        {example.refinementTips.length > 0 && (
-          <div className="mb-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-lg p-3">
-            <div className="flex items-start gap-2">
-              <Lightbulb className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-xs font-semibold text-amber-900 mb-1.5">Refine with:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {example.refinementTips.map((tip, idx) => (
-                    <span
-                      key={idx}
-                      className="bg-white text-amber-800 px-2 py-0.5 rounded text-xs font-medium border border-amber-200"
-                    >
-                      "{tip}"
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Try Button */}
         <button

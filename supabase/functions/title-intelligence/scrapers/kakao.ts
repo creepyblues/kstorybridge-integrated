@@ -250,6 +250,7 @@ export async function scrapeKakao(titleNameOrId: string): Promise<KakaoWebtoonDa
  * Extract seriesId from various input formats:
  * - Direct numeric ID: "63062046" or "4463"
  * - page.kakao.com URL: "https://page.kakao.com/content/63062046"
+ * - page.kakao.com URL with query param: "https://page.kakao.com/home?seriesId=55929080"
  * - webtoon.kakao.com URL: "https://webtoon.kakao.com/content/연습생/4463"
  * - URL with params: "https://page.kakao.com/content/63062046?tab=info"
  */
@@ -265,6 +266,12 @@ function extractSeriesId(input: string): string | null {
   const pageKakaoMatch = trimmed.match(/page\.kakao\.com\/content\/(\d+)/)
   if (pageKakaoMatch) {
     return pageKakaoMatch[1]
+  }
+
+  // page.kakao.com URL with seriesId query param: /home?seriesId=55929080
+  const seriesIdParamMatch = trimmed.match(/page\.kakao\.com\/[^?]*\?.*seriesId=(\d+)/)
+  if (seriesIdParamMatch) {
+    return seriesIdParamMatch[1]
   }
 
   // webtoon.kakao.com URL pattern: /content/{slug}/{id}

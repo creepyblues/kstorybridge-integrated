@@ -145,7 +145,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
             <div className="bg-gray-50 rounded-lg p-4 text-center">
               <Eye className="w-5 h-5 text-[#4C9C9B] mx-auto mb-2" />
               <div className="text-2xl font-bold text-black">
-                {titlesService.formatNumber(totalViews)}
+                {totalViews === 0 ? 'N/A' : titlesService.formatNumber(totalViews)}
               </div>
               <div className="text-xs text-gray-500">Total Views</div>
             </div>

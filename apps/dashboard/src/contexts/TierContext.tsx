@@ -117,10 +117,25 @@ export function TierProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Hook to access tier context.
+ * Returns a default "unrestricted" state when used outside TierProvider
+ * (e.g., in trial pages where all content should be accessible).
+ */
 export function useTierAccess() {
   const context = useContext(TierContext);
+
+  // When outside TierProvider (e.g., trial pages), return permissive defaults
+  // This allows TierGatedContent to show content without tier restrictions
   if (context === undefined) {
-    throw new Error('useTierAccess must be used within a TierProvider');
+    return {
+      tier: 'basic' as UserTier,
+      loading: false,
+      hasAccess: () => true, // Always grant access in trial mode
+      refetch: async () => {},
+      error: null,
+    };
   }
+
   return context;
 }

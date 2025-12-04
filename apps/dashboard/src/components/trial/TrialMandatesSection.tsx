@@ -12,7 +12,7 @@ import { useTrial } from '@/contexts/TrialContext';
 import { mandateService, TitleMatch } from '@/services/mandateService';
 import MandateSearchInput from '@/components/mandates/MandateSearchInput';
 import MandateExamples from '@/components/mandates/MandateExamples';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TrialMandateResultsGrid } from './TrialMandateResultsGrid';
 
 export function TrialMandatesSection() {
@@ -120,9 +120,9 @@ export function TrialMandatesSection() {
             <DialogTitle className="text-lg sm:text-xl font-bold text-purple-600">
               Example Mandates
             </DialogTitle>
-            <p className="text-sm text-gray-600 mt-1">
+            <DialogDescription className="text-sm text-gray-600 mt-1">
               Learn how to write effective mandate descriptions with these examples
-            </p>
+            </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
             <MandateExamples

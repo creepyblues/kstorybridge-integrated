@@ -15,19 +15,12 @@ interface CompNavigatorRequest {
   search_name?: string; // For bookmarking
 }
 
-interface CompAlignment {
-  comp_title: string;
-  alignment_score: number;
-  reasons: string[];
-}
-
 interface TitleMatch {
   title_id: string;
   title_name_en: string;
   title_name_kr: string;
   match_score: number; // 0-100
   explanation: string;
-  comp_alignments: CompAlignment[];
   title_image?: string;
   synopsis: string;
   genre: string[];
@@ -76,8 +69,10 @@ serve(async (req) => {
       throw new Error('Must provide 1-3 comparable titles')
     }
 
-    if (!requestData.user_email || typeof requestData.user_email !== 'string') {
-      throw new Error('Valid user email is required')
+    // Email is only strictly required when saving search
+    // For trial mode, we accept placeholder emails
+    if (requestData.save_search !== false && (!requestData.user_email || typeof requestData.user_email !== 'string')) {
+      throw new Error('Valid user email is required when saving search')
     }
 
     if (requestData.refinement_text && typeof requestData.refinement_text === 'string' && requestData.refinement_text.length > 500) {
@@ -120,7 +115,7 @@ serve(async (req) => {
     const { data: candidates, error: vectorError } = await supabaseClient.rpc('match_titles_by_embedding_optimized', {
       query_embedding: finalEmbedding,
       match_threshold: 0.6,
-      match_count: 30
+      match_count: 15  // Reduced from 30 for faster processing
     })
 
     const vectorSearchDuration = Date.now() - vectorSearchStart
@@ -160,13 +155,27 @@ serve(async (req) => {
       )
     }
 
+    // PHASE 1.5: Smart Prioritization
+    // Apply business-value scoring before LLM re-ranking
+    console.log('[COMPS] Phase 1.5: Applying smart prioritization')
+    const prioritizationStart = Date.now()
+
+    // Fetch pitch deck availability for all candidates
+    const titleIds = candidates.map((c: any) => c.title_id)
+    const titlesWithPitchDeck = await fetchPitchDeckAvailability(supabaseClient, titleIds)
+
+    // Apply weighted scoring and re-sort
+    const prioritizedCandidates = applySmartPrioritization(candidates, titlesWithPitchDeck)
+
+    const prioritizationDuration = Date.now() - prioritizationStart
+    console.log('[COMPS] ⏱️  Smart prioritization took:', prioritizationDuration, 'ms')
+
     // PHASE 2: LLM Re-Ranking
     console.log('[COMPS] Phase 2: LLM re-ranking top candidates')
     const phase2Start = Date.now()
 
-    // Reduced from 20 to 10 candidates for faster LLM processing
-    // 10 candidates = ~50% fewer tokens, 2-3x faster response
-    const topCandidates = candidates.slice(0, 10)
+    // Take top 5 from prioritized candidates (business-value weighted)
+    const topCandidates = prioritizedCandidates.slice(0, 5)
     const rerankedResults = await llmRerank(
       requestData.comp_titles,
       requestData.refinement_text,
@@ -186,6 +195,7 @@ serve(async (req) => {
     console.log('[COMPS] 📊 Performance Summary:', {
       total_duration_ms: totalDuration,
       phase1_ms: phase1Duration,
+      prioritization_ms: prioritizationDuration,
       phase2_ms: phase2Duration,
       embedding_generation_ms: embeddingDuration,
       vector_search_ms: vectorSearchDuration,
@@ -233,7 +243,7 @@ serve(async (req) => {
     })
 
     const response: CompNavigatorResponse = {
-      results: rerankedResults.slice(0, 15), // Return top 15
+      results: rerankedResults.slice(0, 5), // Return top 5 for faster response
       search_id: searchId,
       processing_time_ms: totalDuration,
       cost_estimate: totalCost
@@ -376,6 +386,112 @@ function combineEmbeddings(
   return embed1.map((val, i) => val * weight1 + embed2[i] * weight2)
 }
 
+// =====================================================================
+// SMART PRIORITIZATION FUNCTIONS
+// Weights: similarity (35%) + pitch deck (25%) + priority (20%) + verified (10%) + engagement (10%)
+// =====================================================================
+
+interface CandidateWithPriority {
+  title_id: string;
+  title_name_en: string;
+  title_name_kr: string;
+  synopsis: string;
+  description: string;
+  genre: string[];
+  tone: string;
+  content_format: string;
+  title_image: string;
+  similarity: number;
+  priority: string | null;
+  verified: boolean;
+  views: number;
+  likes: number;
+  hasPitchDeck?: boolean;
+  priorityScore?: number;
+}
+
+async function fetchPitchDeckAvailability(
+  supabaseClient: any,
+  titleIds: string[]
+): Promise<Set<string>> {
+  if (titleIds.length === 0) return new Set()
+
+  const { data, error } = await supabaseClient
+    .from('title_documents')
+    .select('title_id')
+    .in('title_id', titleIds)
+    .eq('document_type', 'source_pdf')
+
+  if (error) {
+    console.warn('[COMPS] Failed to fetch pitch deck availability:', error)
+    return new Set()
+  }
+
+  const titlesWithPitchDeck = new Set<string>(data?.map((d: any) => d.title_id) || [])
+  console.log(`[COMPS] Pitch deck availability: ${titlesWithPitchDeck.size}/${titleIds.length} titles have pitch decks`)
+  return titlesWithPitchDeck
+}
+
+function calculatePriorityScore(
+  candidate: CandidateWithPriority,
+  maxEngagement: number
+): number {
+  // Weights: similarity (35%) + pitch deck (25%) + priority (20%) + verified (10%) + engagement (10%)
+  const similarityScore = (candidate.similarity || 0) * 0.35
+
+  const pitchDeckScore = candidate.hasPitchDeck ? 0.25 : 0
+
+  // Priority: '1' = 1.0, '2' = 0.5, '3' or null = 0
+  const priorityValue = candidate.priority === '1' ? 1.0 : candidate.priority === '2' ? 0.5 : 0
+  const priorityScore = priorityValue * 0.20
+
+  const verifiedScore = candidate.verified ? 0.10 : 0
+
+  // Normalize engagement to 0-1 range
+  const engagement = ((candidate.views || 0) + (candidate.likes || 0)) / Math.max(maxEngagement, 1)
+  const engagementScore = Math.min(engagement, 1) * 0.10
+
+  return similarityScore + pitchDeckScore + priorityScore + verifiedScore + engagementScore
+}
+
+function applySmartPrioritization(
+  candidates: CandidateWithPriority[],
+  titlesWithPitchDeck: Set<string>
+): CandidateWithPriority[] {
+  // Calculate max engagement for normalization
+  const maxEngagement = Math.max(
+    ...candidates.map(c => (c.views || 0) + (c.likes || 0)),
+    1
+  )
+
+  // Add pitch deck info and calculate priority scores
+  const candidatesWithScores = candidates.map(c => ({
+    ...c,
+    hasPitchDeck: titlesWithPitchDeck.has(c.title_id),
+    priorityScore: 0 // Will be set below
+  }))
+
+  // Calculate priority scores
+  for (const candidate of candidatesWithScores) {
+    candidate.priorityScore = calculatePriorityScore(candidate, maxEngagement)
+  }
+
+  // Sort by priority score (descending)
+  candidatesWithScores.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0))
+
+  console.log('[COMPS] Smart prioritization applied:', candidatesWithScores.slice(0, 5).map(c => ({
+    title: c.title_name_en?.substring(0, 30),
+    similarity: c.similarity?.toFixed(3),
+    hasPitchDeck: c.hasPitchDeck,
+    priority: c.priority,
+    verified: c.verified,
+    engagement: (c.views || 0) + (c.likes || 0),
+    finalScore: c.priorityScore?.toFixed(3)
+  })))
+
+  return candidatesWithScores
+}
+
 async function llmRerank(
   compTitles: string[],
   refinementText: string | undefined,
@@ -396,16 +512,16 @@ ${idx + 1}. ${c.title_name_en || c.title_name_kr} (ID: ${c.title_id})
    Format: ${c.content_format || 'Unknown'}
   `).join('\n')
 
-  // Simplified prompt for faster processing (reduced from ~800 tokens to ~400)
+  // Simplified prompt for faster processing - removed comp_alignments for speed
   const prompt = `Match Korean titles to: ${compTitles.join(', ')}
 ${refinementText ? `\nFocus: ${refinementText}` : ''}
 
 Candidates:
 ${formattedCandidates}
 
-Rank all ${candidates.length} by match score (0-100). For each title, provide alignment scores for EACH comp (${compTitles.join(', ')}).
+Rank all ${candidates.length} by match score (0-100). Give a brief 1-sentence explanation for each.
 Return JSON:
-{"results":[{"rank":1,"title_id":"uuid","match_score":85,"explanation":"why","comp_alignments":[${compTitles.map(c => `{"comp_title":"${c}","alignment_score":80,"reasons":["r1","r2"]}`).join(',')}]}]}`
+{"results":[{"rank":1,"title_id":"uuid","match_score":85,"explanation":"One sentence why this matches"}]}`
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -496,7 +612,6 @@ Return JSON:
       title_name_kr: candidate.title_name_kr,
       match_score: ranking.match_score,
       explanation: ranking.explanation,
-      comp_alignments: ranking.comp_alignments || [],
       title_image: candidate.title_image,
       synopsis: candidate.synopsis,
       genre: candidate.genre || [],

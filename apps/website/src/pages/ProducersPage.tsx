@@ -5,6 +5,7 @@ import { Card, CardContent } from '../components/ui/card';
 import FeaturedTitlesCarousel from '../components/FeaturedTitlesCarousel';
 import Footer from '../components/Footer';
 import { useTranslation } from 'react-i18next';
+import { getDashboardUrl } from '../config/urls';
 import {
   Bot,
   Shield,
@@ -90,7 +91,7 @@ const ProducersPage = () => {
                 id="buyers-hero-try-ai-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
+                onClick={() => window.location.href = `${getDashboardUrl()}/trial`}
               >
                 {t('hero.cta')}
               </Button>
@@ -287,7 +288,7 @@ const ProducersPage = () => {
                     <Button
                       size="sm"
                       className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
-                      onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
+                      onClick={() => window.location.href = `${getDashboardUrl()}/trial`}
                     >
                       {t('aiAssistant.demo.cta')}
                     </Button>
@@ -403,7 +404,7 @@ const ProducersPage = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
+                onClick={() => window.location.href = `${getDashboardUrl()}/trial`}
               >
                 Get Started Today
               </Button>

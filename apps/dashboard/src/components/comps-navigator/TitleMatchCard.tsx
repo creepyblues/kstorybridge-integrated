@@ -107,7 +107,7 @@ export default function TitleMatchCard({ match }: TitleMatchCardProps) {
             </div>
 
             {/* Match Explanation - AI Chat Bubble */}
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-3">
               <div className="flex-shrink-0">
                 <div className="bg-hanok-teal/10 rounded-full p-2">
                   <Bot className="h-5 w-5 text-hanok-teal" />
@@ -119,28 +119,6 @@ export default function TitleMatchCard({ match }: TitleMatchCardProps) {
                 </p>
               </div>
             </div>
-
-            {/* Comp Alignments */}
-            {match.comp_alignments && match.comp_alignments.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Comp Alignments</div>
-                {match.comp_alignments.slice(0, 2).map((alignment, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
-                    <span className="bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800 px-2 py-1 rounded-md text-xs font-medium border border-emerald-200">
-                      {alignment.comp_title}
-                    </span>
-                    <span className="text-xs font-bold text-gray-700">
-                      {alignment.alignment_score}%
-                    </span>
-                  </div>
-                ))}
-                {match.comp_alignments.length > 2 && (
-                  <div className="text-xs text-gray-500 italic">
-                    +{match.comp_alignments.length - 2} more
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

@@ -13,7 +13,7 @@ import { compsNavigatorService, TitleMatch } from '@/services/compsNavigatorServ
 import { CompTitle } from '@/components/comps-navigator/CompSelector';
 import CompsNavigatorInput from '@/components/comps-navigator/CompsNavigatorInput';
 import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TrialResultsGrid } from './TrialResultsGrid';
 
 type LoadingPhase = 'semantic' | 'reranking' | null;
@@ -158,9 +158,9 @@ export function TrialCompsSection() {
             <DialogTitle className="text-lg sm:text-xl font-bold text-hanok-teal">
               Explore Example Combinations
             </DialogTitle>
-            <p className="text-sm text-gray-600 mt-1">
+            <DialogDescription className="text-sm text-gray-600 mt-1">
               Learn how to combine comps effectively by trying these curated examples
-            </p>
+            </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
             <ExamplesSection

@@ -13,6 +13,7 @@ import { TitleMatch } from '@/services/compsNavigatorService';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -145,6 +146,9 @@ function TrialMatchDetailModal({ match, onClose }: { match: TitleMatch; onClose:
           <DialogTitle className="text-2xl font-bold">
             {match.title_name_en || match.title_name_kr}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Detailed match information for {match.title_name_en || match.title_name_kr}
+          </DialogDescription>
           {match.title_name_en && match.title_name_kr && (
             <p className="text-gray-500">{match.title_name_kr}</p>
           )}

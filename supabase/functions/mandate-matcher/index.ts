@@ -14,6 +14,7 @@ interface MandateMatchRequest {
   mandate_text: string;
   user_email: string;
   limit?: number;
+  save_search?: boolean; // Whether to save to history (default true)
 }
 
 interface TitleMatch {
@@ -55,10 +56,15 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Parse request
-    const { mandate_text, user_email, limit = 15 }: MandateMatchRequest = await req.json();
+    const { mandate_text, user_email, limit = 15, save_search = true }: MandateMatchRequest = await req.json();
 
-    if (!mandate_text || !user_email) {
-      throw new Error("mandate_text and user_email are required");
+    if (!mandate_text) {
+      throw new Error("mandate_text is required");
+    }
+
+    // Email is only strictly required when saving search
+    if (save_search && !user_email) {
+      throw new Error("user_email is required when saving search");
     }
 
     if (mandate_text.length > 1000) {
@@ -131,23 +137,30 @@ serve(async (req) => {
       ? results.reduce((sum, r) => sum + r.match_score, 0) / results.length
       : 0;
 
-    // Step 4: Save search to database
-    console.log("💾 Saving mandate search to database...");
-    const { data: savedSearch, error: saveError } = await supabase
-      .from("mandate_searches")
-      .insert({
-        user_email,
-        mandate_text,
-        search_results: results,
-        result_count: results.length,
-        avg_match_score: Math.round(avg_match_score * 100) / 100,
-      })
-      .select()
-      .single();
+    // Step 4: Save search to database (only if save_search is true)
+    let savedSearch: any = null;
+    if (save_search && user_email) {
+      console.log("💾 Saving mandate search to database...");
+      const { data, error: saveError } = await supabase
+        .from("mandate_searches")
+        .insert({
+          user_email,
+          mandate_text,
+          search_results: results,
+          result_count: results.length,
+          avg_match_score: Math.round(avg_match_score * 100) / 100,
+        })
+        .select()
+        .single();
 
-    if (saveError) {
-      console.error("⚠️ Failed to save search:", saveError);
-      // Don't throw - we can still return results
+      if (saveError) {
+        console.error("⚠️ Failed to save search:", saveError);
+        // Don't throw - we can still return results
+      } else {
+        savedSearch = data;
+      }
+    } else {
+      console.log("⏭️ Skipping save (trial mode)");
     }
 
     const processingTime = Date.now() - startTime;

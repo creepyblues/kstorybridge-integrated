@@ -60,6 +60,11 @@ import Design2CompsNavigator from '@/pages/preview/Design2CompsNavigator';
 import Design3Dashboard from '@/pages/preview/Design3Dashboard';
 import Design3CompsNavigator from '@/pages/preview/Design3CompsNavigator';
 
+// Trial pages (public, no auth required)
+import Trial from '@/pages/Trial';
+import TrialTitleDetail from '@/pages/TrialTitleDetail';
+import { TrialProvider } from '@/contexts/TrialContext';
+
 // 🚨 AUTH ISOLATION ARCHITECTURE
 // AuthProvider wraps entire app (auth state only)
 // TierProvider wraps ONLY protected routes (business logic, non-blocking)
@@ -80,6 +85,24 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/signup/complete" element={<CompleteProfile />} />
+
+          {/* Public trial routes - No auth required */}
+          <Route
+            path="/trial"
+            element={
+              <TrialProvider>
+                <Trial />
+              </TrialProvider>
+            }
+          />
+          <Route
+            path="/trial/titles/:titleId"
+            element={
+              <TrialProvider>
+                <TrialTitleDetail />
+              </TrialProvider>
+            }
+          />
 
           {/* Protected buyer routes - TierProvider loaded on-demand */}
           <Route

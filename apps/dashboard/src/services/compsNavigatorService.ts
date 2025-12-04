@@ -9,19 +9,12 @@
 
 import { supabase } from '@/lib/supabase';
 
-export interface CompAlignment {
-  comp_title: string;
-  alignment_score: number;
-  reasons: string[];
-}
-
 export interface TitleMatch {
   title_id: string;
   title_name_en: string;
   title_name_kr: string;
   match_score: number; // 0-100
   explanation: string;
-  comp_alignments: CompAlignment[];
   title_image?: string;
   synopsis: string;
   genre: string[];
@@ -63,14 +56,16 @@ export const compsNavigatorService = {
       throw new Error('Must provide 1-3 comparable titles');
     }
 
-    if (!userEmail) {
-      throw new Error('User email is required');
+    // Email is only required when saving search
+    if (saveSearch && !userEmail) {
+      throw new Error('User email is required when saving search');
     }
 
     const requestBody = {
       comp_titles: compTitles,
       ...(refinementText && { refinement_text: refinementText }),
-      user_email: userEmail,
+      // For trial mode, use placeholder email when not saving
+      user_email: userEmail || 'trial@kstorybridge.com',
       save_search: saveSearch,
       ...(searchName && { search_name: searchName })
     };

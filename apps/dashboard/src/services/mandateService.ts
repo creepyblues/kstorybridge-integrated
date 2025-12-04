@@ -44,18 +44,27 @@ export interface MandateMatchResponse {
 class MandateService {
   /**
    * Submit a new mandate and get matching titles
+   * @param saveSearch - If false, skips saving to database (for trial mode)
    */
   async searchMandates(
     mandateText: string,
-    userEmail: string,
-    limit: number = 15
+    userEmail?: string,
+    limit: number = 15,
+    saveSearch: boolean = true
   ): Promise<MandateMatchResponse> {
+    // Email is only required when saving search
+    if (saveSearch && !userEmail) {
+      throw new Error('User email is required when saving search');
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke('mandate-matcher', {
         body: {
           mandate_text: mandateText,
-          user_email: userEmail,
+          // For trial mode, use placeholder email when not saving
+          user_email: userEmail || 'trial@kstorybridge.com',
           limit,
+          save_search: saveSearch,
         },
       });
 

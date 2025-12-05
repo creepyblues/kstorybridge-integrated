@@ -19,6 +19,20 @@ interface TemplateEmailData extends BaseEmailData {
 
 type EmailData = DirectEmailData | TemplateEmailData;
 
+export interface WelcomeEmailData {
+  userName: string;
+  userEmail: string;
+  accountType: 'buyer' | 'creator';
+  dashboardUrl?: string;
+  loginUrl?: string;
+}
+
+export interface EmailResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
 /**
  * Core email sending service using Supabase Edge Function
  */
@@ -83,6 +97,54 @@ Dashboard Link: https://dashboard-v2.kstorybridge.com/buyers/titles/${data.title
       text: emailBody,
       from: 'KStoryBridge <noreply@kstorybridge.com>'
     });
+  }
+
+  /**
+   * Send welcome email to new buyer users
+   *
+   * @param data - Welcome email data including user info and app URLs
+   * @returns Promise with success status and optional message ID or error
+   */
+  async sendWelcomeEmail(data: WelcomeEmailData): Promise<EmailResult> {
+    try {
+      console.log('📧 Sending welcome email to:', data.userEmail);
+
+      const { data: result, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: data.userEmail,
+          subject: `Welcome to KStoryBridge, ${data.userName}! 🎉`,
+          template: 'welcome',
+          templateData: {
+            userName: data.userName,
+            userEmail: data.userEmail,
+            accountType: data.accountType,
+            dashboardUrl: data.dashboardUrl || 'https://dashboard.kstorybridge.com',
+            loginUrl: data.loginUrl || 'https://dashboard.kstorybridge.com/signin',
+          },
+          from: 'KStoryBridge Team <welcome@kstorybridge.com>',
+        },
+      });
+
+      if (error) {
+        console.error('❌ Welcome email error:', error);
+        return {
+          success: false,
+          error: error.message || 'Failed to send welcome email',
+        };
+      }
+
+      console.log('✅ Welcome email sent successfully:', result?.messageId);
+      return {
+        success: true,
+        messageId: result?.messageId,
+      };
+    } catch (error) {
+      console.error('❌ Welcome email sending failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
   }
 
   /**
@@ -205,3 +267,41 @@ export const triggerFirstSaveEmail = async (
   // TODO: Implement engagement email when templates are ready
   // This will send a celebration email when a user saves their first title
 };
+
+/**
+ * Convenience function for sending welcome emails with deduplication
+ *
+ * Note: This function will NOT throw errors or block signup flow.
+ * Email failures are logged but don't prevent user registration.
+ * Uses sessionStorage to prevent duplicate emails within same session.
+ *
+ * @param data - Welcome email data
+ * @returns Promise with email result
+ */
+export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<EmailResult> {
+  const welcomeEmailKey = `welcome_email_sent_${data.userEmail}`;
+
+  // Check if already sent in this session (deduplication)
+  if (typeof window !== 'undefined' && sessionStorage.getItem(welcomeEmailKey)) {
+    console.log('⚠️ Welcome email already sent in this session, skipping');
+    return { success: true, error: 'Already sent in this session' };
+  }
+
+  try {
+    const result = await emailService.sendWelcomeEmail(data);
+
+    // Mark as sent in this session if successful
+    if (result.success && typeof window !== 'undefined') {
+      sessionStorage.setItem(welcomeEmailKey, 'true');
+    }
+
+    return result;
+  } catch (error) {
+    // Log but don't throw - email failures shouldn't block signup
+    console.warn('⚠️ Welcome email failed (non-blocking):', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}

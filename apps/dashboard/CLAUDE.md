@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated**: 2025-11-27
+**Last Updated**: 2025-12-03
 
 ---
 
@@ -15,6 +15,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Title discovery with search, filters, and favorites
 - Stripe subscription integration
 - Admin panel for title management
+- **GA4 Analytics** - Event tracking for user behavior (ID: `G-DWL6MV0MC2`)
+- **Welcome Emails** - Automated welcome emails on signup (email & OAuth)
 - **All email addresses allowed** (no work email restriction)
 
 **Port**: 8081 (development)
@@ -213,9 +215,46 @@ if (!hasAccess('pro')) {
   - `stripe-webhook` - Handles subscription events (tier updates)
 - **Guide**: `STRIPE_SETUP_GUIDE.md` - Complete Stripe setup instructions
 
+### Welcome Emails
+- **Service**: `src/services/emailService.ts` - Email sending with Resend API
+- **Edge Function**: `supabase/functions/send-email/` - Shared email sender
+- **Triggers**:
+  - Email signup: `src/pages/auth/SignUp.tsx` - After profile creation
+  - OAuth signup: `src/pages/auth/CompleteProfile.tsx` - After profile completion
+- **Features**:
+  - Session-based deduplication (prevents duplicate sends)
+  - Non-blocking (email failures don't break signup)
+  - Uses `welcome` template with buyer-specific content
+
 ### Admin Panel
 - **Layout**: `src/components/layout/AdminLayout.tsx` - Sidebar navigation
 - **Titles**: `src/pages/admin/AdminTitles.tsx` - Title management table
+
+### GA4 Analytics (Fully Implemented)
+- **Measurement ID**: `G-DWL6MV0MC2`
+- **Utility**: `src/utils/analytics.ts` (~720 lines, 20+ tracking functions)
+- **Initialization**: `src/main.tsx` - Calls `initializeAnalytics()` on app start
+- **Documentation**:
+  - `docs/tracking/PHASE_1_ANALYTICS.md` - Status overview
+  - `docs/tracking/GA4_IMPLEMENTATION_GUIDE.md` - Complete implementation guide
+
+**5 User Funnels Tracked**:
+| Funnel | Events |
+|--------|--------|
+| Authentication | `signup`, `signin` (form_viewed → attempted → completed/error) |
+| Title Discovery | `title_search`, `title_detail_view`, `favorite` |
+| AI Chat | `chat_message` (sent/received), `chat_title_click` |
+| Comps Navigator | `comps_search`, `comps_result_click` |
+| Checkout | `checkout` (started → completed/cancelled/error) |
+
+**Pages with Tracking**:
+- `SignUp.tsx`, `SignIn.tsx` - Auth funnel
+- `Titles.tsx`, `TitleDetail.tsx` - Discovery funnel
+- `Chat.tsx` - Chat funnel
+- `CompsNavigator.tsx` - Comps funnel
+- `Plan.tsx`, `Checkout.tsx`, `CheckoutSuccess.tsx` - Conversion funnel
+
+**Testing**: Set `VITE_AUTH_DEBUG=true` to see `[Analytics]` logs in console
 
 ---
 
@@ -340,13 +379,15 @@ npx supabase secrets set DASHBOARD_URL=http://localhost:8081
 ### Buyer Signup
 1. Visit `/signup` → Enter email/password, company, role
 2. All email addresses accepted → Profile created via edge function
-3. Redirect to `/buyers/chat` → Welcome to dashboard
+3. Welcome email sent (non-blocking) → Redirect to `/signin`
+4. User verifies email → Sign in → `/buyers/home`
 
 ### OAuth Signup
 1. Click "Sign in with Google" → OAuth consent
 2. Callback to `/auth/callback` (context stored in sessionStorage)
 3. If new user → `/signup/complete` → Fill profile
-4. Edge function creates profile → Redirect to `/buyers/chat`
+4. Edge function creates profile → Welcome email sent (non-blocking)
+5. Redirect to `/buyers/home`
 
 ### Title Discovery
 1. Browse at `/buyers/titles` → Search/filter

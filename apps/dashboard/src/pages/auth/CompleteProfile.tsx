@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { completeOAuthProfile } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
+import { sendWelcomeEmail } from '@/services/emailService';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles profile completion only - no business logic
@@ -95,6 +96,18 @@ export default function CompleteProfile() {
         buyer_role: formData.buyer_role,
         linkedin_url: formData.linkedin_url,
       }, session);
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail({
+        userName: formData.full_name,
+        userEmail: email.toLowerCase(),
+        accountType: 'buyer',
+        dashboardUrl: `${window.location.origin}/buyers/home`,
+        loginUrl: `${window.location.origin}/signin`,
+      }).catch((err) => {
+        // Log but don't block - welcome email is not critical
+        console.warn('Welcome email failed:', err);
+      });
 
       // Clear OAuth sessionStorage after successful profile creation
       sessionStorage.removeItem('oauth_user_id');

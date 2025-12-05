@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { signUpWithEmail, signInWithOAuth } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
+import { trackSignup } from '@/utils/analytics';
+import { sendWelcomeEmail } from '@/services/emailService';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -20,6 +22,11 @@ export default function SignUp() {
     buyer_role: '',
     linkedin_url: '',
   });
+
+  // Track form viewed on mount
+  useEffect(() => {
+    trackSignup('form_viewed', 'email');
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -93,12 +100,30 @@ export default function SignUp() {
       return;
     }
 
+    // Track signup attempt
+    trackSignup('attempted', 'email', { role: formData.buyer_role });
+
     try {
       await signUpWithEmail(formData.email, formData.password, {
         full_name: formData.full_name,
         buyer_company: formData.buyer_company,
         buyer_role: formData.buyer_role,
         linkedin_url: formData.linkedin_url,
+      });
+
+      // Track successful signup
+      trackSignup('completed', 'email', { role: formData.buyer_role });
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail({
+        userName: formData.full_name,
+        userEmail: formData.email.toLowerCase(),
+        accountType: 'buyer',
+        dashboardUrl: `${window.location.origin}/buyers/home`,
+        loginUrl: `${window.location.origin}/signin`,
+      }).catch((err) => {
+        // Log but don't block - welcome email is not critical
+        console.warn('Welcome email failed:', err);
       });
 
       toast({
@@ -110,6 +135,9 @@ export default function SignUp() {
         navigate('/signin');
       }, 2000);
     } catch (error: any) {
+      // Track signup error
+      trackSignup('error', 'email', { error: error.message?.substring(0, 50) });
+
       toast({
         title: 'Sign Up Failed',
         description: error.message || 'Please try again',
@@ -121,10 +149,17 @@ export default function SignUp() {
   };
 
   const handleOAuthSignUp = async () => {
+    // Track OAuth signup attempt
+    trackSignup('attempted', 'google');
+
     try {
       await signInWithOAuth('buyer', 'signup');
       // User will be redirected to Google OAuth
+      // Note: 'completed' tracking happens in AuthCallback
     } catch (error: any) {
+      // Track OAuth error
+      trackSignup('error', 'google', { error: error.message?.substring(0, 50) });
+
       toast({
         title: 'OAuth Sign Up Failed',
         description: error.message || 'Please try again',

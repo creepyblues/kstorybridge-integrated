@@ -193,6 +193,7 @@ export function TitleHero({
       {/* Action Buttons */}
       <div className="flex flex-row lg:flex-col gap-2 w-full lg:w-auto">
         <Button
+          id="title-detail-favorite-toggle-btn"
           onClick={onFavoriteToggle}
           disabled={favoriteLoading}
           variant="outline"

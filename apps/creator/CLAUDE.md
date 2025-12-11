@@ -2,7 +2,7 @@
 
 **App Scope**: Creator-focused dashboard for content management, title submissions, and profile management. Dedicated app for Korean content creators (webtoon artists, web novel authors, agents).
 
-**Last Updated**: 2025-11-12
+**Last Updated**: 2025-12-03
 
 **Status**: ✅ PRODUCTION - Primary creator app (V1 archived as reference)
 
@@ -26,6 +26,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 - **[OAUTH_SETUP.md](./OAUTH_SETUP.md)** - OAuth configuration guide
 - **[PRODUCTION_TEST_REPORT.md](./PRODUCTION_TEST_REPORT.md)** - Production verification tests
 - **[TESTING_CHECKLIST.md](./TESTING_CHECKLIST.md)** - Manual testing checklist
+
+### Analytics & Tracking
+- **[CREATOR_ANALYTICS_IMPLEMENTATION.md](../../docs/tracking/CREATOR_ANALYTICS_IMPLEMENTATION.md)** - Complete GA4/GTM tracking guide, funnel design, and implementation status
 
 ---
 
@@ -744,6 +747,17 @@ See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for OAuth configuration details.
 ---
 
 ## 📝 Recent Changes
+
+### 2025-12-03: Analytics Implementation Documentation
+- **Added**: Comprehensive analytics documentation at `docs/tracking/CREATOR_ANALYTICS_IMPLEMENTATION.md`
+- **GTM Container**: `GTM-PZBC4XQT` (shared across all apps)
+- **Current Coverage**: ~20% of defined tracking functions implemented
+- **Critical Gaps**: Title creation funnel has 0% tracking visibility
+- **Priority Items**: Survey step tracking, title creation events, engagement tracking
+- **Key Files**:
+  - `src/utils/analytics.ts` - 40+ tracking functions defined
+  - `src/hooks/useAnalytics.ts` - Page view tracking hook
+  - `src/components/AnalyticsProvider.tsx` - GTM initialization
 
 ### 2025-11-12: Rights Field Converted to Multi-Select
 - **Changed**: `rights` (text) → `rights_available` (text[] array)

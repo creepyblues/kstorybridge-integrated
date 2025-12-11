@@ -151,7 +151,8 @@ export const trackPitchView = (
     title_id: titleId,
     title_name: titleName,
     user_tier: tier,
-    view_duration_seconds: duration || 0,
+    view_duration: duration || 0, // GTM compatibility (renamed from view_duration_seconds)
+    view_duration_seconds: duration || 0, // Keep for backwards compatibility
     timestamp: new Date().toISOString(),
   });
 };
@@ -180,6 +181,7 @@ export const trackContactCreatorClick = (
     title_name: titleName,
     user_tier: tier,
     click_source: source,
+    contact_source: source, // GTM compatibility (alias for click_source)
     timestamp: new Date().toISOString(),
   });
 };
@@ -287,12 +289,14 @@ export const trackTierUpgrade = (
   source?: 'premium_popup' | 'pricing_page' | 'profile_page' | 'title_detail',
   additionalContext?: Record<string, unknown>
 ): void => {
+  const conversionValue = targetTier === 'pro' ? 250 : targetTier === 'suite' ? 500 : 0;
   const params: Record<string, unknown> = {
     target_tier: targetTier,
     current_tier: currentTier || 'unknown',
     upgrade_source: source || 'unknown',
     conversion_category: 'tier_upgrade',
-    conversion_value: targetTier === 'pro' ? 250 : targetTier === 'suite' ? 500 : 0,
+    conversion_value: conversionValue,
+    potential_value: conversionValue, // GTM compatibility (alias for conversion_value)
     timestamp: new Date().toISOString(),
     ...additionalContext,
   };
@@ -345,6 +349,1037 @@ export const trackPremiumPopupInteraction = (
       context: additionalContext,
     });
   }
+};
+
+// ============================================================================
+// FUNNEL 1: AUTHENTICATION EVENTS
+// Tracks: Signup → Signin → First Access
+// ============================================================================
+
+/**
+ * Track signup events
+ * @param action - 'form_viewed' | 'attempted' | 'completed' | 'error'
+ * @param method - 'email' | 'google'
+ * @param metadata - Additional context
+ */
+export const trackSignup = (
+  action: 'form_viewed' | 'attempted' | 'completed' | 'error',
+  method: 'email' | 'google' = 'email',
+  metadata?: Record<string, unknown>
+): void => {
+  trackEvent('signup', {
+    action,
+    method,
+    timestamp: new Date().toISOString(),
+    ...metadata,
+  });
+};
+
+/**
+ * Track signin events
+ * @param action - 'form_viewed' | 'attempted' | 'completed' | 'error'
+ * @param method - 'email' | 'google'
+ */
+export const trackSignin = (
+  action: 'form_viewed' | 'attempted' | 'completed' | 'error',
+  method: 'email' | 'google' = 'email',
+  metadata?: Record<string, unknown>
+): void => {
+  trackEvent('signin', {
+    action,
+    method,
+    timestamp: new Date().toISOString(),
+    ...metadata,
+  });
+};
+
+// ============================================================================
+// FUNNEL 2: TITLE DISCOVERY EVENTS
+// Tracks: Browse → Search → View Detail → Save
+// ============================================================================
+
+/**
+ * Track title search actions
+ * @param query - Search query text
+ * @param resultCount - Number of results returned
+ * @param searchType - 'vector' | 'pagination' | 'filter'
+ */
+export const trackTitleSearch = (
+  query: string,
+  resultCount: number,
+  searchType: 'vector' | 'pagination' | 'filter' = 'vector',
+  metadata?: Record<string, unknown>
+): void => {
+  trackEvent('title_search', {
+    search_term: query, // GTM compatibility
+    query_length: query.length,
+    query_first_word: query.split(' ')[0]?.toLowerCase() || '',
+    result_count: resultCount,
+    search_type: searchType,
+    has_results: resultCount > 0,
+    app_section: 'titles', // GTM compatibility
+    timestamp: new Date().toISOString(),
+    ...metadata,
+  });
+};
+
+/**
+ * Track title detail page views
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title
+ * @param source - Where the user came from
+ */
+export const trackTitleDetailView = (
+  titleId: string,
+  titleName: string,
+  source: 'search' | 'chat' | 'comps' | 'saved' | 'featured' | 'direct' = 'direct',
+  metadata?: Record<string, unknown>
+): void => {
+  trackEvent('title_detail_view', {
+    title_id: titleId,
+    title_name: titleName,
+    source,
+    timestamp: new Date().toISOString(),
+    ...metadata,
+  });
+};
+
+/**
+ * Track title detail tab switches
+ * @param titleId - UUID of the title
+ * @param fromTab - Previous tab
+ * @param toTab - New tab
+ */
+export const trackTitleTabSwitch = (
+  titleId: string,
+  fromTab: string,
+  toTab: string
+): void => {
+  trackEvent('title_tab_switch', {
+    title_id: titleId,
+    from_tab: fromTab,
+    to_tab: toTab,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track favorite/unfavorite actions
+ * @param action - 'add' | 'remove'
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title
+ * @param source - Where the action occurred
+ */
+export const trackFavorite = (
+  action: 'add' | 'remove',
+  titleId: string,
+  titleName: string,
+  source: 'detail' | 'search' | 'chat' | 'comps' | 'saved' = 'detail'
+): void => {
+  trackEvent('favorite_action', {
+    action,
+    title_id: titleId,
+    title_name: titleName,
+    source,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// ============================================================================
+// FUNNEL 3: AI CHAT EVENTS
+// Tracks: Open Chat → Send Message → Click Title → Save
+// ============================================================================
+
+/**
+ * Track chat message events
+ * @param action - 'sent' | 'received' | 'error'
+ * @param messageLength - Length of message
+ * @param titlesReturned - Number of title recommendations (for 'received')
+ */
+export const trackChatMessage = (
+  action: 'sent' | 'received' | 'error',
+  messageLength: number = 0,
+  titlesReturned: number = 0,
+  responseTimeMs?: number
+): void => {
+  trackEvent('chat_message', {
+    action,
+    message_length: messageLength,
+    titles_returned: titlesReturned,
+    response_time_ms: responseTimeMs || 0,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track chat search events (for GTM compatibility)
+ * Fires when user searches within chat context
+ * @param query - Search query
+ * @param resultCount - Number of results
+ * @param chatMode - Current chat mode (discovery, analysis, etc.)
+ */
+export const trackChatSearch = (
+  query: string,
+  resultCount: number,
+  chatMode?: string
+): void => {
+  trackEvent('chat_search', {
+    search_term: query,
+    query_length: query.length,
+    result_count: resultCount,
+    chat_mode: chatMode || 'discovery',
+    app_section: 'chat',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track chat title recommendation clicks
+ * @param titleId - UUID of clicked title
+ * @param titleName - Name of the title
+ * @param position - Position in recommendation list (1-indexed)
+ */
+export const trackChatTitleClick = (
+  titleId: string,
+  titleName: string,
+  position: number
+): void => {
+  trackEvent('chat_title_click', {
+    title_id: titleId,
+    title_name: titleName,
+    position,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track suggested query clicks
+ * @param query - The suggested query text
+ * @param position - Position in suggestions (1-indexed)
+ */
+export const trackChatSuggestionClick = (
+  query: string,
+  position: number
+): void => {
+  trackEvent('chat_suggestion_click', {
+    query_length: query.length,
+    position,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// ============================================================================
+// FUNNEL 4: COMPS NAVIGATOR EVENTS
+// Tracks: Add Comps → Search → View Results → Click Title
+// ============================================================================
+
+/**
+ * Track Comps Navigator search
+ * @param compTitles - Array of comp title names
+ * @param resultCount - Number of results
+ * @param processingTimeMs - Total processing time
+ */
+export const trackCompsSearch = (
+  compTitles: string[],
+  resultCount: number,
+  processingTimeMs: number,
+  metadata?: Record<string, unknown>
+): void => {
+  trackEvent('comps_search', {
+    num_comps: compTitles.length,
+    comp_titles: compTitles.join(', ').substring(0, 100), // Truncate for GA4
+    result_count: resultCount,
+    processing_time_ms: processingTimeMs,
+    has_results: resultCount > 0,
+    timestamp: new Date().toISOString(),
+    ...metadata,
+  });
+};
+
+/**
+ * Track Comps Navigator result clicks
+ * @param titleId - UUID of clicked title
+ * @param titleName - Name of the title
+ * @param matchScore - Match score (0-100)
+ * @param position - Position in results (1-indexed)
+ */
+export const trackCompsResultClick = (
+  titleId: string,
+  titleName: string,
+  matchScore: number,
+  position: number
+): void => {
+  trackEvent('comps_result_click', {
+    title_id: titleId,
+    title_name: titleName,
+    match_score: matchScore,
+    position,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// ============================================================================
+// FUNNEL 5: CHECKOUT EVENTS
+// Tracks: View Plan → Start Checkout → Complete Payment
+// ============================================================================
+
+/**
+ * Track plan page views
+ * @param currentTier - User's current tier
+ */
+export const trackPlanPageView = (
+  currentTier: string
+): void => {
+  trackEvent('plan_page_view', {
+    current_tier: currentTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track plan selection
+ * @param selectedTier - Tier user selected
+ * @param currentTier - User's current tier
+ */
+export const trackPlanSelect = (
+  selectedTier: string,
+  currentTier: string
+): void => {
+  trackEvent('plan_select', {
+    selected_tier: selectedTier,
+    current_tier: currentTier,
+    is_upgrade: selectedTier !== currentTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track checkout events
+ * @param action - 'started' | 'completed' | 'cancelled' | 'error'
+ * @param tier - Target tier
+ * @param value - Subscription value (for completed)
+ */
+export const trackCheckout = (
+  action: 'started' | 'completed' | 'cancelled' | 'error',
+  tier: string,
+  value?: number,
+  metadata?: Record<string, unknown>
+): void => {
+  const params: Record<string, unknown> = {
+    action,
+    tier,
+    timestamp: new Date().toISOString(),
+    ...metadata,
+  };
+
+  if (value !== undefined) {
+    params.value = value;
+    params.currency = 'USD';
+  }
+
+  trackEvent('checkout', params);
+
+  // Also fire GA4's built-in purchase event for completed checkouts
+  if (action === 'completed' && value) {
+    trackEvent('purchase', {
+      transaction_id: `sub_${Date.now()}`,
+      value,
+      currency: 'USD',
+      items: [{ item_name: `${tier}_subscription`, price: value }],
+    });
+  }
+};
+
+// ============================================================================
+// ENGAGEMENT & SESSION TRACKING
+// ============================================================================
+
+/**
+ * Track feature usage for adoption metrics
+ * @param featureName - Name of feature used
+ * @param userTier - User's tier
+ */
+export const trackFeatureUsage = (
+  featureName: string,
+  userTier: string = 'basic'
+): void => {
+  trackEvent('feature_usage', {
+    feature_name: featureName,
+    user_tier: userTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track user engagement score events
+ * @param action - Type of engagement
+ * @param value - Engagement value/score
+ */
+export const trackEngagement = (
+  action: string,
+  value: number = 1
+): void => {
+  trackEvent('user_engagement', {
+    engagement_action: action,
+    engagement_value: value,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// ============================================================================
+// PHASE 1: CRITICAL TRACKING GAPS
+// Pitch Deck, API Errors, Premium Gates, Search Quality, Checkout Abandonment
+// ============================================================================
+
+// --- PITCH DECK EVENTS (8 events) ---
+
+/**
+ * Track when a pitch deck is opened/loaded
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title
+ * @param userTier - User's current tier
+ * @param totalPages - Total pages in the PDF
+ */
+export const trackPitchDeckOpened = (
+  titleId: string,
+  titleName: string,
+  userTier: string,
+  totalPages: number
+): void => {
+  trackEvent('pitch_deck_opened', {
+    title_id: titleId,
+    title_name: titleName,
+    user_tier: userTier,
+    total_pages: totalPages,
+    timestamp: new Date().toISOString(),
+  });
+
+  // Also fire 'view_pitch' event for GTM compatibility
+  trackEvent('view_pitch', {
+    title_id: titleId,
+    title_name: titleName,
+    user_tier: userTier,
+    total_pages: totalPages,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track pitch deck page navigation
+ * @param titleId - UUID of the title
+ * @param pageNumber - Current page number (1-indexed)
+ * @param timeOnPageMs - Time spent on the previous page in milliseconds
+ */
+export const trackPitchDeckPageViewed = (
+  titleId: string,
+  pageNumber: number,
+  timeOnPageMs: number
+): void => {
+  trackEvent('pitch_deck_page_viewed', {
+    title_id: titleId,
+    page_number: pageNumber,
+    time_on_page_ms: timeOnPageMs,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track when basic users hit the page limit (page 3)
+ * @param titleId - UUID of the title
+ * @param userTier - User's current tier
+ * @param pagesViewed - Number of pages viewed before limit
+ */
+export const trackPitchDeckPageLimitHit = (
+  titleId: string,
+  userTier: string,
+  pagesViewed: number
+): void => {
+  trackEvent('pitch_deck_page_limit_hit', {
+    title_id: titleId,
+    user_tier: userTier,
+    pages_viewed: pagesViewed,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track when upgrade prompt is shown in pitch deck viewer
+ * @param titleId - UUID of the title
+ * @param pagesViewed - Pages viewed before prompt
+ * @param timeViewingMs - Total time viewing before prompt
+ */
+export const trackPitchDeckUpgradePromptShown = (
+  titleId: string,
+  pagesViewed: number,
+  timeViewingMs: number
+): void => {
+  trackEvent('pitch_deck_upgrade_prompt_shown', {
+    title_id: titleId,
+    pages_viewed: pagesViewed,
+    time_viewing_ms: timeViewingMs,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track when pitch deck viewer is closed
+ * @param titleId - UUID of the title
+ * @param pagesViewed - Total pages viewed
+ * @param totalTimeMs - Total time viewing in milliseconds
+ * @param maxPage - Maximum page number reached
+ */
+export const trackPitchDeckClosed = (
+  titleId: string,
+  pagesViewed: number,
+  totalTimeMs: number,
+  maxPage: number
+): void => {
+  trackEvent('pitch_deck_closed', {
+    title_id: titleId,
+    pages_viewed: pagesViewed,
+    total_time_ms: totalTimeMs,
+    max_page_reached: maxPage,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track pitch deck loading errors
+ * @param titleId - UUID of the title
+ * @param errorMessage - Error message (truncated)
+ * @param userTier - User's current tier
+ */
+export const trackPitchDeckError = (
+  titleId: string,
+  errorMessage: string,
+  userTier: string
+): void => {
+  trackEvent('pitch_deck_error', {
+    title_id: titleId,
+    error_message: errorMessage.substring(0, 100),
+    user_tier: userTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track pitch deck zoom actions
+ * @param titleId - UUID of the title
+ * @param zoomLevel - Current zoom level (percentage)
+ */
+export const trackPitchDeckZoom = (
+  titleId: string,
+  zoomLevel: number
+): void => {
+  trackEvent('pitch_deck_zoom', {
+    title_id: titleId,
+    zoom_level: zoomLevel,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track pitch deck fullscreen toggle
+ * @param titleId - UUID of the title
+ * @param action - 'enter' | 'exit'
+ */
+export const trackPitchDeckFullscreen = (
+  titleId: string,
+  action: 'enter' | 'exit'
+): void => {
+  trackEvent('pitch_deck_fullscreen', {
+    title_id: titleId,
+    action,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- API ERROR TRACKING ---
+
+/**
+ * Track API errors for debugging and reliability monitoring
+ * @param endpoint - API endpoint that failed
+ * @param statusCode - HTTP status code
+ * @param errorType - Type of error (network, timeout, server, etc.)
+ * @param userTier - User's current tier (optional)
+ */
+export const trackApiError = (
+  endpoint: string,
+  statusCode: number,
+  errorType: string,
+  userTier?: string
+): void => {
+  trackEvent('api_error', {
+    endpoint: endpoint.substring(0, 100),
+    status_code: statusCode,
+    error_type: errorType,
+    user_tier: userTier || 'unknown',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- PREMIUM GATE TRACKING ---
+
+/**
+ * Track when a premium feature is blocked for the user
+ * @param featureName - Name of the blocked feature
+ * @param requiredTier - Tier required to access
+ * @param userTier - User's current tier
+ * @param contextPage - Page where blocking occurred
+ */
+export const trackPremiumFeatureBlocked = (
+  featureName: string,
+  requiredTier: string,
+  userTier: string,
+  contextPage: string
+): void => {
+  trackEvent('premium_feature_blocked', {
+    feature_name: featureName,
+    required_tier: requiredTier,
+    user_tier: userTier,
+    context_page: contextPage,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track when user clicks upgrade CTA in a premium gate
+ * @param featureName - Feature that triggered upgrade
+ * @param source - Where the CTA was clicked
+ * @param userTier - User's current tier
+ */
+export const trackPremiumUpgradeCtaClicked = (
+  featureName: string,
+  source: string,
+  userTier: string
+): void => {
+  trackEvent('premium_upgrade_cta_clicked', {
+    feature_name: featureName,
+    source,
+    user_tier: userTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- SEARCH QUALITY TRACKING ---
+
+/**
+ * Track when a search returns zero results
+ * @param query - Search query (truncated for privacy)
+ * @param searchType - Type of search performed
+ */
+export const trackSearchZeroResults = (
+  query: string,
+  searchType: string
+): void => {
+  trackEvent('search_zero_results', {
+    query: query.substring(0, 50),
+    query_length: query.length,
+    search_type: searchType,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track search query submission with results
+ * @param query - Search query (truncated)
+ * @param resultCount - Number of results returned
+ * @param searchType - Type of search performed
+ */
+export const trackSearchQuerySubmitted = (
+  query: string,
+  resultCount: number,
+  searchType: string
+): void => {
+  trackEvent('search_query_submitted', {
+    query: query.substring(0, 50),
+    query_length: query.length,
+    result_count: resultCount,
+    search_type: searchType,
+    has_results: resultCount > 0,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- CHECKOUT ABANDONMENT ---
+
+/**
+ * Track checkout page abandonment
+ * @param tier - Target tier
+ * @param timeOnPageMs - Time spent on checkout page
+ * @param stepReached - Last step reached (loading, error, redirecting)
+ */
+export const trackCheckoutAbandoned = (
+  tier: string,
+  timeOnPageMs: number,
+  stepReached: string
+): void => {
+  trackEvent('checkout_abandoned', {
+    tier,
+    time_on_page_ms: timeOnPageMs,
+    step_reached: stepReached,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// ============================================================================
+// PHASE 2: HIGH PRIORITY TRACKING
+// Title Interactions, Chat Lifecycle, Home Page, Mandates, Profile
+// ============================================================================
+
+// --- TITLE INTERACTION EVENTS ---
+
+/**
+ * Track title card clicks in lists/grids
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title
+ * @param source - Where the card was displayed
+ * @param position - Position in the list (1-indexed)
+ */
+export const trackTitleCardClicked = (
+  titleId: string,
+  titleName: string,
+  source: string,
+  position: number
+): void => {
+  trackEvent('title_card_clicked', {
+    title_id: titleId,
+    title_name: titleName,
+    source,
+    position,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track Contact Creator CTA clicks
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title
+ * @param userTier - User's current tier
+ */
+export const trackTitleContactCreatorClicked = (
+  titleId: string,
+  titleName: string,
+  userTier: string
+): void => {
+  trackEvent('title_contact_creator_clicked', {
+    title_id: titleId,
+    title_name: titleName,
+    user_tier: userTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track View Pitch Deck button clicks
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title
+ * @param hasPitch - Whether the title has a pitch deck
+ */
+export const trackTitlePitchCtaClicked = (
+  titleId: string,
+  titleName: string,
+  hasPitch: boolean
+): void => {
+  trackEvent('title_pitch_cta_clicked', {
+    title_id: titleId,
+    title_name: titleName,
+    has_pitch: hasPitch,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track document downloads from title detail
+ * @param titleId - UUID of the title
+ * @param documentType - Type of document (pdf, bible, etc.)
+ * @param userTier - User's current tier
+ */
+export const trackTitleDocumentDownloaded = (
+  titleId: string,
+  documentType: string,
+  userTier: string
+): void => {
+  trackEvent('title_document_downloaded', {
+    title_id: titleId,
+    document_type: documentType,
+    user_tier: userTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- CHAT SESSION LIFECYCLE ---
+
+/**
+ * Track chat session start
+ * @param sessionId - Unique session identifier
+ * @param trigger - What triggered the new session (new_chat, example_click)
+ */
+export const trackChatSessionStarted = (
+  sessionId: string,
+  trigger: string
+): void => {
+  trackEvent('chat_session_started', {
+    session_id: sessionId,
+    trigger,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track loading of chat history
+ * @param sessionId - Session being loaded
+ * @param messageCount - Number of messages in history
+ */
+export const trackChatHistoryLoaded = (
+  sessionId: string,
+  messageCount: number
+): void => {
+  trackEvent('chat_history_loaded', {
+    session_id: sessionId,
+    message_count: messageCount,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track favoriting a title from chat results
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title
+ * @param messagePosition - Position in conversation (1-indexed)
+ */
+export const trackChatSaveFromResults = (
+  titleId: string,
+  titleName: string,
+  messagePosition: number
+): void => {
+  trackEvent('chat_save_from_results', {
+    title_id: titleId,
+    title_name: titleName,
+    message_position: messagePosition,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- HOME PAGE ENTRY POINTS ---
+
+/**
+ * Track home page CTA clicks
+ * @param ctaType - Type of CTA (chat, comps, mandates, browse)
+ * @param ctaValue - Optional value/label associated with the CTA
+ */
+export const trackHomeCtaClicked = (
+  ctaType: string,
+  ctaValue?: string
+): void => {
+  trackEvent('home_cta_clicked', {
+    cta_type: ctaType,
+    cta_value: ctaValue,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track search initiated from home page
+ * @param searchType - Type of search (show_comp, brief, etc.)
+ * @param query - The search query text
+ * @param inputMethod - How the search was initiated (manual, autocomplete)
+ */
+export const trackHomeSearchInitiated = (
+  searchType: string,
+  query: string,
+  inputMethod?: string
+): void => {
+  trackEvent('home_search_initiated', {
+    search_type: searchType,
+    query_length: query.length,
+    input_method: inputMethod,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track featured title clicks from home page sections
+ * @param titleId - UUID of the title
+ * @param sectionName - Name of the featured section
+ * @param position - Position in the section (1-indexed)
+ */
+export const trackFeaturedTitleClicked = (
+  titleId: string,
+  sectionName: string,
+  position: number
+): void => {
+  trackEvent('featured_title_clicked', {
+    title_id: titleId,
+    section_name: sectionName,
+    position,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- MANDATE/BRIEF SEARCH ---
+
+/**
+ * Track mandate search submission
+ * @param query - The mandate query text
+ * @param resultsCount - Number of results returned
+ * @param processingTimeMs - Time to process the search
+ */
+export const trackMandateSearchSubmitted = (
+  query: string,
+  resultsCount: number,
+  processingTimeMs?: number
+): void => {
+  trackEvent('mandate_search_submitted', {
+    query_length: query.length,
+    results_count: resultsCount,
+    processing_time_ms: processingTimeMs,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track mandate result clicks
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title for reporting
+ * @param matchScore - Match score percentage
+ */
+export const trackMandateResultClicked = (
+  titleId: string,
+  titleName: string,
+  matchScore: number
+): void => {
+  trackEvent('mandate_result_clicked', {
+    title_id: titleId,
+    title_name: titleName,
+    match_score: matchScore,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track example mandate usage
+ * @param exampleName - Name of the example mandate
+ */
+export const trackMandateExampleUsed = (
+  exampleName: string
+): void => {
+  trackEvent('mandate_example_used', {
+    example_name: exampleName,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- PROFILE & UPGRADE ---
+
+/**
+ * Track upgrade button click on profile page
+ * @param currentTier - User's current tier
+ * @param targetTier - Tier being upgraded to
+ */
+export const trackProfileUpgradeClicked = (
+  currentTier: string,
+  targetTier?: string
+): void => {
+  trackEvent('profile_upgrade_clicked', {
+    current_tier: currentTier,
+    target_tier: targetTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track user sign out
+ * @param userTier - User's tier at sign out
+ */
+export const trackUserSignedOut = (
+  userTier: string
+): void => {
+  trackEvent('user_signed_out', {
+    user_tier: userTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// ============================================================================
+// PHASE 3: ENGAGEMENT DEPTH & UI INTERACTIONS
+// Scroll Depth, Time Milestones, Modal Tracking
+// ============================================================================
+
+/**
+ * Track scroll depth milestones
+ * @param pagePath - Current page path
+ * @param depthPercentage - Scroll depth (25, 50, 75, 100)
+ */
+export const trackScrollDepthReached = (
+  pagePath: string,
+  depthPercentage: number
+): void => {
+  trackEvent('scroll_depth_reached', {
+    page_path: pagePath,
+    depth_percentage: depthPercentage,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track time on page milestones
+ * @param pagePath - Current page path
+ * @param milestoneSeconds - Time milestone (30, 60, 120)
+ */
+export const trackTimeOnPageMilestone = (
+  pagePath: string,
+  milestoneSeconds: number
+): void => {
+  trackEvent('time_on_page_milestone', {
+    page_path: pagePath,
+    milestone_seconds: milestoneSeconds,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track modal opens
+ * @param modalName - Name of the modal
+ * @param trigger - What triggered the modal
+ */
+export const trackModalOpened = (
+  modalName: string,
+  trigger: string
+): void => {
+  trackEvent('modal_opened', {
+    modal_name: modalName,
+    trigger,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track external link clicks
+ * @param url - Full URL of the external link
+ * @param linkType - Type of link (imdb, linkedin, etc.)
+ * @param context - Context where link was clicked
+ */
+export const trackExternalLinkClicked = (
+  url: string,
+  linkType: string,
+  context?: string
+): void => {
+  // Extract domain from URL for analytics
+  let domain = 'unknown';
+  try {
+    domain = new URL(url).hostname;
+  } catch {
+    // Keep as unknown if URL parsing fails
+  }
+
+  trackEvent('external_link_clicked', {
+    destination_url: url,
+    destination_domain: domain,
+    link_type: linkType,
+    context,
+    timestamp: new Date().toISOString(),
+  });
 };
 
 // Extend Window interface for TypeScript

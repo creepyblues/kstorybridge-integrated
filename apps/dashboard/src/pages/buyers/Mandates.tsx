@@ -18,6 +18,7 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { History } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { trackPageView, trackFeatureUsage, trackMandateSearchSubmitted, trackMandateExampleUsed, trackSearchZeroResults } from '@/utils/analytics';
 
 export default function Mandates() {
   const { user } = useAuth();
@@ -34,6 +35,12 @@ export default function Mandates() {
   const [showHistory, setShowHistory] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
   const [initialBrief, setInitialBrief] = useState<string>('');
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView('/buyers/mandates', 'Mandate Search');
+    trackFeatureUsage('mandate_search');
+  }, []);
 
   // Load mandate history on mount
   useEffect(() => {
@@ -91,6 +98,14 @@ export default function Mandates() {
 
       setCurrentResults(response.results);
       setSelectedMandateId(response.search_id);
+
+      // Track mandate search submitted
+      trackMandateSearchSubmitted(mandateText, response.results.length, response.processing_time_ms);
+
+      // Track zero results for search quality analysis
+      if (response.results.length === 0) {
+        trackSearchZeroResults(mandateText, 'mandate');
+      }
 
       // Reload history to show the new search
       await loadMandateHistory();
@@ -168,6 +183,9 @@ export default function Mandates() {
   };
 
   const handleTryExample = (mandateText: string) => {
+    // Track example usage
+    trackMandateExampleUsed(mandateText);
+
     setShowExamples(false);
     handleSubmitMandate(mandateText);
   };

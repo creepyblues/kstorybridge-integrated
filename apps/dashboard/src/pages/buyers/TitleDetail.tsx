@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Loader2, LayoutGrid, BookOpen, BarChart3, FolderOpen, Users, Bot } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { trackTitleDetailView, trackFavorite, trackFeatureUsage } from '@/utils/analytics';
 
 // Import new title detail components
 import {
@@ -35,6 +36,26 @@ export default function TitleDetail() {
   const [pitchAnalysis, setPitchAnalysis] = useState<PitchAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
+  const location = useLocation();
+  const hasTrackedView = useRef(false);
+
+  // Determine source from navigation state or referrer
+  const getViewSource = (): 'search' | 'chat' | 'comps' | 'saved' | 'featured' | 'direct' => {
+    const state = location.state as { from?: string } | null;
+    if (state?.from === 'chat') return 'chat';
+    if (state?.from === 'comps') return 'comps';
+    if (state?.from === 'saved') return 'saved';
+    if (state?.from === 'featured') return 'featured';
+    if (state?.from === 'search') return 'search';
+    // Check referrer path
+    const referrer = document.referrer;
+    if (referrer.includes('/buyers/chat')) return 'chat';
+    if (referrer.includes('/buyers/comps')) return 'comps';
+    if (referrer.includes('/buyers/saved')) return 'saved';
+    if (referrer.includes('/buyers/titles')) return 'search';
+    return 'direct';
+  };
+
   useEffect(() => {
     const fetchTitle = async () => {
       if (!titleId) return;
@@ -43,6 +64,18 @@ export default function TitleDetail() {
       try {
         const data = await titlesService.getTitleById(titleId);
         setTitle(data);
+
+        // Track title detail view (once per page load)
+        if (data && !hasTrackedView.current) {
+          hasTrackedView.current = true;
+          const source = getViewSource();
+          trackTitleDetailView(data.title_id, data.title_name_en || data.title_name_kr || 'Unknown', source, {
+            genre: data.genre?.join(','),
+            content_format: data.content_format,
+            has_pitch: !!data.pitch,
+          });
+          trackFeatureUsage('title_detail_view');
+        }
 
         // Extract pitch_analysis if available
         console.log('[TitleDetail] Title data received:', {
@@ -91,6 +124,7 @@ export default function TitleDetail() {
       if (isFavorited) {
         await titlesService.removeFavorite(title.title_id, user.id);
         setIsFavorited(false);
+        trackFavorite('remove', title.title_id, title.title_name_en || title.title_name_kr || 'Unknown', 'detail');
         toast({
           title: 'Removed from favorites',
           description: 'Title removed from your saved list',
@@ -98,6 +132,7 @@ export default function TitleDetail() {
       } else {
         await titlesService.addFavorite(title.title_id, user.id);
         setIsFavorited(true);
+        trackFavorite('add', title.title_id, title.title_name_en || title.title_name_kr || 'Unknown', 'detail');
         toast({
           title: 'Added to favorites',
           description: 'Title saved to your list',

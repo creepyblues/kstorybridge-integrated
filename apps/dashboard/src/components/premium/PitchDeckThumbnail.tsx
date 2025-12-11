@@ -120,6 +120,7 @@ export default function PitchDeckThumbnail({
 
   return (
     <div
+      id="title-detail-view-pitch-btn"
       ref={thumbnailRef}
       className={`relative cursor-pointer group ${className}`}
       onClick={handleClick}

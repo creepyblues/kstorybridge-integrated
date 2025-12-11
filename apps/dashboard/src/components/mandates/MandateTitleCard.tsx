@@ -3,8 +3,9 @@
 // Description: Title card for mandate matches with AI explanation chat bubble
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Bot } from 'lucide-react';
+import { Bot, FileText } from 'lucide-react';
 import { TitleMatch } from '@/services/mandateService';
+import { trackMandateResultClicked } from '@/utils/analytics';
 
 interface MandateTitleCardProps {
   match: TitleMatch;
@@ -12,6 +13,13 @@ interface MandateTitleCardProps {
 
 export default function MandateTitleCard({ match }: MandateTitleCardProps) {
   const handleCardClick = () => {
+    // Track mandate result click
+    trackMandateResultClicked(
+      match.title_id,
+      match.title_name_en || match.title_name_kr,
+      match.match_score
+    );
+
     // Open title detail page in new tab
     window.open(`/buyers/titles/${match.title_id}`, '_blank');
   };
@@ -78,20 +86,28 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
             </div>
           )}
 
-          {/* Match Score Badge - Absolute positioned */}
-          <div
-            className={`absolute top-3 right-3 ${matchBadge.gradient} ${matchBadge.text} ${matchBadge.border} border px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm backdrop-blur-sm`}
-          >
-            {match.match_score}%
-          </div>
+          {/* Pitch Deck Badge - Sunrise Coral Gradient */}
+          {match.has_pitch_deck && (
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-orange-400 via-rose-400 to-pink-400 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5" />
+              Pitch Deck
+            </div>
+          )}
         </div>
 
         {/* Content Section */}
         <div className="p-4 md:p-6 flex flex-col">
-          {/* Title */}
-          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-[#4C9C9B] transition-colors">
-            {match.title_name_en || match.title_name_kr}
-          </h3>
+          {/* Title with Match Score Badge */}
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="text-lg md:text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-[#4C9C9B] transition-colors flex-1">
+              {match.title_name_en || match.title_name_kr}
+            </h3>
+            <div
+              className={`flex-shrink-0 ${matchBadge.gradient} ${matchBadge.text} ${matchBadge.border} border px-2.5 py-1 rounded-lg text-sm font-bold`}
+            >
+              {match.match_score}%
+            </div>
+          </div>
           {match.title_name_en && match.title_name_kr && (
             <p className="text-sm text-gray-500 mb-3">{match.title_name_kr}</p>
           )}

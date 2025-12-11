@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { ProBadge } from '@/components/tier/ProBadge';
 import { Loader2, User, Mail, Building, Briefcase, Linkedin, LogOut } from 'lucide-react';
+import { trackPageView, trackFeatureUsage, trackProfileUpgradeClicked, trackUserSignedOut, trackExternalLinkClicked } from '@/utils/analytics';
 
 interface BuyerProfile {
   email: string;
@@ -32,6 +33,9 @@ export default function Profile() {
 
   const handleSignOut = async () => {
     try {
+      // Track sign out before actually signing out
+      trackUserSignedOut(tier || 'basic');
+
       await signOut();
       navigate('/signin');
     } catch (error) {
@@ -43,6 +47,12 @@ export default function Profile() {
       });
     }
   };
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView('/buyers/profile', 'Profile');
+    trackFeatureUsage('profile_view');
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -182,6 +192,7 @@ export default function Profile() {
                       href={profile.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackExternalLinkClicked(profile.linkedin_url!, 'linkedin', 'profile')}
                       className="text-base text-hanok-teal hover:underline"
                     >
                       View Profile
@@ -274,7 +285,10 @@ export default function Profile() {
             {tier !== 'suite' && (
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <Button
-                  onClick={() => navigate('/buyers/plan')}
+                  onClick={() => {
+                    trackProfileUpgradeClicked(tier || 'basic', tier === 'basic' || tier === 'invited' ? 'pro' : 'suite');
+                    navigate('/buyers/plan');
+                  }}
                   className="w-full bg-pro-purple hover:bg-pro-purple/90"
                 >
                   Upgrade to {tier === 'basic' || tier === 'invited' ? 'Pro' : 'Suite'}

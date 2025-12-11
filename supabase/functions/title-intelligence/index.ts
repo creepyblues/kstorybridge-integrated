@@ -33,6 +33,7 @@ import { scrapeRidibooks } from './scrapers/ridibooks.ts'
 import { scrapeBomtoon } from './scrapers/bomtoon.ts'
 import { scrapeReddit } from './scrapers/reddit.ts'
 import { scrapeAO3 } from './scrapers/ao3.ts'
+import { scrapeComick } from './scrapers/comick.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -83,6 +84,7 @@ const SOURCE_CATEGORIES: Record<string, string> = {
   'webtoons': 'official_platform_en',
   'reddit': 'fandom_forum',
   'ao3': 'fanfiction',
+  'comick': 'unofficial_aggregator',
 }
 
 // Domain mapping
@@ -98,6 +100,7 @@ const SOURCE_DOMAINS: Record<string, string> = {
   'webtoons': 'webtoons.com',
   'reddit': 'reddit.com',
   'ao3': 'archiveofourown.org',
+  'comick': 'comick.live',
 }
 
 /**
@@ -428,6 +431,14 @@ async function handleUrlBasedCollection(supabase: any, body: UrlBasedRequest) {
             )
             break
 
+          case 'comick':
+            // Comick.live fan translation aggregator
+            scraperResult = await withRetry(
+              () => scrapeComick(searchTitle),
+              { operationName: `Comick scrape (${searchTitle})`, maxRetries: 2, baseDelayMs: 2000 }
+            )
+            break
+
           default:
             console.warn(`Unknown fan engagement source: ${source}`)
             collectionErrors[source] = 'Unknown source'
@@ -623,6 +634,13 @@ async function handleLegacyCollection(supabase: any, body: LegacyIntelligenceReq
           scraperResult = await withRetry(
             () => scrapeAO3(titleNameInput),
             { operationName: `AO3 legacy scrape (${titleNameInput})`, maxRetries: 2, baseDelayMs: 1500 }
+          )
+          break
+
+        case 'comick':
+          scraperResult = await withRetry(
+            () => scrapeComick(titleNameInput),
+            { operationName: `Comick legacy scrape (${titleNameInput})`, maxRetries: 2, baseDelayMs: 2000 }
           )
           break
 

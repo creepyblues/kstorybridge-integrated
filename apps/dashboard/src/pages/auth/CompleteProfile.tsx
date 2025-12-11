@@ -25,9 +25,14 @@ export default function CompleteProfile() {
     linkedin_url: '',
   });
 
-  // 🚨 CRITICAL: Read from sessionStorage only (no URL parameters per CLAUDE.md)
-  const userId = sessionStorage.getItem('oauth_user_id');
-  const email = sessionStorage.getItem('oauth_user_email');
+  // 🚨 CRITICAL: Prefer authenticated user data over sessionStorage to prevent tampering
+  // SessionStorage is only used as fallback during OAuth redirect timing edge cases
+  const storedUserId = sessionStorage.getItem('oauth_user_id');
+  const storedEmail = sessionStorage.getItem('oauth_user_email');
+
+  // Always prefer authenticated user data - sessionStorage is backup only
+  const userId = user?.id ?? storedUserId;
+  const email = user?.email ?? storedEmail;
 
   useEffect(() => {
     if (user && user.user_metadata?.full_name) {

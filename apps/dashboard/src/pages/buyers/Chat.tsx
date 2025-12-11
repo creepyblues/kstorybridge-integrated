@@ -18,6 +18,7 @@ import { TITLE_CACHE_SIZE } from '@/utils/constants/config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { debug } from '@/utils/debug';
+import { trackPageView, trackFeatureUsage, trackChatMessage, trackChatTitleClick, trackChatSessionStarted, trackChatHistoryLoaded } from '@/utils/analytics';
 
 interface ChatMessage {
   id: string;
@@ -48,6 +49,12 @@ export default function Chat() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView('/buyers/chat', 'AI Chat - Jinu');
+    trackFeatureUsage('ai_chat');
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -160,6 +167,9 @@ export default function Chat() {
 
           setMessages(deduplicatedMessages);
           debug.log(`📜 Loaded ${deduplicatedMessages.length} messages from history (${formattedMessages.length - deduplicatedMessages.length} duplicates filtered)`);
+
+          // Track history loaded for analytics
+          trackChatHistoryLoaded(currentSession.id, deduplicatedMessages.length);
         } else {
           debug.log('📭 No history found for this session');
         }
@@ -202,6 +212,9 @@ export default function Chat() {
 
         setCurrentSession(session);
         debug.log('✅ New session created on first message:', session.id);
+
+        // Track new chat session started
+        trackChatSessionStarted(session.id, 'new');
       }
 
       const startTime = Date.now();
@@ -217,6 +230,9 @@ export default function Chat() {
       debug.log('💬 Adding user message to UI:', tempUserMessage.id, query);
       setMessages((prev) => [...prev, tempUserMessage]);
       setLoading(true);
+
+      // Track message sent
+      trackChatMessage('sent', query.length);
 
       // Record user message in database
       debug.log('💾 Recording user message to database...');
@@ -305,8 +321,14 @@ export default function Chat() {
       };
 
       setMessages((prev) => [...prev, botMessage]);
+
+      // Track message received
+      trackChatMessage('received', response.response.length, response.titles?.length || 0, responseTime);
     } catch (error: any) {
       console.error('❌ Chat error', error);
+
+      // Track chat error
+      trackChatMessage('error');
 
       toast({
         title: 'Error',
@@ -352,10 +374,13 @@ export default function Chat() {
     await handleSendMessage(query);
   };
 
-  const handleTitleClick = async (titleId: string, titleName: string) => {
+  const handleTitleClick = async (titleId: string, titleName: string, position?: number) => {
     if (!user?.id) return;
 
-    // Track title click (if session exists)
+    // Track title click for analytics
+    trackChatTitleClick(titleId, titleName, position || 0);
+
+    // Track title click in database (if session exists)
     if (currentSession) {
       await chatHistoryService.recordInteraction({
         session_id: currentSession.id,
@@ -367,8 +392,8 @@ export default function Chat() {
       });
     }
 
-    // Navigate to title detail
-    navigate(`/buyers/titles/${titleId}`);
+    // Navigate to title detail with source tracking
+    navigate(`/buyers/titles/${titleId}`, { state: { from: 'chat' } });
   };
 
   const handleNewChat = async () => {
@@ -389,6 +414,9 @@ export default function Chat() {
       setMessages([]);
       setHasLoadedHistory(false);
       debug.log('📂 Loading session:', session.id);
+
+      // Track session resumed from history
+      trackChatSessionStarted(session.id, 'resumed');
 
       // Load messages will happen via useEffect when currentSession changes
     } catch (error) {
@@ -480,7 +508,7 @@ export default function Chat() {
                       {message.titles.slice(0, 6).map((title: any, titleIndex: number) => (
                         <div
                           key={`${message.id}-title-${title.id || titleIndex}`}
-                          onClick={() => handleTitleClick(title.id, title.nameEn || title.nameKr)}
+                          onClick={() => handleTitleClick(title.id, title.nameEn || title.nameKr, titleIndex)}
                           className="cursor-pointer"
                         >
                           <TitleCard title={title} variant="compact" />

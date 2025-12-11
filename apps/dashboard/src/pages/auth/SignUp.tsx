@@ -233,21 +233,18 @@ export default function SignUp() {
 
             <div className="space-y-2">
               <Label htmlFor="email">
-                Work Email <span className="text-red-500">*</span>
+                Email <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="you@company.com"
+                placeholder="you@example.com"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
                 disabled={loading}
               />
-              <p className="text-xs text-gray-500">
-                Personal email domains (Gmail, Yahoo, etc.) are not allowed
-              </p>
             </div>
 
             <div className="space-y-2">
@@ -316,6 +313,7 @@ export default function SignUp() {
             </div>
 
             <Button
+              id="signup"
               type="submit"
               className="w-full h-14 bg-hanok-teal hover:bg-hanok-teal/90 text-white text-base font-medium"
               disabled={loading}

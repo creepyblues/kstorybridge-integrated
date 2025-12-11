@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTierAccess } from '@/contexts/TierContext';
@@ -5,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Check, Sparkles, CreditCard } from 'lucide-react';
+import { trackPageView, trackCheckout, trackFeatureUsage } from '@/utils/analytics';
 
 interface TierPlan {
   tier: 'basic' | 'pro';
@@ -60,6 +62,12 @@ export default function Plan() {
   const { user } = useAuth();
   const { tier: currentTier } = useTierAccess();
 
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView('/buyers/plan', 'Choose Your Plan');
+    trackFeatureUsage('plan_page_view');
+  }, []);
+
   const handleSelectPlan = async (plan: TierPlan) => {
     if (!user?.email) {
       navigate('/signin');
@@ -79,8 +87,9 @@ export default function Plan() {
     }
 
     // For Pro/Suite - redirect to checkout
-    // TODO: Implement Stripe checkout
-    console.log('TODO: Redirect to Stripe checkout for', plan.tier, plan.priceId);
+    // Track checkout started
+    trackCheckout('started', plan.tier, plan.tier === 'pro' ? 250 : 500);
+    console.log('Redirecting to checkout for', plan.tier, plan.priceId);
     navigate('/buyers/checkout?tier=' + plan.tier);
   };
 

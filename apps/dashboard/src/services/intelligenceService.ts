@@ -442,3 +442,223 @@ export function getFieldLabel(field: keyof ExtractedIntelligenceData): string {
   };
   return labels[field] || field;
 }
+
+// ============================================================================
+// Fan Engagement Types & Functions
+// ============================================================================
+
+export type FanEngagementSource = 'reddit' | 'ao3' | 'comick';
+
+export interface FanEngagementRequest {
+  titleName: string;
+  sources: FanEngagementSource[];
+}
+
+export interface RedditPost {
+  title: string;
+  score: number;
+  comments: number;
+  subreddit: string;
+  url: string;
+  created_at?: string;
+}
+
+export interface RedditSubreddit {
+  name: string;
+  post_count: number;
+  subscribers: number;
+}
+
+export interface RedditData {
+  posts: number;
+  total_upvotes: number;
+  total_comments: number;
+  avg_upvotes: number | null;
+  avg_comments: number | null;
+  engagement_score: number | null;
+  top_posts: RedditPost[];
+  subreddits: RedditSubreddit[];
+  related_subreddit_subscribers: number;
+}
+
+export interface AO3Work {
+  id: string;
+  title: string;
+  kudos: number;
+  bookmarks: number;
+  comments: number;
+  url: string;
+  authors: string[];
+}
+
+export interface AO3Tag {
+  tag: string;
+  count: number;
+}
+
+export interface AO3Data {
+  works: number;
+  total_kudos: number;
+  total_bookmarks: number;
+  total_comments: number;
+  avg_kudos: number | null;
+  avg_bookmarks: number | null;
+  engagement_score: number | null;
+  top_works: AO3Work[];
+  popular_relationships: AO3Tag[];
+  popular_characters: AO3Tag[];
+  popular_freeform_tags: AO3Tag[];
+  fandoms: string[];
+}
+
+export interface ComickData {
+  comic_id: number | null;
+  title: string | null;
+  slug: string | null;
+  author: string | null;
+  synopsis: string | null;
+  genres: string[];
+  themes: string[];
+  origin: string | null;
+  status: string | null;
+  translation_status: string | null;
+  chapter_count: number | null;
+  ranking: number | null;
+  followers: number | null;
+  rating: number | null;
+  content_rating: string | null;
+  thumbnail: string | null;
+  platform_url: string | null;
+  last_chapter_date: string | null;
+  engagement_score: number | null;
+}
+
+export interface FanSignalData {
+  titleName: string;
+  collectedAt: string;
+  intelligenceTitleId?: string;
+  reddit?: RedditData;
+  ao3?: AO3Data;
+  comick?: ComickData;
+  errors: Record<string, string>;
+}
+
+/**
+ * Collect fan engagement data from Reddit, AO3, and Comick
+ * Uses the legacy title-name-based collection endpoint
+ */
+export async function collectFanEngagement(
+  request: FanEngagementRequest,
+  userEmail: string
+): Promise<FanSignalData> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    throw new Error('Not authenticated');
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/title-intelligence`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({
+        titleNameInput: request.titleName,
+        sources: request.sources,
+        collectedBy: userEmail,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to collect fan engagement data');
+  }
+
+  const result = await response.json();
+
+  // Fetch the intelligence data to extract fan engagement details
+  const fanSignalData: FanSignalData = {
+    titleName: request.titleName,
+    collectedAt: new Date().toISOString(),
+    intelligenceTitleId: result.intelligenceTitleId,
+    errors: result.errors || {},
+  };
+
+  // If we have an intelligence title ID, fetch the detailed source data
+  if (result.intelligenceTitleId) {
+    try {
+      const intelligenceData = await getIntelligenceTitleWithSources(result.intelligenceTitleId);
+
+      // Extract fan engagement data from sources
+      for (const source of intelligenceData.sources) {
+        const rawMeta = source.raw_meta as { data?: Record<string, unknown> } | undefined;
+        const data = rawMeta?.data;
+
+        if (!data) continue;
+
+        if (source.domain === 'reddit.com') {
+          fanSignalData.reddit = {
+            posts: (data.posts as number) || 0,
+            total_upvotes: (data.total_upvotes as number) || 0,
+            total_comments: (data.total_comments as number) || 0,
+            avg_upvotes: (data.avg_upvotes as number) || null,
+            avg_comments: (data.avg_comments as number) || null,
+            engagement_score: (data.engagement_score as number) || null,
+            top_posts: (data.top_posts as RedditPost[]) || [],
+            subreddits: (data.subreddits as RedditSubreddit[]) || [],
+            related_subreddit_subscribers: (data.related_subreddit_subscribers as number) || 0,
+          };
+        } else if (source.domain === 'archiveofourown.org') {
+          fanSignalData.ao3 = {
+            works: (data.works as number) || 0,
+            total_kudos: (data.total_kudos as number) || 0,
+            total_bookmarks: (data.total_bookmarks as number) || 0,
+            total_comments: (data.total_comments as number) || 0,
+            avg_kudos: (data.avg_kudos as number) || null,
+            avg_bookmarks: (data.avg_bookmarks as number) || null,
+            engagement_score: (data.engagement_score as number) || null,
+            top_works: (data.top_works as AO3Work[]) || [],
+            popular_relationships: (data.popular_relationships as AO3Tag[]) || [],
+            popular_characters: (data.popular_characters as AO3Tag[]) || [],
+            popular_freeform_tags: (data.popular_freeform_tags as AO3Tag[]) || [],
+            fandoms: (data.fandoms as string[]) || [],
+          };
+        } else if (source.domain === 'comick.live') {
+          fanSignalData.comick = {
+            comic_id: (data.comic_id as number) || null,
+            title: (data.title as string) || null,
+            slug: (data.slug as string) || null,
+            author: (data.author as string) || null,
+            synopsis: (data.synopsis as string) || null,
+            genres: (data.genres as string[]) || [],
+            themes: (data.themes as string[]) || [],
+            origin: (data.origin as string) || null,
+            status: (data.status as string) || null,
+            translation_status: (data.translation_status as string) || null,
+            chapter_count: (data.chapter_count as number) || null,
+            ranking: (data.ranking as number) || null,
+            followers: (data.followers as number) || null,
+            rating: (data.rating as number) || null,
+            content_rating: (data.content_rating as string) || null,
+            thumbnail: (data.thumbnail as string) || null,
+            platform_url: (data.platform_url as string) || null,
+            last_chapter_date: (data.last_chapter_date as string) || null,
+            engagement_score: (data.engagement_score as number) || null,
+          };
+        }
+      }
+    } catch (fetchError) {
+      console.error('Error fetching intelligence details:', fetchError);
+      // Still return partial data
+    }
+  }
+
+  return fanSignalData;
+}

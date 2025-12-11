@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
   Star,
+  TrendingUp,
   FileEdit,
   BookOpen,
   Sparkles,
@@ -15,6 +16,7 @@ import {
   Palette,
   Library
 } from 'lucide-react';
+import { AdminManualModal } from '@/components/admin/AdminManualModal';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +43,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/featured',
       icon: Star,
       description: 'Manage featured titles'
+    },
+    {
+      name: 'Trending',
+      href: '/admin/trending',
+      icon: TrendingUp,
+      description: 'Featured titles (table view)'
     },
     {
       name: 'Titles',
@@ -80,7 +88,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Mobile Header with Logo and Menu Button */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-gray-200 z-50">
         <div className="flex items-center justify-between px-4 py-3">
@@ -90,14 +98,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <h1 className="text-lg font-bold text-gray-900">Admin Panel</h1>
           </div>
 
-          {/* Hamburger Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {/* Help Button and Hamburger Menu */}
+          <div className="flex items-center gap-1">
+            <AdminManualModal />
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -169,9 +180,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="hidden lg:block fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-2 mb-2">
-            <LayoutDashboard className="w-6 h-6 text-gray-900" />
-            <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <LayoutDashboard className="w-6 h-6 text-gray-900" />
+              <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+            </div>
+            <AdminManualModal />
           </div>
           <p className="text-sm text-gray-500">{user?.email}</p>
         </div>
@@ -299,8 +313,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64 pt-[60px] lg:pt-0">
-        <main className="min-h-screen">
+      <div className="lg:pl-64 pt-[60px] lg:pt-0 flex-1">
+        <main className="min-h-screen w-full">
           {children}
         </main>
       </div>

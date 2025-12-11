@@ -4,6 +4,7 @@ import { titlesService, Title, TitleFilters } from '@/services/titlesService';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TitleCard } from '@/components/title/TitleCard';
 import { Search, Loader2, BookOpen, X } from 'lucide-react';
+import { trackTitleSearch, trackFeatureUsage, trackPageView, trackSearchZeroResults } from '@/utils/analytics';
 
 const PAGE_SIZE = 12;
 
@@ -19,6 +20,12 @@ export default function Titles() {
 
   const observerTarget = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView('/buyers/titles', 'Discover Titles');
+    trackFeatureUsage('titles_browse');
+  }, []);
 
   // Fetch initial titles with filters
   useEffect(() => {
@@ -36,6 +43,14 @@ export default function Titles() {
           setTitles(vectorResults);
           setHasMore(false); // Vector search returns all results at once
           setOffset(0);
+
+          // Track vector search
+          trackTitleSearch(searchQuery, vectorResults.length, 'vector');
+
+          // Track zero results for search quality analysis
+          if (vectorResults.length === 0) {
+            trackSearchZeroResults(searchQuery, 'vector');
+          }
         } else {
           // Use traditional pagination when no search query
           const filters: TitleFilters = {};
@@ -198,9 +213,14 @@ export default function Titles() {
 
             {/* Title Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {titles.map((title) => (
+              {titles.map((title, index) => (
                 <div key={title.title_id} className="min-w-0">
-                  <TitleCard title={title} variant="grid" />
+                  <TitleCard
+                    title={title}
+                    variant="grid"
+                    source={searchQuery ? 'search' : 'browse'}
+                    position={index + 1}
+                  />
                 </div>
               ))}
             </div>

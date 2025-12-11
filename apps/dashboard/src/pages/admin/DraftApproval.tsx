@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Eye, FileEdit } from "lucide-react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { PageContainer } from "@/components/layout/PageContainer";
 import { useToast } from "@/hooks/use-toast";
 import { draftService, type DraftWithCreator, type DraftStatus } from "@/services/draftService";
 // import { Badge } from "@/components/ui/badge";
@@ -134,52 +133,53 @@ export default function AdminDraftApproval() {
 
   return (
     <AdminLayout>
-      <PageContainer>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-2">
+      <div className="p-6 space-y-6 w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
               <FileEdit className="w-6 h-6 text-gray-900" />
-              <h1 className="text-2xl font-bold text-gray-800">Draft Approval</h1>
+              <h1 className="text-2xl font-bold text-black">Draft Approval</h1>
               <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-purple-500 text-white">
                 ADMIN ONLY
               </span>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 mt-1">
               Review and approve creator title submissions
             </p>
-
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-2 mb-4">
-              <FilterTab filter="all" label="All" count={stats.total} />
-              <FilterTab filter="draft" label="Draft" count={stats.draft} />
-              <FilterTab filter="submitted" label="Submitted" count={stats.submitted} />
-              <FilterTab filter="approved" label="Approved" count={stats.approved} />
-              <FilterTab filter="rejected" label="Rejected" count={stats.rejected} />
-            </div>
-
-            <Button
-              onClick={loadDrafts}
-              variant="outline"
-              disabled={loading}
-              className="border-gray-300 hover:bg-gray-100"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
           </div>
+          <Button
+            onClick={loadDrafts}
+            variant="outline"
+            disabled={loading}
+            className="border-gray-300 hover:bg-gray-100"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
 
-          {/* Drafts Table */}
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-            <CardHeader>
-              <CardTitle>
-                {activeFilter === 'all' ? 'All Drafts' :
-                 activeFilter === 'submitted' ? 'Submitted Drafts' :
-                 activeFilter === 'approved' ? 'Approved Drafts' :
-                 'Rejected Drafts'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-2">
+          <FilterTab filter="all" label="All" count={stats.total} />
+          <FilterTab filter="draft" label="Draft" count={stats.draft} />
+          <FilterTab filter="submitted" label="Submitted" count={stats.submitted} />
+          <FilterTab filter="approved" label="Approved" count={stats.approved} />
+          <FilterTab filter="rejected" label="Rejected" count={stats.rejected} />
+        </div>
+
+        {/* Drafts Table */}
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+          <CardHeader>
+            <CardTitle>
+              {activeFilter === 'all' ? 'All Drafts' :
+               activeFilter === 'draft' ? 'Draft Submissions' :
+               activeFilter === 'submitted' ? 'Submitted Drafts' :
+               activeFilter === 'approved' ? 'Approved Drafts' :
+               'Rejected Drafts'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
               {loading ? (
                 <div className="flex justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -321,8 +321,7 @@ export default function AdminDraftApproval() {
               )}
             </CardContent>
           </Card>
-        </div>
-      </PageContainer>
+      </div>
     </AdminLayout>
   );
 }

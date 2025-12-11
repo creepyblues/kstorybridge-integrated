@@ -25,6 +25,7 @@ interface TitleMatch {
   synopsis: string;
   genre: string[];
   tone: string;
+  has_pitch_deck?: boolean;
 }
 
 interface CompNavigatorResponse {
@@ -615,7 +616,8 @@ Return JSON:
       title_image: candidate.title_image,
       synopsis: candidate.synopsis,
       genre: candidate.genre || [],
-      tone: candidate.tone
+      tone: candidate.tone,
+      has_pitch_deck: candidate.hasPitchDeck || false
     }
   }).filter(Boolean) as TitleMatch[]
 

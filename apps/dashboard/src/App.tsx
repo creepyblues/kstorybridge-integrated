@@ -49,6 +49,7 @@ import { ContentList } from '@/pages/admin/ContentList';
 import { ContentEditor } from '@/pages/admin/ContentEditor';
 import AssetGeneration from '@/pages/admin/AssetGeneration';
 import PitchExtractor from '@/pages/admin/PitchExtractor';
+import AdminTrending from '@/pages/admin/Trending';
 import { AdminProtectedRoute } from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/layout/AdminLayout';
 
@@ -247,6 +248,16 @@ function App() {
                 <AdminLayout>
                   <AdminFeatured />
                 </AdminLayout>
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* Trending (Featured with table view) */}
+          <Route
+            path="/admin/trending"
+            element={
+              <AdminProtectedRoute>
+                <AdminTrending />
               </AdminProtectedRoute>
             }
           />

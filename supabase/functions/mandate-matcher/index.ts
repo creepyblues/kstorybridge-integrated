@@ -29,6 +29,7 @@ interface TitleMatch {
   content_format?: string;
   story_author?: string;
   art_author?: string;
+  has_pitch_deck?: boolean;
 }
 
 interface MandateMatchResponse {
@@ -118,7 +119,26 @@ serve(async (req) => {
 
     console.log(`✅ Found ${searchResults?.length || 0} matching titles`);
 
-    // Step 3: Format results
+    // Step 3: Fetch pitch deck availability for matching titles
+    const titleIds = (searchResults || []).map((r: any) => r.title_id);
+    let titlesWithPitchDeck = new Set<string>();
+
+    if (titleIds.length > 0) {
+      const { data: pitchDeckData, error: pitchDeckError } = await supabase
+        .from('title_documents')
+        .select('title_id')
+        .in('title_id', titleIds)
+        .eq('document_type', 'source_pdf');
+
+      if (pitchDeckError) {
+        console.warn('⚠️ Failed to fetch pitch deck availability:', pitchDeckError);
+      } else {
+        titlesWithPitchDeck = new Set<string>(pitchDeckData?.map((d: any) => d.title_id) || []);
+        console.log(`📑 Pitch deck availability: ${titlesWithPitchDeck.size}/${titleIds.length} titles have pitch decks`);
+      }
+    }
+
+    // Step 4: Format results
     const results: TitleMatch[] = (searchResults || []).map((result: any) => ({
       title_id: result.title_id,
       title_name_en: result.title_name_en,
@@ -131,13 +151,14 @@ serve(async (req) => {
       content_format: result.content_format,
       story_author: result.story_author,
       art_author: result.art_author,
+      has_pitch_deck: titlesWithPitchDeck.has(result.title_id),
     }));
 
     const avg_match_score = results.length > 0
       ? results.reduce((sum, r) => sum + r.match_score, 0) / results.length
       : 0;
 
-    // Step 4: Save search to database (only if save_search is true)
+    // Step 5: Save search to database (only if save_search is true)
     let savedSearch: any = null;
     if (save_search && user_email) {
       console.log("💾 Saving mandate search to database...");

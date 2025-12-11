@@ -31,6 +31,7 @@ import { Loader2, CheckCircle2, XCircle, AlertCircle, ShieldAlert } from 'lucide
  * Fan Engagement Sources (Title Name Search):
  * - Reddit: Searches for posts/subreddits mentioning the title
  * - AO3: Searches for fanfiction works for the title
+ * - Comick: Searches for fan translations on Comick.live
  *
  * Updated: Supports both URL-based (Korean platforms) and title-name based (fan engagement)
  */
@@ -224,6 +225,7 @@ export function TitleInvestigator() {
   const [titleNameSearch, setTitleNameSearch] = useState('');
   const [enableReddit, setEnableReddit] = useState(false);
   const [enableAO3, setEnableAO3] = useState(false);
+  const [enableComick, setEnableComick] = useState(false);
 
   // Redirect non-admins
   useEffect(() => {
@@ -246,10 +248,11 @@ export function TitleInvestigator() {
   ];
 
   // Determine if any fan engagement source is selected
-  const hasFanEngagementSources = enableReddit || enableAO3;
+  const hasFanEngagementSources = enableReddit || enableAO3 || enableComick;
   const fanEngagementSources = [
     ...(enableReddit ? ['reddit'] : []),
     ...(enableAO3 ? ['ao3'] : []),
+    ...(enableComick ? ['comick'] : []),
   ];
 
   // Parse URLs as user types
@@ -492,13 +495,13 @@ export function TitleInvestigator() {
                 Fan Engagement Sources (Optional)
               </label>
               <p className="text-xs text-gray-500 mb-3">
-                Search Reddit and AO3 for fan discussions and fanfiction
+                Search Reddit, AO3, and Comick for fan discussions, fanfiction, and translations
               </p>
 
               {/* Title Name Input for Fan Sources */}
               <div className="mb-3">
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Title Name (for Reddit/AO3 search)
+                  Title Name (for fan engagement search)
                 </label>
                 <Input
                   placeholder="e.g., Solo Leveling, Tower of God"
@@ -528,6 +531,15 @@ export function TitleInvestigator() {
                   />
                   <span className="text-sm font-medium text-red-600">AO3</span>
                   <span className="text-xs text-gray-500">(Fanfiction works)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={enableComick}
+                    onCheckedChange={(checked) => setEnableComick(checked === true)}
+                    disabled={isCollecting}
+                  />
+                  <span className="text-sm font-medium text-blue-600">Comick</span>
+                  <span className="text-xs text-gray-500">(Fan translations)</span>
                 </label>
               </div>
 
@@ -616,7 +628,7 @@ export function TitleInvestigator() {
 
             {/* Fan Engagement (Title name search) */}
             <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Fan Engagement (search by title)</p>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               <div className="p-3 rounded-lg bg-gray-50">
                 <p className="font-medium text-orange-600 text-sm">Reddit</p>
                 <p className="text-xs text-gray-500 mt-1">Posts, discussions, subreddits mentioning the title</p>
@@ -624,6 +636,10 @@ export function TitleInvestigator() {
               <div className="p-3 rounded-lg bg-gray-50">
                 <p className="font-medium text-red-600 text-sm">Archive of Our Own (AO3)</p>
                 <p className="text-xs text-gray-500 mt-1">Fanfiction works, kudos, bookmarks, popular tags</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gray-50">
+                <p className="font-medium text-blue-600 text-sm">Comick.live</p>
+                <p className="text-xs text-gray-500 mt-1">Fan translations, rankings, follower counts</p>
               </div>
             </div>
           </CardContent>

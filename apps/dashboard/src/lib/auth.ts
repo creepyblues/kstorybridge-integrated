@@ -190,10 +190,16 @@ export async function completeOAuthProfile(
 
     // Update metadata with account_type (use provided session if available)
     if (session?.access_token) {
-      await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         data: { account_type: 'buyer' },
       });
-      log('Account type metadata updated');
+      if (updateError) {
+        // Log but don't throw - profile was created successfully, metadata update is secondary
+        log('Account type metadata update failed', updateError);
+        console.warn('Failed to update account_type metadata:', updateError.message);
+      } else {
+        log('Account type metadata updated');
+      }
     }
 
     return { success: true };

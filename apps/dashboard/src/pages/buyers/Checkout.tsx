@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Lock } from 'lucide-react';
+import { trackCheckout, trackCheckoutAbandoned } from '@/utils/analytics';
 
 // Initialize Stripe.js with publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -31,10 +32,38 @@ export default function Checkout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Tracking refs for checkout abandonment
+  const pageStartTimeRef = useRef<number>(Date.now());
+  const currentStepRef = useRef<string>('loading');
+  const isRedirectingRef = useRef<boolean>(false);
+
+  // Track checkout abandonment on page leave
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Don't track if successfully redirecting to Stripe
+      if (isRedirectingRef.current) return;
+
+      const timeOnPageMs = Date.now() - pageStartTimeRef.current;
+      trackCheckoutAbandoned(tier || 'unknown', timeOnPageMs, currentStepRef.current);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Track on unmount if not redirecting
+      if (!isRedirectingRef.current && tier) {
+        const timeOnPageMs = Date.now() - pageStartTimeRef.current;
+        trackCheckoutAbandoned(tier, timeOnPageMs, currentStepRef.current);
+      }
+    };
+  }, [tier]);
+
   useEffect(() => {
     if (!tier || !user?.id || !user?.email) {
       setError('Missing required information');
       setLoading(false);
+      currentStepRef.current = 'error';
       return;
     }
 
@@ -78,10 +107,12 @@ export default function Checkout() {
       }
 
       console.log('✅ Redirecting to Stripe Checkout:', data.sessionId);
+      currentStepRef.current = 'redirecting';
 
       // Use direct URL redirect if available (more reliable), otherwise use Stripe.js
       if (data.url) {
         console.log('🔗 Using direct checkout URL');
+        isRedirectingRef.current = true; // Mark as redirecting to prevent abandonment tracking
         window.location.href = data.url;
       } else {
         // Fallback to Stripe.js redirect
@@ -90,11 +121,13 @@ export default function Checkout() {
           throw new Error('Stripe failed to load. Please check your configuration.');
         }
 
+        isRedirectingRef.current = true; // Mark as redirecting to prevent abandonment tracking
         const { error: stripeError } = await stripe.redirectToCheckout({
           sessionId: data.sessionId,
         });
 
         if (stripeError) {
+          isRedirectingRef.current = false; // Reset if redirect fails
           throw new Error(stripeError.message);
         }
       }
@@ -102,6 +135,10 @@ export default function Checkout() {
       console.error('❌ Checkout error:', error);
       setError(error.message);
       setLoading(false);
+      currentStepRef.current = 'error';
+
+      // Track checkout error
+      trackCheckout('error', tier || 'unknown', undefined, { error: error.message?.substring(0, 50) });
 
       toast({
         title: 'Checkout Error',
@@ -112,6 +149,10 @@ export default function Checkout() {
   };
 
   const handleCancel = () => {
+    // Track checkout cancelled
+    if (tier) {
+      trackCheckout('cancelled', tier);
+    }
     navigate('/buyers/plan');
   };
 

@@ -1,19 +1,47 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { useTierAccess, UserTier } from '@/contexts/TierContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lock, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { trackPremiumFeatureBlocked, trackPremiumUpgradeCtaClicked } from '@/utils/analytics';
 
 interface TierGatedContentProps {
   children: ReactNode;
   requiredTier: UserTier;
   fallback?: ReactNode;
+  featureName?: string; // Optional name for tracking
 }
 
-export function TierGatedContent({ children, requiredTier, fallback }: TierGatedContentProps) {
-  const { hasAccess, loading } = useTierAccess();
+export function TierGatedContent({ children, requiredTier, fallback, featureName }: TierGatedContentProps) {
+  const { hasAccess, tier, loading } = useTierAccess();
   const navigate = useNavigate();
+  const location = useLocation();
+  const hasTrackedBlockRef = useRef(false);
+
+  // Track when premium feature is blocked (only once per mount)
+  useEffect(() => {
+    if (!loading && !hasAccess(requiredTier) && !hasTrackedBlockRef.current) {
+      hasTrackedBlockRef.current = true;
+      const feature = featureName || `${requiredTier}_feature`;
+      trackPremiumFeatureBlocked(
+        feature,
+        requiredTier,
+        tier || 'basic',
+        location.pathname
+      );
+    }
+  }, [loading, requiredTier, tier, featureName, location.pathname, hasAccess]);
+
+  const handleUpgradeClick = () => {
+    const feature = featureName || `${requiredTier}_feature`;
+    trackPremiumUpgradeCtaClicked(
+      feature,
+      'tier_gated_content',
+      tier || 'basic'
+    );
+    navigate('/buyers/plan');
+  };
 
   if (loading) {
     return (
@@ -52,7 +80,7 @@ export function TierGatedContent({ children, requiredTier, fallback }: TierGated
         </div>
 
         <Button
-          onClick={() => navigate('/buyers/plan')}
+          onClick={handleUpgradeClick}
           className="bg-pro-purple hover:bg-pro-purple/90"
         >
           <Sparkles className="h-4 w-4 mr-2" />

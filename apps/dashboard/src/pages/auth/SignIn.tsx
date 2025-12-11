@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { signInWithEmail, signInWithOAuth, checkBuyerProfileExists } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
+import { trackSignin } from '@/utils/analytics';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -15,9 +16,17 @@ export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Track form viewed on mount
+  useEffect(() => {
+    trackSignin('form_viewed', 'email');
+  }, []);
+
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Track signin attempt
+    trackSignin('attempted', 'email');
 
     try {
       const { user } = await signInWithEmail(email, password);
@@ -30,6 +39,8 @@ export default function SignIn() {
       const profileExists = await checkBuyerProfileExists(user.id);
 
       if (!profileExists) {
+        trackSignin('error', 'email', { reason: 'profile_not_found' });
+
         toast({
           title: 'Account Not Found',
           description: 'Your account doesn\'t exist. Please sign up first.',
@@ -42,6 +53,9 @@ export default function SignIn() {
         return;
       }
 
+      // Track successful signin
+      trackSignin('completed', 'email');
+
       // Success - redirect to homepage
       toast({
         title: 'Welcome back!',
@@ -50,6 +64,8 @@ export default function SignIn() {
 
       navigate('/buyers/home');
     } catch (error: any) {
+      trackSignin('error', 'email', { error: error.message?.substring(0, 50) });
+
       toast({
         title: 'Sign In Failed',
         description: error.message || 'Please check your credentials and try again',
@@ -61,10 +77,16 @@ export default function SignIn() {
   };
 
   const handleOAuthSignIn = async () => {
+    // Track OAuth signin attempt
+    trackSignin('attempted', 'google');
+
     try {
       await signInWithOAuth('buyer', 'signin');
       // User will be redirected to Google OAuth
+      // Note: 'completed' tracking happens in AuthCallback
     } catch (error: any) {
+      trackSignin('error', 'google', { error: error.message?.substring(0, 50) });
+
       toast({
         title: 'OAuth Sign In Failed',
         description: error.message || 'Please try again',

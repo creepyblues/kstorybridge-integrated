@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { User, Menu, X, Home, MessageSquare, Compass, Sparkles, Star, BookOpen, Heart, CreditCard, Settings, FileText, Wand2, FileSearch, TrendingUp } from 'lucide-react';
+import { User, Menu, X, Home, MessageSquare, Compass, Sparkles, BookOpen, Heart, CreditCard, Shield, TrendingUp } from 'lucide-react';
 
 interface MenuItem {
   title: string;
@@ -26,16 +26,9 @@ const getDiscoverItems = (): MenuItem[] => {
   ];
 };
 
-// Admin menu items (with /admin prefix)
-const getAdminItems = (): MenuItem[] => {
-  return [
-    { title: 'Featured', href: '/admin/featured', icon: <Star className="h-5 w-5" /> },
-    { title: 'Titles', href: '/admin/titles', icon: <Settings className="h-5 w-5" /> },
-    { title: 'Content', href: '/admin/content', icon: <FileText className="h-5 w-5" /> },
-    { title: 'Drafts', href: '/admin/drafts', icon: <FileText className="h-5 w-5" /> },
-    { title: 'Asset Generation', href: '/admin/asset-generation', icon: <Wand2 className="h-5 w-5" /> },
-    { title: 'Pitch Extractor', href: '/admin/pitch-extractor', icon: <FileSearch className="h-5 w-5" /> },
-  ];
+// Admin menu item - single link to admin panel
+const getAdminItem = (): MenuItem => {
+  return { title: 'Admin Panel', href: '/admin', icon: <Shield className="h-5 w-5" /> };
 };
 
 export function BuyerSidebar() {
@@ -46,7 +39,7 @@ export function BuyerSidebar() {
 
   const userEmail = user?.email;
   const discoverItems = getDiscoverItems();
-  const adminItems = getAdminItems();
+  const adminItem = getAdminItem();
 
   const handleLinkClick = () => {
     setIsMobileMenuOpen(false);
@@ -130,28 +123,21 @@ export function BuyerSidebar() {
                   Admin
                 </h3>
                 <ul className="space-y-1">
-                  {adminItems.map((item) => (
-                    <li key={item.href}>
-                      <Link
-                        to={item.href}
-                        onClick={handleLinkClick}
-                        className={cn(
-                          'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',
-                          location.pathname === item.href
-                            ? 'bg-hanok-teal/10 text-hanok-teal shadow-sm border border-hanok-teal/20'
-                            : 'text-gray-700 hover:bg-hanok-teal/5'
-                        )}
-                      >
-                        {item.icon}
-                        <span>{item.title}</span>
-                        {item.badge && (
-                          <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
-                            {item.badge}
-                          </span>
-                        )}
-                      </Link>
-                    </li>
-                  ))}
+                  <li>
+                    <Link
+                      to={adminItem.href}
+                      onClick={handleLinkClick}
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',
+                        location.pathname.startsWith('/admin')
+                          ? 'bg-hanok-teal/10 text-hanok-teal shadow-sm border border-hanok-teal/20'
+                          : 'text-gray-700 hover:bg-hanok-teal/5'
+                      )}
+                    >
+                      {adminItem.icon}
+                      <span>{adminItem.title}</span>
+                    </Link>
+                  </li>
                 </ul>
               </div>
             )}

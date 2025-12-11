@@ -5,3 +5,5 @@ export { PlatformDataTab } from './PlatformDataTab';
 export { MaterialsTab } from './MaterialsTab';
 export { CreditsTab } from './CreditsTab';
 export { AIInsightCard } from './AIInsightCard';
+export { KeyVisualsGallery } from './KeyVisualsGallery';
+export { CompsAnalysisCard } from './CompsAnalysisCard';

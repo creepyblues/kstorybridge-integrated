@@ -19,6 +19,7 @@ export interface TitleMatch {
   synopsis: string;
   genre: string[];
   tone: string;
+  has_pitch_deck?: boolean;
 }
 
 export interface CompNavigatorResponse {

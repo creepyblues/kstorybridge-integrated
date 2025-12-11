@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Film, FileText, TrendingUp, ArrowRight, Search, Loader2, Tv, ExternalLink } from 'lucide-react';
 import { omdbService, OMDBSearchResult } from '@/services/omdbService';
+import { trackHomeCtaClicked, trackHomeSearchInitiated, trackExternalLinkClicked } from '@/utils/analytics';
 
 // Sample queries for each card
 const SAMPLE_SHOW = 'Stranger Things';
@@ -68,31 +69,49 @@ export function HeroSection() {
   }, []);
 
   const handleSelectSuggestion = (result: OMDBSearchResult) => {
+    // Track search initiated with autocomplete selection
+    trackHomeSearchInitiated('show_comp', result.Title, 'autocomplete');
+
     // Navigate to comps-navigator with the selected show
     navigate(`/buyers/comps-navigator?show=${encodeURIComponent(result.Title)}`);
   };
 
   const handleShowCompSubmit = () => {
     if (showInput.trim()) {
+      // Track search initiated via manual input
+      trackHomeSearchInitiated('show_comp', showInput.trim(), 'manual');
+
       navigate(`/buyers/comps-navigator?show=${encodeURIComponent(showInput.trim())}`);
     }
   };
 
   const handleBriefSubmit = () => {
     if (briefInput.trim()) {
+      // Track brief search initiated
+      trackHomeSearchInitiated('brief', briefInput.trim(), 'manual');
+
       navigate(`/buyers/mandates?brief=${encodeURIComponent(briefInput.trim())}`);
     }
   };
 
   const handleSampleShowClick = () => {
+    // Track sample CTA click
+    trackHomeCtaClicked('show_comp_sample', SAMPLE_SHOW);
+
     navigate(`/buyers/comps-navigator?show=${encodeURIComponent(SAMPLE_SHOW)}`);
   };
 
   const handleSampleBriefClick = () => {
+    // Track sample CTA click
+    trackHomeCtaClicked('brief_sample', SAMPLE_BRIEF);
+
     navigate(`/buyers/mandates?brief=${encodeURIComponent(SAMPLE_BRIEF)}`);
   };
 
   const handleHotNowClick = () => {
+    // Track hot now CTA click
+    trackHomeCtaClicked('hot_now', 'featured');
+
     navigate('/buyers/featured');
   };
 
@@ -169,7 +188,10 @@ export function HeroSection() {
                       href={omdbService.getIMDBUrl(result.imdbID)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        trackExternalLinkClicked(omdbService.getIMDBUrl(result.imdbID), 'imdb', result.Title);
+                      }}
                       className="text-gray-400 hover:text-yellow-500 transition-colors flex-shrink-0 ml-2"
                       title="View on IMDB"
                     >

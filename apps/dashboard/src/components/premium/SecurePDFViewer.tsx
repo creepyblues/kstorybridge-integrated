@@ -5,7 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { trackUpgradeButtonClick } from '@/utils/analytics';
+import {
+  trackUpgradeButtonClick,
+  trackPitchDeckOpened,
+  trackPitchDeckPageViewed,
+  trackPitchDeckPageLimitHit,
+  trackPitchDeckUpgradePromptShown,
+  trackPitchDeckClosed,
+  trackPitchDeckError,
+  trackPitchDeckZoom,
+  trackPitchDeckFullscreen,
+} from '@/utils/analytics';
 import { debug } from '@/utils/debug';
 
 // PDF.js worker is now configured in centralized config (/src/lib/pdfConfig.ts)
@@ -33,6 +43,34 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  // Analytics tracking state
+  const sessionStartTimeRef = useRef<number>(Date.now());
+  const pageStartTimeRef = useRef<number>(Date.now());
+  const maxPageViewedRef = useRef<number>(1);
+  const pagesViewedCountRef = useRef<number>(0);
+  const hasTrackedOpenRef = useRef<boolean>(false);
+
+  // Extract title ID from URL for tracking
+  const getTitleIdFromUrl = useCallback((): string => {
+    const pathMatch = pdfUrl.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/);
+    return pathMatch ? pathMatch[1] : 'unknown';
+  }, [pdfUrl]);
+
+  // Track session close on unmount
+  useEffect(() => {
+    return () => {
+      if (hasTrackedOpenRef.current && pagesViewedCountRef.current > 0) {
+        const totalTimeMs = Date.now() - sessionStartTimeRef.current;
+        trackPitchDeckClosed(
+          getTitleIdFromUrl(),
+          pagesViewedCountRef.current,
+          totalTimeMs,
+          maxPageViewedRef.current
+        );
+      }
+    };
+  }, [getTitleIdFromUrl]);
 
   // Validate user authentication and session
   const validateAuth = useCallback(async () => {
@@ -503,6 +541,22 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
     debug.log('📄 REACT-PDF: Document loaded successfully, pages:', numPages);
     setNumPages(numPages);
     setLoading(false);
+
+    // Track pitch deck opened (only once per session)
+    if (!hasTrackedOpenRef.current) {
+      hasTrackedOpenRef.current = true;
+      sessionStartTimeRef.current = Date.now();
+      pageStartTimeRef.current = Date.now();
+      pagesViewedCountRef.current = 1;
+      maxPageViewedRef.current = 1;
+
+      trackPitchDeckOpened(
+        getTitleIdFromUrl(),
+        title || 'Unknown Title',
+        userTier || 'basic',
+        numPages
+      );
+    }
   };
 
 
@@ -513,16 +567,41 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
     const errorMessage = 'Failed to load PDF document: ' + error.message;
     setError(errorMessage);
     setLoading(false);
+
+    // Track pitch deck error
+    trackPitchDeckError(
+      getTitleIdFromUrl(),
+      error.message,
+      userTier || 'basic'
+    );
   };
 
-  const goToPrevPage = () => setPageNumber(prev => Math.max(1, prev - 1));
+  const goToPrevPage = () => {
+    // Track time on current page before navigating
+    const timeOnCurrentPage = Date.now() - pageStartTimeRef.current;
+    trackPitchDeckPageViewed(getTitleIdFromUrl(), pageNumber, timeOnCurrentPage);
+
+    setPageNumber(prev => {
+      const newPage = Math.max(1, prev - 1);
+      pageStartTimeRef.current = Date.now();
+      pagesViewedCountRef.current += 1;
+      return newPage;
+    });
+  };
 
   const goToNextPage = () => {
     const nextPage = pageNumber + 1;
 
+    // Track time on current page before navigating
+    const timeOnCurrentPage = Date.now() - pageStartTimeRef.current;
+    trackPitchDeckPageViewed(getTitleIdFromUrl(), pageNumber, timeOnCurrentPage);
+
     // If no tier provided, allow full access (creator/admin use case)
     if (!userTier) {
       setPageNumber(Math.min(numPages, nextPage));
+      pageStartTimeRef.current = Date.now();
+      pagesViewedCountRef.current += 1;
+      maxPageViewedRef.current = Math.max(maxPageViewedRef.current, Math.min(numPages, nextPage));
       return;
     }
 
@@ -531,20 +610,42 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
     const maxAllowedPage = isPremiumUser ? numPages : maxPagesForBasic;
 
     if (nextPage > maxAllowedPage) {
+      // Track page limit hit
+      trackPitchDeckPageLimitHit(
+        getTitleIdFromUrl(),
+        userTier,
+        pagesViewedCountRef.current
+      );
+
+      // Track upgrade prompt shown
+      const timeViewingMs = Date.now() - sessionStartTimeRef.current;
+      trackPitchDeckUpgradePromptShown(
+        getTitleIdFromUrl(),
+        pagesViewedCountRef.current,
+        timeViewingMs
+      );
+
       setShowUpgradePopup(true);
       trackUpgradeButtonClick('pitch_deck_viewer', userTier, 'page_limit_reached');
       return;
     }
 
     setPageNumber(nextPage);
+    pageStartTimeRef.current = Date.now();
+    pagesViewedCountRef.current += 1;
+    maxPageViewedRef.current = Math.max(maxPageViewedRef.current, nextPage);
   };
   const zoomIn = () => setScale(prev => {
     const currentScale = typeof prev === 'number' ? prev : 1;
-    return Math.min(3, currentScale + 0.2);
+    const newScale = Math.min(3, currentScale + 0.2);
+    trackPitchDeckZoom(getTitleIdFromUrl(), Math.round(newScale * 100));
+    return newScale;
   });
   const zoomOut = () => setScale(prev => {
     const currentScale = typeof prev === 'number' ? prev : 1;
-    return Math.max(0.3, currentScale - 0.2);
+    const newScale = Math.max(0.3, currentScale - 0.2);
+    trackPitchDeckZoom(getTitleIdFromUrl(), Math.round(newScale * 100));
+    return newScale;
   });
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
@@ -552,8 +653,10 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
     try {
       if (!document.fullscreenElement) {
         await containerRef.current.requestFullscreen();
+        trackPitchDeckFullscreen(getTitleIdFromUrl(), 'enter');
       } else {
         await document.exitFullscreen();
+        trackPitchDeckFullscreen(getTitleIdFromUrl(), 'exit');
       }
     } catch (err) {
       console.error('Fullscreen error:', err);

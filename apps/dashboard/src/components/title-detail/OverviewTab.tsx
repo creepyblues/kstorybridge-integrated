@@ -7,8 +7,12 @@ import { Title } from '@/services/titlesService';
 import { type PitchAnalysis } from '@/types/pitchAnalysis';
 import { UserTier } from '@/contexts/TierContext';
 import { AIInsightCard } from './AIInsightCard';
+import { KeyVisualsGallery } from './KeyVisualsGallery';
+import { CompsAnalysisCard } from './CompsAnalysisCard';
 import PitchDeckThumbnail from '@/components/premium/PitchDeckThumbnail';
 import SecurePDFViewer from '@/components/premium/SecurePDFViewer';
+import { trackTitleContactCreatorClicked, trackTitlePitchCtaClicked } from '@/utils/analytics';
+import { type SuggestedComp } from '@/services/compsGeneratorService';
 import {
   Briefcase,
   Target,
@@ -45,6 +49,8 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
 
   const hasRightsAvailable = title.rights_available && title.rights_available.length > 0;
   const hasComps = title.comps && title.comps.length > 0;
+  const hasCompsAnalysis = (title as Title & { comps_analysis?: SuggestedComp[] }).comps_analysis &&
+    (title as Title & { comps_analysis?: SuggestedComp[] }).comps_analysis!.length > 0;
   const hasAwards = title.awards && title.awards.length > 0;
   const hasAchievements = hasAwards || title.media_coverage || title.merchandise_deals || title.print_editions || title.celebrity_endorsements || title.sales_records;
   const hasKeywords = title.keywords && title.keywords.length > 0;
@@ -68,12 +74,12 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
     <div className="space-y-6">
       {/* Licensing Opportunity Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Rights Available Card */}
+        {/* Rights Info Card */}
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Briefcase className="w-5 h-5 text-[#4C9C9B]" />
-              <h3 className="text-lg font-semibold text-black">Rights Available</h3>
+              <h3 className="text-lg font-semibold text-black">Rights Info</h3>
               {title.verified && (
                 <Badge className="bg-green-500 text-white text-xs px-2 py-0.5">
                   <CheckCircle className="w-3 h-3 mr-1" />
@@ -109,8 +115,17 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
                 <div className="text-sm text-gray-600">{title.rights_holder_name}</div>
               )}
               <Button
+                id="title-detail-contact-creator-btn"
                 className="mt-3 bg-[#AF52DE] hover:bg-[#AF52DE]/90 text-white text-sm font-medium px-4 py-2"
                 size="sm"
+                onClick={() => {
+                  trackTitleContactCreatorClicked(
+                    title.title_id,
+                    title.title_name_en || title.title_name_kr || 'Unknown Title',
+                    userTier || 'basic'
+                  );
+                  // TODO: Open contact modal or redirect
+                }}
               >
                 Contact for Licensing
               </Button>
@@ -168,15 +183,26 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
             </div>
             <PitchDeckThumbnail
               pdfUrl={title.pitch!}
-              onClick={() => setIsPdfModalOpen(true)}
+              onClick={() => {
+                trackTitlePitchCtaClicked(
+                  title.title_id,
+                  title.title_name_en || title.title_name_kr || 'Unknown Title',
+                  true
+                );
+                setIsPdfModalOpen(true);
+              }}
               alt={`${title.title_name_en || title.title_name_kr} pitch deck preview`}
             />
           </CardContent>
         </Card>
       )}
 
-      {/* Comparables Card */}
-      {hasComps && (
+      {/* Comparables Section - Show full analysis if available, otherwise simple badges */}
+      {hasCompsAnalysis ? (
+        <CompsAnalysisCard
+          compsAnalysis={(title as Title & { comps_analysis?: SuggestedComp[] }).comps_analysis!}
+        />
+      ) : hasComps && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
@@ -197,6 +223,9 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
           </CardContent>
         </Card>
       )}
+
+      {/* Key Visuals Gallery */}
+      <KeyVisualsGallery titleId={title.title_id} maxDisplay={10} />
 
       {/* Synopsis Card */}
       {title.synopsis && (

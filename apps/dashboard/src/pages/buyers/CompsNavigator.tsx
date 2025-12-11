@@ -19,6 +19,7 @@ import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
 import { Button } from '@/components/ui/button';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { trackPageView, trackFeatureUsage, trackCompsSearch } from '@/utils/analytics';
 
 type LoadingPhase = 'semantic' | 'reranking' | null;
 
@@ -53,6 +54,12 @@ export default function CompsNavigator() {
   const [searchInfo, setSearchInfo] = useState<{ time: number; cost: number } | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView('/buyers/comps-navigator', 'Comps Navigator');
+    trackFeatureUsage('comps_navigator');
+  }, []);
 
   // Handle URL parameter for initial search
   useEffect(() => {
@@ -111,6 +118,9 @@ export default function CompsNavigator() {
         time: response.processing_time_ms,
         cost: response.cost_estimate
       });
+
+      // Track comps search
+      trackCompsSearch(titles, response.results.length, response.processing_time_ms);
 
       toast({
         title: "Matches Found",
@@ -173,6 +183,9 @@ export default function CompsNavigator() {
         time: response.processing_time_ms,
         cost: response.cost_estimate
       });
+
+      // Track comps search
+      trackCompsSearch(titleStrings, response.results.length, response.processing_time_ms);
 
       toast({
         title: "Matches Found",

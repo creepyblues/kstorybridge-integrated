@@ -16,6 +16,7 @@ export interface TitleMatch {
   content_format?: string;
   story_author?: string;
   art_author?: string;
+  has_pitch_deck?: boolean;
 }
 
 export interface MandateSearch {

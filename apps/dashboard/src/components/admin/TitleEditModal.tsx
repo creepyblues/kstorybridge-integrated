@@ -30,11 +30,18 @@ import {
   collectIntelligenceByUrls,
   getIntelligenceTitleWithSources,
   directIngestToTitle,
+  collectFanEngagement,
   type IntelligenceTitleWithSources,
   type ExtractedIntelligenceData,
+  type FanSignalData,
 } from '@/services/intelligenceService';
 import { IntelligenceResultsModal } from './IntelligenceResultsModal';
-import { Save, Loader2, ChevronDown, ChevronUp, Database } from 'lucide-react';
+import { FanSignalResultsModal } from './FanSignalResultsModal';
+import { KeyVisualsCollectorModal } from './KeyVisualsCollectorModal';
+import { CompsGeneratorModal } from './CompsGeneratorModal';
+import { CompsAnalysisCard } from '@/components/title-detail/CompsAnalysisCard';
+import { type SuggestedComp } from '@/services/compsGeneratorService';
+import { Save, Loader2, ChevronDown, ChevronUp, Database, Users, Image as ImageIcon, Sparkles } from 'lucide-react';
 
 // Genre options
 const GENRE_OPTIONS = [
@@ -105,6 +112,17 @@ export function TitleEditModal({
   const [intelligenceResults, setIntelligenceResults] = useState<IntelligenceTitleWithSources | null>(null);
   const [resultsModalOpen, setResultsModalOpen] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
+
+  // Fan signal collection state
+  const [collectingFanSignal, setCollectingFanSignal] = useState(false);
+  const [fanSignalResults, setFanSignalResults] = useState<FanSignalData | null>(null);
+  const [fanSignalModalOpen, setFanSignalModalOpen] = useState(false);
+
+  // Key visuals collection state
+  const [keyVisualsModalOpen, setKeyVisualsModalOpen] = useState(false);
+
+  // Comps generator state
+  const [compsModalOpen, setCompsModalOpen] = useState(false);
 
   useEffect(() => {
     if (titleId && open) {
@@ -306,6 +324,54 @@ export function TitleEditModal({
     }
   };
 
+  // Fan signal collection handler
+  const handleCollectFanSignal = async () => {
+    const titleName = formData.title_name_en || formData.title_name_kr;
+    if (!titleName || !user?.email) {
+      toast({
+        title: 'Error',
+        description: !titleName ? 'No title name available' : 'User not authenticated',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setCollectingFanSignal(true);
+    try {
+      const results = await collectFanEngagement(
+        {
+          titleName,
+          sources: ['reddit', 'ao3', 'comick'],
+        },
+        user.email
+      );
+
+      setFanSignalResults(results);
+      setFanSignalModalOpen(true);
+
+      const sourcesCollected = [
+        results.reddit ? 'Reddit' : null,
+        results.ao3 ? 'AO3' : null,
+        results.comick ? 'Comick' : null,
+      ].filter(Boolean);
+
+      toast({
+        title: 'Fan Signal Collected',
+        description: `Successfully collected data from ${sourcesCollected.length} source(s): ${sourcesCollected.join(', ')}`,
+      });
+    } catch (error) {
+      console.error('Error collecting fan signal:', error);
+      const message = error instanceof Error ? error.message : 'Failed to collect fan signal';
+      toast({
+        title: 'Collection Failed',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setCollectingFanSignal(false);
+    }
+  };
+
   const SectionHeader = ({ id, title }: { id: string; title: string }) => (
     <CollapsibleTrigger
       className="flex items-center justify-between w-full py-3 text-left hover:bg-gray-50 rounded px-2 -mx-2"
@@ -324,8 +390,52 @@ export function TitleEditModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">
-            Edit Title: {title?.title_name_en || title?.title_name_kr || 'Loading...'}
+          <DialogTitle className="text-xl flex items-center justify-between">
+            <span>Edit Title: {title?.title_name_en || title?.title_name_kr || 'Loading...'}</span>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setKeyVisualsModalOpen(true)}
+                disabled={!titleId}
+                className="whitespace-nowrap text-xs"
+              >
+                <ImageIcon className="h-3.5 w-3.5 mr-1" />
+                Key Visuals
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCollectFanSignal}
+                disabled={collectingFanSignal || (!formData.title_name_en && !formData.title_name_kr)}
+                className="whitespace-nowrap text-xs"
+              >
+                {collectingFanSignal ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    Collecting...
+                  </>
+                ) : (
+                  <>
+                    <Users className="h-3.5 w-3.5 mr-1" />
+                    Collect Fan Signal
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setCompsModalOpen(true)}
+                disabled={!titleId}
+                className="whitespace-nowrap text-xs"
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1" />
+                Generate Comps
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
@@ -592,6 +702,21 @@ export function TitleEditModal({
                         className="h-9"
                       />
                     </div>
+
+                    {/* Show saved comps analysis if available */}
+                    {(formData as Title & { comps_analysis?: SuggestedComp[] }).comps_analysis &&
+                      (formData as Title & { comps_analysis?: SuggestedComp[] }).comps_analysis!.length > 0 && (
+                      <div className="md:col-span-2 mt-2">
+                        <Label className="text-sm text-gray-500 mb-2 block">
+                          Saved AI Analysis ({(formData as Title & { comps_analysis?: SuggestedComp[] }).comps_analysis!.length} comp{(formData as Title & { comps_analysis?: SuggestedComp[] }).comps_analysis!.length !== 1 ? 's' : ''})
+                        </Label>
+                        <CompsAnalysisCard
+                          compsAnalysis={(formData as Title & { comps_analysis?: SuggestedComp[] }).comps_analysis!}
+                          showTitle={false}
+                          className="border-purple-200"
+                        />
+                      </div>
+                    )}
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -1108,6 +1233,41 @@ export function TitleEditModal({
         results={intelligenceResults}
         onIngest={handleIngest}
         isIngesting={isIngesting}
+      />
+
+      {/* Fan Signal Results Modal */}
+      <FanSignalResultsModal
+        open={fanSignalModalOpen}
+        onOpenChange={setFanSignalModalOpen}
+        results={fanSignalResults}
+      />
+
+      {/* Key Visuals Collector Modal */}
+      {titleId && (
+        <KeyVisualsCollectorModal
+          open={keyVisualsModalOpen}
+          onOpenChange={setKeyVisualsModalOpen}
+          titleId={titleId}
+          titleName={formData.title_name_en}
+          titleNameKr={formData.title_name_kr}
+          titleUrl={formData.title_url}
+          titleUrlEn={formData.title_url_en}
+          userEmail={user?.email || ''}
+        />
+      )}
+
+      {/* Comps Generator Modal */}
+      <CompsGeneratorModal
+        titleId={titleId}
+        titleName={formData.title_name_en || formData.title_name_kr || undefined}
+        open={compsModalOpen}
+        onOpenChange={setCompsModalOpen}
+        onSaved={() => {
+          // Refresh form data to show new comps
+          if (titleId) {
+            fetchTitle(titleId);
+          }
+        }}
       />
     </Dialog>
   );

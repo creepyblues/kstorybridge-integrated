@@ -1,9 +1,17 @@
+import { useEffect } from 'react';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { HeroSection } from '@/components/home/HeroSection';
+import { trackPageView, trackFeatureUsage } from '@/utils/analytics';
 
 export type HomeMode = 'default' | 'show-comp' | 'brief' | 'hot-now';
 
 export default function Home() {
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView('/buyers/home', 'Home');
+    trackFeatureUsage('home_page');
+  }, []);
+
   return (
     <BuyerLayout>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

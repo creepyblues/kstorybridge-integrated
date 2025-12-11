@@ -4,6 +4,7 @@ import { ExternalLink, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Title } from '@/services/titlesService';
 import { TitleMetadata } from './TitleMetadata';
+import { trackTitleCardClicked } from '@/utils/analytics';
 
 // Chat service title format
 interface ChatTitle {
@@ -24,6 +25,8 @@ interface TitleCardProps {
   variant?: 'compact' | 'grid';
   onRemove?: (titleId: string) => void;
   removing?: boolean;
+  source?: string; // For analytics: where the card is displayed (search, comps, saved, etc.)
+  position?: number; // For analytics: position in list (1-indexed)
 }
 
 // Helper to normalize title format
@@ -47,12 +50,19 @@ function normalizeTitle(title: Title | ChatTitle): Title {
   } as Title;
 }
 
-export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removing = false }: TitleCardProps) {
+export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removing = false, source = 'unknown', position = 0 }: TitleCardProps) {
   const navigate = useNavigate();
   const title = normalizeTitle(rawTitle);
 
   const handleClick = () => {
-    navigate(`/buyers/titles/${title.title_id}`);
+    // Track title card click
+    trackTitleCardClicked(
+      title.title_id,
+      title.title_name_en || title.title_name_kr || 'Unknown Title',
+      source,
+      position
+    );
+    navigate(`/buyers/titles/${title.title_id}`, { state: { from: source } });
   };
 
   if (variant === 'compact') {

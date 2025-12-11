@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Zap, TrendingUp, Database, ArrowRight } from 'lucide-react';
 import { getIntelligenceTitles, type IntelligenceTitle } from '@/services/intelligenceService';
+import { AdminManualModal } from '@/components/admin/AdminManualModal';
 
 /**
  * Admin Tools Dashboard
@@ -74,9 +75,12 @@ export function ToolsIndex() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex items-center gap-2 mb-2">
-            <Zap className="h-6 w-6 text-black" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-black">Admin Tools</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Zap className="h-6 w-6 text-black" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-black">Admin Tools</h1>
+            </div>
+            <AdminManualModal />
           </div>
           <p className="text-gray-600">
             Advanced data collection and management tools for administrators

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Crown, X, ArrowRight, Star, Zap, Shield } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTierAccess } from '@/contexts/TierContext';
@@ -26,35 +26,35 @@ interface UpgradePromptProps {
 
 const CONTEXT_CONFIG = {
   favorites: {
-    icon: Star,
+    icon: 'solar:star-bold-duotone',
     title: 'Unlock Unlimited Saves',
     description: 'Save unlimited titles and organize them with Pro features',
     ctaText: 'Upgrade to Pro',
     benefits: ['Unlimited saved titles', 'Advanced filtering', 'Export collections']
   },
   contact: {
-    icon: Crown,
+    icon: 'solar:crown-bold-duotone',
     title: 'Connect with Creators',
     description: 'Upgrade to Pro to contact creators and rights holders directly',
     ctaText: 'Unlock Contact Info',
     benefits: ['Direct creator contact', 'Exclusive networking', 'Priority responses']
   },
   premium_content: {
-    icon: Zap,
+    icon: 'solar:bolt-bold-duotone',
     title: 'Access Premium Content',
     description: 'Unlock pitch decks, detailed analytics, and exclusive insights',
     ctaText: 'View Premium Content',
     benefits: ['Pitch deck access', 'Market analytics', 'Exclusive content']
   },
   chat: {
-    icon: Crown,
+    icon: 'solar:crown-bold-duotone',
     title: 'Enhanced AI Features',
     description: 'Get advanced search, personalized recommendations, and more',
     ctaText: 'Upgrade for Better AI',
     benefits: ['Advanced AI search', 'Personalized recs', 'Priority support']
   },
   general: {
-    icon: Shield,
+    icon: 'solar:shield-bold-duotone',
     title: 'Unlock Pro Features',
     description: 'Get full access to premium content and exclusive features',
     ctaText: 'Upgrade to Pro',
@@ -85,7 +85,7 @@ export default function UpgradePrompt({
   }
 
   const config = CONTEXT_CONFIG[context];
-  const Icon = config.icon;
+  const iconName = config.icon;
 
   const handleUpgrade = async () => {
     // Trigger appropriate conversion email
@@ -138,7 +138,7 @@ export default function UpgradePrompt({
       <div className={`border border-purple-200 bg-purple-50 rounded-lg ${paddingClasses[size]}`}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Icon className="h-5 w-5 text-purple-600" />
+            <Icon icon={iconName} className="h-5 w-5 text-purple-600" />
             <span className={`font-medium text-purple-600 ${sizeClasses[size]}`}>
               {customMessage || config.description}
             </span>
@@ -150,7 +150,7 @@ export default function UpgradePrompt({
               size={size === 'sm' ? 'sm' : 'default'}
             >
               {config.ctaText}
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <Icon icon="solar:arrow-right-bold-duotone" className="w-4 h-4 ml-2" />
             </Button>
             {dismissible && (
               <Button
@@ -159,7 +159,7 @@ export default function UpgradePrompt({
                 onClick={handleDismiss}
                 className="text-gray-400 hover:text-gray-600 p-1"
               >
-                <X className="w-4 h-4" />
+                <Icon icon="solar:close-circle-bold-duotone" className="w-4 h-4" />
               </Button>
             )}
           </div>
@@ -171,7 +171,7 @@ export default function UpgradePrompt({
   if (variant === 'inline') {
     return (
       <div className="flex items-center gap-3 text-gray-600">
-        <Icon className="h-4 w-4 text-purple-600" />
+        <Icon icon={iconName} className="h-4 w-4 text-purple-600" />
         <span className={sizeClasses[size]}>
           {customMessage || config.description}
         </span>
@@ -200,7 +200,7 @@ export default function UpgradePrompt({
                 onClick={handleDismiss}
                 className="text-gray-400 hover:text-gray-600 p-1"
               >
-                <X className="w-4 h-4" />
+                <Icon icon="solar:close-circle-bold-duotone" className="w-4 h-4" />
               </Button>
             </div>
           )}
@@ -208,7 +208,7 @@ export default function UpgradePrompt({
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
               <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                <Icon className="w-6 h-6 text-white" />
+                <Icon icon={iconName} className="w-6 h-6 text-white" />
               </div>
             </div>
 
@@ -238,9 +238,9 @@ export default function UpgradePrompt({
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                   size={size === 'sm' ? 'sm' : 'default'}
                 >
-                  <Crown className="w-4 h-4 mr-2" />
+                  <Icon icon="solar:crown-bold-duotone" className="w-4 h-4 mr-2" />
                   {config.ctaText}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <Icon icon="solar:arrow-right-bold-duotone" className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </div>

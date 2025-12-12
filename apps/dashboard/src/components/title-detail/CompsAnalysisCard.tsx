@@ -20,7 +20,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { Film, Tv, ChevronDown, ChevronUp, Sparkles, ExternalLink } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import {
   type SuggestedComp,
   compsGeneratorService,
@@ -74,9 +74,9 @@ export function CompsAnalysisCard({
       type.toLowerCase().includes('tv') ||
       type.toLowerCase().includes('series')
     ) {
-      return <Tv className="h-4 w-4" />;
+      return <Icon icon="solar:tv-bold-duotone" className="h-4 w-4" />;
     }
-    return <Film className="h-4 w-4" />;
+    return <Icon icon="solar:clapperboard-bold-duotone" className="h-4 w-4" />;
   };
 
   return (
@@ -86,7 +86,7 @@ export function CompsAnalysisCard({
       <CardContent className="p-5">
         {showTitle && (
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-purple-500" />
+            <Icon icon="solar:stars-bold-duotone" className="w-5 h-5 text-purple-500" />
             <h3 className="text-lg font-semibold text-black">
               AI Comparable Analysis
             </h3>
@@ -120,7 +120,7 @@ export function CompsAnalysisCard({
                   </a>
                 ) : (
                   <div className="w-12 h-[72px] bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                    <Film className="w-5 h-5 text-gray-400" />
+                    <Icon icon="solar:clapperboard-bold-duotone" className="w-5 h-5 text-gray-400" />
                   </div>
                 )}
 
@@ -139,7 +139,7 @@ export function CompsAnalysisCard({
                         className="flex items-center gap-0.5 text-xs text-amber-600 hover:text-amber-700 hover:underline"
                         title={`View on IMDB (${comp.imdb_id})`}
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-3 w-3" />
                         <span>IMDB</span>
                       </a>
                     )}
@@ -190,12 +190,12 @@ export function CompsAnalysisCard({
                     <button className="w-full px-4 py-2 border-t border-gray-100 flex items-center justify-center gap-2 text-sm text-gray-500 hover:bg-gray-50">
                       {expandedComps.has(comp.comp_title) ? (
                         <>
-                          <ChevronUp className="h-4 w-4" />
+                          <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-4 w-4" />
                           Hide dimension breakdown
                         </>
                       ) : (
                         <>
-                          <ChevronDown className="h-4 w-4" />
+                          <Icon icon="solar:alt-arrow-down-bold-duotone" className="h-4 w-4" />
                           Show dimension breakdown
                         </>
                       )}

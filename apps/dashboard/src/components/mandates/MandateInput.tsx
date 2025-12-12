@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Send, X } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface MandateInputProps {
   onSubmit: (mandateText: string) => void;
@@ -98,7 +98,7 @@ export default function MandateInput({ onSubmit, isLoading = false, disabled = f
                 disabled={mandateText.length === 0 || isLoading || disabled}
                 className="border-gray-300 hover:bg-gray-100"
               >
-                <X className="h-4 w-4 mr-1" />
+                <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-1" />
                 Clear
               </Button>
 
@@ -109,12 +109,12 @@ export default function MandateInput({ onSubmit, isLoading = false, disabled = f
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                     Searching...
                   </>
                 ) : (
                   <>
-                    <Send className="h-4 w-4 mr-2" />
+                    <Icon icon="solar:plain-bold-duotone" className="h-4 w-4 mr-2" />
                     Find Matches
                   </>
                 )}

@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { History } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { compsNavigatorService, TitleMatch, CompSearch } from '@/services/compsNavigatorService';
@@ -241,7 +241,7 @@ export default function CompsNavigator() {
               size="sm"
               className="border-gray-300 hover:bg-gray-100"
             >
-              <History className="h-4 w-4 sm:mr-2" />
+              <Icon icon="solar:clock-circle-bold-duotone" className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">History</span>
             </Button>
           </div>

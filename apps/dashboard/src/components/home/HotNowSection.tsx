@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { featuredService } from '@/services/featuredService';
 import { TitleCard } from '@/components/title/TitleCard';
-import { TrendingUp, Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export function HotNowSection() {
   const { data: featured, isLoading, error } = useQuery({
@@ -14,7 +14,7 @@ export function HotNowSection() {
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-50 to-red-50 px-4 py-2 rounded-full mb-4">
-          <TrendingUp className="h-5 w-5 text-orange-500" />
+          <Icon icon="solar:graph-up-bold-duotone" className="h-5 w-5 text-orange-500" />
           <span className="text-orange-600 font-medium">What's Hot Now</span>
         </div>
         <h2 className="text-2xl md:text-3xl font-bold text-black mb-2">
@@ -28,7 +28,7 @@ export function HotNowSection() {
       {/* Loading State */}
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-hanok-teal mb-4" />
+          <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-hanok-teal mb-4" />
           <p className="text-gray-500">Loading trending titles...</p>
         </div>
       )}

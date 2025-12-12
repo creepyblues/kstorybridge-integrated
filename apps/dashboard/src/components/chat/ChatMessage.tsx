@@ -1,4 +1,4 @@
-import { Bot, User } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Card } from '@/components/ui/card';
 
 interface ChatMessageProps {
@@ -19,7 +19,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       {!isUser && (
         <div className="flex-shrink-0">
           <div className="bg-hanok-teal/10 rounded-full p-2">
-            <Bot className="h-5 w-5 text-hanok-teal" />
+            <Icon icon="solar:robot-bold-duotone" className="h-5 w-5 text-hanok-teal" />
           </div>
         </div>
       )}
@@ -53,7 +53,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       {isUser && (
         <div className="flex-shrink-0">
           <div className="bg-gray-200 rounded-full p-2">
-            <User className="h-5 w-5 text-gray-600" />
+            <Icon icon="solar:user-bold-duotone" className="h-5 w-5 text-gray-600" />
           </div>
         </div>
       )}

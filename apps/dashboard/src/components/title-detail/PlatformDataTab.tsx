@@ -2,16 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Title, TitlePlatform, titlesService } from '@/services/titlesService';
-import {
-  BarChart3,
-  Eye,
-  Users,
-  Star,
-  BookOpen,
-  Calendar,
-  ExternalLink,
-  TrendingUp,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface PlatformDataTabProps {
   title: Title;
@@ -65,7 +56,7 @@ function PlatformCard({ platform, totalViews }: { platform: TitlePlatform; total
           className="text-[#4C9C9B] hover:text-[#4C9C9B]/80 h-8 px-2"
           onClick={() => window.open(platform.platform_url, '_blank')}
         >
-          <ExternalLink className="w-4 h-4 mr-1" />
+          <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-1" />
           Visit
         </Button>
       </div>
@@ -73,13 +64,13 @@ function PlatformCard({ platform, totalViews }: { platform: TitlePlatform; total
       <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
         {platform.views != null && (
           <div className="flex items-center gap-1.5">
-            <Eye className="w-4 h-4 text-gray-400" />
+            <Icon icon="solar:eye-bold-duotone" className="w-4 h-4 text-gray-400" />
             <span className="font-medium">{titlesService.formatNumber(platform.views)} views</span>
           </div>
         )}
         {platform.subscribers != null && (
           <div className="flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-gray-400" />
+            <Icon icon="solar:users-group-rounded-bold-duotone" className="w-4 h-4 text-gray-400" />
             <span className="font-medium">{titlesService.formatNumber(platform.subscribers)} subscribers</span>
           </div>
         )}
@@ -136,14 +127,14 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
       <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="w-5 h-5 text-[#4C9C9B]" />
+            <Icon icon="solar:chart-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
             <h3 className="text-lg font-semibold text-black">Aggregate Metrics</h3>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {/* Total Views */}
             <div className="bg-gray-50 rounded-lg p-4 text-center">
-              <Eye className="w-5 h-5 text-[#4C9C9B] mx-auto mb-2" />
+              <Icon icon="solar:eye-bold-duotone" className="w-5 h-5 text-[#4C9C9B] mx-auto mb-2" />
               <div className="text-2xl font-bold text-black">
                 {totalViews === 0 ? 'N/A' : titlesService.formatNumber(totalViews)}
               </div>
@@ -153,7 +144,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
             {/* Total Likes */}
             {title.likes != null && (
               <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <TrendingUp className="w-5 h-5 text-pink-500 mx-auto mb-2" />
+                <Icon icon="solar:graph-up-bold-duotone" className="w-5 h-5 text-pink-500 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-black">
                   {titlesService.formatNumber(title.likes)}
                 </div>
@@ -164,7 +155,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
             {/* Rating */}
             {hasRating && (
               <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <Star className="w-5 h-5 text-amber-500 mx-auto mb-2" />
+                <Icon icon="solar:star-bold-duotone" className="w-5 h-5 text-amber-500 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-black">
                   {title.rating?.toFixed(1)}
                 </div>
@@ -177,7 +168,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
             {/* Chapters */}
             {title.chapters != null && (
               <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <BookOpen className="w-5 h-5 text-blue-500 mx-auto mb-2" />
+                <Icon icon="solar:book-bold-duotone" className="w-5 h-5 text-blue-500 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-black">
                   {title.chapters.toLocaleString()}
                 </div>
@@ -187,7 +178,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
 
             {/* Status */}
             <div className="bg-gray-50 rounded-lg p-4 text-center">
-              <Calendar className="w-5 h-5 text-green-500 mx-auto mb-2" />
+              <Icon icon="solar:calendar-bold-duotone" className="w-5 h-5 text-green-500 mx-auto mb-2" />
               <div className="text-lg font-bold text-black">
                 {title.completed ? 'Completed' : 'Ongoing'}
               </div>
@@ -197,7 +188,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
             {/* Age Rating */}
             {title.age_rating && (
               <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <Users className="w-5 h-5 text-red-500 mx-auto mb-2" />
+                <Icon icon="solar:users-group-rounded-bold-duotone" className="w-5 h-5 text-red-500 mx-auto mb-2" />
                 <div className="text-lg font-bold text-black">
                   {title.age_rating}
                 </div>
@@ -213,7 +204,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:graph-up-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Platform Breakdown</h3>
               <span className="text-sm text-gray-500">
                 ({title.platforms!.length} platforms)
@@ -245,7 +236,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
                   className="border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
                   onClick={() => window.open(title.title_url, '_blank')}
                 >
-                  <ExternalLink className="w-4 h-4 mr-2" />
+                  <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
                   Korean Original
                 </Button>
               )}
@@ -255,7 +246,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
                   className="border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
                   onClick={() => window.open(title.title_url_en, '_blank')}
                 >
-                  <ExternalLink className="w-4 h-4 mr-2" />
+                  <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
                   English Translation
                 </Button>
               )}
@@ -268,7 +259,7 @@ export function PlatformDataTab({ title }: PlatformDataTabProps) {
       {!hasPlatforms && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-8 text-center">
-            <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <Icon icon="solar:chart-bold-duotone" className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No detailed platform data available.</p>
             <p className="text-gray-400 text-sm mt-1">
               Aggregate metrics are shown above based on title data.

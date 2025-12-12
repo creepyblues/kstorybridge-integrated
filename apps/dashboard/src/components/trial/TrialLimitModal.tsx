@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useTrial } from '@/contexts/TrialContext';
-import { Sparkles, History, Heart, Zap } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 const benefits = [
-  { icon: Zap, text: 'Unlimited AI-powered searches' },
-  { icon: History, text: 'Save and revisit your search history' },
-  { icon: Heart, text: 'Save your favorite titles' },
-  { icon: Sparkles, text: 'Access to AI chat assistant (Jinu)' },
+  { icon: 'solar:bolt-bold-duotone', text: 'Unlimited AI-powered searches' },
+  { icon: 'solar:history-bold-duotone', text: 'Save and revisit your search history' },
+  { icon: 'solar:heart-bold-duotone', text: 'Save your favorite titles' },
+  { icon: 'solar:stars-bold-duotone', text: 'Access to AI chat assistant (Jinu)' },
 ];
 
 export function TrialLimitModal() {
@@ -30,7 +30,7 @@ export function TrialLimitModal() {
           {benefits.map((benefit, index) => (
             <div key={index} className="flex items-center gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-hanok-teal/10 flex items-center justify-center">
-                <benefit.icon className="h-4 w-4 text-hanok-teal" />
+                <Icon icon={benefit.icon} className="h-4 w-4 text-hanok-teal" />
               </div>
               <span className="text-gray-700">{benefit.text}</span>
             </div>

@@ -3,7 +3,7 @@ import PreviewBanner from '@/components/preview/PreviewBanner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Plus, X } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useState } from 'react';
 
 export default function Design3CompsNavigator() {
@@ -65,7 +65,7 @@ export default function Design3CompsNavigator() {
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-slate-100 rounded-lg p-2">
-                <Search className="h-4 w-4 text-slate-600" />
+                <Icon icon="solar:magnifer-bold-duotone" className="h-4 w-4 text-slate-600" />
               </div>
               <h2 className="font-semibold text-gray-900">Your Comparables</h2>
             </div>
@@ -79,13 +79,13 @@ export default function Design3CompsNavigator() {
                     onClick={() => setComps(comps.filter((_, i) => i !== idx))}
                     className="text-slate-400 hover:text-slate-600"
                   >
-                    <X className="h-3 w-3" />
+                    <Icon icon="solar:close-circle-bold-duotone" className="h-3 w-3" />
                   </button>
                 </div>
               ))}
               {comps.length < 3 && (
                 <button className="flex items-center gap-1.5 border-2 border-dashed border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:border-cyan-400 hover:text-cyan-700 transition-colors">
-                  <Plus className="h-3 w-3" />
+                  <Icon icon="solar:add-circle-bold-duotone" className="h-3 w-3" />
                   Add comparable
                 </button>
               )}
@@ -110,7 +110,7 @@ export default function Design3CompsNavigator() {
             <p className="text-xs text-gray-600">Based on {comps.length} comparables</p>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-gray-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
-            <Bot className="h-3.5 w-3.5 text-slate-600" />
+            <Icon icon="solar:chat-square-bold-duotone" className="h-3.5 w-3.5 text-slate-600" />
             AI-ranked
           </div>
         </div>

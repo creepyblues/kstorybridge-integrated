@@ -2,9 +2,54 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
+// Import shared types from unified engine
+import {
+  COMPS_ENGINE_VERSION,
+  DIMENSION_KEYS,
+  type DimensionScore,
+  type TitleMatchV2,
+  type CompNavigatorResponse,
+} from '../_shared/comps-types.ts';
+
+import {
+  calculateWeightedScore,
+  logCompsEngine,
+  estimateNavigatorCost,
+} from '../_shared/comps-utils.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// Request timeout in milliseconds (30 seconds for API calls)
+const REQUEST_TIMEOUT_MS = 30000
+
+/**
+ * Fetch with timeout wrapper to prevent hanging requests
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number = REQUEST_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    return response
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timed out after ${timeoutMs}ms`)
+    }
+    throw error
+  } finally {
+    clearTimeout(timeoutId)
+  }
 }
 
 interface CompNavigatorRequest {
@@ -13,26 +58,6 @@ interface CompNavigatorRequest {
   user_email: string;
   save_search?: boolean; // Whether to save to history
   search_name?: string; // For bookmarking
-}
-
-interface TitleMatch {
-  title_id: string;
-  title_name_en: string;
-  title_name_kr: string;
-  match_score: number; // 0-100
-  explanation: string;
-  title_image?: string;
-  synopsis: string;
-  genre: string[];
-  tone: string;
-  has_pitch_deck?: boolean;
-}
-
-interface CompNavigatorResponse {
-  results: TitleMatch[];
-  search_id?: string;
-  processing_time_ms: number;
-  cost_estimate: number;
 }
 
 serve(async (req) => {
@@ -203,10 +228,11 @@ serve(async (req) => {
       llm_reranking_ms: phase2Duration
     })
 
-    // Calculate cost estimate
-    const embeddingCost = requestData.comp_titles.length * 0.0001 + (requestData.refinement_text ? 0.0001 : 0)
-    const llmCost = 0.014 // Approximate GPT-4 Turbo cost
-    const totalCost = embeddingCost + llmCost
+    // Calculate cost estimate using unified engine utility
+    const totalCost = estimateNavigatorCost(
+      requestData.comp_titles.length,
+      !!requestData.refinement_text
+    )
 
     // Save search if requested
     let searchId: string | undefined
@@ -237,17 +263,20 @@ serve(async (req) => {
     }
 
     // totalDuration already calculated at line 175
-    console.log('[COMPS] Search complete', {
+    logCompsEngine('Search complete', {
       total_duration_ms: totalDuration,
       cost_estimate: totalCost,
-      results_count: rerankedResults.length
+      results_count: rerankedResults.length,
+      engine_version: COMPS_ENGINE_VERSION,
     })
 
     const response: CompNavigatorResponse = {
       results: rerankedResults.slice(0, 5), // Return top 5 for faster response
       search_id: searchId,
       processing_time_ms: totalDuration,
-      cost_estimate: totalCost
+      cost_estimate: totalCost,
+      engine_version: COMPS_ENGINE_VERSION,
+      mode_used: 'fast',
     }
 
     return new Response(
@@ -336,7 +365,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
     throw new Error('OPENAI_API_KEY not configured')
   }
 
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
+  const response = await fetchWithTimeout('https://api.openai.com/v1/embeddings', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiApiKey}`,
@@ -346,7 +375,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
       model: 'text-embedding-ada-002',
       input: text
     })
-  })
+  }, 15000) // 15 second timeout for embeddings
 
   if (!response.ok) {
     const error = await response.text()
@@ -497,7 +526,7 @@ async function llmRerank(
   compTitles: string[],
   refinementText: string | undefined,
   candidates: any[]
-): Promise<TitleMatch[]> {
+): Promise<TitleMatchV2[]> {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
 
   if (!openaiApiKey) {
@@ -513,32 +542,70 @@ ${idx + 1}. ${c.title_name_en || c.title_name_kr} (ID: ${c.title_id})
    Format: ${c.content_format || 'Unknown'}
   `).join('\n')
 
-  // Simplified prompt for faster processing - removed comp_alignments for speed
-  const prompt = `Match Korean titles to: ${compTitles.join(', ')}
-${refinementText ? `\nFocus: ${refinementText}` : ''}
+  // V2.0.0: 8-dimensional scoring prompt with aligned_comps
+  const systemPrompt = `You are a Hollywood development executive expert in finding comparable titles (comps) for Korean content.
+You know film and TV history deeply and can identify meaningful similarities across cultures.
+Always return valid JSON matching the requested structure exactly.
+Score each dimension honestly - low scores are fine if dimensions don't match.`
 
-Candidates:
+  const prompt = `Analyze how well each Korean title matches the Hollywood comp combination.
+
+COMP COMBINATION: ${compTitles.join(', ')}
+${refinementText ? `FOCUS: ${refinementText}` : ''}
+
+CANDIDATES:
 ${formattedCandidates}
 
-Rank all ${candidates.length} by match score (0-100). Give a brief 1-sentence explanation for each.
-Return JSON:
-{"results":[{"rank":1,"title_id":"uuid","match_score":85,"explanation":"One sentence why this matches"}]}`
+For EACH candidate, score these 8 dimensions (0-100) with a 1-sentence reason:
+1. genre_blueprint - Save the Cat genre match (Monster in House, Golden Fleece, etc.)
+2. tone_mood - Emotional register and atmosphere
+3. character_archetypes - Hero types, antagonist patterns, relationships
+4. plot_structure - Narrative arc and pacing
+5. setting_world - Time, place, worldbuilding
+6. themes - Core messages and social commentary
+7. target_audience - Demographics and appeal factors
+8. format_style - Narrative structure and format
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+IMPORTANT: For each dimension, specify which comp(s) it aligns with in "aligned_comps" array.
+
+Return JSON:
+{
+  "results": [
+    {
+      "rank": 1,
+      "title_id": "uuid",
+      "dimension_scores": [
+        {"dimension": "genre_blueprint", "score": 85, "reason": "Both feature survival competition with elimination", "aligned_comps": ["${compTitles[0]}"]},
+        {"dimension": "tone_mood", "score": 72, "reason": "Similar dark, tense atmosphere", "aligned_comps": ["${compTitles[0]}"${compTitles.length > 1 ? `, "${compTitles[1]}"` : ''}]},
+        {"dimension": "character_archetypes", "score": 80, "reason": "Desperate underdogs facing impossible odds", "aligned_comps": ["${compTitles[0]}"]},
+        {"dimension": "plot_structure", "score": 75, "reason": "Tournament arc with escalating stakes", "aligned_comps": ["${compTitles[0]}"]},
+        {"dimension": "setting_world", "score": 65, "reason": "Contemporary setting with isolated location", "aligned_comps": ["${compTitles[0]}"]},
+        {"dimension": "themes", "score": 82, "reason": "Class struggle and human desperation", "aligned_comps": ["${compTitles[0]}"]},
+        {"dimension": "target_audience", "score": 78, "reason": "Adult thriller audience", "aligned_comps": ["${compTitles[0]}"]},
+        {"dimension": "format_style", "score": 70, "reason": "Episodic with ensemble cast", "aligned_comps": ["${compTitles[0]}"]}
+      ],
+      "explanation": "This title captures the survival game tension with similar class commentary themes.",
+      "match_reasons": ["Survival competition mechanics", "Class inequality themes", "Ensemble of desperate characters", "High-stakes elimination format"]
+    }
+  ]
+}`
+
+  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiApiKey}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',  // Switched from gpt-4-turbo for 3-5x faster response
+      model: 'gpt-4o-mini',  // Fast mode for Navigator
       messages: [
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt }
       ],
       temperature: 0.3,
       response_format: { type: 'json_object' }
     })
-  })
+  }, 45000) // 45 second timeout for LLM re-ranking (longer for complex analysis)
 
   if (!response.ok) {
     const error = await response.text()
@@ -556,17 +623,17 @@ Return JSON:
     throw new Error('Failed to parse LLM response')
   }
 
-  console.log('[COMPS] Raw LLM response:', JSON.stringify(parsed).substring(0, 500))
-  console.log('[COMPS] LLM response keys:', Object.keys(parsed))
+  logCompsEngine('LLM response received', {
+    response_keys: Object.keys(parsed),
+    results_count: parsed.results?.length || 0,
+  })
 
   // Extract rankings from the response object
-  // GPT-4 is instructed to return { "results": [...] } format
   let rankings = []
   if (parsed && typeof parsed === 'object') {
     if (Array.isArray(parsed.results)) {
       rankings = parsed.results
     } else if (Array.isArray(parsed)) {
-      // Fallback: handle if GPT-4 returns bare array despite instructions
       rankings = parsed
     } else {
       console.error('[COMPS] Invalid LLM response structure:', parsed)
@@ -577,13 +644,6 @@ Return JSON:
     throw new Error('LLM response is not an object')
   }
 
-  console.log('[COMPS] LLM Rankings:', {
-    parsed_type: typeof parsed,
-    is_array: Array.isArray(parsed),
-    rankings_length: rankings.length,
-    first_ranking: rankings[0]
-  })
-
   // Validate rankings array
   if (!rankings || rankings.length === 0) {
     console.error('[COMPS] No rankings returned from LLM')
@@ -593,7 +653,7 @@ Return JSON:
   // Merge LLM rankings with original candidate data
   // Add deduplication to prevent duplicate title_ids in results
   const seenIds = new Set<string>()
-  const results: TitleMatch[] = rankings.map(ranking => {
+  const results: TitleMatchV2[] = rankings.map(ranking => {
     // Filter out duplicate title_ids (LLM sometimes returns same title twice)
     if (seenIds.has(ranking.title_id)) {
       console.warn(`[COMPS] Duplicate title_id filtered: ${ranking.title_id}`)
@@ -607,21 +667,46 @@ Return JSON:
       return null
     }
 
+    // Calculate weighted overall score from dimensions
+    const dimensionScores: DimensionScore[] = ranking.dimension_scores || []
+    const overallScore = calculateWeightedScore(dimensionScores)
+
     return {
       title_id: candidate.title_id,
       title_name_en: candidate.title_name_en,
       title_name_kr: candidate.title_name_kr,
-      match_score: ranking.match_score,
-      explanation: ranking.explanation,
+      // V2.0.0 fields
+      overall_match_score: overallScore,
+      dimension_scores: dimensionScores,
+      explanation: ranking.explanation || '',
+      match_reasons: ranking.match_reasons || [],
+      // Metadata
       title_image: candidate.title_image,
       synopsis: candidate.synopsis,
       genre: candidate.genre || [],
       tone: candidate.tone,
-      has_pitch_deck: candidate.hasPitchDeck || false
+      content_format: candidate.content_format,
+      has_pitch_deck: candidate.hasPitchDeck || false,
+      // Backward compatibility
+      match_score: overallScore,
     }
-  }).filter(Boolean) as TitleMatch[]
+  }).filter(Boolean) as TitleMatchV2[]
 
-  console.log(`[COMPS] Deduplicated results: ${rankings.length} → ${results.length} (filtered ${rankings.length - results.length} duplicates)`)
+  logCompsEngine('Results processed', {
+    input_count: rankings.length,
+    output_count: results.length,
+    duplicates_filtered: rankings.length - results.length,
+  })
+
+  // Sort by overall_match_score descending (highest score first)
+  results.sort((a, b) => (b.overall_match_score || 0) - (a.overall_match_score || 0))
+
+  logCompsEngine('Results sorted by score', {
+    top_scores: results.slice(0, 3).map(r => ({
+      title: r.title_name_en?.substring(0, 25),
+      score: r.overall_match_score
+    }))
+  })
 
   return results
 }

@@ -3,10 +3,24 @@ import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title, TitleFilters } from '@/services/titlesService';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TitleCard } from '@/components/title/TitleCard';
-import { Search, Loader2, BookOpen, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Icon } from '@iconify/react';
 import { trackTitleSearch, trackFeatureUsage, trackPageView, trackSearchZeroResults } from '@/utils/analytics';
+import {
+  type FormatType,
+  formatFitService,
+} from '@/services/formatFitService';
 
 const PAGE_SIZE = 12;
+
+const FORMAT_FILTER_OPTIONS: { value: FormatType | null; label: string; icon: React.ReactNode }[] = [
+  { value: null, label: 'All Formats', icon: null },
+  { value: 'film', label: 'Film', icon: <Icon icon="solar:clapperboard-bold-duotone" className="h-4 w-4" /> },
+  { value: 'tv_series', label: 'TV Series', icon: <Icon icon="solar:tv-bold-duotone" className="h-4 w-4" /> },
+  { value: 'animation', label: 'Animation', icon: <Icon icon="solar:palette-bold-duotone" className="h-4 w-4" /> },
+  { value: 'microdrama', label: 'Microdrama', icon: <Icon icon="solar:smartphone-bold-duotone" className="h-4 w-4" /> },
+  { value: 'audio_drama', label: 'Audio Drama', icon: <Icon icon="solar:headphones-bold-duotone" className="h-4 w-4" /> },
+];
 
 export default function Titles() {
   const { toast } = useToast();
@@ -17,6 +31,8 @@ export default function Titles() {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [formatFilter, setFormatFilter] = useState<FormatType | null>(null);
+  const [formatFilteredTitleIds, setFormatFilteredTitleIds] = useState<Set<string> | null>(null);
 
   const observerTarget = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -26,6 +42,27 @@ export default function Titles() {
     trackPageView('/buyers/titles', 'Discover Titles');
     trackFeatureUsage('titles_browse');
   }, []);
+
+  // Fetch format-filtered title IDs when format filter changes
+  useEffect(() => {
+    const fetchFormatFilteredIds = async () => {
+      if (!formatFilter) {
+        setFormatFilteredTitleIds(null);
+        return;
+      }
+
+      try {
+        const results = await formatFitService.getTitlesForFormat(formatFilter, 50, 100);
+        const ids = new Set(results.map((r) => r.title_id));
+        setFormatFilteredTitleIds(ids);
+      } catch (error) {
+        console.error('Error fetching format-filtered titles:', error);
+        setFormatFilteredTitleIds(new Set());
+      }
+    };
+
+    fetchFormatFilteredIds();
+  }, [formatFilter]);
 
   // Fetch initial titles with filters
   useEffect(() => {
@@ -38,7 +75,12 @@ export default function Titles() {
           console.log('🔍 Using vector search for:', searchQuery);
 
           // Vector search returns all results at once (no pagination)
-          const vectorResults = await titlesService.searchTitlesVector(searchQuery, 30);
+          let vectorResults = await titlesService.searchTitlesVector(searchQuery, 50);
+
+          // Apply format filter if set
+          if (formatFilteredTitleIds !== null) {
+            vectorResults = vectorResults.filter((t) => formatFilteredTitleIds.has(t.title_id));
+          }
 
           setTitles(vectorResults);
           setHasMore(false); // Vector search returns all results at once
@@ -51,8 +93,19 @@ export default function Titles() {
           if (vectorResults.length === 0) {
             trackSearchZeroResults(searchQuery, 'vector');
           }
+        } else if (formatFilteredTitleIds !== null) {
+          // Format filter is active - get those specific titles
+          const titleIds = Array.from(formatFilteredTitleIds).slice(0, 30);
+          if (titleIds.length > 0) {
+            const filteredTitles = await titlesService.getTitlesByIds(titleIds);
+            setTitles(filteredTitles);
+          } else {
+            setTitles([]);
+          }
+          setHasMore(false);
+          setOffset(0);
         } else {
-          // Use traditional pagination when no search query
+          // Use traditional pagination when no search query or format filter
           const filters: TitleFilters = {};
 
           const { data, hasMore: more } = await titlesService.getTitlesPaginated(
@@ -83,7 +136,7 @@ export default function Titles() {
     }, searchQuery ? 500 : 0); // 500ms debounce for search, instant for filters
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery, toast]);
+  }, [searchQuery, formatFilteredTitleIds, toast]);
 
   // Load more titles on scroll (only works for non-vector search)
   const loadMoreTitles = useCallback(async () => {
@@ -150,7 +203,7 @@ export default function Titles() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                <BookOpen className="h-8 w-8 text-white" />
+                <Icon icon="solar:book-bold-duotone" className="h-8 w-8 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Discover Titles</h1>
@@ -165,7 +218,7 @@ export default function Titles() {
         {/* Elegant Search Box */}
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center bg-white border border-gray-200 rounded-3xl shadow-lg px-5 py-2">
-            <Search className="h-5 w-5 text-gray-400 flex-shrink-0" />
+            <Icon icon="solar:magnifer-bold-duotone" className="h-5 w-5 text-gray-400 flex-shrink-0" />
             <input
               ref={inputRef}
               type="text"
@@ -183,7 +236,7 @@ export default function Titles() {
                 className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
                 aria-label="Clear search"
               >
-                <X className="h-4 w-4 text-gray-400" />
+                <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 text-gray-400" />
               </button>
             )}
           </div>
@@ -194,10 +247,34 @@ export default function Titles() {
           )}
         </div>
 
+        {/* Format Fit Filter */}
+        <div className="flex flex-wrap justify-center gap-2">
+          <span className="text-sm text-gray-500 self-center mr-2">Best for:</span>
+          {FORMAT_FILTER_OPTIONS.map((option) => (
+            <button
+              key={option.value || 'all'}
+              onClick={() => setFormatFilter(option.value)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                formatFilter === option.value
+                  ? 'bg-hanok-teal text-white shadow-md'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-hanok-teal hover:text-hanok-teal'
+              }`}
+            >
+              {option.icon}
+              {option.label}
+            </button>
+          ))}
+          {formatFilter && (
+            <Badge className="bg-purple-100 text-purple-700 border-purple-200 self-center ml-2">
+              Score 50+
+            </Badge>
+          )}
+        </div>
+
         {/* Results */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-hanok-teal" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-hanok-teal" />
           </div>
         ) : titles.length === 0 ? (
           <div className="text-center py-12 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-sm">
@@ -229,7 +306,7 @@ export default function Titles() {
             <div ref={observerTarget} className="py-8">
               {loadingMore && (
                 <div className="flex items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-hanok-teal" />
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-6 w-6 animate-spin text-hanok-teal" />
                   <span className="ml-2 text-sm text-gray-600">Loading more...</span>
                 </div>
               )}

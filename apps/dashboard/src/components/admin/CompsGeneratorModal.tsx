@@ -5,7 +5,7 @@
  * Allows admin to select and save comps to the title.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -28,17 +28,8 @@ import {
   type CompsGeneratorResponse,
   type SuggestedComp,
 } from '@/services/compsGeneratorService';
-import {
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
-  Film,
-  Tv,
-  Check,
-  AlertCircle,
-  Info,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
+import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 
 interface CompsGeneratorModalProps {
   titleId: string | null;
@@ -184,30 +175,41 @@ export function CompsGeneratorModal({
 
   const getTypeIcon = (type: string) => {
     if (type.toLowerCase().includes('tv') || type.toLowerCase().includes('series')) {
-      return <Tv className="h-4 w-4" />;
+      return <Icon icon="solar:tv-bold-duotone" className="h-4 w-4" />;
     }
-    return <Film className="h-4 w-4" />;
+    return <Icon icon="solar:clapperboard-bold-duotone" className="h-4 w-4" />;
   };
+
+  // Reset error boundary when modal reopens
+  const handleErrorReset = useCallback(() => {
+    setError(null);
+    setResponse(null);
+    generateComps();
+  }, [titleId, user?.email]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-purple-500" />
-            Generate Comps
-            {titleName && (
-              <span className="text-gray-500 font-normal">
-                for "{titleName}"
-              </span>
-            )}
-          </DialogTitle>
-        </DialogHeader>
+        <ModalErrorBoundary
+          onReset={handleErrorReset}
+          fallbackMessage="An error occurred while generating comps. Please try again."
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon icon="solar:stars-bold-duotone" className="h-5 w-5 text-purple-500" aria-hidden="true" />
+              Generate Comps
+              {titleName && (
+                <span className="text-gray-500 font-normal">
+                  for "{titleName}"
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
 
-        {/* Loading State */}
-        {loading && (
+          {/* Loading State */}
+          {loading && (
           <div className="py-12 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-purple-500" />
             <div className="text-center">
               <p className="font-medium">Analyzing title...</p>
               <p className="text-sm text-gray-500">
@@ -225,7 +227,7 @@ export function CompsGeneratorModal({
         {/* Error State */}
         {error && !loading && (
           <div className="py-8 flex flex-col items-center justify-center gap-4">
-            <AlertCircle className="h-8 w-8 text-red-500" />
+            <Icon icon="solar:danger-circle-bold-duotone" className="h-8 w-8 text-red-500" />
             <div className="text-center">
               <p className="font-medium text-red-600">Generation Failed</p>
               <p className="text-sm text-gray-500 mt-1">{error}</p>
@@ -242,7 +244,7 @@ export function CompsGeneratorModal({
             {/* Analysis Summary */}
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-blue-500 mt-0.5" />
+                <Icon icon="solar:info-circle-bold-duotone" className="h-5 w-5 text-blue-500 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">
                     Analysis Mode: {response.mode_used === 'rich' ? 'Rich Data' : 'Limited Data'}
@@ -321,18 +323,19 @@ export function CompsGeneratorModal({
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Check className="h-4 w-4 mr-2" />
+                  <Icon icon="solar:check-read-bold-duotone" className="h-4 w-4 mr-2" />
                   Save {selectedComps.size} Comp{selectedComps.size !== 1 ? 's' : ''}
                 </>
               )}
             </Button>
           </DialogFooter>
         )}
+        </ModalErrorBoundary>
       </DialogContent>
     </Dialog>
   );
@@ -435,12 +438,12 @@ function CompCard({
           >
             {expanded ? (
               <>
-                <ChevronUp className="h-4 w-4" />
+                <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-4 w-4" />
                 Hide dimension breakdown
               </>
             ) : (
               <>
-                <ChevronDown className="h-4 w-4" />
+                <Icon icon="solar:alt-arrow-down-bold-duotone" className="h-4 w-4" />
                 Show dimension breakdown
               </>
             )}

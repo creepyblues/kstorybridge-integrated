@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
-import { TrendingUp, Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useQuery } from '@tanstack/react-query';
 import { featuredService } from '@/services/featuredService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,7 +37,7 @@ export default function Featured() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                <TrendingUp className="h-8 w-8 text-white" />
+                <Icon icon="solar:graph-up-bold-duotone" className="h-8 w-8 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Trending Titles</h1>
@@ -53,7 +53,7 @@ export default function Featured() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
             <p className="text-gray-600 text-sm">Loading trending titles...</p>
           </div>
         )}
@@ -70,7 +70,7 @@ export default function Featured() {
         {!isLoading && !error && totalCount === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <TrendingUp className="h-8 w-8 text-gray-400" />
+              <Icon icon="solar:graph-up-bold-duotone" className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No Trending Titles Yet</h3>
             <p className="text-gray-600 text-sm text-center max-w-md">

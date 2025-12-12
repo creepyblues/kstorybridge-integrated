@@ -6,7 +6,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Card, CardContent } from '@/components/ui/card';
 import VerifiedBadge from '@/components/common/VerifiedBadge';
 
@@ -137,7 +137,7 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
               {/* Expert Profile Icon */}
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-sm">
-                  <Sparkles className="h-4 w-4 text-white" />
+                  <Icon icon="solar:stars-bold-duotone" className="h-4 w-4 text-white" />
                 </div>
               </div>
 

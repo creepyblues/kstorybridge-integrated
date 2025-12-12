@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { FileText, Search, Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { titlesService, type Title } from '@/services/titlesService';
 import { HomeResultCard } from './HomeResultCard';
 import { useToast } from '@/hooks/use-toast';
@@ -84,7 +84,7 @@ export function BriefSearch({ initialQuery = '' }: BriefSearchProps) {
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-2 rounded-full mb-4">
-          <FileText className="h-5 w-5 text-purple-500" />
+          <Icon icon="solar:document-text-bold-duotone" className="h-5 w-5 text-purple-500" />
           <span className="text-purple-600 font-medium">Search by Brief</span>
         </div>
         <h2 className="text-2xl md:text-3xl font-bold text-black mb-2">
@@ -113,12 +113,12 @@ export function BriefSearch({ initialQuery = '' }: BriefSearchProps) {
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin mr-2" />
                 Searching...
               </>
             ) : (
               <>
-                <Search className="h-4 w-4 mr-2" />
+                <Icon icon="solar:magnifer-bold-duotone" className="h-4 w-4 mr-2" />
                 Find Matches
               </>
             )}
@@ -146,7 +146,7 @@ export function BriefSearch({ initialQuery = '' }: BriefSearchProps) {
       {/* Loading State */}
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-500 mb-4" />
+          <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-purple-500 mb-4" />
           <p className="text-gray-600 text-center">
             Searching for Korean IP matching your brief...
           </p>
@@ -189,7 +189,7 @@ export function BriefSearch({ initialQuery = '' }: BriefSearchProps) {
       {!isLoading && hasSearched && results.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-400 mb-4">
-            <FileText className="h-12 w-12 mx-auto opacity-50" />
+            <Icon icon="solar:document-text-bold-duotone" className="h-12 w-12 mx-auto opacity-50" />
           </div>
           <p className="text-gray-600 mb-2">No matches found for your brief</p>
           <p className="text-sm text-gray-400">Try adjusting your description or using different keywords.</p>

@@ -22,25 +22,7 @@ import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { debug } from '@/utils/debug';
-import {
-  Bold,
-  Italic,
-  Strikethrough,
-  Underline as UnderlineIcon,
-  List,
-  ListOrdered,
-  Heading1,
-  Heading2,
-  Heading3,
-  Quote,
-  Code as CodeIcon,
-  FileCode,
-  Minus,
-  Link as LinkIcon,
-  ImageIcon,
-  Undo,
-  Redo,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface RichTextEditorProps {
   content: string;
@@ -273,7 +255,7 @@ export const RichTextEditor = ({
             aria-label="Toggle bold formatting"
             aria-pressed={editor.isActive('bold')}
           >
-            <Bold className="h-4 w-4" />
+            <Icon icon="solar:text-bold-bold-duotone" className="h-4 w-4" />
           </Button>
 
           <Button
@@ -284,7 +266,7 @@ export const RichTextEditor = ({
             className={editor.isActive('italic') ? 'bg-gray-200' : ''}
             title="Italic (⌘I)"
           >
-            <Italic className="h-4 w-4" />
+            <Icon icon="solar:text-italic-bold-duotone" className="h-4 w-4" />
           </Button>
 
           <Button
@@ -295,7 +277,7 @@ export const RichTextEditor = ({
             className={editor.isActive('strike') ? 'bg-gray-200' : ''}
             title="Strikethrough (⌘⇧X)"
           >
-            <Strikethrough className="h-4 w-4" />
+            <Icon icon="solar:text-bold-bold-duotone" className="h-4 w-4" />
           </Button>
 
           <Button
@@ -306,7 +288,7 @@ export const RichTextEditor = ({
             className={editor.isActive('underline') ? 'bg-gray-200' : ''}
             title="Underline (⌘U)"
           >
-            <UnderlineIcon className="h-4 w-4" />
+            <Icon icon="solar:text-underline-bold-duotone" className="h-4 w-4" />
           </Button>
 
           <div className="w-px h-6 bg-gray-300 mx-1" />
@@ -319,7 +301,7 @@ export const RichTextEditor = ({
             className={editor.isActive('link') ? 'bg-gray-200' : ''}
             title="Add Link (⌘K)"
           >
-            <LinkIcon className="h-4 w-4" />
+            <Icon icon="solar:link-bold-duotone" className="h-4 w-4" />
           </Button>
         </BubbleMenu>
       )}
@@ -341,7 +323,7 @@ export const RichTextEditor = ({
           aria-label="Toggle bold formatting"
           aria-pressed={editor.isActive('bold')}
         >
-          <Bold className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:text-bold-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -354,7 +336,7 @@ export const RichTextEditor = ({
           aria-label="Toggle italic formatting"
           aria-pressed={editor.isActive('italic')}
         >
-          <Italic className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:text-italic-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -367,7 +349,7 @@ export const RichTextEditor = ({
           aria-label="Toggle underline formatting"
           aria-pressed={editor.isActive('underline')}
         >
-          <UnderlineIcon className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:text-underline-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -380,7 +362,7 @@ export const RichTextEditor = ({
           aria-label="Toggle strikethrough formatting"
           aria-pressed={editor.isActive('strike')}
         >
-          <Strikethrough className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:text-bold-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -393,7 +375,7 @@ export const RichTextEditor = ({
           aria-label="Toggle inline code formatting"
           aria-pressed={editor.isActive('code')}
         >
-          <CodeIcon className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:code-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
@@ -409,7 +391,7 @@ export const RichTextEditor = ({
           aria-label="Toggle heading level 1"
           aria-pressed={editor.isActive('heading', { level: 1 })}
         >
-          <Heading1 className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:text-bold-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -422,7 +404,7 @@ export const RichTextEditor = ({
           aria-label="Toggle heading level 2"
           aria-pressed={editor.isActive('heading', { level: 2 })}
         >
-          <Heading2 className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:text-bold-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -435,7 +417,7 @@ export const RichTextEditor = ({
           aria-label="Toggle heading level 3"
           aria-pressed={editor.isActive('heading', { level: 3 })}
         >
-          <Heading3 className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:text-bold-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
@@ -451,7 +433,7 @@ export const RichTextEditor = ({
           aria-label="Toggle bullet list"
           aria-pressed={editor.isActive('bulletList')}
         >
-          <List className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:list-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -464,7 +446,7 @@ export const RichTextEditor = ({
           aria-label="Toggle numbered list"
           aria-pressed={editor.isActive('orderedList')}
         >
-          <ListOrdered className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:sort-by-alphabet-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -477,7 +459,7 @@ export const RichTextEditor = ({
           aria-label="Toggle blockquote"
           aria-pressed={editor.isActive('blockquote')}
         >
-          <Quote className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:document-text-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -490,7 +472,7 @@ export const RichTextEditor = ({
           aria-label="Toggle code block"
           aria-pressed={editor.isActive('codeBlock')}
         >
-          <FileCode className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:code-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
@@ -504,7 +486,7 @@ export const RichTextEditor = ({
           title="Horizontal Rule (Type: --- + enter)"
           aria-label="Insert horizontal rule"
         >
-          <Minus className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:minus-circle-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -517,7 +499,7 @@ export const RichTextEditor = ({
           aria-label="Insert or edit link"
           aria-pressed={editor.isActive('link')}
         >
-          <LinkIcon className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:link-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -528,7 +510,7 @@ export const RichTextEditor = ({
           title="Add Image"
           aria-label="Insert image"
         >
-          <ImageIcon className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:gallery-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <div className="w-px h-6 bg-gray-300 mx-1" role="separator" aria-orientation="vertical" />
@@ -543,7 +525,7 @@ export const RichTextEditor = ({
           title="Undo (⌘Z)"
           aria-label="Undo last action"
         >
-          <Undo className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:undo-left-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
 
         <Button
@@ -555,7 +537,7 @@ export const RichTextEditor = ({
           title="Redo (⌘⇧Z)"
           aria-label="Redo last action"
         >
-          <Redo className="h-4 w-4" aria-hidden="true" />
+          <Icon icon="solar:undo-right-bold-duotone" className="h-4 w-4" aria-hidden="true" />
         </Button>
       </div>
 

@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { listPosts, deletePost, type ContentPost } from '@/services/contentService';
-import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useToast } from '@/hooks/use-toast';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Badge } from "@/components/ui/badge";
@@ -138,7 +138,7 @@ export const ContentList = () => {
               onClick={() => navigate('/admin/content/new')}
               className="bg-black text-white hover:bg-gray-800"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Icon icon="solar:add-circle-bold-duotone" className="h-4 w-4 mr-2" />
               New Post
             </Button>
           </div>
@@ -148,7 +148,7 @@ export const ContentList = () => {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Icon icon="solar:magnifer-bold-duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search by title or excerpt..."
                 value={searchQuery}
@@ -224,7 +224,7 @@ export const ContentList = () => {
                               onClick={() => window.open(`https://creator.kstorybridge.com/${post.category === 'learning' ? 'learning-center' : 'news'}/${post.slug}`, '_blank')}
                               title="View"
                             >
-                              <Eye className="h-4 w-4" />
+                              <Icon icon="solar:eye-bold-duotone" className="h-4 w-4" />
                             </Button>
                           )}
                           <Button
@@ -233,7 +233,7 @@ export const ContentList = () => {
                             onClick={() => navigate(`/admin/content/${post.id}/edit`)}
                             title="Edit"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Icon icon="solar:pen-bold-duotone" className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -242,7 +242,7 @@ export const ContentList = () => {
                             title="Delete"
                             className="text-red-500 hover:text-red-700"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Icon icon="solar:trash-bin-trash-bold-duotone" className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

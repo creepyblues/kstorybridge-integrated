@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { RefreshCw, Eye, FileEdit } from "lucide-react";
+import { Icon } from '@iconify/react';
 import AdminLayout from "@/components/layout/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import { draftService, type DraftWithCreator, type DraftStatus } from "@/services/draftService";
@@ -138,7 +138,7 @@ export default function AdminDraftApproval() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <FileEdit className="w-6 h-6 text-gray-900" />
+              <Icon icon="solar:pen-bold-duotone" className="w-6 h-6 text-gray-900" />
               <h1 className="text-2xl font-bold text-black">Draft Approval</h1>
               <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-purple-500 text-white">
                 ADMIN ONLY
@@ -154,7 +154,7 @@ export default function AdminDraftApproval() {
             disabled={loading}
             className="border-gray-300 hover:bg-gray-100"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <Icon icon="solar:refresh-bold-duotone" className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
@@ -246,7 +246,7 @@ export default function AdminDraftApproval() {
                                 }}
                                 className="border-gray-300 hover:bg-gray-100"
                               >
-                                <Eye className="h-4 w-4 mr-1" />
+                                <Icon icon="solar:eye-bold-duotone" className="h-4 w-4 mr-1" />
                                 View
                               </Button>
                             </TableCell>
@@ -309,7 +309,7 @@ export default function AdminDraftApproval() {
                                 handleDraftClick(draft.id);
                               }}
                             >
-                              <Eye className="h-4 w-4 mr-2" />
+                              <Icon icon="solar:eye-bold-duotone" className="h-4 w-4 mr-2" />
                               View Details
                             </Button>
                           </div>

@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertCircle, Check, Image as ImageIcon } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import {
   type IntelligenceTitleWithSources,
   type ExtractedIntelligenceData,
@@ -147,12 +147,12 @@ export function IntelligenceResultsModal({
 
         {!results ? (
           <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-            <AlertCircle className="h-8 w-8 mb-2" />
+            <Icon icon="solar:danger-circle-bold-duotone" className="h-8 w-8 mb-2" />
             <p>No results available</p>
           </div>
         ) : availableFields.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-            <AlertCircle className="h-8 w-8 mb-2" />
+            <Icon icon="solar:danger-circle-bold-duotone" className="h-8 w-8 mb-2" />
             <p>No data could be extracted from this source</p>
             <p className="text-sm mt-1">The scraper may not have found any data</p>
           </div>
@@ -197,7 +197,7 @@ export function IntelligenceResultsModal({
                       <div className="text-sm text-gray-600 mt-1">
                         {field === 'title_image' && value ? (
                           <div className="flex items-center gap-2">
-                            <ImageIcon className="h-4 w-4 text-gray-400" />
+                            <Icon icon="solar:gallery-bold-duotone" className="h-4 w-4 text-gray-400" />
                             <a
                               href={value as string}
                               target="_blank"
@@ -213,7 +213,7 @@ export function IntelligenceResultsModal({
                       </div>
                     </div>
                     {isSelected && (
-                      <Check className="h-4 w-4 text-[#4C9C9B] flex-shrink-0" />
+                      <Icon icon="solar:check-circle-bold-duotone" className="h-4 w-4 text-[#4C9C9B] flex-shrink-0" />
                     )}
                   </div>
                 );
@@ -246,7 +246,7 @@ export function IntelligenceResultsModal({
           >
             {isIngesting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                 Ingesting...
               </>
             ) : (

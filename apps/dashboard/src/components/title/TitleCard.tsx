@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Heart } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 import { Title } from '@/services/titlesService';
 import { TitleMetadata } from './TitleMetadata';
@@ -110,7 +110,7 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
                   handleClick();
                 }}
               >
-                <ExternalLink className="h-4 w-4" />
+                <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -222,7 +222,7 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
               disabled={removing}
               className="w-full border-red-300 text-red-600 hover:bg-red-50"
             >
-              <Heart className="h-4 w-4 mr-1 fill-current" />
+              <Icon icon="solar:heart-bold-duotone" className="h-4 w-4 mr-1" />
               {removing ? 'Removing...' : 'Remove'}
             </Button>
           )}

@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, X, ChevronLeft, ChevronRight, Image as ImageIcon, Expand } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { getKeyVisuals, type KeyVisual } from '@/services/keyVisualsService';
 
 interface KeyVisualsGalleryProps {
@@ -89,7 +89,7 @@ export function KeyVisualsGallery({ titleId, maxDisplay = 10 }: KeyVisualsGaller
       <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
         <CardContent className="p-5">
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-6 w-6 animate-spin text-gray-400" />
           </div>
         </CardContent>
       </Card>
@@ -109,7 +109,7 @@ export function KeyVisualsGallery({ titleId, maxDisplay = 10 }: KeyVisualsGaller
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:gallery-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Key Visuals</h3>
               <Badge variant="secondary" className="text-xs">
                 {visuals.length} images
@@ -136,7 +136,7 @@ export function KeyVisualsGallery({ titleId, maxDisplay = 10 }: KeyVisualsGaller
 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
-                  <Expand className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Icon icon="solar:maximize-bold-duotone" className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
 
                 {/* Primary badge */}
@@ -188,7 +188,7 @@ export function KeyVisualsGallery({ titleId, maxDisplay = 10 }: KeyVisualsGaller
               closeLightbox();
             }}
           >
-            <X className="h-6 w-6" />
+            <Icon icon="solar:close-circle-bold-duotone" className="h-6 w-6" />
           </Button>
 
           {/* Previous button */}
@@ -202,7 +202,7 @@ export function KeyVisualsGallery({ titleId, maxDisplay = 10 }: KeyVisualsGaller
                 goToPrevious();
               }}
             >
-              <ChevronLeft className="h-8 w-8" />
+              <Icon icon="solar:alt-arrow-left-bold-duotone" className="h-8 w-8" />
             </Button>
           )}
 
@@ -244,7 +244,7 @@ export function KeyVisualsGallery({ titleId, maxDisplay = 10 }: KeyVisualsGaller
                 goToNext();
               }}
             >
-              <ChevronRight className="h-8 w-8" />
+              <Icon icon="solar:alt-arrow-right-bold-duotone" className="h-8 w-8" />
             </Button>
           )}
         </div>

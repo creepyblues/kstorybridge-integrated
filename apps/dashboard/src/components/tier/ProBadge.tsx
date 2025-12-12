@@ -1,4 +1,4 @@
-import { Crown, Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { UserTier } from '@/contexts/TierContext';
 
 interface ProBadgeProps {
@@ -14,13 +14,13 @@ export function ProBadge({ tier, size = 'md', showLabel = true }: ProBadgeProps)
 
   const config = {
     pro: {
-      icon: Sparkles,
+      icon: 'solar:stars-bold-duotone',
       label: 'Pro',
       color: 'bg-pro-purple',
       textColor: 'text-white',
     },
     suite: {
-      icon: Crown,
+      icon: 'solar:crown-bold-duotone',
       label: 'Suite',
       color: 'bg-gradient-to-r from-yellow-400 to-yellow-600',
       textColor: 'text-white',
@@ -29,8 +29,6 @@ export function ProBadge({ tier, size = 'md', showLabel = true }: ProBadgeProps)
 
   const tierConfig = config[tier as 'pro' | 'suite'];
   if (!tierConfig) return null;
-
-  const Icon = tierConfig.icon;
 
   const sizeClasses = {
     sm: 'px-2 py-0.5 text-xs',
@@ -48,7 +46,7 @@ export function ProBadge({ tier, size = 'md', showLabel = true }: ProBadgeProps)
     <span
       className={`inline-flex items-center gap-1 ${tierConfig.color} ${tierConfig.textColor} ${sizeClasses[size]} rounded-full font-semibold`}
     >
-      <Icon className={iconSizes[size]} />
+      <Icon icon={tierConfig.icon} className={iconSizes[size]} />
       {showLabel && tierConfig.label}
     </span>
   );

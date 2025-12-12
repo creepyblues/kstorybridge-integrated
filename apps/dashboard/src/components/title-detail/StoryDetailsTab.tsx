@@ -6,16 +6,7 @@ import { TierGatedContent } from '@/components/tier/TierGatedContent';
 import { Title, CharacterDetail } from '@/services/titlesService';
 import { type PitchAnalysis } from '@/types/pitchAnalysis';
 import { AIInsightCard } from './AIInsightCard';
-import {
-  Palette,
-  Globe,
-  Lightbulb,
-  Users,
-  BookOpen,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface StoryDetailsTabProps {
   title: Title;
@@ -54,7 +45,7 @@ function CharacterCard({ character }: { character: CharacterDetail }) {
             onClick={() => setIsExpanded(!isExpanded)}
             className="text-gray-500 hover:text-gray-700"
           >
-            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {isExpanded ? <Icon icon="solar:alt-arrow-up-bold-duotone" className="w-4 h-4" /> : <Icon icon="solar:alt-arrow-down-bold-duotone" className="w-4 h-4" />}
           </Button>
         )}
       </div>
@@ -136,7 +127,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:book-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">시놉시스</h3>
             </div>
             <p className="text-gray-700 whitespace-pre-line">{title.description_kr}</p>
@@ -149,7 +140,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Palette className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:palette-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Tone & Themes</h3>
             </div>
 
@@ -177,7 +168,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Globe className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:global-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">World & Setting</h3>
             </div>
 
@@ -199,7 +190,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
               {title.supernatural_concepts && (
                 <div>
                   <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-1">
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <Icon icon="solar:stars-bold-duotone" className="w-3.5 h-3.5" />
                     Supernatural Elements
                   </div>
                   <p className="text-gray-700">{title.supernatural_concepts}</p>
@@ -215,7 +206,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Lightbulb className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:lightbulb-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Inspiration</h3>
             </div>
             <p className="text-gray-700 italic">"{title.inspiration}"</p>
@@ -228,7 +219,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:users-group-rounded-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Key Characters</h3>
               <span className="text-sm text-gray-500">
                 ({title.character_details!.length} characters)
@@ -249,12 +240,12 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
               >
                 {showAllCharacters ? (
                   <>
-                    <ChevronUp className="w-4 h-4 mr-2" />
+                    <Icon icon="solar:alt-arrow-up-bold-duotone" className="w-4 h-4 mr-2" />
                     Show Less
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="w-4 h-4 mr-2" />
+                    <Icon icon="solar:alt-arrow-down-bold-duotone" className="w-4 h-4 mr-2" />
                     Show All {title.character_details!.length} Characters
                   </>
                 )}
@@ -270,7 +261,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
           <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-4">
-                <BookOpen className="w-5 h-5 text-[#4C9C9B]" />
+                <Icon icon="solar:book-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
                 <h3 className="text-lg font-semibold text-black">Narrative Structure</h3>
                 <Badge className="bg-[#AF52DE]/10 text-[#AF52DE] text-xs">PRO</Badge>
               </div>
@@ -309,7 +300,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
           {hasAIStoryWorld && (
             <AIInsightCard
               title="Story World"
-              icon={<Globe className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:global-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.story_world.setting && (
@@ -340,7 +331,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
           {hasAIStoryElements && (
             <AIInsightCard
               title="Story Elements"
-              icon={<BookOpen className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:book-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.story_elements.logline && (
@@ -378,7 +369,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
           {hasAIThemesTone && (
             <AIInsightCard
               title="Themes & Tone"
-              icon={<Palette className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:palette-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.themes_and_tone.primary_themes && pitchAnalysis!.themes_and_tone.primary_themes.length > 0 && (
@@ -423,7 +414,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
           {hasAICharacters && (
             <AIInsightCard
               title="Characters"
-              icon={<Users className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:users-group-rounded-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3">
                 {pitchAnalysis!.characters.map((char, idx) => (
@@ -461,7 +452,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
           {hasAIKoreanCultural && (
             <AIInsightCard
               title="Korean Cultural Elements"
-              icon={<Sparkles className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:stars-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <ul className="list-disc ml-5 space-y-1 text-gray-700">
                 {pitchAnalysis!.korean_cultural_elements.map((element, idx) => (
@@ -478,7 +469,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
        !hasAIStoryWorld && !hasAIStoryElements && !hasAIThemesTone && !hasAICharacters && !hasAIKoreanCultural && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-8 text-center">
-            <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <Icon icon="solar:book-bold-duotone" className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No story details available for this title.</p>
           </CardContent>
         </Card>

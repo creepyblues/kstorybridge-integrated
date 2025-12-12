@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Document, Page } from '@/lib/pdfConfig'; // Use centralized config
-import { Loader2, FileText } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { debug } from '@/utils/debug';
 
 interface PitchDeckThumbnailProps {
@@ -134,7 +134,7 @@ export default function PitchDeckThumbnail({
         {/* Loading State */}
         {loading && !error && isVisible && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80">
-            <Loader2 className="h-8 w-8 text-gray-400 animate-spin mb-2" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 text-gray-400 animate-spin mb-2" />
             <span className="text-sm text-gray-500">Loading preview...</span>
           </div>
         )}
@@ -142,7 +142,7 @@ export default function PitchDeckThumbnail({
         {/* Placeholder (before lazy load) */}
         {!isVisible && !error && (
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <FileText className="h-12 w-12 text-gray-300 mb-2" />
+            <Icon icon="solar:document-text-bold-duotone" className="h-12 w-12 text-gray-300 mb-2" />
             <span className="text-sm text-gray-400">Pitch Deck Preview</span>
           </div>
         )}
@@ -150,7 +150,7 @@ export default function PitchDeckThumbnail({
         {/* Error State */}
         {error && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-white">
-            <FileText className="h-12 w-12 text-gray-300 mb-2" />
+            <Icon icon="solar:document-text-bold-duotone" className="h-12 w-12 text-gray-300 mb-2" />
             <span className="text-sm text-gray-500 text-center">
               Preview unavailable
             </span>

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTierAccess } from '@/contexts/TierContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { trackCheckout, trackConversion } from '@/utils/analytics';
 
 export default function CheckoutSuccess() {
@@ -34,7 +34,7 @@ export default function CheckoutSuccess() {
           {/* Success Icon */}
           <div className="flex justify-center">
             <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 shadow-lg">
-              <CheckCircle className="h-12 w-12 text-white" />
+              <Icon icon="solar:check-circle-bold-duotone" className="h-12 w-12 text-white" />
             </div>
           </div>
 
@@ -49,7 +49,7 @@ export default function CheckoutSuccess() {
           {/* Success Message */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
             <div className="flex items-start gap-3">
-              <Sparkles className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <Icon icon="solar:stars-bold-duotone" className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-green-800">
                 <div className="font-medium mb-1">Your subscription is now active</div>
                 <div>

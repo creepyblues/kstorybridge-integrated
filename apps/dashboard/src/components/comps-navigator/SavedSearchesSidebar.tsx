@@ -5,10 +5,21 @@
  * Unified design pattern across Chat, Comps Navigator, and Mandates pages
  */
 
-import { useEffect, useState } from 'react';
-import { Compass, Clock, Bookmark, Trash2, Star } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Icon } from '@iconify/react';
 import { CompSearch, compsNavigatorService } from '@/services/compsNavigatorService';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface SavedSearchesSidebarProps {
   userEmail: string;
@@ -21,11 +32,16 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Bookmark dialog state
+  const [bookmarkDialogOpen, setBookmarkDialogOpen] = useState(false);
+  const [bookmarkName, setBookmarkName] = useState('');
+  const [searchToBookmark, setSearchToBookmark] = useState<CompSearch | null>(null);
+
   useEffect(() => {
     loadSearches();
   }, [userEmail]);
 
-  const loadSearches = async () => {
+  const loadSearches = useCallback(async () => {
     try {
       setLoading(true);
       const [recent, bookmarked] = await Promise.all([
@@ -39,9 +55,9 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
     } finally {
       setLoading(false);
     }
-  };
+  }, [userEmail]);
 
-  const handleDeleteSearch = async (searchId: string) => {
+  const handleDeleteSearch = useCallback(async (searchId: string) => {
     try {
       await compsNavigatorService.deleteSearch(searchId);
       toast({
@@ -56,9 +72,9 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
         variant: "destructive"
       });
     }
-  };
+  }, [toast, loadSearches]);
 
-  const handleToggleBookmark = async (search: CompSearch) => {
+  const handleToggleBookmark = useCallback(async (search: CompSearch) => {
     try {
       if (search.is_bookmarked) {
         await compsNavigatorService.unbookmarkSearch(search.id);
@@ -66,17 +82,13 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
           title: "Bookmark Removed",
           description: "Search removed from bookmarks"
         });
+        loadSearches();
       } else {
-        const name = prompt('Name this search:', search.comp_titles.join(' + '));
-        if (name) {
-          await compsNavigatorService.bookmarkSearch(search.id, name);
-          toast({
-            title: "Search Bookmarked",
-            description: "You can find this search in your bookmarks"
-          });
-        }
+        // Open dialog for naming the bookmark
+        setSearchToBookmark(search);
+        setBookmarkName(search.comp_titles.join(' + '));
+        setBookmarkDialogOpen(true);
       }
-      loadSearches();
     } catch (error) {
       toast({
         title: "Bookmark Failed",
@@ -84,7 +96,29 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
         variant: "destructive"
       });
     }
-  };
+  }, [toast, loadSearches]);
+
+  const handleConfirmBookmark = useCallback(async () => {
+    if (!searchToBookmark || !bookmarkName.trim()) return;
+
+    try {
+      await compsNavigatorService.bookmarkSearch(searchToBookmark.id, bookmarkName.trim());
+      toast({
+        title: "Search Bookmarked",
+        description: "You can find this search in your bookmarks"
+      });
+      setBookmarkDialogOpen(false);
+      setSearchToBookmark(null);
+      setBookmarkName('');
+      loadSearches();
+    } catch (error) {
+      toast({
+        title: "Bookmark Failed",
+        description: "Failed to bookmark search. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [searchToBookmark, bookmarkName, toast, loadSearches]);
 
   if (loading) {
     return (
@@ -100,7 +134,7 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
       <div className="bg-gradient-to-r from-hanok-teal/5 to-hanok-teal/10 border-b border-gray-200 px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="bg-hanok-teal/10 p-2 rounded-lg">
-            <Compass className="h-5 w-5 text-hanok-teal" />
+            <Icon icon="solar:compass-bold-duotone" className="h-5 w-5 text-hanok-teal" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Search History</h2>
@@ -115,7 +149,7 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
         {bookmarkedSearches.length > 0 && (
           <div>
             <h3 className="text-xs font-bold text-gray-600 mb-3 flex items-center gap-2 uppercase tracking-wide">
-              <Bookmark className="h-3.5 w-3.5" />
+              <Icon icon="solar:bookmark-bold-duotone" className="h-3.5 w-3.5" />
               Bookmarked
             </h3>
             <div className="space-y-2">
@@ -136,7 +170,7 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
         {recentSearches.length > 0 && (
           <div>
             <h3 className="text-xs font-bold text-gray-600 mb-3 flex items-center gap-2 uppercase tracking-wide">
-              <Clock className="h-3.5 w-3.5" />
+              <Icon icon="solar:clock-circle-bold-duotone" className="h-3.5 w-3.5" />
               Recent
             </h3>
             <div className="space-y-2">
@@ -157,13 +191,62 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
         {recentSearches.length === 0 && bookmarkedSearches.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="bg-gray-100 rounded-full p-4 mb-4">
-              <Compass className="h-8 w-8 text-gray-400" />
+              <Icon icon="solar:compass-bold-duotone" className="h-8 w-8 text-gray-400" />
             </div>
             <p className="text-sm font-semibold text-gray-900 mb-1">No saved searches</p>
             <p className="text-xs text-gray-500">Your searches will appear here</p>
           </div>
         )}
       </div>
+
+      {/* Bookmark Name Dialog */}
+      <Dialog open={bookmarkDialogOpen} onOpenChange={setBookmarkDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Name this search</DialogTitle>
+            <DialogDescription>
+              Give your saved search a memorable name so you can find it easily later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="bookmark-name">Search name</Label>
+              <Input
+                id="bookmark-name"
+                value={bookmarkName}
+                onChange={(e) => setBookmarkName(e.target.value)}
+                placeholder="e.g., Dark thriller comps"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleConfirmBookmark();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBookmarkDialogOpen(false);
+                setSearchToBookmark(null);
+                setBookmarkName('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmBookmark}
+              disabled={!bookmarkName.trim()}
+              className="bg-hanok-teal hover:bg-hanok-teal/90"
+            >
+              Save Bookmark
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -215,9 +298,12 @@ function SearchItem({ search, onLoad, onDelete, onToggleBookmark }: SearchItemPr
             }}
             className="p-1 hover:bg-hanok-teal/10 rounded transition-colors"
             title={search.is_bookmarked ? 'Remove bookmark' : 'Bookmark'}
+            aria-label={search.is_bookmarked ? `Remove bookmark for ${search.search_name || search.comp_titles.join(' + ')}` : `Bookmark ${search.search_name || search.comp_titles.join(' + ')}`}
           >
-            <Star
-              className={`h-3.5 w-3.5 ${search.is_bookmarked ? 'fill-hanok-teal text-hanok-teal' : 'text-gray-400'}`}
+            <Icon
+              icon="solar:star-bold-duotone"
+              className={`h-3.5 w-3.5 ${search.is_bookmarked ? 'text-hanok-teal' : 'text-gray-400'}`}
+              aria-hidden="true"
             />
           </button>
           <button
@@ -227,8 +313,9 @@ function SearchItem({ search, onLoad, onDelete, onToggleBookmark }: SearchItemPr
             }}
             className="p-1 hover:bg-red-50 rounded transition-colors"
             title="Delete"
+            aria-label={`Delete search ${search.search_name || search.comp_titles.join(' + ')}`}
           >
-            <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-600" />
+            <Icon icon="solar:trash-bin-trash-bold-duotone" className="h-3.5 w-3.5 text-gray-400 hover:text-red-600" aria-hidden="true" />
           </button>
         </div>
       </div>

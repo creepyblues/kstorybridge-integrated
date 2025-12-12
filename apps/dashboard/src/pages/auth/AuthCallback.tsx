@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { checkBuyerProfileExists } from '@/lib/auth';
-import { Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles OAuth callback only - no business logic
@@ -130,7 +130,7 @@ export default function AuthCallback() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="text-center space-y-4">
-        <Loader2 className="h-12 w-12 animate-spin mx-auto text-gray-400" />
+        <Icon icon="solar:refresh-circle-bold-duotone" className="h-12 w-12 animate-spin mx-auto text-gray-400" />
         <h1 className="text-2xl font-semibold">Completing authentication...</h1>
         <p className="text-gray-600">Please wait while we sign you in</p>
       </div>

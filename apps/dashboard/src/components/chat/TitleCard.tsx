@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, FileText } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 
 interface TitleCardProps {
@@ -79,7 +79,7 @@ export function TitleCard({ title }: TitleCardProps) {
               )}
               {title.hasPitch && (
                 <span className="flex items-center gap-1 text-pro-purple">
-                  <FileText className="h-3 w-3" />
+                  <Icon icon="solar:document-text-bold-duotone" className="h-3 w-3" />
                   Pitch
                 </span>
               )}
@@ -97,7 +97,7 @@ export function TitleCard({ title }: TitleCardProps) {
                 handleViewDetails();
               }}
             >
-              <ExternalLink className="h-4 w-4" />
+              <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-4 w-4" />
             </Button>
           </div>
         </div>

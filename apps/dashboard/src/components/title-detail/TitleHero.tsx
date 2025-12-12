@@ -1,16 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Title, titlesService } from '@/services/titlesService';
-import {
-  Heart,
-  ExternalLink,
-  BookOpen,
-  Eye,
-  Star,
-  ThumbsUp,
-  CheckCircle,
-  Calendar,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface TitleHeroProps {
   title: Title;
@@ -45,13 +36,13 @@ export function TitleHero({
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[#4C9C9B]/10 to-[#4C9C9B]/20 flex items-center justify-center">
-              <BookOpen className="w-12 h-12 text-[#4C9C9B]" />
+              <Icon icon="solar:book-bold-duotone" className="w-12 h-12 text-[#4C9C9B]" />
             </div>
           )}
           {title.verified && (
             <div className="absolute top-3 left-3">
               <Badge className="bg-green-500 text-white text-xs px-2 py-0.5">
-                <CheckCircle className="w-3 h-3 mr-1" />
+                <Icon icon="solar:check-circle-bold-duotone" className="w-3 h-3 mr-1" />
                 Verified
               </Badge>
             </div>
@@ -71,13 +62,13 @@ export function TitleHero({
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[#4C9C9B]/10 to-[#4C9C9B]/20 flex items-center justify-center">
-              <BookOpen className="w-10 h-10 text-[#4C9C9B]" />
+              <Icon icon="solar:book-bold-duotone" className="w-10 h-10 text-[#4C9C9B]" />
             </div>
           )}
           {title.verified && (
             <div className="absolute top-2 left-2">
               <Badge className="bg-green-500 text-white text-[10px] px-1.5 py-0.5">
-                <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
+                <Icon icon="solar:check-circle-bold-duotone" className="w-2.5 h-2.5 mr-0.5" />
                 Verified
               </Badge>
             </div>
@@ -108,7 +99,7 @@ export function TitleHero({
         {hasRating && (
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-full">
-              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <Icon icon="solar:star-bold-duotone" className="w-4 h-4 text-amber-500 fill-amber-500" />
               <span className="font-bold text-amber-700">{title.rating?.toFixed(1)}</span>
             </div>
             {hasRatingCount && (
@@ -164,7 +155,7 @@ export function TitleHero({
         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
           {title.views != null && (
             <div className="flex items-center gap-1.5">
-              <Eye className="h-4 w-4" />
+              <Icon icon="solar:eye-bold-duotone" className="h-4 w-4" />
               <span className="font-medium">
                 {title.views === 0 ? 'Not Available' : `${titlesService.formatNumber(title.views)} views`}
               </span>
@@ -172,18 +163,18 @@ export function TitleHero({
           )}
           {title.likes != null && (
             <div className="flex items-center gap-1.5">
-              <ThumbsUp className="h-4 w-4" />
+              <Icon icon="solar:like-bold-duotone" className="h-4 w-4" />
               <span className="font-medium">{titlesService.formatNumber(title.likes)} likes</span>
             </div>
           )}
           {title.chapters != null && (
             <div className="flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4" />
+              <Icon icon="solar:book-bold-duotone" className="h-4 w-4" />
               <span className="font-medium">{title.chapters.toLocaleString()} chapters</span>
             </div>
           )}
           <div className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" />
+            <Icon icon="solar:calendar-bold-duotone" className="h-4 w-4" />
             <span className="font-medium">{title.completed ? 'Completed' : 'Ongoing'}</span>
           </div>
         </div>
@@ -201,7 +192,7 @@ export function TitleHero({
             isFavorited ? 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200' : ''
           }`}
         >
-          <Heart className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} />
+          <Icon icon="solar:heart-bold-duotone" className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} />
           {isFavorited ? 'Saved' : 'Save'}
         </Button>
 
@@ -211,7 +202,7 @@ export function TitleHero({
             className="flex-1 lg:flex-none border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30 px-4 py-2 transition-colors"
             onClick={() => window.open(title.title_url_en || title.title_url, '_blank')}
           >
-            <ExternalLink className="h-4 w-4 mr-2" />
+            <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-4 w-4 mr-2" />
             View Original
           </Button>
         )}

@@ -21,7 +21,7 @@ import {
 import AdminLayout from '@/components/layout/AdminLayout';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 // Genre options
 const GENRE_OPTIONS = [
@@ -154,7 +154,7 @@ export default function AdminTitleEdit() {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-96">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
         </div>
       </AdminLayout>
     );
@@ -184,7 +184,7 @@ export default function AdminTitleEdit() {
               onClick={() => navigate('/admin/titles')}
               className="h-8 w-8 p-0"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4" />
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-black">Edit Title</h1>
@@ -200,12 +200,12 @@ export default function AdminTitleEdit() {
           >
             {saving ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2" />
+                <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
                 Save Changes
               </>
             )}
@@ -881,12 +881,12 @@ export default function AdminTitleEdit() {
           >
             {saving ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2" />
+                <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
                 Save Changes
               </>
             )}

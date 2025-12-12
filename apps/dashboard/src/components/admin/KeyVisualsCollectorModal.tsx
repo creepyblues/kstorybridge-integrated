@@ -26,14 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Loader2,
-  Image as ImageIcon,
-  Check,
-  Download,
-  RefreshCw,
-  Trash2,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 import {
   collectKeyVisuals,
   saveKeyVisual,
@@ -299,7 +292,7 @@ export function KeyVisualsCollectorModal({
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5 text-[#4C9C9B]" />
+            <Icon icon="solar:gallery-bold-duotone" className="h-5 w-5 text-[#4C9C9B]" />
             Key Visuals Collector
             {titleName && (
               <span className="text-sm font-normal text-gray-500 ml-2">
@@ -342,12 +335,12 @@ export function KeyVisualsCollectorModal({
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                       Collecting...
                     </>
                   ) : (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2" />
+                      <Icon icon="solar:refresh-bold-duotone" className="h-4 w-4 mr-2" />
                       Collect Images
                     </>
                   )}
@@ -394,14 +387,14 @@ export function KeyVisualsCollectorModal({
                                 : 'bg-white border-gray-300'
                             }`}
                           >
-                            {img.selected && <Check className="h-3 w-3 text-white" />}
+                            {img.selected && <Icon icon="solar:check-circle-bold-duotone" className="h-3 w-3 text-white" />}
                           </div>
                         </div>
 
                         {/* Status Badge */}
                         {img.saving && (
                           <div className="absolute top-2 right-2">
-                            <Loader2 className="h-4 w-4 animate-spin text-[#4C9C9B]" />
+                            <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin text-[#4C9C9B]" />
                           </div>
                         )}
                         {img.saved && (
@@ -464,7 +457,7 @@ export function KeyVisualsCollectorModal({
                 </>
               ) : !loading ? (
                 <div className="text-center py-12 text-gray-500">
-                  <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <Icon icon="solar:gallery-bold-duotone" className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                   <p>Click "Collect Images" to discover key visuals</p>
                   <p className="text-sm mt-1">
                     Images will be collected from platform URLs and search
@@ -477,7 +470,7 @@ export function KeyVisualsCollectorModal({
             <div className="space-y-4">
               {loadingExisting ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-6 w-6 animate-spin text-gray-400" />
                 </div>
               ) : existingVisuals.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -515,14 +508,14 @@ export function KeyVisualsCollectorModal({
                         className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => handleDeleteExisting(visual.id)}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Icon icon="solar:trash-bin-trash-bold-duotone" className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-12 text-gray-500">
-                  <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <Icon icon="solar:gallery-bold-duotone" className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                   <p>No key visuals saved yet</p>
                   <p className="text-sm mt-1">
                     Switch to "Discover Images" to collect and save visuals
@@ -546,12 +539,12 @@ export function KeyVisualsCollectorModal({
             >
               {savingSelected ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Download className="h-4 w-4 mr-2" />
+                  <Icon icon="solar:download-bold-duotone" className="h-4 w-4 mr-2" />
                   Save Selected ({selectedCount})
                 </>
               )}

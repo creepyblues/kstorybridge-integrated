@@ -9,24 +9,12 @@ import { UserTier } from '@/contexts/TierContext';
 import { AIInsightCard } from './AIInsightCard';
 import { KeyVisualsGallery } from './KeyVisualsGallery';
 import { CompsAnalysisCard } from './CompsAnalysisCard';
+import { FormatFitDetailPanel } from '@/components/format-fit/FormatFitDetailPanel';
 import PitchDeckThumbnail from '@/components/premium/PitchDeckThumbnail';
 import SecurePDFViewer from '@/components/premium/SecurePDFViewer';
 import { trackTitleContactCreatorClicked, trackTitlePitchCtaClicked } from '@/utils/analytics';
 import { type SuggestedComp } from '@/services/compsGeneratorService';
-import {
-  Briefcase,
-  Target,
-  Film,
-  Trophy,
-  Newspaper,
-  Package,
-  Star,
-  Gem,
-  Shield,
-  FileText,
-  X,
-  CheckCircle,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface OverviewTabProps {
   title: Title;
@@ -78,12 +66,16 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Briefcase className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:briefcase-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Rights Info</h3>
-              {title.verified && (
+              {title.verified ? (
                 <Badge className="bg-green-500 text-white text-xs px-2 py-0.5">
-                  <CheckCircle className="w-3 h-3 mr-1" />
+                  <Icon icon="solar:check-circle-bold-duotone" className="w-3 h-3 mr-1" />
                   Rights Verified
+                </Badge>
+              ) : !hasRightsAvailable && (
+                <Badge className="bg-gray-400 text-white text-xs px-2 py-0.5">
+                  Rights Not Verified
                 </Badge>
               )}
             </div>
@@ -102,18 +94,33 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
             ) : title.rights ? (
               <p className="text-gray-600 mb-4">{title.rights}</p>
             ) : (
-              <p className="text-gray-400 italic mb-4">Contact for availability</p>
+              <div className="mb-4">
+                <p className="text-gray-400 italic">Contact for availability</p>
+                <p className="text-sm text-gray-500 mt-1">Contact us for rights verification</p>
+              </div>
             )}
 
             {/* Rights Holder Info */}
             <div className="pt-4 border-t border-gray-100">
-              <div className="text-sm text-gray-500 mb-1">Rights Holder</div>
-              <div className="font-semibold text-black">
-                {title.rights_holder_company || title.rights_holder_name || 'Contact for details'}
+              <div className="text-sm text-gray-500 mb-2">Rights Holder</div>
+              <div className="flex flex-wrap gap-2">
+                {(title.rights_holder_company || title.rights_holder_name) ? (
+                  <>
+                    <Badge className="bg-[#4C9C9B]/10 text-[#4C9C9B] border border-[#4C9C9B]/20 px-3 py-1.5 font-medium">
+                      {title.rights_holder_company || title.rights_holder_name}
+                    </Badge>
+                    {title.rights_holder_name && title.rights_holder_company && (
+                      <Badge className="bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1.5 font-medium">
+                        {title.rights_holder_name}
+                      </Badge>
+                    )}
+                  </>
+                ) : (
+                  <Badge className="bg-gray-100 text-gray-500 border border-gray-200 px-3 py-1.5 font-medium">
+                    Contact for details
+                  </Badge>
+                )}
               </div>
-              {title.rights_holder_name && title.rights_holder_company && (
-                <div className="text-sm text-gray-600">{title.rights_holder_name}</div>
-              )}
               <Button
                 id="title-detail-contact-creator-btn"
                 className="mt-3 bg-[#AF52DE] hover:bg-[#AF52DE]/90 text-white text-sm font-medium px-4 py-2"
@@ -137,7 +144,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Target className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:target-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Target Market</h3>
             </div>
 
@@ -145,22 +152,28 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
               <div className="space-y-4">
                 {title.perfect_for && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Perfect For</div>
-                    <div className="font-medium text-black">{title.perfect_for}</div>
+                    <div className="text-sm text-gray-500 mb-2">Perfect For</div>
+                    <Badge className="bg-[#4C9C9B]/10 text-[#4C9C9B] border border-[#4C9C9B]/20 px-3 py-1.5 font-medium">
+                      {title.perfect_for}
+                    </Badge>
                   </div>
                 )}
 
                 {title.audience && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Target Audience</div>
-                    <div className="font-medium text-black">{title.audience}</div>
+                    <div className="text-sm text-gray-500 mb-2">Target Audience</div>
+                    <Badge className="bg-[#4C9C9B]/10 text-[#4C9C9B] border border-[#4C9C9B]/20 px-3 py-1.5 font-medium">
+                      {title.audience}
+                    </Badge>
                   </div>
                 )}
 
                 {title.tone && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Tone</div>
-                    <div className="font-medium text-black">{title.tone}</div>
+                    <div className="text-sm text-gray-500 mb-2">Tone</div>
+                    <Badge className="bg-[#4C9C9B]/10 text-[#4C9C9B] border border-[#4C9C9B]/20 px-3 py-1.5 font-medium">
+                      {title.tone}
+                    </Badge>
                   </div>
                 )}
 
@@ -178,7 +191,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <FileText className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:document-text-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Pitch Deck</h3>
             </div>
             <PitchDeckThumbnail
@@ -206,7 +219,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Film className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:clapperboard-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Comparable Titles</h3>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -223,6 +236,12 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
           </CardContent>
         </Card>
       )}
+
+      {/* Format Fit Analysis */}
+      <FormatFitDetailPanel
+        titleId={title.title_id}
+        className="bg-white border border-gray-200 shadow-sm rounded-2xl"
+      />
 
       {/* Key Visuals Gallery */}
       <KeyVisualsGallery titleId={title.title_id} maxDisplay={10} />
@@ -251,7 +270,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Trophy className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:cup-star-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Recognition & Achievements</h3>
             </div>
 
@@ -260,7 +279,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
               {hasAwards && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Star className="w-4 h-4 text-amber-500" />
+                    <Icon icon="solar:star-bold-duotone" className="w-4 h-4 text-amber-500" />
                     <span className="font-medium text-gray-700">Awards</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -277,7 +296,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
               {title.media_coverage && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Newspaper className="w-4 h-4 text-blue-500" />
+                    <Icon icon="solar:document-text-bold-duotone" className="w-4 h-4 text-blue-500" />
                     <span className="font-medium text-gray-700">Media Coverage</span>
                   </div>
                   <p className="text-gray-600 text-sm">{title.media_coverage}</p>
@@ -288,7 +307,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
               {title.sales_records && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="w-4 h-4 text-green-500" />
+                    <Icon icon="solar:cup-star-bold-duotone" className="w-4 h-4 text-green-500" />
                     <span className="font-medium text-gray-700">Sales Records</span>
                   </div>
                   <p className="text-gray-600 text-sm">{title.sales_records}</p>
@@ -299,7 +318,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
               {(title.merchandise_deals || title.print_editions) && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Package className="w-4 h-4 text-purple-500" />
+                    <Icon icon="solar:box-bold-duotone" className="w-4 h-4 text-purple-500" />
                     <span className="font-medium text-gray-700">Merchandise & Print</span>
                   </div>
                   <div className="text-gray-600 text-sm space-y-1">
@@ -315,7 +334,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
               {title.celebrity_endorsements && (
                 <div className="md:col-span-2">
                   <div className="flex items-center gap-2 mb-2">
-                    <Star className="w-4 h-4 text-pink-500" />
+                    <Icon icon="solar:star-bold-duotone" className="w-4 h-4 text-pink-500" />
                     <span className="font-medium text-gray-700">Celebrity Endorsements</span>
                   </div>
                   <p className="text-gray-600 text-sm italic">"{title.celebrity_endorsements}"</p>
@@ -353,7 +372,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
           {hasAITargetAudience && (
             <AIInsightCard
               title="Target Audience"
-              icon={<Target className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:target-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.market_positioning.target_audience.age_range && (
@@ -391,7 +410,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
           {hasAIComparables && (
             <AIInsightCard
               title="Comparable Titles"
-              icon={<Film className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:clapperboard-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-2">
                 {pitchAnalysis!.market_positioning.comparable_titles.map((comp, idx) => (
@@ -413,7 +432,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
           {hasAIIPValue && (
             <AIInsightCard
               title="IP Value"
-              icon={<Gem className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:diamond-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.ip_value.franchise_potential && (
@@ -462,7 +481,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
           {hasAIContentClassification && (
             <AIInsightCard
               title="Content Rating"
-              icon={<Shield className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:shield-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.content_classification.maturity_rating && (
@@ -514,7 +533,7 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
               onClick={() => setIsPdfModalOpen(false)}
               className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 p-0"
             >
-              <X className="h-5 w-5" />
+              <Icon icon="solar:close-circle-bold-duotone" className="h-5 w-5" />
             </Button>
             <div className="h-full">
               <SecurePDFViewer

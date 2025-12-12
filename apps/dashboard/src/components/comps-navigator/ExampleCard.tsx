@@ -10,7 +10,7 @@
 
 import { CompExample } from '@/data/examplesData';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface ExampleCardProps {
   example: CompExample;
@@ -56,7 +56,7 @@ export default function ExampleCard({ example, onTryExample, compact = false }: 
             className="w-full flex items-center justify-center gap-1.5 bg-hanok-teal hover:bg-hanok-teal/90 text-white rounded-md px-3 py-2 text-xs font-semibold transition-colors"
           >
             <span>Try This</span>
-            <ArrowRight className="h-3 w-3" />
+            <Icon icon="solar:alt-arrow-right-bold-duotone" className="h-3 w-3" />
           </button>
         </CardContent>
       </Card>
@@ -105,7 +105,7 @@ export default function ExampleCard({ example, onTryExample, compact = false }: 
           className="w-full flex items-center justify-center gap-2 bg-[#4C9C9B] hover:bg-[#4C9C9B]/90 text-white rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
         >
           <span>Try This Example</span>
-          <ArrowRight className="h-4 w-4" />
+          <Icon icon="solar:alt-arrow-right-bold-duotone" className="h-4 w-4" />
         </button>
       </CardContent>
     </Card>

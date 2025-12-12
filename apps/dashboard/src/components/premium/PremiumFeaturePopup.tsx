@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Crown, Sparkles, X } from "lucide-react";
+import { Icon } from '@iconify/react';
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { trackPremiumFeatureRequest, trackTierUpgrade, trackPremiumPopupInteraction } from "@/utils/analytics";
@@ -327,8 +327,8 @@ export default function PremiumFeaturePopup({
               {featureName !== "Pitch deck not available" && (
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <Crown className="h-16 w-16 text-orange-500 animate-pulse" />
-                    <Sparkles className="h-6 w-6 text-teal-600 absolute -top-1 -right-1 animate-bounce" />
+                    <Icon icon="solar:crown-bold-duotone" className="h-16 w-16 text-orange-500 animate-pulse" />
+                    <Icon icon="solar:stars-bold-duotone" className="h-6 w-6 text-teal-600 absolute -top-1 -right-1 animate-bounce" />
                   </div>
                 </div>
               )}
@@ -413,7 +413,7 @@ export default function PremiumFeaturePopup({
                   {featureName !== "Pitch deck not available" && (
                     <div className="flex justify-center">
                       <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                        <Crown className="h-8 w-8 text-green-600" />
+                        <Icon icon="solar:crown-bold-duotone" className="h-8 w-8 text-green-600" />
                       </div>
                     </div>
                   )}
@@ -463,7 +463,7 @@ export default function PremiumFeaturePopup({
                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-colors duration-200 z-10"
                 aria-label="Close modal"
               >
-                <X className="h-5 w-5" />
+                <Icon icon="solar:close-circle-bold-duotone" className="h-5 w-5" />
               </button>
             )}
           </div>

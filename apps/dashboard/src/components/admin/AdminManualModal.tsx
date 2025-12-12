@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HelpCircle } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,7 +32,7 @@ export function AdminManualModal() {
           className="text-gray-500 hover:text-gray-700 p-1"
           title="Admin Manual"
         >
-          <HelpCircle className="h-5 w-5" />
+          <Icon icon="solar:question-circle-bold-duotone" className="h-5 w-5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">

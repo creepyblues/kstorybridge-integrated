@@ -1,4 +1,21 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,11 +23,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminLayout from '@/components/layout/AdminLayout';
 import SectionManager from '@/components/admin/SectionManager';
+import { TitleEditModal } from '@/components/admin/TitleEditModal';
 import { useToast } from '@/hooks/use-toast';
 import { featuredService, type FeaturedWithTitle } from '@/services/featuredService';
 import { titlesService, type Title } from '@/services/titlesService';
 import type { FeaturedSection } from '@/types/featured';
-import { Search, Plus, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Trash2, RefreshCw, X, FolderOpen, LayoutGrid, Edit2, Check } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 type SortField = 'title' | 'section' | 'added';
 type SortDirection = 'asc' | 'desc';
@@ -31,6 +49,10 @@ export default function AdminTrending() {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteValue, setEditNoteValue] = useState('');
 
+  // Title edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedTitleId, setSelectedTitleId] = useState<string | null>(null);
+
   // Add title state
   const [selectedTitle, setSelectedTitle] = useState<Title | null>(null);
   const [addSearchQuery, setAddSearchQuery] = useState('');
@@ -41,6 +63,14 @@ export default function AdminTrending() {
   const [newNote, setNewNote] = useState('');
   const [newSectionId, setNewSectionId] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     loadData();
@@ -178,11 +208,11 @@ export default function AdminTrending() {
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
-      return <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />;
+      return <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-3 w-3 ml-1 opacity-50" />;
     }
     return sortDirection === 'asc'
-      ? <ArrowUp className="h-3 w-3 ml-1" />
-      : <ArrowDown className="h-3 w-3 ml-1" />;
+      ? <Icon icon="solar:arrow-up-bold-duotone" className="h-3 w-3 ml-1" />
+      : <Icon icon="solar:arrow-down-bold-duotone" className="h-3 w-3 ml-1" />;
   };
 
   async function handleDelete(featuredId: string, titleName: string) {
@@ -225,6 +255,12 @@ export default function AdminTrending() {
       console.error('Error updating note:', error);
       toast({ title: 'Error', description: 'Failed to update note', variant: 'destructive' });
     }
+  }
+
+  // Title edit handler
+  function handleEditTitle(titleId: string) {
+    setSelectedTitleId(titleId);
+    setEditModalOpen(true);
   }
 
   // Section assignment handler
@@ -344,6 +380,38 @@ export default function AdminTrending() {
     }
   }
 
+  // Handle drag end for reordering titles within a section
+  async function handleDragEnd(event: DragEndEvent, sectionId: string | null) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    // Get titles for this section
+    const sectionTitles = featured.filter(f => f.section_id === sectionId);
+    const oldIndex = sectionTitles.findIndex(f => f.id === active.id);
+    const newIndex = sectionTitles.findIndex(f => f.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Reorder locally first for immediate feedback
+    const reorderedTitles = arrayMove(sectionTitles, oldIndex, newIndex);
+    const newFeaturedIds = reorderedTitles.map(f => f.id);
+
+    // Update local state
+    setFeatured(prev => {
+      const otherTitles = prev.filter(f => f.section_id !== sectionId);
+      return [...otherTitles, ...reorderedTitles];
+    });
+
+    // Persist to database
+    try {
+      await featuredService.reorderTitlesInSection(newFeaturedIds);
+    } catch (error: any) {
+      console.error('Error reordering titles:', error);
+      toast({ title: 'Error', description: 'Failed to reorder titles', variant: 'destructive' });
+      await loadData(); // Reload to reset state
+    }
+  }
+
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -354,8 +422,164 @@ export default function AdminTrending() {
 
   const isTitleFeatured = (titleId: string) => featured.some((f) => f.title_id === titleId);
 
+  // Sortable row component
+  function SortableRow({ item }: { item: FeaturedWithTitle }) {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: item.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    };
+
+    const titleName = item.titles?.title_name_en || item.titles?.title_name_kr || 'Unknown';
+    const titleNameKr = item.titles?.title_name_kr;
+    const isEditingNote = editingNoteId === item.id;
+
+    return (
+      <tr ref={setNodeRef} style={style} className="hover:bg-gray-50 bg-white">
+        {/* Drag Handle */}
+        <td className="px-2 py-4 whitespace-nowrap">
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 p-1"
+          >
+            <Icon icon="solar:menu-dots-bold-duotone" className="h-5 w-5" />
+          </div>
+        </td>
+
+        {/* Title */}
+        <td className="px-4 py-4 whitespace-nowrap">
+          <button
+            onClick={() => item.title_id && handleEditTitle(item.title_id)}
+            className="flex items-center text-left hover:bg-gray-100 rounded-lg p-1 -m-1 transition-colors"
+          >
+            {item.titles?.title_image && (
+              <div className="flex-shrink-0 h-10 w-10 rounded overflow-hidden bg-gray-100 mr-3">
+                <img
+                  src={item.titles.title_image}
+                  alt={titleName}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+            <div>
+              <div className="text-sm font-medium text-gray-900 hover:text-hanok-teal">{titleName}</div>
+              {item.titles?.title_name_en && titleNameKr && (
+                <div className="text-xs text-gray-500">{titleNameKr}</div>
+              )}
+            </div>
+          </button>
+        </td>
+
+        {/* Section Dropdown */}
+        <td className="px-4 py-4 whitespace-nowrap">
+          <Select
+            value={item.section_id || 'uncategorized'}
+            onValueChange={(value) => handleAssignSection(item.id, value === 'uncategorized' ? null : value)}
+          >
+            <SelectTrigger className="h-8 w-[140px] text-xs">
+              <SelectValue placeholder="Select section" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="uncategorized">Uncategorized</SelectItem>
+              {sections.map((section) => (
+                <SelectItem key={section.id} value={section.id}>
+                  {section.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </td>
+
+        {/* Editable Note */}
+        <td className="px-4 py-4">
+          {isEditingNote ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={editNoteValue}
+                onChange={(e) => setEditNoteValue(e.target.value)}
+                placeholder="Enter note..."
+                className="h-8 text-sm w-48"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    saveNote(item.id);
+                  } else if (e.key === 'Escape') {
+                    cancelEditingNote();
+                  }
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => saveNote(item.id)}
+                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+              >
+                <Icon icon="solar:check-read-bold-duotone" className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={cancelEditingNote}
+                className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              >
+                <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div
+              className="flex items-center gap-2 group cursor-pointer"
+              onClick={() => startEditingNote(item.id, item.note)}
+            >
+              <div className="text-sm text-gray-600 max-w-xs truncate">
+                {item.note || <span className="text-gray-400 italic">No note</span>}
+              </div>
+              <Icon icon="solar:pen-bold-duotone" className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          )}
+        </td>
+
+        {/* Added Date */}
+        <td className="px-4 py-4 whitespace-nowrap">
+          <div className="text-sm text-gray-600">
+            {formatDate(item.created_at)}
+          </div>
+        </td>
+
+        {/* Actions */}
+        <td className="px-4 py-4 whitespace-nowrap text-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(item.id, titleName)}
+            disabled={deletingId === item.id}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            {deletingId === item.id ? (
+              <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin" />
+            ) : (
+              <Icon icon="solar:trash-bin-trash-bold-duotone" className="h-4 w-4" />
+            )}
+          </Button>
+        </td>
+      </tr>
+    );
+  }
+
   // Render table for a section
-  const renderTitlesTable = (titles: FeaturedWithTitle[]) => {
+  const renderTitlesTable = (titles: FeaturedWithTitle[], sectionId: string | null) => {
     if (titles.length === 0) {
       return (
         <div className="text-center py-12 text-gray-500">
@@ -365,154 +589,63 @@ export default function AdminTrending() {
     }
 
     return (
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                onClick={() => handleSort('title')}
-              >
-                <div className="flex items-center">
-                  Title
-                  <SortIcon field="title" />
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Section
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Note
-              </th>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-                onClick={() => handleSort('added')}
-              >
-                <div className="flex items-center">
-                  Added
-                  <SortIcon field="added" />
-                </div>
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {titles.map((item) => {
-              const titleName = item.titles?.title_name_en || item.titles?.title_name_kr || 'Unknown';
-              const titleNameKr = item.titles?.title_name_kr;
-              const isEditingNote = editingNoteId === item.id;
-
-              return (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  {/* Title */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{titleName}</div>
-                      {item.titles?.title_name_en && titleNameKr && (
-                        <div className="text-xs text-gray-500">{titleNameKr}</div>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Section Dropdown */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Select
-                      value={item.section_id || 'uncategorized'}
-                      onValueChange={(value) => handleAssignSection(item.id, value === 'uncategorized' ? null : value)}
-                    >
-                      <SelectTrigger className="h-8 w-[140px] text-xs">
-                        <SelectValue placeholder="Select section" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                        {sections.map((section) => (
-                          <SelectItem key={section.id} value={section.id}>
-                            {section.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </td>
-
-                  {/* Editable Note */}
-                  <td className="px-6 py-4">
-                    {isEditingNote ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={editNoteValue}
-                          onChange={(e) => setEditNoteValue(e.target.value)}
-                          placeholder="Enter note..."
-                          className="h-8 text-sm w-48"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              saveNote(item.id);
-                            } else if (e.key === 'Escape') {
-                              cancelEditingNote();
-                            }
-                          }}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => saveNote(item.id)}
-                          className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={cancelEditingNote}
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div
-                        className="flex items-center gap-2 group cursor-pointer"
-                        onClick={() => startEditingNote(item.id, item.note)}
-                      >
-                        <div className="text-sm text-gray-600 max-w-xs truncate">
-                          {item.note || <span className="text-gray-400 italic">No note</span>}
-                        </div>
-                        <Edit2 className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    )}
-                  </td>
-
-                  {/* Added Date */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">
-                      {formatDate(item.created_at)}
-                    </div>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(item.id, titleName)}
-                      disabled={deletingId === item.id}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      {deletingId === item.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={(event) => handleDragEnd(event, sectionId)}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-2 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider w-10">
+                  <span className="sr-only">Drag</span>
+                </th>
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('title')}
+                >
+                  <div className="flex items-center">
+                    Title
+                    <SortIcon field="title" />
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Section
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Note
+                </th>
+                <th
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('added')}
+                >
+                  <div className="flex items-center">
+                    Added
+                    <SortIcon field="added" />
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <SortableContext
+              items={titles.map(t => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <tbody className="bg-white divide-y divide-gray-200">
+                {titles.map((item) => (
+                  <SortableRow key={item.id} item={item} />
+                ))}
+              </tbody>
+            </SortableContext>
+          </table>
+        </div>
+        <p className="text-xs text-gray-400 px-4 py-2">
+          Drag rows to reorder titles within this section.
+        </p>
+      </DndContext>
     );
   };
 
@@ -533,7 +666,7 @@ export default function AdminTrending() {
             disabled={loading}
             className="border-gray-300"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <Icon icon="solar:refresh-bold-duotone" className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
@@ -605,12 +738,12 @@ export default function AdminTrending() {
                       onClick={clearSelectedTitle}
                       className="h-6 w-6 p-0"
                     >
-                      <X className="h-4 w-4" />
+                      <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
                   <div ref={searchRef} className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Icon icon="solar:magnifer-bold-duotone" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       type="text"
                       placeholder="Search titles..."
@@ -628,7 +761,7 @@ export default function AdminTrending() {
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                         {searching ? (
                           <div className="px-4 py-3 text-sm text-gray-500 flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin" />
                             Searching...
                           </div>
                         ) : searchResults.length > 0 ? (
@@ -718,12 +851,12 @@ export default function AdminTrending() {
               >
                 {adding ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                     Adding...
                   </>
                 ) : (
                   <>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Icon icon="solar:add-circle-bold-duotone" className="h-4 w-4 mr-2" />
                     Add Featured Title
                   </>
                 )}
@@ -737,7 +870,7 @@ export default function AdminTrending() {
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Icon icon="solar:magnifer-bold-duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
                   placeholder="Filter featured titles..."
@@ -755,7 +888,7 @@ export default function AdminTrending() {
           <CardContent className="p-0">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
               </div>
             ) : featured.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
@@ -770,7 +903,7 @@ export default function AdminTrending() {
                       value="uncategorized"
                       className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
                     >
-                      <FolderOpen className="w-4 h-4 mr-2" />
+                      <Icon icon="solar:folder-bold-duotone" className="w-4 h-4 mr-2" />
                       Uncategorized
                       <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
                         {uncategorizedTitles.length}
@@ -786,7 +919,7 @@ export default function AdminTrending() {
                           value={section.id}
                           className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
                         >
-                          <LayoutGrid className="w-4 h-4 mr-2" />
+                          <Icon icon="solar:widget-2-bold-duotone" className="w-4 h-4 mr-2" />
                           {section.name}
                           <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
                             {sectionTitles.length}
@@ -804,12 +937,12 @@ export default function AdminTrending() {
 
                 {/* Tab Contents */}
                 <TabsContent value="uncategorized" className="mt-0">
-                  {renderTitlesTable(getFilteredTitlesForSection(null))}
+                  {renderTitlesTable(getFilteredTitlesForSection(null), null)}
                 </TabsContent>
 
                 {sections.map((section) => (
                   <TabsContent key={section.id} value={section.id} className="mt-0">
-                    {renderTitlesTable(getFilteredTitlesForSection(section.id))}
+                    {renderTitlesTable(getFilteredTitlesForSection(section.id), section.id)}
                   </TabsContent>
                 ))}
               </Tabs>
@@ -817,6 +950,14 @@ export default function AdminTrending() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Title Edit Modal */}
+      <TitleEditModal
+        titleId={selectedTitleId}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        onSaved={loadData}
+      />
     </AdminLayout>
   );
 }

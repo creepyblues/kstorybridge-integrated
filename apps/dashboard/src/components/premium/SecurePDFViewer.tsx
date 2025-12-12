@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Document, Page } from '@/lib/pdfConfig'; // Use centralized config
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Shield, AlertTriangle, Crown, X } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
@@ -675,7 +675,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
       <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
           <div className="flex flex-col items-center gap-4">
-            <Shield className="h-16 w-16 text-red-500" />
+            <Icon icon="solar:shield-warning-bold-duotone" className="h-16 w-16 text-red-500" />
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 {sessionExpired ? 'Session Expired' : 'Authentication Required'}
@@ -729,7 +729,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
       <Card className="bg-white border-gray-300 shadow-lg rounded-2xl">
         <CardContent className="p-8 text-center">
           <div className="flex flex-col items-center gap-4">
-            <AlertTriangle className="h-16 w-16 text-red-500" />
+            <Icon icon="solar:danger-triangle-bold-duotone" className="h-16 w-16 text-red-500" />
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Access Error</h3>
               <p className="text-red-600 mb-4">{error}</p>
@@ -767,7 +767,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
               onClick={goToPrevPage}
               disabled={pageNumber <= 1}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <Icon icon="solar:alt-arrow-left-bold-duotone" className="h-4 w-4" />
             </Button>
             <span className="text-sm text-gray-600 px-2">
               Page {pageNumber} of {numPages}
@@ -779,19 +779,19 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
               onClick={goToNextPage}
               disabled={pageNumber >= numPages}
             >
-              <ChevronRight className="h-4 w-4" />
+              <Icon icon="solar:alt-arrow-right-bold-duotone" className="h-4 w-4" />
             </Button>
           </div>
 
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={zoomOut}>
-              <ZoomOut className="h-4 w-4" />
+              <Icon icon="solar:magnifer-zoom-out-bold-duotone" className="h-4 w-4" />
             </Button>
             <span className="text-sm text-gray-600 px-2">
               {typeof scale === 'number' ? `${Math.round(scale * 100)}%` : scale === 'page' ? 'Fit' : 'Width'}
             </span>
             <Button variant="outline" size="sm" onClick={zoomIn}>
-              <ZoomIn className="h-4 w-4" />
+              <Icon icon="solar:magnifer-zoom-in-bold-duotone" className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -859,7 +859,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/20 hover:bg-black/40 text-white transition-all duration-200 flex items-center justify-center disabled:opacity-0 disabled:pointer-events-none hover:scale-110"
                 aria-label="Previous page"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <Icon icon="solar:alt-arrow-left-bold-duotone" className="h-6 w-6" />
               </button>
 
               {/* Next Page Button - Right Middle */}
@@ -869,7 +869,7 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/20 hover:bg-black/40 text-white transition-all duration-200 flex items-center justify-center disabled:opacity-0 disabled:pointer-events-none hover:scale-110"
                 aria-label="Next page"
               >
-                <ChevronRight className="h-6 w-6" />
+                <Icon icon="solar:alt-arrow-right-bold-duotone" className="h-6 w-6" />
               </button>
             </>
           )}
@@ -937,11 +937,11 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
               onClick={() => setShowUpgradePopup(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <X className="h-5 w-5" />
+              <Icon icon="solar:close-circle-bold-duotone" className="h-5 w-5" />
             </button>
             <div className="text-center">
               <div className="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                <Crown className="h-6 w-6 text-purple-600" />
+                <Icon icon="solar:crown-bold-duotone" className="h-6 w-6 text-purple-600" />
               </div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">This is a premium feature</h2>
               <p className="text-gray-600 mb-6">

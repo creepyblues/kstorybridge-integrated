@@ -6,7 +6,7 @@ import AdminLayout from '@/components/layout/AdminLayout';
 import { TitleEditModal } from '@/components/admin/TitleEditModal';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
-import { Search, Plus, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 type SortField = 'title' | 'genre' | 'priority' | 'views' | 'likes' | 'rights' | 'perfect_for' | 'verified';
 type SortDirection = 'asc' | 'desc';
@@ -112,11 +112,11 @@ export default function AdminTitles() {
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
-      return <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />;
+      return <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-3 w-3 ml-1 opacity-50" />;
     }
     return sortDirection === 'asc'
-      ? <ArrowUp className="h-3 w-3 ml-1" />
-      : <ArrowDown className="h-3 w-3 ml-1" />;
+      ? <Icon icon="solar:arrow-up-bold-duotone" className="h-3 w-3 ml-1" />
+      : <Icon icon="solar:arrow-down-bold-duotone" className="h-3 w-3 ml-1" />;
   };
 
   const fetchTitles = async () => {
@@ -232,7 +232,7 @@ export default function AdminTitles() {
             </p>
           </div>
           <Button className="bg-hanok-teal hover:bg-hanok-teal/90">
-            <Plus className="h-4 w-4 mr-2" />
+            <Icon icon="solar:add-circle-bold-duotone" className="h-4 w-4 mr-2" />
             Add New Title
           </Button>
         </div>
@@ -242,7 +242,7 @@ export default function AdminTitles() {
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Icon icon="solar:magnifer-bold-duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
                   placeholder="Search by title name or ID..."
@@ -301,7 +301,7 @@ export default function AdminTitles() {
           <CardContent className="p-0">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
               </div>
             ) : filteredTitles.length === 0 ? (
               <div className="text-center py-12 text-gray-500">

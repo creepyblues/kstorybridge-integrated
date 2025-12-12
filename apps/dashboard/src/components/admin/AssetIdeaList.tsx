@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Video, PresentationIcon } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { AssetGenerationCard } from './AssetGenerationCard';
 import type { MarketingAsset, AssetCategory } from '@/types/asset-generation';
 
@@ -40,11 +40,11 @@ export function AssetIdeaList({ assets, isLoading }: AssetIdeaListProps) {
   const getCategoryIcon = (category: AssetCategory) => {
     switch (category) {
       case 'social_media':
-        return <Image className="w-5 h-5" />;
+        return <Icon icon="solar:gallery-bold-duotone" className="w-5 h-5" />;
       case 'ad_creative':
-        return <Video className="w-5 h-5" />;
+        return <Icon icon="solar:videocamera-bold-duotone" className="w-5 h-5" />;
       case 'pitch_material':
-        return <PresentationIcon className="w-5 h-5" />;
+        return <Icon icon="solar:presentation-graph-bold-duotone" className="w-5 h-5" />;
     }
   };
 
@@ -85,7 +85,7 @@ export function AssetIdeaList({ assets, isLoading }: AssetIdeaListProps) {
     return (
       <div className="text-center py-12">
         <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-          <Image className="w-8 h-8 text-gray-400" />
+          <Icon icon="solar:gallery-bold-duotone" className="w-8 h-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-medium text-black mb-2">No Assets Generated Yet</h3>
         <p className="text-sm text-gray-500">

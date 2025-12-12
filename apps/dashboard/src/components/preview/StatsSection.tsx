@@ -1,4 +1,4 @@
-import { TrendingUp, BookOpen, Heart, Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface StatsSectionProps {
   theme: 'purple' | 'coral' | 'slate';
@@ -30,10 +30,10 @@ export default function StatsSection({ theme, userName = 'Jason' }: StatsSection
   const styles = themeStyles[theme];
 
   const stats = [
-    { icon: BookOpen, label: 'Titles Viewed', value: '42', change: '+12 this week' },
-    { icon: Heart, label: 'Saved Titles', value: '18', change: '+3 new' },
-    { icon: Sparkles, label: 'AI Searches', value: '27', change: '+8 today' },
-    { icon: TrendingUp, label: 'Match Score Avg', value: '84%', change: '+6% improvement' },
+    { icon: 'solar:book-bold-duotone', label: 'Titles Viewed', value: '42', change: '+12 this week' },
+    { icon: 'solar:heart-bold-duotone', label: 'Saved Titles', value: '18', change: '+3 new' },
+    { icon: 'solar:stars-bold-duotone', label: 'AI Searches', value: '27', change: '+8 today' },
+    { icon: 'solar:graph-up-bold-duotone', label: 'Match Score Avg', value: '84%', change: '+6% improvement' },
   ];
 
   return (
@@ -94,7 +94,7 @@ export default function StatsSection({ theme, userName = 'Jason' }: StatsSection
           >
             <div className="flex items-center gap-3 mb-2">
               <div className="bg-gray-100 rounded-lg p-2">
-                <stat.icon className="h-5 w-5 text-hanok-teal" />
+                <Icon icon={stat.icon} className="h-5 w-5 text-hanok-teal" />
               </div>
               <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
             </div>

@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FlaskConical, Loader2, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface Title {
   title_id: string;
@@ -199,7 +199,7 @@ export default function PitchExtractionTest() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <FlaskConical className="h-8 w-8 text-purple-600" />
+            <Icon icon="solar:test-tube-bold-duotone" className="h-8 w-8 text-purple-600" />
             <h1 className="text-3xl font-bold text-midnight-ink">Pitch Extraction Test Lab</h1>
           </div>
           <p className="text-gray-600">
@@ -298,12 +298,12 @@ export default function PitchExtractionTest() {
               >
                 {extracting ? (
                   <>
-                    <Loader2 className="animate-spin mr-2 h-4 w-4" />
+                    <Icon icon="solar:refresh-circle-bold-duotone" className="animate-spin mr-2 h-4 w-4" />
                     Extracting...
                   </>
                 ) : (
                   <>
-                    <FlaskConical className="mr-2 h-4 w-4" />
+                    <Icon icon="solar:test-tube-bold-duotone" className="mr-2 h-4 w-4" />
                     Test Extract (Preview Only)
                   </>
                 )}
@@ -314,14 +314,14 @@ export default function PitchExtractionTest() {
                 disabled={!selectedTitle || extracting}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                <CheckCircle className="mr-2 h-4 w-4" />
+                <Icon icon="solar:check-circle-bold-duotone" className="mr-2 h-4 w-4" />
                 Extract & Save to Database
               </Button>
             </div>
 
             {error && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3 mb-4">
-                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <Icon icon="solar:danger-circle-bold-duotone" className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-semibold text-red-800 mb-1">Extraction Failed</h3>
                   <p className="text-sm text-red-700">{error}</p>
@@ -333,14 +333,14 @@ export default function PitchExtractionTest() {
               <div className="space-y-4">
                 {/* Success Banner */}
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <Icon icon="solar:check-circle-bold-duotone" className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <h3 className="font-semibold text-green-800 mb-1">
                       ✅ Extraction Complete for "{displayName}"
                     </h3>
                     <div className="flex flex-wrap gap-4 text-sm text-green-700">
                       <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4" />
+                        <Icon icon="solar:dollar-bold-duotone" className="h-4 w-4" />
                         Cost: ${result.cost.toFixed(4)}
                       </div>
                       <div>
@@ -619,7 +619,7 @@ export default function PitchExtractionTest() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <DollarSign className="h-6 w-6 text-yellow-700" />
+                <Icon icon="solar:dollar-bold-duotone" className="h-6 w-6 text-yellow-700" />
                 <div>
                   <h3 className="font-semibold text-yellow-900">Total Cost This Session</h3>
                   <p className="text-sm text-yellow-700">OpenAI API usage</p>

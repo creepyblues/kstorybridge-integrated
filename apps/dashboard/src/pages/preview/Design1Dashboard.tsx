@@ -4,7 +4,7 @@ import StatsSection from '@/components/preview/StatsSection';
 import CategoryPills from '@/components/preview/CategoryPills';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, TrendingUp, Eye, Award } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function Design1Dashboard() {
   // Mock data for featured titles
@@ -74,7 +74,7 @@ export default function Design1Dashboard() {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute top-3 right-3 bg-purple-600 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 shadow-lg">
-                    <Star className="h-4 w-4 fill-current" />
+                    <Icon icon="solar:star-bold-duotone" className="h-4 w-4" />
                     {title.rating}
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 pt-24">
@@ -106,11 +106,11 @@ export default function Design1Dashboard() {
 
                   <div className="flex items-center justify-between text-sm text-gray-600">
                     <div className="flex items-center gap-1.5">
-                      <Eye className="h-4 w-4 text-purple-500" />
+                      <Icon icon="solar:eye-bold-duotone" className="h-4 w-4 text-purple-500" />
                       <span>{title.views} views</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <TrendingUp className="h-4 w-4 text-purple-500" />
+                      <Icon icon="solar:graph-up-bold-duotone" className="h-4 w-4 text-purple-500" />
                       <span>Trending #1</span>
                     </div>
                   </div>
@@ -129,7 +129,7 @@ export default function Design1Dashboard() {
           <CardContent className="p-8">
             <div className="flex items-center gap-4 mb-6">
               <div className="bg-purple-600 rounded-2xl p-4">
-                <Award className="h-8 w-8 text-white" />
+                <Icon icon="solar:crown-bold-duotone" className="h-8 w-8 text-white" />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-900">Your Discovery Journey</h3>

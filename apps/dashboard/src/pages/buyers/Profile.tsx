@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { ProBadge } from '@/components/tier/ProBadge';
-import { Loader2, User, Mail, Building, Briefcase, Linkedin, LogOut } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { trackPageView, trackFeatureUsage, trackProfileUpgradeClicked, trackUserSignedOut, trackExternalLinkClicked } from '@/utils/analytics';
 
 interface BuyerProfile {
@@ -93,7 +93,7 @@ export default function Profile() {
     return (
       <BuyerLayout>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
         </div>
       </BuyerLayout>
     );
@@ -120,7 +120,7 @@ export default function Profile() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                <User className="h-8 w-8 text-white" />
+                <Icon icon="solar:user-bold-duotone" className="h-8 w-8 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Profile</h1>
@@ -138,14 +138,14 @@ export default function Profile() {
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="bg-hanok-teal/10 rounded-full p-4">
-                  <User className="h-12 w-12 text-hanok-teal" />
+                  <Icon icon="solar:user-bold-duotone" className="h-12 w-12 text-hanok-teal" />
                 </div>
                 <div>
                   <h2 className="text-3xl lg:text-4xl font-bold text-hanok-teal mb-1">
                     {profile.full_name}
                   </h2>
                   <div className="flex items-center gap-2 text-gray-600">
-                    <Mail className="h-4 w-4" />
+                    <Icon icon="solar:letter-bold-duotone" className="h-4 w-4" />
                     <span className="text-sm">{profile.email}</span>
                   </div>
                 </div>
@@ -163,7 +163,7 @@ export default function Profile() {
               {/* Company */}
               {profile.buyer_company && (
                 <div className="flex items-start gap-3">
-                  <Building className="h-5 w-5 text-gray-400 mt-0.5" />
+                  <Icon icon="solar:buildings-bold-duotone" className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
                     <div className="text-sm text-gray-500">Company</div>
                     <div className="text-base text-black">{profile.buyer_company}</div>
@@ -174,7 +174,7 @@ export default function Profile() {
               {/* Role */}
               {profile.buyer_role && (
                 <div className="flex items-start gap-3">
-                  <Briefcase className="h-5 w-5 text-gray-400 mt-0.5" />
+                  <Icon icon="solar:case-bold-duotone" className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
                     <div className="text-sm text-gray-500">Role</div>
                     <div className="text-base text-black">{profile.buyer_role}</div>
@@ -185,7 +185,7 @@ export default function Profile() {
               {/* LinkedIn */}
               {profile.linkedin_url && (
                 <div className="flex items-start gap-3">
-                  <Linkedin className="h-5 w-5 text-gray-400 mt-0.5" />
+                  <Icon icon="solar:link-bold-duotone" className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
                     <div className="text-sm text-gray-500">LinkedIn</div>
                     <a
@@ -203,7 +203,7 @@ export default function Profile() {
 
               {/* Member Since */}
               <div className="flex items-start gap-3">
-                <User className="h-5 w-5 text-gray-400 mt-0.5" />
+                <Icon icon="solar:user-bold-duotone" className="h-5 w-5 text-gray-400 mt-0.5" />
                 <div>
                   <div className="text-sm text-gray-500">Member Since</div>
                   <div className="text-base text-black">
@@ -310,7 +310,7 @@ export default function Profile() {
               onClick={handleSignOut}
               className="border-gray-200 hover:bg-hanok-teal/5 hover:border-hanok-teal/30"
             >
-              <LogOut className="h-4 w-4 mr-2" />
+              <Icon icon="solar:logout-2-bold-duotone" className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
           </CardContent>

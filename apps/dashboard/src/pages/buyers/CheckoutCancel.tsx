@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { XCircle } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function CheckoutCancel() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export default function CheckoutCancel() {
           {/* Cancel Icon */}
           <div className="flex justify-center">
             <div className="bg-gray-200 rounded-2xl p-4">
-              <XCircle className="h-12 w-12 text-gray-500" />
+              <Icon icon="solar:close-circle-bold-duotone" className="h-12 w-12 text-gray-500" />
             </div>
           </div>
 

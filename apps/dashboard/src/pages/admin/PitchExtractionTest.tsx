@@ -1,5 +1,5 @@
 import AdminLayout from '@/components/layout/AdminLayout';
-import { FileText } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 export default function PitchExtractionTest() {
@@ -9,7 +9,7 @@ export default function PitchExtractionTest() {
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <FileText className="h-8 w-8 text-hanok-teal" />
+            <Icon icon="solar:document-text-bold-duotone" className="h-8 w-8 text-hanok-teal" />
             <h1 className="text-3xl font-bold text-black">Pitch Extraction Testing</h1>
           </div>
           <p className="text-gray-600">Test AI-powered pitch deck analysis</p>

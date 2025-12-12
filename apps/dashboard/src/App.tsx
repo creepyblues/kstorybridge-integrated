@@ -42,7 +42,6 @@ import Featured from '@/pages/buyers/Featured';
 // Admin pages
 import AdminTitles from '@/pages/admin/AdminTitles';
 import AdminTitleEdit from '@/pages/admin/AdminTitleEdit';
-import AdminFeatured from '@/pages/admin/Featured';
 import DraftApproval from '@/pages/admin/DraftApproval';
 import DraftDetail from '@/pages/admin/DraftDetail';
 import { ContentList } from '@/pages/admin/ContentList';
@@ -238,21 +237,9 @@ function App() {
           />
 
           {/* Admin routes */}
-          <Route path="/admin" element={<Navigate to="/admin/featured" replace />} />
+          <Route path="/admin" element={<Navigate to="/admin/trending" replace />} />
 
-          {/* Featured */}
-          <Route
-            path="/admin/featured"
-            element={
-              <AdminProtectedRoute>
-                <AdminLayout>
-                  <AdminFeatured />
-                </AdminLayout>
-              </AdminProtectedRoute>
-            }
-          />
-
-          {/* Trending (Featured with table view) */}
+          {/* Trending (Featured titles management) */}
           <Route
             path="/admin/trending"
             element={

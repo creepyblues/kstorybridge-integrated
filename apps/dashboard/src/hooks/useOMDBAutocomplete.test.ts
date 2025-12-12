@@ -54,8 +54,8 @@ describe('useOMDBAutocomplete', () => {
       expect(result.current.suggestions).toEqual([]);
     });
 
-    it('should accept debounceMs option', () => {
-      const { result } = renderHook(() => useOMDBAutocomplete('test', { debounceMs: 500 }));
+    it('should accept minChars option', () => {
+      const { result } = renderHook(() => useOMDBAutocomplete('test', { minChars: 3 }));
 
       // Hook should initialize without errors
       expect(result.current.suggestions).toEqual([]);

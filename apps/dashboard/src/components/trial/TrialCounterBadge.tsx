@@ -1,6 +1,6 @@
 import { useTrial } from '@/contexts/TrialContext';
 import { cn } from '@/lib/utils';
-import { Zap } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export function TrialCounterBadge() {
   const { remainingTrials, maxTrials } = useTrial();
@@ -25,7 +25,7 @@ export function TrialCounterBadge() {
         getColorClasses()
       )}
     >
-      <Zap className="h-4 w-4" />
+      <Icon icon="solar:bolt-bold-duotone" className="h-4 w-4" />
       <span>
         {remainingTrials} of {maxTrials} searches left
       </span>

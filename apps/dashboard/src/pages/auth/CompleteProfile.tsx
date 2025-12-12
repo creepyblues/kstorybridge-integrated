@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { completeOAuthProfile } from '@/lib/auth';
-import { Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { sendWelcomeEmail } from '@/services/emailService';
 
 // 🚨 AUTH ISOLATION BOUNDARY
@@ -208,7 +208,7 @@ export default function CompleteProfile() {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Icon icon="solar:refresh-circle-bold-duotone" className="mr-2 h-4 w-4 animate-spin" />}
               Complete Profile
             </Button>
           </form>

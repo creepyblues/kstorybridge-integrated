@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, History } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { ChatEmptyState } from '@/components/chat/ChatEmptyState';
 import { ChatMessage } from '@/components/chat/ChatMessage';
 import { ConversationalMessage } from '@/components/chat/ConversationalMessage';
@@ -441,7 +441,7 @@ export default function Chat() {
               size="sm"
               className="border-gray-300 hover:bg-gray-100"
             >
-              <History className="h-4 w-4 sm:mr-2" />
+              <Icon icon="solar:clock-circle-bold-duotone" className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">History</span>
             </Button>
           </div>
@@ -451,7 +451,7 @@ export default function Chat() {
         {isLoadingHistory ? (
           <div className="flex items-center justify-center h-[calc(100vh-200px)]">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-hanok-teal" />
+              <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-hanok-teal" />
               <p className="text-sm text-gray-600">Loading chat history...</p>
             </div>
           </div>
@@ -523,7 +523,7 @@ export default function Chat() {
             {/* Loading Indicator */}
             {loading && (
               <div className="flex items-center gap-2 text-gray-500 ml-11">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin" />
                 <span className="text-sm">Jinu is thinking...</span>
               </div>
             )}

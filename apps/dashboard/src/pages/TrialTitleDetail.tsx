@@ -13,7 +13,7 @@ import { type PitchAnalysis } from '@/types/pitchAnalysis';
 import { TrialLayout } from '@/components/layout/TrialLayout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Loader2, LayoutGrid, BookOpen, BarChart3, Users, Bot, Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Card } from '@/components/ui/card';
 
 import {
@@ -94,7 +94,7 @@ export default function TrialTitleDetail() {
     return (
       <TrialLayout>
         <div className="flex items-center justify-center min-h-[calc(100vh-16rem)]">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
         </div>
       </TrialLayout>
     );
@@ -106,7 +106,7 @@ export default function TrialTitleDetail() {
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)]">
           <p className="text-gray-500 text-lg mb-4">Title not found</p>
           <Button variant="outline" onClick={() => navigate('/trial')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
             Back to Trial
           </Button>
         </div>
@@ -124,7 +124,7 @@ export default function TrialTitleDetail() {
           onClick={() => navigate('/trial')}
           className="text-gray-600 hover:text-gray-900"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
           Back to Trial
         </Button>
 
@@ -132,7 +132,7 @@ export default function TrialTitleDetail() {
         <div className="bg-gradient-to-r from-hanok-teal/10 to-purple-100/50 border border-hanok-teal/20 rounded-2xl p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="bg-hanok-teal/10 rounded-full p-2">
-              <Sparkles className="h-5 w-5 text-hanok-teal" />
+              <Icon icon="solar:stars-bold-duotone" className="h-5 w-5 text-hanok-teal" />
             </div>
             <div>
               <p className="font-medium text-gray-900">Want to save titles and get unlimited searches?</p>
@@ -164,7 +164,7 @@ export default function TrialTitleDetail() {
           <div className="flex gap-4 items-start p-5 bg-gradient-to-r from-hanok-teal/5 to-transparent border border-hanok-teal/20 rounded-2xl">
             <div className="flex-shrink-0">
               <div className="bg-hanok-teal rounded-full p-2.5 shadow-md">
-                <Bot className="h-5 w-5 text-white" />
+                <Icon icon="solar:chat-square-bold-duotone" className="h-5 w-5 text-white" />
               </div>
             </div>
             <div className="flex-1">
@@ -182,7 +182,7 @@ export default function TrialTitleDetail() {
               value="overview"
               className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
             >
-              <LayoutGrid className="w-4 h-4 mr-2" />
+              <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
               Overview
             </TabsTrigger>
 
@@ -191,7 +191,7 @@ export default function TrialTitleDetail() {
                 value="story"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
               >
-                <BookOpen className="w-4 h-4 mr-2" />
+                <Icon icon="solar:book-bold-duotone" className="w-4 h-4 mr-2" />
                 Story Details
               </TabsTrigger>
             )}
@@ -201,7 +201,7 @@ export default function TrialTitleDetail() {
                 value="platforms"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
               >
-                <BarChart3 className="w-4 h-4 mr-2" />
+                <Icon icon="solar:graph-up-bold-duotone" className="w-4 h-4 mr-2" />
                 Platform Data
               </TabsTrigger>
             )}
@@ -211,7 +211,7 @@ export default function TrialTitleDetail() {
                 value="credits"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
               >
-                <Users className="w-4 h-4 mr-2" />
+                <Icon icon="solar:user-bold-duotone" className="w-4 h-4 mr-2" />
                 Credits
               </TabsTrigger>
             )}

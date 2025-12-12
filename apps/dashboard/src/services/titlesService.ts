@@ -275,6 +275,34 @@ class TitlesService {
   }
 
   /**
+   * Fetch multiple titles by their IDs
+   */
+  async getTitlesByIds(titleIds: string[]): Promise<Title[]> {
+    if (titleIds.length === 0) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('titles')
+        .select('*')
+        .in('title_id', titleIds);
+
+      if (error) {
+        console.error('❌ Error fetching titles by IDs:', error);
+        throw new Error(`Failed to fetch titles: ${error.message}`);
+      }
+
+      // Sort results to match the order of input IDs
+      const titleMap = new Map((data || []).map(t => [t.title_id, t]));
+      return titleIds
+        .map(id => titleMap.get(id))
+        .filter((t): t is Title => t !== undefined);
+    } catch (error: any) {
+      console.error('❌ Titles by IDs service error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Fetch a single title by ID with pitch analysis, platforms, and documents
    * Uses multiple queries for better reliability
    */

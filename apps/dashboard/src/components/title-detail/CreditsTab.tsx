@@ -3,15 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Title } from '@/services/titlesService';
 import { type PitchAnalysis } from '@/types/pitchAnalysis';
 import { AIInsightCard } from './AIInsightCard';
-import {
-  Users,
-  BookOpen,
-  Award,
-  Eye,
-  Star,
-  FileText,
-  Film,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface CreditsTabProps {
   title: Title;
@@ -65,7 +57,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:users-group-rounded-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Creative Team</h3>
             </div>
 
@@ -128,7 +120,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:book-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Source Material</h3>
             </div>
 
@@ -159,7 +151,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
               {(title.underlying_novel_en || title.underlying_novel_kr) && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                    <FileText className="w-4 h-4" />
+                    <Icon icon="solar:document-text-bold-duotone" className="w-4 h-4" />
                     Underlying Novel
                   </div>
                   {title.underlying_novel_en && (
@@ -175,7 +167,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
               {(title.script_title_en || title.script_title_kr) && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                    <FileText className="w-4 h-4" />
+                    <Icon icon="solar:document-text-bold-duotone" className="w-4 h-4" />
                     Script Title
                   </div>
                   {title.script_title_en && (
@@ -191,7 +183,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
               {(title.art_title_en || title.art_title_kr) && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                    <FileText className="w-4 h-4" />
+                    <Icon icon="solar:document-text-bold-duotone" className="w-4 h-4" />
                     Art Title
                   </div>
                   {title.art_title_en && (
@@ -212,7 +204,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Award className="w-5 h-5 text-[#4C9C9B]" />
+              <Icon icon="solar:cup-star-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Creator Track Record</h3>
             </div>
 
@@ -221,7 +213,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
               <div className="flex flex-wrap gap-4">
                 {title.creator_achievements?.total_titles && (
                   <div className="bg-gray-50 rounded-lg p-4 text-center min-w-[100px]">
-                    <FileText className="w-5 h-5 text-[#4C9C9B] mx-auto mb-2" />
+                    <Icon icon="solar:document-text-bold-duotone" className="w-5 h-5 text-[#4C9C9B] mx-auto mb-2" />
                     <div className="text-2xl font-bold text-black">
                       {title.creator_achievements.total_titles}
                     </div>
@@ -231,7 +223,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
 
                 {title.creator_achievements?.total_views && (
                   <div className="bg-gray-50 rounded-lg p-4 text-center min-w-[100px]">
-                    <Eye className="w-5 h-5 text-blue-500 mx-auto mb-2" />
+                    <Icon icon="solar:eye-bold-duotone" className="w-5 h-5 text-blue-500 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-black">
                       {title.creator_achievements.total_views}
                     </div>
@@ -260,7 +252,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
                 title.creator_achievements.awards_received.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                      <Star className="w-4 h-4 text-amber-500" />
+                      <Icon icon="solar:star-bold-duotone" className="w-4 h-4 text-amber-500" />
                       Awards Received
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -292,7 +284,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
           {hasAICreativeTeam && (
             <AIInsightCard
               title="Creative Team"
-              icon={<Users className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:users-group-rounded-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.creative_team.author_writer && (
@@ -328,7 +320,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
           {hasAISourceMaterial && (
             <AIInsightCard
               title="Source Material"
-              icon={<FileText className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:document-text-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.source_material.original_platform && (
@@ -392,7 +384,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
           {hasAIProductionDetails && (
             <AIInsightCard
               title="Production Details"
-              icon={<Film className="w-5 h-5 text-[#4C9C9B]" />}
+              icon={<Icon icon="solar:clapperboard-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />}
             >
               <div className="space-y-3 text-gray-700">
                 {pitchAnalysis!.production_details.format && (
@@ -431,7 +423,7 @@ export function CreditsTab({ title, pitchAnalysis }: CreditsTabProps) {
        !hasAICreativeTeam && !hasAISourceMaterial && !hasAIProductionDetails && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-8 text-center">
-            <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <Icon icon="solar:users-group-rounded-bold-duotone" className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No detailed credits available for this title.</p>
           </CardContent>
         </Card>

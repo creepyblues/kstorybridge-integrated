@@ -1,4 +1,4 @@
-import { Bot } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface ChatEmptyStateProps {
   onQuerySelect: (query: string) => void;
@@ -12,7 +12,7 @@ export function ChatEmptyState({ onQuerySelect, suggestedQueries }: ChatEmptySta
         {/* Icon */}
         <div className="flex justify-center">
           <div className="bg-hanok-teal/10 rounded-full p-4">
-            <Bot className="h-12 w-12 text-hanok-teal" />
+            <Icon icon="solar:robot-bold-duotone" className="h-12 w-12 text-hanok-teal" />
           </div>
         </div>
 

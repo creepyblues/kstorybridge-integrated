@@ -2,7 +2,7 @@
 // Created: 2025-11-21
 // Description: Grid display for mandate search results
 
-import { Loader2, Search } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { TitleMatch } from '@/services/mandateService';
 import MandateTitleCard from './MandateTitleCard';
 
@@ -21,7 +21,7 @@ export default function MandateResultsGrid({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
+        <Icon icon="solar:refresh-circle-bold-duotone" className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
         <p className="text-gray-600 text-sm">Finding titles that match your mandate...</p>
         <p className="text-gray-500 text-xs mt-2">This may take a few seconds</p>
       </div>
@@ -33,7 +33,7 @@ export default function MandateResultsGrid({
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-          <Search className="h-8 w-8 text-gray-400" />
+          <Icon icon="solar:magnifer-bold-duotone" className="h-8 w-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           Ready to Find Your Perfect Titles
@@ -50,7 +50,7 @@ export default function MandateResultsGrid({
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-          <Search className="h-8 w-8 text-gray-400" />
+          <Icon icon="solar:magnifer-bold-duotone" className="h-8 w-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           No Matches Found

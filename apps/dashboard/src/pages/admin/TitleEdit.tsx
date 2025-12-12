@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function TitleEdit() {
   const { toast } = useToast();
@@ -82,7 +82,7 @@ export default function TitleEdit() {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
         </div>
       </AdminLayout>
     );
@@ -107,7 +107,7 @@ export default function TitleEdit() {
               variant="ghost"
               className="text-gray-600 hover:text-gray-800 -ml-2 mb-4"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
               Back to Titles
             </Button>
             <h1 className="text-3xl font-bold text-black">Edit Title</h1>
@@ -371,12 +371,12 @@ export default function TitleEdit() {
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Save className="h-4 w-4 mr-2" />
+                  <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
                   Save Changes
                 </>
               )}

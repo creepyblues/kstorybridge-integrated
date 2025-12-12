@@ -4,7 +4,7 @@ import StatsSection from '@/components/preview/StatsSection';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Star, Heart, BookOpen, TrendingUp, Search } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function Design2Dashboard() {
   const trendingTitles = [
@@ -79,7 +79,7 @@ export default function Design2Dashboard() {
         {/* Search Bar */}
         <div className="mb-8">
           <div className="relative max-w-2xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Icon icon="solar:magnifer-bold-duotone" className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               type="text"
               placeholder="Search titles by name, genre, or keyword..."
@@ -93,7 +93,7 @@ export default function Design2Dashboard() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="bg-hanok-teal/10 rounded-xl p-3">
-                <TrendingUp className="h-6 w-6 text-hanok-teal" />
+                <Icon icon="solar:graph-up-bold-duotone" className="h-6 w-6 text-hanok-teal" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Trending This Week</h2>
@@ -119,11 +119,11 @@ export default function Design2Dashboard() {
                   <div className="absolute bottom-3 left-3 right-3">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="bg-sunrise-coral text-white px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3" />
+                        <Icon icon="solar:graph-up-bold-duotone" className="h-3 w-3" />
                         {title.trend}
                       </div>
                       <div className="bg-white/90 text-gray-900 px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        <Icon icon="solar:star-bold-duotone" className="h-3 w-3 text-yellow-500" />
                         {title.rating}
                       </div>
                     </div>
@@ -147,11 +147,11 @@ export default function Design2Dashboard() {
 
                   <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
                     <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                      <BookOpen className="h-4 w-4 text-hanok-teal" />
+                      <Icon icon="solar:book-bold-duotone" className="h-4 w-4 text-hanok-teal" />
                       {title.views}
                     </div>
                     <button className="text-sunrise-coral hover:text-red-600">
-                      <Heart className="h-5 w-5" />
+                      <Icon icon="solar:heart-bold-duotone" className="h-5 w-5" />
                     </button>
                   </div>
 

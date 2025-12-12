@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -72,7 +72,7 @@ class ErrorBoundary extends Component<Props, State> {
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <AlertCircle className="w-6 h-6 text-red-600" />
+                    <Icon icon="solar:danger-circle-bold-duotone" className="w-6 h-6 text-red-600" />
                   </div>
                 </div>
 

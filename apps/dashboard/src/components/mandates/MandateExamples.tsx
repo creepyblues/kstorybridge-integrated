@@ -8,7 +8,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface MandateExample {
   id: string;
@@ -190,7 +190,7 @@ export default function MandateExamples({ onTryExample, isModal = false }: Manda
                 className="w-full flex items-center justify-center gap-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-md px-3 py-2 text-xs font-semibold transition-colors"
               >
                 <span>Try This</span>
-                <ArrowRight className="h-3 w-3" />
+                <Icon icon="solar:arrow-right-bold-duotone" className="h-3 w-3" />
               </button>
             </CardContent>
           </Card>

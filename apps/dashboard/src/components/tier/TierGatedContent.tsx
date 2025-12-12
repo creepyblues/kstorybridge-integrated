@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useRef } from 'react';
 import { useTierAccess, UserTier } from '@/contexts/TierContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lock, Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { trackPremiumFeatureBlocked, trackPremiumUpgradeCtaClicked } from '@/utils/analytics';
 
@@ -65,7 +65,7 @@ export function TierGatedContent({ children, requiredTier, fallback, featureName
       <CardContent className="p-8 text-center space-y-4">
         <div className="flex justify-center">
           <div className="bg-pro-purple/10 rounded-full p-4">
-            <Lock className="h-8 w-8 text-pro-purple" />
+            <Icon icon="solar:lock-bold-duotone" className="h-8 w-8 text-pro-purple" />
           </div>
         </div>
 
@@ -83,7 +83,7 @@ export function TierGatedContent({ children, requiredTier, fallback, featureName
           onClick={handleUpgradeClick}
           className="bg-pro-purple hover:bg-pro-purple/90"
         >
-          <Sparkles className="h-4 w-4 mr-2" />
+          <Icon icon="solar:stars-bold-duotone" className="h-4 w-4 mr-2" />
           Upgrade to {requiredTier === 'pro' ? 'Pro' : 'Suite'}
         </Button>
       </CardContent>

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithEmail, signInWithOAuth, checkBuyerProfileExists } from '@/lib/auth';
-import { Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { trackSignin } from '@/utils/analytics';
 
 export default function SignIn() {
@@ -137,7 +137,7 @@ export default function SignIn() {
               className="w-full h-14 bg-hanok-teal hover:bg-hanok-teal/90 text-white text-base font-medium"
               disabled={loading}
             >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Icon icon="solar:refresh-circle-bold-duotone" className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>

@@ -7,16 +7,7 @@ import { Title, TitleDocument } from '@/services/titlesService';
 import { UserTier } from '@/contexts/TierContext';
 import PitchDeckThumbnail from '@/components/premium/PitchDeckThumbnail';
 import SecurePDFViewer from '@/components/premium/SecurePDFViewer';
-import {
-  FileText,
-  FolderOpen,
-  Download,
-  ExternalLink,
-  Lock,
-  Unlock,
-  X,
-  File,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface MaterialsTabProps {
   title: Title;
@@ -65,7 +56,7 @@ function DocumentCard({ document }: { document: TitleDocument }) {
     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className={`flex-shrink-0 ${iconColor}`}>
-          <File className="w-5 h-5" />
+          <Icon icon="solar:document-bold-duotone" className="w-5 h-5" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="font-medium text-black truncate">
@@ -84,7 +75,7 @@ function DocumentCard({ document }: { document: TitleDocument }) {
         {isNdaRequired ? (
           <>
             <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 bg-amber-50">
-              <Lock className="w-3 h-3 mr-1" />
+              <Icon icon="solar:lock-bold-duotone" className="w-3 h-3 mr-1" />
               NDA Required
             </Badge>
             <Button
@@ -98,7 +89,7 @@ function DocumentCard({ document }: { document: TitleDocument }) {
         ) : (
           <>
             <Badge variant="outline" className="text-xs border-green-300 text-green-700 bg-green-50">
-              <Unlock className="w-3 h-3 mr-1" />
+              <Icon icon="solar:lock-unlocked-bold-duotone" className="w-3 h-3 mr-1" />
               Available
             </Badge>
             {hasExternalUrl ? (
@@ -108,7 +99,7 @@ function DocumentCard({ document }: { document: TitleDocument }) {
                 className="text-[#4C9C9B] border-[#4C9C9B]/30 hover:bg-[#4C9C9B]/5"
                 onClick={() => window.open(document.external_url!, '_blank')}
               >
-                <ExternalLink className="w-4 h-4 mr-1" />
+                <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-1" />
                 Open
               </Button>
             ) : (
@@ -118,7 +109,7 @@ function DocumentCard({ document }: { document: TitleDocument }) {
                 className="text-[#4C9C9B] border-[#4C9C9B]/30 hover:bg-[#4C9C9B]/5"
                 onClick={() => window.open(document.file_url, '_blank')}
               >
-                <Download className="w-4 h-4 mr-1" />
+                <Icon icon="solar:download-bold-duotone" className="w-4 h-4 mr-1" />
                 Download
               </Button>
             )}
@@ -149,7 +140,7 @@ export function MaterialsTab({ title, userTier }: MaterialsTabProps) {
           <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-4">
-                <FileText className="w-5 h-5 text-[#4C9C9B]" />
+                <Icon icon="solar:document-text-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
                 <h3 className="text-lg font-semibold text-black">Pitch Deck</h3>
                 <Badge className="bg-[#AF52DE]/10 text-[#AF52DE] text-xs">PRO</Badge>
               </div>
@@ -170,7 +161,7 @@ export function MaterialsTab({ title, userTier }: MaterialsTabProps) {
           <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-4">
-                <FolderOpen className="w-5 h-5 text-[#4C9C9B]" />
+                <Icon icon="solar:folder-open-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
                 <h3 className="text-lg font-semibold text-black">Available Documents</h3>
                 <Badge className="bg-[#AF52DE]/10 text-[#AF52DE] text-xs">PRO</Badge>
                 <span className="text-sm text-gray-500">
@@ -192,7 +183,7 @@ export function MaterialsTab({ title, userTier }: MaterialsTabProps) {
       {!hasPitchDeck && !hasDocuments && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-8 text-center">
-            <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <Icon icon="solar:folder-open-bold-duotone" className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No materials available for this title.</p>
             <p className="text-gray-400 text-sm mt-1">
               Check back later or contact the rights holder for more information.
@@ -211,7 +202,7 @@ export function MaterialsTab({ title, userTier }: MaterialsTabProps) {
               onClick={() => setIsPdfModalOpen(false)}
               className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10 p-0"
             >
-              <X className="h-5 w-5" />
+              <Icon icon="solar:close-circle-bold-duotone" className="h-5 w-5" />
             </Button>
 
             <div className="h-full">

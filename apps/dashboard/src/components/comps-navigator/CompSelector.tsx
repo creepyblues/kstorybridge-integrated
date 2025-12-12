@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { X, ExternalLink, Loader2, Film, Tv } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { omdbService, OMDBSearchResult } from '@/services/omdbService';
@@ -18,6 +18,7 @@ export interface CompTitle {
   imdbID: string;
   year: string;
   type: 'movie' | 'series' | 'episode';
+  poster?: string;
 }
 
 interface CompSelectorProps {
@@ -47,8 +48,12 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
     const timer = setTimeout(async () => {
       setIsLoading(true);
       const results = await omdbService.searchTitles(trimmed);
-      setSuggestions(results.slice(0, 6)); // Max 6 suggestions
-      setShowDropdown(results.length > 0);
+      // Deduplicate by imdbID to avoid React key warnings
+      const uniqueResults = results.filter(
+        (result, index, self) => self.findIndex(r => r.imdbID === result.imdbID) === index
+      );
+      setSuggestions(uniqueResults.slice(0, 6)); // Max 6 suggestions
+      setShowDropdown(uniqueResults.length > 0);
       setIsLoading(false);
     }, 300); // 300ms debounce
 
@@ -93,7 +98,8 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
       title: result.Title,
       imdbID: result.imdbID,
       year: result.Year,
-      type: result.Type
+      type: result.Type,
+      poster: result.Poster !== 'N/A' ? result.Poster : undefined,
     };
 
     onChange([...compTitles, newComp]);
@@ -158,39 +164,63 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
 
       {/* Comp Chips */}
       {compTitles.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           {compTitles.map((comp, index) => (
             <div
               key={comp.imdbID || index}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-hanok-teal/10 to-hanok-teal/5 border border-hanok-teal/30 rounded-lg text-sm font-medium text-hanok-teal shadow-sm"
+              className="inline-flex items-center gap-3 p-2 bg-gradient-to-r from-hanok-teal/10 to-hanok-teal/5 border border-hanok-teal/30 rounded-xl text-sm font-medium text-hanok-teal shadow-sm"
             >
-              {comp.type === 'series' ? (
-                <Tv className="h-3.5 w-3.5 text-hanok-teal/70" />
-              ) : (
-                <Film className="h-3.5 w-3.5 text-hanok-teal/70" />
-              )}
-              <span>{comp.title}</span>
-              {comp.year && (
-                <span className="text-hanok-teal/60 text-xs">({comp.year})</span>
-              )}
-              {comp.imdbID && (
-                <a
-                  href={omdbService.getIMDBUrl(comp.imdbID)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-hanok-teal/50 hover:text-yellow-600 transition-colors"
-                  title="View on IMDB"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
+              {/* Poster thumbnail */}
+              <div className="w-[40px] h-[56px] flex-shrink-0 bg-gray-100 rounded overflow-hidden">
+                {comp.poster ? (
+                  <img
+                    src={comp.poster}
+                    alt={comp.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    {comp.type === 'series' ? (
+                      <Icon icon="solar:tv-bold-duotone" className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Icon icon="solar:clapperboard-bold-duotone" className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  {comp.type === 'series' ? (
+                    <Icon icon="solar:tv-bold-duotone" className="h-3.5 w-3.5 text-hanok-teal/70" />
+                  ) : (
+                    <Icon icon="solar:clapperboard-bold-duotone" className="h-3.5 w-3.5 text-hanok-teal/70" />
+                  )}
+                  <span>{comp.title}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {comp.year && (
+                    <span className="text-hanok-teal/60 text-xs">{comp.year}</span>
+                  )}
+                  {comp.imdbID && (
+                    <a
+                      href={omdbService.getIMDBUrl(comp.imdbID)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-hanok-teal/50 hover:text-yellow-600 transition-colors"
+                      title="View on IMDB"
+                    >
+                      <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
               <button
                 onClick={() => handleRemoveComp(index)}
-                className="hover:bg-hanok-teal/20 rounded-full p-0.5 transition-colors"
+                className="hover:bg-hanok-teal/20 rounded-full p-1 transition-colors ml-1"
                 aria-label={`Remove ${comp.title}`}
               >
-                <X className="h-3.5 w-3.5" />
+                <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -223,7 +253,7 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
               />
               {isLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin text-gray-400" />
                 </div>
               )}
             </div>
@@ -239,31 +269,57 @@ export default function CompSelector({ compTitles, onChange, maxComps = 3 }: Com
 
           {/* Suggestions Dropdown */}
           {showDropdown && suggestions.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto">
               {suggestions.map((result) => (
                 <div
                   key={result.imdbID}
                   onClick={() => handleSelectSuggestion(result)}
-                  className="flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    {result.Type === 'series' ? (
-                      <Tv className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                    ) : (
-                      <Film className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                    )}
-                    <span className="font-medium text-gray-900 truncate">{result.Title}</span>
-                    <span className="text-gray-500 text-sm flex-shrink-0">({result.Year})</span>
+                  {/* Poster Image - 1.5x bigger (60x84px) */}
+                  <div className="w-[60px] h-[84px] flex-shrink-0 bg-gray-100 rounded overflow-hidden">
+                    {result.Poster && result.Poster !== 'N/A' ? (
+                      <img
+                        src={result.Poster}
+                        alt={result.Title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to icon if image fails to load
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div className={`w-full h-full flex items-center justify-center ${result.Poster && result.Poster !== 'N/A' ? 'hidden' : ''}`}>
+                      {result.Type === 'series' ? (
+                        <Icon icon="solar:tv-bold-duotone" className="h-6 w-6 text-gray-400" />
+                      ) : (
+                        <Icon icon="solar:clapperboard-bold-duotone" className="h-6 w-6 text-gray-400" />
+                      )}
+                    </div>
                   </div>
+                  {/* Title Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      {result.Type === 'series' ? (
+                        <Icon icon="solar:tv-bold-duotone" className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                      ) : (
+                        <Icon icon="solar:clapperboard-bold-duotone" className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />
+                      )}
+                      <span className="font-medium text-gray-900 truncate">{result.Title}</span>
+                    </div>
+                    <span className="text-gray-500 text-sm">{result.Year}</span>
+                  </div>
+                  {/* IMDB Link */}
                   <a
                     href={omdbService.getIMDBUrl(result.imdbID)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="text-gray-400 hover:text-yellow-500 transition-colors flex-shrink-0 ml-2"
+                    className="text-gray-400 hover:text-yellow-500 transition-colors flex-shrink-0"
                     title="View on IMDB"
                   >
-                    <ExternalLink className="h-4 w-4" />
+                    <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-4 w-4" />
                   </a>
                 </div>
               ))}

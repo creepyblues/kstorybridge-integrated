@@ -4,7 +4,7 @@ import PreviewBanner from '@/components/preview/PreviewBanner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Compass, Sparkles, Plus, X, Bot, Star, Clock, RotateCcw } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function Design2CompsNavigator() {
   const [compTitles, setCompTitles] = useState<string[]>(['Bridgerton']);
@@ -78,7 +78,7 @@ export default function Design2CompsNavigator() {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-3">
             <div className="bg-hanok-teal p-3 rounded-2xl">
-              <Compass className="h-8 w-8 text-white" />
+              <Icon icon="solar:compass-bold-duotone" className="h-8 w-8 text-white" />
             </div>
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
@@ -96,7 +96,7 @@ export default function Design2CompsNavigator() {
           <CardContent className="p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="bg-hanok-teal/10 rounded-full p-2.5">
-                <Sparkles className="h-5 w-5 text-hanok-teal" />
+                <Icon icon="solar:stars-bold-duotone" className="h-5 w-5 text-hanok-teal" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Your Comparable Titles</h2>
@@ -121,7 +121,7 @@ export default function Design2CompsNavigator() {
                       size="icon"
                       className="h-12 w-12 border-red-300 text-red-600 hover:bg-red-50"
                     >
-                      <X className="h-4 w-4" />
+                      <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -133,7 +133,7 @@ export default function Design2CompsNavigator() {
                   variant="outline"
                   className="w-full border-dashed border-2 border-hanok-teal/30 text-hanok-teal hover:bg-hanok-teal/5"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Icon icon="solar:add-circle-bold-duotone" className="h-4 w-4 mr-2" />
                   Add another comparable (optional)
                 </Button>
               )}
@@ -154,7 +154,7 @@ export default function Design2CompsNavigator() {
 
             {/* Search Button */}
             <Button className="w-full h-12 bg-hanok-teal hover:bg-hanok-teal/90 text-white text-lg font-semibold shadow-lg">
-              <Compass className="h-5 w-5 mr-2" />
+              <Icon icon="solar:compass-bold-duotone" className="h-5 w-5 mr-2" />
               Find Matching Korean Titles
             </Button>
           </CardContent>
@@ -169,7 +169,7 @@ export default function Design2CompsNavigator() {
             </p>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600 bg-hanok-teal/5 px-4 py-2 rounded-full border border-hanok-teal/20">
-            <Bot className="h-4 w-4 text-hanok-teal" />
+            <Icon icon="solar:chat-square-bold-duotone" className="h-4 w-4 text-hanok-teal" />
             <span>AI-ranked similarity</span>
           </div>
         </div>
@@ -214,7 +214,7 @@ export default function Design2CompsNavigator() {
                 {/* Stats */}
                 <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    <Icon icon="solar:star-bold-duotone" className="h-4 w-4 text-yellow-500" />
                     <span className="font-semibold text-gray-900">{result.rating}</span>
                   </div>
                   <div>
@@ -225,7 +225,7 @@ export default function Design2CompsNavigator() {
                 {/* AI Explanation */}
                 <div className="mb-4">
                   <div className="flex items-start gap-2 mb-2">
-                    <Bot className="h-4 w-4 text-hanok-teal mt-0.5 flex-shrink-0" />
+                    <Icon icon="solar:chat-square-bold-duotone" className="h-4 w-4 text-hanok-teal mt-0.5 flex-shrink-0" />
                     <span className="text-xs font-semibold text-hanok-teal uppercase">Why it matches</span>
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed bg-hanok-teal/5 rounded-lg p-3 border border-hanok-teal/10">
@@ -246,7 +246,7 @@ export default function Design2CompsNavigator() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Sparkles className="h-6 w-6 text-hanok-teal" />
+                <Icon icon="solar:stars-bold-duotone" className="h-6 w-6 text-hanok-teal" />
                 <div>
                   <div className="font-semibold text-gray-900">Search completed in 4.2s</div>
                   <div className="text-sm text-gray-600">Found 127 matches • Estimated cost: $0.002</div>
@@ -265,7 +265,7 @@ export default function Design2CompsNavigator() {
           <div className="sticky top-20">
             <div className="flex items-center gap-2 mb-4">
               <div className="bg-hanok-teal/10 rounded-full p-2">
-                <Clock className="h-4 w-4 text-hanok-teal" />
+                <Icon icon="solar:clock-circle-bold-duotone" className="h-4 w-4 text-hanok-teal" />
               </div>
               <div>
                 <h2 className="text-sm font-bold text-gray-900">Recent Searches</h2>
@@ -290,7 +290,7 @@ export default function Design2CompsNavigator() {
                       </div>
                       <div className="flex flex-col gap-1 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
+                          <Icon icon="solar:clock-circle-bold-duotone" className="h-3 w-3" />
                           {search.date}
                         </span>
                         <span>{search.matchCount} matches</span>
@@ -301,7 +301,7 @@ export default function Design2CompsNavigator() {
                       size="sm"
                       className="w-full border-hanok-teal/30 text-hanok-teal hover:bg-hanok-teal hover:text-white transition-colors text-xs py-1"
                     >
-                      <RotateCcw className="h-3 w-3 mr-1" />
+                      <Icon icon="solar:refresh-circle-bold-duotone" className="h-3 w-3 mr-1" />
                       Re-run
                     </Button>
                   </CardContent>

@@ -2,9 +2,55 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
+// Import shared types from unified engine
+import {
+  COMPS_ENGINE_VERSION,
+  DIMENSION_WEIGHTS,
+  type DimensionScore,
+  type SuggestedCompV2,
+  type CompsGeneratorResponse,
+  type StoryDeconstruction,
+} from '../_shared/comps-types.ts';
+
+import {
+  logCompsEngine,
+  estimateGeneratorCost,
+} from '../_shared/comps-utils.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// Request timeout in milliseconds
+const REQUEST_TIMEOUT_MS = 60000 // 60 seconds for GPT-4 calls
+const OMDB_TIMEOUT_MS = 10000    // 10 seconds for OMDB lookups
+
+/**
+ * Fetch with timeout wrapper to prevent hanging requests
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number = REQUEST_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    return response
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timed out after ${timeoutMs}ms`)
+    }
+    throw error
+  } finally {
+    clearTimeout(timeoutId)
+  }
 }
 
 // =====================================================================
@@ -17,36 +63,8 @@ interface CompsGeneratorRequest {
   user_email: string;
 }
 
-interface DimensionScore {
-  dimension: string;
-  score: number;
-  reason: string;
-}
-
-interface SuggestedComp {
-  comp_title: string;
-  comp_year?: number;
-  comp_type: string;  // "TV Series" | "Film" | "Anime"
-  overall_match_score: number;
-  dimension_scores: DimensionScore[];
-  explanation: string;
-  match_reasons: string[];
-  // IMDB enrichment (from OMDB API)
-  imdb_id?: string;   // e.g., "tt6994104"
-  imdb_url?: string;  // e.g., "https://www.imdb.com/title/tt6994104"
-  poster_url?: string; // e.g., "https://m.media-amazon.com/images/M/..."
-}
-
-interface CompsGeneratorResponse {
-  title_id: string;
-  title_name: string;
-  mode_used: 'rich' | 'limited';
-  data_completeness: number;
-  suggested_comps: SuggestedComp[];
-  analysis_summary: string;
-  processing_time_ms: number;
-  cost_estimate: number;
-}
+// Use SuggestedCompV2 from shared types
+type SuggestedComp = SuggestedCompV2;
 
 interface TitleData {
   title_id: string;
@@ -78,16 +96,7 @@ interface ContentAnalysis {
   processing_confidence: number | null;
 }
 
-interface StoryDeconstruction {
-  save_the_cat_genre: string;
-  tone_mood: string;
-  character_archetypes: string;
-  plot_structure: string;
-  setting_world: string;
-  themes: string;
-  target_audience: string;
-  format_style: string;
-}
+// StoryDeconstruction is imported from shared types
 
 // =====================================================================
 // MAIN HANDLER
@@ -281,16 +290,15 @@ serve(async (req) => {
     // =====================================================================
     const totalDuration = Date.now() - startTime
 
-    // Cost estimation
-    // Story deconstruction: ~1000 tokens input, ~500 output = ~$0.02
-    // Comp generation: ~1500 tokens input, ~1500 output = ~$0.06
-    const costEstimate = 0.08
+    // Cost estimation using unified engine utility
+    const costEstimate = estimateGeneratorCost()
 
-    console.log('[COMPS-GEN] Generation complete', {
+    logCompsEngine('Generation complete', {
       total_duration_ms: totalDuration,
       mode_used: modeUsed,
       comps_generated: suggestedComps.length,
-      cost_estimate: costEstimate
+      cost_estimate: costEstimate,
+      engine_version: COMPS_ENGINE_VERSION,
     })
 
     const response: CompsGeneratorResponse = {
@@ -301,7 +309,8 @@ serve(async (req) => {
       suggested_comps: enrichedComps,
       analysis_summary: buildAnalysisSummary(deconstruction, modeUsed),
       processing_time_ms: totalDuration,
-      cost_estimate: costEstimate
+      cost_estimate: costEstimate,
+      engine_version: COMPS_ENGINE_VERSION,
     }
 
     return new Response(
@@ -371,7 +380,7 @@ async function deconstructStory(
     ? buildRichDeconstructionPrompt(title, analysis)
     : buildLimitedDeconstructionPrompt(title)
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiApiKey}`,
@@ -391,7 +400,7 @@ Always return valid JSON matching the requested structure.`
       temperature: 0.3,
       response_format: { type: 'json_object' }
     })
-  })
+  }, REQUEST_TIMEOUT_MS) // 60 second timeout for GPT-4 story deconstruction
 
   if (!response.ok) {
     const error = await response.text()
@@ -486,7 +495,7 @@ async function generateComps(
 
   const prompt = buildCompGenerationPrompt(title, deconstruction, mode)
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiApiKey}`,
@@ -508,7 +517,7 @@ Always return valid JSON matching the requested structure.`
       temperature: 0.4,
       response_format: { type: 'json_object' }
     })
-  })
+  }, REQUEST_TIMEOUT_MS) // 60 second timeout for GPT-4 comp generation
 
   if (!response.ok) {
     const error = await response.text()
@@ -650,7 +659,7 @@ async function enrichCompsWithIMDB(comps: SuggestedComp[]): Promise<SuggestedCom
           searchUrl += `&y=${comp.comp_year}`
         }
 
-        const response = await fetch(searchUrl)
+        const response = await fetchWithTimeout(searchUrl, {}, OMDB_TIMEOUT_MS)
         const data: OMDBSearchResponse = await response.json()
 
         if (data.Response === 'True' && data.Search && data.Search.length > 0) {

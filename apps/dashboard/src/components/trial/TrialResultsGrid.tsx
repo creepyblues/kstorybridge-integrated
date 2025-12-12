@@ -6,10 +6,10 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, ExternalLink } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TitleMatch } from '@/services/compsNavigatorService';
+import { TitleMatch, getMatchScore } from '@/services/compsNavigatorService';
 import {
   Dialog,
   DialogContent,
@@ -49,7 +49,8 @@ function TrialTitleMatchCard({ match }: { match: TitleMatch }) {
     };
   };
 
-  const matchBadge = getMatchScoreBadge(match.match_score);
+  const score = getMatchScore(match);
+  const matchBadge = getMatchScoreBadge(score);
 
   return (
     <>
@@ -75,7 +76,7 @@ function TrialTitleMatchCard({ match }: { match: TitleMatch }) {
             )}
 
             <div className={`absolute top-3 right-3 ${matchBadge.gradient} ${matchBadge.text} ${matchBadge.border} border px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm backdrop-blur-sm`}>
-              {match.match_score}%
+              {score}%
             </div>
           </div>
 
@@ -108,7 +109,7 @@ function TrialTitleMatchCard({ match }: { match: TitleMatch }) {
             <div className="flex gap-3">
               <div className="flex-shrink-0">
                 <div className="bg-hanok-teal/10 rounded-full p-2">
-                  <Bot className="h-5 w-5 text-hanok-teal" />
+                  <Icon icon="solar:chat-round-dots-bold-duotone" className="h-5 w-5 text-hanok-teal" />
                 </div>
               </div>
               <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-3">
@@ -134,6 +135,7 @@ function TrialTitleMatchCard({ match }: { match: TitleMatch }) {
 // Trial-specific modal that links to /trial/titles/:id
 function TrialMatchDetailModal({ match, onClose }: { match: TitleMatch; onClose: () => void }) {
   const navigate = useNavigate();
+  const score = getMatchScore(match);
 
   const handleViewFullTitle = () => {
     navigate(`/trial/titles/${match.title_id}`);
@@ -157,7 +159,7 @@ function TrialMatchDetailModal({ match, onClose }: { match: TitleMatch; onClose:
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <div className="text-4xl font-bold text-gray-900">
-              {match.match_score}%
+              {score}%
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Overall Match</p>
@@ -211,7 +213,7 @@ function TrialMatchDetailModal({ match, onClose }: { match: TitleMatch; onClose:
               className="flex-1 flex items-center justify-center gap-2 bg-hanok-teal hover:bg-hanok-teal/90"
             >
               <span>View Full Title Details</span>
-              <ExternalLink className="h-4 w-4" />
+              <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-4 w-4" />
             </Button>
             <Button
               onClick={onClose}

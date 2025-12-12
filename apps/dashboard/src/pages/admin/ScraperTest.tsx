@@ -1,5 +1,5 @@
 import AdminLayout from '@/components/layout/AdminLayout';
-import { TestTube } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 export default function ScraperTest() {
@@ -9,7 +9,7 @@ export default function ScraperTest() {
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <TestTube className="h-8 w-8 text-hanok-teal" />
+            <Icon icon="solar:test-tube-bold-duotone" className="h-8 w-8 text-hanok-teal" />
             <h1 className="text-3xl font-bold text-black">Scraper Testing</h1>
           </div>
           <p className="text-gray-600">Test web scraping functionality for titles</p>

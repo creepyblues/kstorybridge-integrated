@@ -4,7 +4,7 @@
  * Results grid for trial mandate searches that links to /trial/titles/:id
  */
 
-import { Loader2, Search, Bot } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TitleMatch } from '@/services/mandateService';
 
@@ -134,7 +134,7 @@ function TrialMandateTitleCard({ match }: { match: TitleMatch }) {
           <div className="flex gap-3 bg-hanok-teal/5 rounded-xl p-3 border border-hanok-teal/20">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 rounded-full bg-hanok-teal flex items-center justify-center">
-                <Bot className="h-5 w-5 text-white" />
+                <Icon icon="solar:chat-round-dots-bold-duotone" className="h-5 w-5 text-white" />
               </div>
             </div>
             <div className="flex-1">
@@ -158,7 +158,7 @@ export function TrialMandateResultsGrid({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
+        <Icon icon="solar:refresh-circle-bold-duotone" className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
         <p className="text-gray-600 text-sm">Finding titles that match your mandate...</p>
         <p className="text-gray-500 text-xs mt-2">This may take a few seconds</p>
       </div>
@@ -169,7 +169,7 @@ export function TrialMandateResultsGrid({
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-          <Search className="h-8 w-8 text-gray-400" />
+          <Icon icon="solar:magnifer-bold-duotone" className="h-8 w-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           Ready to Find Your Perfect Titles
@@ -185,7 +185,7 @@ export function TrialMandateResultsGrid({
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-          <Search className="h-8 w-8 text-gray-400" />
+          <Icon icon="solar:magnifer-bold-duotone" className="h-8 w-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           No Matches Found

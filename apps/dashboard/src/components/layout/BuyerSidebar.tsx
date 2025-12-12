@@ -3,32 +3,32 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { User, Menu, X, Home, MessageSquare, Compass, Sparkles, BookOpen, Heart, CreditCard, Shield, TrendingUp } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface MenuItem {
   title: string;
   href: string;
   badge?: string;
-  icon: React.ReactNode;
+  icon: string;
 }
 
 // Buyer menu items (with /buyers prefix)
 const getDiscoverItems = (): MenuItem[] => {
   return [
-    { title: 'Home', href: '/buyers/home', icon: <Home className="h-5 w-5" /> },
-    { title: 'Chat', href: '/buyers/chat', icon: <MessageSquare className="h-5 w-5" /> },
-    { title: 'Comps Navigator', href: '/buyers/comps-navigator', icon: <Compass className="h-5 w-5" /> },
-    { title: 'Mandate Matcher', href: '/buyers/mandates', icon: <Sparkles className="h-5 w-5" /> },
-    { title: 'Trending', href: '/buyers/trending', icon: <TrendingUp className="h-5 w-5" /> },
-    { title: 'Titles', href: '/buyers/titles', icon: <BookOpen className="h-5 w-5" /> },
-    { title: 'Saved', href: '/buyers/saved', icon: <Heart className="h-5 w-5" /> },
-    { title: 'Plan', href: '/buyers/plan', icon: <CreditCard className="h-5 w-5" /> },
+    { title: 'Home', href: '/buyers/home', icon: 'solar:home-2-bold-duotone' },
+    { title: 'Chat', href: '/buyers/chat', icon: 'solar:chat-round-dots-bold-duotone' },
+    { title: 'Comps Navigator', href: '/buyers/comps-navigator', icon: 'solar:compass-bold-duotone' },
+    { title: 'Mandate Matcher', href: '/buyers/mandates', icon: 'solar:stars-bold-duotone' },
+    { title: 'Trending', href: '/buyers/trending', icon: 'solar:graph-up-bold-duotone' },
+    { title: 'Titles', href: '/buyers/titles', icon: 'solar:book-bold-duotone' },
+    { title: 'Saved', href: '/buyers/saved', icon: 'solar:heart-bold-duotone' },
+    { title: 'Plan', href: '/buyers/plan', icon: 'solar:card-bold-duotone' },
   ];
 };
 
 // Admin menu item - single link to admin panel
 const getAdminItem = (): MenuItem => {
-  return { title: 'Admin Panel', href: '/admin', icon: <Shield className="h-5 w-5" /> };
+  return { title: 'Admin Panel', href: '/admin', icon: 'solar:shield-bold-duotone' };
 };
 
 export function BuyerSidebar() {
@@ -56,7 +56,7 @@ export function BuyerSidebar() {
         onClick={handleMobileMenuToggle}
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white border border-red-200 shadow-lg"
       >
-        {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        {isMobileMenuOpen ? <Icon icon="solar:close-circle-bold-duotone" className="h-6 w-6" /> : <Icon icon="solar:hamburger-menu-bold-duotone" className="h-6 w-6" />}
       </button>
 
       {/* Overlay for mobile */}
@@ -103,7 +103,7 @@ export function BuyerSidebar() {
                           : 'text-gray-700 hover:bg-hanok-teal/5'
                       )}
                     >
-                      {item.icon}
+                      <Icon icon={item.icon} className="h-5 w-5" />
                       <span>{item.title}</span>
                       {item.badge && (
                         <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
@@ -134,7 +134,7 @@ export function BuyerSidebar() {
                           : 'text-gray-700 hover:bg-hanok-teal/5'
                       )}
                     >
-                      {adminItem.icon}
+                      <Icon icon={adminItem.icon} className="h-5 w-5" />
                       <span>{adminItem.title}</span>
                     </Link>
                   </li>
@@ -150,7 +150,7 @@ export function BuyerSidebar() {
               onClick={handleLinkClick}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-hanok-teal/5 transition-colors"
             >
-              <User className="h-5 w-5 text-gray-400" />
+              <Icon icon="solar:user-bold-duotone" className="h-5 w-5 text-gray-400" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {user?.user_metadata?.full_name || 'Buyer'}

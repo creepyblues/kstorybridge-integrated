@@ -20,7 +20,7 @@ import {
   type ContentPostInsert,
 } from '@/services/contentService';
 import { RichTextEditor } from '@/components/RichTextEditor';
-import { ArrowLeft, Save, Eye, Upload } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from "@/components/ui/button";
@@ -295,7 +295,7 @@ export const ContentEditor = () => {
             size="sm"
             onClick={() => navigate('/admin/content')}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
             Back
           </Button>
           <h1 className="text-2xl font-bold">
@@ -420,7 +420,7 @@ export const ContentEditor = () => {
                 disabled={isSubmitting}
                 className="bg-black text-white hover:bg-gray-800 flex-1"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
                 {isSubmitting ? 'Saving...' : isEditMode ? 'Update Post' : 'Create Post'}
               </Button>
 
@@ -430,7 +430,7 @@ export const ContentEditor = () => {
                 disabled={isSubmitting}
                 className="bg-green-600 text-white hover:bg-green-700 flex-1"
               >
-                <Upload className="h-4 w-4 mr-2" />
+                <Icon icon="solar:upload-bold-duotone" className="h-4 w-4 mr-2" />
                 Publish
               </Button>
 
@@ -440,7 +440,7 @@ export const ContentEditor = () => {
                 onClick={() => setPreviewMode(!previewMode)}
                 className="border-gray-300 hover:bg-gray-100"
               >
-                <Eye className="h-4 w-4 mr-2" />
+                <Icon icon="solar:eye-bold-duotone" className="h-4 w-4 mr-2" />
                 {previewMode ? 'Edit' : 'Preview'}
               </Button>
             </div>
@@ -458,7 +458,7 @@ export const ContentEditor = () => {
                   onClick={() => setPreviewMode(false)}
                   className="border-gray-300 hover:bg-gray-100"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
                   Back to Edit
                 </Button>
               </div>

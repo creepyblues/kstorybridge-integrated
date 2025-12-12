@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, DollarSign, CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import type { MarketingAsset, GenerationStatsData } from '@/types/asset-generation';
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -42,21 +42,21 @@ export function GenerationStats({ assets }: GenerationStatsProps) {
     {
       title: 'Total Assets',
       value: stats.total_assets,
-      icon: TrendingUp,
+      icon: 'solar:graph-up-bold-duotone',
       color: 'text-gray-700',
       bgColor: 'bg-gray-100',
     },
     {
       title: 'Completed',
       value: stats.completed_count,
-      icon: CheckCircle2,
+      icon: 'solar:check-circle-bold-duotone',
       color: 'text-green-700',
       bgColor: 'bg-green-100',
     },
     {
       title: 'Generating',
       value: stats.generating_count,
-      icon: Loader2,
+      icon: 'solar:refresh-circle-bold-duotone',
       color: 'text-blue-700',
       bgColor: 'bg-blue-100',
       animate: stats.generating_count > 0,
@@ -64,21 +64,21 @@ export function GenerationStats({ assets }: GenerationStatsProps) {
     {
       title: 'Pending',
       value: stats.pending_count,
-      icon: Clock,
+      icon: 'solar:clock-circle-bold-duotone',
       color: 'text-gray-600',
       bgColor: 'bg-gray-100',
     },
     {
       title: 'Failed',
       value: stats.failed_count,
-      icon: XCircle,
+      icon: 'solar:close-circle-bold-duotone',
       color: 'text-red-700',
       bgColor: 'bg-red-100',
     },
     {
       title: 'Total Cost',
       value: `$${stats.total_cost.toFixed(2)}`,
-      icon: DollarSign,
+      icon: 'solar:dollar-bold-duotone',
       color: 'text-purple-700',
       bgColor: 'bg-purple-100',
     },
@@ -89,7 +89,6 @@ export function GenerationStats({ assets }: GenerationStatsProps) {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {statCards.map((stat) => {
-          const Icon = stat.icon;
           return (
             <Card
               key={stat.title}
@@ -99,6 +98,7 @@ export function GenerationStats({ assets }: GenerationStatsProps) {
                 <div className="flex items-center gap-3">
                   <div className={`${stat.bgColor} p-2 rounded-lg`}>
                     <Icon
+                      icon={stat.icon}
                       className={`w-5 h-5 ${stat.color} ${
                         stat.animate ? 'animate-spin' : ''
                       }`}

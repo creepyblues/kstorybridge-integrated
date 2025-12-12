@@ -3,7 +3,7 @@ import PreviewBanner from '@/components/preview/PreviewBanner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Star, TrendingUp, Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function Design1CompsNavigator() {
 
@@ -54,7 +54,7 @@ export default function Design1CompsNavigator() {
           <CardContent className="p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="bg-purple-600 rounded-full p-3">
-                <Sparkles className="h-6 w-6 text-white" />
+                <Icon icon="solar:stars-bold-duotone" className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">AI-Powered Search</h2>
@@ -64,7 +64,7 @@ export default function Design1CompsNavigator() {
 
             <div className="space-y-4">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-400" />
+                <Icon icon="solar:magnifer-bold-duotone" className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-400" />
                 <Input
                   placeholder="e.g., Bridgerton, Game of Thrones, The Crown..."
                   className="pl-12 h-14 text-lg border-purple-300 focus:border-purple-500 focus:ring-purple-500"
@@ -97,7 +97,7 @@ export default function Design1CompsNavigator() {
             <p className="text-gray-600">Based on: <span className="text-purple-600 font-medium">Game of Thrones, Bridgerton</span></p>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Bot className="h-5 w-5 text-purple-600" />
+            <Icon icon="solar:chat-square-bold-duotone" className="h-5 w-5 text-purple-600" />
             <span>AI-ranked by similarity</span>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function Design1CompsNavigator() {
                 {/* AI Explanation */}
                 <div className="mb-4">
                   <div className="flex items-start gap-2 mb-2">
-                    <Bot className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <Icon icon="solar:chat-square-bold-duotone" className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
                     <span className="text-xs font-semibold text-purple-600 uppercase">Why it matches</span>
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed bg-purple-50 rounded-lg p-3 border border-purple-100">
@@ -155,7 +155,7 @@ export default function Design1CompsNavigator() {
                     View Details
                   </Button>
                   <Button variant="outline" size="icon" className="border-purple-300 text-purple-600 hover:bg-purple-50">
-                    <Star className="h-4 w-4" />
+                    <Icon icon="solar:star-bold-duotone" className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -168,7 +168,7 @@ export default function Design1CompsNavigator() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
+                <Icon icon="solar:graph-up-bold-duotone" className="h-6 w-6 text-purple-600" />
                 <div>
                   <div className="font-semibold text-gray-900">Search completed in 4.2s</div>
                   <div className="text-sm text-gray-600">Found 127 matches across all genres</div>

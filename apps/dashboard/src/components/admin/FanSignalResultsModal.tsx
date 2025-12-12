@@ -20,19 +20,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import {
-  AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  MessageSquare,
-  Heart,
-  Users,
-  BookOpen,
-  Star,
-  TrendingUp,
-  Hash,
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 import {
   type FanSignalData,
   type RedditData,
@@ -86,7 +74,7 @@ export function FanSignalResultsModal({
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-[#4C9C9B]" />
+            <Icon icon="solar:users-group-rounded-bold-duotone" className="h-5 w-5 text-[#4C9C9B]" />
             Fan Signal Results
             {results && (
               <span className="text-sm font-normal text-gray-500 ml-2">
@@ -98,12 +86,12 @@ export function FanSignalResultsModal({
 
         {!results ? (
           <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-            <AlertCircle className="h-8 w-8 mb-2" />
+            <Icon icon="solar:danger-circle-bold-duotone" className="h-8 w-8 mb-2" />
             <p>No results available</p>
           </div>
         ) : !hasAnyData ? (
           <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-            <AlertCircle className="h-8 w-8 mb-2" />
+            <Icon icon="solar:danger-circle-bold-duotone" className="h-8 w-8 mb-2" />
             <p>No fan engagement data found</p>
             {hasErrors && (
               <div className="mt-4 text-sm">
@@ -201,25 +189,25 @@ function RedditSection({ data, isOpen, onToggle }: RedditSectionProps) {
           </Badge>
         </div>
         {isOpen ? (
-          <ChevronUp className="h-5 w-5 text-gray-500" />
+          <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-5 w-5 text-gray-500" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500" />
+          <Icon icon="solar:alt-arrow-down-bold-duotone" className="h-5 w-5 text-gray-500" />
         )}
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="p-4 space-y-4">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard icon={<MessageSquare className="h-4 w-4" />} label="Posts" value={data.posts} />
-            <StatCard icon={<TrendingUp className="h-4 w-4" />} label="Total Upvotes" value={formatNumber(data.total_upvotes)} />
-            <StatCard icon={<MessageSquare className="h-4 w-4" />} label="Total Comments" value={formatNumber(data.total_comments)} />
-            <StatCard icon={<Users className="h-4 w-4" />} label="Subreddit Subs" value={formatNumber(data.related_subreddit_subscribers)} />
+            <StatCard icon={<Icon icon="solar:chat-round-line-bold-duotone" className="h-4 w-4" />} label="Posts" value={data.posts} />
+            <StatCard icon={<Icon icon="solar:graph-up-bold-duotone" className="h-4 w-4" />} label="Total Upvotes" value={formatNumber(data.total_upvotes)} />
+            <StatCard icon={<Icon icon="solar:chat-round-line-bold-duotone" className="h-4 w-4" />} label="Total Comments" value={formatNumber(data.total_comments)} />
+            <StatCard icon={<Icon icon="solar:users-group-rounded-bold-duotone" className="h-4 w-4" />} label="Subreddit Subs" value={formatNumber(data.related_subreddit_subscribers)} />
           </div>
 
           {/* Engagement Score */}
           {data.engagement_score !== null && (
             <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-500" />
+              <Icon icon="solar:star-bold-duotone" className="h-4 w-4 text-yellow-500" />
               <span className="text-sm text-gray-600">Engagement Score:</span>
               <Badge className="bg-yellow-100 text-yellow-800">{data.engagement_score.toFixed(1)}</Badge>
             </div>
@@ -241,7 +229,7 @@ function RedditSection({ data, isOpen, onToggle }: RedditSectionProps) {
                       >
                         {post.title}
                       </a>
-                      <ExternalLink className="h-3 w-3 text-gray-400 flex-shrink-0 mt-1" />
+                      <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-3 w-3 text-gray-400 flex-shrink-0 mt-1" />
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                       <span>r/{post.subreddit}</span>
@@ -292,7 +280,7 @@ function AO3Section({ data, isOpen, onToggle }: AO3SectionProps) {
       >
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center">
-            <BookOpen className="h-3 w-3 text-white" />
+            <Icon icon="solar:book-bold-duotone" className="h-3 w-3 text-white" />
           </div>
           <span className="font-semibold">Archive of Our Own</span>
           <Badge variant="secondary" className="text-xs">
@@ -300,19 +288,19 @@ function AO3Section({ data, isOpen, onToggle }: AO3SectionProps) {
           </Badge>
         </div>
         {isOpen ? (
-          <ChevronUp className="h-5 w-5 text-gray-500" />
+          <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-5 w-5 text-gray-500" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500" />
+          <Icon icon="solar:alt-arrow-down-bold-duotone" className="h-5 w-5 text-gray-500" />
         )}
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="p-4 space-y-4">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard icon={<BookOpen className="h-4 w-4" />} label="Works" value={data.works} />
-            <StatCard icon={<Heart className="h-4 w-4" />} label="Total Kudos" value={formatNumber(data.total_kudos)} />
-            <StatCard icon={<BookOpen className="h-4 w-4" />} label="Bookmarks" value={formatNumber(data.total_bookmarks)} />
-            <StatCard icon={<MessageSquare className="h-4 w-4" />} label="Comments" value={formatNumber(data.total_comments)} />
+            <StatCard icon={<Icon icon="solar:book-bold-duotone" className="h-4 w-4" />} label="Works" value={data.works} />
+            <StatCard icon={<Icon icon="solar:heart-bold-duotone" className="h-4 w-4" />} label="Total Kudos" value={formatNumber(data.total_kudos)} />
+            <StatCard icon={<Icon icon="solar:book-bold-duotone" className="h-4 w-4" />} label="Bookmarks" value={formatNumber(data.total_bookmarks)} />
+            <StatCard icon={<Icon icon="solar:chat-round-line-bold-duotone" className="h-4 w-4" />} label="Comments" value={formatNumber(data.total_comments)} />
           </div>
 
           {/* Top Works */}
@@ -331,7 +319,7 @@ function AO3Section({ data, isOpen, onToggle }: AO3SectionProps) {
                       >
                         {work.title}
                       </a>
-                      <ExternalLink className="h-3 w-3 text-gray-400 flex-shrink-0 mt-1" />
+                      <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-3 w-3 text-gray-400 flex-shrink-0 mt-1" />
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                       <span>by {work.authors.join(', ') || 'Anonymous'}</span>
@@ -395,7 +383,7 @@ function ComickSection({ data, isOpen, onToggle }: ComickSectionProps) {
       >
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
-            <BookOpen className="h-3 w-3 text-white" />
+            <Icon icon="solar:book-bold-duotone" className="h-3 w-3 text-white" />
           </div>
           <span className="font-semibold">Comick</span>
           {data.followers !== null && (
@@ -405,9 +393,9 @@ function ComickSection({ data, isOpen, onToggle }: ComickSectionProps) {
           )}
         </div>
         {isOpen ? (
-          <ChevronUp className="h-5 w-5 text-gray-500" />
+          <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-5 w-5 text-gray-500" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-500" />
+          <Icon icon="solar:alt-arrow-down-bold-duotone" className="h-5 w-5 text-gray-500" />
         )}
       </CollapsibleTrigger>
       <CollapsibleContent>
@@ -441,10 +429,10 @@ function ComickSection({ data, isOpen, onToggle }: ComickSectionProps) {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard icon={<Users className="h-4 w-4" />} label="Followers" value={formatNumber(data.followers)} />
-            <StatCard icon={<Star className="h-4 w-4" />} label="Rating" value={data.rating?.toFixed(1) || '-'} />
-            <StatCard icon={<TrendingUp className="h-4 w-4" />} label="Ranking" value={data.ranking ? `#${data.ranking}` : '-'} />
-            <StatCard icon={<BookOpen className="h-4 w-4" />} label="Chapters" value={data.chapter_count || '-'} />
+            <StatCard icon={<Icon icon="solar:users-group-rounded-bold-duotone" className="h-4 w-4" />} label="Followers" value={formatNumber(data.followers)} />
+            <StatCard icon={<Icon icon="solar:star-bold-duotone" className="h-4 w-4" />} label="Rating" value={data.rating?.toFixed(1) || '-'} />
+            <StatCard icon={<Icon icon="solar:graph-up-bold-duotone" className="h-4 w-4" />} label="Ranking" value={data.ranking ? `#${data.ranking}` : '-'} />
+            <StatCard icon={<Icon icon="solar:book-bold-duotone" className="h-4 w-4" />} label="Chapters" value={data.chapter_count || '-'} />
           </div>
 
           {/* Status */}
@@ -469,7 +457,7 @@ function ComickSection({ data, isOpen, onToggle }: ComickSectionProps) {
               <div className="flex flex-wrap gap-2">
                 {data.genres.map((genre, idx) => (
                   <Badge key={idx} variant="outline" className="text-xs">
-                    <Hash className="h-3 w-3 mr-1" />
+                    <Icon icon="solar:hashtag-bold-duotone" className="h-3 w-3 mr-1" />
                     {genre}
                   </Badge>
                 ))}
@@ -499,7 +487,7 @@ function ComickSection({ data, isOpen, onToggle }: ComickSectionProps) {
               className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
             >
               View on Comick
-              <ExternalLink className="h-3 w-3" />
+              <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-3 w-3" />
             </a>
           )}
         </div>

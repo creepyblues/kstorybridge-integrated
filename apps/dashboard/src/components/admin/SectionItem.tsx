@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil, Trash2, Eye, EyeOff, Check, X } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { FeaturedSection } from '@/types/featured';
@@ -76,7 +76,7 @@ export default function SectionItem({ section, onUpdate, onDelete }: SectionItem
         {...listeners}
         className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
       >
-        <GripVertical className="h-5 w-5" />
+        <Icon icon="solar:hamburger-menu-bold-duotone" className="h-5 w-5" />
       </div>
 
       {/* Content */}
@@ -113,26 +113,26 @@ export default function SectionItem({ section, onUpdate, onDelete }: SectionItem
         {editing ? (
           <>
             <Button size="sm" variant="ghost" onClick={handleSave} disabled={saving || !editName.trim()}>
-              <Check className="h-4 w-4 text-green-600" />
+              <Icon icon="solar:check-circle-bold-duotone" className="h-4 w-4 text-green-600" />
             </Button>
             <Button size="sm" variant="ghost" onClick={handleCancel} disabled={saving}>
-              <X className="h-4 w-4 text-gray-500" />
+              <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 text-gray-500" />
             </Button>
           </>
         ) : (
           <>
             <Button size="sm" variant="ghost" onClick={handleToggleActive} title={section.is_active ? 'Hide section' : 'Show section'}>
               {section.is_active ? (
-                <Eye className="h-4 w-4 text-green-600" />
+                <Icon icon="solar:eye-bold-duotone" className="h-4 w-4 text-green-600" />
               ) : (
-                <EyeOff className="h-4 w-4 text-gray-400" />
+                <Icon icon="solar:eye-closed-bold-duotone" className="h-4 w-4 text-gray-400" />
               )}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setEditing(true)} title="Edit section">
-              <Pencil className="h-4 w-4 text-gray-500" />
+              <Icon icon="solar:pen-bold-duotone" className="h-4 w-4 text-gray-500" />
             </Button>
             <Button size="sm" variant="ghost" onClick={handleDelete} title="Delete section">
-              <Trash2 className="h-4 w-4 text-red-500" />
+              <Icon icon="solar:trash-bin-trash-bold-duotone" className="h-4 w-4 text-red-500" />
             </Button>
           </>
         )}

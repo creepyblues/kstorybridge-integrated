@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, Loader2, Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useQuery } from '@tanstack/react-query';
 import { featuredService } from '@/services/featuredService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -127,7 +127,7 @@ function TrialFeaturedCard({ featured }: { featured: FeaturedTitle }) {
             <div className="flex gap-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200 mt-auto">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-sm">
-                  <Sparkles className="h-4 w-4 text-white" />
+                  <Icon icon="solar:stars-bold-duotone" className="h-4 w-4 text-white" />
                 </div>
               </div>
               <div className="flex-1 min-w-0">
@@ -173,7 +173,7 @@ export function TrialTrendingSection() {
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-4 py-2 rounded-full mb-4">
-          <TrendingUp className="h-5 w-5 text-orange-500" />
+          <Icon icon="solar:graph-up-bold-duotone" className="h-5 w-5 text-orange-500" />
           <span className="text-orange-600 font-medium">Trending Titles</span>
         </div>
         <h2 className="text-2xl md:text-3xl font-bold text-black">
@@ -184,7 +184,7 @@ export function TrialTrendingSection() {
       {/* Loading */}
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
+          <Icon icon="solar:refresh-circle-bold-duotone" className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
           <p className="text-gray-600 text-sm">Loading trending titles...</p>
         </div>
       )}
@@ -201,7 +201,7 @@ export function TrialTrendingSection() {
       {!isLoading && !error && totalCount === 0 && (
         <div className="flex flex-col items-center justify-center py-20">
           <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-            <TrendingUp className="h-8 w-8 text-gray-400" />
+            <Icon icon="solar:graph-up-bold-duotone" className="h-8 w-8 text-gray-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Trending Titles Yet</h3>
           <p className="text-gray-600 text-sm text-center max-w-md">

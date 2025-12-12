@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, Wand2, CheckCircle2, XCircle, Clock, Loader2, Eye, Edit, RotateCcw } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,21 +68,21 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
       case 'completed':
         return (
           <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-            <CheckCircle2 className="w-3 h-3 mr-1" />
+            <Icon icon="solar:check-circle-bold-duotone" className="w-3 h-3 mr-1" />
             Completed
           </Badge>
         );
       case 'generating':
         return (
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="w-3 h-3 mr-1 animate-spin" />
             Generating
           </Badge>
         );
       case 'failed':
         return (
           <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
-            <XCircle className="w-3 h-3 mr-1" />
+            <Icon icon="solar:close-circle-bold-duotone" className="w-3 h-3 mr-1" />
             Failed
           </Badge>
         );
@@ -90,7 +90,7 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
       default:
         return (
           <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
-            <Clock className="w-3 h-3 mr-1" />
+            <Icon icon="solar:clock-circle-bold-duotone" className="w-3 h-3 mr-1" />
             Pending
           </Badge>
         );
@@ -157,7 +157,7 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
                 onClick={() => setIsEditingPrompt(true)}
                 className="h-auto py-0 text-xs text-gray-500 hover:text-black"
               >
-                <Edit className="w-3 h-3 mr-1" />
+                <Icon icon="solar:pen-bold-duotone" className="w-3 h-3 mr-1" />
                 Edit
               </Button>
             )}
@@ -180,12 +180,12 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      <Icon icon="solar:refresh-circle-bold-duotone" className="w-3 h-3 mr-1 animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <Wand2 className="w-3 h-3 mr-1" />
+                      <Icon icon="solar:magic-stick-bold-duotone" className="w-3 h-3 mr-1" />
                       Generate with Custom Prompt
                     </>
                   )}
@@ -225,7 +225,7 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
               />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-20 rounded-lg">
                 <div className="bg-white rounded-full p-3 shadow-lg">
-                  <Eye className="w-5 h-5 text-gray-900" />
+                  <Icon icon="solar:eye-bold-duotone" className="w-5 h-5 text-gray-900" />
                 </div>
               </div>
             </button>
@@ -261,12 +261,12 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
           >
             {isGenerating ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="w-4 h-4 mr-2 animate-spin" />
                 Generating...
               </>
             ) : (
               <>
-                <Wand2 className="w-4 h-4 mr-2" />
+                <Icon icon="solar:magic-stick-bold-duotone" className="w-4 h-4 mr-2" />
                 Generate Image
               </>
             )}
@@ -281,7 +281,7 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
             onClick={() => setIsPreviewOpen(true)}
             className="border-gray-300 hover:bg-gray-100"
           >
-            <Eye className="w-4 h-4 mr-2" />
+            <Icon icon="solar:eye-bold-duotone" className="w-4 h-4 mr-2" />
             View
           </Button>
         )}
@@ -295,7 +295,7 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
             disabled={isGenerating || !adminEmail}
             className="border-gray-300 hover:bg-gray-100"
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
+            <Icon icon="solar:restart-bold-duotone" className="w-4 h-4 mr-2" />
             Retry
           </Button>
         )}
@@ -310,11 +310,11 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
             className="border-gray-300 hover:bg-gray-100"
           >
             {isUpdatingApproval ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Icon icon="solar:refresh-circle-bold-duotone" className="w-4 h-4 mr-2 animate-spin" />
             ) : asset.approved ? (
-              <XCircle className="w-4 h-4 mr-2" />
+              <Icon icon="solar:close-circle-bold-duotone" className="w-4 h-4 mr-2" />
             ) : (
-              <CheckCircle2 className="w-4 h-4 mr-2" />
+              <Icon icon="solar:check-circle-bold-duotone" className="w-4 h-4 mr-2" />
             )}
             {asset.approved ? 'Remove Approval' : 'Approve'}
           </Button>
@@ -330,12 +330,12 @@ export function AssetGenerationCard({ asset }: AssetGenerationCardProps) {
         >
           {isDeleting ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Icon icon="solar:refresh-circle-bold-duotone" className="w-4 h-4 mr-2 animate-spin" />
               Deleting...
             </>
           ) : (
             <>
-              <Trash2 className="w-4 h-4 mr-2" />
+              <Icon icon="solar:trash-bin-trash-bold-duotone" className="w-4 h-4 mr-2" />
               Delete
             </>
           )}

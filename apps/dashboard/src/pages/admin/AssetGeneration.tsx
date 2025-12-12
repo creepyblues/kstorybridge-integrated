@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Sparkles, AlertCircle, Wand2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
@@ -85,7 +85,7 @@ export default function AssetGeneration() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="bg-purple-100 p-2 rounded-lg">
-            <Sparkles className="w-6 h-6 text-purple-600" />
+            <Icon icon="solar:stars-bold-duotone" className="w-6 h-6 text-purple-600" />
           </div>
           <h1 className="text-3xl font-bold text-black">Creative Asset Generation</h1>
         </div>
@@ -131,12 +131,12 @@ export default function AssetGeneration() {
               >
                 {analyzePitch.isPending ? (
                   <>
-                    <Wand2 className="w-4 h-4 mr-2 animate-pulse" />
+                    <Icon icon="solar:magic-stick-3-bold-duotone" className="w-4 h-4 mr-2 animate-pulse" />
                     Analyzing (30-60s)...
                   </>
                 ) : (
                   <>
-                    <Wand2 className="w-4 h-4 mr-2" />
+                    <Icon icon="solar:magic-stick-3-bold-duotone" className="w-4 h-4 mr-2" />
                     Analyze Pitch & Generate Ideas
                   </>
                 )}
@@ -146,7 +146,7 @@ export default function AssetGeneration() {
 
           {selectedTitle && !selectedTitle.pitch && (
             <Alert>
-              <AlertCircle className="h-4 w-4" />
+              <Icon icon="solar:danger-circle-bold-duotone" className="h-4 w-4" />
               <AlertTitle>No Pitch Data</AlertTitle>
               <AlertDescription>
                 This title does not have pitch deck data. Please upload a pitch deck first.
@@ -188,7 +188,7 @@ export default function AssetGeneration() {
           <CardContent className="p-12">
             <div className="text-center">
               <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-8 h-8 text-gray-400" />
+                <Icon icon="solar:stars-bold-duotone" className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-black mb-2">
                 Select a Title to Get Started
@@ -206,7 +206,7 @@ export default function AssetGeneration() {
       <Card className="bg-blue-50 border-blue-200 shadow-none rounded-2xl mt-8">
         <CardContent className="p-4">
           <div className="flex gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <Icon icon="solar:danger-circle-bold-duotone" className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-blue-900">
               <p className="font-medium mb-1">How it works</p>
               <ol className="list-decimal list-inside space-y-1 text-blue-800">

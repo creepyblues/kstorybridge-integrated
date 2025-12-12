@@ -8,7 +8,7 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { useTierAccess } from '@/contexts/TierContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Loader2, LayoutGrid, BookOpen, BarChart3, FolderOpen, Users, Bot } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Card } from '@/components/ui/card';
 import { trackTitleDetailView, trackFavorite, trackFeatureUsage } from '@/utils/analytics';
 
@@ -187,7 +187,7 @@ export default function TitleDetail() {
     return (
       <BuyerLayout>
         <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
         </div>
       </BuyerLayout>
     );
@@ -199,7 +199,7 @@ export default function TitleDetail() {
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)]">
           <p className="text-gray-500 text-lg mb-4">Title not found</p>
           <Button variant="outline" onClick={() => navigate('/buyers/titles')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
             Back to Titles
           </Button>
         </div>
@@ -224,7 +224,7 @@ export default function TitleDetail() {
             {/* AI Avatar */}
             <div className="flex-shrink-0">
               <div className="bg-hanok-teal rounded-full p-2.5 shadow-md">
-                <Bot className="h-5 w-5 text-white" />
+                <Icon icon="solar:chat-square-bold-duotone" className="h-5 w-5 text-white" />
               </div>
             </div>
             {/* Chat Bubble */}
@@ -243,7 +243,7 @@ export default function TitleDetail() {
               value="overview"
               className="data-[state=active]:border-b-2 data-[state=active]:border-[#4C9C9B] data-[state=active]:text-[#4C9C9B] data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
             >
-              <LayoutGrid className="w-4 h-4 mr-2" />
+              <Icon icon="solar:widget-bold-duotone" className="w-4 h-4 mr-2" />
               Overview
             </TabsTrigger>
 
@@ -252,7 +252,7 @@ export default function TitleDetail() {
                 value="story"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-[#4C9C9B] data-[state=active]:text-[#4C9C9B] data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
               >
-                <BookOpen className="w-4 h-4 mr-2" />
+                <Icon icon="solar:book-bold-duotone" className="w-4 h-4 mr-2" />
                 Story Details
               </TabsTrigger>
             )}
@@ -262,7 +262,7 @@ export default function TitleDetail() {
                 value="platforms"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-[#4C9C9B] data-[state=active]:text-[#4C9C9B] data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
               >
-                <BarChart3 className="w-4 h-4 mr-2" />
+                <Icon icon="solar:chart-bold-duotone" className="w-4 h-4 mr-2" />
                 Platform Data
               </TabsTrigger>
             )}
@@ -272,7 +272,7 @@ export default function TitleDetail() {
                 value="materials"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-[#4C9C9B] data-[state=active]:text-[#4C9C9B] data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
               >
-                <FolderOpen className="w-4 h-4 mr-2" />
+                <Icon icon="solar:folder-bold-duotone" className="w-4 h-4 mr-2" />
                 Materials
               </TabsTrigger>
             )}
@@ -282,7 +282,7 @@ export default function TitleDetail() {
                 value="credits"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-[#4C9C9B] data-[state=active]:text-[#4C9C9B] data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
               >
-                <Users className="w-4 h-4 mr-2" />
+                <Icon icon="solar:users-group-rounded-bold-duotone" className="w-4 h-4 mr-2" />
                 Credits
               </TabsTrigger>
             )}

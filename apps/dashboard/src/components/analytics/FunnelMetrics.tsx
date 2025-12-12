@@ -9,7 +9,7 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowUp, ArrowDown, Minus, Target } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export interface MetricData {
   label: string;
@@ -34,11 +34,11 @@ export function FunnelMetrics({
   const getTrendIcon = (trend?: 'up' | 'down' | 'stable') => {
     switch (trend) {
       case 'up':
-        return <ArrowUp className="h-4 w-4" />;
+        return <Icon icon="solar:arrow-up-bold-duotone" className="h-4 w-4" />;
       case 'down':
-        return <ArrowDown className="h-4 w-4" />;
+        return <Icon icon="solar:arrow-down-bold-duotone" className="h-4 w-4" />;
       case 'stable':
-        return <Minus className="h-4 w-4" />;
+        return <Icon icon="solar:minus-circle-bold-duotone" className="h-4 w-4" />;
       default:
         return null;
     }
@@ -71,7 +71,7 @@ export function FunnelMetrics({
       <CardContent className={title ? '' : 'pt-6'}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {metrics.map((metric, index) => {
-            const Icon = metric.icon || Target;
+            const MetricIcon = metric.icon;
             const trendColor = getTrendColor(metric.change);
             const meetsTarget = metric.target
               ? parseFloat(String(metric.value)) >= metric.target
@@ -85,7 +85,11 @@ export function FunnelMetrics({
                 {/* Header */}
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Icon className="h-5 w-5 text-gray-500" />
+                    {MetricIcon ? (
+                      <MetricIcon className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <Icon icon="solar:target-bold-duotone" className="h-5 w-5 text-gray-500" />
+                    )}
                     <span className="text-sm font-medium text-gray-600">
                       {metric.label}
                     </span>

@@ -14,7 +14,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Plus, Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -99,12 +99,12 @@ export default function SectionManager({
           >
             {creating ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                 Adding...
               </>
             ) : (
               <>
-                <Plus className="h-4 w-4 mr-2" />
+                <Icon icon="solar:add-circle-bold-duotone" className="h-4 w-4 mr-2" />
                 Add Section
               </>
             )}

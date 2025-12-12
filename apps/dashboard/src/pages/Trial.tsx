@@ -12,7 +12,7 @@ import { TrialCompsSection } from '@/components/trial/TrialCompsSection';
 import { TrialMandatesSection } from '@/components/trial/TrialMandatesSection';
 import { TrialTrendingSection } from '@/components/trial/TrialTrendingSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Compass, Sparkles, TrendingUp } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function Trial() {
   return (
@@ -42,7 +42,7 @@ export default function Trial() {
                 className="flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 border-transparent bg-gray-50 hover:bg-gray-100 data-[state=active]:bg-hanok-teal/10 data-[state=active]:border-hanok-teal data-[state=active]:shadow-sm transition-all duration-200"
               >
                 <div className="p-2 rounded-xl bg-hanok-teal/10 data-[state=active]:bg-hanok-teal group-data-[state=active]:bg-hanok-teal">
-                  <Compass className="h-5 w-5 text-hanok-teal" />
+                  <Icon icon="solar:compass-bold-duotone" className="h-5 w-5 text-hanok-teal" />
                 </div>
                 <span className="font-semibold text-base text-gray-700 data-[state=active]:text-hanok-teal hidden sm:block">Comps Navigator</span>
                 <span className="font-semibold text-base text-gray-700 sm:hidden">Comps</span>
@@ -52,7 +52,7 @@ export default function Trial() {
                 className="flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 border-transparent bg-gray-50 hover:bg-gray-100 data-[state=active]:bg-purple-50 data-[state=active]:border-purple-500 data-[state=active]:shadow-sm transition-all duration-200"
               >
                 <div className="p-2 rounded-xl bg-purple-100">
-                  <Sparkles className="h-5 w-5 text-purple-600" />
+                  <Icon icon="solar:stars-bold-duotone" className="h-5 w-5 text-purple-600" />
                 </div>
                 <span className="font-semibold text-base text-gray-700 data-[state=active]:text-purple-600 hidden sm:block">Mandate Matcher</span>
                 <span className="font-semibold text-base text-gray-700 sm:hidden">Mandates</span>
@@ -62,7 +62,7 @@ export default function Trial() {
                 className="flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 border-transparent bg-gray-50 hover:bg-gray-100 data-[state=active]:bg-orange-50 data-[state=active]:border-orange-500 data-[state=active]:shadow-sm transition-all duration-200"
               >
                 <div className="p-2 rounded-xl bg-orange-100">
-                  <TrendingUp className="h-5 w-5 text-orange-500" />
+                  <Icon icon="solar:graph-up-bold-duotone" className="h-5 w-5 text-orange-500" />
                 </div>
                 <span className="font-semibold text-base text-gray-700 data-[state=active]:text-orange-600 hidden sm:block">Trending Titles</span>
                 <span className="font-semibold text-base text-gray-700 sm:hidden">Trending</span>

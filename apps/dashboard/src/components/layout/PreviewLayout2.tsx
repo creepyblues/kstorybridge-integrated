@@ -1,17 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  MessageSquare,
-  Compass,
-  Sparkles,
-  Star,
-  BookOpen,
-  Heart,
-  CreditCard,
-  Menu,
-  X,
-  User
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface PreviewLayout2Props {
   children: ReactNode;
@@ -22,13 +11,13 @@ export default function PreviewLayout2({ children }: PreviewLayout2Props) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
-    { name: 'Chat', href: '/preview/design2', icon: MessageSquare },
-    { name: 'Comps Navigator', href: '/preview/design2/comps', icon: Compass },
-    { name: 'Mandate Matcher', href: '/buyers/mandates', icon: Sparkles },
-    { name: 'Featured', href: '/buyers/featured', icon: Star },
-    { name: 'Titles', href: '/buyers/titles', icon: BookOpen },
-    { name: 'Saved', href: '/buyers/saved', icon: Heart },
-    { name: 'Plan', href: '/buyers/plan', icon: CreditCard },
+    { name: 'Chat', href: '/preview/design2', icon: 'solar:chat-round-dots-bold-duotone' },
+    { name: 'Comps Navigator', href: '/preview/design2/comps', icon: 'solar:compass-bold-duotone' },
+    { name: 'Mandate Matcher', href: '/buyers/mandates', icon: 'solar:stars-bold-duotone' },
+    { name: 'Featured', href: '/buyers/featured', icon: 'solar:star-bold-duotone' },
+    { name: 'Titles', href: '/buyers/titles', icon: 'solar:book-bold-duotone' },
+    { name: 'Saved', href: '/buyers/saved', icon: 'solar:heart-bold-duotone' },
+    { name: 'Plan', href: '/buyers/plan', icon: 'solar:card-bold-duotone' },
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -40,7 +29,7 @@ export default function PreviewLayout2({ children }: PreviewLayout2Props) {
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white border border-red-200 shadow-lg"
       >
-        {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        {isMobileMenuOpen ? <Icon icon="solar:close-circle-bold-duotone" className="h-6 w-6" /> : <Icon icon="solar:hamburger-menu-bold-duotone" className="h-6 w-6" />}
       </button>
 
       {/* Sidebar */}
@@ -63,7 +52,6 @@ export default function PreviewLayout2({ children }: PreviewLayout2Props) {
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
-              const Icon = item.icon;
               const active = isActive(item.href);
               return (
                 <Link
@@ -78,7 +66,7 @@ export default function PreviewLayout2({ children }: PreviewLayout2Props) {
                   `}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Icon className={`h-5 w-5 ${active ? 'text-hanok-teal' : 'text-gray-400'}`} />
+                  <Icon icon={item.icon} className={`h-5 w-5 ${active ? 'text-hanok-teal' : 'text-gray-400'}`} />
                   <span>{item.name}</span>
                 </Link>
               );
@@ -91,7 +79,7 @@ export default function PreviewLayout2({ children }: PreviewLayout2Props) {
               to="/buyers/profile"
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-hanok-teal/5 transition-colors"
             >
-              <User className="h-5 w-5 text-gray-400" />
+              <Icon icon="solar:user-bold-duotone" className="h-5 w-5 text-gray-400" />
               <span className="font-medium">Profile</span>
             </Link>
           </div>

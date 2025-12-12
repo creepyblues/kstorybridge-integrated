@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle, XCircle, User, FileEdit, Calendar } from "lucide-react";
+import { Icon } from '@iconify/react';
 import AdminLayout from "@/components/layout/AdminLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { useToast } from "@/hooks/use-toast";
@@ -220,7 +220,7 @@ export default function AdminDraftDetail() {
             variant="ghost"
             className="text-gray-600 hover:text-gray-800"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
             Back to Drafts
           </Button>
 
@@ -230,7 +230,7 @@ export default function AdminDraftDetail() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <FileEdit className="w-6 h-6 text-gray-700" />
+                    <Icon icon="solar:document-text-bold-duotone" className="w-6 h-6 text-gray-700" />
                     <h1 className="text-2xl font-bold text-gray-900">
                       {draftData.title_name_en || draftData.title_name_kr || 'Untitled Draft'}
                     </h1>
@@ -255,7 +255,7 @@ export default function AdminDraftDetail() {
           <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
+                <Icon icon="solar:user-bold-duotone" className="w-5 h-5" />
                 Creator Information
               </CardTitle>
             </CardHeader>
@@ -273,7 +273,7 @@ export default function AdminDraftDetail() {
                 <span className="text-sm text-gray-900">{draft.user_creators?.pen_name || '-'}</span>
               </div>
               <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                <Calendar className="w-4 h-4 text-gray-500" />
+                <Icon icon="solar:calendar-bold-duotone" className="w-4 h-4 text-gray-500" />
                 <span className="text-xs text-gray-500">
                   Submitted: {formatDate(draft.submitted_at)} | Last Updated: {formatDate(draft.updated_at)}
                 </span>
@@ -409,14 +409,14 @@ export default function AdminDraftDetail() {
                 variant="outline"
                 className="border-red-300 text-red-700 hover:bg-red-50"
               >
-                <XCircle className="h-4 w-4 mr-2" />
+                <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-2" />
                 Reject Draft
               </Button>
               <Button
                 onClick={() => setShowApproveDialog(true)}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <Icon icon="solar:check-circle-bold-duotone" className="h-4 w-4 mr-2" />
                 Approve Draft
               </Button>
             </div>

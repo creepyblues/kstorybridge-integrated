@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { LucideIcon } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface EmptyStateProps {
-  icon: LucideIcon;
+  icon: string;
   title: string;
   description?: string;
   actionLabel?: string;
@@ -10,7 +10,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon: Icon,
+  icon,
   title,
   description,
   actionLabel,
@@ -18,7 +18,7 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="text-center py-12">
-      <Icon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+      <Icon icon={icon} className="h-16 w-16 text-gray-300 mx-auto mb-4" />
       <p className="text-gray-500 text-lg mb-2">{title}</p>
       {description && (
         <p className="text-gray-400 text-sm mb-6">{description}</p>

@@ -5,7 +5,7 @@ import { useTierAccess } from '@/contexts/TierContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
-import { Check, Sparkles, CreditCard } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { trackPageView, trackCheckout, trackFeatureUsage } from '@/utils/analytics';
 
 interface TierPlan {
@@ -14,7 +14,7 @@ interface TierPlan {
   price: string;
   priceId: string; // Stripe Price ID
   description: string;
-  icon: any;
+  icon: string | null;
   color: string;
   features: string[];
   popular?: boolean;
@@ -43,7 +43,7 @@ const plans: TierPlan[] = [
     price: '$250/month',
     priceId: 'price_1SGrYjDrScgTb4Bok3I71wES', // Live Stripe Price ID
     description: 'Unlock premium features and pitch decks',
-    icon: Sparkles,
+    icon: 'solar:stars-bold-duotone',
     color: 'border-pro-purple',
     popular: true,
     features: [
@@ -101,7 +101,7 @@ export default function Plan() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                <CreditCard className="h-8 w-8 text-white" />
+                <Icon icon="solar:card-bold-duotone" className="h-8 w-8 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Choose Your Plan</h1>
@@ -126,7 +126,7 @@ export default function Plan() {
         {/* Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-3xl mx-auto">
           {plans.map((plan) => {
-            const Icon = plan.icon;
+            const iconName = plan.icon;
             const isCurrentTier = plan.tier === currentTier;
 
             return (
@@ -148,11 +148,11 @@ export default function Plan() {
                 <CardContent className="p-6">
                   {/* Icon & Name */}
                   <div className="text-center mb-6">
-                    {Icon && (
+                    {iconName && (
                       <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
                         plan.tier === 'pro' ? 'bg-pro-purple/10' : 'bg-hanok-teal/10'
                       }`}>
-                        <Icon className={`h-6 w-6 ${
+                        <Icon icon={iconName} className={`h-6 w-6 ${
                           plan.tier === 'pro' ? 'text-pro-purple' : 'text-hanok-teal'
                         }`} />
                       </div>
@@ -169,7 +169,7 @@ export default function Plan() {
                   <ul className="space-y-3 mb-6">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
-                        <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <Icon icon="solar:check-read-bold-duotone" className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                         <span>{feature}</span>
                       </li>
                     ))}

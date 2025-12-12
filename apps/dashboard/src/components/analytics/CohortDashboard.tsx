@@ -9,7 +9,7 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, TrendingUp, Users } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export interface CohortData {
   cohortName: string; // e.g., "Week of Jan 1, 2025"
@@ -75,7 +75,7 @@ export function CohortDashboard({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="p-4 rounded-lg border border-gray-200 bg-gray-50">
             <div className="flex items-center gap-2 mb-2">
-              <Calendar className="h-4 w-4 text-gray-500" />
+              <Icon icon="solar:calendar-bold-duotone" className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-600">Day 1 Retention</span>
             </div>
             <div className={`text-3xl font-bold ${getRetentionTextColor(avgRetention.day1)}`}>
@@ -86,7 +86,7 @@ export function CohortDashboard({
 
           <div className="p-4 rounded-lg border border-gray-200 bg-gray-50">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-gray-500" />
+              <Icon icon="solar:graph-up-bold-duotone" className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-600">Day 7 Retention</span>
             </div>
             <div className={`text-3xl font-bold ${getRetentionTextColor(avgRetention.day7)}`}>
@@ -97,7 +97,7 @@ export function CohortDashboard({
 
           <div className="p-4 rounded-lg border border-gray-200 bg-gray-50">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="h-4 w-4 text-gray-500" />
+              <Icon icon="solar:users-group-rounded-bold-duotone" className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-600">Day 30 Retention</span>
             </div>
             <div className={`text-3xl font-bold ${getRetentionTextColor(avgRetention.day30)}`}>

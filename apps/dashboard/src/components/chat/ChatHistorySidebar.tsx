@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import { MessageSquare, Trash2, Plus, Clock } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { ChatSession, chatHistoryService } from '@/services/chatHistoryService';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -103,7 +103,7 @@ export default function ChatHistorySidebar({
       <div className="bg-gradient-to-r from-hanok-teal/5 to-hanok-teal/10 border-b border-gray-200 px-6 py-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="bg-hanok-teal/10 p-2 rounded-lg">
-            <MessageSquare className="h-5 w-5 text-hanok-teal" />
+            <Icon icon="solar:chat-square-bold-duotone" className="h-5 w-5 text-hanok-teal" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Chat History</h2>
@@ -116,7 +116,7 @@ export default function ChatHistorySidebar({
           onClick={onNewChat}
           className="w-full flex items-center justify-center gap-2 bg-hanok-teal hover:bg-hanok-teal/90 h-10 text-sm"
         >
-          <Plus className="h-4 w-4" />
+          <Icon icon="solar:add-circle-bold-duotone" className="h-4 w-4" />
           New Chat
         </Button>
       </div>
@@ -139,7 +139,7 @@ export default function ChatHistorySidebar({
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="bg-gray-100 rounded-full p-4 mb-4">
-              <MessageSquare className="h-8 w-8 text-gray-400" />
+              <Icon icon="solar:chat-square-bold-duotone" className="h-8 w-8 text-gray-400" />
             </div>
             <p className="text-sm font-semibold text-gray-900 mb-1">No chat history</p>
             <p className="text-xs text-gray-500">Start a conversation with Jinu</p>
@@ -172,7 +172,7 @@ function SessionItem({ session, isActive, onLoad, onDelete, formatTime }: Sessio
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <Clock className={`h-3 w-3 flex-shrink-0 ${isActive ? 'text-hanok-teal' : 'text-gray-400'}`} />
+            <Icon icon="solar:clock-circle-bold-duotone" className={`h-3 w-3 flex-shrink-0 ${isActive ? 'text-hanok-teal' : 'text-gray-400'}`} />
             <p className={`text-xs font-medium ${isActive ? 'text-hanok-teal' : 'text-gray-500'}`}>
               {formatTime(session.started_at)}
             </p>
@@ -192,7 +192,7 @@ function SessionItem({ session, isActive, onLoad, onDelete, formatTime }: Sessio
           className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 rounded"
           title="Delete session"
         >
-          <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-600" />
+          <Icon icon="solar:trash-bin-trash-bold-duotone" className="h-3.5 w-3.5 text-gray-400 hover:text-red-600" />
         </button>
       </div>
     </div>

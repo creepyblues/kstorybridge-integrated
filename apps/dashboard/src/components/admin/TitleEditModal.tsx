@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 import { titlesService, Title } from '@/services/titlesService';
 import {
   parseUrl,
@@ -39,9 +40,10 @@ import { IntelligenceResultsModal } from './IntelligenceResultsModal';
 import { FanSignalResultsModal } from './FanSignalResultsModal';
 import { KeyVisualsCollectorModal } from './KeyVisualsCollectorModal';
 import { CompsGeneratorModal } from './CompsGeneratorModal';
+import { FormatFitGeneratorModal } from '@/components/format-fit/FormatFitGeneratorModal';
 import { CompsAnalysisCard } from '@/components/title-detail/CompsAnalysisCard';
 import { type SuggestedComp } from '@/services/compsGeneratorService';
-import { Save, Loader2, ChevronDown, ChevronUp, Database, Users, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 // Genre options
 const GENRE_OPTIONS = [
@@ -124,6 +126,39 @@ export function TitleEditModal({
   // Comps generator state
   const [compsModalOpen, setCompsModalOpen] = useState(false);
 
+  // Format fit analyzer state
+  const [formatFitModalOpen, setFormatFitModalOpen] = useState(false);
+
+  // Analyzer data existence state (to show filled buttons when data exists)
+  const [hasKeyVisuals, setHasKeyVisuals] = useState(false);
+  const [hasComps, setHasComps] = useState(false);
+  const [hasFormatFit, setHasFormatFit] = useState(false);
+
+  // Check which analyzers have data for this title
+  const checkAnalyzerDataExists = async (id: string, titleData: Title | null) => {
+    try {
+      // Check Key Visuals
+      const { count: keyVisualsCount } = await supabase
+        .from('title_key_visuals')
+        .select('*', { count: 'exact', head: true })
+        .eq('title_id', id);
+      setHasKeyVisuals((keyVisualsCount || 0) > 0);
+
+      // Check Comps (from title data)
+      const compsData = (titleData as Title & { comps_analysis?: unknown[] })?.comps_analysis;
+      setHasComps(Array.isArray(compsData) && compsData.length > 0);
+
+      // Check Format Fit
+      const { count: formatFitCount } = await supabase
+        .from('title_format_fit')
+        .select('*', { count: 'exact', head: true })
+        .eq('title_id', id);
+      setHasFormatFit((formatFitCount || 0) > 0);
+    } catch (error) {
+      console.error('Error checking analyzer data:', error);
+    }
+  };
+
   useEffect(() => {
     if (titleId && open) {
       fetchTitle(titleId);
@@ -133,11 +168,17 @@ export function TitleEditModal({
 
   const fetchTitle = async (id: string) => {
     setLoading(true);
+    // Reset analyzer states
+    setHasKeyVisuals(false);
+    setHasComps(false);
+    setHasFormatFit(false);
     try {
       const data = await titlesService.getTitleById(id);
       if (data) {
         setTitle(data);
         setFormData(data);
+        // Check which analyzers have data
+        checkAnalyzerDataExists(id, data);
       } else {
         toast({
           title: 'Error',
@@ -379,9 +420,9 @@ export function TitleEditModal({
     >
       <span className="text-lg font-semibold">{title}</span>
       {openSections.includes(id) ? (
-        <ChevronUp className="h-5 w-5 text-gray-500" />
+        <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-5 w-5 text-gray-500" />
       ) : (
-        <ChevronDown className="h-5 w-5 text-gray-500" />
+        <Icon icon="solar:alt-arrow-down-bold-duotone" className="h-5 w-5 text-gray-500" />
       )}
     </CollapsibleTrigger>
   );
@@ -399,9 +440,13 @@ export function TitleEditModal({
                 size="sm"
                 onClick={() => setKeyVisualsModalOpen(true)}
                 disabled={!titleId}
-                className="whitespace-nowrap text-xs"
+                className={`whitespace-nowrap text-xs ${
+                  hasKeyVisuals
+                    ? 'bg-blue-50 border-2 border-blue-500 text-blue-700 hover:bg-blue-100'
+                    : ''
+                }`}
               >
-                <ImageIcon className="h-3.5 w-3.5 mr-1" />
+                <Icon icon="solar:gallery-bold-duotone" className="h-3.5 w-3.5 mr-1" />
                 Key Visuals
               </Button>
               <Button
@@ -414,12 +459,12 @@ export function TitleEditModal({
               >
                 {collectingFanSignal ? (
                   <>
-                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-3.5 w-3.5 mr-1 animate-spin" />
                     Collecting...
                   </>
                 ) : (
                   <>
-                    <Users className="h-3.5 w-3.5 mr-1" />
+                    <Icon icon="solar:users-group-rounded-bold-duotone" className="h-3.5 w-3.5 mr-1" />
                     Collect Fan Signal
                   </>
                 )}
@@ -430,10 +475,29 @@ export function TitleEditModal({
                 size="sm"
                 onClick={() => setCompsModalOpen(true)}
                 disabled={!titleId}
-                className="whitespace-nowrap text-xs"
+                className={`whitespace-nowrap text-xs ${
+                  hasComps
+                    ? 'bg-blue-50 border-2 border-blue-500 text-blue-700 hover:bg-blue-100'
+                    : ''
+                }`}
               >
-                <Sparkles className="h-3.5 w-3.5 mr-1" />
+                <Icon icon="solar:stars-bold-duotone" className="h-3.5 w-3.5 mr-1" />
                 Generate Comps
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setFormatFitModalOpen(true)}
+                disabled={!titleId}
+                className={`whitespace-nowrap text-xs ${
+                  hasFormatFit
+                    ? 'bg-blue-50 border-2 border-blue-500 text-blue-700 hover:bg-blue-100'
+                    : ''
+                }`}
+              >
+                <Icon icon="solar:chart-bold-duotone" className="h-3.5 w-3.5 mr-1" />
+                Format Fit
               </Button>
             </div>
           </DialogTitle>
@@ -441,7 +505,7 @@ export function TitleEditModal({
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : !title ? (
           <div className="text-center py-12 text-gray-500">
@@ -527,10 +591,10 @@ export function TitleEditModal({
                           className="h-9 whitespace-nowrap text-xs px-2"
                         >
                           {collectingUrl === 'kr' ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Icon icon="solar:refresh-circle-bold-duotone" className="h-3.5 w-3.5 animate-spin" />
                           ) : (
                             <>
-                              <Database className="h-3.5 w-3.5 mr-1" />
+                              <Icon icon="solar:database-bold-duotone" className="h-3.5 w-3.5 mr-1" />
                               Collect
                             </>
                           )}
@@ -555,10 +619,10 @@ export function TitleEditModal({
                           className="h-9 whitespace-nowrap text-xs px-2"
                         >
                           {collectingUrl === 'en' ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Icon icon="solar:refresh-circle-bold-duotone" className="h-3.5 w-3.5 animate-spin" />
                           ) : (
                             <>
-                              <Database className="h-3.5 w-3.5 mr-1" />
+                              <Icon icon="solar:database-bold-duotone" className="h-3.5 w-3.5 mr-1" />
                               Collect
                             </>
                           )}
@@ -1211,12 +1275,12 @@ export function TitleEditModal({
               >
                 {saving ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
+                    <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
                     Save Changes
                   </>
                 )}
@@ -1253,6 +1317,7 @@ export function TitleEditModal({
           titleUrl={formData.title_url}
           titleUrlEn={formData.title_url_en}
           userEmail={user?.email || ''}
+          onSaved={() => setHasKeyVisuals(true)}
         />
       )}
 
@@ -1268,6 +1333,15 @@ export function TitleEditModal({
             fetchTitle(titleId);
           }
         }}
+      />
+
+      {/* Format Fit Generator Modal */}
+      <FormatFitGeneratorModal
+        titleId={titleId}
+        titleName={formData.title_name_en || formData.title_name_kr || undefined}
+        open={formatFitModalOpen}
+        onOpenChange={setFormatFitModalOpen}
+        onComplete={() => setHasFormatFit(true)}
       />
     </Dialog>
   );

@@ -13,7 +13,7 @@
 import { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { FileText, Search, Loader2, HelpCircle, X } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 const EXAMPLE_BRIEFS = [
   'Female-driven thriller with contained locations',
@@ -77,7 +77,7 @@ export default function MandateSearchInput({
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-2 rounded-full mb-4">
-          <FileText className="h-5 w-5 text-purple-500" />
+          <Icon icon="solar:document-text-bold-duotone" className="h-5 w-5 text-purple-500" />
           <span className="text-purple-600 font-medium">Search by Brief</span>
         </div>
         <h2 className="text-2xl md:text-3xl font-bold text-black">
@@ -104,7 +104,7 @@ export default function MandateSearchInput({
               disabled={isLoading}
               className="border-gray-300 hover:bg-gray-100"
             >
-              <X className="h-4 w-4 mr-2" />
+              <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-2" />
               Clear
             </Button>
           )}
@@ -115,12 +115,12 @@ export default function MandateSearchInput({
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin mr-2" />
                 Searching...
               </>
             ) : (
               <>
-                <Search className="h-4 w-4 mr-2" />
+                <Icon icon="solar:magnifer-bold-duotone" className="h-4 w-4 mr-2" />
                 Find Matches
               </>
             )}
@@ -150,7 +150,7 @@ export default function MandateSearchInput({
             onClick={onNeedHelp}
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-purple-600 transition-colors"
           >
-            <HelpCircle className="h-4 w-4" />
+            <Icon icon="solar:info-circle-bold-duotone" className="h-4 w-4" />
             <span className="underline underline-offset-2">Need help?</span>
           </button>
         </div>

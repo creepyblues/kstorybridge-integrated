@@ -4,6 +4,7 @@ import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
 import Footer from '../components/Footer';
+import { TypewriterText } from '../components/TypewriterText';
 import {
   Sparkles,
   ShieldCheck,
@@ -55,15 +56,24 @@ const HomePage = () => {
 
               {/* Left: Text Content */}
               <div className="text-center lg:text-left">
-                {/* Main Headline */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-midnight-ink mb-6 leading-tight">
-                  {t('hero.title')}
-                </h1>
-
-                {/* Subheadline */}
-                <p className="text-xl sm:text-2xl text-midnight-ink-600 mb-10 leading-relaxed">
-                  {t('hero.subtitle')}
-                </p>
+                {/* Main Headline with Typewriter Effect */}
+                <div className="mb-6">
+                  <TypewriterText
+                    storageKey="home-hero-played"
+                    lines={[
+                      {
+                        text: t('hero.title'),
+                        className: 'text-4xl sm:text-5xl lg:text-6xl font-bold text-midnight-ink leading-tight',
+                      },
+                      {
+                        text: t('hero.subtitle'),
+                        className: 'text-xl sm:text-2xl text-midnight-ink-600 leading-relaxed block mt-6',
+                        delay: 400,
+                      },
+                    ]}
+                    cursorClassName="text-hanok-teal"
+                  />
+                </div>
 
                 {/* Dual CTAs */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

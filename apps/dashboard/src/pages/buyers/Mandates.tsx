@@ -15,7 +15,7 @@ import MandateExamples from '@/components/mandates/MandateExamples';
 import MandateHistorySidebar from '@/components/mandates/MandateHistorySidebar';
 import MandateResultsGrid from '@/components/mandates/MandateResultsGrid';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
-import { History } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { trackPageView, trackFeatureUsage, trackMandateSearchSubmitted, trackMandateExampleUsed, trackSearchZeroResults } from '@/utils/analytics';
@@ -202,7 +202,7 @@ export default function Mandates() {
               size="sm"
               className="border-gray-300 hover:bg-gray-100"
             >
-              <History className="h-4 w-4 sm:mr-2" />
+              <Icon icon="solar:clock-circle-bold-duotone" className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">History</span>
             </Button>
           </div>

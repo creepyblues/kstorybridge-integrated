@@ -1,5 +1,5 @@
 import { useState, KeyboardEvent, useRef, useEffect } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -57,9 +57,9 @@ export function ChatInput({ onSendMessage, loading, placeholder }: ChatInputProp
           aria-label="Send message"
         >
           {loading ? (
-            <Loader2 className="h-5 w-5 text-white animate-spin" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-5 w-5 text-white animate-spin" />
           ) : (
-            <Send className="h-5 w-5 text-white" />
+            <Icon icon="solar:plain-bold-duotone" className="h-5 w-5 text-white" />
           )}
         </button>
       </div>

@@ -1,4 +1,4 @@
-import { FileText } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { Title } from '@/services/titlesService';
 
 interface TitleMetadataProps {
@@ -40,7 +40,7 @@ export function TitleMetadata({ title, compact = false }: TitleMetadataProps) {
         )}
         {title.pitch && (
           <span className={`flex items-center gap-1 text-pro-purple ${compact ? 'font-normal' : 'font-medium'}`}>
-            {compact && <FileText className="h-3 w-3" />}
+            {compact && <Icon icon="solar:document-text-bold-duotone" className="h-3 w-3" />}
             {compact ? 'Pitch' : 'Pitch Available'}
           </span>
         )}

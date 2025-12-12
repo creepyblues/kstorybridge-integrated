@@ -1,24 +1,89 @@
 /**
  * Comps Navigator Service
+ * Version: 2.0.0
  *
  * Handles all API interactions for the Comps Navigator feature:
  * - Search for titles based on comp combinations
  * - Manage search history and bookmarks
  * - Cache and retrieve saved searches
+ *
+ * V2.0.0: Added 8-dimensional scoring with aligned_comps
  */
 
 import { supabase } from '@/lib/supabase';
 
+// =====================================================================
+// ENGINE CONSTANTS
+// =====================================================================
+
+export const COMPS_ENGINE_VERSION = '2.0.0';
+
+export type DimensionKey =
+  | 'genre_blueprint'
+  | 'tone_mood'
+  | 'character_archetypes'
+  | 'plot_structure'
+  | 'setting_world'
+  | 'themes'
+  | 'target_audience'
+  | 'format_style';
+
+export const DIMENSION_WEIGHTS: Record<DimensionKey, number> = {
+  genre_blueprint: 0.20,
+  tone_mood: 0.15,
+  character_archetypes: 0.15,
+  plot_structure: 0.15,
+  setting_world: 0.10,
+  themes: 0.10,
+  target_audience: 0.10,
+  format_style: 0.05,
+};
+
+export const DIMENSION_DISPLAY_NAMES: Record<DimensionKey, string> = {
+  genre_blueprint: 'Genre Blueprint',
+  tone_mood: 'Tone & Mood',
+  character_archetypes: 'Characters',
+  plot_structure: 'Plot Structure',
+  setting_world: 'Setting & World',
+  themes: 'Themes',
+  target_audience: 'Target Audience',
+  format_style: 'Format Style',
+};
+
+// =====================================================================
+// TYPES
+// =====================================================================
+
+/**
+ * Score for a single dimension (V2.0.0)
+ */
+export interface DimensionScore {
+  dimension: DimensionKey;
+  score: number;              // 0-100
+  reason: string;             // 1-2 sentence explanation
+  aligned_comps: string[];    // Which input comps this dimension aligned with
+}
+
+/**
+ * Title match result (V2.0.0)
+ */
 export interface TitleMatch {
   title_id: string;
   title_name_en: string;
   title_name_kr: string;
-  match_score: number; // 0-100
+  // V2.0.0 fields
+  overall_match_score?: number;     // NEW - preferred
+  dimension_scores?: DimensionScore[];  // NEW - 8 dimensions
+  match_reasons?: string[];         // NEW - 4-5 bullet points
+  // Legacy field (backward compat)
+  match_score?: number;             // DEPRECATED - use overall_match_score
   explanation: string;
+  // Metadata
   title_image?: string;
   synopsis: string;
   genre: string[];
   tone: string;
+  content_format?: string;
   has_pitch_deck?: boolean;
 }
 
@@ -27,6 +92,63 @@ export interface CompNavigatorResponse {
   search_id?: string;
   processing_time_ms: number;
   cost_estimate: number;
+  // V2.0.0 fields
+  engine_version?: string;
+  mode_used?: 'fast' | 'deep';
+}
+
+// =====================================================================
+// UTILITY FUNCTIONS
+// =====================================================================
+
+/**
+ * Get the effective match score (supports both v1 and v2 responses)
+ */
+export function getMatchScore(match: TitleMatch): number {
+  return match.overall_match_score ?? match.match_score ?? 0;
+}
+
+/**
+ * Get score level for UI display
+ */
+export function getScoreLevel(score: number): 'excellent' | 'strong' | 'moderate' | 'weak' {
+  if (score >= 85) return 'excellent';
+  if (score >= 70) return 'strong';
+  if (score >= 55) return 'moderate';
+  return 'weak';
+}
+
+/**
+ * Get color class for score level
+ */
+export function getScoreColorClass(score: number): string {
+  const level = getScoreLevel(score);
+  switch (level) {
+    case 'excellent':
+      return 'bg-green-500';
+    case 'strong':
+      return 'bg-blue-500';
+    case 'moderate':
+      return 'bg-yellow-500';
+    case 'weak':
+      return 'bg-gray-400';
+  }
+}
+
+/**
+ * Format dimension name for display
+ */
+export function formatDimensionName(key: string): string {
+  return DIMENSION_DISPLAY_NAMES[key as DimensionKey] || key;
+}
+
+/**
+ * Get dimension weight as percentage string
+ */
+export function getDimensionWeightPercent(key: string): string {
+  const weight = DIMENSION_WEIGHTS[key as DimensionKey];
+  if (weight === undefined) return '0%';
+  return `${Math.round(weight * 100)}%`;
 }
 
 export interface CompSearch {

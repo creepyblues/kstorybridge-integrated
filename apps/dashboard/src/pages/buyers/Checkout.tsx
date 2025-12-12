@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Lock } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { trackCheckout, trackCheckoutAbandoned } from '@/utils/analytics';
 
 // Initialize Stripe.js with publishable key
@@ -165,7 +165,7 @@ export default function Checkout() {
             {/* Error Icon */}
             <div className="flex justify-center">
               <div className="bg-red-100 rounded-2xl p-4">
-                <Lock className="h-12 w-12 text-red-500" />
+                <Icon icon="solar:shield-bold-duotone" className="h-12 w-12 text-red-500" />
               </div>
             </div>
 
@@ -204,7 +204,7 @@ export default function Checkout() {
           {/* Lock Icon */}
           <div className="flex justify-center">
             <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 rounded-2xl p-4 shadow-lg">
-              <Lock className="h-12 w-12 text-white" />
+              <Icon icon="solar:shield-bold-duotone" className="h-12 w-12 text-white" />
             </div>
           </div>
 
@@ -218,7 +218,7 @@ export default function Checkout() {
 
           {/* Loading State */}
           <div className="flex items-center justify-center gap-2 text-gray-500 py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-hanok-teal" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-5 w-5 animate-spin text-hanok-teal" />
             <span>
               {loading ? 'Creating checkout session...' : 'Redirecting to Stripe...'}
             </span>

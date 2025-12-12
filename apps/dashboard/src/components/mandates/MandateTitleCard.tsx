@@ -3,7 +3,7 @@
 // Description: Title card for mandate matches with AI explanation chat bubble
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Bot, FileText } from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { TitleMatch } from '@/services/mandateService';
 import { trackMandateResultClicked } from '@/utils/analytics';
 
@@ -89,7 +89,7 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
           {/* Pitch Deck Badge - Sunrise Coral Gradient */}
           {match.has_pitch_deck && (
             <div className="absolute top-3 right-3 bg-gradient-to-r from-orange-400 via-rose-400 to-pink-400 text-white px-2.5 py-1 rounded-lg text-xs font-semibold shadow-md flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5" />
+              <Icon icon="solar:document-text-bold-duotone" className="w-3.5 h-3.5" />
               Pitch Deck
             </div>
           )}
@@ -159,7 +159,7 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
             {/* AI Profile Icon */}
             <div className="flex-shrink-0">
               <div className="w-8 h-8 rounded-full bg-hanok-teal flex items-center justify-center">
-                <Bot className="h-5 w-5 text-white" />
+                <Icon icon="solar:chat-round-dots-bold-duotone" className="h-5 w-5 text-white" />
               </div>
             </div>
 

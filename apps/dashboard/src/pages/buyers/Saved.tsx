@@ -6,7 +6,7 @@ import { titlesService, Title } from '@/services/titlesService';
 import { Button } from '@/components/ui/button';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TitleCard } from '@/components/title/TitleCard';
-import { Heart, Loader2 } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function Saved() {
   const { user } = useAuth();
@@ -71,7 +71,7 @@ export default function Saved() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-hanok-teal to-hanok-teal/80 p-3 rounded-2xl shadow-lg">
-                <Heart className="h-8 w-8 text-white" />
+                <Icon icon="solar:heart-bold-duotone" className="h-8 w-8 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-hanok-teal">Saved Titles</h1>
@@ -85,11 +85,11 @@ export default function Saved() {
         </div>
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : favorites.length === 0 ? (
           <div className="text-center py-12">
-            <Heart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <Icon icon="solar:heart-bold-duotone" className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-2">No saved titles yet</p>
             <p className="text-gray-400 text-sm mb-6">
               Save titles to find them easily later

@@ -3,7 +3,7 @@ import PreviewBanner from '@/components/preview/PreviewBanner';
 import StatsSection from '@/components/preview/StatsSection';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, BookOpen, Heart, Filter } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function Design3Dashboard() {
   const compactTitles = [
@@ -80,7 +80,7 @@ export default function Design3Dashboard() {
         {/* Quick Filters Bar */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-slate-600" />
+            <Icon icon="solar:filter-bold-duotone" className="h-5 w-5 text-slate-600" />
             <h2 className="text-xl font-bold text-gray-900">Quick Filters</h2>
           </div>
 
@@ -143,13 +143,13 @@ export default function Design3Dashboard() {
 
                     <div className="space-y-1 text-xs text-gray-600 mb-3">
                       <div className="flex items-center gap-2">
-                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        <Icon icon="solar:star-bold-duotone" className="h-3 w-3 text-yellow-500 fill-yellow-500" />
                         <span className="font-semibold text-gray-900">{title.rating}</span>
                         <span>·</span>
                         <span>{title.chapters} ch</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <BookOpen className="h-3 w-3 text-slate-400" />
+                        <Icon icon="solar:book-bold-duotone" className="h-3 w-3 text-slate-400" />
                         <span>{title.views} views</span>
                       </div>
                     </div>
@@ -159,7 +159,7 @@ export default function Design3Dashboard() {
                         View
                       </Button>
                       <Button size="sm" variant="outline" className="h-7 w-7 p-0 border-slate-300 hover:bg-cyan-50 hover:border-cyan-400">
-                        <Heart className="h-3 w-3" />
+                        <Icon icon="solar:heart-bold-duotone" className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>

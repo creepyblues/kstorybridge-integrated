@@ -1,21 +1,7 @@
 import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import {
-  LayoutDashboard,
-  Star,
-  TrendingUp,
-  FileEdit,
-  BookOpen,
-  Sparkles,
-  FileText,
-  ArrowLeft,
-  LogOut,
-  Menu,
-  X,
-  Palette,
-  Library
-} from 'lucide-react';
+import { Icon } from '@iconify/react';
 import { AdminManualModal } from '@/components/admin/AdminManualModal';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -39,45 +25,39 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const navigation = [
     {
-      name: 'Featured',
-      href: '/admin/featured',
-      icon: Star,
-      description: 'Manage featured titles'
-    },
-    {
       name: 'Trending',
       href: '/admin/trending',
-      icon: TrendingUp,
-      description: 'Featured titles (table view)'
+      icon: 'solar:graph-up-bold-duotone',
+      description: 'Manage featured titles'
     },
     {
       name: 'Titles',
       href: '/admin/titles',
-      icon: Library,
+      icon: 'solar:library-bold-duotone',
       description: 'Manage all titles'
     },
     {
       name: 'Drafts',
       href: '/admin/drafts',
-      icon: FileEdit,
+      icon: 'solar:document-add-bold-duotone',
       description: 'Review creator drafts'
     },
     {
       name: 'Content',
       href: '/admin/content',
-      icon: BookOpen,
+      icon: 'solar:book-bold-duotone',
       description: 'Learning & News CMS'
     },
     {
       name: 'Asset Generation',
       href: '/admin/asset-generation',
-      icon: Sparkles,
+      icon: 'solar:stars-bold-duotone',
       description: 'AI-powered marketing assets'
     },
     {
       name: 'Pitch Extractor',
       href: '/admin/pitch-extractor',
-      icon: FileText,
+      icon: 'solar:document-text-bold-duotone',
       description: 'Pitch deck analysis'
     }
   ];
@@ -94,7 +74,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex items-center justify-between px-4 py-3">
           {/* Logo and Title */}
           <div className="flex items-center gap-2">
-            <LayoutDashboard className="w-6 h-6 text-gray-900" />
+            <Icon icon="solar:widget-bold-duotone" className="w-6 h-6 text-gray-900" />
             <h1 className="text-lg font-bold text-gray-900">Admin Panel</h1>
           </div>
 
@@ -106,7 +86,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Toggle menu"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <Icon icon="solar:close-circle-bold-duotone" className="w-5 h-5" /> : <Icon icon="solar:hamburger-menu-bold-duotone" className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -128,7 +108,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             {navigation.map((item) => {
               const isActive = location.pathname === item.href ||
                              location.pathname.startsWith(item.href + '/');
-              const Icon = item.icon;
 
               return (
                 <Link
@@ -142,7 +121,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       : "text-gray-900 hover:bg-gray-50"
                   )}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon icon={item.icon} className="w-5 h-5" />
                   <span>{item.name}</span>
                 </Link>
               );
@@ -159,7 +138,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               }}
               className="flex items-center gap-3 px-4 py-3 text-base font-normal text-gray-900 hover:bg-gray-50 transition-colors w-full"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <Icon icon="solar:arrow-left-bold-duotone" className="w-5 h-5" />
               <span>Back to Dashboard</span>
             </button>
             <button
@@ -169,7 +148,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               }}
               className="flex items-center gap-3 px-4 py-3 text-base font-normal text-red-600 hover:bg-red-50 transition-colors w-full"
             >
-              <LogOut className="w-5 h-5" />
+              <Icon icon="solar:logout-2-bold-duotone" className="w-5 h-5" />
               <span>Sign Out</span>
             </button>
           </div>
@@ -182,7 +161,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <LayoutDashboard className="w-6 h-6 text-gray-900" />
+              <Icon icon="solar:widget-bold-duotone" className="w-6 h-6 text-gray-900" />
               <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
             </div>
             <AdminManualModal />
@@ -195,7 +174,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {navigation.map((item) => {
             const isActive = location.pathname === item.href ||
                            location.pathname.startsWith(item.href + '/');
-            const Icon = item.icon;
 
             return (
               <Link
@@ -208,7 +186,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 )}
               >
-                <Icon className="w-5 h-5" />
+                <Icon icon={item.icon} className="w-5 h-5" />
                 <div className="flex-1">
                   <div>{item.name}</div>
                   <div className="text-xs text-gray-500">{item.description}</div>
@@ -222,7 +200,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <>
               <div className="pt-4 mt-4 border-t border-gray-200">
                 <div className="flex items-center gap-2 px-3 py-2 mb-2">
-                  <Palette className="w-4 h-4 text-gray-500" />
+                  <Icon icon="solar:pallete-2-bold-duotone" className="w-4 h-4 text-gray-500" />
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Design Previews
                   </span>
@@ -297,7 +275,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             className="w-full justify-start"
             size="sm"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <Icon icon="solar:arrow-left-bold-duotone" className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
           <Button
@@ -306,7 +284,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
             size="sm"
           >
-            <LogOut className="w-4 h-4 mr-2" />
+            <Icon icon="solar:logout-2-bold-duotone" className="w-4 h-4 mr-2" />
             Sign Out
           </Button>
         </div>

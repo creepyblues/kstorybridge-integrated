@@ -4,6 +4,7 @@ import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
 import Footer from '../components/Footer';
+import { TypewriterText } from '../components/TypewriterText';
 import { getCreatorUrl } from '../config/urls';
 import {
   Globe,
@@ -34,15 +35,29 @@ const CreatorsPage = () => {
         <section className="relative py-12 sm:py-16 lg:py-24 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center">
-              {/* Aspirational headline */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 sm:mb-8 text-midnight-ink leading-tight">
-                {t('hero.title')}<span className="text-sunrise-coral">{t('hero.titleHighlight')}</span>
-              </h1>
-
-              {/* Hollywood access hook */}
-              <p className="text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto">
-                {t('hero.subtitle')}
-              </p>
+              {/* Hero with Typewriter Effect */}
+              <div className="mb-8 sm:mb-12">
+                <TypewriterText
+                  storageKey="creators-hero-played"
+                  lines={[
+                    {
+                      text: t('hero.title'),
+                      className: 'text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-midnight-ink leading-tight',
+                    },
+                    {
+                      text: t('hero.titleHighlight'),
+                      className: 'text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-sunrise-coral leading-tight',
+                      delay: 0,
+                    },
+                    {
+                      text: t('hero.subtitle'),
+                      className: 'text-lg sm:text-xl lg:text-2xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto block mt-6 sm:mt-8',
+                      delay: 400,
+                    },
+                  ]}
+                  cursorClassName="text-sunrise-coral"
+                />
+              </div>
 
               {/* Primary CTA */}
               <Button

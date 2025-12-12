@@ -2,6 +2,7 @@ import UniversalHeader from '../components/UniversalHeader';
 import { Card, CardContent } from '@kstorybridge/ui';
 import { ExternalLink } from 'lucide-react';
 import Footer from '../components/Footer';
+import { TypewriterText } from '../components/TypewriterText';
 import { useTranslation } from 'react-i18next';
 
 const AboutPage = () => {
@@ -12,16 +13,27 @@ const AboutPage = () => {
       <UniversalHeader />
       
       <main className="flex-1">
-        {/* Hero Section */}
+        {/* Hero Section with Typewriter Effect */}
         <section className="py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-5xl lg:text-6xl font-bold text-midnight-ink mb-6">
-                {t('hero.title')}
-              </h1>
-              <p className="text-xl lg:text-2xl text-midnight-ink-600 mb-12">
-                {t('hero.subtitle')}
-              </p>
+              <div className="mb-12">
+                <TypewriterText
+                  storageKey="about-hero-played"
+                  lines={[
+                    {
+                      text: t('hero.title'),
+                      className: 'text-5xl lg:text-6xl font-bold text-midnight-ink',
+                    },
+                    {
+                      text: t('hero.subtitle'),
+                      className: 'text-xl lg:text-2xl text-midnight-ink-600 block mt-6',
+                      delay: 400,
+                    },
+                  ]}
+                  cursorClassName="text-hanok-teal"
+                />
+              </div>
             </div>
           </div>
         </section>

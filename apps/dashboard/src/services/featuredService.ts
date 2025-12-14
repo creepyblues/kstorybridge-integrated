@@ -21,12 +21,25 @@ export const featuredService = {
     const { data, error } = await supabase
       .from('featured')
       .select(`
-        *,
+        id,
+        title_id,
+        note,
+        section_id,
+        display_order,
+        created_at,
+        updated_at,
         titles (
-          *,
-          title_content_analysis (
-            pitch_analysis
-          )
+          title_id,
+          title_name_en,
+          title_name_kr,
+          title_image,
+          synopsis,
+          genre,
+          tone,
+          content_format,
+          rating,
+          story_author,
+          art_author
         )
       `)
       .order('created_at', { ascending: false });
@@ -35,7 +48,13 @@ export const featuredService = {
       throw new Error(`Failed to fetch all featured titles: ${error.message}`);
     }
 
-    return data || [];
+    // Normalize the data - Supabase returns titles as array for join, but we expect single object
+    const normalizedData = (data || []).map(f => ({
+      ...f,
+      titles: Array.isArray(f.titles) ? f.titles[0] : f.titles
+    })) as FeaturedWithTitle[];
+
+    return normalizedData;
   },
 
   async addFeaturedTitle(titleId: string, note?: string, sectionId?: string): Promise<void> {
@@ -240,16 +259,29 @@ export const featuredService = {
     // Fetch all active sections
     const sections = await this.getActiveSections();
 
-    // Fetch all featured titles with their section assignments
+    // Fetch all featured titles with only needed fields (optimized for performance)
     const { data: featured, error } = await supabase
       .from('featured')
       .select(`
-        *,
+        id,
+        title_id,
+        note,
+        section_id,
+        display_order,
+        created_at,
+        updated_at,
         titles (
-          *,
-          title_content_analysis (
-            pitch_analysis
-          )
+          title_id,
+          title_name_en,
+          title_name_kr,
+          title_image,
+          synopsis,
+          genre,
+          tone,
+          content_format,
+          rating,
+          story_author,
+          art_author
         )
       `)
       .order('display_order', { ascending: true });
@@ -258,16 +290,23 @@ export const featuredService = {
       throw new Error(`Failed to fetch featured titles: ${error.message}`);
     }
 
+    // Normalize the data - Supabase returns titles as array for join, but we expect single object
+    const normalizedFeatured = (featured || []).map(f => ({
+      ...f,
+      // Supabase returns array for joined relation, take first item
+      titles: Array.isArray(f.titles) ? f.titles[0] : f.titles
+    })) as FeaturedWithTitle[];
+
     // Group titles by section
     const sectionsWithTitles: FeaturedSectionWithTitles[] = sections.map(section => ({
       ...section,
-      featured: (featured || [])
+      featured: normalizedFeatured
         .filter(f => f.section_id === section.id)
         .sort((a, b) => a.display_order - b.display_order)
     }));
 
     // Get uncategorized titles (section_id is null)
-    const uncategorized = (featured || [])
+    const uncategorized = normalizedFeatured
       .filter(f => f.section_id === null)
       .sort((a, b) => a.display_order - b.display_order);
 

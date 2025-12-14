@@ -5,7 +5,44 @@
  * Allows admin to select and save comps to the title.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+// =====================================================================
+// LOADING UX CONFIGURATION
+// =====================================================================
+
+const LOADING_PHASES = [
+  { id: 'collect', label: 'Collecting title data', duration: 1000 },
+  { id: 'analyze', label: 'Analyzing story elements', duration: 2000 },
+  { id: 'deconstruct', label: 'Deconstructing narrative DNA', duration: 6000 },
+  { id: 'match', label: 'Finding Hollywood comparables', duration: 6000 },
+  { id: 'enrich', label: 'Enriching with IMDB data', duration: 2000 },
+];
+
+const TOTAL_ESTIMATED_TIME = LOADING_PHASES.reduce((sum, p) => sum + p.duration, 0);
+
+const LOADING_MESSAGES = [
+  { emoji: '🎬', text: "Consulting Hollywood's best matchmakers..." },
+  { emoji: '🎭', text: 'Teaching AI about K-drama plot twists...' },
+  { emoji: '🍿', text: 'Popping fresh comps for your title...' },
+  { emoji: '🎯', text: 'Finding shows that would make Netflix jealous...' },
+  { emoji: '🔮', text: "Reading the entertainment industry's crystal ball..." },
+  { emoji: '📺', text: 'Scanning every binge-worthy show since 2010...' },
+  { emoji: '🌏', text: 'Translating Korean magic into Hollywood gold...' },
+  { emoji: '⚡', text: 'Speed-dating through the streaming catalog...' },
+  { emoji: '🎪', text: 'Assembling the ultimate comp squad...' },
+  { emoji: '✨', text: 'Sprinkling some AI magic on your title...' },
+];
+
+const FUN_FACTS = [
+  'Squid Game became Netflix\'s most-watched series with 1.65B viewing hours',
+  'Korean webtoons have inspired 50+ Hollywood adaptations since 2020',
+  'The K-content wave (Hallyu) reaches 180+ countries',
+  'All of Us Are Dead was greenlit 12 years after its webtoon debut',
+  'Sweet Home\'s webtoon had 1.2B views before becoming a Netflix series',
+  'Parasite was the first non-English film to win Best Picture at the Oscars',
+  'K-dramas are now available in 190+ countries worldwide',
+];
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -57,6 +94,14 @@ export function CompsGeneratorModal({
   const [selectedComps, setSelectedComps] = useState<Set<string>>(new Set());
   const [expandedComps, setExpandedComps] = useState<Set<string>>(new Set());
 
+  // Loading progress state
+  const [currentPhase, setCurrentPhase] = useState(0);
+  const [currentMessage, setCurrentMessage] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [funFact, setFunFact] = useState(() => FUN_FACTS[Math.floor(Math.random() * FUN_FACTS.length)]);
+  const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const messageTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Reset state when modal opens
   useEffect(() => {
     if (open && titleId) {
@@ -64,9 +109,57 @@ export function CompsGeneratorModal({
       setError(null);
       setSelectedComps(new Set());
       setExpandedComps(new Set());
+      // Reset loading progress state
+      setCurrentPhase(0);
+      setCurrentMessage(0);
+      setElapsedTime(0);
+      setFunFact(FUN_FACTS[Math.floor(Math.random() * FUN_FACTS.length)]);
       generateComps();
     }
   }, [open, titleId]);
+
+  // Time-based loading progress simulation
+  useEffect(() => {
+    if (!loading) {
+      // Clear timers when loading stops
+      if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
+      if (messageTimerRef.current) clearInterval(messageTimerRef.current);
+      return;
+    }
+
+    // Progress timer - updates every 100ms for smooth progress bar
+    loadingTimerRef.current = setInterval(() => {
+      setElapsedTime((prev) => {
+        const newTime = prev + 100;
+
+        // Calculate which phase we should be in based on elapsed time
+        let accumulated = 0;
+        for (let i = 0; i < LOADING_PHASES.length; i++) {
+          accumulated += LOADING_PHASES[i].duration;
+          if (newTime < accumulated) {
+            setCurrentPhase(i);
+            break;
+          }
+        }
+
+        // Cap at 95% until actually complete (to handle variance in actual time)
+        return Math.min(newTime, TOTAL_ESTIMATED_TIME * 0.95);
+      });
+    }, 100);
+
+    // Message rotation timer - changes every 3.5 seconds
+    messageTimerRef.current = setInterval(() => {
+      setCurrentMessage((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    }, 3500);
+
+    return () => {
+      if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
+      if (messageTimerRef.current) clearInterval(messageTimerRef.current);
+    };
+  }, [loading]);
+
+  // Calculate progress percentage
+  const progressPercent = Math.min(Math.round((elapsedTime / TOTAL_ESTIMATED_TIME) * 100), 95);
 
   const generateComps = async () => {
     if (!titleId || !user?.email) return;
@@ -206,23 +299,80 @@ export function CompsGeneratorModal({
             </DialogTitle>
           </DialogHeader>
 
-          {/* Loading State */}
+          {/* Enhanced Loading State */}
           {loading && (
-          <div className="py-12 flex flex-col items-center justify-center gap-4">
-            <Icon icon="solar:refresh-circle-bold-duotone" className="h-8 w-8 animate-spin text-purple-500" />
-            <div className="text-center">
-              <p className="font-medium">Analyzing title...</p>
-              <p className="text-sm text-gray-500">
-                This may take 10-15 seconds
-              </p>
+            <div className="py-8 flex flex-col items-center justify-center gap-6">
+              {/* Rotating entertaining message */}
+              <div className="text-center transition-opacity duration-300" key={currentMessage}>
+                <span className="text-3xl mb-2 block">{LOADING_MESSAGES[currentMessage].emoji}</span>
+                <p className="text-lg font-medium text-gray-700 italic">
+                  "{LOADING_MESSAGES[currentMessage].text}"
+                </p>
+              </div>
+
+              {/* Phase stepper */}
+              <div className="w-full max-w-sm space-y-2">
+                {LOADING_PHASES.map((phase, index) => {
+                  const isComplete = index < currentPhase;
+                  const isCurrent = index === currentPhase;
+                  const isPending = index > currentPhase;
+
+                  return (
+                    <div
+                      key={phase.id}
+                      className={`flex items-center gap-3 text-sm transition-all duration-300 ${
+                        isComplete ? 'text-green-600' :
+                        isCurrent ? 'text-purple-600 font-medium' :
+                        'text-gray-400'
+                      }`}
+                    >
+                      {/* Status indicator */}
+                      <span className="w-5 flex justify-center">
+                        {isComplete && (
+                          <Icon icon="solar:check-circle-bold" className="h-5 w-5 text-green-500" />
+                        )}
+                        {isCurrent && (
+                          <span className="relative flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                          </span>
+                        )}
+                        {isPending && (
+                          <span className="h-2 w-2 rounded-full bg-gray-300"></span>
+                        )}
+                      </span>
+                      {/* Phase label */}
+                      <span>{phase.label}{isCurrent && '...'}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full max-w-sm">
+                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <span>Progress</span>
+                  <span>{progressPercent}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Fun fact */}
+              <div className="text-center max-w-sm mt-2">
+                <div className="bg-purple-50 border border-purple-100 rounded-lg p-3">
+                  <p className="text-xs text-purple-600 flex items-start gap-2">
+                    <Icon icon="solar:lightbulb-bolt-bold-duotone" className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <span><strong>Did you know?</strong> {funFact}</span>
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-gray-400 space-y-1">
-              <p>1. Collecting title data...</p>
-              <p>2. Deconstructing story elements...</p>
-              <p>3. Finding Hollywood comparables...</p>
-            </div>
-          </div>
-        )}
+          )}
 
         {/* Error State */}
         {error && !loading && (

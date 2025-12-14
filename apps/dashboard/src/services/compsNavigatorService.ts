@@ -95,6 +95,10 @@ export interface CompNavigatorResponse {
   // V2.0.0 fields
   engine_version?: string;
   mode_used?: 'fast' | 'deep';
+  // V2.1.0 - Relevancy filtering fields
+  filtered_count?: number;          // How many results were filtered out
+  no_results_message?: string;      // Message when no relevant results found
+  suggestions?: string[];           // Suggestions when no results
 }
 
 // =====================================================================

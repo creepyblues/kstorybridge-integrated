@@ -54,9 +54,10 @@ export function BuyerSidebar() {
       {/* Mobile menu button */}
       <button
         onClick={handleMobileMenuToggle}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white border border-red-200 shadow-lg"
+        className="md:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm shadow-md"
+        aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
       >
-        {isMobileMenuOpen ? <Icon icon="solar:close-circle-bold-duotone" className="h-6 w-6" /> : <Icon icon="solar:hamburger-menu-bold-duotone" className="h-6 w-6" />}
+        {isMobileMenuOpen ? <Icon icon="solar:close-circle-bold-duotone" className="h-5 w-5 text-gray-700" /> : <Icon icon="solar:hamburger-menu-bold-duotone" className="h-5 w-5 text-gray-700" />}
       </button>
 
       {/* Overlay for mobile */}
@@ -103,7 +104,7 @@ export function BuyerSidebar() {
                           : 'text-gray-700 hover:bg-hanok-teal/5'
                       )}
                     >
-                      <Icon icon={item.icon} className="h-5 w-5" />
+                      <Icon icon={item.icon} className={cn("h-5 w-5", location.pathname === item.href ? "" : "text-gray-400")} />
                       <span>{item.title}</span>
                       {item.badge && (
                         <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
@@ -134,7 +135,7 @@ export function BuyerSidebar() {
                           : 'text-gray-700 hover:bg-hanok-teal/5'
                       )}
                     >
-                      <Icon icon={adminItem.icon} className="h-5 w-5" />
+                      <Icon icon={adminItem.icon} className={cn("h-5 w-5", location.pathname.startsWith('/admin') ? "" : "text-gray-400")} />
                       <span>{adminItem.title}</span>
                     </Link>
                   </li>

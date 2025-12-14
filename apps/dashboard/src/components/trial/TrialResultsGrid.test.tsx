@@ -39,10 +39,10 @@ const mockResults: TitleMatch[] = [
   },
 ];
 
-function renderGrid(results: TitleMatch[] = mockResults, isLoading = false) {
+function renderGrid(results: TitleMatch[] = mockResults) {
   return render(
     <BrowserRouter>
-      <TrialResultsGrid results={results} isLoading={isLoading} />
+      <TrialResultsGrid results={results} />
     </BrowserRouter>
   );
 }
@@ -52,16 +52,11 @@ describe('TrialResultsGrid', () => {
     vi.clearAllMocks();
   });
 
-  describe('loading state', () => {
-    it('should show loading spinner when isLoading is true', () => {
-      renderGrid([], true);
-      expect(screen.getByText('Searching for matches...')).toBeInTheDocument();
-    });
-  });
+  // Note: Loading state is now handled by SearchLoadingModal at the page level
 
   describe('empty state', () => {
-    it('should show empty state when no results and not loading', () => {
-      renderGrid([], false);
+    it('should show empty state when no results', () => {
+      renderGrid([]);
       expect(screen.getByText('No results yet')).toBeInTheDocument();
       expect(screen.getByText('Add comps and click "Find Matches" to search')).toBeInTheDocument();
     });

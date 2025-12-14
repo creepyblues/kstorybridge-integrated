@@ -28,6 +28,7 @@ interface ChatMessage {
   titles?: any[];
   suggestedQueries?: string[];
   messageId?: string; // Database message ID for tracking
+  isNew?: boolean; // Whether this is a new message (for typewriter effect)
 }
 
 export default function Chat() {
@@ -309,7 +310,7 @@ export default function Chat() {
         await chatHistoryService.recordSuggestedQueries(queries);
       }
 
-      // Add bot response to UI
+      // Add bot response to UI with typewriter effect enabled
       const botMessage: ChatMessage = {
         id: botDbMessage?.id || `temp-bot-${Date.now()}`,
         role: 'assistant',
@@ -318,6 +319,7 @@ export default function Chat() {
         titles: response.titles?.map((t: any) => chatOrchestratorService.formatTitleForChat(t)),
         suggestedQueries: response.suggestedQueries,
         messageId: botDbMessage?.id,
+        isNew: true, // Enable typewriter effect for new messages
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -483,10 +485,19 @@ export default function Chat() {
                         allMessages={messages}
                         titleCache={titleCache}
                         handleSuggestedQuery={handleSuggestedQuery}
+                        enableTypewriter={message.isNew}
+                        onTypewriterComplete={() => {
+                          // Clear isNew flag after typewriter completes to prevent re-animation
+                          setMessages((prev) =>
+                            prev.map((m) =>
+                              m.id === message.id ? { ...m, isNew: false } : m
+                            )
+                          );
+                        }}
                       />
 
-                      {/* Suggested Queries */}
-                      {message.suggestedQueries && message.suggestedQueries.length > 0 && (
+                      {/* Suggested Queries - only show after typewriter completes */}
+                      {message.suggestedQueries && message.suggestedQueries.length > 0 && !message.isNew && (
                         <div className="mt-4">
                           <SuggestedQueries
                             queries={message.suggestedQueries}
@@ -498,9 +509,9 @@ export default function Chat() {
                   </div>
                 )}
 
-                {/* Title Cards (shown below bot messages) */}
-                {message.titles && message.titles.length > 0 && message.role === 'assistant' && (
-                  <div className="ml-11 space-y-2">
+                {/* Title Cards (shown below bot messages - only after typewriter completes) */}
+                {message.titles && message.titles.length > 0 && message.role === 'assistant' && !message.isNew && (
+                  <div className="ml-11 space-y-2 animate-in fade-in duration-300">
                     <p className="text-sm text-gray-600 font-medium">
                       Found {message.titles.length} title{message.titles.length !== 1 ? 's' : ''}:
                     </p>

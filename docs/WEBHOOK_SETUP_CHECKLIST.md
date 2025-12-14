@@ -42,7 +42,7 @@
 ## Verify Secret
 
 - [ ] Run: `npx supabase secrets list`
-- [ ] Confirm `STRIPE_WEBHOOK_SECRET` matches
+- [ ] Confirm `STRIPE_WEBHOOK_SECRET` matches 
 - [ ] If different, update: `npx supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_xxx`
 - [ ] If updated, redeploy: `npx supabase functions deploy creator-stripe-webhook`
 

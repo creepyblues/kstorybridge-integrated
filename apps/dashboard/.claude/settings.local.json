@@ -58,7 +58,8 @@
       "WebFetch(domain:www.nofilmschoolnotrustfundnoproblem.com)",
       "WebFetch(domain:www.flyingwrestler.com)",
       "WebFetch(domain:savethecat.com)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:vitrina.ai)"
     ],
     "deny": [],
     "ask": []

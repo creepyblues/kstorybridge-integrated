@@ -7,7 +7,7 @@ export type ToastProps = {
   title?: string;
   description?: string;
   action?: ToastActionElement;
-  variant?: "default" | "destructive";
+  variant?: "default" | "success" | "destructive";
 };
 
 const TOAST_LIMIT = 1;

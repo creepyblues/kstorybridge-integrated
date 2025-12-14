@@ -1,7 +1,8 @@
 /**
  * ResultsGrid Component
  *
- * Displays search results in a responsive grid layout
+ * Displays search results in a responsive grid layout.
+ * Note: Loading state is now handled by SearchLoadingModal at the page level.
  */
 
 import { TitleMatch } from '@/services/compsNavigatorService';
@@ -9,19 +10,9 @@ import TitleMatchCard from './TitleMatchCard';
 
 interface ResultsGridProps {
   results: TitleMatch[];
-  isLoading?: boolean;
 }
 
-export default function ResultsGrid({ results, isLoading }: ResultsGridProps) {
-  if (isLoading) {
-    return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        <p className="mt-4 text-gray-600">Searching for matches...</p>
-      </div>
-    );
-  }
-
+export default function ResultsGrid({ results }: ResultsGridProps) {
   if (results.length === 0) {
     return (
       <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">

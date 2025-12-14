@@ -60,6 +60,7 @@ export default function SignIn() {
       toast({
         title: 'Welcome back!',
         description: 'Successfully signed in',
+        variant: 'success',
       });
 
       navigate('/buyers/home');

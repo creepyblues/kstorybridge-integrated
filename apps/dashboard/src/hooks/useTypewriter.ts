@@ -15,6 +15,7 @@ interface UseTypewriterReturn {
   isComplete: boolean;
   isTyping: boolean;
   reset: () => void;
+  skipToEnd: () => void;
 }
 
 const PUNCTUATION_CHARS = new Set(['.', ',', '!', '?', ';', ':']);
@@ -28,13 +29,16 @@ function isPunctuation(char: string): boolean {
   return PUNCTUATION_CHARS.has(char);
 }
 
+// Default variance range as stable reference
+const DEFAULT_VARIANCE: [number, number] = [-15, 30];
+
 export function useTypewriter({
   text,
   speed = 50,
   startDelay = 0,
   onComplete,
   skipAnimation = false,
-  varianceRange = [-15, 30],
+  varianceRange = DEFAULT_VARIANCE,
   punctuationPause = 200,
 }: UseTypewriterOptions): UseTypewriterReturn {
   const [displayedText, setDisplayedText] = useState(skipAnimation ? text : '');
@@ -42,6 +46,19 @@ export function useTypewriter({
   const [isTyping, setIsTyping] = useState(!skipAnimation);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const indexRef = useRef(0);
+
+  // Store callbacks and values in refs to avoid dependency issues
+  const onCompleteRef = useRef(onComplete);
+  const varianceRef = useRef(varianceRange);
+
+  // Update refs when props change
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    varianceRef.current = varianceRange;
+  }, [varianceRange]);
 
   const reset = useCallback(() => {
     if (timeoutRef.current) {
@@ -52,6 +69,17 @@ export function useTypewriter({
     setIsComplete(false);
     setIsTyping(true);
   }, []);
+
+  const skipToEnd = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setDisplayedText(text);
+    setIsComplete(true);
+    setIsTyping(false);
+    indexRef.current = text.length;
+    onCompleteRef.current?.();
+  }, [text]);
 
   useEffect(() => {
     // Check for reduced motion preference
@@ -75,7 +103,7 @@ export function useTypewriter({
         setDisplayedText(text.slice(0, indexRef.current + 1));
 
         // Calculate delay for next character
-        let delay = speed + getRandomVariance(varianceRange);
+        let delay = speed + getRandomVariance(varianceRef.current);
         if (isPunctuation(char)) {
           delay += punctuationPause;
         }
@@ -85,7 +113,7 @@ export function useTypewriter({
       } else {
         setIsTyping(false);
         setIsComplete(true);
-        onComplete?.();
+        onCompleteRef.current?.();
       }
     };
 
@@ -97,7 +125,7 @@ export function useTypewriter({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [text, speed, startDelay, skipAnimation, varianceRange, punctuationPause, onComplete]);
+  }, [text, speed, startDelay, skipAnimation, punctuationPause]);
 
-  return { displayedText, isComplete, isTyping, reset };
+  return { displayedText, isComplete, isTyping, reset, skipToEnd };
 }

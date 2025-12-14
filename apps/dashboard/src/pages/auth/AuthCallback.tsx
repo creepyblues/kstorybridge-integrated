@@ -90,6 +90,7 @@ export default function AuthCallback() {
         toast({
           title: 'Welcome back!',
           description: 'Successfully signed in',
+          variant: 'success',
         });
         navigate('/buyers/home');
       } else {

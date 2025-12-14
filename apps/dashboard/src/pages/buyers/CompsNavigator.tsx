@@ -14,6 +14,7 @@ import { compsNavigatorService, TitleMatch, CompSearch } from '@/services/compsN
 import { CompTitle } from '@/components/comps-navigator/CompSelector';
 import CompsNavigatorInput from '@/components/comps-navigator/CompsNavigatorInput';
 import ResultsGrid from '@/components/comps-navigator/ResultsGrid';
+import { SearchLoadingModal } from '@/components/comps-navigator/SearchLoadingModal';
 import SavedSearchesSidebar from '@/components/comps-navigator/SavedSearchesSidebar';
 import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,10 @@ export default function CompsNavigator() {
   const [searchInfo, setSearchInfo] = useState<{ time: number; cost: number } | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
+  // V2.1.0 - Relevancy filtering state
+  const [noResultsMessage, setNoResultsMessage] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[] | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // Track page view on mount
   useEffect(() => {
@@ -100,6 +105,9 @@ export default function CompsNavigator() {
     setIsLoading(true);
     setLoadingPhase('semantic');
     setResults([]);
+    setNoResultsMessage(null);
+    setSuggestions(null);
+    setHasSearched(true);
 
     try {
       const phaseTimer = setTimeout(() => setLoadingPhase('reranking'), 1500);
@@ -119,13 +127,21 @@ export default function CompsNavigator() {
         cost: response.cost_estimate
       });
 
+      // Handle no results case with message and suggestions
+      if (response.no_results_message) {
+        setNoResultsMessage(response.no_results_message);
+        setSuggestions(response.suggestions || null);
+      }
+
       // Track comps search
       trackCompsSearch(titles, response.results.length, response.processing_time_ms);
 
-      toast({
-        title: "Matches Found",
-        description: `Found ${response.results.length} titles matching your comp combination`
-      });
+      if (response.results.length > 0) {
+        toast({
+          title: "Matches Found",
+          description: `Found ${response.results.length} titles matching your comp combination`
+        });
+      }
     } catch (error: any) {
       console.error('Search error:', error);
       toast({
@@ -161,6 +177,9 @@ export default function CompsNavigator() {
     setIsLoading(true);
     setLoadingPhase('semantic');
     setResults([]);
+    setNoResultsMessage(null);
+    setSuggestions(null);
+    setHasSearched(true);
 
     try {
       // Transition to reranking phase after semantic search completes
@@ -184,13 +203,21 @@ export default function CompsNavigator() {
         cost: response.cost_estimate
       });
 
+      // Handle no results case with message and suggestions
+      if (response.no_results_message) {
+        setNoResultsMessage(response.no_results_message);
+        setSuggestions(response.suggestions || null);
+      }
+
       // Track comps search
       trackCompsSearch(titleStrings, response.results.length, response.processing_time_ms);
 
-      toast({
-        title: "Matches Found",
-        description: `Found ${response.results.length} titles matching your comp combination`
-      });
+      if (response.results.length > 0) {
+        toast({
+          title: "Matches Found",
+          description: `Found ${response.results.length} titles matching your comp combination`
+        });
+      }
     } catch (error: any) {
       console.error('Search error:', error);
       toast({
@@ -221,6 +248,9 @@ export default function CompsNavigator() {
     setCompTitles([]);
     setResults([]);
     setSearchInfo(null);
+    setNoResultsMessage(null);
+    setSuggestions(null);
+    setHasSearched(false);
   };
 
   const handleTryExample = (comps: string[]) => {
@@ -237,12 +267,12 @@ export default function CompsNavigator() {
           <div className="flex justify-end">
             <Button
               onClick={() => setShowHistory(true)}
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="border-gray-300 hover:bg-gray-100"
+              className="md:border md:border-gray-300 md:hover:bg-gray-100 hover:bg-gray-100/50 rounded-xl p-2.5 md:px-3"
             >
-              <Icon icon="solar:clock-circle-bold-duotone" className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">History</span>
+              <Icon icon="solar:clock-circle-bold-duotone" className="h-5 w-5 md:h-4 md:w-4 text-gray-600 md:mr-2" />
+              <span className="hidden md:inline">History</span>
             </Button>
           </div>
         )}
@@ -261,10 +291,39 @@ export default function CompsNavigator() {
         />
 
         {/* Results */}
-        {(results.length > 0 || isLoading) && (
-          <ResultsGrid results={results} isLoading={isLoading} />
+        {results.length > 0 && (
+          <ResultsGrid results={results} />
+        )}
+
+        {/* No Results Empty State */}
+        {!isLoading && hasSearched && results.length === 0 && noResultsMessage && (
+          <div className="text-center py-12 px-4">
+            <Icon icon="solar:compass-bold-duotone" className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+            <p className="text-lg font-medium text-gray-700 mb-2">{noResultsMessage}</p>
+            {suggestions && suggestions.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-500 mb-2">Try these suggestions:</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {suggestions.map((suggestion, index) => (
+                    <li key={index}>• {suggestion}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <Button
+              onClick={() => setShowExamples(true)}
+              variant="outline"
+              className="mt-6 border-gray-300 hover:bg-gray-100"
+            >
+              <Icon icon="solar:lightbulb-bold-duotone" className="h-4 w-4 mr-2" />
+              View Example Combinations
+            </Button>
+          </div>
         )}
       </div>
+
+      {/* Search Loading Modal - displays progress as popup for visibility */}
+      <SearchLoadingModal isOpen={isLoading} />
 
       {/* History Dialog */}
       {user?.email && (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { debug } from '@/utils/debug';
+import { useTypewriter } from '@/hooks/useTypewriter';
 
 interface ConversationalMessage {
   id: string;
@@ -19,6 +20,10 @@ interface ConversationalMessageProps {
   titleCache?: any[];
   handleSuggestedQuery?: (query: string) => void;
   onTitleCardClick?: (title: any) => void;
+  /** Enable typewriter effect for new messages */
+  enableTypewriter?: boolean;
+  /** Callback when typewriter completes */
+  onTypewriterComplete?: () => void;
 }
 
 /**
@@ -37,7 +42,21 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
   allMessages,
   titleCache,
   handleSuggestedQuery,
+  enableTypewriter = false,
+  onTypewriterComplete,
 }) => {
+  // Use typewriter effect for new messages
+  const { displayedText, isTyping, skipToEnd } = useTypewriter({
+    text: content,
+    speed: 25, // Faster speed for chat (25ms per char = ~40 chars/sec)
+    skipAnimation: !enableTypewriter,
+    onComplete: onTypewriterComplete,
+    varianceRange: [-5, 15], // Subtle variance for natural feel
+    punctuationPause: 100, // Brief pause on punctuation
+  });
+
+  // Use displayed text when typewriter is active, otherwise use full content
+  const textToRender = enableTypewriter ? displayedText : content;
 
   // Levenshtein distance for fuzzy string matching
   const levenshteinDistance = (str1: string, str2: string): number => {
@@ -503,5 +522,23 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
     return segments;
   };
 
-  return <div className="prose prose-sm max-w-none">{formatText(content)}</div>;
+  return (
+    <div className="prose prose-sm max-w-none">
+      {formatText(textToRender)}
+      {/* Show skip button while typing */}
+      {enableTypewriter && isTyping && (
+        <button
+          onClick={skipToEnd}
+          className="ml-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Skip to end"
+        >
+          Skip ↵
+        </button>
+      )}
+      {/* Show typing cursor while typing */}
+      {enableTypewriter && isTyping && (
+        <span className="inline-block w-0.5 h-4 bg-hanok-teal ml-0.5 animate-pulse" aria-hidden="true" />
+      )}
+    </div>
+  );
 };

@@ -181,11 +181,37 @@ export function TrialTrendingSection() {
         </h2>
       </div>
 
-      {/* Loading */}
+      {/* Loading - Skeleton Cards */}
       {isLoading && (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Icon icon="solar:refresh-circle-bold-duotone" className="h-12 w-12 text-hanok-teal animate-spin mb-4" />
-          <p className="text-gray-600 text-sm">Loading trending titles...</p>
+        <div className="space-y-6">
+          {/* Skeleton Tab Bar */}
+          <div className="bg-gray-50 rounded-2xl p-2">
+            <div className="flex gap-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 w-32 bg-gray-200 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </div>
+          {/* Skeleton Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                <div className="aspect-video bg-gray-200 animate-pulse" />
+                <div className="p-6 space-y-3">
+                  <div className="h-6 bg-gray-200 rounded animate-pulse w-3/4" />
+                  <div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" />
+                  <div className="flex gap-2">
+                    <div className="h-6 w-16 bg-gray-100 rounded-md animate-pulse" />
+                    <div className="h-6 w-20 bg-gray-100 rounded-md animate-pulse" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                    <div className="h-4 bg-gray-100 rounded animate-pulse w-5/6" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -1,14 +1,16 @@
 /**
  * TrialResultsGrid
  *
- * Results grid for trial mode that links to /trial/titles/:id
+ * Results grid for trial mode that links to /trial/titles/:id.
+ * Note: Loading state is now handled by SearchLoadingModal at the page level.
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { TypewriterText } from '@/components/ui/TypewriterText';
 import { TitleMatch, getMatchScore } from '@/services/compsNavigatorService';
 import {
   Dialog,
@@ -20,12 +22,12 @@ import {
 
 interface TrialResultsGridProps {
   results: TitleMatch[];
-  isLoading?: boolean;
 }
 
 // Trial-specific card
-function TrialTitleMatchCard({ match }: { match: TitleMatch }) {
+function TrialTitleMatchCard({ match, enableTypewriter = false }: { match: TitleMatch; enableTypewriter?: boolean }) {
   const [showModal, setShowModal] = useState(false);
+  const [typewriterDone, setTypewriterDone] = useState(!enableTypewriter);
 
   const getMatchScoreBadge = (score: number) => {
     if (score >= 85) {
@@ -114,7 +116,15 @@ function TrialTitleMatchCard({ match }: { match: TitleMatch }) {
               </div>
               <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-3">
                 <p className="text-sm text-gray-700">
-                  {match.explanation}
+                  {enableTypewriter && !typewriterDone ? (
+                    <TypewriterText
+                      text={match.explanation}
+                      speed={20}
+                      onComplete={() => setTypewriterDone(true)}
+                    />
+                  ) : (
+                    match.explanation
+                  )}
                 </p>
               </div>
             </div>
@@ -229,15 +239,29 @@ function TrialMatchDetailModal({ match, onClose }: { match: TitleMatch; onClose:
   );
 }
 
-export function TrialResultsGrid({ results, isLoading }: TrialResultsGridProps) {
-  if (isLoading) {
-    return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        <p className="mt-4 text-gray-600">Searching for matches...</p>
-      </div>
+export function TrialResultsGrid({ results }: TrialResultsGridProps) {
+  // Track whether these results are "new" (just loaded) for typewriter effect
+  const prevResultsRef = useRef<string[]>([]);
+  const [isNewResults, setIsNewResults] = useState(false);
+
+  useEffect(() => {
+    const currentIds = results.map(r => r.title_id);
+    const prevIds = prevResultsRef.current;
+
+    // Results are "new" if they're different from previous results
+    const hasNewResults = results.length > 0 && (
+      currentIds.length !== prevIds.length ||
+      currentIds.some((id, idx) => id !== prevIds[idx])
     );
-  }
+
+    if (hasNewResults) {
+      setIsNewResults(true);
+      // Reset after all typewriters should be done (generous timeout)
+      const timer = setTimeout(() => setIsNewResults(false), 10000);
+      prevResultsRef.current = currentIds;
+      return () => clearTimeout(timer);
+    }
+  }, [results]);
 
   if (results.length === 0) {
     return (
@@ -261,7 +285,11 @@ export function TrialResultsGrid({ results, isLoading }: TrialResultsGridProps) 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {results.map((match) => (
-          <TrialTitleMatchCard key={match.title_id} match={match} />
+          <TrialTitleMatchCard
+            key={match.title_id}
+            match={match}
+            enableTypewriter={isNewResults}
+          />
         ))}
       </div>
     </div>

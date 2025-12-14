@@ -21,13 +21,16 @@ export function TrialCounterBadge() {
   return (
     <div
       className={cn(
-        'flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium',
+        'flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm font-medium whitespace-nowrap',
         getColorClasses()
       )}
     >
-      <Icon icon="solar:bolt-bold-duotone" className="h-4 w-4" />
-      <span>
+      <Icon icon="solar:bolt-bold-duotone" className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+      <span className="hidden sm:inline">
         {remainingTrials} of {maxTrials} searches left
+      </span>
+      <span className="sm:hidden">
+        {remainingTrials} of {maxTrials}
       </span>
     </div>
   );

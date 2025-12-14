@@ -4,8 +4,11 @@
  * Results grid for trial mandate searches that links to /trial/titles/:id
  */
 
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { Card, CardContent } from '@/components/ui/card';
+import { TypewriterText } from '@/components/ui/TypewriterText';
 import { TitleMatch } from '@/services/mandateService';
 
 interface TrialMandateResultsGridProps {
@@ -15,10 +18,13 @@ interface TrialMandateResultsGridProps {
 }
 
 // Trial-specific card that opens in same tab to /trial/titles/:id
-function TrialMandateTitleCard({ match }: { match: TitleMatch }) {
+function TrialMandateTitleCard({ match, enableTypewriter = false }: { match: TitleMatch; enableTypewriter?: boolean }) {
+  const navigate = useNavigate();
+  const [typewriterDone, setTypewriterDone] = useState(!enableTypewriter);
+
   const handleCardClick = () => {
-    // Navigate to trial title detail (same tab for trial flow)
-    window.location.href = `/trial/titles/${match.title_id}`;
+    // Navigate to trial title detail using React Router for smooth transition
+    navigate(`/trial/titles/${match.title_id}`);
   };
 
   const getMatchScoreBadge = (score: number) => {
@@ -140,7 +146,15 @@ function TrialMandateTitleCard({ match }: { match: TitleMatch }) {
             <div className="flex-1">
               <p className="text-xs font-medium text-hanok-teal mb-1">AI Analysis</p>
               <p className="text-sm text-gray-700 leading-relaxed">
-                {getAIExplanation()}
+                {enableTypewriter && !typewriterDone ? (
+                  <TypewriterText
+                    text={getAIExplanation()}
+                    speed={20}
+                    onComplete={() => setTypewriterDone(true)}
+                  />
+                ) : (
+                  getAIExplanation()
+                )}
               </p>
             </div>
           </div>
@@ -155,6 +169,29 @@ export function TrialMandateResultsGrid({
   isLoading = false,
   mandateText,
 }: TrialMandateResultsGridProps) {
+  // Track whether these results are "new" (just loaded) for typewriter effect
+  const prevResultsRef = useRef<string[]>([]);
+  const [isNewResults, setIsNewResults] = useState(false);
+
+  useEffect(() => {
+    const currentIds = results.map(r => r.title_id);
+    const prevIds = prevResultsRef.current;
+
+    // Results are "new" if they're different from previous results
+    const hasNewResults = results.length > 0 && (
+      currentIds.length !== prevIds.length ||
+      currentIds.some((id, idx) => id !== prevIds[idx])
+    );
+
+    if (hasNewResults) {
+      setIsNewResults(true);
+      // Reset after all typewriters should be done (generous timeout)
+      const timer = setTimeout(() => setIsNewResults(false), 10000);
+      prevResultsRef.current = currentIds;
+      return () => clearTimeout(timer);
+    }
+  }, [results]);
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -236,7 +273,11 @@ export function TrialMandateResultsGrid({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {results.map((match) => (
-          <TrialMandateTitleCard key={match.title_id} match={match} />
+          <TrialMandateTitleCard
+            key={match.title_id}
+            match={match}
+            enableTypewriter={isNewResults}
+          />
         ))}
       </div>
 

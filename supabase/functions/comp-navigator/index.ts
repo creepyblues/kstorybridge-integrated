@@ -25,6 +25,46 @@ const corsHeaders = {
 // Request timeout in milliseconds (30 seconds for API calls)
 const REQUEST_TIMEOUT_MS = 30000
 
+// =====================================================================
+// RELEVANCY FILTERING THRESHOLDS
+// =====================================================================
+const MIN_OVERALL_SCORE = 55                    // Minimum overall score to show
+const MIN_OVERALL_FOR_DIMENSION_EXCEPTION = 40  // Minimum overall when exceptional dimension exists
+const EXCEPTIONAL_DIMENSION_SCORE = 80          // Score that qualifies as "exceptional" in one dimension
+
+// Suggestions shown when no relevant results found
+const NO_RESULTS_SUGGESTIONS = [
+  "Try broader genre titles like 'Squid Game' or 'Parasite'",
+  "Search for specific genres: thriller, romance, action",
+  "Use fewer comp titles for wider matches"
+]
+
+/**
+ * Hybrid relevancy filter: Shows titles that meet EITHER condition:
+ * 1. Overall match score >= MIN_OVERALL_SCORE (55)
+ * 2. Any dimension score >= EXCEPTIONAL_DIMENSION_SCORE (80) AND overall >= MIN_OVERALL_FOR_DIMENSION_EXCEPTION (40)
+ */
+function filterRelevantResults(results: TitleMatchV2[]): TitleMatchV2[] {
+  return results.filter(result => {
+    // Condition 1: Overall score meets minimum threshold
+    if (result.overall_match_score >= MIN_OVERALL_SCORE) {
+      return true
+    }
+
+    // Condition 2: Exceptional in one dimension + minimum overall score
+    if (result.overall_match_score >= MIN_OVERALL_FOR_DIMENSION_EXCEPTION) {
+      const hasExceptionalDimension = result.dimension_scores?.some(
+        d => d.score >= EXCEPTIONAL_DIMENSION_SCORE
+      )
+      if (hasExceptionalDimension) {
+        return true
+      }
+    }
+
+    return false
+  })
+}
+
 /**
  * Fetch with timeout wrapper to prevent hanging requests
  */
@@ -209,7 +249,6 @@ serve(async (req) => {
     )
 
     const phase2Duration = Date.now() - phase2Start
-    const totalDuration = Date.now() - startTime
 
     console.log('[COMPS] ✅ Phase 2 complete', {
       results_count: rerankedResults.length,
@@ -217,6 +256,22 @@ serve(async (req) => {
       sample_result: rerankedResults[0]?.title_name_en,
       all_title_ids: rerankedResults.map(r => r.title_id).slice(0, 5)
     })
+
+    // PHASE 3: Relevancy Filtering
+    console.log('[COMPS] Phase 3: Applying relevancy filtering')
+    const preFilterCount = rerankedResults.length
+    const filteredResults = filterRelevantResults(rerankedResults)
+    const filteredCount = preFilterCount - filteredResults.length
+
+    console.log('[COMPS] ✅ Relevancy filtering complete', {
+      pre_filter_count: preFilterCount,
+      post_filter_count: filteredResults.length,
+      filtered_out: filteredCount,
+      threshold_overall: MIN_OVERALL_SCORE,
+      threshold_dimension: EXCEPTIONAL_DIMENSION_SCORE,
+    })
+
+    const totalDuration = Date.now() - startTime
 
     console.log('[COMPS] 📊 Performance Summary:', {
       total_duration_ms: totalDuration,
@@ -234,11 +289,24 @@ serve(async (req) => {
       !!requestData.refinement_text
     )
 
-    // Save search if requested
+    // Prepare no results message and suggestions if needed
+    let noResultsMessage: string | undefined
+    let suggestions: string[] | undefined
+
+    if (filteredResults.length === 0) {
+      const compTitlesFormatted = requestData.comp_titles.join(', ')
+      noResultsMessage = `Unfortunately, we don't have any titles comparable to ${compTitlesFormatted}`
+      suggestions = NO_RESULTS_SUGGESTIONS
+      console.log('[COMPS] No relevant results - showing suggestions')
+    }
+
+    // Save search if requested (save filtered results for accurate history)
     let searchId: string | undefined
 
     if (requestData.save_search) {
-      const avgMatchScore = rerankedResults.reduce((sum, r) => sum + r.match_score, 0) / rerankedResults.length
+      const avgMatchScore = filteredResults.length > 0
+        ? filteredResults.reduce((sum, r) => sum + (r.match_score || r.overall_match_score), 0) / filteredResults.length
+        : 0
 
       const { data: searchData, error: saveError } = await supabaseClient
         .from('comp_searches')
@@ -247,9 +315,9 @@ serve(async (req) => {
           comp_titles: requestData.comp_titles,
           refinement_text: requestData.refinement_text,
           search_name: requestData.search_name,
-          search_results: rerankedResults,
+          search_results: filteredResults,
           is_bookmarked: !!requestData.search_name,
-          result_count: rerankedResults.length,
+          result_count: filteredResults.length,
           avg_match_score: avgMatchScore
         })
         .select('id')
@@ -262,21 +330,25 @@ serve(async (req) => {
       }
     }
 
-    // totalDuration already calculated at line 175
     logCompsEngine('Search complete', {
       total_duration_ms: totalDuration,
       cost_estimate: totalCost,
-      results_count: rerankedResults.length,
+      results_count: filteredResults.length,
+      filtered_count: filteredCount,
       engine_version: COMPS_ENGINE_VERSION,
     })
 
     const response: CompNavigatorResponse = {
-      results: rerankedResults.slice(0, 5), // Return top 5 for faster response
+      results: filteredResults.slice(0, 5), // Return top 5 for faster response
       search_id: searchId,
       processing_time_ms: totalDuration,
       cost_estimate: totalCost,
       engine_version: COMPS_ENGINE_VERSION,
       mode_used: 'fast',
+      // v2.1.0 - Relevancy filtering fields
+      filtered_count: filteredCount,
+      no_results_message: noResultsMessage,
+      suggestions: suggestions,
     }
 
     return new Response(
@@ -522,6 +594,19 @@ function applySmartPrioritization(
   return candidatesWithScores
 }
 
+/**
+ * Escape special characters in titles for safe interpolation in JSON prompts.
+ * Prevents malformed JSON when titles contain quotes, backslashes, or other special chars.
+ */
+function escapeForJsonPrompt(title: string): string {
+  return title
+    .replace(/\\/g, '\\\\')  // Escape backslashes first
+    .replace(/"/g, '\\"')     // Escape double quotes
+    .replace(/\n/g, '\\n')    // Escape newlines
+    .replace(/\r/g, '\\r')    // Escape carriage returns
+    .replace(/\t/g, '\\t')    // Escape tabs
+}
+
 async function llmRerank(
   compTitles: string[],
   refinementText: string | undefined,
@@ -541,6 +626,11 @@ ${idx + 1}. ${c.title_name_en || c.title_name_kr} (ID: ${c.title_id})
    Tone: ${c.tone || 'Unknown'}
    Format: ${c.content_format || 'Unknown'}
   `).join('\n')
+
+  // Escape comp titles for safe JSON interpolation in prompt examples
+  const escapedCompTitles = compTitles.map(escapeForJsonPrompt)
+  console.log('[COMPS] Original comp titles:', compTitles)
+  console.log('[COMPS] Escaped comp titles for prompt:', escapedCompTitles)
 
   // V2.0.0: 8-dimensional scoring prompt with aligned_comps
   const systemPrompt = `You are a Hollywood development executive expert in finding comparable titles (comps) for Korean content.
@@ -575,14 +665,14 @@ Return JSON:
       "rank": 1,
       "title_id": "uuid",
       "dimension_scores": [
-        {"dimension": "genre_blueprint", "score": 85, "reason": "Both feature survival competition with elimination", "aligned_comps": ["${compTitles[0]}"]},
-        {"dimension": "tone_mood", "score": 72, "reason": "Similar dark, tense atmosphere", "aligned_comps": ["${compTitles[0]}"${compTitles.length > 1 ? `, "${compTitles[1]}"` : ''}]},
-        {"dimension": "character_archetypes", "score": 80, "reason": "Desperate underdogs facing impossible odds", "aligned_comps": ["${compTitles[0]}"]},
-        {"dimension": "plot_structure", "score": 75, "reason": "Tournament arc with escalating stakes", "aligned_comps": ["${compTitles[0]}"]},
-        {"dimension": "setting_world", "score": 65, "reason": "Contemporary setting with isolated location", "aligned_comps": ["${compTitles[0]}"]},
-        {"dimension": "themes", "score": 82, "reason": "Class struggle and human desperation", "aligned_comps": ["${compTitles[0]}"]},
-        {"dimension": "target_audience", "score": 78, "reason": "Adult thriller audience", "aligned_comps": ["${compTitles[0]}"]},
-        {"dimension": "format_style", "score": 70, "reason": "Episodic with ensemble cast", "aligned_comps": ["${compTitles[0]}"]}
+        {"dimension": "genre_blueprint", "score": 85, "reason": "Both feature survival competition with elimination", "aligned_comps": ["${escapedCompTitles[0]}"]},
+        {"dimension": "tone_mood", "score": 72, "reason": "Similar dark, tense atmosphere", "aligned_comps": ["${escapedCompTitles[0]}"${escapedCompTitles.length > 1 ? `, "${escapedCompTitles[1]}"` : ''}]},
+        {"dimension": "character_archetypes", "score": 80, "reason": "Desperate underdogs facing impossible odds", "aligned_comps": ["${escapedCompTitles[0]}"]},
+        {"dimension": "plot_structure", "score": 75, "reason": "Tournament arc with escalating stakes", "aligned_comps": ["${escapedCompTitles[0]}"]},
+        {"dimension": "setting_world", "score": 65, "reason": "Contemporary setting with isolated location", "aligned_comps": ["${escapedCompTitles[0]}"]},
+        {"dimension": "themes", "score": 82, "reason": "Class struggle and human desperation", "aligned_comps": ["${escapedCompTitles[0]}"]},
+        {"dimension": "target_audience", "score": 78, "reason": "Adult thriller audience", "aligned_comps": ["${escapedCompTitles[0]}"]},
+        {"dimension": "format_style", "score": 70, "reason": "Episodic with ensemble cast", "aligned_comps": ["${escapedCompTitles[0]}"]}
       ],
       "explanation": "This title captures the survival game tension with similar class commentary themes.",
       "match_reasons": ["Survival competition mechanics", "Class inequality themes", "Ensemble of desperate characters", "High-stakes elimination format"]
@@ -605,7 +695,7 @@ Return JSON:
       temperature: 0.3,
       response_format: { type: 'json_object' }
     })
-  }, 45000) // 45 second timeout for LLM re-ranking (longer for complex analysis)
+  }, 90000) // 90 second timeout for LLM re-ranking (increased from 45s due to OpenAI latency)
 
   if (!response.ok) {
     const error = await response.text()
@@ -615,18 +705,30 @@ Return JSON:
   const data = await response.json()
   const content = data.choices[0].message.content
 
+  // DEBUG: Log raw LLM response details
+  console.log('[COMPS] LLM response received, content length:', content?.length)
+  console.log('[COMPS] LLM response preview (first 500 chars):', content?.substring(0, 500))
+
   let parsed
   try {
     parsed = JSON.parse(content)
   } catch (e) {
-    console.error('[COMPS] Failed to parse LLM response:', content)
-    throw new Error('Failed to parse LLM response')
+    console.error('[COMPS] JSON parse error:', e.message)
+    console.error('[COMPS] Failed content type:', typeof content)
+    console.error('[COMPS] Failed content (first 1000 chars):', content?.substring(0, 1000))
+    throw new Error(`Failed to parse LLM response: ${e.message}`)
   }
 
   logCompsEngine('LLM response received', {
     response_keys: Object.keys(parsed),
     results_count: parsed.results?.length || 0,
   })
+
+  // DEBUG: Log parsed structure for debugging
+  console.log('[COMPS] Parsed response type:', typeof parsed)
+  console.log('[COMPS] Parsed response keys:', parsed ? Object.keys(parsed) : 'null')
+  console.log('[COMPS] Has results array:', Array.isArray(parsed?.results))
+  console.log('[COMPS] Results length:', parsed?.results?.length)
 
   // Extract rankings from the response object
   let rankings = []

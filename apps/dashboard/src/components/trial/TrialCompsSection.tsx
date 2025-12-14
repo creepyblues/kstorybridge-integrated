@@ -13,6 +13,7 @@ import { compsNavigatorService, TitleMatch } from '@/services/compsNavigatorServ
 import { CompTitle } from '@/components/comps-navigator/CompSelector';
 import CompsNavigatorInput from '@/components/comps-navigator/CompsNavigatorInput';
 import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
+import { SearchLoadingModal } from '@/components/comps-navigator/SearchLoadingModal';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TrialResultsGrid } from './TrialResultsGrid';
 
@@ -147,9 +148,12 @@ export function TrialCompsSection() {
       />
 
       {/* Results */}
-      {(results.length > 0 || isLoading) && (
-        <TrialResultsGrid results={results} isLoading={isLoading} />
+      {results.length > 0 && (
+        <TrialResultsGrid results={results} />
       )}
+
+      {/* Search Loading Modal - displays progress as popup for visibility */}
+      <SearchLoadingModal isOpen={isLoading} />
 
       {/* Examples Modal */}
       <Dialog open={showExamples} onOpenChange={setShowExamples}>

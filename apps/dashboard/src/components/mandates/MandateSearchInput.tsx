@@ -91,9 +91,9 @@ export default function MandateSearchInput({
           value={mandateText}
           onChange={(e) => setMandateText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={`Describe the content you're looking for...\n\ne.g., Female-driven thriller with contained locations, suitable for limited series adaptation`}
-          className="w-full min-h-[120px] text-base py-4 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500 resize-none"
+          className="w-full min-h-[48px] text-base py-3 px-4 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500 resize-none"
           disabled={isLoading}
+          rows={1}
         />
 
         <div className="flex justify-end gap-2 mt-3">

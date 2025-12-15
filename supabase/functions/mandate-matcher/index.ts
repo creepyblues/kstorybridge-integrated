@@ -1,7 +1,8 @@
 // Edge Function: mandate-matcher
-// Version: 1.0
+// Version: 2.0
 // Created: 2025-11-21
-// Description: Matches producer mandates to titles using vector similarity search
+// Updated: 2025-12-14
+// Description: Matches producer mandates to titles using vector similarity search + AI explanations
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
@@ -30,6 +31,14 @@ interface TitleMatch {
   story_author?: string;
   art_author?: string;
   has_pitch_deck?: boolean;
+  ai_explanation?: string;      // AI-generated explanation
+  match_highlights?: string[];  // Key match reasons
+}
+
+interface AIExplanation {
+  title_id: string;
+  explanation: string;
+  highlights: string[];
 }
 
 interface MandateMatchResponse {
@@ -37,6 +46,102 @@ interface MandateMatchResponse {
   search_id: string;
   processing_time_ms: number;
   cost_estimate: number;
+}
+
+// Generate fallback explanation when AI fails
+function getDefaultExplanation(match: TitleMatch): string {
+  const format = match.content_format || 'title';
+  const mainGenre = match.genre?.[0] || 'story';
+  const toneDesc = match.tone ? ` with ${match.tone} tone` : '';
+  return `This ${format} may align with your mandate based on its ${mainGenre} elements${toneDesc}. Review the synopsis for detailed story information.`;
+}
+
+// Generate AI explanations for mandate matches using GPT-4o-mini
+async function generateAIExplanations(
+  mandateText: string,
+  matches: TitleMatch[]
+): Promise<AIExplanation[]> {
+  if (!OPENAI_API_KEY || matches.length === 0) {
+    return [];
+  }
+
+  try {
+    const titlesContext = matches.map((m, i) => `
+${i + 1}. "${m.title_name_en}" (ID: ${m.title_id}, ${m.match_score}% match)
+   Synopsis: ${(m.synopsis || '').slice(0, 250)}${(m.synopsis || '').length > 250 ? '...' : ''}
+   Genre: ${m.genre?.join(', ') || 'N/A'}
+   Tone: ${m.tone || 'N/A'}
+   Format: ${m.content_format || 'N/A'}`).join('\n');
+
+    const prompt = `You are a Hollywood development executive analyzing Korean IP for media buyers.
+
+BUYER'S MANDATE: "${mandateText}"
+
+Analyze why each Korean title below matches this mandate. Focus on:
+- Specific narrative or thematic connections to what the buyer is seeking
+- Story elements, characters, or themes that align with their criteria
+- What makes this title suitable for their development needs
+
+TITLES TO ANALYZE:
+${titlesContext}
+
+For EACH title, provide:
+1. "explanation": Exactly 2 sentences explaining WHY this matches the mandate. Be specific - reference actual story elements, not just genre keywords.
+2. "highlights": Exactly 3 brief bullet points (3-6 words each) of key match reasons.
+
+Return valid JSON:
+{
+  "results": [
+    { "title_id": "uuid-here", "explanation": "Two sentences here.", "highlights": ["Point 1", "Point 2", "Point 3"] }
+  ]
+}`;
+
+    console.log("🤖 Generating AI explanations for", matches.length, "titles...");
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+        max_tokens: 2000,
+        response_format: { type: "json_object" }
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("❌ AI explanation API error:", error);
+      return [];
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) {
+      console.error("❌ Empty AI response");
+      return [];
+    }
+
+    const parsed = JSON.parse(content);
+    const results = parsed.results || [];
+
+    console.log(`✅ AI explanations generated for ${results.length} titles`);
+
+    // Calculate GPT-4o-mini cost (~$0.15/1M input, ~$0.60/1M output)
+    const usage = data.usage || {};
+    const aiCost = ((usage.prompt_tokens || 0) * 0.00000015) + ((usage.completion_tokens || 0) * 0.0000006);
+    console.log(`💰 AI explanation cost: $${aiCost.toFixed(6)}`);
+
+    return results;
+  } catch (error) {
+    console.error("❌ AI explanation generation failed:", error);
+    return [];
+  }
 }
 
 serve(async (req) => {
@@ -138,8 +243,8 @@ serve(async (req) => {
       }
     }
 
-    // Step 4: Format results
-    const results: TitleMatch[] = (searchResults || []).map((result: any) => ({
+    // Step 4: Format initial results
+    const initialResults: TitleMatch[] = (searchResults || []).map((result: any) => ({
       title_id: result.title_id,
       title_name_en: result.title_name_en,
       title_name_kr: result.title_name_kr,
@@ -154,11 +259,24 @@ serve(async (req) => {
       has_pitch_deck: titlesWithPitchDeck.has(result.title_id),
     }));
 
+    // Step 5: Generate AI explanations for matches
+    const aiExplanations = await generateAIExplanations(mandate_text, initialResults);
+
+    // Merge AI explanations into results
+    const results: TitleMatch[] = initialResults.map(result => {
+      const aiData = aiExplanations.find(e => e.title_id === result.title_id);
+      return {
+        ...result,
+        ai_explanation: aiData?.explanation || getDefaultExplanation(result),
+        match_highlights: aiData?.highlights || [],
+      };
+    });
+
     const avg_match_score = results.length > 0
       ? results.reduce((sum, r) => sum + r.match_score, 0) / results.length
       : 0;
 
-    // Step 5: Save search to database (only if save_search is true)
+    // Step 6: Save search to database (only if save_search is true)
     let savedSearch: any = null;
     if (save_search && user_email) {
       console.log("💾 Saving mandate search to database...");

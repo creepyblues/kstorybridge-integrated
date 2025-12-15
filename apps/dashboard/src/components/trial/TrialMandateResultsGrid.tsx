@@ -49,20 +49,17 @@ function TrialMandateTitleCard({ match, enableTypewriter = false }: { match: Tit
     };
   };
 
-  const getAIExplanation = () => {
-    const score = match.match_score;
-    const genres = match.genre.slice(0, 2).join(' and ');
-
-    if (score >= 85) {
-      return `Excellent match! This ${match.content_format || 'title'} strongly aligns with your mandate. The ${genres} genre${match.tone ? ` with ${match.tone} tone` : ''} perfectly fits your requirements.`;
-    }
-    if (score >= 70) {
-      return `Strong match! This ${match.content_format || 'title'} fits well with your mandate. The ${genres} elements${match.tone ? ` and ${match.tone} atmosphere` : ''} align with what you're looking for.`;
-    }
-    return `Good match! This ${match.content_format || 'title'} shares key themes with your mandate. Consider the ${genres} aspects${match.tone ? ` and ${match.tone} tone` : ''} for your project.`;
+  // Fallback explanation when server AI explanation is not available
+  const getFallbackExplanation = () => {
+    const format = match.content_format || 'title';
+    const mainGenre = match.genre?.[0] || 'story';
+    const toneDesc = match.tone ? ` with ${match.tone} tone` : '';
+    return `This ${format} may align with your mandate based on its ${mainGenre} elements${toneDesc}. Review the synopsis for detailed story information.`;
   };
 
   const matchBadge = getMatchScoreBadge(match.match_score);
+  const aiExplanation = match.ai_explanation || getFallbackExplanation();
+  const matchHighlights = match.match_highlights || [];
 
   return (
     <Card
@@ -148,14 +145,24 @@ function TrialMandateTitleCard({ match, enableTypewriter = false }: { match: Tit
               <p className="text-sm text-gray-700 leading-relaxed">
                 {enableTypewriter && !typewriterDone ? (
                   <TypewriterText
-                    text={getAIExplanation()}
+                    text={aiExplanation}
                     speed={20}
                     onComplete={() => setTypewriterDone(true)}
                   />
                 ) : (
-                  getAIExplanation()
+                  aiExplanation
                 )}
               </p>
+              {matchHighlights.length > 0 && (
+                <ul className="mt-2 space-y-1">
+                  {matchHighlights.map((highlight, i) => (
+                    <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
+                      <Icon icon="solar:check-circle-bold" className="w-3 h-3 text-hanok-teal mt-0.5 flex-shrink-0" />
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>

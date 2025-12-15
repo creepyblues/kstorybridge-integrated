@@ -55,6 +55,18 @@ export const DIMENSION_DISPLAY_NAMES: Record<DimensionKey, string> = {
 // =====================================================================
 
 /**
+ * Comparable title with optional IMDB metadata
+ * Used in CompsNavigatorInput for OMDB autocomplete
+ */
+export interface CompTitle {
+  title: string;
+  imdbID: string;
+  year: string;
+  type: 'movie' | 'series' | 'episode';
+  poster?: string;
+}
+
+/**
  * Score for a single dimension (V2.0.0)
  */
 export interface DimensionScore {
@@ -168,16 +180,51 @@ export interface CompSearch {
   avg_match_score: number;
 }
 
+export interface CompDescriptionsResponse {
+  descriptions: Record<string, string>;
+  processing_time_ms: number;
+}
+
 export const compsNavigatorService = {
   /**
+   * Generate LLM descriptions for comp titles (Phase 1 of two-phase search)
+   * This is a fast call (~2-3s) that returns thematic descriptions
+   * to show users what the AI understood about their comps.
+   */
+  async getCompDescriptions(compTitles: string[]): Promise<CompDescriptionsResponse> {
+    if (!compTitles || compTitles.length === 0 || compTitles.length > 3) {
+      throw new Error('Must provide 1-3 comparable titles');
+    }
+
+    console.log('[CompsNavigator] Getting descriptions for:', compTitles);
+
+    const { data, error } = await supabase.functions.invoke('comp-navigator', {
+      body: {
+        action: 'describe',
+        comp_titles: compTitles,
+        user_email: 'describe@kstorybridge.com' // Not required for describe action
+      }
+    });
+
+    if (error) {
+      console.error('[CompsNavigator] Description error:', error);
+      throw new Error(data?.error || error.message || 'Failed to get descriptions');
+    }
+
+    return data as CompDescriptionsResponse;
+  },
+
+  /**
    * Search for titles based on comp combination
+   * Optionally accepts pre-generated descriptions to skip LLM call
    */
   async searchComps(
     compTitles: string[],
     refinementText?: string,
     userEmail?: string,
     saveSearch: boolean = true,
-    searchName?: string
+    searchName?: string,
+    providedDescriptions?: Record<string, string>
   ): Promise<CompNavigatorResponse> {
     if (!compTitles || compTitles.length === 0 || compTitles.length > 3) {
       throw new Error('Must provide 1-3 comparable titles');
@@ -189,15 +236,20 @@ export const compsNavigatorService = {
     }
 
     const requestBody = {
+      action: 'search' as const,
       comp_titles: compTitles,
       ...(refinementText && { refinement_text: refinementText }),
       // For trial mode, use placeholder email when not saving
       user_email: userEmail || 'trial@kstorybridge.com',
       save_search: saveSearch,
-      ...(searchName && { search_name: searchName })
+      ...(searchName && { search_name: searchName }),
+      ...(providedDescriptions && { provided_descriptions: providedDescriptions })
     };
 
-    console.log('[CompsNavigator] Sending request:', requestBody);
+    console.log('[CompsNavigator] Sending search request:', {
+      ...requestBody,
+      has_provided_descriptions: !!providedDescriptions
+    });
 
     const { data, error } = await supabase.functions.invoke('comp-navigator', {
       body: requestBody

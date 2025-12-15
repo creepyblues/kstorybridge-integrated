@@ -17,6 +17,8 @@ export interface TitleMatch {
   story_author?: string;
   art_author?: string;
   has_pitch_deck?: boolean;
+  ai_explanation?: string;      // AI-generated contextual explanation
+  match_highlights?: string[];  // Key match reasons (3 bullet points)
 }
 
 export interface MandateSearch {

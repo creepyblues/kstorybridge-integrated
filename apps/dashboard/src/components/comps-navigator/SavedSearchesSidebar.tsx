@@ -37,10 +37,6 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
   const [bookmarkName, setBookmarkName] = useState('');
   const [searchToBookmark, setSearchToBookmark] = useState<CompSearch | null>(null);
 
-  useEffect(() => {
-    loadSearches();
-  }, [userEmail]);
-
   const loadSearches = useCallback(async () => {
     try {
       setLoading(true);
@@ -56,6 +52,10 @@ export default function SavedSearchesSidebar({ userEmail, onLoadSearch }: SavedS
       setLoading(false);
     }
   }, [userEmail]);
+
+  useEffect(() => {
+    loadSearches();
+  }, [userEmail, loadSearches]);
 
   const handleDeleteSearch = useCallback(async (searchId: string) => {
     try {

@@ -9,9 +9,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useToast } from '@/hooks/use-toast';
-import { compsNavigatorService, TitleMatch, CompSearch } from '@/services/compsNavigatorService';
-import { CompTitle } from '@/components/comps-navigator/CompSelector';
+import { compsNavigatorService, TitleMatch, CompSearch, CompTitle } from '@/services/compsNavigatorService';
 import CompsNavigatorInput from '@/components/comps-navigator/CompsNavigatorInput';
 import ResultsGrid from '@/components/comps-navigator/ResultsGrid';
 import { SearchLoadingModal } from '@/components/comps-navigator/SearchLoadingModal';
@@ -22,7 +22,7 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { trackPageView, trackFeatureUsage, trackCompsSearch } from '@/utils/analytics';
 
-type LoadingPhase = 'semantic' | 'reranking' | null;
+type LoadingPhase = 'describing' | 'semantic' | 'reranking' | null;
 
 /**
  * Helper to convert string[] to CompTitle[] (for loading from history/examples)
@@ -44,6 +44,7 @@ const compTitlesToStrings = (compTitles: CompTitle[]): string[] =>
 
 export default function CompsNavigator() {
   const { user } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const hasTriggeredInitialSearch = useRef(false);
@@ -59,6 +60,8 @@ export default function CompsNavigator() {
   const [noResultsMessage, setNoResultsMessage] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[] | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  // V2.2.0 - Two-phase search with LLM descriptions
+  const [compDescriptions, setCompDescriptions] = useState<Record<string, string> | null>(null);
 
   // Track page view on mount
   useEffect(() => {
@@ -103,27 +106,38 @@ export default function CompsNavigator() {
     }
 
     setIsLoading(true);
-    setLoadingPhase('semantic');
+    setLoadingPhase('describing');
     setResults([]);
     setNoResultsMessage(null);
     setSuggestions(null);
+    setCompDescriptions(null);
     setHasSearched(true);
 
+    // Declare timer outside try block so it can be cleared in finally
+    let phaseTimer: NodeJS.Timeout | null = null;
+
     try {
-      const phaseTimer = setTimeout(() => setLoadingPhase('reranking'), 1500);
+      // PHASE 1: Get LLM descriptions (~2-3s)
+      // Show users what the AI understood about their comps
+      const descResponse = await compsNavigatorService.getCompDescriptions(titles);
+      setCompDescriptions(descResponse.descriptions);
+
+      // PHASE 2: Search with provided descriptions
+      setLoadingPhase('semantic');
+      phaseTimer = setTimeout(() => setLoadingPhase('reranking'), 2000);
 
       const response = await compsNavigatorService.searchComps(
         titles,
         undefined,
         user.email,
-        true
+        true,
+        undefined,
+        descResponse.descriptions // Pass descriptions to skip LLM call
       );
-
-      clearTimeout(phaseTimer);
 
       setResults(response.results);
       setSearchInfo({
-        time: response.processing_time_ms,
+        time: response.processing_time_ms + descResponse.processing_time_ms,
         cost: response.cost_estimate
       });
 
@@ -150,6 +164,10 @@ export default function CompsNavigator() {
         variant: "destructive"
       });
     } finally {
+      // Always clear timer to prevent memory leaks
+      if (phaseTimer) {
+        clearTimeout(phaseTimer);
+      }
       setIsLoading(false);
       setLoadingPhase(null);
     }
@@ -164,71 +182,8 @@ export default function CompsNavigator() {
       });
       return;
     }
-
-    if (!user?.email) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to use Comps Navigator",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setLoadingPhase('semantic');
-    setResults([]);
-    setNoResultsMessage(null);
-    setSuggestions(null);
-    setHasSearched(true);
-
-    try {
-      // Transition to reranking phase after semantic search completes
-      const phaseTimer = setTimeout(() => setLoadingPhase('reranking'), 1500);
-
-      // Extract title strings for API call
-      const titleStrings = compTitlesToStrings(compTitles);
-
-      const response = await compsNavigatorService.searchComps(
-        titleStrings,
-        undefined,
-        user.email,
-        true // Save search
-      );
-
-      clearTimeout(phaseTimer);
-
-      setResults(response.results);
-      setSearchInfo({
-        time: response.processing_time_ms,
-        cost: response.cost_estimate
-      });
-
-      // Handle no results case with message and suggestions
-      if (response.no_results_message) {
-        setNoResultsMessage(response.no_results_message);
-        setSuggestions(response.suggestions || null);
-      }
-
-      // Track comps search
-      trackCompsSearch(titleStrings, response.results.length, response.processing_time_ms);
-
-      if (response.results.length > 0) {
-        toast({
-          title: "Matches Found",
-          description: `Found ${response.results.length} titles matching your comp combination`
-        });
-      }
-    } catch (error: any) {
-      console.error('Search error:', error);
-      toast({
-        title: "Search Failed",
-        description: error.message || "Failed to find matches. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-      setLoadingPhase(null);
-    }
+    // Delegate to handleSearchWithTitles to avoid code duplication
+    await handleSearchWithTitles(compTitlesToStrings(compTitles));
   };
 
   const handleLoadSearch = (search: CompSearch) => {
@@ -250,6 +205,7 @@ export default function CompsNavigator() {
     setSearchInfo(null);
     setNoResultsMessage(null);
     setSuggestions(null);
+    setCompDescriptions(null);
     setHasSearched(false);
   };
 
@@ -288,7 +244,26 @@ export default function CompsNavigator() {
           loadingPhase={loadingPhase}
           searchInfo={searchInfo}
           hasResults={results.length > 0}
+          isAdmin={isAdmin}
         />
+
+        {/* AI Understanding - Show what AI understood about the comps */}
+        {!isLoading && compDescriptions && Object.keys(compDescriptions).length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <p className="text-sm font-medium text-blue-800 mb-3 flex items-center gap-2">
+              <Icon icon="solar:magic-stick-3-bold-duotone" className="h-5 w-5" />
+              AI Understanding
+            </p>
+            <div className="space-y-2">
+              {Object.entries(compDescriptions).map(([title, description]) => (
+                <div key={title} className="text-sm text-blue-700">
+                  <span className="font-semibold">{title}:</span>{' '}
+                  <span className="text-blue-600">{description}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Results */}
         {results.length > 0 && (
@@ -323,7 +298,7 @@ export default function CompsNavigator() {
       </div>
 
       {/* Search Loading Modal - displays progress as popup for visibility */}
-      <SearchLoadingModal isOpen={isLoading} />
+      <SearchLoadingModal isOpen={isLoading} compDescriptions={compDescriptions} />
 
       {/* History Dialog */}
       {user?.email && (

@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { debug } from '@/utils/debug';
 import { useTypewriter } from '@/hooks/useTypewriter';
+
+// Configure DOMPurify to only allow safe text content
+const sanitizeText = (text: string): string => {
+  return DOMPurify.sanitize(text, {
+    ALLOWED_TAGS: [], // Strip all HTML tags
+    ALLOWED_ATTR: [], // Strip all attributes
+  });
+};
 
 interface ConversationalMessage {
   id: string;
@@ -14,12 +23,9 @@ interface ConversationalMessage {
 
 interface ConversationalMessageProps {
   content: string;
-  navigate: any;
   titleData?: any[];
   allMessages?: ConversationalMessage[];
   titleCache?: any[];
-  handleSuggestedQuery?: (query: string) => void;
-  onTitleCardClick?: (title: any) => void;
   /** Enable typewriter effect for new messages */
   enableTypewriter?: boolean;
   /** Callback when typewriter completes */
@@ -32,7 +38,6 @@ interface ConversationalMessageProps {
  * Renders bot messages with advanced features:
  * - Fuzzy title matching (80% similarity threshold using Levenshtein distance)
  * - Clickable title links to title detail pages
- * - "Learn more" buttons for quick follow-up queries
  * - Markdown link support
  * - Smart text formatting
  */
@@ -41,22 +46,24 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
   titleData,
   allMessages,
   titleCache,
-  handleSuggestedQuery,
   enableTypewriter = false,
   onTypewriterComplete,
 }) => {
+  // Sanitize content to prevent XSS attacks
+  const sanitizedContent = useMemo(() => sanitizeText(content), [content]);
+
   // Use typewriter effect for new messages
   const { displayedText, isTyping, skipToEnd } = useTypewriter({
-    text: content,
-    speed: 25, // Faster speed for chat (25ms per char = ~40 chars/sec)
+    text: sanitizedContent,
+    speed: 6, // Ultra-fast speed for chat (6ms per char = ~160 chars/sec)
     skipAnimation: !enableTypewriter,
     onComplete: onTypewriterComplete,
-    varianceRange: [-5, 15], // Subtle variance for natural feel
-    punctuationPause: 100, // Brief pause on punctuation
+    varianceRange: [-2, 4], // Minimal variance for smooth fast typing
+    punctuationPause: 25, // Very short pause on punctuation
   });
 
-  // Use displayed text when typewriter is active, otherwise use full content
-  const textToRender = enableTypewriter ? displayedText : content;
+  // Use displayed text when typewriter is active, otherwise use full sanitized content
+  const textToRender = enableTypewriter ? displayedText : sanitizedContent;
 
   // Levenshtein distance for fuzzy string matching
   const levenshteinDistance = (str1: string, str2: string): number => {
@@ -397,29 +404,16 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
         case 'quote':
           if (segment.titleId) {
             return (
-              <span key={segmentIdx} className="inline-flex items-center gap-1">
-                <a
-                  href={`/buyers/titles/${segment.titleId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
-                  title={`View "${segment.content}" details`}
-                >
-                  "{segment.content}"
-                </a>
-                {handleSuggestedQuery && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleSuggestedQuery(`Tell me more about ${segment.content}`);
-                    }}
-                    className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] rounded-lg transition-colors font-medium"
-                    title={`Learn more about "${segment.content}"`}
-                  >
-                    learn more
-                  </button>
-                )}
-              </span>
+              <a
+                key={segmentIdx}
+                href={`/buyers/titles/${segment.titleId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
+                title={`View "${segment.content}" details`}
+              >
+                "{segment.content}"
+              </a>
             );
           } else {
             return <span key={segmentIdx} className="font-medium">"{segment.content}"</span>;
@@ -427,29 +421,16 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
         case 'unquoted-title':
           if (segment.titleId) {
             return (
-              <span key={segmentIdx} className="inline-flex items-center gap-1">
-                <a
-                  href={`/buyers/titles/${segment.titleId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
-                  title={`View "${segment.content}" details`}
-                >
-                  {segment.content}
-                </a>
-                {handleSuggestedQuery && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleSuggestedQuery(`Tell me more about ${segment.content}`);
-                    }}
-                    className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] rounded-lg transition-colors font-medium"
-                    title={`Learn more about "${segment.content}"`}
-                  >
-                    learn more
-                  </button>
-                )}
-              </span>
+              <a
+                key={segmentIdx}
+                href={`/buyers/titles/${segment.titleId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-hanok-teal hover:text-hanok-teal-600 underline hover:no-underline transition-all cursor-pointer"
+                title={`View "${segment.content}" details`}
+              >
+                {segment.content}
+              </a>
             );
           } else {
             return <span key={segmentIdx} className="font-medium">{segment.content}</span>;

@@ -13,6 +13,7 @@ import { Icon } from '@iconify/react';
 // =====================================================================
 
 const SEARCH_PHASES = [
+  { id: 'describing', label: 'Understanding your comps' },
   { id: 'semantic', label: 'Scanning Korean title database' },
   { id: 'matching', label: 'Finding genre & tone matches' },
   { id: 'ranking', label: 'AI ranking by comp alignment' },
@@ -20,7 +21,8 @@ const SEARCH_PHASES = [
 ];
 
 // Progress thresholds for phase transitions (based on asymptotic progress %)
-const PHASE_THRESHOLDS = [0, 20, 45, 75];
+// 5 phases now: describing (0%), semantic (15%), matching (35%), ranking (55%), explaining (75%)
+const PHASE_THRESHOLDS = [0, 15, 35, 55, 75];
 
 // Asymptotic progress constants
 const TIME_CONSTANT = 8000;  // 8 seconds to reach ~63%
@@ -72,9 +74,10 @@ const FUN_FACTS = [
 
 interface EnhancedSearchLoadingProps {
   className?: string;
+  compDescriptions?: Record<string, string> | null;
 }
 
-export function EnhancedSearchLoading({ className = '' }: EnhancedSearchLoadingProps) {
+export function EnhancedSearchLoading({ className = '', compDescriptions }: EnhancedSearchLoadingProps) {
   const [currentPhase, setCurrentPhase] = useState(0);
   const [currentMessage, setCurrentMessage] = useState(() => Math.floor(Math.random() * LOADING_MESSAGES.length));
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -175,15 +178,37 @@ export function EnhancedSearchLoading({ className = '' }: EnhancedSearchLoadingP
         </div>
       </div>
 
-      {/* Fun fact */}
-      <div className="text-center max-w-sm mt-2">
-        <div className="bg-hanok-teal/5 border border-hanok-teal/20 rounded-lg p-3">
-          <p className="text-xs text-hanok-teal flex items-start gap-2">
-            <Icon icon="solar:lightbulb-bolt-bold-duotone" className="h-4 w-4 flex-shrink-0 mt-0.5" />
-            <span><strong>Did you know?</strong> {funFact}</span>
-          </p>
+      {/* AI Understanding - Show LLM-generated descriptions */}
+      {compDescriptions && Object.keys(compDescriptions).length > 0 && (
+        <div className="w-full max-w-sm mt-2">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs font-medium text-blue-800 mb-2 flex items-center gap-1.5">
+              <Icon icon="solar:magic-stick-3-bold-duotone" className="h-4 w-4" />
+              AI Understanding
+            </p>
+            <div className="space-y-2">
+              {Object.entries(compDescriptions).map(([title, description]) => (
+                <div key={title} className="text-xs text-blue-700">
+                  <span className="font-semibold">{title}:</span>{' '}
+                  <span className="text-blue-600">{description}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Fun fact - only show when descriptions not yet loaded */}
+      {!compDescriptions && (
+        <div className="text-center max-w-sm mt-2">
+          <div className="bg-hanok-teal/5 border border-hanok-teal/20 rounded-lg p-3">
+            <p className="text-xs text-hanok-teal flex items-start gap-2">
+              <Icon icon="solar:lightbulb-bolt-bold-duotone" className="h-4 w-4 flex-shrink-0 mt-0.5" />
+              <span><strong>Did you know?</strong> {funFact}</span>
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

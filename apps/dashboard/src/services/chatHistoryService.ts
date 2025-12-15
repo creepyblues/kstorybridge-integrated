@@ -1,7 +1,25 @@
 import { supabase } from '@/lib/supabase';
 
-// Simplified type - dashboard-v2 doesn't have auto-generated Database types
-type TitleRow = any;
+// Type definitions for title data used in chat recommendations
+interface TitleRow {
+  title_id: string;
+  title_name_en: string | null;
+  title_name_kr: string | null;
+  synopsis: string | null;
+  genre: string[] | null;
+  tone: string | null;
+  content_format: string | null;
+  title_image: string | null;
+  views: number | null;
+  rating: number | null;
+}
+
+// Message in JSONB conversation context
+interface SessionMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp?: string;
+}
 
 export interface ChatSession {
   id: string;
@@ -12,7 +30,7 @@ export interface ChatSession {
   ended_at?: string | null;
   created_at: string;
   updated_at: string;
-  messages?: any[]; // JSONB conversation context
+  messages?: SessionMessage[]; // JSONB conversation context
 }
 
 export interface ChatMessage {
@@ -349,10 +367,10 @@ class ChatHistoryService {
       
       // Batch fetch all recommendations and suggested queries in parallel
       const [allRecommendations, allSuggestedQueries] = await Promise.all([
-        // Get all recommendations for all messages in one query
+        // Get all recommendations for all messages in one query (join titles for images)
         supabase
           .from('chat_title_recommendations')
-          .select('*')
+          .select('*, titles:title_id(title_image, genre, content_format)')
           .in('message_id', messageIds)
           .order('recommendation_score', { ascending: false })
           .then(({ data, error }) => {

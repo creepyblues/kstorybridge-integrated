@@ -2,6 +2,18 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
+// Import intent detection and routing modules
+import { detectIntent, getIntentDescription, type IntentDetectionResult } from '../_shared/intent-detection.ts';
+import { routeQuery, getRoutingDescription, type RouterDecision, type SearchEngine } from '../_shared/chat-router.ts';
+import {
+  generateCompsExplanations,
+  generateMandateExplanations,
+  generateVectorExplanations,
+  formatExplanationsForChat,
+  type RichExplanation
+} from '../_shared/explanation-generator.ts';
+import type { TitleMatchV2 } from '../_shared/comps-types.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -452,14 +464,66 @@ serve(async (req) => {
     // Get user's latest query
     const userQuery = messages[messages.length - 1]?.content || ''
 
-    // Always run vector search for all queries
-    let searchResults: VectorSearchResult[] = []
+    // ========== INTELLIGENT INTENT ROUTING ==========
+    // Detect user intent and route to appropriate search engine
+    const detectedIntent = detectIntent(userQuery, conversationHistory);
+    const routeDecision = routeQuery(detectedIntent, userQuery);
 
-    const searchLimit = vectorSearchLimit || 10  // Increased default from 5 to 10
-    const searchThreshold = 0.7  // Can be made configurable via request params
+    console.log('🎯 Intent Detection:', {
+      level1: detectedIntent.level1,
+      level2: detectedIntent.level2,
+      confidence: Math.round(detectedIntent.confidence * 100) + '%',
+      engine: detectedIntent.searchEngine,
+      reasoning: detectedIntent.reasoning.substring(0, 100)
+    });
 
-    // Try vector search first
-    searchResults = await performVectorSearch(supabase, userQuery, user.id, searchLimit, searchThreshold)
+    console.log('🚦 Routing Decision:', getRoutingDescription(routeDecision));
+
+    // Initialize results containers
+    let searchResults: VectorSearchResult[] = [];
+    let richExplanations: RichExplanation[] = [];
+    let searchEngineUsed: SearchEngine | null = routeDecision.engine;
+
+    const searchLimit = vectorSearchLimit || 10;
+    const searchThreshold = 0.7;
+
+    // Execute search based on routing decision
+    if (!routeDecision.skipSearch && routeDecision.engine) {
+      const searchOutput = await executeSearchByEngine(
+        supabase,
+        routeDecision,
+        userQuery,
+        user.id,
+        user.email || '',
+        searchLimit,
+        searchThreshold
+      );
+
+      searchResults = searchOutput.results;
+      richExplanations = searchOutput.explanations;
+
+      console.log('🔍 Search Results:', {
+        engine: routeDecision.engine,
+        resultCount: searchResults.length,
+        hasExplanations: richExplanations.length > 0
+      });
+
+      // Fallback to keyword search if vector search returns no results
+      if (searchResults.length === 0 && routeDecision.engine === 'vector') {
+        console.log('⚠️ Vector search returned no results, trying fallback keyword search...');
+        searchResults = await performKeywordSearch(supabase, userQuery, searchLimit);
+
+        if (searchResults.length > 0) {
+          console.log('✅ Fallback keyword search successful:', searchResults.length, 'results');
+          // Generate explanations for keyword results
+          richExplanations = generateVectorExplanations(searchResults, userQuery);
+        } else {
+          console.log('❌ Both vector and keyword search returned no results');
+        }
+      }
+    } else {
+      console.log('💬 Conversation mode - skipping search');
+    }
 
     // Log pitch analytics usage (added 2025-01-30)
     const pitchEnabledCount = ENABLE_PITCH_CONTEXT
@@ -472,18 +536,6 @@ serve(async (req) => {
       withPitchData: pitchEnabledCount,
       coveragePercent: searchResults.length > 0 ? ((pitchEnabledCount / searchResults.length) * 100).toFixed(0) + '%' : '0%'
     });
-
-    // Fallback to keyword search if no results
-    if (searchResults.length === 0) {
-      console.log('⚠️ Vector search returned no results, trying fallback keyword search...');
-      searchResults = await performKeywordSearch(supabase, userQuery, searchLimit)
-
-      if (searchResults.length > 0) {
-        console.log('✅ Fallback keyword search successful:', searchResults.length, 'results');
-      } else {
-        console.log('❌ Both vector and keyword search returned no results');
-      }
-    }
 
     // ========== PHASE 4: CONTEXTUAL RESPONSE ANALYSIS (Added 2025-10-21) ==========
     // Analyze conversation context to detect follow-up queries about recently mentioned titles
@@ -556,12 +608,15 @@ ${focusedContext}
 
 PERSONALITY: Conversational story nerd, enthusiastic but focused on answering the specific question.`;
       } else {
-        // Standard response generation
+        // Standard response generation with rich explanations
         masterPrompt = buildMasterPrompt({
           userProfile,
           conversationHistory: fullConversationHistory,
           searchResults,
-          userQuery
+          userQuery,
+          richExplanations,
+          detectedIntent,
+          searchEngine: searchEngineUsed
         });
       }
     }
@@ -579,6 +634,25 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // PHASE 0: Send intent detection event
+          controller.enqueue(
+            new TextEncoder().encode(
+              `data: ${JSON.stringify({
+                type: 'intent_detected',
+                level1: detectedIntent.level1,
+                level2: detectedIntent.level2,
+                confidence: Math.round(detectedIntent.confidence * 100),
+                engine: searchEngineUsed,
+                isConversation: routeDecision.skipSearch
+              })}\n\n`
+            )
+          );
+
+          console.log('✅ Sent intent_detected event:', {
+            intent: `${detectedIntent.level1}/${detectedIntent.level2}`,
+            engine: searchEngineUsed
+          });
+
           // PHASE 1: Send search complete event with previews
           if (searchResults && searchResults.length > 0) {
             const avgSimilarity = searchResults.reduce((sum, r) => sum + r.similarity, 0) / searchResults.length;
@@ -589,13 +663,16 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
                   type: 'search_complete',
                   resultsCount: searchResults.length,
                   avgSimilarity: Math.round(avgSimilarity * 100) / 100,
-                  topTitles: searchResults.slice(0, 3).map(r => ({
+                  engine: searchEngineUsed,
+                  topTitles: searchResults.slice(0, 10).map(r => ({
                     title_id: r.title_id,
                     title_name_en: r.title_name_en,
                     title_name_kr: r.title_name_kr,
                     title_image: r.title_image,
+                    synopsis: r.synopsis,
                     genre: r.genre,
                     tone: r.tone,
+                    content_format: r.content_format,
                     similarity: Math.round(r.similarity * 100) / 100
                   }))
                 })}\n\n`
@@ -605,8 +682,33 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
             console.log('✅ Sent search_complete event:', {
               count: searchResults.length,
               avgSimilarity: avgSimilarity.toFixed(2),
+              engine: searchEngineUsed,
               topTitles: searchResults.slice(0, 3).map(r => r.title_name_en || r.title_name_kr)
             });
+
+            // PHASE 1.5: Send rich explanations if available
+            if (richExplanations && richExplanations.length > 0) {
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `data: ${JSON.stringify({
+                    type: 'explanations_ready',
+                    explanations: richExplanations.slice(0, 5).map(exp => ({
+                      title_id: exp.title_id,
+                      title_name: exp.title_name,
+                      overall_score: exp.overall_score,
+                      explanation_narrative: exp.explanation_narrative,
+                      match_reasons: exp.match_reasons.slice(0, 3),
+                      source_engine: exp.source_engine
+                    }))
+                  })}\n\n`
+                )
+              );
+
+              console.log('✅ Sent explanations_ready event:', {
+                count: richExplanations.length,
+                engine: richExplanations[0]?.source_engine
+              });
+            }
           }
 
           // PHASE 2: Start AI streaming
@@ -1025,7 +1127,8 @@ async function performVectorSearch(
     const embedding = embeddingData.data[0].embedding
 
     // Perform vector search with configurable parameters
-    const { data: results } = await supabase.rpc('match_titles_by_embedding', {
+    // Using optimized function which includes title_image field
+    const { data: results } = await supabase.rpc('match_titles_by_embedding_optimized', {
       query_embedding: embedding,
       match_threshold: matchThreshold,
       match_count: matchCount
@@ -1040,6 +1143,191 @@ async function performVectorSearch(
   } catch (error) {
     console.error('❌ Vector search error:', error)
     return []
+  }
+}
+
+/**
+ * Execute search based on routing decision.
+ * Routes to appropriate engine: comps, mandate, or vector.
+ */
+async function executeSearchByEngine(
+  supabase: any,
+  decision: RouterDecision,
+  userQuery: string,
+  userId: string,
+  userEmail: string,
+  searchLimit: number,
+  searchThreshold: number
+): Promise<{ results: VectorSearchResult[]; explanations: RichExplanation[] }> {
+  const startTime = Date.now();
+
+  try {
+    switch (decision.engine) {
+      case 'comps':
+        return await executeCompsSearch(
+          decision.searchParams.compTitles || [],
+          decision.searchParams.refinementText,
+          userEmail
+        );
+
+      case 'mandate':
+        return await executeMandateSearch(
+          decision.searchParams.mandateText || userQuery,
+          userEmail
+        );
+
+      case 'vector':
+      default:
+        const results = await performVectorSearch(
+          supabase,
+          decision.searchParams.query || userQuery,
+          userId,
+          decision.searchParams.limit || searchLimit,
+          decision.searchParams.threshold || searchThreshold
+        );
+        const explanations = generateVectorExplanations(results, userQuery);
+        return { results, explanations };
+    }
+  } catch (error) {
+    console.error(`❌ ${decision.engine} search error:`, error);
+    // Fallback to vector search on engine failure
+    console.log('⚠️ Falling back to vector search...');
+    const results = await performVectorSearch(supabase, userQuery, userId, searchLimit, searchThreshold);
+    const explanations = generateVectorExplanations(results, userQuery);
+    return { results, explanations };
+  } finally {
+    console.log(`⏱️ Search execution time: ${Date.now() - startTime}ms`);
+  }
+}
+
+/**
+ * Execute Comps Navigator search via internal HTTP call.
+ */
+async function executeCompsSearch(
+  compTitles: string[],
+  refinementText?: string,
+  userEmail?: string
+): Promise<{ results: VectorSearchResult[]; explanations: RichExplanation[] }> {
+  console.log('🎬 Executing Comps Navigator search:', {
+    compTitles,
+    refinementText: refinementText?.substring(0, 50),
+    userEmail: userEmail?.substring(0, 10) + '...'
+  });
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/comp-navigator`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseAnonKey, // Required for Supabase edge function routing
+        'Authorization': `Bearer ${supabaseServiceKey}` // Service role for elevated permissions
+      },
+      body: JSON.stringify({
+        comp_titles: compTitles,
+        refinement_text: refinementText,
+        user_email: userEmail || 'chat@internal',
+        save_search: false // Don't save internal chat searches
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Comps Navigator returned ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Convert TitleMatchV2 results to VectorSearchResult format
+    const results: VectorSearchResult[] = (data.results || []).map((match: TitleMatchV2) => ({
+      title_id: match.title_id,
+      title_name_en: match.title_name_en,
+      title_name_kr: match.title_name_kr,
+      synopsis: match.synopsis,
+      genre: match.genre,
+      tone: match.tone,
+      content_format: match.content_format,
+      similarity: match.overall_match_score / 100 // Convert 0-100 to 0-1
+    }));
+
+    // Generate rich explanations from comps results
+    const explanations = generateCompsExplanations(data.results || [], compTitles);
+
+    console.log('✅ Comps Navigator results:', {
+      resultCount: results.length,
+      topScore: results[0]?.similarity?.toFixed(2),
+      processingTime: data.processing_time_ms
+    });
+
+    return { results, explanations };
+  } catch (error) {
+    console.error('❌ Comps Navigator error:', error);
+    return { results: [], explanations: [] };
+  }
+}
+
+/**
+ * Execute Mandate Matcher search via internal HTTP call.
+ */
+async function executeMandateSearch(
+  mandateText: string,
+  userEmail?: string
+): Promise<{ results: VectorSearchResult[]; explanations: RichExplanation[] }> {
+  console.log('📋 Executing Mandate Matcher search:', {
+    mandateText: mandateText.substring(0, 100) + '...',
+    userEmail: userEmail?.substring(0, 10) + '...'
+  });
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/mandate-matcher`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+        // No Authorization needed - mandate-matcher has verify_jwt = false in config.toml
+      },
+      body: JSON.stringify({
+        mandate_text: mandateText,
+        user_email: userEmail || 'chat@internal',
+        save_search: false, // Don't save internal chat searches
+        limit: 10
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Mandate Matcher returned ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Convert mandate results to VectorSearchResult format
+    const results: VectorSearchResult[] = (data.results || []).map((match: any) => ({
+      title_id: match.title_id,
+      title_name_en: match.title_name_en,
+      title_name_kr: match.title_name_kr,
+      synopsis: match.synopsis,
+      genre: match.genre,
+      tone: match.tone,
+      content_format: match.content_format,
+      similarity: match.match_score / 100 // Convert 0-100 to 0-1
+    }));
+
+    // Generate rich explanations from mandate results
+    const explanations = generateMandateExplanations(data.results || [], mandateText);
+
+    console.log('✅ Mandate Matcher results:', {
+      resultCount: results.length,
+      topScore: results[0]?.similarity?.toFixed(2),
+      processingTime: data.processing_time_ms
+    });
+
+    return { results, explanations };
+  } catch (error) {
+    console.error('❌ Mandate Matcher error:', error);
+    return { results: [], explanations: [] };
   }
 }
 
@@ -2555,8 +2843,11 @@ function buildMasterPrompt(context: {
   conversationHistory: ChatMessage[];
   searchResults: VectorSearchResult[];
   userQuery: string;
+  richExplanations?: RichExplanation[];
+  detectedIntent?: IntentDetectionResult;
+  searchEngine?: SearchEngine | null;
 }): string {
-  const { userProfile, conversationHistory, searchResults, userQuery } = context
+  const { userProfile, conversationHistory, searchResults, userQuery, richExplanations, detectedIntent, searchEngine } = context
 
   // Classify query intent for specialized handling
   const queryIntent = classifyQueryIntent(userQuery, conversationHistory);
@@ -2587,6 +2878,7 @@ function buildMasterPrompt(context: {
   // 1. Very short current conversation (<=3 messages)
   // 2. OR explicitly asking for new recommendations ("looking for", "recommend", etc.)
   // 3. BUT NOT if it's a specific follow-up ("tell me more", "learn more")
+  // 4. BUT NOT if query already contains specific content preferences (genre, format, themes)
   const currentConversationLength = conversationHistory.filter(msg =>
     msg.role === 'user' || msg.role === 'assistant'
   ).length;
@@ -2600,15 +2892,52 @@ function buildMasterPrompt(context: {
                             userQuery.toLowerCase().includes('learn more') ||
                             userQuery.toLowerCase().includes('compare');
 
-  const isFreshStart = !isSpecificFollowUp && (
+  // Check if query already contains specific content preferences
+  // These users know what they want - give them results, don't ask more questions
+  const specificContentIndicators = [
+    // Genres
+    'romance', 'action', 'thriller', 'fantasy', 'sci-fi', 'science fiction',
+    'horror', 'comedy', 'drama', 'mystery', 'slice of life', 'historical',
+    'supernatural', 'adventure', 'sports', 'martial arts', 'isekai',
+    // Content formats
+    'webtoon', 'webnovel', 'web novel', 'manhwa', 'series', 'stories',
+    // Specific themes/elements
+    'revenge', 'reincarnation', 'regression', 'system', 'dungeon',
+    'romance', 'love', 'relationship', 'family', 'friendship',
+    'overpowered', 'weak to strong', 'underdog', 'villain',
+    'magic', 'monsters', 'demons', 'gods', 'powers',
+    // Qualifiers that indicate specificity
+    'dark', 'light', 'deep lore', 'world building', 'worldbuilding',
+    'character development', 'plot twist', 'fast-paced', 'slow burn',
+    'completed', 'ongoing', 'long-running', 'short',
+    'set in space', 'set in', 'takes place', 'based on'
+  ];
+
+  const lowerQuery = userQuery.toLowerCase();
+  const hasSpecificPreferences = specificContentIndicators.some(indicator =>
+    lowerQuery.includes(indicator)
+  );
+
+  // Also check if intent detection identified this as a title_search with specific intent
+  const hasTitleSearchIntent = detectedIntent &&
+    detectedIntent.level1 === 'title_search' &&
+    ['discovery', 'comp_based', 'mandate_based'].includes(detectedIntent.level2);
+
+  // Don't treat as "fresh start" if user already specified what they want
+  const shouldAskClarifyingQuestions = !hasSpecificPreferences && !hasTitleSearchIntent;
+
+  const isFreshStart = !isSpecificFollowUp && shouldAskClarifyingQuestions && (
     currentConversationLength <= 3 ||
-    freshStartIndicators.some(indicator => userQuery.toLowerCase().includes(indicator))
+    freshStartIndicators.some(indicator => lowerQuery.includes(indicator))
   );
 
   console.log('🆕 Fresh Start Detection:', {
     isFreshStart,
     currentConversationLength,
     isSpecificFollowUp,
+    hasSpecificPreferences,
+    hasTitleSearchIntent,
+    shouldAskClarifyingQuestions,
     query: userQuery.substring(0, 50) + '...'
   });
 
@@ -2669,6 +2998,28 @@ ${searchResults.map((result, idx) => {
 }).join('\n\n')}
 
 SEARCH INSIGHTS: Found ${searchResults.length} titles with complete database information. Use ONLY the fields provided above.` : ''}
+
+${richExplanations && richExplanations.length > 0 ? `
+🎯 **RICH MATCH EXPLANATIONS** (Use these to explain WHY titles match):
+${richExplanations.slice(0, 5).map((exp, idx) => {
+  return `${idx + 1}. "${exp.title_name}" (${exp.overall_score}% match via ${exp.source_engine} engine)
+   **WHY THIS MATCHES**: ${exp.explanation_narrative}
+   **KEY CONNECTIONS**:
+   ${exp.match_reasons.slice(0, 3).map(r => `   • ${r}`).join('\n')}`
+}).join('\n\n')}
+
+**RESPONSE STYLE WITH EXPLANATIONS**:
+- When recommending titles, ALWAYS include WHY they match using the explanations above
+- Focus on the narrative/thematic connections, not just metadata
+- Be conversational but substantive: "This connects to your request because..."
+- Reference specific story elements that align with what the user is looking for
+` : ''}
+
+${searchEngine && searchEngine !== 'vector' ? `
+🔍 **SEARCH ENGINE USED**: ${searchEngine === 'comps' ? 'Comps Navigator (Hollywood title matching)' : 'Mandate Matcher (Production mandate matching)'}
+${searchEngine === 'comps' ? '- The user referenced Hollywood/global titles as comparisons - emphasize dimensional similarities' : ''}
+${searchEngine === 'mandate' ? '- The user described a business/production mandate - emphasize market fit and development potential' : ''}
+` : ''}
 
 CURRENT QUERY: "${userQuery}"
 

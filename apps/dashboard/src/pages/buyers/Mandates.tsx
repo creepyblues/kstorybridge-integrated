@@ -14,6 +14,7 @@ import MandateSearchInput from '@/components/mandates/MandateSearchInput';
 import MandateExamples from '@/components/mandates/MandateExamples';
 import MandateHistorySidebar from '@/components/mandates/MandateHistorySidebar';
 import MandateResultsGrid from '@/components/mandates/MandateResultsGrid';
+import MandateSearchLoadingModal from '@/components/mandates/MandateSearchLoadingModal';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Icon } from '@iconify/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -227,6 +228,9 @@ export default function Mandates() {
           />
         )}
       </div>
+
+      {/* Search Loading Modal */}
+      <MandateSearchLoadingModal isOpen={isLoading} />
 
       {/* History Dialog */}
       {user?.email && (

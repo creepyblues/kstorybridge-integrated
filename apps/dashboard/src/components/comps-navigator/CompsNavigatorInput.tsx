@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
 import { omdbService, OMDBSearchResult } from '@/services/omdbService';
-import { CompTitle } from './CompSelector';
+import { CompTitle } from '@/services/compsNavigatorService';
 
 interface CompsNavigatorInputProps {
   compTitles: CompTitle[];
@@ -20,12 +20,11 @@ interface CompsNavigatorInputProps {
   onClear: () => void;
   onNeedHelp: () => void;
   isLoading: boolean;
-  loadingPhase: 'semantic' | 'reranking' | null;
+  loadingPhase: 'describing' | 'semantic' | 'reranking' | null;
   searchInfo: { time: number; cost: number } | null;
   hasResults: boolean;
+  isAdmin?: boolean;
 }
-
-const EXAMPLE_SHOWS = ['The Bear', 'Squid Game', 'Succession', 'Emily in Paris'];
 
 export default function CompsNavigatorInput({
   compTitles,
@@ -37,6 +36,7 @@ export default function CompsNavigatorInput({
   loadingPhase,
   searchInfo,
   hasResults,
+  isAdmin,
 }: CompsNavigatorInputProps) {
   // Track how many input rows are visible (1-3)
   const [activeInputCount, setActiveInputCount] = useState(1);
@@ -221,18 +221,6 @@ export default function CompsNavigatorInput({
     }
   };
 
-  const handleTryExample = (example: string) => {
-    // Set the example in the first empty slot or first input
-    const emptySlotIndex = compTitles.length;
-    if (emptySlotIndex < 3) {
-      setInputValues((prev) => {
-        const newValues = [...prev];
-        newValues[emptySlotIndex] = example;
-        return newValues;
-      });
-    }
-  };
-
   const handleAddInput = () => {
     if (activeInputCount < 3) {
       setActiveInputCount((prev) => prev + 1);
@@ -352,7 +340,7 @@ export default function CompsNavigatorInput({
                       }}
                       placeholder={
                         index === 0
-                          ? 'Type a show you love (e.g., The Bear, Squid Game)'
+                          ? 'Type a show you love (e.g., Twilight, Bridgerton)'
                           : `Add ${index === 1 ? 'second' : 'third'} show (optional)`
                       }
                       className="w-full text-sm sm:text-base py-5 sm:py-6 pr-12 rounded-xl border-gray-300 focus:border-hanok-teal focus:ring-hanok-teal"
@@ -480,38 +468,24 @@ export default function CompsNavigatorInput({
         </Button>
       </div>
 
-      {/* Try Examples and Need Help */}
-      <div className="mt-6">
-        <p className="text-sm text-gray-500 mb-3">Try these examples:</p>
-        <div className="flex flex-wrap gap-2">
-          {EXAMPLE_SHOWS.map((example) => (
-            <button
-              key={example}
-              onClick={() => handleTryExample(example)}
-              disabled={isLoading || compTitles.length >= 3}
-              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {example}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Need help button */}
-      <div className="mt-4 text-center">
+      {/* Try Examples Button */}
+      <div className="mt-6 text-center">
         <button
           onClick={onNeedHelp}
           disabled={isLoading}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-hanok-teal transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-hanok-teal bg-hanok-teal/10 hover:bg-hanok-teal/20 rounded-full transition-colors"
         >
-          <Icon icon="solar:info-circle-bold-duotone" className="h-4 w-4" />
-          <span className="underline underline-offset-2">Need help?</span>
+          <Icon icon="solar:lightbulb-bolt-bold-duotone" className="h-5 w-5" />
+          Try these examples
         </button>
       </div>
 
-      {/* Search Info */}
-      {searchInfo && !isLoading && (
+      {/* Search Info - Admin Only */}
+      {searchInfo && !isLoading && isAdmin && (
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-gray-400">
+          <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-medium uppercase">
+            Admin Only
+          </span>
           <span>{(searchInfo.time / 1000).toFixed(1)}s</span>
           <span>•</span>
           <span>${searchInfo.cost.toFixed(3)}</span>

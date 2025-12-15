@@ -118,6 +118,7 @@ describe('compsNavigatorService', () => {
 
       expect(supabase.functions.invoke).toHaveBeenCalledWith('comp-navigator', {
         body: {
+          action: 'search',
           comp_titles: ['The Bear', 'Succession'],
           refinement_text: 'dark comedy',
           user_email: 'test@example.com',

@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Icon } from '@iconify/react';
@@ -10,7 +9,8 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import { TitleCard } from '@/components/title/TitleCard';
 import { SuggestedQueries } from '@/components/chat/SuggestedQueries';
 import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar';
-import { chatOrchestratorService } from '@/services/chatOrchestratorService';
+import ChatProcessingStatus from '@/components/chat/ChatProcessingStatus';
+import { chatOrchestratorService, ChatPhase, PhaseData, RichExplanation } from '@/services/chatOrchestratorService';
 import { chatHistoryService, type ChatSession } from '@/services/chatHistoryService';
 import { supabase } from '@/lib/supabase';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
@@ -18,7 +18,7 @@ import { TITLE_CACHE_SIZE } from '@/utils/constants/config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { debug } from '@/utils/debug';
-import { trackPageView, trackFeatureUsage, trackChatMessage, trackChatTitleClick, trackChatSessionStarted, trackChatHistoryLoaded } from '@/utils/analytics';
+import { trackPageView, trackFeatureUsage, trackChatMessage, trackChatSessionStarted, trackChatHistoryLoaded } from '@/utils/analytics';
 
 interface ChatMessage {
   id: string;
@@ -27,6 +27,7 @@ interface ChatMessage {
   timestamp: Date;
   titles?: any[];
   suggestedQueries?: string[];
+  explanations?: RichExplanation[]; // AI explanations for title matches
   messageId?: string; // Database message ID for tracking
   isNew?: boolean; // Whether this is a new message (for typewriter effect)
 }
@@ -34,17 +35,21 @@ interface ChatMessage {
 export default function Chat() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [_historyLoadError, setHistoryLoadError] = useState<string | null>(null); // Used for debugging; toast handles user notification
   const [titleCache, setTitleCache] = useState<any[]>([]); // Cache for ALL titles for fuzzy matching
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  // Processing status state for Claude-style status timeline
+  const [currentPhase, setCurrentPhase] = useState<ChatPhase>(null);
+  const [searchCount, setSearchCount] = useState<number | undefined>(undefined);
+  const [progressAfterMessageId, setProgressAfterMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousUserIdRef = useRef<string | null>(null);
-  const isSubmittingRef = useRef(false); // Prevent double submission
+  const submissionLockRef = useRef<Promise<void> | null>(null); // Promise-based lock for session creation
   const suggestedQueries = chatOrchestratorService.getSuggestedQueries();
 
   const scrollToBottom = () => {
@@ -126,6 +131,7 @@ export default function Chat() {
       }
 
       setIsLoadingHistory(true);
+      setHistoryLoadError(null);
       try {
         debug.log('📂 Loading history for session:', currentSession.id);
         const history = await chatHistoryService.getSessionMessagesWithData(currentSession.id);
@@ -143,8 +149,17 @@ export default function Chat() {
             role: msg.message_type === 'user_prompt' ? 'user' : 'assistant',
             content: msg.content,
             timestamp: new Date(msg.created_at),
-            titles: msg.titles,
-            suggestedQueries: msg.suggestedQueries,
+            // Convert recommendations to titles format for TitleCard
+            titles: msg.recommendations?.map((rec: any) => ({
+              id: rec.title_id,
+              nameEn: rec.title_name_en,
+              nameKr: rec.title_name_kr,
+              image: rec.titles?.title_image, // From joined titles table
+              genre: rec.titles?.genre,
+              format: rec.titles?.content_format,
+              similarity: rec.recommendation_score,
+            })),
+            suggestedQueries: msg.suggested_queries, // Fixed: was msg.suggestedQueries
             messageId: msg.id,
           }));
 
@@ -178,6 +193,14 @@ export default function Chat() {
         setHasLoadedHistory(true);
       } catch (error) {
         console.error('Error loading chat history:', error);
+        setHistoryLoadError('Failed to load chat history. Please try refreshing the page.');
+        toast({
+          title: 'Error loading history',
+          description: 'Could not load your previous messages. You can still start a new conversation.',
+          variant: 'destructive',
+        });
+        // Still mark as loaded to prevent infinite retry loop
+        setHasLoadedHistory(true);
       } finally {
         setIsLoadingHistory(false);
       }
@@ -189,12 +212,23 @@ export default function Chat() {
   const handleSendMessage = async (query: string) => {
     if (!query.trim() || loading || !user?.id) return;
 
-    // Prevent double submission (React StrictMode or rapid clicks)
-    if (isSubmittingRef.current) {
-      debug.log('⏭️ Skipping duplicate submission');
-      return;
+    // Wait for any pending submission to complete (prevents race condition during session creation)
+    if (submissionLockRef.current) {
+      debug.log('⏳ Waiting for pending submission to complete...');
+      try {
+        await submissionLockRef.current;
+      } catch {
+        // Previous submission failed, continue with this one
+      }
     }
-    isSubmittingRef.current = true;
+
+    // Create a new lock for this submission
+    let resolveLock: () => void;
+    let rejectLock: (error: Error) => void;
+    submissionLockRef.current = new Promise<void>((resolve, reject) => {
+      resolveLock = resolve;
+      rejectLock = reject;
+    });
 
     try {
       // LAZY SESSION CREATION: Create session if it doesn't exist
@@ -232,6 +266,12 @@ export default function Chat() {
       setMessages((prev) => [...prev, tempUserMessage]);
       setLoading(true);
 
+      // Show "analyzing" phase IMMEDIATELY for instant feedback
+      // Progress will appear right after this user message
+      setCurrentPhase('analyzing');
+      setSearchCount(undefined);
+      setProgressAfterMessageId(tempUserMessage.id);
+
       // Track message sent
       trackChatMessage('sent', query.length);
 
@@ -253,6 +293,8 @@ export default function Chat() {
               : msg
           )
         );
+        // Update progress position to use the real message ID
+        setProgressAfterMessageId(userDbMessage.id);
       } else {
         console.error('❌ Failed to record user message to database');
       }
@@ -265,11 +307,19 @@ export default function Chat() {
           content: msg.content,
         }));
 
-      // Send to chatbot orchestrator
+      // Send to chatbot orchestrator with phase callbacks
       const response = await chatOrchestratorService.sendMessage(
         query,
         conversationHistory,
-        user.id
+        user.id,
+        {
+          onPhaseChange: (phase: ChatPhase, data?: PhaseData) => {
+            setCurrentPhase(phase);
+            if (data?.count !== undefined) {
+              setSearchCount(data.count);
+            }
+          },
+        }
       );
 
       const responseTime = Date.now() - startTime;
@@ -316,13 +366,17 @@ export default function Chat() {
         role: 'assistant',
         content: response.response,
         timestamp: new Date(),
-        titles: response.titles?.map((t: any) => chatOrchestratorService.formatTitleForChat(t)),
+        titles: response.titles,
         suggestedQueries: response.suggestedQueries,
+        explanations: response.explanations, // AI explanations for title matches
         messageId: botDbMessage?.id,
         isNew: true, // Enable typewriter effect for new messages
       };
 
       setMessages((prev) => [...prev, botMessage]);
+
+      // Mark all phases as complete
+      setCurrentPhase('complete');
 
       // Track message received
       trackChatMessage('received', response.response.length, response.titles?.length || 0, responseTime);
@@ -347,9 +401,15 @@ export default function Chat() {
       };
 
       setMessages((prev) => [...prev, errorMessage]);
+
+      // Reject the lock so waiting submissions know this one failed
+      rejectLock!(error);
     } finally {
       setLoading(false);
-      isSubmittingRef.current = false; // Reset submission lock
+      // Progress stays visible until next message is sent
+      // Resolve the lock to allow next submission
+      resolveLock!();
+      submissionLockRef.current = null;
     }
   };
 
@@ -376,27 +436,8 @@ export default function Chat() {
     await handleSendMessage(query);
   };
 
-  const handleTitleClick = async (titleId: string, titleName: string, position?: number) => {
-    if (!user?.id) return;
-
-    // Track title click for analytics
-    trackChatTitleClick(titleId, titleName, position || 0);
-
-    // Track title click in database (if session exists)
-    if (currentSession) {
-      await chatHistoryService.recordInteraction({
-        session_id: currentSession.id,
-        user_id: user.id,
-        interaction_type: 'title_click',
-        target_id: titleId,
-        target_title: titleName,
-        metadata: { clicked_at: new Date().toISOString() },
-      });
-    }
-
-    // Navigate to title detail with source tracking
-    navigate(`/buyers/titles/${titleId}`, { state: { from: 'chat' } });
-  };
+  // Note: Title click handling is now managed by TitleCard component directly
+  // It uses trackTitleCardClicked for analytics and navigates to title detail page
 
   const handleNewChat = async () => {
     if (!user?.id || !user?.email) return;
@@ -468,7 +509,15 @@ export default function Chat() {
               <div key={message.id} className="space-y-3">
                 {/* User Message - use basic ChatMessage */}
                 {message.role === 'user' && (
-                  <ChatMessage message={message} isLatest={index === messages.length - 1} />
+                  <>
+                    <ChatMessage message={message} isLatest={index === messages.length - 1} />
+                    {/* Processing Status - appears right after the user message that triggered it */}
+                    {message.id === progressAfterMessageId && currentPhase && (
+                      <div className="ml-11">
+                        <ChatProcessingStatus phase={currentPhase} searchCount={searchCount} />
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Bot Message - use ConversationalMessage with title linking */}
@@ -480,11 +529,9 @@ export default function Chat() {
                     <div className="flex-1">
                       <ConversationalMessage
                         content={message.content}
-                        navigate={navigate}
                         titleData={message.titles}
                         allMessages={messages}
                         titleCache={titleCache}
-                        handleSuggestedQuery={handleSuggestedQuery}
                         enableTypewriter={message.isNew}
                         onTypewriterComplete={() => {
                           // Clear isNew flag after typewriter completes to prevent re-animation
@@ -509,35 +556,35 @@ export default function Chat() {
                   </div>
                 )}
 
-                {/* Title Cards (shown below bot messages - only after typewriter completes) */}
+                {/* Inline Title Cards with Explanations (shown below bot messages - only after typewriter completes) */}
                 {message.titles && message.titles.length > 0 && message.role === 'assistant' && !message.isNew && (
-                  <div className="ml-11 space-y-2 animate-in fade-in duration-300">
-                    <p className="text-sm text-gray-600 font-medium">
-                      Found {message.titles.length} title{message.titles.length !== 1 ? 's' : ''}:
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {message.titles.slice(0, 6).map((title: any, titleIndex: number) => (
-                        <div
-                          key={`${message.id}-title-${title.id || titleIndex}`}
-                          onClick={() => handleTitleClick(title.id, title.nameEn || title.nameKr, titleIndex)}
-                          className="cursor-pointer"
-                        >
-                          <TitleCard title={title} variant="compact" />
+                  <div className="ml-11 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                    {message.titles.slice(0, 6).map((title: any, titleIndex: number) => {
+                      const explanation = message.explanations?.find(
+                        (exp) => exp.title_id === title.id
+                      );
+                      return (
+                        <div key={`${message.id}-title-${title.id || titleIndex}`} className="space-y-2">
+                          {/* Static TitleCard - compact variant */}
+                          <TitleCard
+                            title={title}
+                            variant="compact"
+                            source="chat"
+                            position={titleIndex + 1}
+                          />
+                          {/* AI Explanation - simple text below card */}
+                          {explanation?.explanation_narrative && (
+                            <p className="text-sm text-gray-600 pl-2 border-l-2 border-hanok-teal/30">
+                              {explanation.explanation_narrative}
+                            </p>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
             ))}
-
-            {/* Loading Indicator */}
-            {loading && (
-              <div className="flex items-center gap-2 text-gray-500 ml-11">
-                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Jinu is thinking...</span>
-              </div>
-            )}
 
             <div ref={messagesEndRef} />
           </div>

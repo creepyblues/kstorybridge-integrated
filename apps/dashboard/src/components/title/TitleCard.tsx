@@ -18,6 +18,7 @@ interface ChatTitle {
   image?: string;
   hasPitch?: boolean;
   similarity?: number;
+  synopsis?: string;
 }
 
 interface TitleCardProps {
@@ -47,6 +48,7 @@ function normalizeTitle(title: Title | ChatTitle): Title {
     rating: chatTitle.rating,
     title_image: chatTitle.image,
     pitch: chatTitle.hasPitch ? 'has_pitch' : undefined,
+    synopsis: chatTitle.synopsis,
   } as Title;
 }
 
@@ -62,7 +64,13 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
       source,
       position
     );
-    navigate(`/buyers/titles/${title.title_id}`, { state: { from: source } });
+
+    // Open in new tab for chat, navigate in same tab for other sources
+    if (source === 'chat') {
+      window.open(`/buyers/titles/${title.title_id}`, '_blank');
+    } else {
+      navigate(`/buyers/titles/${title.title_id}`, { state: { from: source } });
+    }
   };
 
   if (variant === 'compact') {
@@ -97,6 +105,13 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
               )}
 
               <TitleMetadata title={title} compact />
+
+              {/* Synopsis - 2 lines max */}
+              {title.synopsis && (
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {title.synopsis}
+                </p>
+              )}
             </div>
 
             {/* Action Button */}

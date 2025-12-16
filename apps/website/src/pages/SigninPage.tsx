@@ -42,41 +42,41 @@ const SigninPage = () => {
               </p>
             </div>
 
-            {/* Two-Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
+            {/* Two-Column Layout - Side by side on all screens */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-8 lg:gap-12 max-w-5xl mx-auto">
 
               {/* Creator Section */}
               <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="p-8">
+                <CardContent className="p-4 sm:p-8 text-center sm:text-left">
                   {/* Icon */}
-                  <div className="w-16 h-16 bg-sunrise-coral/10 rounded-2xl flex items-center justify-center mb-6">
-                    <Palette className="w-8 h-8 text-sunrise-coral" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-sunrise-coral/10 rounded-2xl flex items-center justify-center mb-3 sm:mb-6 mx-auto sm:mx-0">
+                    <Palette className="w-6 h-6 sm:w-8 sm:h-8 text-sunrise-coral" />
                   </div>
 
                   {/* Title */}
-                  <h2 className="text-2xl font-bold text-midnight-ink mb-3">
+                  <h2 className="text-sm sm:text-2xl font-bold text-midnight-ink mb-3 sm:mb-3">
                     {t('signinPage.creator.title')}
                   </h2>
 
-                  {/* Description */}
-                  <p className="text-midnight-ink-600 mb-8">
+                  {/* Description - Hidden on mobile */}
+                  <p className="hidden sm:block text-midnight-ink-600 mb-8">
                     {t('signinPage.creator.description')}
                   </p>
 
                   {/* Sign Up Button (Primary) */}
-                  <a href={`${creatorUrl}/signup`} className="block mb-4">
+                  <a href={`${creatorUrl}/signup`} className="block mb-2 sm:mb-4">
                     <Button
                       size="lg"
-                      className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="w-full bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-3 sm:px-8 py-2 sm:py-6 text-xs sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       {t('signinPage.creator.signupButton')}
                     </Button>
                   </a>
 
-                  {/* Sign In Link */}
+                  {/* Sign In Link - Hidden on mobile */}
                   <a
                     href={`${creatorUrl}/signin`}
-                    className="flex items-center justify-center text-black hover:text-gray-700 transition-colors text-sm"
+                    className="hidden sm:flex items-center justify-center sm:justify-start text-black hover:text-gray-700 transition-colors text-sm"
                   >
                     {t('signinPage.creator.signinLink')}
                     <ArrowRight className="w-4 h-4 ml-1" />
@@ -84,38 +84,38 @@ const SigninPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Buyer Section */}
+              {/* Producer Section */}
               <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="p-8">
+                <CardContent className="p-4 sm:p-8 text-center sm:text-left">
                   {/* Icon */}
-                  <div className="w-16 h-16 bg-hanok-teal/10 rounded-2xl flex items-center justify-center mb-6">
-                    <ShoppingCart className="w-8 h-8 text-hanok-teal" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-hanok-teal/10 rounded-2xl flex items-center justify-center mb-3 sm:mb-6 mx-auto sm:mx-0">
+                    <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 text-hanok-teal" />
                   </div>
 
                   {/* Title */}
-                  <h2 className="text-2xl font-bold text-midnight-ink mb-3">
+                  <h2 className="text-sm sm:text-2xl font-bold text-midnight-ink mb-3 sm:mb-3">
                     {t('signinPage.buyer.title')}
                   </h2>
 
-                  {/* Description */}
-                  <p className="text-midnight-ink-600 mb-8">
+                  {/* Description - Hidden on mobile */}
+                  <p className="hidden sm:block text-midnight-ink-600 mb-8">
                     {t('signinPage.buyer.description')}
                   </p>
 
                   {/* Sign Up Button (Primary) */}
-                  <a href={`${dashboardUrl}/signup/buyer`} className="block mb-4">
+                  <a href={`${dashboardUrl}/signup/buyer`} className="block mb-2 sm:mb-4">
                     <Button
                       size="lg"
-                      className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white px-3 sm:px-8 py-2 sm:py-6 text-xs sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       {t('signinPage.buyer.signupButton')}
                     </Button>
                   </a>
 
-                  {/* Sign In Link */}
+                  {/* Sign In Link - Hidden on mobile */}
                   <a
                     href={`${dashboardUrl}/signin/buyer`}
-                    className="flex items-center justify-center text-black hover:text-gray-700 transition-colors text-sm"
+                    className="hidden sm:flex items-center justify-center sm:justify-start text-black hover:text-gray-700 transition-colors text-sm"
                   >
                     {t('signinPage.buyer.signinLink')}
                     <ArrowRight className="w-4 h-4 ml-1" />
@@ -125,15 +125,6 @@ const SigninPage = () => {
 
             </div>
 
-            {/* Help Text */}
-            <div className="text-center mt-12">
-              <p className="text-midnight-ink-600 text-sm">
-                {t('signinPage.help.text')}{' '}
-                <a href="/about" className="text-black hover:text-gray-700 underline">
-                  {t('signinPage.help.link')}
-                </a>
-              </p>
-            </div>
           </div>
         </section>
       </main>

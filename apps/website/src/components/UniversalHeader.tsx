@@ -90,18 +90,26 @@ const UniversalHeader = () => {
             <LanguageSelector />
           </div>
           
-          {/* Mobile menu button - improved touch target */}
-          <button
-            className="md:hidden p-2 -mr-2 touch-manipulation"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6 text-midnight-ink" />
-            ) : (
-              <Menu className="h-6 w-6 text-midnight-ink" />
-            )}
-          </button>
+          {/* Mobile: Sign Up button + menu button */}
+          <div className="md:hidden flex items-center gap-2">
+            <Button
+              className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
+              onClick={() => navigate('/signin')}
+            >
+              {t('cta.signUp').toUpperCase()}
+            </Button>
+            <button
+              className="p-2 -mr-2 touch-manipulation"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6 text-midnight-ink" />
+              ) : (
+                <Menu className="h-6 w-6 text-midnight-ink" />
+              )}
+            </button>
+          </div>
         </div>
       </nav>
 

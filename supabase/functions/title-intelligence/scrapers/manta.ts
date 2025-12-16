@@ -9,11 +9,18 @@
  * - thumbnail: Cover image URL
  * - genre: Extracted from metaKeywords
  * - completed: Completion status from metaKeywords
+ * - author: Falls back to "Manta Comics" (localizer) since credits are JS-loaded
+ * - artist: Falls back to "Manta Comics" (localizer) since credits are JS-loaded
  *
  * Strategy:
  * 1. Fetch HTML from manta.net/en/series/{slug}?seriesId={id}
  * 2. Extract __NEXT_DATA__ JSON for structured data
  * 3. Parse headData from pageProps
+ * 4. Apply "Manta Comics" fallback for author/artist (credit data is JS-loaded)
+ *
+ * Note: Manta's credit data (Writer, Illustrator, Original Story, Localization)
+ * is loaded dynamically via JavaScript and not accessible via server-side scraping.
+ * We use "Manta Comics" as the localizer/publisher fallback.
  *
  * URL Format: https://manta.net/en/series/{slug}?seriesId={id}
  */
@@ -243,11 +250,23 @@ export async function scrapeManta(seriesId: string): Promise<MantaData> {
       }
     }
 
+    // Credits fallback: Manta's credit data (Writer, Illustrator, Original Story, Localization)
+    // is loaded dynamically via JavaScript and not available in static HTML.
+    // Use "Manta Comics" as the localizer/publisher fallback for author attribution.
+    if (!result.data.author) {
+      result.data.author = 'Manta Comics'
+    }
+    if (!result.data.artist) {
+      result.data.artist = 'Manta Comics'
+    }
+
     console.log(`[Manta] Extracted:`, {
       title: result.data.title_en,
       genres: result.data.genre,
       completed: result.data.completed,
-      hasThumb: !!result.data.thumbnail
+      hasThumb: !!result.data.thumbnail,
+      author: result.data.author,
+      artist: result.data.artist
     })
 
     return result

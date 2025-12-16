@@ -60,7 +60,7 @@ const App = () => (
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
-          <Route path="/signin" element={<SigninPage />} />
+          <Route path="/signup" element={<SigninPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
           <Route path="/sample/werewolves-going-crazy-over-me" element={<SampleTitleDetailPage />} />

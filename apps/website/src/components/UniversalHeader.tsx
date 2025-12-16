@@ -81,7 +81,7 @@ const UniversalHeader = () => {
             {/* Auth Buttons */}
             <Button
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
-              onClick={() => navigate('/signin')}
+              onClick={() => navigate('/signup')}
             >
               {t('cta.getStarted').toUpperCase()}
             </Button>
@@ -94,7 +94,7 @@ const UniversalHeader = () => {
           <div className="md:hidden flex items-center gap-2">
             <Button
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
-              onClick={() => navigate('/signin')}
+              onClick={() => navigate('/signup')}
             >
               {t('cta.signUp').toUpperCase()}
             </Button>
@@ -181,7 +181,7 @@ const UniversalHeader = () => {
               <Button
                 className="w-full border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-3 rounded-full font-medium transition-colors"
                 onClick={() => {
-                  navigate('/signin');
+                  navigate('/signup');
                   setMobileMenuOpen(false);
                 }}
               >

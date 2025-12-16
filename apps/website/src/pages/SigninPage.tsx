@@ -103,7 +103,7 @@ const SigninPage = () => {
                   </p>
 
                   {/* Sign Up Button (Primary) */}
-                  <a href={`${dashboardUrl}/signup/buyer`} className="block mb-2 sm:mb-4">
+                  <a href={`${dashboardUrl}/signup`} className="block mb-2 sm:mb-4">
                     <Button
                       size="lg"
                       className="w-full bg-hanok-teal hover:bg-hanok-teal-600 text-white px-3 sm:px-8 py-2 sm:py-6 text-xs sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"

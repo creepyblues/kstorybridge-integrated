@@ -1031,8 +1031,8 @@ export function getChatbotQueriesByCategory(category: keyof typeof CHATBOT_QUERI
 export const HERO_SAMPLES = {
   showComp: {
     placeholder: "Try 'Twilight' or 'Bridgerton'",
-    sampleTitle: 'Stranger Things',
-    sampleLabel: 'Try: Stranger Things'
+    sampleTitle: 'Twilight',
+    sampleLabel: 'Try: Twilight'
   },
   brief: {
     placeholder: "e.g., 'Female-driven thriller'",

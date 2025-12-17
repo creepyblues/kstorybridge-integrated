@@ -1,6 +1,15 @@
 # Manual Deployment Guide - KStoryBridge Monorepo
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-12-17
+
+## TL;DR - Deploy Dashboard Staging
+
+```bash
+cd /Users/sungholee/code/kstorybridge/apps/dashboard
+vercel --prod --project dashboard-staging
+```
+
+---
 
 ## Overview
 
@@ -17,14 +26,29 @@ This guide explains how to manually deploy staging apps after pushing to the v2 
 
 ### Manual Staging Deployment
 
-```bash
-# After pushing to v2 branch (no auto-deploy)
-cd apps/creator
-vercel                    # Deploy to staging (preview)
+**⚠️ IMPORTANT**: The local `.vercel/project.json` may be linked to a different project than you expect. Use explicit project targeting to ensure you deploy to the correct staging project.
 
-cd apps/dashboard
-vercel                    # Deploy to staging (preview)
+```bash
+# RECOMMENDED: Explicit project targeting (always works)
+cd /Users/sungholee/code/kstorybridge/apps/dashboard
+vercel --prod --project dashboard-staging
+
+cd /Users/sungholee/code/kstorybridge/apps/creator
+vercel --prod --project creator-staging
 ```
+
+**Alternative: Re-link directory to staging project first**:
+```bash
+cd apps/dashboard
+vercel link --project dashboard-staging
+vercel --prod
+
+cd apps/creator
+vercel link --project creator-staging
+vercel --prod
+```
+
+> **Note**: Without `--prod`, Vercel creates a preview deployment that doesn't update the staging domain. Use `--prod` to deploy to the staging domain directly.
 
 ### Manual Production Deployment
 
@@ -304,6 +328,39 @@ vercel project ls
 - Setting "Production Branch" to `v2` makes them ignore `main` branch pushes entirely
 
 **See**: [VERCEL_DEPLOYMENT_ARCHITECTURE.md - Critical Settings Checklist](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md#critical-vercel-project-settings-checklist)
+
+### Issue: Staging not updating after `vercel` deploy
+
+**Symptom**: You ran `vercel` but the staging URL still shows old content.
+
+**Root Cause**: The local `.vercel/project.json` is linked to the **production** project, not the staging project.
+
+**Check which project is linked**:
+```bash
+cat apps/dashboard/.vercel/project.json
+# If it shows "dashboard" instead of "dashboard-staging", that's the problem
+```
+
+**Solution 1: Use explicit project targeting (recommended)**:
+```bash
+cd apps/dashboard
+vercel --prod --project dashboard-staging
+```
+
+**Solution 2: Re-link the directory**:
+```bash
+cd apps/dashboard
+vercel link --project dashboard-staging
+vercel --prod
+```
+
+**Solution 3: Deploy from Vercel Dashboard**:
+1. Go to https://vercel.com/creepyblues-9060s-projects/dashboard-staging
+2. Click "Deployments" tab
+3. Find a recent preview deployment
+4. Click "..." → "Promote to Production"
+
+---
 
 ### Issue: Staging still auto-deploys after pushing to v2
 

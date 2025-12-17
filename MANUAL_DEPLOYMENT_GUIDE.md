@@ -1,6 +1,18 @@
 # Manual Deployment Guide - KStoryBridge Monorepo
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-12-17
+
+## TL;DR - Deploy Dashboard Staging
+
+```bash
+cd /Users/sungholee/code/kstorybridge
+vercel link --project dashboard-staging --yes
+vercel --prod
+```
+
+> **Important**: Deploy from monorepo ROOT, not from `apps/dashboard`. See [Troubleshooting](#issue-the-provided-path-does-not-exist-error) for why.
+
+---
 
 ## Overview
 
@@ -17,14 +29,23 @@ This guide explains how to manually deploy staging apps after pushing to the v2 
 
 ### Manual Staging Deployment
 
-```bash
-# After pushing to v2 branch (no auto-deploy)
-cd apps/creator
-vercel                    # Deploy to staging (preview)
+**⚠️ IMPORTANT**: Deploy from the **monorepo root**, not from the app directory. The Vercel project has `Root Directory` set to `apps/dashboard`, so running from the app directory causes path errors.
 
-cd apps/dashboard
-vercel                    # Deploy to staging (preview)
+```bash
+# Dashboard staging (from monorepo root)
+cd /Users/sungholee/code/kstorybridge
+vercel link --project dashboard-staging --yes
+vercel --prod
+
+# Creator staging (from monorepo root)
+cd /Users/sungholee/code/kstorybridge
+vercel link --project creator-staging --yes
+vercel --prod
 ```
+
+> **Why from root?** Vercel's `Root Directory` setting is applied relative to where you run the CLI. If you run from `apps/dashboard/` and Vercel has `Root Directory = apps/dashboard`, it looks for `apps/dashboard/apps/dashboard` which doesn't exist.
+
+> **Note**: Without `--prod`, Vercel creates a preview deployment that doesn't update the staging domain. Use `--prod` to deploy to the staging domain directly.
 
 ### Manual Production Deployment
 
@@ -99,23 +120,19 @@ Each app has `vercel.json` configured to control deployment behavior for multipl
 - Staging projects (e.g., `dashboard-staging`) read `"v2": false` → manual deployment required
 - Production projects (e.g., `kstorybridge-dashboard`) read `"main": true` → auto-deploy enabled
 
-### turbo-ignore (Production Selective Deploy)
+### Ignored Build Step Configuration
 
-Production apps use the enhanced script for selective deployment:
+**Staging projects** use `Automatic` (no custom script):
+- **Ignored Build Step**: `Automatic`
+- Reason: Staging auto-deploy is disabled via `vercel.json`, you manually trigger deploys
+- No need for turbo-ignore since you control when builds happen
 
-**Vercel "Ignored Build Step" setting** (all 6 projects):
-```bash
-cd ../.. && bash scripts/vercel-ignore-turbo.sh
-```
+**Production projects** use turbo-ignore for selective deployment:
+- **Ignored Build Step**: `Automatic` (or custom script if needed)
+- This allows only changed apps to deploy when merging to main
 
-**What this does**:
-- Auto-detects workspace from package.json (`@kstorybridge/creator`, etc.)
-- Checks if the app has changed since last deployment
-- Returns exit code 0 (skip build) or 1 (proceed with build)
-- Includes debugging output for troubleshooting
-
-**Files created**:
-- `/scripts/vercel-ignore-turbo.sh` - Enhanced wrapper script
+**Files available for custom selective builds**:
+- `/scripts/vercel-ignore-turbo.sh` - Enhanced wrapper script (optional)
 - `/apps/creator/turbo.json` - Enables workspace detection
 - `/apps/dashboard/turbo.json` - Enables workspace detection
 - `/apps/website/turbo.json` - Enables workspace detection
@@ -305,6 +322,39 @@ vercel project ls
 
 **See**: [VERCEL_DEPLOYMENT_ARCHITECTURE.md - Critical Settings Checklist](docs/guides/VERCEL_DEPLOYMENT_ARCHITECTURE.md#critical-vercel-project-settings-checklist)
 
+### Issue: Staging not updating after `vercel` deploy
+
+**Symptom**: You ran `vercel` but the staging URL still shows old content.
+
+**Root Cause**: The local `.vercel/project.json` is linked to the **production** project, not the staging project.
+
+**Check which project is linked**:
+```bash
+cat apps/dashboard/.vercel/project.json
+# If it shows "dashboard" instead of "dashboard-staging", that's the problem
+```
+
+**Solution 1: Use explicit project targeting (recommended)**:
+```bash
+cd apps/dashboard
+vercel --prod --project dashboard-staging
+```
+
+**Solution 2: Re-link the directory**:
+```bash
+cd apps/dashboard
+vercel link --project dashboard-staging
+vercel --prod
+```
+
+**Solution 3: Deploy from Vercel Dashboard**:
+1. Go to https://vercel.com/creepyblues-9060s-projects/dashboard-staging
+2. Click "Deployments" tab
+3. Find a recent preview deployment
+4. Click "..." → "Promote to Production"
+
+---
+
 ### Issue: Staging still auto-deploys after pushing to v2
 
 **Check**:
@@ -378,6 +428,35 @@ The `cd ../..` prefix is missing or incorrect.
 
 **Fix**:
 Ensure Vercel "Ignored Build Step" starts with `cd ../..` to change from `apps/[app]/` to monorepo root.
+
+### Issue: "The provided path does not exist" error
+
+**Symptom**:
+```
+Error: The provided path "~/code/kstorybridge/apps/dashboard/app/dashboard" does not exist
+```
+
+**Root Cause**: You're running `vercel` from the app directory (e.g., `apps/dashboard/`), but the Vercel project has `Root Directory` set to `apps/dashboard`. Vercel combines them, looking for `apps/dashboard/apps/dashboard` which doesn't exist.
+
+**Solution**: Deploy from the **monorepo root**, not from the app directory:
+```bash
+cd /Users/sungholee/code/kstorybridge
+vercel link --project dashboard-staging --yes
+vercel --prod
+```
+
+**Also check**: Make sure `Root Directory` in Vercel Dashboard is `apps/dashboard` (with 's'), not `app/dashboard` (common typo).
+
+### Issue: Wrong app building (e.g., "turbo-ignore creator" for dashboard-staging)
+
+**Symptom**: Build log shows wrong app name in turbo-ignore command.
+
+**Root Cause**: Vercel Dashboard "Ignored Build Step" has wrong parameter or wrong project linked.
+
+**Solution**:
+1. Go to Vercel Dashboard → Project Settings → Git
+2. Check "Ignored Build Step" setting
+3. Either set to `Automatic` or fix the parameter to match the app
 
 ---
 

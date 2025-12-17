@@ -1,6 +1,6 @@
 # Vercel Deployment Architecture
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-12-17
 
 This document provides a complete reference for the KStoryBridge Vercel deployment architecture, including the mapping of app directories to Vercel projects and how deployment control works.
 
@@ -142,6 +142,39 @@ Both branches require manual deployment because dashboard-next is still under de
 |----------------|---------------|--------|-------------|---------|-------------------|
 | `dashboard-staging` | `apps/dashboard` | v2 | ❌ No | dashboard-staging.kstorybridge.com | Manual via `vercel` CLI |
 | `creator-staging` | `apps/creator` | v2 | ❌ No | creator-staging.kstorybridge.com | Manual via `vercel` CLI |
+
+#### Required Vercel Dashboard Settings for Staging Projects
+
+All Override toggles must be **ON** for these settings:
+
+| Setting | dashboard-staging | creator-staging |
+|---------|-------------------|-----------------|
+| **Root Directory** | `apps/dashboard` | `apps/creator` |
+| **Framework Preset** | Vite | Vite |
+| **Build Command** | `npm run build` (Override ON) | `npm run build` (Override ON) |
+| **Output Directory** | `dist` (Override ON) | `dist` (Override ON) |
+| **Install Command** | `npm install` (Override ON) | `npm install` (Override ON) |
+| **Dev Command** | `npm run dev` (Override ON) | `npm run dev` (Override ON) |
+| **Ignored Build Step** | `Automatic` | `Automatic` |
+| **Production Branch** | `v2` | `v2` |
+
+> **Note**: Staging projects do NOT use turbo-ignore. Since auto-deploy is disabled via `vercel.json`, you manually control when builds happen.
+
+#### Deploy Command for Staging (from monorepo root)
+
+```bash
+# Dashboard staging
+cd /Users/sungholee/code/kstorybridge
+vercel link --project dashboard-staging --yes
+vercel --prod
+
+# Creator staging
+cd /Users/sungholee/code/kstorybridge
+vercel link --project creator-staging --yes
+vercel --prod
+```
+
+> **Important**: Deploy from monorepo ROOT, not from `apps/dashboard`. See [MANUAL_DEPLOYMENT_GUIDE.md](../../MANUAL_DEPLOYMENT_GUIDE.md) for details.
 
 ### Development Projects (Manual Deploy Only)
 
@@ -553,5 +586,5 @@ When ready for production:
 
 ---
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-12-17
 **Architecture Version**: Hybrid Deployment Model (Manual Staging + Auto Production)

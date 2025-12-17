@@ -103,7 +103,7 @@ export class WebtoonEnScraper extends BaseScraper {
           metrics: {
             subscribers: subscribers !== null ? subscribers : undefined,
             rating_score: rating_score !== null ? rating_score : undefined,
-            episode_count: episodeCount > 0 ? episodeCount : undefined,
+            episode_count: episodeCount !== null && episodeCount > 0 ? episodeCount : undefined,
             status: status || undefined
           }
         },

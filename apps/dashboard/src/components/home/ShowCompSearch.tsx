@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
@@ -8,9 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { HomeResultCard } from './HomeResultCard';
 import { useToast } from '@/hooks/use-toast';
 import { useOMDBAutocomplete } from '@/hooks/useOMDBAutocomplete';
-
-// Constants
-const EXAMPLE_SHOWS = ['The Bear', 'Squid Game', 'Succession', 'Emily in Paris'];
+import { getRandomShowSuggestions } from '@/data/examplesData';
 const MAX_PREVIEW_RESULTS = 5;
 
 interface ShowCompSearchProps {
@@ -24,6 +22,9 @@ export function ShowCompSearch({ initialQuery = '' }: ShowCompSearchProps) {
   const [hasSearched, setHasSearched] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Use centralized suggestion data from examplesData.ts
+  const exampleShows = useMemo(() => getRandomShowSuggestions(4), []);
   const hasTriggeredInitialSearch = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -270,7 +271,7 @@ export function ShowCompSearch({ initialQuery = '' }: ShowCompSearchProps) {
         {/* Example suggestions - clicking triggers search immediately */}
         <div className="flex flex-wrap gap-2 mt-3 justify-center">
           <span className="text-sm text-gray-400">Try:</span>
-          {EXAMPLE_SHOWS.map((example) => (
+          {exampleShows.map((example) => (
             <button
               key={example}
               onClick={() => {

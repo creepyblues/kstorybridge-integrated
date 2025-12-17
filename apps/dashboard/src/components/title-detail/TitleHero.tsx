@@ -195,17 +195,6 @@ export function TitleHero({
           <Icon icon="solar:heart-bold-duotone" className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} />
           {isFavorited ? 'Saved' : 'Save'}
         </Button>
-
-        {(title.title_url || title.title_url_en) && (
-          <Button
-            variant="outline"
-            className="flex-1 lg:flex-none border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30 px-4 py-2 transition-colors"
-            onClick={() => window.open(title.title_url_en || title.title_url, '_blank')}
-          >
-            <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-4 w-4 mr-2" />
-            View Original
-          </Button>
-        )}
       </div>
     </div>
   );

@@ -5,9 +5,10 @@ interface ChatInputProps {
   onSendMessage: (message: string) => void;
   loading?: boolean;
   placeholder?: string;
+  showHint?: boolean;
 }
 
-export function ChatInput({ onSendMessage, loading, placeholder }: ChatInputProps) {
+export function ChatInput({ onSendMessage, loading, placeholder, showHint = true }: ChatInputProps) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -43,7 +44,7 @@ export function ChatInput({ onSendMessage, loading, placeholder }: ChatInputProp
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || "Ask me about Korean webtoons, web novels..."}
+          placeholder={placeholder ?? "Ask me about Korean webtoons, web novels..."}
           disabled={loading}
           rows={1}
           className="flex-1 resize-none border-0 bg-transparent py-2 text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 max-h-[200px] overflow-auto"
@@ -65,9 +66,11 @@ export function ChatInput({ onSendMessage, loading, placeholder }: ChatInputProp
       </div>
 
       {/* Footer hint text */}
-      <p className="text-xs text-gray-500 text-center mt-3 px-4">
-        Press Enter to send, Shift+Enter for new line
-      </p>
+      {showHint && (
+        <p className="text-xs text-gray-500 text-center mt-3 px-4">
+          Press Enter to send, Shift+Enter for new line
+        </p>
+      )}
     </div>
   );
 }

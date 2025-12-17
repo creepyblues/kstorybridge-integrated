@@ -5,6 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import { Title } from '@/services/titlesService';
 import { TitleMetadata } from './TitleMetadata';
 import { trackTitleCardClicked } from '@/utils/analytics';
+import {
+  type FormatType,
+  type FormatFitSummary,
+  FORMAT_DISPLAY_NAMES,
+} from '@/services/formatFitService';
 
 // Chat service title format
 interface ChatTitle {
@@ -28,6 +33,8 @@ interface TitleCardProps {
   removing?: boolean;
   source?: string; // For analytics: where the card is displayed (search, comps, saved, etc.)
   position?: number; // For analytics: position in list (1-indexed)
+  formatFitSummary?: FormatFitSummary; // Format fit data when filter is active
+  selectedFormat?: FormatType; // The selected format filter
 }
 
 // Helper to normalize title format
@@ -52,7 +59,30 @@ function normalizeTitle(title: Title | ChatTitle): Title {
   } as Title;
 }
 
-export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removing = false, source = 'unknown', position = 0 }: TitleCardProps) {
+// Format icons for display
+const FORMAT_ICONS: Record<FormatType, React.ReactNode> = {
+  film: <Icon icon="solar:clapperboard-bold-duotone" className="h-4 w-4" />,
+  tv_series: <Icon icon="solar:tv-bold-duotone" className="h-4 w-4" />,
+  animation: <Icon icon="solar:palette-bold-duotone" className="h-4 w-4" />,
+  microdrama: <Icon icon="solar:smartphone-bold-duotone" className="h-4 w-4" />,
+  audio_drama: <Icon icon="solar:headphones-bold-duotone" className="h-4 w-4" />,
+};
+
+// Fit level badge colors
+const getFitLevelBadgeColor = (fitLevel: string): string => {
+  switch (fitLevel.toLowerCase()) {
+    case 'excellent':
+      return 'bg-green-100 text-green-700 border-green-200';
+    case 'good':
+      return 'bg-blue-100 text-blue-700 border-blue-200';
+    case 'moderate':
+      return 'bg-amber-100 text-amber-700 border-amber-200';
+    default:
+      return 'bg-gray-100 text-gray-600 border-gray-200';
+  }
+};
+
+export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removing = false, source = 'unknown', position = 0, formatFitSummary, selectedFormat }: TitleCardProps) {
   const navigate = useNavigate();
   const title = normalizeTitle(rawTitle);
 
@@ -205,6 +235,28 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
               </span>
             )}
           </div>
+
+          {/* Format Fit Badge (when filter active) */}
+          {formatFitSummary && selectedFormat && (
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3 mb-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-purple-600">
+                  {FORMAT_ICONS[selectedFormat]}
+                </span>
+                <span className="font-semibold text-purple-800">
+                  {FORMAT_DISPLAY_NAMES[selectedFormat]}: {formatFitSummary.score}
+                </span>
+                <span className={`text-xs px-2 py-0.5 rounded-full border ${getFitLevelBadgeColor(formatFitSummary.fit_level)}`}>
+                  {formatFitSummary.fit_level}
+                </span>
+              </div>
+              {formatFitSummary.summary && (
+                <p className="text-xs text-purple-700 line-clamp-2">
+                  {formatFitSummary.summary}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Synopsis */}
           {title.synopsis && (

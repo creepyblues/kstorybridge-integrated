@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 const Logo = () => {
   return (
     <Link to="/" className="flex items-center">
-      <img 
-        src="/logo-new-teal.png" 
-        alt="KStoryBridge" 
-        className="h-10 w-auto"
-      />
+      <span className="text-2xl font-bold tracking-tight">
+        <span className="text-black">K</span>
+        <span className="text-hanok-teal">Story</span>
+        <span className="text-black">Bridge</span>
+      </span>
     </Link>
   );
 };

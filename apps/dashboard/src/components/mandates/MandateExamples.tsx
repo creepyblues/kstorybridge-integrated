@@ -4,109 +4,15 @@
  * Displays curated mandate examples in the "Need help" modal.
  * Shows detailed examples with explanations to help users understand
  * how to write effective mandate descriptions.
+ *
+ * IMPORTANT: Uses examplesData.ts as single source of truth for all examples.
+ * Do NOT hardcode examples in this component.
  */
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Icon } from '@iconify/react';
-
-interface MandateExample {
-  id: string;
-  category: string;
-  title: string;
-  mandateText: string;
-  breakdown: string[];
-}
-
-const MANDATE_EXAMPLES: MandateExample[] = [
-  {
-    id: 'thriller-1',
-    category: 'Thriller',
-    title: 'Female-Led Action Thriller',
-    mandateText: 'Looking for action-thriller with strong female lead, Korean setting, suitable for streaming platform, budget under $5M',
-    breakdown: [
-      'Genre: Action-thriller',
-      'Protagonist: Strong female lead',
-      'Setting: Korean location',
-      'Distribution: Streaming-ready',
-      'Budget: Under $5M production',
-    ],
-  },
-  {
-    id: 'romance-1',
-    category: 'Romance',
-    title: 'Modern Seoul Rom-Com',
-    mandateText: 'Need romantic comedy set in modern Seoul, light tone, suitable for theatrical release, targets 20-30 age group',
-    breakdown: [
-      'Genre: Romantic comedy',
-      'Setting: Contemporary Seoul',
-      'Tone: Light and fun',
-      'Distribution: Theatrical potential',
-      'Audience: Young adults (20-30)',
-    ],
-  },
-  {
-    id: 'scifi-1',
-    category: 'Sci-Fi',
-    title: 'Philosophical Sci-Fi Drama',
-    mandateText: 'Seeking sci-fi drama with ensemble cast, philosophical themes, premium production value for limited series format',
-    breakdown: [
-      'Genre: Sci-fi drama',
-      'Cast: Ensemble structure',
-      'Themes: Philosophical depth',
-      'Quality: Premium production',
-      'Format: Limited series',
-    ],
-  },
-  {
-    id: 'fantasy-1',
-    category: 'Fantasy',
-    title: 'Dark Fantasy Epic',
-    mandateText: 'Dark fantasy with strong world-building, completed source material, suitable for multi-season adaptation',
-    breakdown: [
-      'Genre: Dark fantasy',
-      'World: Rich world-building',
-      'Source: Complete story',
-      'Potential: Multi-season arc',
-    ],
-  },
-  {
-    id: 'drama-1',
-    category: 'Drama',
-    title: 'Family Generational Saga',
-    mandateText: 'Family drama with multi-generational story, emotional depth, Korean cultural elements, suitable for international audience',
-    breakdown: [
-      'Genre: Family drama',
-      'Scope: Multi-generational',
-      'Tone: Emotionally rich',
-      'Culture: Korean heritage',
-      'Appeal: International market',
-    ],
-  },
-  {
-    id: 'horror-1',
-    category: 'Horror',
-    title: 'Psychological Horror',
-    mandateText: 'Psychological horror with supernatural elements, contained setting, suitable for theatrical release, targets mature audience',
-    breakdown: [
-      'Genre: Psychological horror',
-      'Elements: Supernatural',
-      'Setting: Contained/isolated',
-      'Distribution: Theatrical',
-      'Audience: Mature viewers',
-    ],
-  },
-];
-
-const CATEGORIES = [
-  { id: 'all', label: 'All' },
-  { id: 'Thriller', label: 'Thriller' },
-  { id: 'Romance', label: 'Romance' },
-  { id: 'Sci-Fi', label: 'Sci-Fi' },
-  { id: 'Fantasy', label: 'Fantasy' },
-  { id: 'Drama', label: 'Drama' },
-  { id: 'Horror', label: 'Horror' },
-];
+import { MANDATE_CATEGORIES, getMandatesByCategory } from '@/data/examplesData';
 
 interface MandateExamplesProps {
   onTryExample: (mandateText: string) => void;
@@ -116,16 +22,15 @@ interface MandateExamplesProps {
 export default function MandateExamples({ onTryExample, isModal = false }: MandateExamplesProps) {
   const [activeCategory, setActiveCategory] = useState('all');
 
-  const filteredExamples = activeCategory === 'all'
-    ? MANDATE_EXAMPLES
-    : MANDATE_EXAMPLES.filter(e => e.category === activeCategory);
+  // Use centralized function from examplesData.ts
+  const filteredExamples = getMandatesByCategory(activeCategory);
 
   return (
     <div className="space-y-4">
       {/* Category Tabs */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="flex gap-2 pb-2">
-          {CATEGORIES.map((category) => (
+          {MANDATE_CATEGORIES.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}

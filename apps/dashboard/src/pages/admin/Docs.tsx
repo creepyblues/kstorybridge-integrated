@@ -492,17 +492,17 @@ export default function AdminDocs() {
                     remarkPlugins={[remarkGfm]}
                     components={{
                       // Custom styling for headers
-                      h1: ({ children }) => (
+                      h1: ({ children }: { children?: React.ReactNode }) => (
                         <h1 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-4">{children}</h1>
                       ),
-                      h2: ({ children }) => (
+                      h2: ({ children }: { children?: React.ReactNode }) => (
                         <h2 className="text-xl font-semibold text-gray-800 mt-6 mb-3">{children}</h2>
                       ),
-                      h3: ({ children }) => (
+                      h3: ({ children }: { children?: React.ReactNode }) => (
                         <h3 className="text-lg font-medium text-gray-700 mt-4 mb-2">{children}</h3>
                       ),
                       // Code blocks
-                      code: ({ className, children, ...props }) => {
+                      code: ({ className, children, ...props }: { className?: string; children?: React.ReactNode }) => {
                         const isInline = !className;
                         if (isInline) {
                           return (
@@ -517,29 +517,29 @@ export default function AdminDocs() {
                           </code>
                         );
                       },
-                      pre: ({ children }) => (
+                      pre: ({ children }: { children?: React.ReactNode }) => (
                         <pre className="bg-gray-900 rounded-lg overflow-x-auto my-4">{children}</pre>
                       ),
                       // Tables
-                      table: ({ children }) => (
+                      table: ({ children }: { children?: React.ReactNode }) => (
                         <div className="overflow-x-auto my-4">
                           <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
                             {children}
                           </table>
                         </div>
                       ),
-                      th: ({ children }) => (
+                      th: ({ children }: { children?: React.ReactNode }) => (
                         <th className="px-4 py-2 bg-gray-50 text-left text-sm font-semibold text-gray-700">
                           {children}
                         </th>
                       ),
-                      td: ({ children }) => (
+                      td: ({ children }: { children?: React.ReactNode }) => (
                         <td className="px-4 py-2 text-sm text-gray-600 border-t border-gray-100">
                           {children}
                         </td>
                       ),
                       // Links
-                      a: ({ href, children }) => (
+                      a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
                         <a
                           href={href}
                           className="text-hanok-teal hover:text-hanok-teal/80 underline"
@@ -550,14 +550,14 @@ export default function AdminDocs() {
                         </a>
                       ),
                       // Lists
-                      ul: ({ children }) => (
+                      ul: ({ children }: { children?: React.ReactNode }) => (
                         <ul className="list-disc list-inside space-y-1 my-2">{children}</ul>
                       ),
-                      ol: ({ children }) => (
+                      ol: ({ children }: { children?: React.ReactNode }) => (
                         <ol className="list-decimal list-inside space-y-1 my-2">{children}</ol>
                       ),
                       // Blockquotes
-                      blockquote: ({ children }) => (
+                      blockquote: ({ children }: { children?: React.ReactNode }) => (
                         <blockquote className="border-l-4 border-hanok-teal pl-4 italic text-gray-600 my-4">
                           {children}
                         </blockquote>

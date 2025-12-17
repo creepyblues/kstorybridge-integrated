@@ -331,6 +331,59 @@ export async function getFormatFitScores(titleIds: string[]): Promise<Map<string
 }
 
 /**
+ * Format fit summary for display on title cards
+ */
+export interface FormatFitSummary {
+  title_id: string;
+  score: number;
+  fit_level: string;
+  summary: string;
+}
+
+/**
+ * Get format fit summaries for multiple titles (for title cards when filter active)
+ * Returns score + summary for the specified format
+ */
+export async function getFormatFitSummariesForFormat(
+  titleIds: string[],
+  format: FormatType
+): Promise<Map<string, FormatFitSummary>> {
+  if (titleIds.length === 0) {
+    return new Map();
+  }
+
+  // Fetch all score and analysis columns to avoid dynamic column typing issues
+  const { data, error } = await supabase
+    .from('title_format_fit')
+    .select('title_id, film_score, tv_series_score, animation_score, microdrama_score, audio_drama_score, film_analysis, tv_series_analysis, animation_analysis, microdrama_analysis, audio_drama_analysis')
+    .in('title_id', titleIds);
+
+  if (error) {
+    console.error('[FormatFit] Batch summary fetch error:', error);
+    return new Map();
+  }
+
+  const summaryMap = new Map<string, FormatFitSummary>();
+  for (const row of data || []) {
+    // Get the score for the selected format
+    const scoreKey = `${format}_score` as keyof typeof row;
+    const analysisKey = `${format}_analysis` as keyof typeof row;
+
+    const score = (row[scoreKey] as number) || 0;
+    const analysis = row[analysisKey] as { summary?: string } | null;
+
+    summaryMap.set(row.title_id, {
+      title_id: row.title_id,
+      score,
+      fit_level: getFitLevelLabel(score),
+      summary: analysis?.summary || '',
+    });
+  }
+
+  return summaryMap;
+}
+
+/**
  * Search titles by format fit score
  */
 export async function getTitlesForFormat(
@@ -425,6 +478,7 @@ export const formatFitService = {
   analyzeFormatFit,
   getFormatFit,
   getFormatFitScores,
+  getFormatFitSummariesForFormat,
   getTitlesForFormat,
   saveFormatFitAnalysis,
   deleteFormatFit,

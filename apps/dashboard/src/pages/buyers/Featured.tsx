@@ -3,8 +3,9 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Icon } from '@iconify/react';
 import { useQuery } from '@tanstack/react-query';
 import { featuredService } from '@/services/featuredService';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import FeaturedTitleCard from '@/components/featured/FeaturedTitleCard';
+import { OverflowTabNavigation, type TabItem } from '@/components/navigation/OverflowTabNavigation';
 
 export default function Featured() {
   const [activeTab, setActiveTab] = useState<string | null>(null);
@@ -83,37 +84,27 @@ export default function Featured() {
         {!isLoading && !error && data && totalCount > 0 && activeTab && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             {/* Section Navigation Bar */}
-            <div className="bg-gray-50 rounded-2xl p-2 mb-6">
-              <TabsList className="w-full justify-start bg-transparent rounded-none h-auto p-0 gap-2 flex-wrap">
-                {/* Section Tabs */}
-                {data.sections.map((section) => (
-                  <TabsTrigger
-                    key={section.id}
-                    value={section.id}
-                    className="data-[state=active]:bg-hanok-teal data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl px-5 py-3 text-gray-700 hover:bg-gray-200 font-semibold text-base transition-all duration-200"
-                  >
-                    {section.name}
-                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/20 data-[state=active]:bg-white/30">
-                      {section.featured.length}
-                    </span>
-                  </TabsTrigger>
-                ))}
-
-                {/* Uncategorized Tab (if any) */}
-                {data.uncategorized.length > 0 && (
-                  <TabsTrigger
-                    value="uncategorized"
-                    className="data-[state=active]:bg-hanok-teal data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl px-5 py-3 text-gray-700 hover:bg-gray-200 font-semibold text-base transition-all duration-200"
-                  >
-                    More Titles
-                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/20 data-[state=active]:bg-white/30">
-                      {data.uncategorized.length}
-                    </span>
-                  </TabsTrigger>
-                )}
-
-              </TabsList>
-            </div>
+            <OverflowTabNavigation
+              tabs={(() => {
+                const tabItems: TabItem[] = data.sections.map((section) => ({
+                  id: section.id,
+                  name: section.name,
+                  count: section.featured.length,
+                }));
+                if (data.uncategorized.length > 0) {
+                  tabItems.push({
+                    id: 'uncategorized',
+                    name: 'More Titles',
+                    count: data.uncategorized.length,
+                  });
+                }
+                return tabItems;
+              })()}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              maxVisibleTabs={5}
+              className="mb-6"
+            />
 
             {/* Tab Contents */}
             <div className="mt-6">

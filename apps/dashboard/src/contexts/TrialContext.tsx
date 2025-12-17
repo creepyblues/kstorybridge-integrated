@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 // Trial mode state management for anonymous users
-// Tracks search usage in localStorage, limits to 3 AI searches
+// Tracks search usage in localStorage, limits to 5 AI searches
 
 const STORAGE_KEY = 'kstorybridge_trial_usage';
-const MAX_TRIALS = 3;
+const MAX_TRIALS = 5;
 
 interface TrialStorage {
   searches_used: number;

@@ -30,15 +30,10 @@ describe('TrialLayout', () => {
       expect(screen.getByText('Trial')).toBeInTheDocument();
     });
 
-    it('should have Sign In button', () => {
+    it('should have Sign Up button in header', () => {
       renderLayout();
-      expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute('href', '/signin');
-    });
-
-    it('should have Sign Up Free button in header', () => {
-      renderLayout();
-      const signUpButtons = screen.getAllByRole('link', { name: /sign up free/i });
-      expect(signUpButtons[0]).toHaveAttribute('href', '/signup');
+      // Header now has simple "Sign Up" button (Sign In was removed for cleaner mobile UX)
+      expect(screen.getByRole('link', { name: /^sign up$/i })).toHaveAttribute('href', '/signup');
     });
 
     it('should display trial counter badge', () => {
@@ -62,9 +57,8 @@ describe('TrialLayout', () => {
 
     it('should have Sign Up Free button in footer', () => {
       renderLayout();
-      const signUpButtons = screen.getAllByRole('link', { name: /sign up free/i });
-      // Footer is the second signup button
-      expect(signUpButtons.length).toBeGreaterThanOrEqual(2);
+      // Footer has "Sign Up Free" button linking to signup
+      expect(screen.getByRole('link', { name: /sign up free/i })).toHaveAttribute('href', '/signup');
     });
   });
 });

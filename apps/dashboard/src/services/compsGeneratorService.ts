@@ -116,6 +116,7 @@ export async function saveCompsToTitle(
 
 /**
  * Save selected comps AND their full analysis to a title
+ * MERGES new comps with existing ones (does not overwrite)
  *
  * @param titleId - UUID of the title
  * @param selectedCompTitles - Array of comp titles selected by admin
@@ -126,16 +127,45 @@ export async function saveCompsWithAnalysis(
   selectedCompTitles: string[],
   allComps: SuggestedComp[]
 ): Promise<void> {
-  // Filter allComps to only include selected ones
-  const selectedAnalysis = allComps.filter(comp =>
+  // 1. Fetch existing comps data
+  const { data: existingTitle, error: fetchError } = await supabase
+    .from('titles')
+    .select('comps, comps_analysis')
+    .eq('title_id', titleId)
+    .single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    console.error('[CompsGenerator] Fetch existing comps error:', fetchError);
+    throw new Error(fetchError.message || 'Failed to fetch existing comps');
+  }
+
+  const existingComps: string[] = existingTitle?.comps || [];
+  const existingAnalysis: SuggestedComp[] = (existingTitle?.comps_analysis || []) as SuggestedComp[];
+
+  // 2. Filter new comps to only include selected ones
+  const newAnalysis = allComps.filter(comp =>
     selectedCompTitles.includes(comp.comp_title)
   );
 
+  // 3. Merge: add new comps that don't already exist (by comp_title)
+  const existingTitles = new Set(existingAnalysis.map(c => c.comp_title));
+
+  const mergedAnalysis = [
+    ...existingAnalysis,
+    ...newAnalysis.filter(c => !existingTitles.has(c.comp_title))
+  ];
+
+  const mergedComps = [...new Set([
+    ...existingComps,
+    ...selectedCompTitles
+  ])];
+
+  // 4. Save merged result
   const { error } = await supabase
     .from('titles')
     .update({
-      comps: selectedCompTitles,
-      comps_analysis: selectedAnalysis,
+      comps: mergedComps,
+      comps_analysis: mergedAnalysis,
     })
     .eq('title_id', titleId);
 

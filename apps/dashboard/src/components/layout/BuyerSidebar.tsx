@@ -26,9 +26,12 @@ const getDiscoverItems = (): MenuItem[] => {
   ];
 };
 
-// Admin menu item - single link to admin panel
-const getAdminItem = (): MenuItem => {
-  return { title: 'Admin Panel', href: '/admin', icon: 'solar:shield-bold-duotone' };
+// Admin menu items - admin panel and docs
+const getAdminItems = (): MenuItem[] => {
+  return [
+    { title: 'Admin Panel', href: '/admin', icon: 'solar:shield-bold-duotone' },
+    { title: 'Docs', href: '/admin/docs', icon: 'solar:notebook-bold-duotone' },
+  ];
 };
 
 export function BuyerSidebar() {
@@ -39,7 +42,7 @@ export function BuyerSidebar() {
 
   const userEmail = user?.email;
   const discoverItems = getDiscoverItems();
-  const adminItem = getAdminItem();
+  const adminItems = getAdminItems();
 
   const handleLinkClick = () => {
     setIsMobileMenuOpen(false);
@@ -78,8 +81,10 @@ export function BuyerSidebar() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-hanok-teal">
-              KStoryBridge
+            <h1 className="text-2xl font-bold">
+              <span className="text-black">K</span>
+              <span className="text-hanok-teal">Story</span>
+              <span className="text-black">Bridge</span>
             </h1>
             <p className="text-xs text-gray-500 mt-1">Dashboard for Producers</p>
           </div>
@@ -124,21 +129,23 @@ export function BuyerSidebar() {
                   Admin
                 </h3>
                 <ul className="space-y-1">
-                  <li>
-                    <Link
-                      to={adminItem.href}
-                      onClick={handleLinkClick}
-                      className={cn(
-                        'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',
-                        location.pathname.startsWith('/admin')
-                          ? 'bg-hanok-teal/10 text-hanok-teal shadow-sm border border-hanok-teal/20'
-                          : 'text-gray-700 hover:bg-hanok-teal/5'
-                      )}
-                    >
-                      <Icon icon={adminItem.icon} className={cn("h-5 w-5", location.pathname.startsWith('/admin') ? "" : "text-gray-400")} />
-                      <span>{adminItem.title}</span>
-                    </Link>
-                  </li>
+                  {adminItems.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        to={item.href}
+                        onClick={handleLinkClick}
+                        className={cn(
+                          'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',
+                          location.pathname === item.href || (item.href === '/admin' && location.pathname.startsWith('/admin') && location.pathname !== '/admin/docs')
+                            ? 'bg-hanok-teal/10 text-hanok-teal shadow-sm border border-hanok-teal/20'
+                            : 'text-gray-700 hover:bg-hanok-teal/5'
+                        )}
+                      >
+                        <Icon icon={item.icon} className={cn("h-5 w-5", location.pathname === item.href || (item.href === '/admin' && location.pathname.startsWith('/admin') && location.pathname !== '/admin/docs') ? "" : "text-gray-400")} />
+                        <span>{item.title}</span>
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}

@@ -89,7 +89,7 @@ const ProducersPagePreview = () => {
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
               >
-                Try AI Assistant →
+                Experience Free Trial
               </Button>
 
               <p className="mt-4 text-sm text-midnight-ink-400">

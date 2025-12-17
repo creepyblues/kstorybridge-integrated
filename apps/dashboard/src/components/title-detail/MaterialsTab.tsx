@@ -132,8 +132,57 @@ export function MaterialsTab({ title, userTier }: MaterialsTabProps) {
     setTimeout(() => setIsPdfModalOpen(true), 10);
   };
 
+  // Check if there are any original links to show
+  const hasOriginalLinks = title.title_url || title.title_url_en || (title.platforms && title.platforms.length > 0);
+
   return (
     <div className="space-y-6">
+      {/* View Original Section - NOT tier gated */}
+      {hasOriginalLinks && (
+        <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Icon icon="solar:link-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
+              <h3 className="text-lg font-semibold text-black">View Original</h3>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              {title.title_url && (
+                <Button
+                  variant="outline"
+                  className="border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
+                  onClick={() => window.open(title.title_url, '_blank')}
+                >
+                  <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
+                  Korean
+                </Button>
+              )}
+              {title.title_url_en && (
+                <Button
+                  variant="outline"
+                  className="border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
+                  onClick={() => window.open(title.title_url_en, '_blank')}
+                >
+                  <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
+                  English
+                </Button>
+              )}
+              {title.platforms?.map((platform) => (
+                <Button
+                  key={platform.id}
+                  variant="outline"
+                  className="border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
+                  onClick={() => window.open(platform.platform_url, '_blank')}
+                >
+                  <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
+                  {platform.platform_name}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Pitch Deck Card - PRO Gated */}
       {hasPitchDeck && (
         <TierGatedContent requiredTier="pro">

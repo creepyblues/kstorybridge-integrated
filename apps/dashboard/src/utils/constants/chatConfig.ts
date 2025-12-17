@@ -4,6 +4,8 @@
  * Centralized configuration for chatbot behavior, limits, and settings.
  */
 
+import { getRandomChatbotQueries } from '@/data/examplesData';
+
 /**
  * Maximum number of messages to display in chat history
  */
@@ -56,13 +58,11 @@ export const QUERY_CACHE_TIME = 10 * 60 * 1000;
 
 /**
  * Default suggested queries for new users
+ * NOTE: Use getRandomChatbotQueries() from @/data/examplesData.ts instead
+ * This constant is deprecated - kept for backwards compatibility only
+ * @deprecated Use examplesData.ts as the single source of truth
  */
-export const DEFAULT_SUGGESTED_QUERIES = [
-  "What genres do you have?",
-  "Show me popular romance titles",
-  "Tell me about trending webtoons",
-  "What's new this month?"
-];
+export const DEFAULT_SUGGESTED_QUERIES = getRandomChatbotQueries(4);
 
 /**
  * Chatbot persona name

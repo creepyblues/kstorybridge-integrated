@@ -58,8 +58,11 @@ export function TrialCompsSection() {
     }
   }, [searchParams, setSearchParams]);
 
-  const handleSearch = async () => {
-    if (compTitles.length === 0) {
+  const handleSearch = async (overrideCompTitles?: CompTitle[]) => {
+    // Use override titles if provided (from suggestion click), otherwise use state
+    const titlesToSearch = overrideCompTitles || compTitles;
+
+    if (titlesToSearch.length === 0) {
       toast({
         title: "No Comps Selected",
         description: "Please add at least one comparable title to search",
@@ -81,7 +84,7 @@ export function TrialCompsSection() {
     try {
       const phaseTimer = setTimeout(() => setLoadingPhase('reranking'), 1500);
 
-      const titleStrings = compTitlesToStrings(compTitles);
+      const titleStrings = compTitlesToStrings(titlesToSearch);
 
       // Call service with saveSearch: false for trial mode
       const response = await compsNavigatorService.searchComps(

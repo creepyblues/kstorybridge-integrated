@@ -20,7 +20,7 @@ import { getRandomCompSuggestions } from '@/data/examplesData';
 interface CompsNavigatorInputProps {
   compTitles: CompTitle[];
   onChange: (titles: CompTitle[]) => void;
-  onSearch: () => void;
+  onSearch: (overrideCompTitles?: CompTitle[]) => void;
   onClear: () => void;
   onNeedHelp: () => void;
   isLoading: boolean;
@@ -76,13 +76,13 @@ export default function CompsNavigatorInput({
       type: 'movie' as const,
     }));
 
-    // Set the comp titles and trigger search
+    // Set the comp titles for UI display
     onChange(newCompTitles);
     setActiveInputCount(newCompTitles.length);
 
-    // Use setTimeout to ensure state is updated before search
+    // Pass titles directly to onSearch to avoid race condition with state update
     setTimeout(() => {
-      onSearch();
+      onSearch(newCompTitles);
     }, 0);
   };
 
@@ -476,7 +476,7 @@ export default function CompsNavigatorInput({
           </Button>
         )}
         <Button
-          onClick={onSearch}
+          onClick={() => onSearch()}
           disabled={isLoading || compTitles.length === 0}
           className="bg-gradient-to-r from-hanok-teal to-cyan-600 hover:from-hanok-teal/90 hover:to-cyan-700"
         >

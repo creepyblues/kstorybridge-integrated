@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Icon } from '@iconify/react';
@@ -10,7 +11,7 @@ import { TitleCard } from '@/components/title/TitleCard';
 import { SuggestedQueries } from '@/components/chat/SuggestedQueries';
 import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar';
 import ChatProcessingStatus from '@/components/chat/ChatProcessingStatus';
-import { chatOrchestratorService, ChatPhase, PhaseData, RichExplanation } from '@/services/chatOrchestratorService';
+import { chatOrchestratorService, ChatPhase, PhaseData, RichExplanation, ChatTiming } from '@/services/chatOrchestratorService';
 import { chatHistoryService, type ChatSession } from '@/services/chatHistoryService';
 import { supabase } from '@/lib/supabase';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
@@ -35,6 +36,7 @@ interface ChatMessage {
 export default function Chat() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
@@ -47,9 +49,11 @@ export default function Chat() {
   const [currentPhase, setCurrentPhase] = useState<ChatPhase>(null);
   const [searchCount, setSearchCount] = useState<number | undefined>(undefined);
   const [progressAfterMessageId, setProgressAfterMessageId] = useState<string | null>(null);
+  const [lastTiming, setLastTiming] = useState<ChatTiming | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const previousUserIdRef = useRef<string | null>(null);
   const submissionLockRef = useRef<Promise<void> | null>(null); // Promise-based lock for session creation
+  const hasTriggeredInitialQuery = useRef(false); // Prevent double-triggering URL query
   const suggestedQueries = chatOrchestratorService.getSuggestedQueries();
 
   const scrollToBottom = () => {
@@ -117,6 +121,18 @@ export default function Chat() {
 
     initializeTitleCache();
   }, [user?.id, user?.email]);
+
+  // Handle URL parameter for initial query (from homepage)
+  useEffect(() => {
+    const queryParam = searchParams.get('q');
+    if (queryParam && !hasTriggeredInitialQuery.current && user?.id) {
+      hasTriggeredInitialQuery.current = true;
+      // Auto-submit the query after a short delay to ensure state is ready
+      setTimeout(() => {
+        handleSendMessage(queryParam);
+      }, 100);
+    }
+  }, [searchParams, user?.id]);
 
   // Load message history from database
   useEffect(() => {
@@ -378,6 +394,11 @@ export default function Chat() {
       // Mark all phases as complete
       setCurrentPhase('complete');
 
+      // Store timing for display
+      if (response.timing) {
+        setLastTiming(response.timing);
+      }
+
       // Track message received
       trackChatMessage('received', response.response.length, response.titles?.length || 0, responseTime);
     } catch (error: any) {
@@ -599,6 +620,20 @@ export default function Chat() {
             loading={loading}
             placeholder="Ask me about Korean webtoons, web novels..."
           />
+          {/* Timing breakdown display */}
+          {lastTiming && currentPhase === 'complete' && (
+            <div className="flex items-center justify-center gap-2 text-[10px] text-gray-400 mt-2">
+              <span>Setup: {((lastTiming.setup_ms || 0) / 1000).toFixed(1)}s</span>
+              <span className="text-gray-300">→</span>
+              <span>Intent: {((lastTiming.intent_ms || 0) / 1000).toFixed(1)}s</span>
+              <span className="text-gray-300">→</span>
+              <span>Search: {((lastTiming.search_ms || 0) / 1000).toFixed(1)}s</span>
+              <span className="text-gray-300">→</span>
+              <span>AI: {((lastTiming.ai_ms || 0) / 1000).toFixed(1)}s</span>
+              <span className="text-gray-300">→</span>
+              <span className="font-medium text-gray-500">Total: {((lastTiming.total_ms || 0) / 1000).toFixed(1)}s</span>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1031,13 +1031,18 @@ export function getChatbotQueriesByCategory(category: keyof typeof CHATBOT_QUERI
 export const HERO_SAMPLES = {
   showComp: {
     placeholder: "Try 'Twilight' or 'Bridgerton'",
-    sampleTitle: 'Stranger Things',
-    sampleLabel: 'Try: Stranger Things'
+    sampleTitle: 'Twilight',
+    sampleLabel: 'Try: Twilight'
   },
   brief: {
     placeholder: "e.g., 'Female-driven thriller'",
     sampleText: 'Romantic comedy for streaming, completed series',
     sampleLabel: 'Try: Romantic comedy for streaming'
+  },
+  aiChat: {
+    placeholder: 'Ask anything about Korean IP...',
+    sampleText: 'What Korean thriller would work for Netflix?',
+    sampleLabel: 'Try: Korean thriller for Netflix'
   }
 };
 

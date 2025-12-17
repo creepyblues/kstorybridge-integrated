@@ -35,7 +35,7 @@ export default function CompsNavigatorInput({
   onChange,
   onSearch,
   onClear,
-  onNeedHelp,
+  onNeedHelp: _onNeedHelp, // Reserved for future "Need Help" button
   isLoading,
   loadingPhase,
   searchInfo,
@@ -62,6 +62,29 @@ export default function CompsNavigatorInput({
 
   // Use centralized suggestion data from examplesData.ts
   const exampleSuggestions = useMemo(() => getRandomCompSuggestions(3), []);
+
+  // Handle clicking an example suggestion - parse and execute search directly
+  const handleExampleClick = (example: string) => {
+    // Parse the example (may contain " + " to separate titles)
+    const titles = example.split(' + ').map(title => title.trim());
+
+    // Create CompTitle objects for each title
+    const newCompTitles: CompTitle[] = titles.map(title => ({
+      title,
+      imdbID: '',
+      year: '',
+      type: 'movie' as const,
+    }));
+
+    // Set the comp titles and trigger search
+    onChange(newCompTitles);
+    setActiveInputCount(newCompTitles.length);
+
+    // Use setTimeout to ensure state is updated before search
+    setTimeout(() => {
+      onSearch();
+    }, 0);
+  };
 
   // Sync activeInputCount with compTitles length
   useEffect(() => {
@@ -478,7 +501,7 @@ export default function CompsNavigatorInput({
           {exampleSuggestions.map((example) => (
             <button
               key={example}
-              onClick={onNeedHelp}
+              onClick={() => handleExampleClick(example)}
               disabled={isLoading}
               className="px-2.5 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors disabled:opacity-50"
             >

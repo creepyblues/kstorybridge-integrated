@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-12-17
 
 This is the master index of all active documentation for the KStoryBridge project.
 
@@ -68,12 +68,25 @@ Multi-platform scraping tool for collecting metadata and popularity signals:
 | Document | Description |
 |----------|-------------|
 | **[OPTIMIZATION_COMPLETE.md](features/comps-navigator/OPTIMIZATION_COMPLETE.md)** | ⭐ Complete optimization documentation (95-98% faster) |
+| **[COMPS_NAVIGATOR_SAMPLES.md](features/COMPS_NAVIGATOR_SAMPLES.md)** | ⭐ 37 comp combinations + 35 mandate samples (2025-12-17) |
 | **[COMPS_NAVIGATOR_PLAN.md](features/COMPS_NAVIGATOR_PLAN.md)** | Original feature plan and architecture |
 | **[COMPS_NAVIGATOR_EMBEDDING_FIX.md](COMPS_NAVIGATOR_EMBEDDING_FIX.md)** | Embedding null safety review |
 | **[COMPS_NAVIGATOR_OPTIMIZATION_SUMMARY.md](COMPS_NAVIGATOR_OPTIMIZATION_SUMMARY.md)** | Phase 1 optimization summary |
 | **[COMPS_NAVIGATOR_PHASE2_OPTIMIZATION.md](COMPS_NAVIGATOR_PHASE2_OPTIMIZATION.md)** | Phase 2 optimization summary |
 
 **Related**: [COMPS_NAVIGATOR_USER_GUIDE.md](../apps/dashboard/public/docs/COMPS_NAVIGATOR_USER_GUIDE.md) (user-facing)
+
+### Format Fit Analyzer (`docs/features/`)
+
+| Document | Description |
+|----------|-------------|
+| **[FORMAT_FIT.md](features/FORMAT_FIT.md)** | ⭐ Complete Format Fit documentation (2025-12-16) |
+
+AI-powered format fit analysis for 5 content formats:
+- Film, TV Series, Animation, Microdrama, Audio Drama
+- GPT-4o story deconstruction and scoring
+- Discover Titles format filtering (score ≥ 50)
+- Admin integration via TitleEditModal
 
 ---
 

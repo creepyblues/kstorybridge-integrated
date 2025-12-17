@@ -28,6 +28,7 @@ const config: StorybookConfig = {
       config.resolve.alias = {
         ...config.resolve.alias,
         '@kstorybridge/ui': path.default.resolve(__dirname, '../../../packages/ui/src'),
+        '@': path.default.resolve(__dirname, '../../../packages/ui/src'),
       };
     }
     return config;

@@ -173,8 +173,11 @@ export default function CompsNavigator() {
     }
   };
 
-  const handleSearch = async () => {
-    if (compTitles.length === 0) {
+  const handleSearch = async (overrideCompTitles?: CompTitle[]) => {
+    // Use override titles if provided (from suggestion click), otherwise use state
+    const titlesToSearch = overrideCompTitles || compTitles;
+
+    if (titlesToSearch.length === 0) {
       toast({
         title: "No Comps Selected",
         description: "Please add at least one comparable title to search",
@@ -183,7 +186,7 @@ export default function CompsNavigator() {
       return;
     }
     // Delegate to handleSearchWithTitles to avoid code duplication
-    await handleSearchWithTitles(compTitlesToStrings(compTitles));
+    await handleSearchWithTitles(compTitlesToStrings(titlesToSearch));
   };
 
   const handleLoadSearch = (search: CompSearch) => {

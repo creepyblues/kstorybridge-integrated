@@ -69,14 +69,6 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
     setCurrentPage(prev => (prev < totalPages - 1 ? prev + 1 : 0));
   };
 
-  const formatGenre = (genre: string | string[] | null) => {
-    if (!genre) return '';
-    if (Array.isArray(genre)) {
-      return genre.map(g => g.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ');
-    }
-    return genre.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
-
   // Links removed - cards are now display-only
 
   if (loading) {
@@ -161,25 +153,13 @@ const FeaturedTitlesCarousel = ({ className = "" }: FeaturedTitlesCarouselProps)
               </div>
               
               <CardContent className="p-4 flex-1 flex flex-col">
-                <h3 className="font-bold text-midnight-ink text-sm mb-2 line-clamp-2 flex-1">
+                <h3 className="font-bold text-midnight-ink text-sm mb-1 line-clamp-2 flex-1">
                   {title.title_name_en || title.title_name_kr}
                 </h3>
-                
+
                 {title.story_author && (
-                  <p className="text-xs text-midnight-ink-600 mb-2">
+                  <p className="text-xs text-midnight-ink-600">
                     by {title.story_author}
-                  </p>
-                )}
-                
-                {title.genre && (
-                  <p className="text-xs text-hanok-teal font-medium mb-2">
-                    {formatGenre(title.genre)}
-                  </p>
-                )}
-                
-                {title.tagline && (
-                  <p className="text-xs text-midnight-ink-500 italic line-clamp-2">
-                    {title.tagline}
                   </p>
                 )}
               </CardContent>

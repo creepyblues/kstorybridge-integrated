@@ -5,6 +5,23 @@
     "ctaCreator": "창작자로 시작하기",
     "ctaBuyer": "프로듀서로 시작하기"
   },
+  "trialPromo": {
+    "title": "직접 체험해보세요",
+    "subtitle": "3회 무료 검색. 가입 불필요.",
+    "cta": "지금 체험하기",
+    "comps": {
+      "title": "Comps Navigator",
+      "description": "유사 작품으로 찾기"
+    },
+    "mandates": {
+      "title": "Mandate Matcher",
+      "description": "제작 조건으로 찾기"
+    },
+    "trending": {
+      "title": "Trending Titles",
+      "description": "큐레이션 둘러보기"
+    }
+  },
   "coreValues": {
     "sectionTitle": "핵심 가치",
     "subtitle": "KStoryBridge가 창작자와 프로듀서들에게 드리는 가치",

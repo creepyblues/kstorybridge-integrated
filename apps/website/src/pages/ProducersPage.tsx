@@ -302,8 +302,7 @@ const ProducersPage = () => {
                   <div className="text-center pt-4">
                     <Button
                       size="sm"
-                      className="bg-hanok-teal hover:bg-hanok-teal-600 text-white"
-                      onClick={() => window.location.href = `${getDashboardUrl()}/trial`}
+                      className="bg-hanok-teal hover:bg-hanok-teal-600 text-white cursor-default"
                     >
                       {t('aiAssistant.demo.cta')}
                     </Button>
@@ -419,7 +418,7 @@ const ProducersPage = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${getDashboardUrl()}/trial`}
+                onClick={() => window.location.href = `${getDashboardUrl()}/signup/producer`}
               >
                 Get Started Today
               </Button>

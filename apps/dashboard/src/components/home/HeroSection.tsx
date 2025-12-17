@@ -8,10 +8,11 @@ import { Icon } from '@iconify/react';
 import { omdbService, OMDBSearchResult } from '@/services/omdbService';
 import { useOMDBAutocomplete } from '@/hooks/useOMDBAutocomplete';
 import { trackHomeCtaClicked, trackHomeSearchInitiated, trackExternalLinkClicked } from '@/utils/analytics';
+import { HERO_SAMPLES } from '@/data/examplesData';
 
-// Sample queries for each card
-const SAMPLE_SHOW = 'Stranger Things';
-const SAMPLE_BRIEF = 'Romantic comedy for streaming, completed series';
+// Use centralized sample data from examplesData.ts
+const SAMPLE_SHOW = HERO_SAMPLES.showComp.sampleTitle;
+const SAMPLE_BRIEF = HERO_SAMPLES.brief.sampleText;
 
 export function HeroSection() {
   const navigate = useNavigate();
@@ -116,7 +117,7 @@ export function HeroSection() {
                 onFocus={() => {
                   if (suggestions.length > 0) setShowDropdown(true);
                 }}
-                placeholder="e.g., 'The Bear', 'Squid Game'"
+                placeholder="Try 'Twilight' or 'Bridgerton'"
                 className="border-gray-300 focus:border-hanok-teal focus:ring-hanok-teal pr-8"
                 aria-label="Search for a show"
                 aria-autocomplete="list"

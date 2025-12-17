@@ -48,6 +48,7 @@ import { ContentList } from '@/pages/admin/ContentList';
 import { ContentEditor } from '@/pages/admin/ContentEditor';
 import AssetGeneration from '@/pages/admin/AssetGeneration';
 import PitchExtractor from '@/pages/admin/PitchExtractor';
+import AdminDocs from '@/pages/admin/Docs';
 import AdminTrending from '@/pages/admin/Trending';
 import { AdminProtectedRoute } from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -321,6 +322,16 @@ function App() {
                 <AdminLayout>
                   <PitchExtractor />
                 </AdminLayout>
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* Docs - Standalone page (no AdminLayout) */}
+          <Route
+            path="/admin/docs"
+            element={
+              <AdminProtectedRoute>
+                <AdminDocs />
               </AdminProtectedRoute>
             }
           />

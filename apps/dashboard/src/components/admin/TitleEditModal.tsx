@@ -43,6 +43,13 @@ import { CompsGeneratorModal } from './CompsGeneratorModal';
 import { FormatFitGeneratorModal } from '@/components/format-fit/FormatFitGeneratorModal';
 import { CompsAnalysisCard } from '@/components/title-detail/CompsAnalysisCard';
 import { type SuggestedComp } from '@/services/compsGeneratorService';
+import {
+  formatFitService,
+  type FormatFitRecord,
+  type FormatType,
+  FORMAT_DISPLAY_NAMES,
+  getFitLevelLabel,
+} from '@/services/formatFitService';
 import { Icon } from '@iconify/react';
 
 // Genre options
@@ -133,6 +140,7 @@ export function TitleEditModal({
   const [hasKeyVisuals, setHasKeyVisuals] = useState(false);
   const [hasComps, setHasComps] = useState(false);
   const [hasFormatFit, setHasFormatFit] = useState(false);
+  const [formatFitData, setFormatFitData] = useState<FormatFitRecord | null>(null);
 
   // Check which analyzers have data for this title
   const checkAnalyzerDataExists = async (id: string, titleData: Title | null) => {
@@ -148,12 +156,10 @@ export function TitleEditModal({
       const compsData = (titleData as Title & { comps_analysis?: unknown[] })?.comps_analysis;
       setHasComps(Array.isArray(compsData) && compsData.length > 0);
 
-      // Check Format Fit
-      const { count: formatFitCount } = await supabase
-        .from('title_format_fit')
-        .select('*', { count: 'exact', head: true })
-        .eq('title_id', id);
-      setHasFormatFit((formatFitCount || 0) > 0);
+      // Check and fetch Format Fit data
+      const formatFit = await formatFitService.getFormatFit(id);
+      setHasFormatFit(!!formatFit);
+      setFormatFitData(formatFit);
     } catch (error) {
       console.error('Error checking analyzer data:', error);
     }
@@ -172,6 +178,7 @@ export function TitleEditModal({
     setHasKeyVisuals(false);
     setHasComps(false);
     setHasFormatFit(false);
+    setFormatFitData(null);
     try {
       const data = await titlesService.getTitleById(id);
       if (data) {
@@ -781,6 +788,86 @@ export function TitleEditModal({
                         />
                       </div>
                     )}
+
+                    {/* Show format fit analysis if available */}
+                    {formatFitData && (
+                      <div className="md:col-span-2 mt-2">
+                        <Label className="text-sm text-gray-500 mb-2 block">
+                          Format Fit Analysis
+                        </Label>
+                        <div className="border border-blue-200 rounded-lg p-3 bg-blue-50/30">
+                          {/* Best Format Highlight */}
+                          <div className="flex items-center gap-3 mb-3 pb-3 border-b border-blue-200">
+                            <div className="bg-blue-100 p-2 rounded-lg">
+                              <Icon icon="solar:cup-star-bold-duotone" className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-blue-600 font-medium">Best Format</p>
+                              <p className="font-semibold text-gray-900">
+                                {FORMAT_DISPLAY_NAMES[
+                                  (['film', 'tv_series', 'animation', 'microdrama', 'audio_drama'] as FormatType[])
+                                    .reduce((best, format) => {
+                                      const scores: Record<FormatType, number> = {
+                                        film: formatFitData.film_score,
+                                        tv_series: formatFitData.tv_series_score,
+                                        animation: formatFitData.animation_score,
+                                        microdrama: formatFitData.microdrama_score,
+                                        audio_drama: formatFitData.audio_drama_score,
+                                      };
+                                      return scores[format] > scores[best] ? format : best;
+                                    }, 'film' as FormatType)
+                                ]}
+                                <span className="ml-2 text-sm text-blue-600">
+                                  ({Math.max(
+                                    formatFitData.film_score,
+                                    formatFitData.tv_series_score,
+                                    formatFitData.animation_score,
+                                    formatFitData.microdrama_score,
+                                    formatFitData.audio_drama_score
+                                  )}%)
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* All Format Scores */}
+                          <div className="grid grid-cols-5 gap-2">
+                            {([
+                              { key: 'film' as FormatType, icon: 'solar:clapperboard-bold-duotone', score: formatFitData.film_score },
+                              { key: 'tv_series' as FormatType, icon: 'solar:tv-bold-duotone', score: formatFitData.tv_series_score },
+                              { key: 'animation' as FormatType, icon: 'solar:pallete-bold-duotone', score: formatFitData.animation_score },
+                              { key: 'microdrama' as FormatType, icon: 'solar:smartphone-bold-duotone', score: formatFitData.microdrama_score },
+                              { key: 'audio_drama' as FormatType, icon: 'solar:headphones-bold-duotone', score: formatFitData.audio_drama_score },
+                            ]).map(({ key, icon, score }) => (
+                              <div
+                                key={key}
+                                className="text-center p-2 bg-white rounded-lg border border-gray-200"
+                              >
+                                <Icon icon={icon} className="h-4 w-4 mx-auto text-gray-500 mb-1" />
+                                <p className="text-[10px] text-gray-500 leading-tight mb-0.5">
+                                  {FORMAT_DISPLAY_NAMES[key]}
+                                </p>
+                                <p className={`text-sm font-bold ${
+                                  score >= 80 ? 'text-green-600' :
+                                  score >= 60 ? 'text-blue-600' :
+                                  score >= 40 ? 'text-yellow-600' : 'text-gray-500'
+                                }`}>
+                                  {score}
+                                </p>
+                                <p className="text-[9px] text-gray-400">
+                                  {getFitLevelLabel(score)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Data Completeness */}
+                          <div className="mt-2 text-[10px] text-gray-400 text-center">
+                            Based on {formatFitData.data_completeness}% data completeness
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -811,13 +898,13 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="rating" className="text-sm">Rating (0-5)</Label>
+                      <Label htmlFor="rating" className="text-sm">Rating (1-10)</Label>
                       <Input
                         id="rating"
                         type="number"
                         step="0.1"
                         min="0"
-                        max="5"
+                        max="10"
                         value={formData.rating ?? ''}
                         onChange={(e) => handleInputChange('rating', e.target.value ? parseFloat(e.target.value) : null)}
                         className="h-9"
@@ -1341,7 +1428,14 @@ export function TitleEditModal({
         titleName={formData.title_name_en || formData.title_name_kr || undefined}
         open={formatFitModalOpen}
         onOpenChange={setFormatFitModalOpen}
-        onComplete={() => setHasFormatFit(true)}
+        onComplete={async () => {
+          setHasFormatFit(true);
+          // Refresh format fit data to show in the modal
+          if (titleId) {
+            const updatedData = await formatFitService.getFormatFit(titleId);
+            setFormatFitData(updatedData);
+          }
+        }}
       />
     </Dialog>
   );

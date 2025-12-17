@@ -92,12 +92,64 @@ async function fetchWithTimeout(
   }
 }
 
+/**
+ * Fetch with retry logic for transient OpenAI API errors
+ * Retries up to maxRetries times with exponential backoff
+ */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number = REQUEST_TIMEOUT_MS,
+  maxRetries: number = 3
+): Promise<Response> {
+  let lastError: Error | null = null
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetchWithTimeout(url, options, timeoutMs)
+
+      // Retry on 5xx server errors and specific connection errors
+      if (response.status >= 500 && attempt < maxRetries) {
+        const errorText = await response.text()
+        console.warn(`[COMPS] OpenAI API error (attempt ${attempt}/${maxRetries}): ${response.status} - ${errorText}`)
+        lastError = new Error(`OpenAI API error: ${errorText}`)
+        // Exponential backoff: 1s, 2s, 4s
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)))
+        continue
+      }
+
+      return response
+    } catch (error) {
+      lastError = error
+      const isRetryableError =
+        error.message?.includes('upstream connect error') ||
+        error.message?.includes('connection termination') ||
+        error.message?.includes('reset before headers') ||
+        error.message?.includes('ECONNRESET') ||
+        error.message?.includes('socket hang up')
+
+      if (isRetryableError && attempt < maxRetries) {
+        console.warn(`[COMPS] Retryable error (attempt ${attempt}/${maxRetries}): ${error.message}`)
+        // Exponential backoff: 1s, 2s, 4s
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)))
+        continue
+      }
+
+      throw error
+    }
+  }
+
+  throw lastError || new Error('Max retries exceeded')
+}
+
 interface CompNavigatorRequest {
+  action?: 'search' | 'describe'; // Action type (default: search)
   comp_titles: string[]; // 1-3 comp titles
   refinement_text?: string; // Optional text refinement
   user_email: string;
   save_search?: boolean; // Whether to save to history
   search_name?: string; // For bookmarking
+  provided_descriptions?: Record<string, string>; // Pre-generated descriptions to skip LLM call
 }
 
 serve(async (req) => {
@@ -149,14 +201,31 @@ serve(async (req) => {
       throw new Error('Search name must be 100 characters or less')
     }
 
+    // Handle "describe" action - only generate descriptions, no search
+    if (requestData.action === 'describe') {
+      console.log('[COMPS] Describe action: generating descriptions only')
+      const descriptions: Record<string, string> = {};
+      for (const title of requestData.comp_titles) {
+        descriptions[title] = await generateCompDescription(title);
+      }
+      return new Response(JSON.stringify({
+        descriptions,
+        processing_time_ms: Date.now() - startTime
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // PHASE 1: Semantic Retrieval (Vector Search)
     console.log('[COMPS] Phase 1: Generating embeddings and performing vector search')
     const phase1Start = Date.now()
 
-    // Generate embeddings for comp titles
+    // Generate embeddings for comp titles (use provided descriptions if available)
     const embeddingStart = Date.now()
     const compEmbeddings = await Promise.all(
-      requestData.comp_titles.map(title => getOrGenerateEmbedding(supabaseClient, title))
+      requestData.comp_titles.map(title =>
+        getOrGenerateEmbedding(supabaseClient, title, requestData.provided_descriptions?.[title])
+      )
     )
     const embeddingDuration = Date.now() - embeddingStart
 
@@ -367,7 +436,7 @@ serve(async (req) => {
 
 // Helper Functions
 
-async function getOrGenerateEmbedding(supabaseClient: any, compTitle: string): Promise<number[]> {
+async function getOrGenerateEmbedding(supabaseClient: any, compTitle: string, providedDescription?: string): Promise<number[]> {
   const normalizedTitle = compTitle.toLowerCase().trim()
 
   // Check cache first
@@ -401,9 +470,18 @@ async function getOrGenerateEmbedding(supabaseClient: any, compTitle: string): P
     console.warn(`[COMPS] Cache lookup error for "${compTitle}":`, cacheError)
   }
 
-  // Generate new embedding
-  console.log(`[COMPS] Cache miss for "${compTitle}", generating embedding`)
-  const embedding = await generateEmbedding(compTitle)
+  // Generate new embedding with LLM-enriched context
+  console.log(`[COMPS] Cache miss for "${compTitle}", generating enriched embedding`)
+
+  // Use provided description or generate new one from LLM
+  const description = providedDescription || await generateCompDescription(compTitle)
+  if (providedDescription) {
+    console.log(`[COMPS] Using provided description for "${compTitle}"`)
+  }
+
+  // Generate embedding from title + description for richer semantic matching
+  const embeddingInput = `${compTitle}: ${description}`
+  const embedding = await generateEmbedding(embeddingInput)
 
   // Cache for future use (use upsert to handle duplicates)
   try {
@@ -456,6 +534,52 @@ async function generateEmbedding(text: string): Promise<number[]> {
 
   const data = await response.json()
   return data.data[0].embedding
+}
+
+/**
+ * Generate a thematic description of a Hollywood comp title using GPT-4o-mini.
+ * This enriches the embedding context beyond just the title text.
+ */
+async function generateCompDescription(compTitle: string): Promise<string> {
+  const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
+
+  if (!openaiApiKey) {
+    throw new Error('OPENAI_API_KEY not configured')
+  }
+
+  console.log(`[COMPS] Generating description for "${compTitle}"`)
+
+  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiApiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: 'You are a film/TV expert. Given a title, provide a brief (2-3 sentence) description focusing on: genre, tone, themes, setting, and target audience. Be specific about story elements. Do not include the title in your response.'
+      }, {
+        role: 'user',
+        content: `Describe: "${compTitle}"`
+      }],
+      max_tokens: 150,
+      temperature: 0.3
+    })
+  }, 10000)  // 10 second timeout
+
+  if (!response.ok) {
+    const error = await response.text()
+    console.warn(`[COMPS] Failed to generate description for "${compTitle}": ${error}`)
+    // Fallback to just the title if description generation fails
+    return compTitle
+  }
+
+  const data = await response.json()
+  const description = data.choices?.[0]?.message?.content || compTitle
+  console.log(`[COMPS] Description for "${compTitle}": ${description}`)
+  return description
 }
 
 function averageEmbeddings(embeddings: number[][]): number[] {
@@ -680,7 +804,7 @@ Return JSON:
   ]
 }`
 
-  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+  const response = await fetchWithRetry('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiApiKey}`,
@@ -695,7 +819,7 @@ Return JSON:
       temperature: 0.3,
       response_format: { type: 'json_object' }
     })
-  }, 90000) // 90 second timeout for LLM re-ranking (increased from 45s due to OpenAI latency)
+  }, 90000, 3) // 90 second timeout, 3 retries for LLM re-ranking
 
   if (!response.ok) {
     const error = await response.text()

@@ -133,8 +133,10 @@ export function TrialCompsSection() {
 
   return (
     <div className="space-y-6">
-      {/* Search Form */}
-      <CompsNavigatorInput
+      {/* Glassmorphism Container */}
+      <div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-8">
+        {/* Search Form */}
+        <CompsNavigatorInput
         compTitles={compTitles}
         onChange={setCompTitles}
         onSearch={handleSearch}
@@ -144,7 +146,8 @@ export function TrialCompsSection() {
         loadingPhase={loadingPhase}
         searchInfo={searchInfo}
         hasResults={results.length > 0}
-      />
+        />
+      </div>
 
       {/* Results */}
       {results.length > 0 && (

@@ -59,6 +59,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/pitch-extractor',
       icon: 'solar:document-text-bold-duotone',
       description: 'Pitch deck analysis'
+    },
+    {
+      name: 'Docs',
+      href: '/admin/docs',
+      icon: 'solar:notebook-bold-duotone',
+      description: 'Internal documentation'
     }
   ];
 

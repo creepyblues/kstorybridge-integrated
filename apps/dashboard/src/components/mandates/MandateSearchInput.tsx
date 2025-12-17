@@ -8,19 +8,16 @@
  * - Find Matches button
  * - Try examples pills
  * - Need help? button
+ *
+ * IMPORTANT: Uses examplesData.ts as single source of truth for examples.
+ * Do NOT hardcode examples in this component.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
-
-const EXAMPLE_BRIEFS = [
-  'Female-driven thriller with contained locations',
-  'Romantic comedy for streaming, completed series',
-  'Dark fantasy with strong world-building',
-  'Family drama with multi-generational story',
-];
+import { getRandomMandates } from '@/data/examplesData';
 
 interface MandateSearchInputProps {
   onSearch: (mandateText: string) => void;
@@ -34,12 +31,18 @@ interface MandateSearchInputProps {
 export default function MandateSearchInput({
   onSearch,
   onClear,
-  onNeedHelp,
+  onNeedHelp: _onNeedHelp, // Reserved for future "Need Help" button
   isLoading,
   hasResults,
   initialValue = '',
 }: MandateSearchInputProps) {
   const [mandateText, setMandateText] = useState(initialValue);
+
+  // Use centralized suggestion data from examplesData.ts
+  const exampleBriefs = useMemo(() =>
+    getRandomMandates(3).map(m => m.mandateText),
+    []
+  );
 
   // Update mandate text when initialValue changes
   useEffect(() => {
@@ -73,14 +76,10 @@ export default function MandateSearchInput({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-2 rounded-full mb-4">
-          <Icon icon="solar:document-text-bold-duotone" className="h-5 w-5 text-purple-500" />
-          <span className="text-purple-600 font-medium">Search by Brief</span>
-        </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-black">
+      <div className="text-center py-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">
           Describe what you're looking for
         </h2>
       </div>
@@ -128,15 +127,15 @@ export default function MandateSearchInput({
         </div>
 
         {/* Example briefs */}
-        <div className="mt-6">
-          <p className="text-sm text-gray-500 mb-3">Try these examples:</p>
-          <div className="flex flex-wrap gap-2">
-            {EXAMPLE_BRIEFS.map((example) => (
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600 mb-4">Try asking:</p>
+          <div className="flex flex-wrap justify-center gap-1.5">
+            {exampleBriefs.map((example) => (
               <button
                 key={example}
                 onClick={() => handleExampleClick(example)}
                 disabled={isLoading}
-                className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50"
+                className="px-2.5 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors disabled:opacity-50"
               >
                 {example}
               </button>
@@ -144,16 +143,6 @@ export default function MandateSearchInput({
           </div>
         </div>
 
-        {/* Need help button */}
-        <div className="mt-4 text-center">
-          <button
-            onClick={onNeedHelp}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-purple-600 transition-colors"
-          >
-            <Icon icon="solar:info-circle-bold-duotone" className="h-4 w-4" />
-            <span className="underline underline-offset-2">Need help?</span>
-          </button>
-        </div>
       </div>
     </div>
   );

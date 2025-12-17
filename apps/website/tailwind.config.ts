@@ -23,10 +23,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'serif': ['Merriweather', 'Georgia', 'serif'],
-				'sans': ['Inter', 'system-ui', 'sans-serif'],
-				'open-sans': ['Open Sans', 'sans-serif'], // Keep for backward compatibility
-				'noto-kr': ['Noto Sans KR', 'sans-serif'],
+				'sans': ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
 			},
 			colors: {
 				// KStoryBridge Brand Colors

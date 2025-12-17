@@ -2,8 +2,12 @@
  * Trial Page
  *
  * Main trial experience page for anonymous users.
- * Features 3 tabs: Comps Navigator, Mandate Matcher, Trending Titles
+ * Features 3 discovery tools: Comps Navigator, Mandate Matcher, AI Chatbot
  * Limits AI searches to 3 total via TrialContext.
+ *
+ * Design: Following website app patterns
+ * - Hero: Multi-line typewriter (from CreatorsPage)
+ * - Selection: Glassmorphism card with clickable feature cards (from HomePage trialPromo)
  */
 
 import { useState } from 'react';
@@ -11,89 +15,118 @@ import { TrialLayout } from '@/components/layout/TrialLayout';
 import { TrialLimitModal } from '@/components/trial/TrialLimitModal';
 import { TrialCompsSection } from '@/components/trial/TrialCompsSection';
 import { TrialMandatesSection } from '@/components/trial/TrialMandatesSection';
-import { TrialTrendingSection } from '@/components/trial/TrialTrendingSection';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TypewriterText } from '@/components/ui/TypewriterText';
+import { TrialChatSection } from '@/components/trial/TrialChatSection';
+import { TypewriterText } from '@/components/home/TypewriterText';
 import { Icon } from '@iconify/react';
+import { cn } from '@/lib/utils';
+
+type ActiveTab = 'comps' | 'mandates' | 'chat';
 
 export default function Trial() {
-  const [titleComplete, setTitleComplete] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActiveTab>('comps');
 
   return (
     <TrialLayout>
       <div className="space-y-6 sm:space-y-8">
-        {/* Hero */}
-        <div className="text-center space-y-3 sm:space-y-4 px-2">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+
+        {/* Hero Section - following CreatorsPage design */}
+        <section className="relative py-6 sm:py-10 lg:py-12 overflow-hidden">
+          <div className="max-w-4xl mx-auto text-center px-4">
+            <div className="mb-4 sm:mb-6">
               <TypewriterText
-                text="Discover Korean Content"
-                speed={40}
-                onComplete={() => setTitleComplete(true)}
+                storageKey="trial-hero-played"
+                lines={[
+                  {
+                    text: "Discover Korean Stories",
+                    className: "text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 leading-tight",
+                  },
+                  {
+                    text: "Search up to 5 times for free, then sign up to unlock unlimited access.",
+                    className: "text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto block mt-3 sm:mt-4",
+                    delay: 400,
+                  },
+                ]}
+                cursorClassName="text-hanok-teal"
               />
-            </h1>
-            <span className={`px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-full bg-hanok-teal text-white uppercase tracking-wide transition-opacity duration-300 ${titleComplete ? 'opacity-100' : 'opacity-0'}`}>
-              Trial
-            </span>
+            </div>
           </div>
-          <p className={`text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto transition-opacity duration-500 ${titleComplete ? 'opacity-100' : 'opacity-0'}`}>
-            {titleComplete && (
-              <TypewriterText
-                text="Try our AI-powered discovery tools. Search up to 3 times for free, then sign up to unlock unlimited access."
-                speed={15}
-              />
-            )}
-          </p>
-        </div>
+        </section>
 
-        {/* Tabbed Interface */}
-        <Tabs defaultValue="comps" className="w-full">
-          <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-sm">
-            <TabsList className="w-full grid grid-cols-3 gap-1 sm:gap-2 h-auto bg-transparent">
-              <TabsTrigger
-                value="comps"
-                className="flex flex-col items-center gap-1 sm:gap-2 py-2.5 sm:py-4 px-2 sm:px-3 rounded-lg sm:rounded-xl border-2 border-transparent bg-gray-50 hover:bg-gray-100 data-[state=active]:bg-hanok-teal/10 data-[state=active]:border-hanok-teal data-[state=active]:shadow-sm transition-all duration-200"
-              >
-                <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-hanok-teal/10 data-[state=active]:bg-hanok-teal group-data-[state=active]:bg-hanok-teal">
-                  <Icon icon="solar:compass-bold-duotone" className="h-4 w-4 sm:h-5 sm:w-5 text-hanok-teal" />
+        {/* Feature Selection - following HomePage glassmorphism design */}
+        <section className="py-4 sm:py-6">
+          <div className="max-w-4xl mx-auto px-2 sm:px-4">
+            {/* Glassmorphism Card Container */}
+            <div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-8">
+
+              <p className="text-sm sm:text-base text-gray-600 text-center mb-6 sm:mb-8">
+                Click a card to start exploring Korean IP
+              </p>
+
+              {/* 3 Feature Cards Grid */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+
+                {/* Card 1: Comps Navigator */}
+                <div
+                  onClick={() => setActiveTab('comps')}
+                  className={cn(
+                    "group p-2 sm:p-5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200",
+                    activeTab === 'comps'
+                      ? "bg-hanok-teal/10 border-2 border-hanok-teal shadow-sm"
+                      : "hover:bg-white/50 border-2 border-transparent"
+                  )}
+                >
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 bg-hanok-teal/10 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1 sm:mb-3">
+                    <Icon icon="solar:compass-bold-duotone" className="h-5 w-5 sm:h-7 sm:w-7 text-hanok-teal" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-center text-xs sm:text-base">Comps<br className="sm:hidden" /> Navigator</h3>
                 </div>
-                <span className="font-semibold text-xs sm:text-base text-gray-700 data-[state=active]:text-hanok-teal">Comps</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="mandates"
-                className="flex flex-col items-center gap-1 sm:gap-2 py-2.5 sm:py-4 px-2 sm:px-3 rounded-lg sm:rounded-xl border-2 border-transparent bg-gray-50 hover:bg-gray-100 data-[state=active]:bg-purple-50 data-[state=active]:border-purple-500 data-[state=active]:shadow-sm transition-all duration-200"
-              >
-                <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-purple-100">
-                  <Icon icon="solar:stars-bold-duotone" className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+
+                {/* Card 2: Mandate Matcher */}
+                <div
+                  onClick={() => setActiveTab('mandates')}
+                  className={cn(
+                    "group p-2 sm:p-5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200",
+                    activeTab === 'mandates'
+                      ? "bg-purple-50 border-2 border-purple-500 shadow-sm"
+                      : "hover:bg-white/50 border-2 border-transparent"
+                  )}
+                >
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 bg-purple-500/10 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1 sm:mb-3">
+                    <Icon icon="solar:stars-bold-duotone" className="h-5 w-5 sm:h-7 sm:w-7 text-purple-500" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-center text-xs sm:text-base">Mandate<br className="sm:hidden" /> Matcher</h3>
                 </div>
-                <span className="font-semibold text-xs sm:text-base text-gray-700 data-[state=active]:text-purple-600">Mandates</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="trending"
-                className="flex flex-col items-center gap-1 sm:gap-2 py-2.5 sm:py-4 px-2 sm:px-3 rounded-lg sm:rounded-xl border-2 border-transparent bg-gray-50 hover:bg-gray-100 data-[state=active]:bg-orange-50 data-[state=active]:border-orange-500 data-[state=active]:shadow-sm transition-all duration-200"
-              >
-                <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-orange-100">
-                  <Icon icon="solar:graph-up-bold-duotone" className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+
+                {/* Card 3: AI Chatbot */}
+                <div
+                  onClick={() => setActiveTab('chat')}
+                  className={cn(
+                    "group p-2 sm:p-5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200",
+                    activeTab === 'chat'
+                      ? "bg-blue-50 border-2 border-blue-500 shadow-sm"
+                      : "hover:bg-white/50 border-2 border-transparent"
+                  )}
+                >
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 bg-blue-500/10 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-1 sm:mb-3">
+                    <Icon icon="solar:chat-round-dots-bold-duotone" className="h-5 w-5 sm:h-7 sm:w-7 text-blue-500" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-center text-xs sm:text-base">AI<br className="sm:hidden" /> Chatbot</h3>
                 </div>
-                <span className="font-semibold text-xs sm:text-base text-gray-700 data-[state=active]:text-orange-600">Trending</span>
-              </TabsTrigger>
-            </TabsList>
+
+              </div>
+            </div>
           </div>
+        </section>
 
-          <div className="mt-6 sm:mt-8">
-            <TabsContent value="comps" className="mt-0">
-              <TrialCompsSection />
-            </TabsContent>
-
-            <TabsContent value="mandates" className="mt-0">
-              <TrialMandatesSection />
-            </TabsContent>
-
-            <TabsContent value="trending" className="mt-0">
-              <TrialTrendingSection />
-            </TabsContent>
+        {/* Content Section - Show based on activeTab */}
+        <section className="py-2 sm:py-4">
+          <div className="max-w-4xl mx-auto px-2 sm:px-4">
+            {activeTab === 'comps' && <TrialCompsSection />}
+            {activeTab === 'mandates' && <TrialMandatesSection />}
+            {activeTab === 'chat' && <TrialChatSection />}
           </div>
-        </Tabs>
+        </section>
+
       </div>
 
       {/* Limit Modal */}

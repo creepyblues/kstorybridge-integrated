@@ -13,6 +13,10 @@ export default defineConfig({
   },
   server: {
     port: 8085,
+    fs: {
+      // Allow serving files from the monorepo root docs folder
+      allow: ['../..'],
+    },
   },
   test: {
     globals: true,

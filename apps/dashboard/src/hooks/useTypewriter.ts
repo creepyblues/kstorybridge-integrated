@@ -46,6 +46,7 @@ export function useTypewriter({
   const [isTyping, setIsTyping] = useState(!skipAnimation);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const indexRef = useRef(0);
+  const isMountedRef = useRef(true); // Track if component is mounted to prevent memory leaks
 
   // Store callbacks and values in refs to avoid dependency issues
   const onCompleteRef = useRef(onComplete);
@@ -59,6 +60,14 @@ export function useTypewriter({
   useEffect(() => {
     varianceRef.current = varianceRange;
   }, [varianceRange]);
+
+  // Track component mount status to prevent memory leaks
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const reset = useCallback(() => {
     if (timeoutRef.current) {
@@ -98,6 +107,11 @@ export function useTypewriter({
     setIsTyping(true);
 
     const typeNextChar = () => {
+      // Prevent state updates if component unmounted (memory leak prevention)
+      if (!isMountedRef.current) {
+        return;
+      }
+
       if (indexRef.current < text.length) {
         const char = text[indexRef.current];
         setDisplayedText(text.slice(0, indexRef.current + 1));

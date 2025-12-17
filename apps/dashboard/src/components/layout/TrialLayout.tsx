@@ -15,7 +15,11 @@ export function TrialLayout({ children }: TrialLayoutProps) {
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo */}
             <Link to="https://kstorybridge.com" className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <h1 className="text-lg sm:text-xl font-bold text-hanok-teal">KStoryBridge</h1>
+              <h1 className="text-lg sm:text-xl font-bold">
+                <span className="text-black">K</span>
+                <span className="text-hanok-teal">Story</span>
+                <span className="text-black">Bridge</span>
+              </h1>
               <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium rounded-full bg-hanok-teal/10 text-hanok-teal">
                 Trial
               </span>
@@ -29,8 +33,8 @@ export function TrialLayout({ children }: TrialLayoutProps) {
             {/* Right side - Sign Up only */}
             <div className="flex-shrink-0">
               <Link to="/signup">
-                <Button size="sm" className="bg-hanok-teal hover:bg-hanok-teal/90 text-white text-xs sm:text-sm px-3 sm:px-4">
-                  Sign Up
+                <Button className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors">
+                  SIGN UP
                 </Button>
               </Link>
             </div>
@@ -42,20 +46,6 @@ export function TrialLayout({ children }: TrialLayoutProps) {
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {children}
       </main>
-
-      {/* Footer CTA */}
-      <footer className="bg-white border-t border-gray-200 py-6 sm:py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
-            Ready to unlock unlimited searches and save your discoveries?
-          </p>
-          <Link to="/signup">
-            <Button className="bg-hanok-teal hover:bg-hanok-teal/90 text-white px-6 sm:px-8 text-sm sm:text-base">
-              Sign Up Free
-            </Button>
-          </Link>
-        </div>
-      </footer>
     </div>
   );
 }

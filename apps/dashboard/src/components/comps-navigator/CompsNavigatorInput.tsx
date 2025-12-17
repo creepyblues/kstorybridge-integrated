@@ -4,14 +4,18 @@
  * Multi-input component for selecting up to 3 comparable titles.
  * Clean search-engine style design.
  * Features OMDB autocomplete for each input.
+ *
+ * IMPORTANT: Uses examplesData.ts as single source of truth for examples.
+ * Do NOT hardcode examples in this component.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
 import { omdbService, OMDBSearchResult } from '@/services/omdbService';
 import { CompTitle } from '@/services/compsNavigatorService';
+import { getRandomCompSuggestions } from '@/data/examplesData';
 
 interface CompsNavigatorInputProps {
   compTitles: CompTitle[];
@@ -55,6 +59,9 @@ export default function CompsNavigatorInput({
 
   // Refs for click outside detection
   const dropdownRefs = useRef<(HTMLDivElement | null)[]>([null, null, null]);
+
+  // Use centralized suggestion data from examplesData.ts
+  const exampleSuggestions = useMemo(() => getRandomCompSuggestions(3), []);
 
   // Sync activeInputCount with compTitles length
   useEffect(() => {
@@ -234,12 +241,8 @@ export default function CompsNavigatorInput({
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
       {/* Header */}
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-50 to-blue-50 px-4 py-2 rounded-full mb-4">
-          <Icon icon="solar:clapperboard-bold-duotone" className="h-5 w-5 text-cyan-500" />
-          <span className="text-cyan-600 font-medium">Find Similar IP</span>
-        </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-black">
+      <div className="text-center py-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">
           What show do you love?
         </h2>
       </div>
@@ -468,16 +471,21 @@ export default function CompsNavigatorInput({
         </Button>
       </div>
 
-      {/* Try Examples Button */}
+      {/* Example suggestions */}
       <div className="mt-6 text-center">
-        <button
-          onClick={onNeedHelp}
-          disabled={isLoading}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-hanok-teal bg-hanok-teal/10 hover:bg-hanok-teal/20 rounded-full transition-colors"
-        >
-          <Icon icon="solar:lightbulb-bolt-bold-duotone" className="h-5 w-5" />
-          Try these examples
-        </button>
+        <p className="text-sm text-gray-600 mb-4">Try asking:</p>
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {exampleSuggestions.map((example) => (
+            <button
+              key={example}
+              onClick={onNeedHelp}
+              disabled={isLoading}
+              className="px-2.5 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors disabled:opacity-50"
+            >
+              {example}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Search Info - Admin Only */}

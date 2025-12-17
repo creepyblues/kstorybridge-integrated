@@ -356,3 +356,8 @@ verify_jwt = false
 # Stripe webhooks authenticate via signature verification, not JWT
 [functions.creator-stripe-webhook]
 verify_jwt = false
+
+# Mandate Matcher - Bypass JWT for internal edge function calls
+# Called by chat-orchestrator which doesn't have a user JWT to forward
+[functions.mandate-matcher]
+verify_jwt = false

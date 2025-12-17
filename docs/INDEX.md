@@ -111,6 +111,7 @@ AI-powered format fit analysis for 5 content formats:
 | **[FIELD_NAMING_STANDARDS.md](guides/FIELD_NAMING_STANDARDS.md)** | Database field naming conventions |
 | **[CREDENTIAL_ROTATION_CHECKLIST.md](guides/CREDENTIAL_ROTATION_CHECKLIST.md)** | Security credential rotation |
 | **[TITLE_DETAIL_NEW_DESIGN.md](guides/TITLE_DETAIL_NEW_DESIGN.md)** | Title detail page design |
+| **[SUGGESTION_DATA_POLICY.md](guides/SUGGESTION_DATA_POLICY.md)** | ⭐ Single source of truth for suggestion examples (2025-12-17) |
 
 ---
 

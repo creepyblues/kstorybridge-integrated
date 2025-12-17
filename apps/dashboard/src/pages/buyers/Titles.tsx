@@ -8,6 +8,7 @@ import { Icon } from '@iconify/react';
 import { trackTitleSearch, trackFeatureUsage, trackPageView, trackSearchZeroResults } from '@/utils/analytics';
 import {
   type FormatType,
+  type FormatFitSummary,
   formatFitService,
 } from '@/services/formatFitService';
 
@@ -33,6 +34,7 @@ export default function Titles() {
   const [searchQuery, setSearchQuery] = useState('');
   const [formatFilter, setFormatFilter] = useState<FormatType | null>(null);
   const [formatFilteredTitleIds, setFormatFilteredTitleIds] = useState<Set<string> | null>(null);
+  const [formatFitSummaries, setFormatFitSummaries] = useState<Map<string, FormatFitSummary>>(new Map());
 
   const observerTarget = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -93,14 +95,20 @@ export default function Titles() {
           if (vectorResults.length === 0) {
             trackSearchZeroResults(searchQuery, 'vector');
           }
-        } else if (formatFilteredTitleIds !== null) {
+        } else if (formatFilteredTitleIds !== null && formatFilter) {
           // Format filter is active - get those specific titles
           const titleIds = Array.from(formatFilteredTitleIds).slice(0, 30);
           if (titleIds.length > 0) {
-            const filteredTitles = await titlesService.getTitlesByIds(titleIds);
+            // Fetch titles and format fit summaries in parallel
+            const [filteredTitles, summaries] = await Promise.all([
+              titlesService.getTitlesByIds(titleIds),
+              formatFitService.getFormatFitSummariesForFormat(titleIds, formatFilter),
+            ]);
             setTitles(filteredTitles);
+            setFormatFitSummaries(summaries);
           } else {
             setTitles([]);
+            setFormatFitSummaries(new Map());
           }
           setHasMore(false);
           setOffset(0);
@@ -116,6 +124,7 @@ export default function Titles() {
           setTitles(data);
           setHasMore(more);
           setOffset(PAGE_SIZE);
+          setFormatFitSummaries(new Map()); // Clear summaries when no filter
         }
       } catch (error: unknown) {
         console.error('Error fetching titles:', error);
@@ -295,8 +304,10 @@ export default function Titles() {
                   <TitleCard
                     title={title}
                     variant="grid"
-                    source={searchQuery ? 'search' : 'browse'}
+                    source={searchQuery ? 'search' : formatFilter ? 'format_filter' : 'browse'}
                     position={index + 1}
+                    formatFitSummary={formatFilter ? formatFitSummaries.get(title.title_id) : undefined}
+                    selectedFormat={formatFilter || undefined}
                   />
                 </div>
               ))}

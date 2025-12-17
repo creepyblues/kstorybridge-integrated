@@ -94,15 +94,18 @@ export function TrialMandatesSection() {
 
   return (
     <div className="space-y-6">
-      {/* Search Input */}
-      <MandateSearchInput
-        onSearch={handleSubmitMandate}
-        onClear={handleClear}
-        onNeedHelp={() => setShowExamples(true)}
-        isLoading={isLoading}
-        hasResults={currentResults.length > 0}
-        initialValue={initialBrief}
-      />
+      {/* Glassmorphism Container */}
+      <div className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-8">
+        {/* Search Input */}
+        <MandateSearchInput
+          onSearch={handleSubmitMandate}
+          onClear={handleClear}
+          onNeedHelp={() => setShowExamples(true)}
+          isLoading={isLoading}
+          hasResults={currentResults.length > 0}
+          initialValue={initialBrief}
+        />
+      </div>
 
       {/* Results */}
       {(currentResults.length > 0 || isLoading) && (

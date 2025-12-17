@@ -13,11 +13,13 @@ import { HERO_SAMPLES } from '@/data/examplesData';
 // Use centralized sample data from examplesData.ts
 const SAMPLE_SHOW = HERO_SAMPLES.showComp.sampleTitle;
 const SAMPLE_BRIEF = HERO_SAMPLES.brief.sampleText;
+const SAMPLE_CHAT = HERO_SAMPLES.aiChat.sampleText;
 
 export function HeroSection() {
   const navigate = useNavigate();
   const [showInput, setShowInput] = useState('');
   const [briefInput, setBriefInput] = useState('');
+  const [chatInput, setChatInput] = useState('');
 
   // Use shared OMDB autocomplete hook
   const {
@@ -71,18 +73,27 @@ export function HeroSection() {
     navigate(`/buyers/mandates?brief=${encodeURIComponent(SAMPLE_BRIEF)}`);
   };
 
-  const handleHotNowClick = () => {
-    // Track hot now CTA click
-    trackHomeCtaClicked('hot_now', 'featured');
+  const handleChatSubmit = () => {
+    if (chatInput.trim()) {
+      // Track AI chat search initiated
+      trackHomeSearchInitiated('ai_chat', chatInput.trim(), 'manual');
 
-    navigate('/buyers/featured');
+      navigate(`/buyers/chat?q=${encodeURIComponent(chatInput.trim())}`);
+    }
+  };
+
+  const handleSampleChatClick = () => {
+    // Track sample CTA click
+    trackHomeCtaClicked('ai_chat_sample', SAMPLE_CHAT);
+
+    navigate(`/buyers/chat?q=${encodeURIComponent(SAMPLE_CHAT)}`);
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Card 1: I have a show I like */}
-      <Card className="bg-white border-2 border-hanok-teal rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden">
-        <CardContent className="p-6">
+      <Card className="bg-white border-2 border-hanok-teal rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
+        <CardContent className="p-6 flex flex-col h-full">
           {/* Icon */}
           <div className="w-14 h-14 rounded-xl bg-hanok-teal/10 flex items-center justify-center mb-5">
             <div className="relative">
@@ -101,6 +112,8 @@ export function HeroSection() {
             Find Korean IP similar to a show you love.
           </p>
 
+          {/* Input section - pushed to bottom */}
+          <div className="mt-auto">
           {/* Input with Autocomplete */}
           <div className="relative mb-4" ref={dropdownRef}>
             <div className="relative">
@@ -216,8 +229,8 @@ export function HeroSection() {
             <Icon icon="solar:arrow-right-bold-duotone" className="h-4 w-4 ml-2" aria-hidden="true" />
           </Button>
 
-          {/* Sample Link */}
-          <div className="mt-3 text-center">
+          {/* Sample Link - fixed height for alignment */}
+          <div className="mt-3 text-center min-h-[40px] flex items-start justify-center">
             <button
               onClick={handleSampleShowClick}
               className="text-xs text-gray-500 hover:text-hanok-teal transition-colors underline underline-offset-2"
@@ -225,12 +238,13 @@ export function HeroSection() {
               Try: {SAMPLE_SHOW}
             </button>
           </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Card 2: I have a brief */}
-      <Card className="bg-white border-2 border-purple-500 rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden">
-        <CardContent className="p-6">
+      <Card className="bg-white border-2 border-purple-500 rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
+        <CardContent className="p-6 flex flex-col h-full">
           {/* Icon */}
           <div className="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center mb-5">
             <Icon icon="solar:document-text-bold-duotone" className="h-7 w-7 text-purple-500" />
@@ -246,6 +260,8 @@ export function HeroSection() {
             Describe what you're looking for.
           </p>
 
+          {/* Input section - pushed to bottom */}
+          <div className="mt-auto">
           {/* Input */}
           <Textarea
             value={briefInput}
@@ -272,8 +288,8 @@ export function HeroSection() {
             <Icon icon="solar:arrow-right-bold-duotone" className="h-4 w-4 ml-2" aria-hidden="true" />
           </Button>
 
-          {/* Sample Link */}
-          <div className="mt-3 text-center">
+          {/* Sample Link - fixed height for alignment */}
+          <div className="mt-3 text-center min-h-[40px] flex items-start justify-center">
             <button
               onClick={handleSampleBriefClick}
               className="text-xs text-gray-500 hover:text-purple-500 transition-colors underline underline-offset-2"
@@ -281,49 +297,65 @@ export function HeroSection() {
               Try: {SAMPLE_BRIEF}
             </button>
           </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Card 3: What's hot now */}
-      <Card className="bg-white border-2 border-orange-500 rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden">
-        <CardContent className="p-6">
+      {/* Card 3: Ask AI (AI Chat) */}
+      <Card className="bg-white border-2 border-orange-500 rounded-2xl hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
+        <CardContent className="p-6 flex flex-col h-full">
           {/* Icon */}
           <div className="w-14 h-14 rounded-xl bg-orange-500/10 flex items-center justify-center mb-5">
-            <Icon icon="solar:graph-up-bold-duotone" className="h-7 w-7 text-orange-500" />
+            <Icon icon="solar:chat-round-dots-bold-duotone" className="h-7 w-7 text-orange-500" />
           </div>
 
           {/* Title */}
           <h3 className="text-2xl font-bold text-black mb-2">
-            What's<br />hot now.
+            Ask AI<br />anything.
           </h3>
 
           {/* Description */}
           <p className="text-gray-600 text-sm mb-5">
-            See trending Korean IP ready for adaptation.
+            Get AI-powered recommendations and insights.
           </p>
 
-          {/* Placeholder text matching input height */}
-          <div className="mb-4 py-2.5 px-3 text-sm text-gray-400 border border-transparent">
-            Curated picks with high market potential
-          </div>
+          {/* Input section - pushed to bottom */}
+          <div className="mt-auto">
+          {/* Input */}
+          <Textarea
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleChatSubmit();
+              }
+            }}
+            placeholder={HERO_SAMPLES.aiChat.placeholder}
+            className="mb-4 border-gray-300 focus:border-orange-500 focus:ring-orange-500 min-h-[42px] resize-none"
+            rows={1}
+            aria-label="Ask Jinu a question"
+          />
 
           {/* Button */}
           <Button
-            onClick={handleHotNowClick}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
+            onClick={handleChatSubmit}
+            disabled={!chatInput.trim()}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium disabled:opacity-50"
           >
-            VIEW TRENDING
+            ASK AI
             <Icon icon="solar:arrow-right-bold-duotone" className="h-4 w-4 ml-2" aria-hidden="true" />
           </Button>
 
-          {/* Sample Link - go to same page */}
-          <div className="mt-3 text-center">
+          {/* Sample Link - fixed height for alignment */}
+          <div className="mt-3 text-center min-h-[40px] flex items-start justify-center">
             <button
-              onClick={handleHotNowClick}
+              onClick={handleSampleChatClick}
               className="text-xs text-gray-500 hover:text-orange-500 transition-colors underline underline-offset-2"
             >
-              Browse featured titles
+              {HERO_SAMPLES.aiChat.sampleLabel}
             </button>
+          </div>
           </div>
         </CardContent>
       </Card>

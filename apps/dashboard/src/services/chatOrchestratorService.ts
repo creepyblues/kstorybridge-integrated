@@ -27,6 +27,15 @@ export interface RichExplanation {
   source_engine: 'comps' | 'mandate' | 'vector';
 }
 
+// Timing breakdown from edge function
+export interface ChatTiming {
+  setup_ms: number;
+  intent_ms: number;
+  search_ms: number;
+  ai_ms: number;
+  total_ms: number;
+}
+
 export interface ChatResponse {
   response: string;
   titles?: any[];
@@ -36,6 +45,8 @@ export interface ChatResponse {
   intentInfo?: IntentInfo;
   explanations?: RichExplanation[];
   searchEngine?: 'comps' | 'mandate' | 'vector' | null;
+  // Timing breakdown (v1.5.0)
+  timing?: ChatTiming;
 }
 
 // Phase types for processing status
@@ -127,6 +138,7 @@ export const chatOrchestratorService = {
       let explanations: RichExplanation[] = [];
       let searchEngine: 'comps' | 'mandate' | 'vector' | null = null;
       let hasStartedGenerating = false; // Track if we've sent the 'generating' phase
+      let timing: ChatTiming | undefined; // Timing breakdown from edge function
 
       debug.log('📡 Starting real-time SSE stream processing...');
 
@@ -163,6 +175,15 @@ export const chatOrchestratorService = {
                   titles = data.titles || [];
                 } else if (data.type === 'suggestions' || data.type === 'suggested_queries') {
                   suggestedQueries = data.suggestedQueries || data.suggested_queries || [];
+                  // Parse timing from suggestions event
+                  if (data.timing) {
+                    timing = data.timing;
+                    debug.log('⏱️ Timing received with suggestions:', timing);
+                  }
+                } else if (data.type === 'timing_complete') {
+                  // Timing sent when suggestions are suppressed
+                  timing = data.timing;
+                  debug.log('⏱️ Timing complete event:', timing);
                 } else if (data.type === 'complete') {
                   conversationId = data.conversationId;
                 }
@@ -221,6 +242,7 @@ export const chatOrchestratorService = {
         hasIntent: !!intentInfo,
         hasExplanations: explanations.length > 0,
         searchEngine,
+        timing: timing ? `${timing.total_ms}ms` : 'not available',
       });
 
       return {
@@ -231,6 +253,7 @@ export const chatOrchestratorService = {
         intentInfo,
         explanations,
         searchEngine,
+        timing,
       };
     } catch (error: any) {
       console.error('❌ Chat service error', error);

@@ -22,17 +22,19 @@ const UniversalHeader = () => {
       {/* Header with improved mobile padding */}
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-7xl mx-auto">
-          {/* Logo - smaller on mobile */}
-          <div className="flex items-center">
-            <img 
-              src="/logo-new-teal.png" 
-              alt="KStoryBridge" 
-              className="h-8 sm:h-10 w-auto cursor-pointer"
-              onClick={() => {
-                navigate('/');
-                setMobileMenuOpen(false);
-              }}
-            />
+          {/* Logo - text version */}
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => {
+              navigate('/');
+              setMobileMenuOpen(false);
+            }}
+          >
+            <span className="text-xl sm:text-2xl font-bold tracking-tight">
+              <span className="text-black">K</span>
+              <span className="text-hanok-teal">Story</span>
+              <span className="text-black">Bridge</span>
+            </span>
           </div>
           
           {/* Desktop Navigation and Auth Buttons */}
@@ -58,16 +60,6 @@ const UniversalHeader = () => {
               {t('nav.producers').toUpperCase()}
             </button>
             <button
-              onClick={() => navigate('/news')}
-              className={`font-medium transition-colors ${
-                isActive('/news')
-                  ? 'text-hanok-teal'
-                  : 'text-midnight-ink hover:text-hanok-teal'
-              }`}
-            >
-              {t('nav.news').toUpperCase()}
-            </button>
-            <button
               onClick={() => navigate('/about')}
               className={`font-medium transition-colors ${
                 isActive('/about')
@@ -90,7 +82,7 @@ const UniversalHeader = () => {
             <LanguageSelector />
           </div>
           
-          {/* Mobile: Sign Up button + menu button */}
+          {/* Mobile: Sign Up button + Language selector + menu button */}
           <div className="md:hidden flex items-center gap-2">
             <Button
               className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
@@ -98,6 +90,7 @@ const UniversalHeader = () => {
             >
               {t('cta.signUp').toUpperCase()}
             </Button>
+            <LanguageSelector />
             <button
               className="p-2 -mr-2 touch-manipulation"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -147,19 +140,6 @@ const UniversalHeader = () => {
               </button>
               <button
                 onClick={() => {
-                  navigate('/news');
-                  setMobileMenuOpen(false);
-                }}
-                className={`block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors ${
-                  isActive('/news')
-                    ? 'bg-hanok-teal/10 text-hanok-teal'
-                    : 'text-midnight-ink hover:bg-gray-50'
-                }`}
-              >
-                {t('nav.news').toUpperCase()}
-              </button>
-              <button
-                onClick={() => {
                   navigate('/about');
                   setMobileMenuOpen(false);
                 }}
@@ -171,22 +151,6 @@ const UniversalHeader = () => {
               >
                 {t('nav.about').toUpperCase()}
               </button>
-            </div>
-
-            {/* Language Selector & Auth Buttons - Full width on mobile */}
-            <div className="pt-6 border-t border-gray-200 space-y-3">
-              <div className="flex justify-center">
-                <LanguageSelector isMobile={true} />
-              </div>
-              <Button
-                className="w-full border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-3 rounded-full font-medium transition-colors"
-                onClick={() => {
-                  navigate('/signup');
-                  setMobileMenuOpen(false);
-                }}
-              >
-                {t('cta.getStarted').toUpperCase()}
-              </Button>
             </div>
           </div>
         </div>

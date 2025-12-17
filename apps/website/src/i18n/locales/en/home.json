@@ -5,6 +5,23 @@
     "ctaCreator": "I'm a Creator",
     "ctaBuyer": "I'm a Producer"
   },
+  "trialPromo": {
+    "title": "See It in Action",
+    "subtitle": "3 free searches. No signup required.",
+    "cta": "Try It Now",
+    "comps": {
+      "title": "Comps Navigator",
+      "description": "Find by similar titles"
+    },
+    "mandates": {
+      "title": "Mandate Matcher",
+      "description": "Find by production brief"
+    },
+    "trending": {
+      "title": "Trending Titles",
+      "description": "Browse curated picks"
+    }
+  },
   "coreValues": {
     "sectionTitle": "Three Core Values",
     "subtitle": "How we connect creators and producers to unlock exceptional opportunities",

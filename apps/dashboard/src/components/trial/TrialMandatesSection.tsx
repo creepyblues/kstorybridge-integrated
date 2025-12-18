@@ -9,7 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useTrial } from '@/contexts/TrialContext';
-import { mandateService, TitleMatch } from '@/services/mandateService';
+import { mandateService, TitleMatch, MandateTiming } from '@/services/mandateService';
 import MandateSearchInput from '@/components/mandates/MandateSearchInput';
 import MandateExamples from '@/components/mandates/MandateExamples';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -26,6 +26,7 @@ export function TrialMandatesSection() {
   const [currentMandateText, setCurrentMandateText] = useState('');
   const [showExamples, setShowExamples] = useState(false);
   const [initialBrief, setInitialBrief] = useState<string>('');
+  const [searchTiming, setSearchTiming] = useState<MandateTiming | null>(null);
 
   // Handle URL parameter for initial search
   useEffect(() => {
@@ -57,6 +58,7 @@ export function TrialMandatesSection() {
       );
 
       setCurrentResults(response.results);
+      setSearchTiming(response.timing || null);
 
       // Increment trial usage only on success
       incrementUsage();
@@ -85,6 +87,7 @@ export function TrialMandatesSection() {
   const handleClear = () => {
     setCurrentResults([]);
     setCurrentMandateText('');
+    setSearchTiming(null);
   };
 
   const handleTryExample = (mandateText: string) => {
@@ -104,6 +107,7 @@ export function TrialMandatesSection() {
           isLoading={isLoading}
           hasResults={currentResults.length > 0}
           initialValue={initialBrief}
+          timing={searchTiming}
         />
       </div>
 

@@ -40,15 +40,17 @@ export const initializeAnalytics = (): void => {
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
   document.head.appendChild(script);
 
-  // Initialize gtag
+  // Initialize gtag - must use 'arguments' object, not spread args
+  // This is the standard gtag pattern required by gtag.js
   window.dataLayer = window.dataLayer || [];
-  function gtag(...args: unknown[]) {
-    window.dataLayer.push(args);
-  }
-  window.gtag = gtag;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  window.gtag = function () {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments);
+  };
 
-  gtag('js', new Date());
-  gtag('config', GA_MEASUREMENT_ID, {
+  window.gtag('js', new Date());
+  window.gtag('config', GA_MEASUREMENT_ID, {
     send_page_view: true,
   });
 

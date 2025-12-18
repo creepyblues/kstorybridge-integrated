@@ -11,7 +11,7 @@ import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useToast } from '@/hooks/use-toast';
-import { compsNavigatorService, TitleMatch, CompSearch, CompTitle } from '@/services/compsNavigatorService';
+import { compsNavigatorService, TitleMatch, CompSearch, CompTitle, SearchTiming } from '@/services/compsNavigatorService';
 import CompsNavigatorInput from '@/components/comps-navigator/CompsNavigatorInput';
 import ResultsGrid from '@/components/comps-navigator/ResultsGrid';
 import { SearchLoadingModal } from '@/components/comps-navigator/SearchLoadingModal';
@@ -53,7 +53,7 @@ export default function CompsNavigator() {
   const [results, setResults] = useState<TitleMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState<LoadingPhase>(null);
-  const [searchInfo, setSearchInfo] = useState<{ time: number; cost: number } | null>(null);
+  const [searchInfo, setSearchInfo] = useState<{ time: number; cost: number; timing?: SearchTiming } | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
   // V2.1.0 - Relevancy filtering state
@@ -138,7 +138,8 @@ export default function CompsNavigator() {
       setResults(response.results);
       setSearchInfo({
         time: response.processing_time_ms + descResponse.processing_time_ms,
-        cost: response.cost_estimate
+        cost: response.cost_estimate,
+        timing: response.timing,
       });
 
       // Handle no results case with message and suggestions

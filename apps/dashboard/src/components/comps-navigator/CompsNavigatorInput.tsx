@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
 import { omdbService, OMDBSearchResult } from '@/services/omdbService';
-import { CompTitle } from '@/services/compsNavigatorService';
+import { CompTitle, SearchTiming } from '@/services/compsNavigatorService';
 import { getRandomCompSuggestions } from '@/data/examplesData';
 
 interface CompsNavigatorInputProps {
@@ -25,7 +25,7 @@ interface CompsNavigatorInputProps {
   onNeedHelp: () => void;
   isLoading: boolean;
   loadingPhase: 'describing' | 'semantic' | 'reranking' | null;
-  searchInfo: { time: number; cost: number } | null;
+  searchInfo: { time: number; cost: number; timing?: SearchTiming } | null;
   hasResults: boolean;
   isAdmin?: boolean;
 }
@@ -511,15 +511,44 @@ export default function CompsNavigatorInput({
         </div>
       </div>
 
-      {/* Search Info - Admin Only */}
-      {searchInfo && !isLoading && isAdmin && (
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-gray-400">
-          <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-medium uppercase">
-            Admin Only
-          </span>
-          <span>{(searchInfo.time / 1000).toFixed(1)}s</span>
-          <span>•</span>
-          <span>${searchInfo.cost.toFixed(3)}</span>
+      {/* Search Info - Show timing breakdown */}
+      {searchInfo && !isLoading && (
+        <div className="text-center space-y-1">
+          {/* Timing breakdown in small font */}
+          {searchInfo.timing && (
+            <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] text-gray-400">
+              <span className="flex items-center gap-1">
+                <Icon icon="solar:cpu-bolt-bold-duotone" className="h-3 w-3" />
+                Embed: {(searchInfo.timing.embedding_ms / 1000).toFixed(1)}s
+              </span>
+              <span>→</span>
+              <span className="flex items-center gap-1">
+                <Icon icon="solar:database-bold-duotone" className="h-3 w-3" />
+                Search: {(searchInfo.timing.vector_search_ms / 1000).toFixed(1)}s
+              </span>
+              <span>→</span>
+              <span className="flex items-center gap-1">
+                <Icon icon="solar:magic-stick-3-bold-duotone" className="h-3 w-3" />
+                AI Rank: {((searchInfo.timing.llm_reranking_ms || 0) / 1000).toFixed(1)}s
+                {searchInfo.timing.cache_hit && (
+                  <span className="text-green-500">(cached)</span>
+                )}
+              </span>
+              <span>→</span>
+              <span className="font-medium text-gray-500">
+                Total: {(searchInfo.timing.total_ms / 1000).toFixed(1)}s
+              </span>
+            </div>
+          )}
+          {/* Admin-only cost info */}
+          {isAdmin && (
+            <div className="flex items-center justify-center gap-2 text-[10px] text-gray-400">
+              <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-medium uppercase">
+                Admin
+              </span>
+              <span>${searchInfo.cost.toFixed(4)}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

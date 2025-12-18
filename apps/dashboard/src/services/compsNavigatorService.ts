@@ -99,6 +99,19 @@ export interface TitleMatch {
   has_pitch_deck?: boolean;
 }
 
+/**
+ * Timing breakdown for performance display (V2.2.0)
+ */
+export interface SearchTiming {
+  embedding_ms: number;
+  vector_search_ms: number;
+  prioritization_ms?: number;  // Comps Navigator only
+  llm_reranking_ms?: number;   // Comps Navigator only
+  ai_explanation_ms?: number;  // Mandate Matcher only
+  total_ms: number;
+  cache_hit?: boolean;
+}
+
 export interface CompNavigatorResponse {
   results: TitleMatch[];
   search_id?: string;
@@ -106,11 +119,15 @@ export interface CompNavigatorResponse {
   cost_estimate: number;
   // V2.0.0 fields
   engine_version?: string;
-  mode_used?: 'fast' | 'deep';
+  mode_used?: 'fast' | 'deep' | 'cached' | 'cached_rerank';
   // V2.1.0 - Relevancy filtering fields
   filtered_count?: number;          // How many results were filtered out
   no_results_message?: string;      // Message when no relevant results found
   suggestions?: string[];           // Suggestions when no results
+  // V2.2.0 - Timing breakdown for UI display
+  timing?: SearchTiming;
+  cache_hit?: boolean;
+  cache_similarity?: number;
 }
 
 // =====================================================================

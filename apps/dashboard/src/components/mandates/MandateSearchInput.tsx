@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
 import { getRandomMandates } from '@/data/examplesData';
+import { MandateTiming } from '@/services/mandateService';
 
 interface MandateSearchInputProps {
   onSearch: (mandateText: string) => void;
@@ -26,6 +27,7 @@ interface MandateSearchInputProps {
   isLoading: boolean;
   hasResults: boolean;
   initialValue?: string;
+  timing?: MandateTiming | null;
 }
 
 export default function MandateSearchInput({
@@ -35,6 +37,7 @@ export default function MandateSearchInput({
   isLoading,
   hasResults,
   initialValue = '',
+  timing,
 }: MandateSearchInputProps) {
   const [mandateText, setMandateText] = useState(initialValue);
 
@@ -142,6 +145,32 @@ export default function MandateSearchInput({
             ))}
           </div>
         </div>
+
+        {/* Timing breakdown - show after search completes */}
+        {timing && !isLoading && (
+          <div className="mt-4 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] text-gray-400">
+              <span className="flex items-center gap-1">
+                <Icon icon="solar:cpu-bolt-bold-duotone" className="h-3 w-3" />
+                Embed: {(timing.embedding_ms / 1000).toFixed(1)}s
+              </span>
+              <span>→</span>
+              <span className="flex items-center gap-1">
+                <Icon icon="solar:database-bold-duotone" className="h-3 w-3" />
+                Search: {(timing.vector_search_ms / 1000).toFixed(1)}s
+              </span>
+              <span>→</span>
+              <span className="flex items-center gap-1">
+                <Icon icon="solar:magic-stick-3-bold-duotone" className="h-3 w-3" />
+                AI: {(timing.ai_explanation_ms / 1000).toFixed(1)}s
+              </span>
+              <span>→</span>
+              <span className="font-medium text-gray-500">
+                Total: {(timing.total_ms / 1000).toFixed(1)}s
+              </span>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

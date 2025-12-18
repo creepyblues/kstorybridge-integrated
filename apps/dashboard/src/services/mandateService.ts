@@ -37,11 +37,25 @@ export interface MandateMatchRequest {
   limit?: number;
 }
 
+/**
+ * Timing breakdown for performance display (V2.2.0)
+ */
+export interface MandateTiming {
+  embedding_ms: number;
+  vector_search_ms: number;
+  ai_explanation_ms: number;
+  total_ms: number;
+}
+
 export interface MandateMatchResponse {
   results: TitleMatch[];
   search_id: string;
   processing_time_ms: number;
   cost_estimate: number;
+  // V2.2.0 - Timing breakdown for UI display
+  timing?: MandateTiming;
+  cache_hit?: boolean;
+  cache_similarity?: number;
 }
 
 class MandateService {

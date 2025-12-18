@@ -9,7 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useTrial } from '@/contexts/TrialContext';
-import { compsNavigatorService, TitleMatch, CompTitle } from '@/services/compsNavigatorService';
+import { compsNavigatorService, TitleMatch, CompTitle, SearchTiming } from '@/services/compsNavigatorService';
 import CompsNavigatorInput from '@/components/comps-navigator/CompsNavigatorInput';
 import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
 import { SearchLoadingModal } from '@/components/comps-navigator/SearchLoadingModal';
@@ -39,7 +39,7 @@ export function TrialCompsSection() {
   const [results, setResults] = useState<TitleMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState<LoadingPhase>(null);
-  const [searchInfo, setSearchInfo] = useState<{ time: number; cost: number } | null>(null);
+  const [searchInfo, setSearchInfo] = useState<{ time: number; cost: number; timing?: SearchTiming } | null>(null);
   const [showExamples, setShowExamples] = useState(false);
 
   // Handle URL parameter for initial search
@@ -99,7 +99,8 @@ export function TrialCompsSection() {
       setResults(response.results);
       setSearchInfo({
         time: response.processing_time_ms,
-        cost: response.cost_estimate
+        cost: response.cost_estimate,
+        timing: response.timing,
       });
 
       // Increment trial usage only on success

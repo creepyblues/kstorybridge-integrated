@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-12-01
+**Last Updated**: 2025-12-17
 
 > 📜 For historical changes and system evolution, see [CHANGELOG.md](CHANGELOG.md)
 
@@ -94,6 +94,12 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
   | thumbnail | title_image |
   | tags | keywords |
 - **See**: [apps/creator/CLAUDE.md](apps/creator/CLAUDE.md) for full documentation
+
+**Data Quality Improvement** (🔄 IN PROGRESS - 2025-12-17):
+- **[DATA_QUALITY_IMPROVEMENT_TRACKER.md](docs/DATA_QUALITY_IMPROVEMENT_TRACKER.md)** - Systematic data quality tracking
+- Phase 1 Complete: Metadata normalization (tone, audience, age_rating, content_format)
+- Phase 2 Pending: AI-assisted field completion
+- Phase 3 Pending: Rights data entry
 
 **Stripe Payment Integration** (`docs/`):
 - **[STRIPE_PAYMENT_INTEGRATION.md](docs/STRIPE_PAYMENT_INTEGRATION.md)** - Complete implementation summary (✅ LIVE - 2025-11-14)

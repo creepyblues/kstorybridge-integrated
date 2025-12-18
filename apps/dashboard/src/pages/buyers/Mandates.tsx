@@ -9,7 +9,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { mandateService, MandateSearch, TitleMatch } from '@/services/mandateService';
+import { mandateService, MandateSearch, TitleMatch, MandateTiming } from '@/services/mandateService';
 import MandateSearchInput from '@/components/mandates/MandateSearchInput';
 import MandateExamples from '@/components/mandates/MandateExamples';
 import MandateHistorySidebar from '@/components/mandates/MandateHistorySidebar';
@@ -36,6 +36,7 @@ export default function Mandates() {
   const [showHistory, setShowHistory] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
   const [initialBrief, setInitialBrief] = useState<string>('');
+  const [searchTiming, setSearchTiming] = useState<MandateTiming | null>(null);
 
   // Track page view on mount
   useEffect(() => {
@@ -99,6 +100,7 @@ export default function Mandates() {
 
       setCurrentResults(response.results);
       setSelectedMandateId(response.search_id);
+      setSearchTiming(response.timing || null);
 
       // Track mandate search submitted
       trackMandateSearchSubmitted(mandateText, response.results.length, response.processing_time_ms);
@@ -181,6 +183,7 @@ export default function Mandates() {
     setCurrentResults([]);
     setCurrentMandateText('');
     setSelectedMandateId(undefined);
+    setSearchTiming(null);
   };
 
   const handleTryExample = (mandateText: string) => {
@@ -217,6 +220,7 @@ export default function Mandates() {
           isLoading={isLoading}
           hasResults={currentResults.length > 0}
           initialValue={initialBrief}
+          timing={searchTiming}
         />
 
         {/* Results */}

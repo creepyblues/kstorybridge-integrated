@@ -2,6 +2,16 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
+// Import caching utilities
+import {
+  checkSemanticCache,
+  storeInSemanticCache,
+  checkRerankingCache,
+  storeRerankingResult,
+  logCacheMetrics,
+  generateRerankingCacheKey
+} from '../_shared/search-cache.ts';
+
 // Import shared types from unified engine
 import {
   COMPS_ENGINE_VERSION,
@@ -25,12 +35,17 @@ const corsHeaders = {
 // Request timeout in milliseconds (30 seconds for API calls)
 const REQUEST_TIMEOUT_MS = 30000
 
+// Cache configuration
+const ENABLE_CACHE = true;  // Feature flag for caching
+const CACHE_SIMILARITY_THRESHOLD = 0.92;  // High threshold for quality
+const ENABLE_RERANKING_CACHE = true;  // Cache LLM re-ranking results
+
 // =====================================================================
-// RELEVANCY FILTERING THRESHOLDS
+// RELEVANCY FILTERING THRESHOLDS (v2.3.0 - lowered for better coverage)
 // =====================================================================
-const MIN_OVERALL_SCORE = 55                    // Minimum overall score to show
-const MIN_OVERALL_FOR_DIMENSION_EXCEPTION = 40  // Minimum overall when exceptional dimension exists
-const EXCEPTIONAL_DIMENSION_SCORE = 80          // Score that qualifies as "exceptional" in one dimension
+const MIN_OVERALL_SCORE = 45                    // Minimum overall score to show (was 55)
+const MIN_OVERALL_FOR_DIMENSION_EXCEPTION = 35  // Minimum overall when exceptional dimension exists (was 40)
+const EXCEPTIONAL_DIMENSION_SCORE = 70          // Score that qualifies as "exceptional" in one dimension (was 80)
 
 // Suggestions shown when no relevant results found
 const NO_RESULTS_SUGGESTIONS = [
@@ -243,6 +258,42 @@ serve(async (req) => {
       finalEmbedding = combineEmbeddings(avgEmbedding, refinementEmbedding, 0.7, 0.3)
     }
 
+    // PERFORMANCE: Check semantic cache for similar queries
+    // Cache hit returns in ~50ms vs ~2-3s for full search
+    if (ENABLE_CACHE) {
+      const cacheStart = Date.now()
+      const cachedResult = await checkSemanticCache(
+        supabaseClient,
+        finalEmbedding,
+        'comps',
+        CACHE_SIMILARITY_THRESHOLD
+      )
+
+      if (cachedResult) {
+        const cacheTime = Date.now() - cacheStart
+        logCacheMetrics('comps', true, cacheTime, cachedResult.similarity)
+
+        console.log(`[COMPS] 🚀 CACHE HIT! Returning cached results (${cacheTime}ms vs ~2-3s)`)
+
+        // Return cached response
+        const processingTime = Date.now() - startTime
+        return new Response(JSON.stringify({
+          results: cachedResult.response_data,
+          search_id: '',
+          processing_time_ms: processingTime,
+          cost_estimate: 0.0001,  // Minimal cost for cache hit
+          engine_version: COMPS_ENGINE_VERSION,
+          mode_used: 'cached',
+          cache_hit: true,
+          cache_similarity: cachedResult.similarity
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      logCacheMetrics('comps', false, Date.now() - cacheStart)
+    }
+
     // Perform vector search using optimized RPC function
     console.log('[COMPS] Calling vector search with embedding dim:', finalEmbedding.length)
     const vectorSearchStart = Date.now()
@@ -250,7 +301,7 @@ serve(async (req) => {
     const { data: candidates, error: vectorError } = await supabaseClient.rpc('match_titles_by_embedding_optimized', {
       query_embedding: finalEmbedding,
       match_threshold: 0.6,
-      match_count: 15  // Reduced from 30 for faster processing
+      match_count: 20  // Increased from 15 for better diversity (v2.3.0)
     })
 
     const vectorSearchDuration = Date.now() - vectorSearchStart
@@ -311,11 +362,76 @@ serve(async (req) => {
 
     // Take top 5 from prioritized candidates (business-value weighted)
     const topCandidates = prioritizedCandidates.slice(0, 5)
-    const rerankedResults = await llmRerank(
-      requestData.comp_titles,
-      requestData.refinement_text,
-      topCandidates
-    )
+    const candidateIds = topCandidates.map((c: any) => c.title_id)
+
+    // PERFORMANCE: Check LLM reranking cache for exact match
+    // Cache hit saves 3-8 seconds and ~$0.01 per search
+    let rerankedResults: TitleMatchV2[]
+    let rerankingCacheHit = false
+
+    if (ENABLE_RERANKING_CACHE) {
+      const rerankCacheStart = Date.now()
+      const cachedReranking = await checkRerankingCache(
+        supabaseClient,
+        requestData.comp_titles,
+        requestData.refinement_text,
+        candidateIds
+      )
+
+      if (cachedReranking) {
+        const rerankCacheTime = Date.now() - rerankCacheStart
+        console.log(`[COMPS] 🚀 RERANKING CACHE HIT! (${rerankCacheTime}ms vs ~3-8s LLM call)`)
+        rerankingCacheHit = true
+
+        // Merge cached reranking results with candidate metadata
+        rerankedResults = cachedReranking.reranking_results.map((ranking: any) => {
+          const candidate = topCandidates.find((c: any) => c.title_id === ranking.title_id)
+          if (!candidate) return null
+          return {
+            ...ranking,
+            title_image: candidate.title_image,
+            synopsis: candidate.synopsis,
+            genre: candidate.genre || [],
+            tone: candidate.tone,
+            content_format: candidate.content_format,
+            has_pitch_deck: candidate.hasPitchDeck || false,
+          }
+        }).filter(Boolean)
+      } else {
+        // Cache miss - call LLM
+        rerankedResults = await llmRerank(
+          requestData.comp_titles,
+          requestData.refinement_text,
+          topCandidates
+        )
+
+        // Store reranking results in cache (fire-and-forget)
+        storeRerankingResult(
+          supabaseClient,
+          requestData.comp_titles,
+          requestData.refinement_text,
+          candidateIds,
+          rerankedResults.map(r => ({
+            title_id: r.title_id,
+            title_name_en: r.title_name_en,
+            title_name_kr: r.title_name_kr,
+            overall_match_score: r.overall_match_score,
+            dimension_scores: r.dimension_scores,
+            explanation: r.explanation,
+            match_reasons: r.match_reasons,
+            match_score: r.match_score,
+          })),
+          { modelUsed: 'gpt-4o-mini' }
+        ).catch(err => console.warn('[COMPS] Failed to cache reranking:', err))
+      }
+    } else {
+      // Caching disabled - always call LLM
+      rerankedResults = await llmRerank(
+        requestData.comp_titles,
+        requestData.refinement_text,
+        topCandidates
+      )
+    }
 
     const phase2Duration = Date.now() - phase2Start
 
@@ -370,6 +486,7 @@ serve(async (req) => {
     }
 
     // Save search if requested (save filtered results for accurate history)
+    // PERFORMANCE OPTIMIZATION: Fire-and-forget async save to reduce response latency by 100-200ms
     let searchId: string | undefined
 
     if (requestData.save_search) {
@@ -377,9 +494,14 @@ serve(async (req) => {
         ? filteredResults.reduce((sum, r) => sum + (r.match_score || r.overall_match_score), 0) / filteredResults.length
         : 0
 
-      const { data: searchData, error: saveError } = await supabaseClient
+      // Generate predictable UUID so we can return it immediately
+      searchId = crypto.randomUUID()
+
+      // Fire-and-forget: Don't await the database save
+      supabaseClient
         .from('comp_searches')
         .insert({
+          id: searchId,
           user_email: requestData.user_email,
           comp_titles: requestData.comp_titles,
           refinement_text: requestData.refinement_text,
@@ -389,14 +511,16 @@ serve(async (req) => {
           result_count: filteredResults.length,
           avg_match_score: avgMatchScore
         })
-        .select('id')
-        .single()
-
-      if (saveError) {
-        console.error('[COMPS] Failed to save search:', saveError)
-      } else {
-        searchId = searchData?.id
-      }
+        .then(({ error: saveError }) => {
+          if (saveError) {
+            console.error('[COMPS] Failed to save search (async):', saveError)
+          } else {
+            console.log('[COMPS] Search saved successfully (async)')
+          }
+        })
+        .catch((err) => {
+          console.error('[COMPS] Exception saving search (async):', err)
+        })
     }
 
     logCompsEngine('Search complete', {
@@ -407,17 +531,45 @@ serve(async (req) => {
       engine_version: COMPS_ENGINE_VERSION,
     })
 
+    // PERFORMANCE: Store results in semantic cache for future similar queries
+    // Expected hit rate: 20-40% for comps searches
+    if (ENABLE_CACHE && filteredResults.length > 0) {
+      const avgScore = filteredResults.reduce((sum, r) => sum + (r.overall_match_score || 0), 0) / filteredResults.length
+      storeInSemanticCache(
+        supabaseClient,
+        'comps',
+        requestData.comp_titles.join(' | ') + (requestData.refinement_text ? ` | ${requestData.refinement_text}` : ''),
+        finalEmbedding,
+        filteredResults.slice(0, 5),  // Store top 5 for cache
+        {
+          compTitles: requestData.comp_titles,
+          refinementText: requestData.refinement_text,
+          resultCount: filteredResults.length,
+          avgMatchScore: avgScore
+        }
+      ).catch(err => console.warn('[COMPS] Failed to store in semantic cache:', err))
+    }
+
     const response: CompNavigatorResponse = {
       results: filteredResults.slice(0, 5), // Return top 5 for faster response
       search_id: searchId,
       processing_time_ms: totalDuration,
       cost_estimate: totalCost,
       engine_version: COMPS_ENGINE_VERSION,
-      mode_used: 'fast',
+      mode_used: rerankingCacheHit ? 'cached_rerank' : 'fast',
       // v2.1.0 - Relevancy filtering fields
       filtered_count: filteredCount,
       no_results_message: noResultsMessage,
       suggestions: suggestions,
+      // v2.2.0 - Timing breakdown for UI display
+      timing: {
+        embedding_ms: embeddingDuration,
+        vector_search_ms: vectorSearchDuration,
+        prioritization_ms: prioritizationDuration,
+        llm_reranking_ms: phase2Duration,
+        total_ms: totalDuration,
+        cache_hit: rerankingCacheHit,
+      },
     }
 
     return new Response(
@@ -731,6 +883,82 @@ function escapeForJsonPrompt(title: string): string {
     .replace(/\t/g, '\\t')    // Escape tabs
 }
 
+/**
+ * Score a SINGLE candidate against comp titles (v2.3.0 - parallel processing)
+ * This is called in parallel for each candidate to reduce total latency
+ */
+async function llmRerankSingle(
+  compTitles: string[],
+  refinementText: string | undefined,
+  candidate: any,
+  openaiApiKey: string
+): Promise<any | null> {
+  const escapedCompTitles = compTitles.map(escapeForJsonPrompt)
+
+  const systemPrompt = `You are a Hollywood development executive scoring Korean content against Hollywood comps.
+Return valid JSON. Score honestly - low scores are fine if dimensions don't match.`
+
+  const prompt = `Score this Korean title against the comp combination.
+
+COMPS: ${compTitles.join(', ')}${refinementText ? `\nFOCUS: ${refinementText}` : ''}
+
+TITLE: ${candidate.title_name_en || candidate.title_name_kr}
+Synopsis: ${candidate.synopsis || 'No synopsis'}
+Genre: ${candidate.genre?.join(', ') || 'Unknown'}
+Tone: ${candidate.tone || 'Unknown'}
+
+Score 8 dimensions (0-100) with brief reason and which comp(s) align:
+genre_blueprint, tone_mood, character_archetypes, plot_structure, setting_world, themes, target_audience, format_style
+
+Return JSON:
+{"dimension_scores":[{"dimension":"genre_blueprint","score":75,"reason":"...","aligned_comps":["${escapedCompTitles[0]}"]},...],
+"explanation":"2 sentences why this matches",
+"match_reasons":["reason1","reason2","reason3"]}`
+
+  try {
+    const response = await fetchWithRetry('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 800,  // Limit tokens for faster response
+        response_format: { type: 'json_object' }
+      })
+    }, 30000, 2) // 30 second timeout, 2 retries per candidate
+
+    if (!response.ok) {
+      console.error(`[COMPS] LLM error for ${candidate.title_id}:`, await response.text())
+      return null
+    }
+
+    const data = await response.json()
+    const content = data.choices[0].message.content
+    const parsed = JSON.parse(content)
+
+    return {
+      title_id: candidate.title_id,
+      dimension_scores: parsed.dimension_scores || [],
+      explanation: parsed.explanation || '',
+      match_reasons: parsed.match_reasons || []
+    }
+  } catch (error) {
+    console.error(`[COMPS] Failed to score ${candidate.title_id}:`, error.message)
+    return null
+  }
+}
+
+/**
+ * LLM Re-ranking with PARALLEL processing (v2.3.0)
+ * Scores candidates in parallel for ~5x faster execution
+ */
 async function llmRerank(
   compTitles: string[],
   refinementText: string | undefined,
@@ -742,197 +970,65 @@ async function llmRerank(
     throw new Error('OPENAI_API_KEY not configured')
   }
 
-  // Format candidates for the prompt
-  const formattedCandidates = candidates.map((c, idx) => `
-${idx + 1}. ${c.title_name_en || c.title_name_kr} (ID: ${c.title_id})
-   Synopsis: ${c.synopsis || 'No synopsis available'}
-   Genre: ${c.genre?.join(', ') || 'Unknown'}
-   Tone: ${c.tone || 'Unknown'}
-   Format: ${c.content_format || 'Unknown'}
-  `).join('\n')
+  console.log('[COMPS] Starting parallel LLM reranking for', candidates.length, 'candidates')
+  const startTime = Date.now()
 
-  // Escape comp titles for safe JSON interpolation in prompt examples
-  const escapedCompTitles = compTitles.map(escapeForJsonPrompt)
-  console.log('[COMPS] Original comp titles:', compTitles)
-  console.log('[COMPS] Escaped comp titles for prompt:', escapedCompTitles)
+  // Score ALL candidates in PARALLEL
+  const rankingPromises = candidates.map(candidate =>
+    llmRerankSingle(compTitles, refinementText, candidate, openaiApiKey)
+  )
 
-  // V2.0.0: 8-dimensional scoring prompt with aligned_comps
-  const systemPrompt = `You are a Hollywood development executive expert in finding comparable titles (comps) for Korean content.
-You know film and TV history deeply and can identify meaningful similarities across cultures.
-Always return valid JSON matching the requested structure exactly.
-Score each dimension honestly - low scores are fine if dimensions don't match.`
+  const rankings = await Promise.all(rankingPromises)
 
-  const prompt = `Analyze how well each Korean title matches the Hollywood comp combination.
+  const parallelDuration = Date.now() - startTime
+  console.log(`[COMPS] Parallel LLM completed in ${parallelDuration}ms`)
 
-COMP COMBINATION: ${compTitles.join(', ')}
-${refinementText ? `FOCUS: ${refinementText}` : ''}
-
-CANDIDATES:
-${formattedCandidates}
-
-For EACH candidate, score these 8 dimensions (0-100) with a 1-sentence reason:
-1. genre_blueprint - Save the Cat genre match (Monster in House, Golden Fleece, etc.)
-2. tone_mood - Emotional register and atmosphere
-3. character_archetypes - Hero types, antagonist patterns, relationships
-4. plot_structure - Narrative arc and pacing
-5. setting_world - Time, place, worldbuilding
-6. themes - Core messages and social commentary
-7. target_audience - Demographics and appeal factors
-8. format_style - Narrative structure and format
-
-IMPORTANT: For each dimension, specify which comp(s) it aligns with in "aligned_comps" array.
-
-Return JSON:
-{
-  "results": [
-    {
-      "rank": 1,
-      "title_id": "uuid",
-      "dimension_scores": [
-        {"dimension": "genre_blueprint", "score": 85, "reason": "Both feature survival competition with elimination", "aligned_comps": ["${escapedCompTitles[0]}"]},
-        {"dimension": "tone_mood", "score": 72, "reason": "Similar dark, tense atmosphere", "aligned_comps": ["${escapedCompTitles[0]}"${escapedCompTitles.length > 1 ? `, "${escapedCompTitles[1]}"` : ''}]},
-        {"dimension": "character_archetypes", "score": 80, "reason": "Desperate underdogs facing impossible odds", "aligned_comps": ["${escapedCompTitles[0]}"]},
-        {"dimension": "plot_structure", "score": 75, "reason": "Tournament arc with escalating stakes", "aligned_comps": ["${escapedCompTitles[0]}"]},
-        {"dimension": "setting_world", "score": 65, "reason": "Contemporary setting with isolated location", "aligned_comps": ["${escapedCompTitles[0]}"]},
-        {"dimension": "themes", "score": 82, "reason": "Class struggle and human desperation", "aligned_comps": ["${escapedCompTitles[0]}"]},
-        {"dimension": "target_audience", "score": 78, "reason": "Adult thriller audience", "aligned_comps": ["${escapedCompTitles[0]}"]},
-        {"dimension": "format_style", "score": 70, "reason": "Episodic with ensemble cast", "aligned_comps": ["${escapedCompTitles[0]}"]}
-      ],
-      "explanation": "This title captures the survival game tension with similar class commentary themes.",
-      "match_reasons": ["Survival competition mechanics", "Class inequality themes", "Ensemble of desperate characters", "High-stakes elimination format"]
-    }
-  ]
-}`
-
-  const response = await fetchWithRetry('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',  // Fast mode for Navigator
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' }
-    })
-  }, 90000, 3) // 90 second timeout, 3 retries for LLM re-ranking
-
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`OpenAI API error: ${error}`)
-  }
-
-  const data = await response.json()
-  const content = data.choices[0].message.content
-
-  // DEBUG: Log raw LLM response details
-  console.log('[COMPS] LLM response received, content length:', content?.length)
-  console.log('[COMPS] LLM response preview (first 500 chars):', content?.substring(0, 500))
-
-  let parsed
-  try {
-    parsed = JSON.parse(content)
-  } catch (e) {
-    console.error('[COMPS] JSON parse error:', e.message)
-    console.error('[COMPS] Failed content type:', typeof content)
-    console.error('[COMPS] Failed content (first 1000 chars):', content?.substring(0, 1000))
-    throw new Error(`Failed to parse LLM response: ${e.message}`)
-  }
-
-  logCompsEngine('LLM response received', {
-    response_keys: Object.keys(parsed),
-    results_count: parsed.results?.length || 0,
-  })
-
-  // DEBUG: Log parsed structure for debugging
-  console.log('[COMPS] Parsed response type:', typeof parsed)
-  console.log('[COMPS] Parsed response keys:', parsed ? Object.keys(parsed) : 'null')
-  console.log('[COMPS] Has results array:', Array.isArray(parsed?.results))
-  console.log('[COMPS] Results length:', parsed?.results?.length)
-
-  // Extract rankings from the response object
-  let rankings = []
-  if (parsed && typeof parsed === 'object') {
-    if (Array.isArray(parsed.results)) {
-      rankings = parsed.results
-    } else if (Array.isArray(parsed)) {
-      rankings = parsed
-    } else {
-      console.error('[COMPS] Invalid LLM response structure:', parsed)
-      throw new Error('LLM response missing "results" array')
-    }
-  } else {
-    console.error('[COMPS] Invalid LLM response type:', typeof parsed)
-    throw new Error('LLM response is not an object')
-  }
-
-  // Validate rankings array
-  if (!rankings || rankings.length === 0) {
-    console.error('[COMPS] No rankings returned from LLM')
-    throw new Error('LLM returned empty results')
-  }
-
-  // Merge LLM rankings with original candidate data
-  // Add deduplication to prevent duplicate title_ids in results
+  // Filter out failed rankings and merge with candidate data
   const seenIds = new Set<string>()
-  const results: TitleMatchV2[] = rankings.map(ranking => {
-    // Filter out duplicate title_ids (LLM sometimes returns same title twice)
-    if (seenIds.has(ranking.title_id)) {
-      console.warn(`[COMPS] Duplicate title_id filtered: ${ranking.title_id}`)
-      return null
-    }
-    seenIds.add(ranking.title_id)
+  const results: TitleMatchV2[] = rankings
+    .filter(ranking => ranking !== null)
+    .map(ranking => {
+      if (seenIds.has(ranking.title_id)) {
+        return null
+      }
+      seenIds.add(ranking.title_id)
 
-    const candidate = candidates.find(c => c.title_id === ranking.title_id)
-    if (!candidate) {
-      console.warn(`[COMPS] LLM returned unknown title_id: ${ranking.title_id}`)
-      return null
-    }
+      const candidate = candidates.find(c => c.title_id === ranking.title_id)
+      if (!candidate) {
+        return null
+      }
 
-    // Calculate weighted overall score from dimensions
-    const dimensionScores: DimensionScore[] = ranking.dimension_scores || []
-    const overallScore = calculateWeightedScore(dimensionScores)
+      const dimensionScores: DimensionScore[] = ranking.dimension_scores || []
+      const overallScore = calculateWeightedScore(dimensionScores)
 
-    return {
-      title_id: candidate.title_id,
-      title_name_en: candidate.title_name_en,
-      title_name_kr: candidate.title_name_kr,
-      // V2.0.0 fields
-      overall_match_score: overallScore,
-      dimension_scores: dimensionScores,
-      explanation: ranking.explanation || '',
-      match_reasons: ranking.match_reasons || [],
-      // Metadata
-      title_image: candidate.title_image,
-      synopsis: candidate.synopsis,
-      genre: candidate.genre || [],
-      tone: candidate.tone,
-      content_format: candidate.content_format,
-      has_pitch_deck: candidate.hasPitchDeck || false,
-      // Backward compatibility
-      match_score: overallScore,
-    }
-  }).filter(Boolean) as TitleMatchV2[]
+      return {
+        title_id: candidate.title_id,
+        title_name_en: candidate.title_name_en,
+        title_name_kr: candidate.title_name_kr,
+        overall_match_score: overallScore,
+        dimension_scores: dimensionScores,
+        explanation: ranking.explanation || '',
+        match_reasons: ranking.match_reasons || [],
+        title_image: candidate.title_image,
+        synopsis: candidate.synopsis,
+        genre: candidate.genre || [],
+        tone: candidate.tone,
+        content_format: candidate.content_format,
+        has_pitch_deck: candidate.hasPitchDeck || false,
+        match_score: overallScore,
+      }
+    })
+    .filter(Boolean) as TitleMatchV2[]
 
-  logCompsEngine('Results processed', {
-    input_count: rankings.length,
-    output_count: results.length,
-    duplicates_filtered: rankings.length - results.length,
+  logCompsEngine('Parallel LLM results', {
+    candidates_count: candidates.length,
+    successful_scores: results.length,
+    failed_scores: candidates.length - results.length,
+    duration_ms: parallelDuration
   })
 
-  // Sort by overall_match_score descending (highest score first)
+  // Sort by overall_match_score descending
   results.sort((a, b) => (b.overall_match_score || 0) - (a.overall_match_score || 0))
-
-  logCompsEngine('Results sorted by score', {
-    top_scores: results.slice(0, 3).map(r => ({
-      title: r.title_name_en?.substring(0, 25),
-      score: r.overall_match_score
-    }))
-  })
 
   return results
 }

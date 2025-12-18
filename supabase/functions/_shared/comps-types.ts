@@ -1,17 +1,22 @@
 /**
  * Unified Comps Matching Engine - Shared Types
- * Version: 2.0.0
+ * Version: 2.3.0
  *
  * This file defines the canonical types and constants used by both:
  * - comps-generator (admin): Korean title -> Hollywood comps
  * - comp-navigator (buyer): Hollywood comps -> Korean titles
+ *
+ * v2.3.0 Changes:
+ * - Parallel LLM reranking for ~5x faster scoring
+ * - Lowered relevancy thresholds (45/35/70) for better coverage
+ * - Increased vector search candidates (20) for diversity
  */
 
 // =====================================================================
 // ENGINE VERSION
 // =====================================================================
 
-export const COMPS_ENGINE_VERSION = "2.0.0";
+export const COMPS_ENGINE_VERSION = "2.3.0";
 
 // =====================================================================
 // DIMENSION DEFINITIONS

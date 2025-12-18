@@ -407,6 +407,19 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  // ========== TIMING TRACKING (v1.5.0) ==========
+  const timingStart = Date.now()
+  const timing = {
+    auth_ms: 0,
+    profile_ms: 0,
+    session_ms: 0,
+    intent_ms: 0,
+    search_ms: 0,
+    ai_start_ms: 0,
+    ai_ms: 0,
+    total_ms: 0
+  }
+
   try {
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -432,6 +445,7 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+    timing.auth_ms = Date.now() - timingStart
 
     // Parse request body
     const { messages, sessionId, model, vectorSearchLimit, systemPrompt, formattingRules } = await req.json() as ChatRequest
@@ -444,12 +458,16 @@ serve(async (req) => {
     }
 
     // Get user profile and tier information
+    const profileStart = Date.now()
     const userProfile = await getUserProfile(supabase, user.id, user.email || '')
+    timing.profile_ms = Date.now() - profileStart
 
     // Get or create chat session
+    const sessionStart = Date.now()
     const activeSession = sessionId
       ? await getSession(supabase, sessionId)
       : await getOrCreateActiveSession(supabase, user.id, user.email || '')
+    timing.session_ms = Date.now() - sessionStart
 
     if (!activeSession) {
       return new Response(
@@ -466,8 +484,10 @@ serve(async (req) => {
 
     // ========== INTELLIGENT INTENT ROUTING ==========
     // Detect user intent and route to appropriate search engine
+    const intentStart = Date.now()
     const detectedIntent = detectIntent(userQuery, conversationHistory);
     const routeDecision = routeQuery(detectedIntent, userQuery);
+    timing.intent_ms = Date.now() - intentStart
 
     console.log('🎯 Intent Detection:', {
       level1: detectedIntent.level1,
@@ -488,6 +508,7 @@ serve(async (req) => {
     const searchThreshold = 0.7;
 
     // Execute search based on routing decision
+    const searchStart = Date.now()
     if (!routeDecision.skipSearch && routeDecision.engine) {
       const searchOutput = await executeSearchByEngine(
         supabase,
@@ -524,6 +545,7 @@ serve(async (req) => {
     } else {
       console.log('💬 Conversation mode - skipping search');
     }
+    timing.search_ms = Date.now() - searchStart
 
     // Log pitch analytics usage (added 2025-01-30)
     const pitchEnabledCount = ENABLE_PITCH_CONTEXT
@@ -654,6 +676,9 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
           });
 
           // PHASE 1: Send search complete event with previews
+          // Track AI start time for timing breakdown
+          timing.ai_start_ms = Date.now() - timingStart
+
           if (searchResults && searchResults.length > 0) {
             const avgSimilarity = searchResults.reduce((sum, r) => sum + r.similarity, 0) / searchResults.length;
 
@@ -664,6 +689,11 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
                   resultsCount: searchResults.length,
                   avgSimilarity: Math.round(avgSimilarity * 100) / 100,
                   engine: searchEngineUsed,
+                  timing: {
+                    intent_ms: timing.intent_ms,
+                    search_ms: timing.search_ms,
+                    setup_ms: timing.auth_ms + timing.profile_ms + timing.session_ms
+                  },
                   topTitles: searchResults.slice(0, 10).map(r => ({
                     title_id: r.title_id,
                     title_name_en: r.title_name_en,
@@ -806,6 +836,10 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
                 const data = line.slice(6)
 
                 if (data === '[DONE]') {
+                  // Calculate final timing
+                  timing.total_ms = Date.now() - timingStart
+                  timing.ai_ms = timing.total_ms - timing.ai_start_ms
+
                   // Validate response for title hallucinations
                   const validation = validateAIResponse(fullResponse, searchResults)
 
@@ -836,19 +870,42 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
                       responseAnalysis // Pass analysis results
                     });
 
-                    // Send suggestions AFTER full response but BEFORE [DONE]
+                    // Send suggestions with timing AFTER full response but BEFORE [DONE]
                     if (suggestedQueries.length > 0) {
                       controller.enqueue(
                         new TextEncoder().encode(
                           `data: ${JSON.stringify({
                             type: 'suggestions',
                             suggestedQueries,
-                            generatedAt: 'after_completion'
+                            generatedAt: 'after_completion',
+                            timing: {
+                              setup_ms: timing.auth_ms + timing.profile_ms + timing.session_ms,
+                              intent_ms: timing.intent_ms,
+                              search_ms: timing.search_ms,
+                              ai_ms: timing.ai_ms,
+                              total_ms: timing.total_ms
+                            }
                           })}\n\n`
                         )
                       );
 
-                      console.log('💡 Sent suggestions after completion:', suggestedQueries);
+                      console.log('💡 Sent suggestions after completion:', suggestedQueries, 'timing:', timing.total_ms + 'ms');
+                    } else {
+                      // Send timing even when no suggestions generated
+                      controller.enqueue(
+                        new TextEncoder().encode(
+                          `data: ${JSON.stringify({
+                            type: 'timing_complete',
+                            timing: {
+                              setup_ms: timing.auth_ms + timing.profile_ms + timing.session_ms,
+                              intent_ms: timing.intent_ms,
+                              search_ms: timing.search_ms,
+                              ai_ms: timing.ai_ms,
+                              total_ms: timing.total_ms
+                            }
+                          })}\n\n`
+                        )
+                      );
                     }
                   } else {
                     console.log('🔇 Suppressing suggestions:', {
@@ -859,6 +916,22 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
                       conversationStage,
                       responseAnalysis
                     });
+
+                    // Send timing even when suggestions are suppressed
+                    controller.enqueue(
+                      new TextEncoder().encode(
+                        `data: ${JSON.stringify({
+                          type: 'timing_complete',
+                          timing: {
+                            setup_ms: timing.auth_ms + timing.profile_ms + timing.session_ms,
+                            intent_ms: timing.intent_ms,
+                            search_ms: timing.search_ms,
+                            ai_ms: timing.ai_ms,
+                            total_ms: timing.total_ms
+                          }
+                        })}\n\n`
+                      )
+                    );
                   }
 
                   // Save response and suggestions to database

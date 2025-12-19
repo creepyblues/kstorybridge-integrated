@@ -20,7 +20,6 @@ import {
   TitleHero,
   OverviewTab,
   StoryDetailsTab,
-  PlatformDataTab,
   CreditsTab,
 } from '@/components/title-detail';
 
@@ -75,12 +74,6 @@ export default function TrialTitleDetail() {
     title?.story_structure ||
     title?.narrative_arc ||
     title?.planned_ending;
-
-  const hasPlatformData =
-    (title?.platforms && title.platforms.length > 0) ||
-    title?.views != null ||
-    title?.likes != null ||
-    title?.rating != null;
 
   const hasCredits =
     title?.story_author ||
@@ -196,16 +189,6 @@ export default function TrialTitleDetail() {
               </TabsTrigger>
             )}
 
-            {hasPlatformData && (
-              <TabsTrigger
-                value="platforms"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
-              >
-                <Icon icon="solar:graph-up-bold-duotone" className="w-4 h-4 mr-2" />
-                Platform Data
-              </TabsTrigger>
-            )}
-
             {hasCredits && (
               <TabsTrigger
                 value="credits"
@@ -225,12 +208,6 @@ export default function TrialTitleDetail() {
             {hasStoryDetails && (
               <TabsContent value="story" className="mt-0">
                 <StoryDetailsTab title={title} pitchAnalysis={pitchAnalysis} />
-              </TabsContent>
-            )}
-
-            {hasPlatformData && (
-              <TabsContent value="platforms" className="mt-0">
-                <PlatformDataTab title={title} />
               </TabsContent>
             )}
 

@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TierGatedContent } from '@/components/tier/TierGatedContent';
-import { Title } from '@/services/titlesService';
+import { Title, titlesService } from '@/services/titlesService';
 import { type PitchAnalysis } from '@/types/pitchAnalysis';
 import { UserTier } from '@/contexts/TierContext';
 import { AIInsightCard } from './AIInsightCard';
@@ -58,8 +58,137 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
     pitchAnalysis.content_classification.content_warnings?.length
   );
 
+  // Calculate metrics
+  const hasPlatforms = title.platforms && title.platforms.length > 0;
+  const hasRating = title.rating != null && title.rating > 0;
+  const platformTotalViews = hasPlatforms
+    ? title.platforms!.reduce((sum, p) => sum + (p.views || 0), 0)
+    : 0;
+  const totalViews = platformTotalViews > 0 ? platformTotalViews : (title.views || 0);
+  const hasQuickLinks = title.title_url || title.title_url_en;
+  const hasMetrics = totalViews > 0 || title.likes != null || hasRating || title.chapters != null;
+
   return (
     <div className="space-y-6">
+      {/* Aggregate Metrics & Quick Links Row */}
+      {(hasMetrics || hasQuickLinks) && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Aggregate Metrics Card */}
+          {hasMetrics && (
+            <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl lg:col-span-2">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Icon icon="solar:chart-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
+                  <h3 className="text-lg font-semibold text-black">Metrics</h3>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {/* Total Views */}
+                  {totalViews > 0 && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <Icon icon="solar:eye-bold-duotone" className="w-4 h-4 text-[#4C9C9B] mx-auto mb-1" />
+                      <div className="text-lg font-bold text-black">
+                        {titlesService.formatNumber(totalViews)}
+                      </div>
+                      <div className="text-xs text-gray-500">Views</div>
+                    </div>
+                  )}
+
+                  {/* Total Likes */}
+                  {title.likes != null && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <Icon icon="solar:graph-up-bold-duotone" className="w-4 h-4 text-pink-500 mx-auto mb-1" />
+                      <div className="text-lg font-bold text-black">
+                        {titlesService.formatNumber(title.likes)}
+                      </div>
+                      <div className="text-xs text-gray-500">Likes</div>
+                    </div>
+                  )}
+
+                  {/* Rating */}
+                  {hasRating && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <Icon icon="solar:star-bold-duotone" className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+                      <div className="text-lg font-bold text-black">
+                        {title.rating?.toFixed(1)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {title.rating_count ? `${titlesService.formatNumber(title.rating_count)} ratings` : 'Rating'}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Chapters */}
+                  {title.chapters != null && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <Icon icon="solar:book-bold-duotone" className="w-4 h-4 text-blue-500 mx-auto mb-1" />
+                      <div className="text-lg font-bold text-black">
+                        {title.chapters.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500">Chapters</div>
+                    </div>
+                  )}
+
+                  {/* Status */}
+                  <div className="bg-gray-50 rounded-lg p-3 text-center">
+                    <Icon icon="solar:calendar-bold-duotone" className="w-4 h-4 text-green-500 mx-auto mb-1" />
+                    <div className="text-base font-bold text-black">
+                      {title.completed ? 'Completed' : 'Ongoing'}
+                    </div>
+                    <div className="text-xs text-gray-500">Status</div>
+                  </div>
+
+                  {/* Age Rating */}
+                  {title.age_rating && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <Icon icon="solar:users-group-rounded-bold-duotone" className="w-4 h-4 text-red-500 mx-auto mb-1" />
+                      <div className="text-base font-bold text-black">
+                        {title.age_rating}
+                      </div>
+                      <div className="text-xs text-gray-500">Age Rating</div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Quick Links Card */}
+          {hasQuickLinks && (
+            <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Icon icon="solar:link-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
+                  <h3 className="text-lg font-semibold text-black">Quick Links</h3>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {title.title_url && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
+                      onClick={() => window.open(title.title_url, '_blank')}
+                    >
+                      <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
+                      Korean Original
+                    </Button>
+                  )}
+                  {title.title_url_en && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
+                      onClick={() => window.open(title.title_url_en, '_blank')}
+                    >
+                      <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
+                      English Translation
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
       {/* Licensing Opportunity Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Rights Info Card */}

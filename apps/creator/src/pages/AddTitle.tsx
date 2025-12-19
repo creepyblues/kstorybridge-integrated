@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { trackSurveyStepComplete, trackTitleCreate, trackTitleSaveDraft } from '@/utils/analytics'
 
 // Layout
 import { MainLayout } from '@/components/layout/MainLayout'
@@ -140,6 +141,8 @@ export default function AddTitleSurvey() {
           draft_data: data,
           current_step: currentStep,
         })
+        // Track draft save
+        trackTitleSaveDraft(currentStep)
       } else {
         // Create new draft and set ID
         const newDraft = await draftService.createDraft({
@@ -150,6 +153,8 @@ export default function AddTitleSurvey() {
         setCurrentDraftId(newDraft.id)
         // Update URL with new draftId (without page reload)
         window.history.replaceState(null, '', `/titles/add-title?draftId=${newDraft.id}`)
+        // Track first draft save
+        trackTitleSaveDraft(currentStep)
       }
     },
     debounceMs: 30000, // 30 seconds
@@ -218,9 +223,15 @@ export default function AddTitleSurvey() {
     }
   }
 
+  // Step names for analytics
+  const stepNames = ['', 'Basic Info', 'Story Details', 'Narrative', 'Materials', 'Profile']
+
   // Navigation handlers
   const goToNextStep = () => {
     if (validateCurrentStep()) {
+      // Track step completion before moving to next step
+      trackSurveyStepComplete(currentStep, stepNames[currentStep])
+
       if (currentStep < 5) {
         setCurrentStep(currentStep + 1)
         window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -305,6 +316,11 @@ export default function AddTitleSurvey() {
       }
 
       console.log('Title submitted for approval')
+
+      // Track title creation (use the draft ID as title ID since it becomes the title)
+      const submittedDraftId = currentDraftId || 'new-title'
+      trackTitleCreate(submittedDraftId, data.content_format)
+      trackSurveyStepComplete(5, stepNames[5]) // Track final step completion
 
       // Navigate to titles list (submission will show as "Pending Approval")
       alert(t('survey:messages.submitReviewMessage'))

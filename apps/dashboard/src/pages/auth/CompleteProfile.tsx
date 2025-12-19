@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { completeOAuthProfile } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { sendWelcomeEmail } from '@/services/emailService';
+import { notifyBuyerSignup } from '@/utils/slack';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles profile completion only - no business logic
@@ -101,6 +102,16 @@ export default function CompleteProfile() {
         buyer_role: formData.buyer_role,
         linkedin_url: formData.linkedin_url,
       }, session);
+
+      // Send Slack notification (non-blocking)
+      notifyBuyerSignup({
+        fullName: formData.full_name,
+        email: email,
+        company: formData.buyer_company,
+        role: formData.buyer_role,
+        authType: 'google',
+        linkedinUrl: formData.linkedin_url,
+      }).catch(console.warn);
 
       // Send welcome email (non-blocking)
       sendWelcomeEmail({

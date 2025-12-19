@@ -544,7 +544,7 @@ function mapIntelligenceFieldToTitle(fieldName: string): string | null {
     'completed': 'completed',
     'status': 'completed',  // Will need conversion: 'completed' -> true
     'synopsis': 'synopsis',
-    'synopsis_kr': 'description_kr',  // Korean synopsis maps to description_kr
+    'synopsis_kr': 'synopsis_kr',  // Korean synopsis maps to synopsis_kr
     'genre': 'genre',
     'author': 'story_author',
     'age_rating': 'age_rating',

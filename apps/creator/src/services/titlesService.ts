@@ -10,8 +10,8 @@ export interface Title {
   art_author?: string | null
   genre?: string[] | string | null
   synopsis?: string | null
+  synopsis_kr?: string | null
   description?: string | null
-  description_kr?: string | null
   tagline?: string | null
   tagline_kr?: string | null
   pitch?: string | null

@@ -113,7 +113,7 @@ export interface ExtractedIntelligenceData {
   rating?: number;
   rating_count?: number;
   chapters?: number;
-  description_kr?: string;
+  synopsis_kr?: string;
   genre?: string[];
   story_author?: string;
   title_image?: string;
@@ -321,7 +321,7 @@ export function extractIntelligenceData(
     const raw = latestMetrics.raw as Record<string, unknown> | undefined;
     if (raw) {
       if (raw.synopsis_kr && typeof raw.synopsis_kr === 'string') {
-        extracted.description_kr = raw.synopsis_kr;
+        extracted.synopsis_kr = raw.synopsis_kr;
       }
       if (raw.genre && Array.isArray(raw.genre)) {
         extracted.genre = raw.genre as string[];
@@ -346,8 +346,8 @@ export function extractIntelligenceData(
     const data = rawMeta.data as Record<string, unknown>;
 
     // Fill in any missing fields from source raw_meta
-    if (!extracted.description_kr && data.synopsis_kr && typeof data.synopsis_kr === 'string') {
-      extracted.description_kr = data.synopsis_kr;
+    if (!extracted.synopsis_kr && data.synopsis_kr && typeof data.synopsis_kr === 'string') {
+      extracted.synopsis_kr = data.synopsis_kr;
     }
     if (!extracted.genre && data.genre && Array.isArray(data.genre)) {
       extracted.genre = data.genre as string[];
@@ -432,7 +432,7 @@ export function getFieldLabel(field: keyof ExtractedIntelligenceData): string {
     rating: 'Rating',
     rating_count: 'Rating Count',
     chapters: 'Chapters',
-    description_kr: 'Synopsis (Korean)',
+    synopsis_kr: 'Synopsis (Korean)',
     genre: 'Genre',
     story_author: 'Author',
     title_image: 'Thumbnail',

@@ -9,6 +9,7 @@ import { signUpWithEmail, signInWithOAuth } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { trackSignup } from '@/utils/analytics';
 import { sendWelcomeEmail } from '@/services/emailService';
+import { notifyBuyerSignup } from '@/utils/slack';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -113,6 +114,16 @@ export default function SignUp() {
 
       // Track successful signup
       trackSignup('completed', 'email', { role: formData.buyer_role });
+
+      // Send Slack notification (non-blocking)
+      notifyBuyerSignup({
+        fullName: formData.full_name,
+        email: formData.email,
+        company: formData.buyer_company,
+        role: formData.buyer_role,
+        authType: 'email',
+        linkedinUrl: formData.linkedin_url,
+      }).catch(console.warn);
 
       // Send welcome email (non-blocking)
       sendWelcomeEmail({

@@ -106,7 +106,7 @@ export function IntelligenceResultsModal({
         return (value as string[]).join(', ');
       case 'completed':
         return (value as boolean) ? 'Yes' : 'No';
-      case 'description_kr': {
+      case 'synopsis_kr': {
         const text = value as string;
         return text.length > 100 ? `${text.slice(0, 100)}...` : text;
       }

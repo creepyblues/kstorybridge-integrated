@@ -575,13 +575,27 @@ export default function AdminTitleEdit() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="description_kr">Description (Korean)</Label>
+                      <Label htmlFor="synopsis_kr">Synopsis (Korean)</Label>
                       <Textarea
-                        id="description_kr"
-                        value={formData.description_kr || ''}
-                        onChange={(e) => handleInputChange('description_kr', e.target.value)}
+                        id="synopsis_kr"
+                        value={formData.synopsis_kr || ''}
+                        onChange={(e) => handleInputChange('synopsis_kr', e.target.value)}
                         rows={4}
                         className="resize-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description" className="text-purple-700 font-medium flex items-center gap-2">
+                        Full Description
+                        <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-purple-600 text-white uppercase">Admin</span>
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description || ''}
+                        onChange={(e) => handleInputChange('description', e.target.value)}
+                        rows={4}
+                        placeholder="Full description for admin use..."
+                        className="resize-none border-purple-400 bg-purple-50 focus:border-purple-500 focus:ring-purple-500"
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

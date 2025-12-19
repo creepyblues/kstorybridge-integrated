@@ -208,7 +208,8 @@ CREATE TABLE public.titles (
   tagline_kr text,
   note_kr text,
   cp text,
-  description_kr text,
+  synopsis_kr text,
+  description text,
   original_author text,
   original_author_kr text,
   age_rating text,
@@ -268,7 +269,8 @@ CREATE TABLE public.titles (
 - `synopsis`: Full story synopsis
 - `tagline`: Short tagline
 - `tagline_kr`: Short tagline (Korean)
-- `description_kr`: Korean description
+- `synopsis_kr`: Korean synopsis
+- `description`: Full description for admin use (English)
 - `note`: Internal notes
 - `note_kr`: Korean notes
 

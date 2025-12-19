@@ -173,7 +173,7 @@ export function AdminManualModal() {
                     </tr>
                     <tr className="border-b border-gray-100">
                       <td className="py-1.5 pr-4">synopsis_kr</td>
-                      <td className="py-1.5">description_kr</td>
+                      <td className="py-1.5">synopsis_kr</td>
                     </tr>
                     <tr className="border-b border-gray-100">
                       <td className="py-1.5 pr-4">genre</td>

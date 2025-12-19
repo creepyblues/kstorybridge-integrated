@@ -62,13 +62,6 @@ export function CompsAnalysisCard({
     return 'bg-gray-400';
   };
 
-  const getScoreBgColor = (score: number): string => {
-    if (score >= 85) return 'bg-green-50 border-green-200';
-    if (score >= 70) return 'bg-blue-50 border-blue-200';
-    if (score >= 55) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-gray-50 border-gray-200';
-  };
-
   const getTypeIcon = (type: string) => {
     if (
       type.toLowerCase().includes('tv') ||
@@ -96,83 +89,88 @@ export function CompsAnalysisCard({
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {compsAnalysis.map((comp) => (
             <div
               key={comp.comp_title}
-              className="border rounded-lg border-gray-200"
+              className="border rounded-xl border-gray-200 bg-gradient-to-r from-white to-gray-50 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
             >
-              {/* Comp Header with Poster */}
-              <div className="p-4 flex gap-4">
-                {/* Poster Thumbnail */}
-                {comp.poster_url ? (
-                  <a
-                    href={comp.imdb_url || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-shrink-0"
+              {/* Main Content Row - Poster Left, Info Right */}
+              <div className="flex">
+                {/* Poster - Left Side */}
+                <div className="relative flex-shrink-0 w-24">
+                  {comp.poster_url ? (
+                    <a
+                      href={comp.imdb_url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block h-full"
+                    >
+                      <img
+                        src={comp.poster_url}
+                        alt={`${comp.comp_title} poster`}
+                        className="w-24 h-36 object-cover"
+                      />
+                    </a>
+                  ) : (
+                    <div className="w-24 h-36 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <Icon icon="solar:clapperboard-bold-duotone" className="w-8 h-8 text-gray-300" />
+                    </div>
+                  )}
+                  {/* Match Score Badge - Floating on poster */}
+                  <Badge
+                    className={`absolute top-2 left-2 ${getScoreColor(comp.overall_match_score)} text-white text-xs font-bold px-2 py-0.5 shadow-lg`}
                   >
-                    <img
-                      src={comp.poster_url}
-                      alt={`${comp.comp_title} poster`}
-                      className="w-12 h-[72px] object-cover rounded shadow-sm hover:shadow-md transition-shadow"
-                    />
-                  </a>
-                ) : (
-                  <div className="w-12 h-[72px] bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                    <Icon icon="solar:clapperboard-bold-duotone" className="w-5 h-5 text-gray-400" />
-                  </div>
-                )}
+                    {comp.overall_match_score}%
+                  </Badge>
+                </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-gray-900">
-                      {comp.comp_title}
-                    </span>
-                    {/* IMDB Link - right next to title */}
-                    {comp.imdb_url && (
-                      <a
-                        href={comp.imdb_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-0.5 text-xs text-amber-600 hover:text-amber-700 hover:underline"
-                        title={`View on IMDB (${comp.imdb_id})`}
-                      >
-                        <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-3 w-3" />
-                        <span>IMDB</span>
-                      </a>
-                    )}
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                {/* Info - Right Side */}
+                <div className="flex-1 p-3 flex flex-col min-w-0">
+                  {/* Title & Type */}
+                  <div className="mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">
+                        {comp.comp_title}
+                      </h4>
+                      {comp.imdb_url && (
+                        <a
+                          href={comp.imdb_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-shrink-0 text-amber-500 hover:text-amber-600"
+                          title="View on IMDB"
+                        >
+                          <Icon icon="solar:square-arrow-right-up-bold-duotone" className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
                       {getTypeIcon(comp.comp_type)}
                       <span>
                         {comp.comp_year && `${comp.comp_year} · `}
                         {comp.comp_type}
                       </span>
                     </div>
-                    <Badge
-                      className={`${getScoreColor(comp.overall_match_score)} text-white`}
-                    >
-                      {comp.overall_match_score}% Match
-                    </Badge>
                   </div>
 
-                  <p className="text-sm text-gray-600 mt-2">{comp.explanation}</p>
+                  {/* Explanation */}
+                  <p className="text-xs text-gray-600 line-clamp-2 mb-2 flex-1">{comp.explanation}</p>
 
                   {/* Match Reasons */}
                   {comp.match_reasons && comp.match_reasons.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {comp.match_reasons.slice(0, 3).map((reason, idx) => (
+                    <div className="flex flex-wrap gap-1">
+                      {comp.match_reasons.slice(0, 2).map((reason, idx) => (
                         <span
                           key={idx}
-                          className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                          className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded-full"
                         >
                           {reason}
                         </span>
                       ))}
-                      {comp.match_reasons.length > 3 && (
-                        <span className="text-xs text-gray-400">
-                          +{comp.match_reasons.length - 3} more
+                      {comp.match_reasons.length > 2 && (
+                        <span className="text-[10px] text-gray-400">
+                          +{comp.match_reasons.length - 2}
                         </span>
                       )}
                     </div>
@@ -180,59 +178,60 @@ export function CompsAnalysisCard({
                 </div>
               </div>
 
-              {/* Expandable Dimension Scores */}
+              {/* Show Details - Bottom */}
               {comp.dimension_scores && comp.dimension_scores.length > 0 && (
                 <Collapsible
                   open={expandedComps.has(comp.comp_title)}
                   onOpenChange={() => toggleExpand(comp.comp_title)}
                 >
                   <CollapsibleTrigger asChild>
-                    <button className="w-full px-4 py-2 border-t border-gray-100 flex items-center justify-center gap-2 text-sm text-gray-500 hover:bg-gray-50">
+                    <button className="w-full py-2 border-t border-gray-100 flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors">
                       {expandedComps.has(comp.comp_title) ? (
                         <>
-                          <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-4 w-4" />
-                          Hide dimension breakdown
+                          <Icon icon="solar:alt-arrow-up-bold-duotone" className="h-3.5 w-3.5" />
+                          Hide details
                         </>
                       ) : (
                         <>
-                          <Icon icon="solar:alt-arrow-down-bold-duotone" className="h-4 w-4" />
-                          Show dimension breakdown
+                          <Icon icon="solar:alt-arrow-down-bold-duotone" className="h-3.5 w-3.5" />
+                          Show details
                         </>
                       )}
                     </button>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
-                    <div className="px-4 pb-4 pt-2">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {comp.dimension_scores.map((dim) => (
-                          <div
-                            key={dim.dimension}
-                            className={`p-2 rounded border ${getScoreBgColor(dim.score)}`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-medium text-gray-700">
-                                {compsGeneratorService.formatDimensionName(
-                                  dim.dimension
-                                )}
-                              </span>
-                              <span
-                                className={`text-xs font-bold ${
-                                  dim.score >= 85
-                                    ? 'text-green-600'
-                                    : dim.score >= 70
-                                      ? 'text-blue-600'
-                                      : dim.score >= 55
-                                        ? 'text-yellow-600'
-                                        : 'text-gray-500'
-                                }`}
-                              >
-                                {dim.score}%
-                              </span>
+                    <div className="px-3 pb-3 space-y-1.5">
+                      {comp.dimension_scores.map((dim) => (
+                        <div
+                          key={dim.dimension}
+                          className="flex items-center justify-between text-xs"
+                        >
+                          <span className="text-gray-600">
+                            {compsGeneratorService.formatDimensionName(dim.dimension)}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${getScoreColor(dim.score)}`}
+                                style={{ width: `${dim.score}%` }}
+                              />
                             </div>
-                            <p className="text-xs text-gray-600">{dim.reason}</p>
+                            <span
+                              className={`font-medium w-8 text-right ${
+                                dim.score >= 85
+                                  ? 'text-green-600'
+                                  : dim.score >= 70
+                                    ? 'text-blue-600'
+                                    : dim.score >= 55
+                                      ? 'text-yellow-600'
+                                      : 'text-gray-500'
+                              }`}
+                            >
+                              {dim.score}
+                            </span>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   </CollapsibleContent>
                 </Collapsible>

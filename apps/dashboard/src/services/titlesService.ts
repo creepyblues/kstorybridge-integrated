@@ -90,9 +90,10 @@ export interface Title {
 
   // Synopsis & Description
   synopsis?: string;
+  synopsis_kr?: string;
+  description?: string;
   tagline?: string;
   tagline_kr?: string;
-  description_kr?: string;
   note?: string;
   note_kr?: string;
 

@@ -1,238 +1,314 @@
-// Google Tag Manager utility functions for the Creator app
+/**
+ * Analytics Utility - GA4 Event Tracking for Creator App
+ *
+ * Provides comprehensive event tracking for user journey analytics.
+ * Uses direct GA4 implementation (same pattern as dashboard app).
+ *
+ * @module analytics
+ */
 
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag?: (...args: unknown[]) => void;
+    dataLayer: unknown[];
   }
 }
 
-// Google Tag Manager Container ID (shared with Dashboard and Website)
-const GTM_CONTAINER_ID = 'GTM-PZBC4XQT';
+// Environment-based configuration
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || '';
+const IS_DEV = import.meta.env.DEV;
+const IS_ANALYTICS_ENABLED = !!GA_MEASUREMENT_ID;
 
-// Initialize Google Tag Manager (GTM is loaded directly in HTML)
-export const initGA = () => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    // GTM is initialized via the script in HTML
-    // Push initial configuration to dataLayer
-    window.dataLayer.push({
-      'gtm.start': new Date().getTime(),
-      'event': 'gtm.js',
-      'app_name': 'creator',
-      'app_version': '2.0.0'
-    });
+/**
+ * Initialize Google Analytics 4
+ * Call this once in your app's entry point (main.tsx)
+ */
+export const initializeAnalytics = (): void => {
+  if (!IS_ANALYTICS_ENABLED) {
+    if (IS_DEV) {
+      console.log('[Analytics] GA4 not configured (VITE_GA_MEASUREMENT_ID not set)');
+    }
+    return;
+  }
+
+  // Load gtag.js script dynamically
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  document.head.appendChild(script);
+
+  // Initialize gtag - must use 'arguments' object, not spread args
+  // This is the standard gtag pattern required by gtag.js
+  window.dataLayer = window.dataLayer || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  window.gtag = function () {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments);
+  };
+
+  window.gtag('js', new Date());
+  window.gtag('config', GA_MEASUREMENT_ID, {
+    send_page_view: true,
+  });
+
+  if (IS_DEV) {
+    console.log(`[Analytics] Creator GA4 initialized (${GA_MEASUREMENT_ID})`);
   }
 };
 
-// Track page views
-export const trackPageView = (path: string, title?: string) => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'page_view',
-      'page_title': title || document.title,
-      'page_location': window.location.href,
-      'page_path': path,
-      'app_section': 'creator'
-    });
+/**
+ * Generic event tracking helper
+ */
+const trackEvent = (eventName: string, params: Record<string, unknown>): void => {
+  // Add app_section to all events for segmentation
+  const enrichedParams = {
+    ...params,
+    app_section: 'creator',
+  };
+
+  if (IS_DEV) {
+    console.log(`[Analytics] ${eventName}`, enrichedParams);
+  }
+
+  if (!IS_ANALYTICS_ENABLED) {
+    return;
+  }
+
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', eventName, enrichedParams);
   }
 };
 
-// Track custom events
-export const trackEvent = (action: string, category: string, label?: string, value?: number) => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'custom_event',
-      'event_action': action,
-      'event_category': category,
-      'event_label': label,
-      'event_value': value,
-      'app_section': 'creator'
-    });
-  }
+// ============================================
+// Page View Tracking
+// ============================================
+
+/**
+ * Track page views
+ */
+export const trackPageView = (path: string, title?: string): void => {
+  trackEvent('page_view', {
+    page_title: title || document.title,
+    page_location: window.location.href,
+    page_path: path,
+  });
 };
 
 // ============================================
 // Authentication Events
 // ============================================
 
-export const trackSignup = (method: 'email' | 'google') => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'sign_up',
-      'method': method,
-      'user_type': 'creator',
-      'app_section': 'creator'
-    });
-  }
+export const trackSignup = (method: 'email' | 'google'): void => {
+  trackEvent('sign_up', {
+    method: method,
+    user_type: 'creator',
+  });
 };
 
-export const trackLogin = (method: 'email' | 'google') => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'login',
-      'method': method,
-      'user_type': 'creator',
-      'app_section': 'creator'
-    });
-  }
+export const trackLogin = (method: 'email' | 'google'): void => {
+  trackEvent('login', {
+    method: method,
+    user_type: 'creator',
+  });
 };
 
-export const trackLogout = () => {
-  trackEvent('logout', 'authentication', 'creator_logout');
+export const trackLogout = (): void => {
+  trackEvent('logout', {
+    event_category: 'authentication',
+    event_label: 'creator_logout',
+  });
 };
 
-export const trackOAuthComplete = (provider: string) => {
-  trackEvent('oauth_complete', 'authentication', provider);
+export const trackOAuthComplete = (provider: string): void => {
+  trackEvent('oauth_complete', {
+    event_category: 'authentication',
+    provider: provider,
+  });
 };
 
-export const trackProfileComplete = () => {
-  trackEvent('profile_complete', 'authentication', 'creator_profile_setup');
+export const trackProfileComplete = (): void => {
+  trackEvent('profile_complete', {
+    event_category: 'authentication',
+    event_label: 'creator_profile_setup',
+  });
 };
 
 // ============================================
 // Title Management Events
 // ============================================
 
-export const trackTitleCreate = (titleId: string, format?: string) => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'title_create',
-      'title_id': titleId,
-      'content_format': format,
-      'app_section': 'creator'
-    });
-  }
+export const trackTitleCreate = (titleId: string, format?: string): void => {
+  trackEvent('title_create', {
+    title_id: titleId,
+    content_format: format,
+  });
 };
 
-export const trackTitleEdit = (titleId: string) => {
-  trackEvent('title_edit', 'title_management', titleId);
+export const trackTitleEdit = (titleId: string): void => {
+  trackEvent('title_edit', {
+    event_category: 'title_management',
+    title_id: titleId,
+  });
 };
 
-export const trackTitleDelete = (titleId: string) => {
-  trackEvent('title_delete', 'title_management', titleId);
+export const trackTitleDelete = (titleId: string): void => {
+  trackEvent('title_delete', {
+    event_category: 'title_management',
+    title_id: titleId,
+  });
 };
 
-export const trackTitleView = (titleId: string) => {
-  trackEvent('title_view', 'title_management', titleId);
+export const trackTitleView = (titleId: string): void => {
+  trackEvent('title_view', {
+    event_category: 'title_management',
+    title_id: titleId,
+  });
 };
 
-export const trackTitleSaveDraft = (step: number) => {
-  trackEvent('title_save_draft', 'title_management', `step_${step}`, step);
+export const trackTitleSaveDraft = (step: number): void => {
+  trackEvent('title_save_draft', {
+    event_category: 'title_management',
+    event_label: `step_${step}`,
+    step_number: step,
+  });
 };
 
-export const trackSurveyStepComplete = (step: number, stepName: string) => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'survey_step_complete',
-      'step_number': step,
-      'step_name': stepName,
-      'app_section': 'creator'
-    });
-  }
+export const trackSurveyStepComplete = (step: number, stepName: string): void => {
+  trackEvent('survey_step_complete', {
+    step_number: step,
+    step_name: stepName,
+  });
 };
 
-export const trackDocumentUpload = (documentType: string, titleId?: string) => {
-  trackEvent('document_upload', 'title_management', documentType, titleId ? 1 : 0);
+export const trackDocumentUpload = (documentType: string, titleId?: string): void => {
+  trackEvent('document_upload', {
+    event_category: 'title_management',
+    document_type: documentType,
+    title_id: titleId,
+  });
 };
 
 // ============================================
 // Subscription & Billing Events
 // ============================================
 
-export const trackPlanView = () => {
-  trackEvent('plan_view', 'subscription', 'pricing_page');
+export const trackPlanView = (): void => {
+  trackEvent('plan_view', {
+    event_category: 'subscription',
+    event_label: 'pricing_page',
+  });
 };
 
-export const trackCheckoutStart = (plan: string, billingPeriod: 'monthly' | 'yearly', titleId?: string) => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'begin_checkout',
-      'plan_type': plan,
-      'billing_period': billingPeriod,
-      'title_id': titleId,
-      'app_section': 'creator'
-    });
-  }
+export const trackCheckoutStart = (plan: string, billingPeriod: 'monthly' | 'yearly', titleId?: string): void => {
+  trackEvent('begin_checkout', {
+    plan_type: plan,
+    billing_period: billingPeriod,
+    title_id: titleId,
+  });
 };
 
-export const trackPaymentSuccess = (plan: string, billingPeriod: string, amount?: number) => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'purchase',
-      'plan_type': plan,
-      'billing_period': billingPeriod,
-      'value': amount,
-      'currency': 'USD',
-      'app_section': 'creator'
-    });
-  }
+export const trackPaymentSuccess = (plan: string, billingPeriod: string, amount?: number): void => {
+  trackEvent('purchase', {
+    plan_type: plan,
+    billing_period: billingPeriod,
+    value: amount,
+    currency: 'USD',
+  });
 };
 
-export const trackBillingView = () => {
-  trackEvent('billing_view', 'subscription', 'billing_page');
+export const trackBillingView = (): void => {
+  trackEvent('billing_view', {
+    event_category: 'subscription',
+    event_label: 'billing_page',
+  });
 };
 
-export const trackSubscriptionCancel = (subscriptionId: string) => {
-  trackEvent('subscription_cancel', 'subscription', subscriptionId);
+export const trackSubscriptionCancel = (subscriptionId: string): void => {
+  trackEvent('subscription_cancel', {
+    event_category: 'subscription',
+    subscription_id: subscriptionId,
+  });
 };
 
 // ============================================
 // Profile & Settings Events
 // ============================================
 
-export const trackProfileUpdate = (fields: string[]) => {
-  trackEvent('profile_update', 'user_settings', fields.join(', '));
+export const trackProfileUpdate = (fields: string[]): void => {
+  trackEvent('profile_update', {
+    event_category: 'user_settings',
+    fields_updated: fields.join(', '),
+  });
 };
 
-export const trackProfileView = () => {
-  trackEvent('profile_view', 'user_settings', 'profile_page');
+export const trackProfileView = (): void => {
+  trackEvent('profile_view', {
+    event_category: 'user_settings',
+    event_label: 'profile_page',
+  });
 };
 
 // ============================================
 // Content & Navigation Events
 // ============================================
 
-export const trackNewsView = (postId: string, title?: string) => {
-  trackEvent('news_view', 'content_engagement', title || postId);
+export const trackNewsView = (postId: string, title?: string): void => {
+  trackEvent('news_view', {
+    event_category: 'content_engagement',
+    post_id: postId,
+    post_title: title,
+  });
 };
 
-export const trackLearningCenterView = (postId: string, title?: string) => {
-  trackEvent('learning_center_view', 'content_engagement', title || postId);
+export const trackLearningCenterView = (postId: string, title?: string): void => {
+  trackEvent('learning_center_view', {
+    event_category: 'content_engagement',
+    post_id: postId,
+    post_title: title,
+  });
 };
 
-export const trackNavigation = (destination: string, source?: string) => {
-  trackEvent('navigation', 'user_flow', `${source || 'unknown'} -> ${destination}`);
+export const trackNavigation = (destination: string, source?: string): void => {
+  trackEvent('navigation', {
+    event_category: 'user_flow',
+    destination: destination,
+    source: source || 'unknown',
+  });
 };
 
-export const trackButtonClick = (buttonName: string, location: string) => {
-  trackEvent('button_click', 'engagement', `${buttonName} (${location})`);
+export const trackButtonClick = (buttonName: string, location: string): void => {
+  trackEvent('button_click', {
+    event_category: 'engagement',
+    button_name: buttonName,
+    location: location,
+  });
 };
 
-export const trackExternalLink = (url: string, linkText?: string) => {
-  trackEvent('external_link_click', 'outbound', linkText || url);
+export const trackExternalLink = (url: string, linkText?: string): void => {
+  trackEvent('external_link_click', {
+    event_category: 'outbound',
+    url: url,
+    link_text: linkText,
+  });
 };
 
 // ============================================
 // Error Tracking
 // ============================================
 
-export const trackError = (errorMessage: string, errorLocation: string, errorCode?: string) => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'error',
-      'error_message': errorMessage,
-      'error_location': errorLocation,
-      'error_code': errorCode,
-      'app_section': 'creator'
-    });
-  }
+export const trackError = (errorMessage: string, errorLocation: string, errorCode?: string): void => {
+  trackEvent('error', {
+    error_message: errorMessage,
+    error_location: errorLocation,
+    error_code: errorCode,
+  });
 };
 
-export const trackAuthError = (errorMessage: string, method?: string) => {
+export const trackAuthError = (errorMessage: string, method?: string): void => {
   trackError(errorMessage, 'authentication', method);
 };
 
-export const trackApiError = (endpoint: string, errorMessage: string, statusCode?: number) => {
+export const trackApiError = (endpoint: string, errorMessage: string, statusCode?: number): void => {
   trackError(errorMessage, `api_${endpoint}`, statusCode?.toString());
 };
 
@@ -240,10 +316,40 @@ export const trackApiError = (endpoint: string, errorMessage: string, statusCode
 // Form Events
 // ============================================
 
-export const trackFormSubmission = (formName: string, success: boolean) => {
-  trackEvent('form_submit', 'conversion', formName, success ? 1 : 0);
+export const trackFormSubmission = (formName: string, success: boolean): void => {
+  trackEvent('form_submit', {
+    event_category: 'conversion',
+    form_name: formName,
+    success: success,
+  });
 };
 
-export const trackFormError = (formName: string, fieldName: string, errorMessage: string) => {
-  trackEvent('form_error', 'validation', `${formName}: ${fieldName} - ${errorMessage}`);
+export const trackFormError = (formName: string, fieldName: string, errorMessage: string): void => {
+  trackEvent('form_error', {
+    event_category: 'validation',
+    form_name: formName,
+    field_name: fieldName,
+    error_message: errorMessage,
+  });
+};
+
+// ============================================
+// Legacy Exports (for backward compatibility)
+// ============================================
+
+/**
+ * @deprecated Use initializeAnalytics() instead
+ */
+export const initGA = initializeAnalytics;
+
+/**
+ * Generic custom event tracker (for backward compatibility)
+ */
+export const trackCustomEvent = (action: string, category: string, label?: string, value?: number): void => {
+  trackEvent('custom_event', {
+    event_action: action,
+    event_category: category,
+    event_label: label,
+    event_value: value,
+  });
 };

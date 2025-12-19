@@ -63,8 +63,14 @@ export const initializeAnalytics = (): void => {
  * Generic event tracking helper
  */
 const trackEvent = (eventName: string, params: Record<string, unknown>): void => {
+  // Add app_section to all events for segmentation
+  const enrichedParams = {
+    ...params,
+    app_section: 'dashboard',
+  };
+
   if (IS_DEV) {
-    console.log(`[Analytics] ${eventName}`, params);
+    console.log(`[Analytics] ${eventName}`, enrichedParams);
   }
 
   if (!IS_ANALYTICS_ENABLED) {
@@ -72,7 +78,7 @@ const trackEvent = (eventName: string, params: Record<string, unknown>): void =>
   }
 
   if (typeof window.gtag === 'function') {
-    window.gtag('event', eventName, params);
+    window.gtag('event', eventName, enrichedParams);
   }
 };
 

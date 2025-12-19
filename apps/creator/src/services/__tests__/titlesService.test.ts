@@ -68,7 +68,7 @@ describe('titlesService', () => {
         // Content details
         synopsis: 'A test synopsis',
         description: 'A detailed description',
-        description_kr: '한국어 설명',
+        synopsis_kr: '한국어 설명',
         tagline: 'A catchy tagline',
         tagline_kr: '한국어 태그라인',
         pitch: 'Elevator pitch',
@@ -365,7 +365,7 @@ describe('titlesService', () => {
         synopsis: 'A compelling synopsis',
         tagline: 'Catchy tagline',
         tagline_kr: '한국어 태그라인',
-        description_kr: '상세 설명',
+        synopsis_kr: '상세 설명',
         inspiration: 'Inspired by...',
         comparables: ['Similar Title 1', 'Similar Title 2'],
         important_issues: 'Social themes',
@@ -571,7 +571,7 @@ describe('titlesService', () => {
         synopsis: 'Synopsis',
         tagline: 'Tagline',
         tagline_kr: '태그라인',
-        description_kr: '설명',
+        synopsis_kr: '설명',
         inspiration: 'Inspiration',
         comps: ['Comp 1', 'Comp 2'], // DB uses 'comps'
         important_issues: 'Issues',
@@ -585,7 +585,7 @@ describe('titlesService', () => {
         synopsis: dbTitle.synopsis || '',
         tagline: dbTitle.tagline || '',
         tagline_kr: dbTitle.tagline_kr || '',
-        description_kr: dbTitle.description_kr || '',
+        synopsis_kr: dbTitle.synopsis_kr || '',
         inspiration: dbTitle.inspiration || '',
         comparables: dbTitle.comps || [], // Form uses 'comparables'
         important_issues: dbTitle.important_issues || '',
@@ -680,7 +680,7 @@ describe('titlesService', () => {
         'updated_at', // System field
         'rights_owner', // Deprecated
         'rights', // Deprecated (use rights_available)
-        'description', // Uses description_kr instead
+        'description_kr', // Deprecated - use synopsis_kr instead
         'pitch', // Separate upload component
         'note_kr', // Not in edit form
       ]
@@ -887,7 +887,7 @@ describe('EditTitle onSubmit Field Mapping Verification', () => {
       synopsis: 'Synopsis',
       tagline: 'Tagline',
       tagline_kr: '태그라인',
-      description_kr: '설명',
+      synopsis_kr: '설명',
       inspiration: 'Inspiration',
       comparables: ['Comp 1', 'Comp 2'],
       important_issues: 'Issues',
@@ -955,7 +955,7 @@ describe('EditTitle onSubmit Field Mapping Verification', () => {
       synopsis: values.synopsis?.trim() || null,
       tagline: values.tagline?.trim() || null,
       tagline_kr: values.tagline_kr?.trim() || null,
-      description_kr: values.description_kr?.trim() || null,
+      synopsis_kr: values.synopsis_kr?.trim() || null,
       inspiration: values.inspiration?.trim() || null,
       comps: values.comparables && values.comparables.length > 0
         ? values.comparables

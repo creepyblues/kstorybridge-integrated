@@ -115,7 +115,7 @@ export const mockTitle = {
   title_name_en: 'Test Title',
   title_name_kr: '테스트 제목',
   synopsis: 'A compelling story about...',
-  description_kr: '매력적인 이야기...',
+  synopsis_kr: '매력적인 이야기...',
   genre: ['Drama', 'Thriller'],
   tone: 'Dark',
   content_format: 'TV Series',

@@ -153,7 +153,7 @@ export default function TitleDetail() {
 
   // Check if tabs have content to determine which to show
   const hasStoryDetails =
-    title?.description_kr ||
+    title?.synopsis_kr ||
     title?.tone ||
     title?.important_issues ||
     title?.setting_description ||

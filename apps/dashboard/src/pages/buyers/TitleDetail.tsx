@@ -17,7 +17,6 @@ import {
   TitleHero,
   OverviewTab,
   StoryDetailsTab,
-  PlatformDataTab,
   MaterialsTab,
   CreditsTab,
 } from '@/components/title-detail';
@@ -165,12 +164,6 @@ export default function TitleDetail() {
     title?.narrative_arc ||
     title?.planned_ending;
 
-  const hasPlatformData =
-    (title?.platforms && title.platforms.length > 0) ||
-    title?.views != null ||
-    title?.likes != null ||
-    title?.rating != null;
-
   const hasMaterials =
     (title?.pitch && title.pitch.trim() !== '') ||
     (title?.documents && title.documents.length > 0);
@@ -257,16 +250,6 @@ export default function TitleDetail() {
               </TabsTrigger>
             )}
 
-            {hasPlatformData && (
-              <TabsTrigger
-                value="platforms"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#4C9C9B] data-[state=active]:text-[#4C9C9B] data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
-              >
-                <Icon icon="solar:chart-bold-duotone" className="w-4 h-4 mr-2" />
-                Platform Data
-              </TabsTrigger>
-            )}
-
             {hasMaterials && (
               <TabsTrigger
                 value="materials"
@@ -296,12 +279,6 @@ export default function TitleDetail() {
             {hasStoryDetails && (
               <TabsContent value="story" className="mt-0">
                 <StoryDetailsTab title={title} pitchAnalysis={pitchAnalysis} />
-              </TabsContent>
-            )}
-
-            {hasPlatformData && (
-              <TabsContent value="platforms" className="mt-0">
-                <PlatformDataTab title={title} />
               </TabsContent>
             )}
 

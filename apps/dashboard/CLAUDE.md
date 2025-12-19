@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated**: 2025-12-03
+**Last Updated**: 2025-12-19
 
 ---
 
@@ -229,6 +229,11 @@ if (!hasAccess('pro')) {
 ### Admin Panel
 - **Layout**: `src/components/layout/AdminLayout.tsx` - Sidebar navigation
 - **Titles**: `src/pages/admin/AdminTitles.tsx` - Title management table
+- **Title Edit Modal**: `src/components/admin/TitleEditModal.tsx` - Full title editing with:
+  - Database column names shown in curly braces after each field label (e.g., "Korean Name {title_name_kr}")
+  - Collapsible sections: Basic Info, Classification, Metrics, Authors, Content, Story Details, Rights, Achievements
+  - Intelligence collection buttons for auto-populating data from platform URLs
+  - Analyzer tools: Key Visuals, Fan Signal, Comps Generator, Format Fit
 
 ### GA4 Analytics (Fully Implemented)
 - **Measurement ID**: `G-DWL6MV0MC2`
@@ -464,6 +469,6 @@ Only create new files when:
 
 ---
 
-**Last Updated**: 2025-11-27
+**Last Updated**: 2025-12-19
 **Version**: 2.0
 **Status**: ✅ Production Ready - Primary Buyer Dashboard

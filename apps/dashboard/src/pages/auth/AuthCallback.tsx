@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { checkBuyerProfileExists } from '@/lib/auth';
 import { Icon } from '@iconify/react';
+import { notifyUserSignin } from '@/utils/slack';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles OAuth callback only - no business logic
@@ -87,6 +88,13 @@ export default function AuthCallback() {
 
         // Profile exists - redirect to homepage
         clearOAuthStorage();
+
+        // Send Slack notification (non-blocking)
+        notifyUserSignin({
+          email: user.email || '',
+          authType: 'google',
+        }).catch(console.warn);
+
         toast({
           title: 'Welcome back!',
           description: 'Successfully signed in',

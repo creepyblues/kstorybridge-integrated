@@ -91,7 +91,8 @@ function CharacterCard({ character }: { character: CharacterDetail }) {
 export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) {
   const [showAllCharacters, setShowAllCharacters] = useState(false);
 
-  const hasSynopsis = !!title.description_kr;
+  const hasSynopsis = !!title.synopsis_kr;
+  const hasDescription = !!title.description;
   const hasThemesContent = title.tone || title.important_issues;
   const hasWorldContent = title.setting_description || title.world_lore || title.supernatural_concepts;
   const hasCharacters = title.character_details && title.character_details.length > 0;
@@ -130,7 +131,20 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
               <Icon icon="solar:book-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">시놉시스</h3>
             </div>
-            <p className="text-gray-700 whitespace-pre-line">{title.description_kr}</p>
+            <p className="text-gray-700 whitespace-pre-line">{title.synopsis_kr}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Full Description Card */}
+      {hasDescription && (
+        <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Icon icon="solar:document-text-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
+              <h3 className="text-lg font-semibold text-black">Full Description</h3>
+            </div>
+            <p className="text-gray-700 whitespace-pre-line">{title.description}</p>
           </CardContent>
         </Card>
       )}
@@ -465,7 +479,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
       )}
 
       {/* No content message */}
-      {!hasSynopsis && !hasThemesContent && !hasWorldContent && !title.inspiration && !hasCharacters && !hasNarrativeContent &&
+      {!hasSynopsis && !hasDescription && !hasThemesContent && !hasWorldContent && !title.inspiration && !hasCharacters && !hasNarrativeContent &&
        !hasAIStoryWorld && !hasAIStoryElements && !hasAIThemesTone && !hasAICharacters && !hasAIKoreanCultural && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-8 text-center">

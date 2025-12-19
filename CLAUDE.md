@@ -88,7 +88,7 @@ gh pr create --base main --head v2 --title "Deploy v2 to production"
   | subscribers | likes |
   | rating_score | rating |
   | episode_count | chapters |
-  | synopsis_kr | description_kr |
+  | synopsis_kr | synopsis_kr |
   | genre | genre |
   | author | story_author |
   | thumbnail | title_image |
@@ -596,7 +596,7 @@ interface CreatorFormData {
 
 ### Key Fields (Quick Reference)
 - `title_id`, `title_name_kr`, `title_name_en` - Title identification
-- `synopsis`, `description_kr` - Story summaries
+- `synopsis`, `synopsis_kr`, `description` - Story summaries
 - `story_author`, `art_author` - Creator credits
 - `genre` (array), `content_format`, `tone` - Content classification
 - `rights`, `rights_holder_name` - Business & rights

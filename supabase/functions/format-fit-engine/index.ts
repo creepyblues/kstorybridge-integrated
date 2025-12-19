@@ -41,7 +41,7 @@ interface TitleData {
   title_name_en: string | null;
   title_name_kr: string | null;
   synopsis: string | null;
-  description_kr: string | null;
+  synopsis_kr: string | null;
   genre: string[] | null;
   tone: string | null;
   content_format: string | null;
@@ -125,7 +125,7 @@ serve(async (req) => {
         title_name_en,
         title_name_kr,
         synopsis,
-        description_kr,
+        synopsis_kr,
         genre,
         tone,
         content_format,
@@ -443,7 +443,7 @@ function buildDeconstructionPrompt(
 ): string {
   const titleInfo = `
 TITLE: ${title.title_name_en || ''} / ${title.title_name_kr || ''}
-SYNOPSIS: ${title.synopsis || title.description_kr || 'Not available'}
+SYNOPSIS: ${title.synopsis || title.synopsis_kr || 'Not available'}
 GENRE: ${title.genre?.join(', ') || 'Not specified'}
 TONE: ${title.tone || 'Not specified'}
 FORMAT: ${title.content_format || 'Not specified'}

@@ -58,7 +58,7 @@ interface EditTitleFormData {
   synopsis?: string
   tagline?: string
   tagline_kr?: string
-  description_kr?: string
+  synopsis_kr?: string
   inspiration?: string
   comparables?: string[]
   important_issues?: string
@@ -218,7 +218,7 @@ export default function EditTitle() {
         synopsis: data.synopsis || '',
         tagline: data.tagline || '',
         tagline_kr: data.tagline_kr || '',
-        description_kr: data.description_kr || '',
+        synopsis_kr: data.synopsis_kr || '',
         inspiration: data.inspiration || '',
         comparables: data.comps || [],
         important_issues: data.important_issues || '',
@@ -304,7 +304,7 @@ export default function EditTitle() {
         synopsis: values.synopsis?.trim() || null,
         tagline: values.tagline?.trim() || null,
         tagline_kr: values.tagline_kr?.trim() || null,
-        description_kr: values.description_kr?.trim() || null,
+        synopsis_kr: values.synopsis_kr?.trim() || null,
         inspiration: values.inspiration?.trim() || null,
         comps: values.comparables && values.comparables.length > 0
           ? values.comparables

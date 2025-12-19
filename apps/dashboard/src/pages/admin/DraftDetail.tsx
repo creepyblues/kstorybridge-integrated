@@ -289,7 +289,7 @@ export default function AdminDraftDetail() {
             { label: "Tagline (English)", value: draftData.tagline },
             { label: "Tagline (Korean)", value: draftData.tagline_kr },
             { label: "Synopsis", value: draftData.synopsis },
-            { label: "Description (Korean)", value: draftData.description_kr },
+            { label: "Synopsis (Korean)", value: draftData.synopsis_kr },
             { label: "Genre", value: draftData.genre },
             { label: "Genre (Korean)", value: draftData.genre_kr },
             { label: "Content Format", value: draftData.content_format },

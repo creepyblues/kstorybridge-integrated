@@ -432,10 +432,10 @@ export default function TitleDetail() {
                   fullWidth
                 />
                 <FieldDisplay
-                  label={t('titles:detail.descriptionKr', 'Description (Korean)')}
-                  value={title.description_kr && (
+                  label={t('titles:detail.synopsisKr', 'Synopsis (Korean)')}
+                  value={title.synopsis_kr && (
                     <p className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
-                      {title.description_kr}
+                      {title.synopsis_kr}
                     </p>
                   )}
                   fullWidth

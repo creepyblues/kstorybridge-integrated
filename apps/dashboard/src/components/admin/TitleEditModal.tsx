@@ -563,7 +563,7 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 pb-4 border-b">
                     <div className="space-y-1">
-                      <Label htmlFor="title_name_en" className="text-sm">English Name</Label>
+                      <Label htmlFor="title_name_en" className="text-sm">English Name <span className="text-gray-400 font-normal">{'{title_name_en}'}</span></Label>
                       <Input
                         id="title_name_en"
                         value={formData.title_name_en || ''}
@@ -572,7 +572,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="title_name_kr" className="text-sm">Korean Name</Label>
+                      <Label htmlFor="title_name_kr" className="text-sm">Korean Name <span className="text-gray-400 font-normal">{'{title_name_kr}'}</span></Label>
                       <Input
                         id="title_name_kr"
                         value={formData.title_name_kr || ''}
@@ -581,7 +581,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="title_url" className="text-sm">Title URL</Label>
+                      <Label htmlFor="title_url" className="text-sm">Title URL <span className="text-gray-400 font-normal">{'{title_url}'}</span></Label>
                       <div className="flex gap-2">
                         <Input
                           id="title_url"
@@ -609,7 +609,7 @@ export function TitleEditModal({
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="title_url_en" className="text-sm">English URL</Label>
+                      <Label htmlFor="title_url_en" className="text-sm">English URL <span className="text-gray-400 font-normal">{'{title_url_en}'}</span></Label>
                       <div className="flex gap-2">
                         <Input
                           id="title_url_en"
@@ -637,7 +637,7 @@ export function TitleEditModal({
                       </div>
                     </div>
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="title_image" className="text-sm">Image URL</Label>
+                      <Label htmlFor="title_image" className="text-sm">Image URL <span className="text-gray-400 font-normal">{'{title_image}'}</span></Label>
                       <Input
                         id="title_image"
                         value={formData.title_image || ''}
@@ -646,7 +646,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="priority" className="text-sm">Priority</Label>
+                      <Label htmlFor="priority" className="text-sm">Priority <span className="text-gray-400 font-normal">{'{priority}'}</span></Label>
                       <Select
                         value={formData.priority || '2'}
                         onValueChange={(value) => handleInputChange('priority', value)}
@@ -664,7 +664,7 @@ export function TitleEditModal({
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="verified" className="text-sm">Verified</Label>
+                      <Label htmlFor="verified" className="text-sm">Verified <span className="text-gray-400 font-normal">{'{verified}'}</span></Label>
                       <Select
                         value={formData.verified ? 'true' : 'false'}
                         onValueChange={(value) => handleInputChange('verified', value === 'true')}
@@ -688,7 +688,7 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 pb-4 border-b">
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="genre" className="text-sm">Genre (comma-separated)</Label>
+                      <Label htmlFor="genre" className="text-sm">Genre (comma-separated) <span className="text-gray-400 font-normal">{'{genre}'}</span></Label>
                       <Input
                         id="genre"
                         value={arrayToString(formData.genre)}
@@ -701,7 +701,7 @@ export function TitleEditModal({
                       </p>
                     </div>
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="genre_kr" className="text-sm">Korean Genre (comma-separated)</Label>
+                      <Label htmlFor="genre_kr" className="text-sm">Korean Genre (comma-separated) <span className="text-gray-400 font-normal">{'{genre_kr}'}</span></Label>
                       <Input
                         id="genre_kr"
                         value={arrayToString(formData.genre_kr)}
@@ -710,7 +710,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="content_format" className="text-sm">Content Format</Label>
+                      <Label htmlFor="content_format" className="text-sm">Content Format <span className="text-gray-400 font-normal">{'{content_format}'}</span></Label>
                       <Select
                         value={formData.content_format || ''}
                         onValueChange={(value) => handleInputChange('content_format', value)}
@@ -728,7 +728,7 @@ export function TitleEditModal({
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="tone" className="text-sm">Tone</Label>
+                      <Label htmlFor="tone" className="text-sm">Tone <span className="text-gray-400 font-normal">{'{tone}'}</span></Label>
                       <Input
                         id="tone"
                         value={formData.tone || ''}
@@ -737,7 +737,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="audience" className="text-sm">Audience</Label>
+                      <Label htmlFor="audience" className="text-sm">Audience <span className="text-gray-400 font-normal">{'{audience}'}</span></Label>
                       <Input
                         id="audience"
                         value={formData.audience || ''}
@@ -746,7 +746,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="age_rating" className="text-sm">Age Rating</Label>
+                      <Label htmlFor="age_rating" className="text-sm">Age Rating <span className="text-gray-400 font-normal">{'{age_rating}'}</span></Label>
                       <Input
                         id="age_rating"
                         value={formData.age_rating || ''}
@@ -755,7 +755,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="keywords" className="text-sm">Keywords (comma-separated)</Label>
+                      <Label htmlFor="keywords" className="text-sm">Keywords (comma-separated) <span className="text-gray-400 font-normal">{'{keywords}'}</span></Label>
                       <Input
                         id="keywords"
                         value={arrayToString(formData.keywords)}
@@ -764,7 +764,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="comps" className="text-sm">Comps (comma-separated)</Label>
+                      <Label htmlFor="comps" className="text-sm">Comps (comma-separated) <span className="text-gray-400 font-normal">{'{comps}'}</span></Label>
                       <Input
                         id="comps"
                         value={arrayToString(formData.comps)}
@@ -878,7 +878,7 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 pb-4 border-b">
                     <div className="space-y-1">
-                      <Label htmlFor="views" className="text-sm">Views</Label>
+                      <Label htmlFor="views" className="text-sm">Views <span className="text-gray-400 font-normal">{'{views}'}</span></Label>
                       <Input
                         id="views"
                         type="number"
@@ -888,7 +888,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="likes" className="text-sm">Likes</Label>
+                      <Label htmlFor="likes" className="text-sm">Likes <span className="text-gray-400 font-normal">{'{likes}'}</span></Label>
                       <Input
                         id="likes"
                         type="number"
@@ -898,7 +898,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="rating" className="text-sm">Rating (1-10)</Label>
+                      <Label htmlFor="rating" className="text-sm">Rating (1-10) <span className="text-gray-400 font-normal">{'{rating}'}</span></Label>
                       <Input
                         id="rating"
                         type="number"
@@ -911,7 +911,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="rating_count" className="text-sm">Rating Count</Label>
+                      <Label htmlFor="rating_count" className="text-sm">Rating Count <span className="text-gray-400 font-normal">{'{rating_count}'}</span></Label>
                       <Input
                         id="rating_count"
                         type="number"
@@ -921,7 +921,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="chapters" className="text-sm">Chapters</Label>
+                      <Label htmlFor="chapters" className="text-sm">Chapters <span className="text-gray-400 font-normal">{'{chapters}'}</span></Label>
                       <Input
                         id="chapters"
                         type="number"
@@ -931,7 +931,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="completed" className="text-sm">Completed</Label>
+                      <Label htmlFor="completed" className="text-sm">Completed <span className="text-gray-400 font-normal">{'{completed}'}</span></Label>
                       <Select
                         value={formData.completed ? 'true' : 'false'}
                         onValueChange={(value) => handleInputChange('completed', value === 'true')}
@@ -946,7 +946,7 @@ export function TitleEditModal({
                       </Select>
                     </div>
                     <div className="space-y-1 md:col-span-3">
-                      <Label htmlFor="perfect_for" className="text-sm">Perfect For</Label>
+                      <Label htmlFor="perfect_for" className="text-sm">Perfect For <span className="text-gray-400 font-normal">{'{perfect_for}'}</span></Label>
                       <Input
                         id="perfect_for"
                         value={formData.perfect_for || ''}
@@ -965,7 +965,7 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 pb-4 border-b">
                     <div className="space-y-1">
-                      <Label htmlFor="story_author" className="text-sm">Story Author</Label>
+                      <Label htmlFor="story_author" className="text-sm">Story Author <span className="text-gray-400 font-normal">{'{story_author}'}</span></Label>
                       <Input
                         id="story_author"
                         value={formData.story_author || ''}
@@ -974,7 +974,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="story_author_kr" className="text-sm">Story Author (Korean)</Label>
+                      <Label htmlFor="story_author_kr" className="text-sm">Story Author (Korean) <span className="text-gray-400 font-normal">{'{story_author_kr}'}</span></Label>
                       <Input
                         id="story_author_kr"
                         value={formData.story_author_kr || ''}
@@ -983,7 +983,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="art_author" className="text-sm">Art Author</Label>
+                      <Label htmlFor="art_author" className="text-sm">Art Author <span className="text-gray-400 font-normal">{'{art_author}'}</span></Label>
                       <Input
                         id="art_author"
                         value={formData.art_author || ''}
@@ -992,7 +992,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="art_author_kr" className="text-sm">Art Author (Korean)</Label>
+                      <Label htmlFor="art_author_kr" className="text-sm">Art Author (Korean) <span className="text-gray-400 font-normal">{'{art_author_kr}'}</span></Label>
                       <Input
                         id="art_author_kr"
                         value={formData.art_author_kr || ''}
@@ -1001,7 +1001,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="original_author" className="text-sm">Original Author</Label>
+                      <Label htmlFor="original_author" className="text-sm">Original Author <span className="text-gray-400 font-normal">{'{original_author}'}</span></Label>
                       <Input
                         id="original_author"
                         value={formData.original_author || ''}
@@ -1010,7 +1010,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="original_author_kr" className="text-sm">Original Author (Korean)</Label>
+                      <Label htmlFor="original_author_kr" className="text-sm">Original Author (Korean) <span className="text-gray-400 font-normal">{'{original_author_kr}'}</span></Label>
                       <Input
                         id="original_author_kr"
                         value={formData.original_author_kr || ''}
@@ -1028,7 +1028,7 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 gap-3 pt-3 pb-4 border-b">
                     <div className="space-y-1">
-                      <Label htmlFor="synopsis" className="text-sm">Synopsis</Label>
+                      <Label htmlFor="synopsis" className="text-sm">Synopsis <span className="text-gray-400 font-normal">{'{synopsis}'}</span></Label>
                       <Textarea
                         id="synopsis"
                         value={formData.synopsis || ''}
@@ -1038,18 +1038,33 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="description_kr" className="text-sm">Description (Korean)</Label>
+                      <Label htmlFor="synopsis_kr" className="text-sm">Synopsis (Korean) <span className="text-gray-400 font-normal">{'{synopsis_kr}'}</span></Label>
                       <Textarea
-                        id="description_kr"
-                        value={formData.description_kr || ''}
-                        onChange={(e) => handleInputChange('description_kr', e.target.value)}
+                        id="synopsis_kr"
+                        value={formData.synopsis_kr || ''}
+                        onChange={(e) => handleInputChange('synopsis_kr', e.target.value)}
                         rows={3}
                         className="resize-none"
                       />
                     </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="description" className="text-sm text-purple-700 font-medium flex items-center gap-2">
+                        Full Description
+                        <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-purple-600 text-white uppercase">Admin</span>
+                        <span className="text-purple-400 font-normal">{'{description}'}</span>
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description || ''}
+                        onChange={(e) => handleInputChange('description', e.target.value)}
+                        rows={4}
+                        placeholder="Full description for admin use..."
+                        className="resize-none border-purple-400 bg-purple-50 focus:border-purple-500 focus:ring-purple-500"
+                      />
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label htmlFor="tagline" className="text-sm">Tagline</Label>
+                        <Label htmlFor="tagline" className="text-sm">Tagline <span className="text-gray-400 font-normal">{'{tagline}'}</span></Label>
                         <Input
                           id="tagline"
                           value={formData.tagline || ''}
@@ -1058,7 +1073,7 @@ export function TitleEditModal({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="tagline_kr" className="text-sm">Tagline (Korean)</Label>
+                        <Label htmlFor="tagline_kr" className="text-sm">Tagline (Korean) <span className="text-gray-400 font-normal">{'{tagline_kr}'}</span></Label>
                         <Input
                           id="tagline_kr"
                           value={formData.tagline_kr || ''}
@@ -1068,7 +1083,7 @@ export function TitleEditModal({
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="pitch" className="text-sm">Pitch</Label>
+                      <Label htmlFor="pitch" className="text-sm">Pitch <span className="text-gray-400 font-normal">{'{pitch}'}</span></Label>
                       <Textarea
                         id="pitch"
                         value={formData.pitch || ''}
@@ -1079,7 +1094,7 @@ export function TitleEditModal({
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label htmlFor="note" className="text-sm">Note</Label>
+                        <Label htmlFor="note" className="text-sm">Note <span className="text-gray-400 font-normal">{'{note}'}</span></Label>
                         <Textarea
                           id="note"
                           value={formData.note || ''}
@@ -1089,7 +1104,7 @@ export function TitleEditModal({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="note_kr" className="text-sm">Note (Korean)</Label>
+                        <Label htmlFor="note_kr" className="text-sm">Note (Korean) <span className="text-gray-400 font-normal">{'{note_kr}'}</span></Label>
                         <Textarea
                           id="note_kr"
                           value={formData.note_kr || ''}
@@ -1109,7 +1124,7 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 gap-3 pt-3 pb-4 border-b">
                     <div className="space-y-1">
-                      <Label htmlFor="inspiration" className="text-sm">Inspiration</Label>
+                      <Label htmlFor="inspiration" className="text-sm">Inspiration <span className="text-gray-400 font-normal">{'{inspiration}'}</span></Label>
                       <Textarea
                         id="inspiration"
                         value={formData.inspiration || ''}
@@ -1119,7 +1134,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="important_issues" className="text-sm">Important Issues</Label>
+                      <Label htmlFor="important_issues" className="text-sm">Important Issues <span className="text-gray-400 font-normal">{'{important_issues}'}</span></Label>
                       <Textarea
                         id="important_issues"
                         value={formData.important_issues || ''}
@@ -1129,7 +1144,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="setting_description" className="text-sm">Setting Description</Label>
+                      <Label htmlFor="setting_description" className="text-sm">Setting Description <span className="text-gray-400 font-normal">{'{setting_description}'}</span></Label>
                       <Textarea
                         id="setting_description"
                         value={formData.setting_description || ''}
@@ -1139,7 +1154,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="world_lore" className="text-sm">World Lore</Label>
+                      <Label htmlFor="world_lore" className="text-sm">World Lore <span className="text-gray-400 font-normal">{'{world_lore}'}</span></Label>
                       <Textarea
                         id="world_lore"
                         value={formData.world_lore || ''}
@@ -1149,7 +1164,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="supernatural_concepts" className="text-sm">Supernatural Concepts</Label>
+                      <Label htmlFor="supernatural_concepts" className="text-sm">Supernatural Concepts <span className="text-gray-400 font-normal">{'{supernatural_concepts}'}</span></Label>
                       <Textarea
                         id="supernatural_concepts"
                         value={formData.supernatural_concepts || ''}
@@ -1159,7 +1174,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="character_details" className="text-sm">Character Details (JSON)</Label>
+                      <Label htmlFor="character_details" className="text-sm">Character Details (JSON) <span className="text-gray-400 font-normal">{'{character_details}'}</span></Label>
                       <Textarea
                         id="character_details"
                         value={formData.character_details ? JSON.stringify(formData.character_details, null, 2) : ''}
@@ -1178,7 +1193,7 @@ export function TitleEditModal({
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="space-y-1">
-                        <Label htmlFor="story_structure" className="text-sm">Story Structure</Label>
+                        <Label htmlFor="story_structure" className="text-sm">Story Structure <span className="text-gray-400 font-normal">{'{story_structure}'}</span></Label>
                         <Input
                           id="story_structure"
                           value={formData.story_structure || ''}
@@ -1187,7 +1202,7 @@ export function TitleEditModal({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="planned_ending" className="text-sm">Planned Ending</Label>
+                        <Label htmlFor="planned_ending" className="text-sm">Planned Ending <span className="text-gray-400 font-normal">{'{planned_ending}'}</span></Label>
                         <Input
                           id="planned_ending"
                           value={formData.planned_ending || ''}
@@ -1196,7 +1211,7 @@ export function TitleEditModal({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="narrative_arc" className="text-sm">Narrative Arc</Label>
+                        <Label htmlFor="narrative_arc" className="text-sm">Narrative Arc <span className="text-gray-400 font-normal">{'{narrative_arc}'}</span></Label>
                         <Input
                           id="narrative_arc"
                           value={formData.narrative_arc || ''}
@@ -1215,7 +1230,7 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 pb-4 border-b">
                     <div className="space-y-2 md:col-span-2">
-                      <Label className="text-sm">Rights Available</Label>
+                      <Label className="text-sm">Rights Available <span className="text-gray-400 font-normal">{'{rights_available}'}</span></Label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {RIGHTS_OPTIONS.map((option) => (
                           <div key={option.value} className="flex items-center space-x-2">
@@ -1242,7 +1257,7 @@ export function TitleEditModal({
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="rights_holder_name" className="text-sm">Rights Holder Name</Label>
+                      <Label htmlFor="rights_holder_name" className="text-sm">Rights Holder Name <span className="text-gray-400 font-normal">{'{rights_holder_name}'}</span></Label>
                       <Input
                         id="rights_holder_name"
                         value={formData.rights_holder_name || ''}
@@ -1251,7 +1266,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="rights_holder_company" className="text-sm">Rights Holder Company</Label>
+                      <Label htmlFor="rights_holder_company" className="text-sm">Rights Holder Company <span className="text-gray-400 font-normal">{'{rights_holder_company}'}</span></Label>
                       <Input
                         id="rights_holder_company"
                         value={formData.rights_holder_company || ''}
@@ -1260,7 +1275,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="cp" className="text-sm">CP (Copyright Info)</Label>
+                      <Label htmlFor="cp" className="text-sm">CP (Copyright Info) <span className="text-gray-400 font-normal">{'{cp}'}</span></Label>
                       <Input
                         id="cp"
                         value={formData.cp || ''}
@@ -1278,7 +1293,7 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 pb-4">
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="awards" className="text-sm">Awards (comma-separated)</Label>
+                      <Label htmlFor="awards" className="text-sm">Awards (comma-separated) <span className="text-gray-400 font-normal">{'{awards}'}</span></Label>
                       <Input
                         id="awards"
                         value={arrayToString(formData.awards)}
@@ -1287,7 +1302,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="sales_records" className="text-sm">Sales Records</Label>
+                      <Label htmlFor="sales_records" className="text-sm">Sales Records <span className="text-gray-400 font-normal">{'{sales_records}'}</span></Label>
                       <Input
                         id="sales_records"
                         value={formData.sales_records || ''}
@@ -1296,7 +1311,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="merchandise_deals" className="text-sm">Merchandise Deals</Label>
+                      <Label htmlFor="merchandise_deals" className="text-sm">Merchandise Deals <span className="text-gray-400 font-normal">{'{merchandise_deals}'}</span></Label>
                       <Input
                         id="merchandise_deals"
                         value={formData.merchandise_deals || ''}
@@ -1305,7 +1320,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="print_editions" className="text-sm">Print Editions</Label>
+                      <Label htmlFor="print_editions" className="text-sm">Print Editions <span className="text-gray-400 font-normal">{'{print_editions}'}</span></Label>
                       <Select
                         value={formData.print_editions ? 'true' : 'false'}
                         onValueChange={(value) => handleInputChange('print_editions', value === 'true')}
@@ -1320,7 +1335,7 @@ export function TitleEditModal({
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="print_edition_details" className="text-sm">Print Edition Details</Label>
+                      <Label htmlFor="print_edition_details" className="text-sm">Print Edition Details <span className="text-gray-400 font-normal">{'{print_edition_details}'}</span></Label>
                       <Input
                         id="print_edition_details"
                         value={formData.print_edition_details || ''}
@@ -1329,7 +1344,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="media_coverage" className="text-sm">Media Coverage</Label>
+                      <Label htmlFor="media_coverage" className="text-sm">Media Coverage <span className="text-gray-400 font-normal">{'{media_coverage}'}</span></Label>
                       <Textarea
                         id="media_coverage"
                         value={formData.media_coverage || ''}
@@ -1339,7 +1354,7 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="celebrity_endorsements" className="text-sm">Celebrity Endorsements</Label>
+                      <Label htmlFor="celebrity_endorsements" className="text-sm">Celebrity Endorsements <span className="text-gray-400 font-normal">{'{celebrity_endorsements}'}</span></Label>
                       <Textarea
                         id="celebrity_endorsements"
                         value={formData.celebrity_endorsements || ''}

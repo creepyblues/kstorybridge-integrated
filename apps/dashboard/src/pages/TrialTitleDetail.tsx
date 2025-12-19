@@ -64,7 +64,7 @@ export default function TrialTitleDetail() {
 
   // Check if tabs have content
   const hasStoryDetails =
-    title?.description_kr ||
+    title?.synopsis_kr ||
     title?.tone ||
     title?.important_issues ||
     title?.setting_description ||

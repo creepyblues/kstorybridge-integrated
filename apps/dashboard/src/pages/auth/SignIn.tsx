@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { signInWithEmail, signInWithOAuth, checkBuyerProfileExists } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { trackSignin } from '@/utils/analytics';
+import { notifyUserSignin } from '@/utils/slack';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -55,6 +56,12 @@ export default function SignIn() {
 
       // Track successful signin
       trackSignin('completed', 'email');
+
+      // Send Slack notification (non-blocking)
+      notifyUserSignin({
+        email: email,
+        authType: 'email',
+      }).catch(console.warn);
 
       // Success - redirect to homepage
       toast({

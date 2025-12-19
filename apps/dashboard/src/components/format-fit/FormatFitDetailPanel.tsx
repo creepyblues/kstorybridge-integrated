@@ -32,11 +32,11 @@ interface FormatFitDetailPanelProps {
 }
 
 const FORMAT_ICONS: Record<FormatType, React.ReactNode> = {
-  film: <Icon icon="solar:clapperboard-bold-duotone" className="h-5 w-5" />,
-  tv_series: <Icon icon="solar:tv-bold-duotone" className="h-5 w-5" />,
-  animation: <Icon icon="solar:pallete-bold-duotone" className="h-5 w-5" />,
-  microdrama: <Icon icon="solar:smartphone-bold-duotone" className="h-5 w-5" />,
-  audio_drama: <Icon icon="solar:headphones-bold-duotone" className="h-5 w-5" />,
+  film: <Icon icon="solar:clapperboard-bold-duotone" className="h-7 w-7" />,
+  tv_series: <Icon icon="solar:tv-bold-duotone" className="h-7 w-7" />,
+  animation: <Icon icon="solar:magic-stick-3-bold-duotone" className="h-7 w-7" />,
+  microdrama: <Icon icon="solar:smartphone-bold-duotone" className="h-7 w-7" />,
+  audio_drama: <Icon icon="solar:microphone-large-bold-duotone" className="h-7 w-7" />,
 };
 
 const getScoreColor = (score: number): string => {

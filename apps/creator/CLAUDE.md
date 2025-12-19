@@ -328,7 +328,8 @@ interface CreatorFormData {
 - `synopsis` (text) - English synopsis
 - `tagline` (text) - English tagline
 - `tagline_kr` (text) - Korean tagline
-- `description_kr` (text) - Korean description
+- `synopsis_kr` (text) - Korean synopsis
+- `description` (text) - Full description for admin use (English)
 - `note` (text) - Internal notes (English)
 - `note_kr` (text) - Internal notes (Korean)
 

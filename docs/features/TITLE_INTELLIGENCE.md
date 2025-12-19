@@ -341,7 +341,7 @@ const mapping: Record<string, string> = {
   'completed': 'completed',
   'status': 'completed',
   'synopsis': 'synopsis',
-  'synopsis_kr': 'description_kr',
+  'synopsis_kr': 'synopsis_kr',
   'genre': 'genre',
   'author': 'story_author',
   'age_rating': 'age_rating',

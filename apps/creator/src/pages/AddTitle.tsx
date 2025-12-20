@@ -429,7 +429,7 @@ export default function AddTitleSurvey() {
               </div>
               <div className="flex-1">
                 <h2 className="text-lg font-bold text-black">
-                  {getDefaultSteps(t)[currentStep - 1]?.title || `Step ${currentStep}`}
+                  {getDefaultSteps(t)[currentStep - 1]?.label || `Step ${currentStep}`}
                 </h2>
                 <p className="text-sm text-gray-600">
                   {getStepDescription(currentStep, t)}
@@ -548,7 +548,8 @@ export default function AddTitleSurvey() {
 }
 
 // Helper function to get step descriptions
-function getStepDescription(step: number, t: (key: string, fallback?: string) => string): string {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getStepDescription(step: number, t: any): string {
   const descriptions: Record<number, string> = {
     1: t('survey:steps.step1.description', 'Enter the basic information about your title'),
     2: t('survey:steps.step2.description', 'Describe your story world and characters'),
@@ -560,7 +561,8 @@ function getStepDescription(step: number, t: (key: string, fallback?: string) =>
 }
 
 // Helper function to get step tips
-function getStepTip(step: number, t: (key: string, fallback?: string) => string): string {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getStepTip(step: number, t: any): string {
   const tips: Record<number, string> = {
     1: t('survey:tips.step1', 'Make sure to include a compelling Korean title and accurate genre tags. These help buyers find your content.'),
     2: t('survey:tips.step2', 'Rich character descriptions and unique world-building elements make your title stand out to potential buyers.'),

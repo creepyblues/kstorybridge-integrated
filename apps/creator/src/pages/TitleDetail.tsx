@@ -1,27 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Icon } from '@iconify/react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { titlesService } from '@/services/titlesService'
-import {
-  Eye,
-  ExternalLink,
-  BookOpen,
-  Edit,
-  Calendar,
-  FileText,
-  Globe,
-  Users,
-  Lightbulb,
-  BookMarked,
-  FolderOpen,
-  Trophy,
-  X
-} from 'lucide-react'
 
 // Components
 import { TitleDetailSection, FieldDisplay } from '@/components/titles/TitleDetailSection'
@@ -78,7 +64,11 @@ export default function TitleDetail() {
     return (
       <MainLayout>
         <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
+          <div className="flex flex-col items-center justify-center py-24">
+            <Icon
+              icon="solar:spinner-bold"
+              className="h-8 w-8 animate-spin text-sunrise-coral mb-3"
+            />
             <p className="text-gray-500">{t('titles:detail.loading', 'Loading title details...')}</p>
           </div>
         </div>
@@ -90,13 +80,20 @@ export default function TitleDetail() {
     return (
       <MainLayout>
         <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
-            <p className="text-red-500">{error || 'Title not found'}</p>
+          <div className="text-center py-24">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mb-4">
+              <Icon
+                icon="solar:danger-triangle-bold-duotone"
+                className="h-8 w-8 text-red-500"
+              />
+            </div>
+            <p className="text-red-600 mb-4">{error || 'Title not found'}</p>
             <Button
               onClick={() => navigate('/titles')}
               variant="outline"
-              className="mt-4 border-gray-300 hover:bg-gray-100"
+              className="border-gray-300 hover:bg-gray-100"
             >
+              <Icon icon="solar:arrow-left-linear" className="h-4 w-4 mr-2" />
               {t('titles:detail.backToList', 'Back to Titles')}
             </Button>
           </div>
@@ -115,96 +112,131 @@ export default function TitleDetail() {
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Back Navigation */}
+        <nav className="mb-6">
+          <button
+            onClick={() => navigate('/titles')}
+            className="group inline-flex items-center gap-2 text-sm text-gray-500 hover:text-sunrise-coral transition-colors"
+          >
+            <Icon
+              icon="solar:arrow-left-linear"
+              className="h-4 w-4 group-hover:-translate-x-1 transition-transform"
+            />
+            <span>Back to My Titles</span>
+          </button>
+        </nav>
+
         {/* Hero Section */}
-        <div>
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="flex-1 min-w-0">
-              {/* Title Image & Info */}
-              <div className="flex items-start gap-6 mb-4">
-                <div className="w-32 h-44 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-lg">
-                  {title.title_image ? (
-                    <img
-                      src={title.title_image}
-                      alt={title.title_name_en || title.title_name_kr}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                      <BookOpen className="w-10 h-10 text-gray-400" />
-                    </div>
+        <Card className="bg-gradient-to-br from-sunrise-coral/5 to-orange-50 border-sunrise-coral/20 shadow-none rounded-2xl overflow-hidden mb-8">
+          <CardContent className="p-6 sm:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+              {/* Title Image */}
+              <div className="w-36 h-48 flex-shrink-0 bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100">
+                {title.title_image ? (
+                  <img
+                    src={title.title_image}
+                    alt={title.title_name_en || title.title_name_kr}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+                    <Icon icon="solar:book-2-bold-duotone" className="w-12 h-12 text-gray-300" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                {/* Title & Korean Name */}
+                <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2 leading-tight">
+                  {title.title_name_en || title.title_name_kr}
+                </h1>
+                {title.title_name_kr && title.title_name_en && (
+                  <p className="text-lg text-gray-600 font-medium mb-4">
+                    {title.title_name_kr}
+                  </p>
+                )}
+
+                {/* Genre & Format Badges */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {title.content_format && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-sunrise-coral text-white">
+                      <Icon icon="solar:document-text-bold" className="h-3 w-3" />
+                      {formatContentFormat(title.content_format)}
+                    </span>
+                  )}
+                  {title.completed !== undefined && (
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full ${
+                      title.completed
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      <Icon icon={title.completed ? 'solar:check-circle-bold' : 'solar:play-circle-bold'} className="h-3 w-3" />
+                      {title.completed ? 'Completed' : 'Ongoing'}
+                    </span>
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-3xl font-bold text-black mb-3 leading-tight">
-                    {title.title_name_en || title.title_name_kr}
-                  </h2>
-                  {title.title_name_kr && title.title_name_en && (
-                    <p className="text-xl text-gray-600 font-medium mb-4">
-                      {title.title_name_kr}
-                    </p>
+                {/* Author info */}
+                <div className="flex flex-row flex-wrap gap-4 text-sm text-gray-600 mb-4">
+                  {title.story_author && (
+                    <span className="flex items-center gap-2">
+                      <Icon icon="solar:pen-bold-duotone" className="h-4 w-4 text-sunrise-coral" />
+                      <span className="font-medium">{title.story_author}</span>
+                    </span>
                   )}
+                  {title.art_author && (
+                    <span className="flex items-center gap-2">
+                      <Icon icon="solar:palette-bold-duotone" className="h-4 w-4 text-sunrise-coral" />
+                      <span className="font-medium">{title.art_author}</span>
+                    </span>
+                  )}
+                </div>
 
-                  {/* Author info */}
-                  <div className="flex flex-row flex-wrap gap-6 text-base text-gray-600 mb-4">
-                    {title.story_author && (
-                      <span className="flex items-center gap-2">
-                        <span className="font-semibold text-black">Story:</span>
-                        <span className="font-medium">{title.story_author}</span>
-                      </span>
-                    )}
-                    {title.art_author && (
-                      <span className="flex items-center gap-2">
-                        <span className="font-semibold text-black">Art:</span>
-                        <span className="font-medium">{title.art_author}</span>
-                      </span>
-                    )}
+                {/* Quick stats */}
+                <div className="flex flex-row items-center gap-4 text-sm text-gray-500 flex-wrap">
+                  <div className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full">
+                    <Icon icon="solar:eye-bold" className="h-4 w-4 text-sunrise-coral" />
+                    <span className="font-medium">{formatViews(title.views)} views</span>
                   </div>
-
-                  {/* Quick stats */}
-                  <div className="flex flex-row items-center gap-6 text-sm text-gray-500 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      <span className="font-medium">{formatViews(title.views)} views</span>
+                  {title.chapters && (
+                    <div className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full">
+                      <Icon icon="solar:book-bold" className="h-4 w-4 text-sunrise-coral" />
+                      <span className="font-medium">{title.chapters.toLocaleString()} chapters</span>
                     </div>
-                    {title.chapters && (
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        <span className="font-medium">{title.chapters.toLocaleString()} chapters</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span className="font-medium">{title.completed ? 'Completed' : 'Ongoing'}</span>
+                  )}
+                  {title.rating && (
+                    <div className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full">
+                      <Icon icon="solar:star-bold" className="h-4 w-4 text-amber-500" />
+                      <span className="font-medium">{title.rating}/10</span>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-row gap-3 w-full lg:w-auto justify-center lg:justify-end">
-              <Button
-                onClick={() => navigate(`/titles/${title.title_id}/edit`)}
-                className="flex-1 bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {t('titles:detail.editButton', 'Edit')}
-              </Button>
-
-              {title.title_url && (
+              {/* Action Buttons */}
+              <div className="flex flex-row lg:flex-col gap-3 w-full lg:w-auto">
                 <Button
-                  onClick={() => window.open(title.title_url, '_blank')}
-                  variant="outline"
-                  className="flex-1 border-gray-300 hover:bg-gray-100"
+                  onClick={() => navigate(`/titles/${title.title_id}/edit`)}
+                  className="flex-1 lg:flex-none bg-sunrise-coral text-white hover:bg-sunrise-coral/90 shadow-lg shadow-sunrise-coral/25"
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  {t('titles:detail.viewOriginal', 'View Original')}
+                  <Icon icon="solar:pen-new-round-bold" className="h-4 w-4 mr-2" />
+                  {t('titles:detail.editButton', 'Edit Title')}
                 </Button>
-              )}
+
+                {title.title_url && (
+                  <Button
+                    onClick={() => window.open(title.title_url, '_blank')}
+                    variant="outline"
+                    className="flex-1 lg:flex-none border-gray-300 hover:bg-white"
+                  >
+                    <Icon icon="solar:link-round-bold" className="h-4 w-4 mr-2" />
+                    {t('titles:detail.viewOriginal', 'View Original')}
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Pitch Deck Section */}
         {title.pitch && title.pitch.trim() !== '' && (
@@ -227,7 +259,7 @@ export default function TitleDetail() {
         <TitleDetailSection
           stepNumber={1}
           title={t('survey:step1.title', 'Basic Information')}
-          icon={<FileText className="w-5 h-5" />}
+          icon={<Icon icon="solar:document-text-bold-duotone" className="w-5 h-5" />}
           defaultExpanded={true}
           isEmpty={!hasStep1Data}
         >
@@ -403,7 +435,7 @@ export default function TitleDetail() {
         <TitleDetailSection
           stepNumber={2}
           title={t('survey:step2.title', 'Story Details')}
-          icon={<BookMarked className="w-5 h-5" />}
+          icon={<Icon icon="solar:book-bold-duotone" className="w-5 h-5" />}
           defaultExpanded={true}
           isEmpty={!hasStep2Data}
         >
@@ -547,7 +579,7 @@ export default function TitleDetail() {
             {title.character_details && title.character_details.length > 0 && (
               <div className="border-t border-gray-200 pt-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-gray-700" />
+                  <Icon icon="solar:users-group-rounded-bold-duotone" className="w-5 h-5 text-sunrise-coral" />
                   {t('titles:detail.mainCharacters', 'Main Characters')}
                 </h3>
                 <CharacterDetailsDisplay characters={title.character_details} />
@@ -560,7 +592,7 @@ export default function TitleDetail() {
         <TitleDetailSection
           stepNumber={3}
           title={t('survey:step3.title', 'Narrative Structure')}
-          icon={<Lightbulb className="w-5 h-5" />}
+          icon={<Icon icon="solar:pen-new-round-bold-duotone" className="w-5 h-5" />}
           defaultExpanded={false}
           isEmpty={!hasStep3Data}
         >
@@ -599,7 +631,7 @@ export default function TitleDetail() {
         <TitleDetailSection
           stepNumber={4}
           title={t('survey:step4.title', 'Materials & Platforms')}
-          icon={<FolderOpen className="w-5 h-5" />}
+          icon={<Icon icon="solar:folder-with-files-bold-duotone" className="w-5 h-5" />}
           defaultExpanded={false}
           isEmpty={!hasStep4Data}
         >
@@ -631,7 +663,7 @@ export default function TitleDetail() {
             {title.platforms && title.platforms.length > 0 && (
               <div className="border-t border-gray-200 pt-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-gray-700" />
+                  <Icon icon="solar:global-bold-duotone" className="w-5 h-5 text-sunrise-coral" />
                   {t('titles:detail.platformMetrics', 'Platform Metrics')}
                 </h3>
                 <PlatformMetricsDisplay platforms={title.platforms} />
@@ -642,7 +674,7 @@ export default function TitleDetail() {
             {title.documents && title.documents.length > 0 && (
               <div className="border-t border-gray-200 pt-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-gray-700" />
+                  <Icon icon="solar:file-text-bold-duotone" className="w-5 h-5 text-sunrise-coral" />
                   {t('titles:detail.documents', 'Documents')}
                 </h3>
                 <DocumentsList documents={title.documents} />
@@ -655,7 +687,7 @@ export default function TitleDetail() {
         <TitleDetailSection
           stepNumber={5}
           title={t('survey:step5.title', 'Achievements & Profile')}
-          icon={<Trophy className="w-5 h-5" />}
+          icon={<Icon icon="solar:cup-star-bold-duotone" className="w-5 h-5" />}
           defaultExpanded={false}
           isEmpty={!hasStep5Data}
         >
@@ -672,7 +704,7 @@ export default function TitleDetail() {
                         <div className="space-y-2">
                           {title.awards.map((award: string, i: number) => (
                             <div key={i} className="flex items-start gap-2 text-sm">
-                              <Trophy className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                              <Icon icon="solar:cup-star-bold" className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                               <span>{award}</span>
                             </div>
                           ))}
@@ -738,7 +770,7 @@ export default function TitleDetail() {
               variant="outline"
               className="absolute top-4 right-4 z-10 border-gray-300 hover:bg-gray-100"
             >
-              <X className="w-5 h-5" />
+              <Icon icon="solar:close-circle-bold" className="w-5 h-5" />
             </Button>
             <div className="h-[90vh] overflow-y-auto">
               <PitchDeckViewer

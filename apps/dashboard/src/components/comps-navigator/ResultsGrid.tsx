@@ -36,8 +36,8 @@ export default function ResultsGrid({ results }: ResultsGridProps) {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {results.map((match) => (
-          <TitleMatchCard key={match.title_id} match={match} />
+        {results.map((match, index) => (
+          <TitleMatchCard key={match.title_id} match={match} position={index + 1} />
         ))}
       </div>
     </div>

@@ -19,13 +19,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { trackTrialResultClicked } from '@/utils/analytics';
 
 interface TrialResultsGridProps {
   results: TitleMatch[];
 }
 
 // Trial-specific card
-function TrialTitleMatchCard({ match, enableTypewriter = false }: { match: TitleMatch; enableTypewriter?: boolean }) {
+function TrialTitleMatchCard({ match, enableTypewriter = false, position }: { match: TitleMatch; enableTypewriter?: boolean; position: number }) {
   const [showModal, setShowModal] = useState(false);
   const [typewriterDone, setTypewriterDone] = useState(!enableTypewriter);
 
@@ -54,11 +55,23 @@ function TrialTitleMatchCard({ match, enableTypewriter = false }: { match: Title
   const score = getMatchScore(match);
   const matchBadge = getMatchScoreBadge(score);
 
+  const handleCardClick = () => {
+    // Track result click
+    trackTrialResultClicked(
+      'comps',
+      match.title_id,
+      match.title_name_en || match.title_name_kr,
+      score,
+      position
+    );
+    setShowModal(true);
+  };
+
   return (
     <>
       <Card
         className="bg-white border border-gray-300 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden cursor-pointer"
-        onClick={() => setShowModal(true)}
+        onClick={handleCardClick}
       >
         <CardContent className="p-0">
           <div className="relative w-full h-64 bg-gray-100 overflow-hidden">
@@ -148,7 +161,7 @@ function TrialMatchDetailModal({ match, onClose }: { match: TitleMatch; onClose:
   const score = getMatchScore(match);
 
   const handleViewFullTitle = () => {
-    navigate(`/trial/titles/${match.title_id}`);
+    navigate(`/trial/titles/${match.title_id}?source=comps`);
   };
 
   return (
@@ -284,11 +297,12 @@ export function TrialResultsGrid({ results }: TrialResultsGridProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {results.map((match) => (
+        {results.map((match, index) => (
           <TrialTitleMatchCard
             key={match.title_id}
             match={match}
             enableTypewriter={isNewResults}
+            position={index + 1}
           />
         ))}
       </div>

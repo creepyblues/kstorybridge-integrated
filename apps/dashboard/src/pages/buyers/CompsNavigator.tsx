@@ -20,7 +20,7 @@ import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
 import { Button } from '@/components/ui/button';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { trackPageView, trackFeatureUsage, trackCompsSearch } from '@/utils/analytics';
+import { trackPageView, trackFeatureUsage, trackCompsSearch, trackSessionSearches } from '@/utils/analytics';
 
 type LoadingPhase = 'describing' | 'semantic' | 'reranking' | null;
 
@@ -48,6 +48,7 @@ export default function CompsNavigator() {
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const hasTriggeredInitialSearch = useRef(false);
+  const searchCountRef = useRef(0); // Track searches per session for analytics
 
   const [compTitles, setCompTitles] = useState<CompTitle[]>([]);
   const [results, setResults] = useState<TitleMatch[]>([]);
@@ -67,6 +68,15 @@ export default function CompsNavigator() {
   useEffect(() => {
     trackPageView('/buyers/comps-navigator', 'Comps Navigator');
     trackFeatureUsage('comps_navigator');
+  }, []);
+
+  // Track session searches on page leave
+  useEffect(() => {
+    return () => {
+      if (searchCountRef.current > 0) {
+        trackSessionSearches('comps', searchCountRef.current);
+      }
+    };
   }, []);
 
   // Handle URL parameter for initial search
@@ -104,6 +114,9 @@ export default function CompsNavigator() {
       });
       return;
     }
+
+    // Increment search counter for session analytics
+    searchCountRef.current += 1;
 
     setIsLoading(true);
     setLoadingPhase('describing');

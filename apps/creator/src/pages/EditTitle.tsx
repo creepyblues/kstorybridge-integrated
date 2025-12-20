@@ -489,7 +489,7 @@ export default function EditTitle() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
+                  className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
                 >
                   {isSubmitting
                     ? t('common:saving', 'Saving...')

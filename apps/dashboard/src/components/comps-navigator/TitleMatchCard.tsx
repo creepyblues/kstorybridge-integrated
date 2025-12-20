@@ -20,17 +20,30 @@ import {
   getDimensionWeightPercent,
 } from '@/services/compsNavigatorService';
 import MatchDetailModal from './MatchDetailModal';
+import { trackCompsResultClick } from '@/utils/analytics';
 
 interface TitleMatchCardProps {
   match: TitleMatch;
+  position?: number; // 1-indexed position in results for analytics
 }
 
-export default function TitleMatchCard({ match }: TitleMatchCardProps) {
+export default function TitleMatchCard({ match, position = 1 }: TitleMatchCardProps) {
   const [showModal, setShowModal] = useState(false);
   const [showDimensions, setShowDimensions] = useState(false);
 
   // Use the utility function for backward compatibility
   const score = getMatchScore(match);
+
+  // Handle card click with analytics tracking
+  const handleCardClick = () => {
+    trackCompsResultClick(
+      match.title_id,
+      match.title_name_en || match.title_name_kr || 'Unknown',
+      score,
+      position
+    );
+    setShowModal(true);
+  };
 
   // Get gradient badge styling based on match score
   const getMatchScoreBadge = (score: number) => {
@@ -69,7 +82,7 @@ export default function TitleMatchCard({ match }: TitleMatchCardProps) {
     <>
       <Card
         className="bg-white border border-gray-300 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden cursor-pointer"
-        onClick={() => setShowModal(true)}
+        onClick={handleCardClick}
       >
         <CardContent className="p-0">
           {/* Image Section with Hover Zoom */}

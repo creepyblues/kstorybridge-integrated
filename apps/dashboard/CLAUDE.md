@@ -237,26 +237,42 @@ if (!hasAccess('pro')) {
 
 ### GA4 Analytics (Fully Implemented)
 - **Measurement ID**: `G-DWL6MV0MC2`
-- **Utility**: `src/utils/analytics.ts` (~720 lines, 20+ tracking functions)
+- **Utility**: `src/utils/analytics.ts` (~800 lines, 25+ tracking functions)
 - **Initialization**: `src/main.tsx` - Calls `initializeAnalytics()` on app start
-- **Documentation**:
-  - `docs/tracking/PHASE_1_ANALYTICS.md` - Status overview
-  - `docs/tracking/GA4_IMPLEMENTATION_GUIDE.md` - Complete implementation guide
+- **Documentation**: `docs/tracking/GA4_TRACKING_REFERENCE.md` - Complete event reference
 
-**5 User Funnels Tracked**:
+**6 User Funnels Tracked**:
 | Funnel | Events |
 |--------|--------|
 | Authentication | `signup`, `signin` (form_viewed → attempted → completed/error) |
-| Title Discovery | `title_search`, `title_detail_view`, `favorite` |
-| AI Chat | `chat_message` (sent/received), `chat_title_click` |
-| Comps Navigator | `comps_search`, `comps_result_click` |
+| Title Discovery | `title_search`, `title_detail_view`, `favorite`, `titles_filter_applied` |
+| AI Chat | `chat_message` (sent/received), `chat_title_click`, `chat_message_source`, `chat_example_clicked`, `chat_suggestion_click` |
+| Comps Navigator | `comps_search`, `comps_result_click`, `comps_example_used` |
+| Mandate Matcher | `mandate_search_submitted`, `mandate_example_used`, `mandate_result_click` |
 | Checkout | `checkout` (started → completed/cancelled/error) |
+
+**Session-Level Tracking** (fires on page leave):
+| Page | Event | Parameters |
+|------|-------|------------|
+| Chat | `session_searches` | tool: 'chat', search_count |
+| Comps Navigator | `session_searches` | tool: 'comps', search_count |
+| Mandate Matcher | `session_searches` | tool: 'mandates', search_count |
+| Titles | `session_searches` | tool: 'titles', search_count |
+
+**Input Source Tracking** (Chat page):
+| Source | Description |
+|--------|-------------|
+| `typed` | User typed message manually |
+| `example` | Clicked example prompt in ChatEmptyState |
+| `suggestion` | Clicked suggested follow-up query |
+| `url_param` | Message from URL parameter (shared link) |
 
 **Pages with Tracking**:
 - `SignUp.tsx`, `SignIn.tsx` - Auth funnel
-- `Titles.tsx`, `TitleDetail.tsx` - Discovery funnel
-- `Chat.tsx` - Chat funnel
-- `CompsNavigator.tsx` - Comps funnel
+- `Titles.tsx`, `TitleDetail.tsx` - Discovery funnel with filter tracking
+- `Chat.tsx` - Chat funnel with source/session tracking
+- `CompsNavigator.tsx` - Comps funnel with example/result/session tracking
+- `Mandates.tsx` - Mandate funnel with session tracking
 - `Plan.tsx`, `Checkout.tsx`, `CheckoutSuccess.tsx` - Conversion funnel
 
 **Testing**: Set `VITE_AUTH_DEBUG=true` to see `[Analytics]` logs in console

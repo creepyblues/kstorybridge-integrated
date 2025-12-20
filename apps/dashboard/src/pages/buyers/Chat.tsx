@@ -19,7 +19,7 @@ import { TITLE_CACHE_SIZE } from '@/utils/constants/config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { debug } from '@/utils/debug';
-import { trackPageView, trackFeatureUsage, trackChatMessage, trackChatSessionStarted, trackChatHistoryLoaded } from '@/utils/analytics';
+import { trackPageView, trackFeatureUsage, trackChatMessage, trackChatSessionStarted, trackChatHistoryLoaded, trackChatMessageSource, trackChatSuggestionClick, trackSessionSearches } from '@/utils/analytics';
 
 interface ChatMessage {
   id: string;
@@ -54,6 +54,7 @@ export default function Chat() {
   const previousUserIdRef = useRef<string | null>(null);
   const submissionLockRef = useRef<Promise<void> | null>(null); // Promise-based lock for session creation
   const hasTriggeredInitialQuery = useRef(false); // Prevent double-triggering URL query
+  const promptCountRef = useRef(0); // Track prompts per session for analytics
   const suggestedQueries = chatOrchestratorService.getSuggestedQueries();
 
   const scrollToBottom = () => {
@@ -64,6 +65,15 @@ export default function Chat() {
   useEffect(() => {
     trackPageView('/buyers/chat', 'AI Chat - Jinu');
     trackFeatureUsage('ai_chat');
+  }, []);
+
+  // Track session prompts on page leave
+  useEffect(() => {
+    return () => {
+      if (promptCountRef.current > 0) {
+        trackSessionSearches('chat', promptCountRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -129,7 +139,7 @@ export default function Chat() {
       hasTriggeredInitialQuery.current = true;
       // Auto-submit the query after a short delay to ensure state is ready
       setTimeout(() => {
-        handleSendMessage(queryParam);
+        handleSendMessage(queryParam, 'url_param');
       }, 100);
     }
   }, [searchParams, user?.id]);
@@ -225,8 +235,15 @@ export default function Chat() {
     loadHistory();
   }, [currentSession?.id, hasLoadedHistory]);
 
-  const handleSendMessage = async (query: string) => {
+  const handleSendMessage = async (
+    query: string,
+    source: 'typed' | 'example' | 'suggestion' | 'url_param' = 'typed'
+  ) => {
     if (!query.trim() || loading || !user?.id) return;
+
+    // Track message source for analytics
+    trackChatMessageSource(source, query.length);
+    promptCountRef.current += 1;
 
     // Wait for any pending submission to complete (prevents race condition during session creation)
     if (submissionLockRef.current) {
@@ -434,8 +451,11 @@ export default function Chat() {
     }
   };
 
-  const handleSuggestedQuery = async (query: string, messageId?: string) => {
+  const handleSuggestedQuery = async (query: string, messageId?: string, position?: number) => {
     if (!user?.id) return;
+
+    // Track suggestion click for GA4 analytics
+    trackChatSuggestionClick(query, position || 1);
 
     // Mark query as clicked in database (if session exists)
     if (messageId && currentSession) {
@@ -454,7 +474,7 @@ export default function Chat() {
     }
 
     // Execute the query (will create session if needed)
-    await handleSendMessage(query);
+    await handleSendMessage(query, 'suggestion');
   };
 
   // Note: Title click handling is now managed by TitleCard component directly
@@ -569,7 +589,7 @@ export default function Chat() {
                         <div className="mt-4">
                           <SuggestedQueries
                             queries={message.suggestedQueries}
-                            onQueryClick={(query: string) => handleSuggestedQuery(query, message.messageId)}
+                            onQueryClick={(query: string, position: number) => handleSuggestedQuery(query, message.messageId, position)}
                           />
                         </div>
                       )}

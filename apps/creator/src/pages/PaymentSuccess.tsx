@@ -35,7 +35,7 @@ export default function PaymentSuccess() {
         <div className="max-w-2xl mx-auto py-20">
           <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
             <CardContent className="p-12 text-center">
-              <Loader2 className="w-16 h-16 animate-spin text-sunrise-coral-500 mx-auto mb-6" />
+              <Loader2 className="w-16 h-16 animate-spin text-sunrise-coral mx-auto mb-6" />
               <h1 className="text-2xl font-bold text-black mb-3">{t('payment:processing.title')}</h1>
               <p className="text-gray-600">
                 {t('payment:processing.message')}
@@ -74,23 +74,23 @@ export default function PaymentSuccess() {
             )}
 
             {/* What's Next */}
-            <div className="mb-8 text-left bg-sunrise-coral-50 p-6 rounded-lg">
+            <div className="mb-8 text-left bg-sunrise-coral/10 p-6 rounded-lg">
               <h2 className="text-lg font-semibold text-black mb-3">{t('payment:success.whatsNext.title')}</h2>
               <ul className="space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-sunrise-coral flex-shrink-0 mt-0.5" />
                   <span>{t('payment:success.whatsNext.step1')}</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-sunrise-coral flex-shrink-0 mt-0.5" />
                   <span>{t('payment:success.whatsNext.step2')}</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-sunrise-coral flex-shrink-0 mt-0.5" />
                   <span>{t('payment:success.whatsNext.step3')}</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-sunrise-coral-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-sunrise-coral flex-shrink-0 mt-0.5" />
                   <span>{t('payment:success.whatsNext.step4')}</span>
                 </li>
               </ul>
@@ -100,7 +100,7 @@ export default function PaymentSuccess() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
                 onClick={() => navigate('/billing')}
-                className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
+                className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
               >
                 {t('payment:success.viewBillingButton')}
               </Button>

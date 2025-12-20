@@ -311,7 +311,7 @@ export default function SignUp() {
               href="https://kstorybridge.com/terms"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline"
+              className="text-sunrise-coral hover:text-sunrise-coral/80 underline"
             >
               Terms of Use
             </a>
@@ -320,7 +320,7 @@ export default function SignUp() {
               href="https://kstorybridge.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline"
+              className="text-sunrise-coral hover:text-sunrise-coral/80 underline"
             >
               Privacy Policy
             </a>

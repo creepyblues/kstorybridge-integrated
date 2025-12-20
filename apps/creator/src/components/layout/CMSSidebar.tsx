@@ -4,14 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
-import { User, Menu, X, Zap } from 'lucide-react'
+import { Icon } from '@iconify/react'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 interface MenuItem {
   title: string
   href: string
   badge?: string
-  icon?: string
+  icon: string
 }
 
 export function CMSSidebar() {
@@ -23,18 +23,17 @@ export function CMSSidebar() {
 
   // Creator-only menu items (no /creators prefix)
   const baseMenuItems: MenuItem[] = [
-    { title: t('navigation:sidebar.home'), href: '/home' },
-    { title: t('navigation:sidebar.myTitles'), href: '/titles' },
-    { title: t('navigation:sidebar.plan'), href: '/plan' },
-    { title: 'Billing', href: '/billing' },
-    { title: t('navigation:sidebar.news'), href: '/news' },
-    { title: t('navigation:sidebar.learningCenter'), href: '/learning-center' },
+    { title: t('navigation:sidebar.home'), href: '/home', icon: 'solar:home-2-bold-duotone' },
+    { title: t('navigation:sidebar.myTitles'), href: '/titles', icon: 'solar:book-bold-duotone' },
+    { title: t('navigation:sidebar.plan'), href: '/plan', icon: 'solar:card-bold-duotone' },
+    { title: 'Billing', href: '/billing', icon: 'solar:wallet-bold-duotone' },
+    { title: t('navigation:sidebar.learningCenter'), href: '/learning-center', icon: 'solar:square-academic-cap-bold-duotone' },
   ]
 
   // Add admin-only menu items
   const menuItems: MenuItem[] = [
     ...baseMenuItems,
-    ...(isAdmin ? [{ title: '⚡ Tools', href: '/tools', icon: '⚡' }] : [])
+    ...(isAdmin ? [{ title: 'Tools', href: '/tools', icon: 'solar:hammer-bold-duotone' }] : [])
   ]
 
   const userEmail = user?.email
@@ -49,87 +48,45 @@ export function CMSSidebar() {
 
   return (
     <>
-      {/* Mobile Header with Logo and Menu Button */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-gray-100 shadow-sm border-b border-gray-300 z-50">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Logo on the left */}
-          <Link
-            to="/home"
-            className="flex items-center"
-          >
-            <h2 className="text-xl font-bold text-gray-900">KStoryBridge</h2>
-          </Link>
+      {/* Mobile menu button */}
+      <button
+        onClick={handleMobileMenuToggle}
+        className="md:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-white/90 backdrop-blur-sm shadow-md"
+        aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+      >
+        {isMobileMenuOpen ? (
+          <Icon icon="solar:close-circle-bold-duotone" className="h-5 w-5 text-gray-700" />
+        ) : (
+          <Icon icon="solar:hamburger-menu-bold-duotone" className="h-5 w-5 text-gray-700" />
+        )}
+      </button>
 
-          {/* Menu button on the right */}
-          <button
-            onClick={handleMobileMenuToggle}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Overlay */}
+      {/* Overlay for mobile */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black/20 z-30 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
-      {/* Mobile Menu Dropdown */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden fixed left-4 right-4 top-[60px] bg-white rounded-2xl shadow-sm border border-gray-300 z-50 overflow-hidden">
-          <div className="py-2">
-            {/* Menu items */}
-            {menuItems.map((item) => {
-              const isActive = location.pathname === item.href
-
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={handleLinkClick}
-                  className={cn(
-                    'flex items-center justify-between px-4 py-3 text-base font-normal transition-colors border-b border-gray-100',
-                    isActive
-                      ? 'bg-sunrise-coral-600 text-white'
-                      : 'text-gray-900 hover:bg-sunrise-coral-50'
-                  )}
-                >
-                  <span>{item.title}</span>
-                  {item.badge && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold text-white rounded-full bg-red-500 uppercase tracking-wider">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              )
-            })}
-            {/* Language Switcher */}
-            <div className="px-4 py-3">
-              <LanguageSwitcher />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Desktop Sidebar - hidden on mobile */}
+      {/* Sidebar */}
       <aside
-        className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200"
+        className={cn(
+          'fixed left-0 top-0 z-40 h-screen w-64 bg-white shadow-xl transition-transform duration-300 ease-in-out',
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-gray-200">
-            <Link
-              to="/home"
-              className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
-            >
-              KStoryBridge
+            <Link to="/home" className="block">
+              <h1 className="text-2xl font-bold">
+                <span className="text-black">K</span>
+                <span className="text-sunrise-coral">Story</span>
+                <span className="text-black">Bridge</span>
+              </h1>
+              <p className="text-xs text-gray-500 mt-1">Dashboard for Creators</p>
             </Link>
-            <p className="text-sm text-gray-500 mt-1">{t('navigation:pageHeaders.dashboard')}</p>
           </div>
 
           {/* Navigation */}
@@ -139,43 +96,50 @@ export function CMSSidebar() {
               <LanguageSwitcher size="xs" />
             </div>
 
+            {/* Menu Items */}
             <div className="mb-8">
               <ul className="space-y-1">
-                {menuItems.map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      to={item.href}
-                      onClick={handleLinkClick}
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                        location.pathname === item.href
-                          ? 'bg-sunrise-coral-50 text-sunrise-coral-700 border-l-4 border-sunrise-coral-500 pl-2'
-                          : 'text-gray-600 hover:bg-sunrise-coral-50 hover:text-gray-900'
-                      )}
-                    >
-                      {item.icon && <span>{item.icon}</span>}
-                      <span>{item.title}</span>
-                      {item.badge && (
-                        <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
+                {menuItems.map((item) => {
+                  const isActive = location.pathname === item.href
+
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        to={item.href}
+                        onClick={handleLinkClick}
+                        className={cn(
+                          'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',
+                          isActive
+                            ? 'bg-sunrise-coral/10 text-sunrise-coral shadow-sm border border-sunrise-coral/20'
+                            : 'text-gray-700 hover:bg-sunrise-coral/5'
+                        )}
+                      >
+                        <Icon
+                          icon={item.icon}
+                          className={cn("h-5 w-5", isActive ? "" : "text-gray-400")}
+                        />
+                        <span>{item.title}</span>
+                        {item.badge && (
+                          <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           </nav>
 
-          {/* User info */}
+          {/* User info - clickable profile link */}
           <div className="p-4 border-t border-gray-200">
             <Link
               to="/profile"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={handleLinkClick}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-sunrise-coral/5 transition-colors"
             >
-              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-gray-600">
-                <User className="h-4 w-4" />
-              </div>
+              <Icon icon="solar:user-bold-duotone" className="h-5 w-5 text-gray-400" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {user?.user_metadata?.full_name || 'Creator'}

@@ -1,25 +1,26 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/hooks/useAuth'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { titlesService, Title } from '@/services/titlesService'
 import { draftService, TitleDraft } from '@/services/draftService'
 import { listPosts, type ContentPost } from '@/services/contentService'
-import { LearningCard } from '@/components/LearningCard'
-import { HomeTitleCard } from '@/components/HomeTitleCard'
+import {
+  QuickActionsRow,
+  TitleShelf,
+  CreatorProgressCard,
+  LearningSpotlight,
+  UpdatesFeed,
+} from '@/components/home'
 
 export default function Home() {
-  const { t } = useTranslation(['titles', 'navigation', 'common'])
-  const navigate = useNavigate()
+  const { t } = useTranslation(['common'])
   const { user } = useAuth()
   const [titles, setTitles] = useState<Title[]>([])
   const [drafts, setDrafts] = useState<TitleDraft[]>([])
   const [newsPosts, setNewsPosts] = useState<ContentPost[]>([])
   const [learningPosts, setLearningPosts] = useState<ContentPost[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (user?.id) {
@@ -33,13 +34,12 @@ export default function Home() {
 
     try {
       setLoading(true)
-      setError(null)
 
       // Fetch titles, drafts, news posts, and learning posts in parallel
       const [titlesData, draftsData, newsData, learningData] = await Promise.all([
         titlesService.getTitlesByCreator(user.id),
         draftService.getAllDrafts(user.id, 'draft'),
-        listPosts({ category: 'news', status: 'published', limit: 1 }),
+        listPosts({ category: 'news', status: 'published', limit: 5 }),
         listPosts({ category: 'learning', status: 'published', limit: 3 }),
       ])
 
@@ -49,151 +49,43 @@ export default function Home() {
       setLearningPosts(learningData.posts)
     } catch (err) {
       console.error('Error loading data:', err)
-      setError('Failed to load data. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
+  // Get user's display name
+  const displayName = user?.user_metadata?.full_name?.split(' ')[0]
+    || user?.user_metadata?.pen_name
+    || 'Creator'
+
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('navigation:pageHeaders.dashboard')}</h1>
+        {/* Welcome Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">
+            {t('common:home.welcome')}, {displayName} 👋
+          </h1>
         </div>
 
-        {/* Two-column grid layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 sm:mb-8 lg:mb-12">
-          {/* Updates Section - News Posts */}
-          <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl">
-            <CardHeader>
-              <CardTitle>{t('navigation:sidebar.updates')}</CardTitle>
-              <CardDescription>{t('common:home.updatesDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-                </div>
-              ) : newsPosts.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600 text-sm">{t('common:home.noNewsYet')}</p>
-                </div>
-              ) : (
-                <div>
-                  {newsPosts.map((post) => (
-                    <LearningCard
-                      key={post.id}
-                      title={post.title}
-                      excerpt={post.excerpt || ''}
-                      featuredImageUrl={post.featured_image_url || undefined}
-                      authorName={post.author_name}
-                      publishedAt={post.published_at}
-                      category={post.category as 'learning' | 'news'}
-                      onClick={() => navigate(`/news/${post.slug}`)}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* Quick Actions */}
+        <QuickActionsRow />
 
-          {/* Titles Section */}
-          <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl">
-            <CardHeader>
-              <CardTitle>{t('titles:list.title')}</CardTitle>
-              <CardDescription>{t('titles:list.subtitle')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-                </div>
-              ) : error ? (
-                <div className="text-center py-8">
-                  <p className="text-red-600 text-sm">{error}</p>
-                </div>
-              ) : titles.length === 0 && drafts.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600 text-sm mb-3">{t('titles:list.emptyState')}</p>
-                  <button
-                    onClick={() => navigate('/titles/add-title')}
-                    className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline text-sm font-medium"
-                  >
-                    {t('titles:list.emptyStateDescription')}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* Published Titles */}
-                  {titles.map((title) => (
-                    <HomeTitleCard
-                      key={title.title_id}
-                      title={title}
-                      status="published"
-                      onClick={() => navigate(`/titles/${title.title_id}`)}
-                    />
-                  ))}
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+          {/* Main Column - 2 cols */}
+          <div className="lg:col-span-2 space-y-6">
+            <TitleShelf titles={titles} drafts={drafts} loading={loading} />
+            <LearningSpotlight posts={learningPosts} loading={loading} />
+          </div>
 
-                  {/* Drafts */}
-                  {drafts.map((draft) => (
-                    <HomeTitleCard
-                      key={draft.id}
-                      draft={draft}
-                      status="draft"
-                      currentStep={draft.current_step}
-                      onClick={() => navigate(`/titles/add-title?draftId=${draft.id}`)}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Sidebar Column - 1 col */}
+          <div className="space-y-6">
+            <CreatorProgressCard titles={titles} drafts={drafts} />
+            <UpdatesFeed posts={newsPosts} loading={loading} />
+          </div>
         </div>
-
-        {/* Learning Center Section */}
-        <Card className="bg-transparent border-gray-50 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-          <CardHeader>
-            <CardTitle>{t('navigation:pageHeaders.learningCenter')}</CardTitle>
-            <CardDescription>{t('common:home.learningCenterDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-              </div>
-            ) : learningPosts.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600 text-sm">{t('common:home.noLearningYet')}</p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {learningPosts.map((post) => (
-                    <LearningCard
-                      key={post.id}
-                      title={post.title}
-                      excerpt={post.excerpt || ''}
-                      featuredImageUrl={post.featured_image_url || undefined}
-                      authorName={post.author_name}
-                      publishedAt={post.published_at}
-                      category={post.category as 'learning' | 'news'}
-                      onClick={() => navigate(`/learning-center/${post.slug}`)}
-                    />
-                  ))}
-                </div>
-                {learningPosts.length > 0 && (
-                  <button
-                    onClick={() => navigate('/learning-center')}
-                    className="text-sunrise-coral-600 hover:text-sunrise-coral-700 underline text-sm font-medium mt-6 block mx-auto"
-                  >
-                    {t('common:home.viewAllLearning')}
-                  </button>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </MainLayout>
   )

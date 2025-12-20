@@ -30,6 +30,7 @@ import Titles from '@/pages/Titles'
 import TitleDetail from '@/pages/TitleDetail'
 import AddTitle from '@/pages/AddTitle'
 import EditTitle from '@/pages/EditTitle'
+import QuickAddTitle from '@/pages/QuickAddTitle'
 import Profile from '@/pages/Profile'
 import Requests from '@/pages/Requests'
 import News from '@/pages/News'
@@ -72,6 +73,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Titles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/titles/quick-add"
+              element={
+                <ProtectedRoute>
+                  <QuickAddTitle />
                 </ProtectedRoute>
               }
             />

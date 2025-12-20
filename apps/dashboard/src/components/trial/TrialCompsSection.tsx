@@ -15,6 +15,13 @@ import ExamplesSection from '@/components/comps-navigator/ExamplesSection';
 import { SearchLoadingModal } from '@/components/comps-navigator/SearchLoadingModal';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TrialResultsGrid } from './TrialResultsGrid';
+import {
+  trackTrialCompsSearch,
+  trackTrialCompsResults,
+  trackTrialCompsExampleUsed,
+  trackTrialSearchCompleted,
+  trackTrialLimitReached,
+} from '@/utils/analytics';
 
 type LoadingPhase = 'semantic' | 'reranking' | null;
 
@@ -31,7 +38,7 @@ const compTitlesToStrings = (compTitles: CompTitle[]): string[] =>
 
 export function TrialCompsSection() {
   const { toast } = useToast();
-  const { hasTrialRemaining, incrementUsage, setShowLimitModal } = useTrial();
+  const { hasTrialRemaining, incrementUsage, setShowLimitModal, remainingTrials, maxTrials } = useTrial();
   const [searchParams, setSearchParams] = useSearchParams();
   const hasTriggeredInitialSearch = useRef(false);
 
@@ -73,9 +80,14 @@ export function TrialCompsSection() {
 
     // Check trial limit
     if (!hasTrialRemaining) {
+      trackTrialLimitReached('comps');
       setShowLimitModal(true);
       return;
     }
+
+    // Track search initiation
+    const titleStringsForTracking = compTitlesToStrings(titlesToSearch);
+    trackTrialCompsSearch(titleStringsForTracking, titlesToSearch.length);
 
     setIsLoading(true);
     setLoadingPhase('semantic');
@@ -102,6 +114,18 @@ export function TrialCompsSection() {
         cost: response.cost_estimate,
         timing: response.timing,
       });
+
+      // Track results
+      trackTrialCompsResults(
+        response.results.length,
+        response.processing_time_ms,
+        response.cost_estimate
+      );
+
+      // Calculate searches used (before increment: maxTrials - remainingTrials + 1)
+      const searchesUsed = maxTrials - remainingTrials + 1;
+      const newRemainingTrials = remainingTrials - 1;
+      trackTrialSearchCompleted('comps', searchesUsed, newRemainingTrials);
 
       // Increment trial usage only on success
       incrementUsage();
@@ -131,6 +155,8 @@ export function TrialCompsSection() {
   };
 
   const handleTryExample = (comps: string[]) => {
+    // Track example usage (use first comp as example name)
+    trackTrialCompsExampleUsed(comps.join(' + '));
     setCompTitles(stringsToCompTitles(comps));
     setShowExamples(false);
   };

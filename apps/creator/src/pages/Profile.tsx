@@ -211,7 +211,7 @@ export default function Profile() {
               {!isEditing ? (
                 <Button
                   onClick={() => setIsEditing(true)}
-                  className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
+                  className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
                 >
                   Edit Profile
                 </Button>
@@ -220,7 +220,7 @@ export default function Profile() {
                   <Button
                     onClick={handleUpdateProfile}
                     disabled={updating}
-                    className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
+                    className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
                   >
                     {updating ? 'Saving...' : 'Save Changes'}
                   </Button>

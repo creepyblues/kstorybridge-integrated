@@ -10,7 +10,7 @@
  * - Selection: Glassmorphism card with clickable feature cards (from HomePage trialPromo)
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TrialLayout } from '@/components/layout/TrialLayout';
 import { TrialLimitModal } from '@/components/trial/TrialLimitModal';
 import { TrialCompsSection } from '@/components/trial/TrialCompsSection';
@@ -19,11 +19,27 @@ import { TrialChatSection } from '@/components/trial/TrialChatSection';
 import { TypewriterText } from '@/components/home/TypewriterText';
 import { Icon } from '@iconify/react';
 import { cn } from '@/lib/utils';
+import { useTrial } from '@/contexts/TrialContext';
+import { trackTrialPageView, trackTrialToolSelected } from '@/utils/analytics';
 
 type ActiveTab = 'comps' | 'mandates' | 'chat';
 
 export default function Trial() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('comps');
+  const { remainingTrials } = useTrial();
+
+  // Track page view on mount
+  useEffect(() => {
+    trackTrialPageView(remainingTrials);
+  }, []); // Only track once on mount
+
+  // Handle tool selection with tracking
+  const handleToolSelect = (tool: ActiveTab) => {
+    if (tool !== activeTab) {
+      trackTrialToolSelected(tool, remainingTrials);
+      setActiveTab(tool);
+    }
+  };
 
   return (
     <TrialLayout>
@@ -67,7 +83,7 @@ export default function Trial() {
 
                 {/* Card 1: Comps Navigator */}
                 <div
-                  onClick={() => setActiveTab('comps')}
+                  onClick={() => handleToolSelect('comps')}
                   className={cn(
                     "group p-2 sm:p-5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200",
                     activeTab === 'comps'
@@ -83,7 +99,7 @@ export default function Trial() {
 
                 {/* Card 2: Mandate Matcher */}
                 <div
-                  onClick={() => setActiveTab('mandates')}
+                  onClick={() => handleToolSelect('mandates')}
                   className={cn(
                     "group p-2 sm:p-5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200",
                     activeTab === 'mandates'
@@ -99,7 +115,7 @@ export default function Trial() {
 
                 {/* Card 3: AI Chatbot */}
                 <div
-                  onClick={() => setActiveTab('chat')}
+                  onClick={() => handleToolSelect('chat')}
                   className={cn(
                     "group p-2 sm:p-5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200",
                     activeTab === 'chat'

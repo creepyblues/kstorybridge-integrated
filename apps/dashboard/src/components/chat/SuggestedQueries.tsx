@@ -1,12 +1,13 @@
 interface SuggestedQueriesProps {
   queries: string[];
-  onQueryClick: (query: string) => void;
+  onQueryClick: (query: string, position: number) => void;
   disabled?: boolean;
 }
 
 /**
  * SuggestedQueries Component
  * Displays follow-up question suggestions that auto-execute on click
+ * Passes 1-indexed position for analytics tracking
  */
 export const SuggestedQueries = ({ queries, onQueryClick, disabled = false }: SuggestedQueriesProps) => {
   if (!queries || queries.length === 0) {
@@ -20,7 +21,7 @@ export const SuggestedQueries = ({ queries, onQueryClick, disabled = false }: Su
         {queries.map((query, idx) => (
           <button
             key={idx}
-            onClick={() => onQueryClick(query)}
+            onClick={() => onQueryClick(query, idx + 1)}
             disabled={disabled}
             className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >

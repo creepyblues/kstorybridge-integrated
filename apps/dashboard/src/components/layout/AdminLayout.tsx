@@ -39,7 +39,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     {
       name: 'Title Approval',
       href: '/admin/title-approval',
-      icon: 'solar:document-check-bold-duotone',
+      icon: 'solar:clipboard-check-bold-duotone',
       description: 'Review title submissions'
     },
     {

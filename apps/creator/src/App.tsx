@@ -173,7 +173,7 @@ function App() {
               }
             />
             <Route
-              path="/news/:slug"
+              path="/updates/:slug"
               element={
                 <ProtectedRoute>
                   <PostDetail />

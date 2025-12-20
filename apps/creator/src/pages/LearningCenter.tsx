@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { MainLayout } from '@/components/layout/MainLayout'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import {
   LearningCardEnhanced,
@@ -24,8 +25,9 @@ interface ContentPost {
 
 export default function LearningCenter() {
   const navigate = useNavigate()
-  const { t } = useTranslation(['content', 'common'])
+  const { t } = useTranslation(['content', 'common', 'navigation'])
   const [posts, setPosts] = useState<ContentPost[]>([])
+  const [newsPosts, setNewsPosts] = useState<ContentPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -34,19 +36,31 @@ export default function LearningCenter() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const { data, error } = await supabase
-          .from('content_posts')
-          .select('id, title, slug, excerpt, featured_image_url, tags, author_name, published_at, category')
-          .eq('category', 'learning')
-          .eq('status', 'published')
-          .order('published_at', { ascending: false })
+        // Fetch learning and news posts in parallel
+        const [learningResult, newsResult] = await Promise.all([
+          supabase
+            .from('content_posts')
+            .select('id, title, slug, excerpt, featured_image_url, tags, author_name, published_at, category')
+            .eq('category', 'learning')
+            .eq('status', 'published')
+            .order('published_at', { ascending: false }),
+          supabase
+            .from('content_posts')
+            .select('id, title, slug, excerpt, featured_image_url, tags, author_name, published_at, category')
+            .eq('category', 'news')
+            .eq('status', 'published')
+            .order('published_at', { ascending: false })
+            .limit(5),
+        ])
 
-        if (error) throw error
+        if (learningResult.error) throw learningResult.error
+        if (newsResult.error) throw newsResult.error
 
-        setPosts(data || [])
+        setPosts(learningResult.data || [])
+        setNewsPosts(newsResult.data || [])
       } catch (err) {
-        console.error('Error fetching learning posts:', err)
-        setError('Failed to load learning materials. Please try again later.')
+        console.error('Error fetching posts:', err)
+        setError('Failed to load content. Please try again later.')
       } finally {
         setLoading(false)
       }
@@ -122,6 +136,50 @@ export default function LearningCenter() {
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
         />
+
+        {/* Updates Section */}
+        {!loading && newsPosts.length > 0 && (
+          <Card className="bg-white border-gray-200 shadow-none rounded-2xl mb-8">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-blue-500/10">
+                  <Icon icon="solar:bell-bold-duotone" className="h-5 w-5 text-blue-600" />
+                </div>
+                <CardTitle className="text-lg">{t('navigation:sidebar.updates')}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3">
+                {newsPosts.map((post, index) => (
+                  <div
+                    key={post.id}
+                    onClick={() => navigate(`/updates/${post.slug}`)}
+                    className={`flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer ${
+                      index !== newsPosts.length - 1 ? 'border-b border-gray-100' : ''
+                    }`}
+                  >
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                      <Icon icon="solar:document-text-bold" className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 line-clamp-2 hover:text-sunrise-coral transition-colors">
+                        {post.title}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {post.published_at
+                          ? new Date(post.published_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : ''}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Loading State */}
         {loading && (

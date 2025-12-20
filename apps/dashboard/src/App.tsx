@@ -42,8 +42,8 @@ import Featured from '@/pages/buyers/Featured';
 // Admin pages
 import AdminTitles from '@/pages/admin/AdminTitles';
 import AdminTitleEdit from '@/pages/admin/AdminTitleEdit';
-import DraftApproval from '@/pages/admin/DraftApproval';
-import DraftDetail from '@/pages/admin/DraftDetail';
+import TitleApproval from '@/pages/admin/TitleApproval';
+import TitleApprovalDetail from '@/pages/admin/TitleApprovalDetail';
 import { ContentList } from '@/pages/admin/ContentList';
 import { ContentEditor } from '@/pages/admin/ContentEditor';
 import AssetGeneration from '@/pages/admin/AssetGeneration';
@@ -250,22 +250,22 @@ function App() {
             }
           />
 
-          {/* Drafts */}
+          {/* Title Approval */}
           <Route
-            path="/admin/drafts"
+            path="/admin/title-approval"
             element={
               <AdminProtectedRoute>
                 <AdminLayout>
-                  <DraftApproval />
+                  <TitleApproval />
                 </AdminLayout>
               </AdminProtectedRoute>
             }
           />
           <Route
-            path="/admin/drafts/:draftId"
+            path="/admin/title-approval/:draftId"
             element={
               <AdminProtectedRoute>
-                <DraftDetail />
+                <TitleApprovalDetail />
               </AdminProtectedRoute>
             }
           />

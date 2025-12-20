@@ -1,3 +1,8 @@
+/**
+ * Title Approval Detail Page (Admin)
+ * Review and approve/reject a single title submission
+ */
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Icon } from '@iconify/react';
@@ -12,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function AdminDraftDetail() {
+export default function TitleApprovalDetail() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { draftId } = useParams<{ draftId: string }>();
@@ -40,7 +45,7 @@ export default function AdminDraftDetail() {
       console.error("Error loading draft:", error);
       toast({
         title: "Error",
-        description: "Failed to load draft"
+        description: "Failed to load submission"
       });
     } finally {
       setLoading(false);
@@ -56,17 +61,17 @@ export default function AdminDraftDetail() {
 
       toast({
         title: "Success",
-        description: "Draft has been approved"
+        description: "Submission has been approved"
       });
 
       // Reload draft to show updated status
       await loadDraft(draft.id);
       setShowApproveDialog(false);
     } catch (error) {
-      console.error("Error approving draft:", error);
+      console.error("Error approving submission:", error);
       toast({
         title: "Error",
-        description: "Failed to approve draft"
+        description: "Failed to approve submission"
       });
     } finally {
       setApproving(false);
@@ -90,7 +95,7 @@ export default function AdminDraftDetail() {
 
       toast({
         title: "Success",
-        description: "Draft has been rejected"
+        description: "Submission has been rejected"
       });
 
       // Reload draft to show updated status
@@ -98,10 +103,10 @@ export default function AdminDraftDetail() {
       setShowRejectDialog(false);
       setRejectionReason('');
     } catch (error) {
-      console.error("Error rejecting draft:", error);
+      console.error("Error rejecting submission:", error);
       toast({
         title: "Error",
-        description: "Failed to reject draft"
+        description: "Failed to reject submission"
       });
     } finally {
       setRejecting(false);
@@ -191,7 +196,7 @@ export default function AdminDraftDetail() {
     return (
       <AdminLayout>
         <PageContainer>
-          <div className="text-center text-gray-600 py-8">Loading draft...</div>
+          <div className="text-center text-gray-600 py-8">Loading submission...</div>
         </PageContainer>
       </AdminLayout>
     );
@@ -201,7 +206,7 @@ export default function AdminDraftDetail() {
     return (
       <AdminLayout>
         <PageContainer>
-          <div className="text-center text-gray-600 py-8">Draft not found</div>
+          <div className="text-center text-gray-600 py-8">Submission not found</div>
         </PageContainer>
       </AdminLayout>
     );
@@ -216,12 +221,12 @@ export default function AdminDraftDetail() {
         <div className="space-y-6">
           {/* Back Button */}
           <Button
-            onClick={() => navigate('/admin/drafts')}
+            onClick={() => navigate('/admin/title-approval')}
             variant="ghost"
             className="text-gray-600 hover:text-gray-800"
           >
             <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
-            Back to Drafts
+            Back to Title Approval
           </Button>
 
           {/* Header Card */}
@@ -232,7 +237,7 @@ export default function AdminDraftDetail() {
                   <div className="flex items-center gap-3 mb-2">
                     <Icon icon="solar:document-text-bold-duotone" className="w-6 h-6 text-gray-700" />
                     <h1 className="text-2xl font-bold text-gray-900">
-                      {draftData.title_name_en || draftData.title_name_kr || 'Untitled Draft'}
+                      {draftData.title_name_en || draftData.title_name_kr || 'Untitled Submission'}
                     </h1>
                   </div>
                   {draftData.title_name_kr && draftData.title_name_en && (
@@ -410,14 +415,14 @@ export default function AdminDraftDetail() {
                 className="border-red-300 text-red-700 hover:bg-red-50"
               >
                 <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-2" />
-                Reject Draft
+                Reject
               </Button>
               <Button
                 onClick={() => setShowApproveDialog(true)}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Icon icon="solar:check-circle-bold-duotone" className="h-4 w-4 mr-2" />
-                Approve Draft
+                Approve
               </Button>
             </div>
           )}
@@ -427,9 +432,9 @@ export default function AdminDraftDetail() {
         <Dialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Approve Draft</DialogTitle>
+              <DialogTitle>Approve Submission</DialogTitle>
               <DialogDescription>
-                Are you sure you want to approve this draft? This will change the status to approved.
+                Are you sure you want to approve this submission? This will change the status to approved.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -455,9 +460,9 @@ export default function AdminDraftDetail() {
         <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Reject Draft</DialogTitle>
+              <DialogTitle>Reject Submission</DialogTitle>
               <DialogDescription>
-                Please provide a reason for rejecting this draft. The creator will see this feedback.
+                Please provide a reason for rejecting this submission. The creator will see this feedback.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4">
@@ -466,8 +471,8 @@ export default function AdminDraftDetail() {
               </label>
               <Textarea
                 value={rejectionReason}
-                onChange={(e: React.FormEvent) => setRejectionReason((e as React.ChangeEvent<HTMLTextAreaElement>).target.value)}
-                placeholder="Explain why this draft is being rejected..."
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setRejectionReason(e.target.value)}
+                placeholder="Explain why this submission is being rejected..."
                 rows={4}
                 className="w-full"
                 required

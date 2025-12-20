@@ -20,7 +20,7 @@ export function QuickActionsRow() {
       title: t('common:home.quickActions.addTitle'),
       description: t('common:home.quickActions.addTitleDesc'),
       icon: 'solar:add-circle-bold-duotone',
-      href: '/titles/add-title',
+      href: '/titles/quick-add',
       color: 'bg-sunrise-coral/10 text-sunrise-coral',
     },
     {

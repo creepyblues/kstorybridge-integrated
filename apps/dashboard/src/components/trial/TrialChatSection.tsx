@@ -15,6 +15,13 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import ChatProcessingStatus from '@/components/chat/ChatProcessingStatus';
 import { ChatPhase, RichExplanation } from '@/services/chatOrchestratorService';
 import { getRandomChatbotQueries } from '@/data/examplesData';
+import {
+  trackTrialChatMessageSent,
+  trackTrialChatResponse,
+  trackTrialChatSuggestionClicked,
+  trackTrialSearchCompleted,
+  trackTrialLimitReached,
+} from '@/utils/analytics';
 
 interface Message {
   id: string;
@@ -27,7 +34,7 @@ interface Message {
 export function TrialChatSection() {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { hasTrialRemaining, incrementUsage, setShowLimitModal } = useTrial();
+  const { hasTrialRemaining, incrementUsage, setShowLimitModal, remainingTrials, maxTrials } = useTrial();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -43,12 +50,16 @@ export function TrialChatSection() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = async (message: string) => {
+  const handleSendMessage = async (message: string, inputType: 'typed' | 'suggested' = 'typed') => {
     // Check trial limit
     if (!hasTrialRemaining) {
+      trackTrialLimitReached('chat');
       setShowLimitModal(true);
       return;
     }
+
+    // Track message sent
+    trackTrialChatMessageSent(message.length, inputType);
 
     // Add user message to UI
     const userMessage: Message = {
@@ -126,6 +137,14 @@ export function TrialChatSection() {
       };
       setMessages(prev => [...prev, botMessage]);
 
+      // Track response
+      trackTrialChatResponse(titles.length, processingPhase || 'complete');
+
+      // Calculate searches used and track completion
+      const searchesUsed = maxTrials - remainingTrials + 1;
+      const newRemainingTrials = remainingTrials - 1;
+      trackTrialSearchCompleted('chat', searchesUsed, newRemainingTrials);
+
       // Increment trial usage on success
       incrementUsage();
 
@@ -146,11 +165,13 @@ export function TrialChatSection() {
   };
 
   const handleSuggestedQuery = (query: string) => {
-    handleSendMessage(query);
+    // Track suggestion click
+    trackTrialChatSuggestionClicked(query);
+    handleSendMessage(query, 'suggested');
   };
 
   const handleTitleClick = (titleId: string) => {
-    navigate(`/trial/titles/${titleId}`);
+    navigate(`/trial/titles/${titleId}?source=chat`);
   };
 
   return (

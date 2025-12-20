@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { useTrial } from '@/contexts/TrialContext';
 import { Icon } from '@iconify/react';
+import { trackTrialSignupCtaClicked } from '@/utils/analytics';
 
 const benefits = [
   { icon: 'solar:bolt-bold-duotone', text: 'Unlimited AI-powered searches' },
@@ -38,14 +39,22 @@ export function TrialLimitModal() {
         </div>
 
         <div className="mt-8 space-y-3">
-          <Link to="/signup" className="block">
+          <Link
+            to="/signup"
+            className="block"
+            onClick={() => trackTrialSignupCtaClicked('limit_modal')}
+          >
             <Button className="w-full bg-hanok-teal hover:bg-hanok-teal/90 text-white py-6 text-lg">
               Sign Up Free
             </Button>
           </Link>
           <p className="text-center text-sm text-gray-500">
             Already have an account?{' '}
-            <Link to="/signin" className="text-hanok-teal hover:underline font-medium">
+            <Link
+              to="/signin"
+              className="text-hanok-teal hover:underline font-medium"
+              onClick={() => trackTrialSignupCtaClicked('limit_modal')}
+            >
               Sign In
             </Link>
           </p>

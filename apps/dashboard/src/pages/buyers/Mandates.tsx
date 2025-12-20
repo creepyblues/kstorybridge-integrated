@@ -19,13 +19,14 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Icon } from '@iconify/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { trackPageView, trackFeatureUsage, trackMandateSearchSubmitted, trackMandateExampleUsed, trackSearchZeroResults } from '@/utils/analytics';
+import { trackPageView, trackFeatureUsage, trackMandateSearchSubmitted, trackMandateExampleUsed, trackSearchZeroResults, trackSessionSearches } from '@/utils/analytics';
 
 export default function Mandates() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const hasTriggeredInitialSearch = useRef(false);
+  const searchCountRef = useRef(0); // Track searches per session for analytics
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -42,6 +43,15 @@ export default function Mandates() {
   useEffect(() => {
     trackPageView('/buyers/mandates', 'Mandate Search');
     trackFeatureUsage('mandate_search');
+  }, []);
+
+  // Track session searches on page leave
+  useEffect(() => {
+    return () => {
+      if (searchCountRef.current > 0) {
+        trackSessionSearches('mandates', searchCountRef.current);
+      }
+    };
   }, []);
 
   // Load mandate history on mount
@@ -94,6 +104,9 @@ export default function Mandates() {
     try {
       setIsLoading(true);
       setCurrentMandateText(mandateText);
+
+      // Increment search counter for session analytics
+      searchCountRef.current += 1;
 
       // Call the mandate matcher service
       const response = await mandateService.searchMandates(mandateText, user.email);

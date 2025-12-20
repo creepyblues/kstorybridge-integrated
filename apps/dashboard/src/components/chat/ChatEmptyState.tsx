@@ -1,11 +1,19 @@
 import { Icon } from '@iconify/react';
+import { trackChatExampleClicked } from '@/utils/analytics';
 
 interface ChatEmptyStateProps {
-  onQuerySelect: (query: string) => void;
+  onQuerySelect: (query: string, source?: 'typed' | 'example' | 'suggestion' | 'url_param') => void;
   suggestedQueries: string[];
 }
 
 export function ChatEmptyState({ onQuerySelect, suggestedQueries }: ChatEmptyStateProps) {
+  const handleExampleClick = (query: string) => {
+    // Track example click for GA4 analytics
+    trackChatExampleClicked(query);
+    // Execute with 'example' source
+    onQuerySelect(query, 'example');
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-full py-12 px-4">
       <div className="max-w-2xl w-full text-center space-y-6">
@@ -33,7 +41,7 @@ export function ChatEmptyState({ onQuerySelect, suggestedQueries }: ChatEmptySta
             {suggestedQueries.map((query, index) => (
               <button
                 key={index}
-                onClick={() => onQuerySelect(query)}
+                onClick={() => handleExampleClick(query)}
                 className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
               >
                 {query}

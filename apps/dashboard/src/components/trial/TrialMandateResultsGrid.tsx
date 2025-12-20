@@ -10,6 +10,7 @@ import { Icon } from '@iconify/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TypewriterText } from '@/components/ui/TypewriterText';
 import { TitleMatch } from '@/services/mandateService';
+import { trackTrialResultClicked } from '@/utils/analytics';
 
 interface TrialMandateResultsGridProps {
   results: TitleMatch[];
@@ -18,13 +19,21 @@ interface TrialMandateResultsGridProps {
 }
 
 // Trial-specific card that opens in same tab to /trial/titles/:id
-function TrialMandateTitleCard({ match, enableTypewriter = false }: { match: TitleMatch; enableTypewriter?: boolean }) {
+function TrialMandateTitleCard({ match, enableTypewriter = false, position }: { match: TitleMatch; enableTypewriter?: boolean; position: number }) {
   const navigate = useNavigate();
   const [typewriterDone, setTypewriterDone] = useState(!enableTypewriter);
 
   const handleCardClick = () => {
+    // Track result click
+    trackTrialResultClicked(
+      'mandates',
+      match.title_id,
+      match.title_name_en || match.title_name_kr,
+      match.match_score,
+      position
+    );
     // Navigate to trial title detail using React Router for smooth transition
-    navigate(`/trial/titles/${match.title_id}`);
+    navigate(`/trial/titles/${match.title_id}?source=mandates`);
   };
 
   const getMatchScoreBadge = (score: number) => {
@@ -279,11 +288,12 @@ export function TrialMandateResultsGrid({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {results.map((match) => (
+        {results.map((match, index) => (
           <TrialMandateTitleCard
             key={match.title_id}
             match={match}
             enableTypewriter={isNewResults}
+            position={index + 1}
           />
         ))}
       </div>

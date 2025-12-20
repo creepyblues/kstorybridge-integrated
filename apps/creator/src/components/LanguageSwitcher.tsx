@@ -1,34 +1,50 @@
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Globe } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
 
 interface LanguageSwitcherProps {
-  size?: 'xs' | 'sm';
+  size?: 'xs' | 'sm'
 }
 
 export function LanguageSwitcher({ size = 'sm' }: LanguageSwitcherProps) {
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation()
 
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'ko' : 'en';
-    i18n.changeLanguage(newLang);
-  };
+  const isEnglish = i18n.language === 'en' || i18n.language.startsWith('en-')
 
-  const currentLanguage = i18n.language === 'ko' ? '한국어' : 'English';
+  const setLanguage = (lang: 'en' | 'ko') => {
+    i18n.changeLanguage(lang)
+  }
 
   return (
-    <Button
-      variant="outline"
-      size={size === 'xs' ? 'sm' : 'sm'}
-      onClick={toggleLanguage}
+    <div
       className={cn(
-        'border-gray-300 hover:bg-gray-100',
-        size === 'xs' && 'h-7 px-2 text-xs'
+        'inline-flex items-center rounded-full bg-gray-100 p-0.5',
+        size === 'xs' ? 'text-xs' : 'text-sm'
       )}
     >
-      <Globe className={cn(size === 'xs' ? 'h-3 w-3 mr-1.5' : 'h-4 w-4 mr-2')} />
-      {currentLanguage}
-    </Button>
-  );
+      <button
+        onClick={() => setLanguage('en')}
+        className={cn(
+          'rounded-full font-medium transition-all duration-200',
+          size === 'xs' ? 'px-2.5 py-1' : 'px-3 py-1.5',
+          isEnglish
+            ? 'bg-white text-gray-900 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
+        )}
+      >
+        EN
+      </button>
+      <button
+        onClick={() => setLanguage('ko')}
+        className={cn(
+          'rounded-full font-medium transition-all duration-200',
+          size === 'xs' ? 'px-2.5 py-1' : 'px-3 py-1.5',
+          !isEnglish
+            ? 'bg-white text-gray-900 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
+        )}
+      >
+        한
+      </button>
+    </div>
+  )
 }

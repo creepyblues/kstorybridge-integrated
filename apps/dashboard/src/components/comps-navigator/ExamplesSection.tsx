@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { EXAMPLE_CATEGORIES, getExamplesByCategory } from '@/data/examplesData';
 import ExampleCard from './ExampleCard';
+import { trackCompsExampleUsed } from '@/utils/analytics';
 
 interface ExamplesSectionProps {
   onTryExample: (comps: string[], refinement?: string) => void;
@@ -19,6 +20,14 @@ export default function ExamplesSection({ onTryExample, isModal = false }: Examp
   const [activeCategory, setActiveCategory] = useState('genre');
 
   const categoryExamples = getExamplesByCategory(activeCategory);
+
+  // Wrap onTryExample to add tracking
+  const handleTryExample = (comps: string[], refinement?: string) => {
+    // Track example usage for GA4 analytics
+    trackCompsExampleUsed(activeCategory, comps);
+    // Call the original handler
+    onTryExample(comps, refinement);
+  };
 
   // Modal version - no card wrapper, no header
   if (isModal) {
@@ -54,7 +63,7 @@ export default function ExamplesSection({ onTryExample, isModal = false }: Examp
             <ExampleCard
               key={example.id}
               example={example}
-              onTryExample={onTryExample}
+              onTryExample={handleTryExample}
               compact={true}
             />
           ))}
@@ -114,7 +123,7 @@ export default function ExamplesSection({ onTryExample, isModal = false }: Examp
             <ExampleCard
               key={example.id}
               example={example}
-              onTryExample={onTryExample}
+              onTryExample={handleTryExample}
             />
           ))}
         </div>

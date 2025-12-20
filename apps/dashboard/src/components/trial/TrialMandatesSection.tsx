@@ -14,10 +14,17 @@ import MandateSearchInput from '@/components/mandates/MandateSearchInput';
 import MandateExamples from '@/components/mandates/MandateExamples';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TrialMandateResultsGrid } from './TrialMandateResultsGrid';
+import {
+  trackTrialMandateSearch,
+  trackTrialMandateResults,
+  trackTrialMandateExampleUsed,
+  trackTrialSearchCompleted,
+  trackTrialLimitReached,
+} from '@/utils/analytics';
 
 export function TrialMandatesSection() {
   const { toast } = useToast();
-  const { hasTrialRemaining, incrementUsage, setShowLimitModal } = useTrial();
+  const { hasTrialRemaining, incrementUsage, setShowLimitModal, remainingTrials, maxTrials } = useTrial();
   const [searchParams, setSearchParams] = useSearchParams();
   const hasTriggeredInitialSearch = useRef(false);
 
@@ -41,9 +48,13 @@ export function TrialMandatesSection() {
   const handleSubmitMandate = async (mandateText: string) => {
     // Check trial limit
     if (!hasTrialRemaining) {
+      trackTrialLimitReached('mandates');
       setShowLimitModal(true);
       return;
     }
+
+    // Track search initiation
+    trackTrialMandateSearch(mandateText);
 
     try {
       setIsLoading(true);
@@ -59,6 +70,14 @@ export function TrialMandatesSection() {
 
       setCurrentResults(response.results);
       setSearchTiming(response.timing || null);
+
+      // Track results
+      trackTrialMandateResults(response.results.length, response.processing_time_ms);
+
+      // Calculate searches used and track completion
+      const searchesUsed = maxTrials - remainingTrials + 1;
+      const newRemainingTrials = remainingTrials - 1;
+      trackTrialSearchCompleted('mandates', searchesUsed, newRemainingTrials);
 
       // Increment trial usage only on success
       incrementUsage();
@@ -91,6 +110,8 @@ export function TrialMandatesSection() {
   };
 
   const handleTryExample = (mandateText: string) => {
+    // Track example usage (use first 30 chars as example name)
+    trackTrialMandateExampleUsed(mandateText.substring(0, 30) + (mandateText.length > 30 ? '...' : ''));
     setShowExamples(false);
     handleSubmitMandate(mandateText);
   };

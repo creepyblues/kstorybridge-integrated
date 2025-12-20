@@ -92,6 +92,17 @@ export interface Title {
   creator_achievements?: Record<string, any> | null
 }
 
+// Quick Add Title input (simplified form)
+export interface QuickAddTitleInput {
+  title_name_kr: string
+  title_url: string
+  rights_holder_name: string
+  rights_available: string[]
+  creator_id: string
+  title_name_en?: string
+  title_url_en?: string
+}
+
 export interface CreateTitleInput {
   // Required fields
   title_name_en: string
@@ -280,6 +291,28 @@ export const titlesService = {
 
     if (error) {
       console.error('Error creating title:', error)
+      throw error
+    }
+
+    return data
+  },
+
+  /**
+   * Create title via quick add form (simplified input)
+   * Sets verified: false by default
+   */
+  async createQuickTitle(input: QuickAddTitleInput): Promise<Title> {
+    const { data, error } = await supabase
+      .from('titles')
+      .insert([{
+        ...input,
+        verified: false,
+      }])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating quick title:', error)
       throw error
     }
 

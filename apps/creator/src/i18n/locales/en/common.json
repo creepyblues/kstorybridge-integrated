@@ -93,6 +93,29 @@
     "learningCenterDescription": "Resources and guides to help you succeed",
     "viewAllLearning": "View All Learning Resources",
     "noNewsYet": "No news updates at the moment",
-    "noLearningYet": "No learning resources available yet"
-  }
+    "noLearningYet": "No learning resources available yet",
+    "featured": "Featured",
+    "quickActions": {
+      "addTitle": "Add New Title",
+      "addTitleDesc": "Submit your webtoon or web novel for international licensing",
+      "viewTitles": "View My Titles",
+      "viewTitlesDesc": "Manage your submitted titles and track their status",
+      "learnMore": "Learn the Platform",
+      "learnMoreDesc": "Tutorials and guides to help you succeed"
+    },
+    "progress": {
+      "title": "Getting Started",
+      "completed": "completed",
+      "completeProfile": "Complete your profile",
+      "completeProfileDesc": "Add your pen name and details",
+      "addFirstTitle": "Add your first title",
+      "addFirstTitleDesc": "Submit a webtoon or web novel",
+      "publishTitle": "Get your title approved",
+      "publishTitleDesc": "Complete the review process",
+      "learnPlatform": "Explore learning resources",
+      "learnPlatformDesc": "Tips for successful licensing"
+    },
+    "welcome": "Welcome back"
+  },
+  "viewAll": "View All"
 }

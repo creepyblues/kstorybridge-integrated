@@ -5,7 +5,7 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TitleCard } from '@/components/title/TitleCard';
 import { Badge } from '@/components/ui/badge';
 import { Icon } from '@iconify/react';
-import { trackTitleSearch, trackFeatureUsage, trackPageView, trackSearchZeroResults } from '@/utils/analytics';
+import { trackTitleSearch, trackFeatureUsage, trackPageView, trackSearchZeroResults, trackTitlesFilterApplied, trackSessionSearches } from '@/utils/analytics';
 import {
   type FormatType,
   type FormatFitSummary,
@@ -38,11 +38,21 @@ export default function Titles() {
 
   const observerTarget = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchCountRef = useRef(0); // Track searches per session for analytics
 
   // Track page view on mount
   useEffect(() => {
     trackPageView('/buyers/titles', 'Discover Titles');
     trackFeatureUsage('titles_browse');
+  }, []);
+
+  // Track session searches on page leave
+  useEffect(() => {
+    return () => {
+      if (searchCountRef.current > 0) {
+        trackSessionSearches('titles', searchCountRef.current);
+      }
+    };
   }, []);
 
   // Fetch format-filtered title IDs when format filter changes
@@ -90,6 +100,9 @@ export default function Titles() {
 
           // Track vector search
           trackTitleSearch(searchQuery, vectorResults.length, 'vector');
+
+          // Increment search counter for session analytics
+          searchCountRef.current += 1;
 
           // Track zero results for search quality analysis
           if (vectorResults.length === 0) {
@@ -181,6 +194,13 @@ export default function Titles() {
     }
   }, [loadingMore, hasMore, offset, searchQuery, toast]);
 
+  // Handle format filter change with tracking
+  const handleFormatFilterChange = (newFormat: FormatType | null) => {
+    // Track filter change
+    trackTitlesFilterApplied('format', newFormat);
+    setFormatFilter(newFormat);
+  };
+
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -262,7 +282,7 @@ export default function Titles() {
           {FORMAT_FILTER_OPTIONS.map((option) => (
             <button
               key={option.value || 'all'}
-              onClick={() => setFormatFilter(option.value)}
+              onClick={() => handleFormatFilterChange(option.value)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                 formatFilter === option.value
                   ? 'bg-hanok-teal text-white shadow-md'

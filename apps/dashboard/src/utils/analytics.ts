@@ -570,8 +570,38 @@ export const trackChatSuggestionClick = (
   position: number
 ): void => {
   trackEvent('chat_suggestion_click', {
+    query_text: query.substring(0, 50),
     query_length: query.length,
     position,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track chat message input source (typed vs example vs suggestion)
+ * @param source - How the message was initiated
+ * @param messageLength - Length of the message
+ */
+export const trackChatMessageSource = (
+  source: 'typed' | 'example' | 'suggestion' | 'url_param',
+  messageLength: number
+): void => {
+  trackEvent('chat_message_source', {
+    source,
+    message_length: messageLength,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track when user clicks an initial example prompt on chat page
+ * @param exampleText - The example text that was clicked
+ */
+export const trackChatExampleClicked = (
+  exampleText: string
+): void => {
+  trackEvent('chat_example_clicked', {
+    example_text: exampleText.substring(0, 50),
     timestamp: new Date().toISOString(),
   });
 };
@@ -622,6 +652,23 @@ export const trackCompsResultClick = (
     title_name: titleName,
     match_score: matchScore,
     position,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track when user clicks "Try Example" in Comps Navigator
+ * @param exampleName - Name of the example used
+ * @param compTitles - Array of comp titles in the example
+ */
+export const trackCompsExampleUsed = (
+  exampleName: string,
+  compTitles: string[]
+): void => {
+  trackEvent('comps_example_used', {
+    example_name: exampleName,
+    comp_titles: compTitles.join(', ').substring(0, 100),
+    comp_count: compTitles.length,
     timestamp: new Date().toISOString(),
   });
 };
@@ -730,6 +777,38 @@ export const trackEngagement = (
   trackEvent('user_engagement', {
     engagement_action: action,
     engagement_value: value,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track session-level search counts (fired on page leave)
+ * @param tool - Which tool the searches were performed in
+ * @param searchCount - Total number of searches in the session
+ */
+export const trackSessionSearches = (
+  tool: 'chat' | 'comps' | 'mandates' | 'titles',
+  searchCount: number
+): void => {
+  trackEvent('session_searches', {
+    tool,
+    search_count: searchCount,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track filter applied on titles page
+ * @param filterType - Type of filter (e.g., 'format')
+ * @param filterValue - Value of the filter (e.g., 'webtoon', null for 'all')
+ */
+export const trackTitlesFilterApplied = (
+  filterType: string,
+  filterValue: string | null
+): void => {
+  trackEvent('titles_filter_applied', {
+    filter_type: filterType,
+    filter_value: filterValue || 'all',
     timestamp: new Date().toISOString(),
   });
 };
@@ -1386,6 +1465,268 @@ export const trackExternalLinkClicked = (
     destination_domain: domain,
     link_type: linkType,
     context,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// ============================================================================
+// TRIAL PAGE TRACKING
+// Tracks: Tool Selection, Searches, Results, Limit, Signup CTA
+// ============================================================================
+
+type TrialTool = 'comps' | 'mandates' | 'chat';
+
+/**
+ * Track trial page view
+ */
+export const trackTrialPageView = (remainingTrials: number): void => {
+  trackEvent('trial_page_view', {
+    remaining_trials: remainingTrials,
+    trial_tool: 'none',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track tool selection on trial page
+ */
+export const trackTrialToolSelected = (
+  tool: TrialTool,
+  remainingTrials: number
+): void => {
+  trackEvent('trial_tool_selected', {
+    trial_tool: tool,
+    remaining_trials: remainingTrials,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track comp title added
+ */
+export const trackTrialCompAdded = (
+  compTitle: string,
+  compCount: number
+): void => {
+  trackEvent('trial_comp_added', {
+    comp_title: compTitle,
+    comp_count: compCount,
+    trial_tool: 'comps',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track comp title removed
+ */
+export const trackTrialCompRemoved = (
+  compTitle: string,
+  compCount: number
+): void => {
+  trackEvent('trial_comp_removed', {
+    comp_title: compTitle,
+    comp_count: compCount,
+    trial_tool: 'comps',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track comps search initiated
+ */
+export const trackTrialCompsSearch = (
+  compTitles: string[],
+  compCount: number
+): void => {
+  trackEvent('trial_comps_search', {
+    comp_titles: compTitles.join(', ').substring(0, 100),
+    comp_count: compCount,
+    trial_tool: 'comps',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track comps search results received
+ */
+export const trackTrialCompsResults = (
+  resultCount: number,
+  processingTimeMs: number,
+  costEstimate?: number
+): void => {
+  trackEvent('trial_comps_results', {
+    result_count: resultCount,
+    processing_time_ms: processingTimeMs,
+    cost_estimate: costEstimate || 0,
+    trial_tool: 'comps',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track comps example used
+ */
+export const trackTrialCompsExampleUsed = (exampleName: string): void => {
+  trackEvent('trial_comps_example_used', {
+    example_name: exampleName,
+    trial_tool: 'comps',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track mandate search initiated
+ */
+export const trackTrialMandateSearch = (
+  mandateText: string
+): void => {
+  trackEvent('trial_mandate_search', {
+    mandate_length: mandateText.length,
+    mandate_preview: mandateText.substring(0, 50),
+    trial_tool: 'mandates',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track mandate search results received
+ */
+export const trackTrialMandateResults = (
+  resultCount: number,
+  processingTimeMs: number
+): void => {
+  trackEvent('trial_mandate_results', {
+    result_count: resultCount,
+    processing_time_ms: processingTimeMs,
+    trial_tool: 'mandates',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track mandate example used
+ */
+export const trackTrialMandateExampleUsed = (exampleName: string): void => {
+  trackEvent('trial_mandate_example_used', {
+    example_name: exampleName,
+    trial_tool: 'mandates',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track chat message sent
+ */
+export const trackTrialChatMessageSent = (
+  messageLength: number,
+  inputType: 'typed' | 'suggested'
+): void => {
+  trackEvent('trial_chat_message_sent', {
+    message_length: messageLength,
+    input_type: inputType,
+    trial_tool: 'chat',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track chat response received
+ */
+export const trackTrialChatResponse = (
+  resultCount: number,
+  processingPhase: string
+): void => {
+  trackEvent('trial_chat_response', {
+    result_count: resultCount,
+    processing_phase: processingPhase,
+    trial_tool: 'chat',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track chat suggestion clicked
+ */
+export const trackTrialChatSuggestionClicked = (suggestionText: string): void => {
+  trackEvent('trial_chat_suggestion_clicked', {
+    suggestion_text: suggestionText.substring(0, 50),
+    trial_tool: 'chat',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track result card clicked
+ */
+export const trackTrialResultClicked = (
+  tool: TrialTool,
+  titleId: string,
+  titleName: string,
+  matchScore: number,
+  position: number
+): void => {
+  trackEvent('trial_result_clicked', {
+    trial_tool: tool,
+    title_id: titleId,
+    title_name: titleName,
+    match_score: matchScore,
+    position,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track trial title detail page view
+ */
+export const trackTrialTitleDetailView = (
+  titleId: string,
+  titleName: string,
+  sourceTool: TrialTool
+): void => {
+  trackEvent('trial_title_detail_view', {
+    title_id: titleId,
+    title_name: titleName,
+    source_tool: sourceTool,
+    trial_tool: sourceTool,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track search completed (any tool)
+ */
+export const trackTrialSearchCompleted = (
+  tool: TrialTool,
+  searchesUsed: number,
+  remainingTrials: number
+): void => {
+  trackEvent('trial_search_completed', {
+    trial_tool: tool,
+    searches_used: searchesUsed,
+    remaining_trials: remainingTrials,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track trial limit reached (5/5 searches)
+ */
+export const trackTrialLimitReached = (lastToolUsed: TrialTool): void => {
+  trackEvent('trial_limit_reached', {
+    last_tool_used: lastToolUsed,
+    trial_tool: lastToolUsed,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track signup CTA clicked from trial
+ */
+export const trackTrialSignupCtaClicked = (
+  source: 'limit_modal' | 'title_detail_banner' | 'header'
+): void => {
+  trackEvent('trial_signup_cta_clicked', {
+    source,
     timestamp: new Date().toISOString(),
   });
 };

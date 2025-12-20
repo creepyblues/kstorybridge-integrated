@@ -126,7 +126,7 @@ export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: Chec
                 Subscribe to {planName}
               </h2>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-sunrise-coral-500">{plan.price}</span>
+                <span className="text-3xl font-bold text-sunrise-coral">{plan.price}</span>
                 <span className="text-gray-600">{plan.period}</span>
               </div>
               <p className="text-sm text-gray-500 mt-1">{plan.description}</p>
@@ -163,7 +163,7 @@ export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: Chec
               </p>
               <Button
                 onClick={() => window.location.href = '/titles/add-title'}
-                className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
+                className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
               >
                 Create Your First Title
               </Button>
@@ -188,7 +188,7 @@ export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: Chec
                       onClick={() => setSelectedTitleId(title.title_id)}
                       className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                         selectedTitleId === title.title_id
-                          ? 'border-sunrise-coral-500 bg-sunrise-coral-50'
+                          ? 'border-sunrise-coral bg-sunrise-coral/10'
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
@@ -233,7 +233,7 @@ export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: Chec
                 <Button
                   onClick={handleCheckout}
                   disabled={!selectedTitleId || processing}
-                  className="w-full bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600 py-6 text-lg font-semibold"
+                  className="w-full bg-sunrise-coral text-white hover:bg-sunrise-coral/90 py-6 text-lg font-semibold"
                 >
                   {processing ? (
                     <>

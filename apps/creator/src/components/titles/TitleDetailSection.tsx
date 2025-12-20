@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { Icon } from '@iconify/react'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface TitleDetailSectionProps {
@@ -41,20 +41,19 @@ export const TitleDetailSection: React.FC<TitleDetailSectionProps> = ({
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white text-sm font-semibold">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-sunrise-coral to-orange-500 text-white text-sm font-semibold shadow-sm">
               {stepNumber}
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-gray-700">{icon}</div>
+              <div className="text-sunrise-coral">{icon}</div>
               <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
             </div>
           </div>
-          <div className="text-gray-500">
-            {isExpanded ? (
-              <ChevronDown className="w-5 h-5" />
-            ) : (
-              <ChevronRight className="w-5 h-5" />
-            )}
+          <div className="text-gray-400">
+            <Icon
+              icon={isExpanded ? 'solar:alt-arrow-down-linear' : 'solar:alt-arrow-right-linear'}
+              className="w-5 h-5"
+            />
           </div>
         </button>
 

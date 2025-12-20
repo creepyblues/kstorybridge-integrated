@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Check } from 'lucide-react'
+import { Icon } from '@iconify/react'
 import { ReactNode } from 'react'
 
 interface PricingCardProps {
@@ -13,6 +13,7 @@ interface PricingCardProps {
   buttonText: string
   onButtonClick: () => void
   popular?: boolean
+  icon?: string
   className?: string
 }
 
@@ -26,62 +27,129 @@ export function PricingCard({
   buttonText,
   onButtonClick,
   popular = false,
-  className = ''
+  icon,
+  className = '',
 }: PricingCardProps) {
   return (
     <Card
-      className={`relative ${popular ? 'border-sunrise-coral-500 border-2' : 'border-gray-300'} ${className}`}
+      className={`h-full relative overflow-hidden transition-all duration-300 ${
+        popular
+          ? 'border-2 border-sunrise-coral bg-gradient-to-b from-sunrise-coral/5 to-white shadow-lg shadow-sunrise-coral/10'
+          : 'border-gray-200 hover:border-sunrise-coral/50 bg-white'
+      } ${className}`}
     >
+      {/* Popular Badge */}
       {popular && (
-        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-          <span className="bg-sunrise-coral-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-            Most Popular
-          </span>
-        </div>
+        <div className="absolute -top-px left-0 right-0 h-1 bg-gradient-to-r from-sunrise-coral to-orange-400" />
       )}
 
-      <CardContent className="p-6 sm:p-8 lg:p-10 text-center">
-        <h3 className="text-xl sm:text-2xl font-bold text-black mb-4">{title}</h3>
+      <CardContent className="p-6 sm:p-8 flex flex-col h-full">
+        {/* Popular Badge Area - Fixed height, always reserved */}
+        <div className="h-[32px] flex items-center justify-center mb-2">
+          {popular && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-sunrise-coral text-white">
+              <Icon icon="solar:star-bold" className="h-3 w-3" />
+              Most Popular
+            </span>
+          )}
+        </div>
 
-        {description && (
-          <p className="text-gray-600 mb-6 text-sm sm:text-base">{description}</p>
-        )}
-
-        <div className="mb-6 min-h-[120px] flex flex-col justify-end">
-          {originalPrice && (
-            <div className="mb-2">
-              <span className="text-xl sm:text-2xl font-bold text-gray-400 line-through">
-                {originalPrice}
-              </span>
-              {period && <span className="text-gray-400 text-sm sm:text-base ml-1">{period}</span>}
+        {/* Icon Area - Fixed height */}
+        <div className="h-[56px] flex items-center justify-center mb-4">
+          {icon && (
+            <div
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                popular
+                  ? 'bg-gradient-to-br from-sunrise-coral to-orange-400'
+                  : 'bg-gray-100'
+              }`}
+            >
+              <Icon
+                icon={icon}
+                className={`h-7 w-7 ${popular ? 'text-white' : 'text-gray-600'}`}
+              />
             </div>
           )}
-          <div>
-            <span className="text-4xl sm:text-5xl font-bold text-black">{price}</span>
-            {period && <span className="text-gray-600 text-base sm:text-lg ml-2">{period}</span>}
+        </div>
+
+        {/* Title Section - Fixed height */}
+        <div className="h-[36px] flex items-center justify-center">
+          <h3 className="text-xl sm:text-2xl font-bold text-black text-center">
+            {title}
+          </h3>
+        </div>
+
+        {/* Description Section - Fixed min-height */}
+        <div className="min-h-[48px] mb-6 flex items-start justify-center">
+          {description && (
+            <p className="text-gray-500 text-sm text-center">{description}</p>
+          )}
+        </div>
+
+        {/* Price Section - Fixed height */}
+        <div className="h-[80px] flex flex-col justify-end text-center mb-6">
+          {/* Always reserve space for original price line */}
+          <div className="h-[28px] flex items-center justify-center">
+            {originalPrice && (
+              <span className="text-lg text-gray-400 line-through">
+                {originalPrice}
+              </span>
+            )}
+          </div>
+          <div className="flex items-baseline justify-center gap-1">
+            <span
+              className={`text-4xl sm:text-5xl font-bold ${
+                popular ? 'text-sunrise-coral' : 'text-black'
+              }`}
+            >
+              {price}
+            </span>
+            {period && (
+              <span className="text-gray-500 text-base ml-1">{period}</span>
+            )}
           </div>
         </div>
 
+        {/* CTA Button */}
         <Button
           onClick={onButtonClick}
-          className={`w-full h-12 text-base font-semibold mb-8 ${
+          className={`w-full h-12 text-base font-semibold mb-6 transition-all ${
             popular
-              ? 'bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600'
-              : 'border-gray-300 hover:bg-gray-100'
+              ? 'bg-sunrise-coral text-white hover:bg-sunrise-coral/90 shadow-lg shadow-sunrise-coral/25'
+              : 'border-gray-300 hover:bg-gray-100 hover:border-gray-400'
           }`}
           variant={popular ? 'default' : 'outline'}
         >
           {buttonText}
         </Button>
 
-        <ul className="space-y-3 sm:space-y-4 text-left">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-start">
-              <Check className="w-5 h-5 text-sunrise-coral-500 mr-3 mt-0.5 flex-shrink-0" />
-              <span className="text-gray-700 text-sm sm:text-base">{feature}</span>
-            </li>
-          ))}
-        </ul>
+        {/* Features Section - Grows to fill remaining space */}
+        <div className="flex-grow border-t border-gray-200 pt-6">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
+            What's included
+          </p>
+
+          {/* Features List */}
+          <ul className="space-y-3">
+            {features.map((feature, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <div
+                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                    popular ? 'bg-sunrise-coral/10' : 'bg-gray-100'
+                  }`}
+                >
+                  <Icon
+                    icon="solar:check-circle-bold"
+                    className={`h-4 w-4 ${
+                      popular ? 'text-sunrise-coral' : 'text-gray-600'
+                    }`}
+                  />
+                </div>
+                <span className="text-gray-700 text-sm">{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </CardContent>
     </Card>
   )

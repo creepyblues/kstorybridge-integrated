@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
 import { type PitchAnalysis } from '@/types/pitchAnalysis';
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Icon } from '@iconify/react';
 import { Card } from '@/components/ui/card';
+import { trackTrialTitleDetailView, trackTrialSignupCtaClicked } from '@/utils/analytics';
 
 import {
   TitleHero,
@@ -27,11 +28,16 @@ export default function TrialTitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [title, setTitle] = useState<Title | null>(null);
   const [loading, setLoading] = useState(true);
   const [pitchAnalysis, setPitchAnalysis] = useState<PitchAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [hasTrackedView, setHasTrackedView] = useState(false);
+
+  // Get source tool from URL params (set when navigating from result cards)
+  const sourceTool = searchParams.get('source') as 'comps' | 'mandates' | 'chat' | null;
 
   useEffect(() => {
     const fetchTitle = async () => {
@@ -44,6 +50,16 @@ export default function TrialTitleDetail() {
 
         if (data?.pitch_analysis) {
           setPitchAnalysis(data.pitch_analysis);
+        }
+
+        // Track title detail view once title is loaded
+        if (!hasTrackedView && data) {
+          trackTrialTitleDetailView(
+            titleId,
+            data.title_name_en || data.title_name_kr || 'Unknown Title',
+            sourceTool || 'comps' // Default to comps if no source param
+          );
+          setHasTrackedView(true);
         }
       } catch (error: unknown) {
         console.error('Error fetching title:', error);
@@ -59,7 +75,7 @@ export default function TrialTitleDetail() {
     };
 
     fetchTitle();
-  }, [titleId, toast]);
+  }, [titleId, toast, sourceTool, hasTrackedView]);
 
   // Check if tabs have content
   const hasStoryDetails =
@@ -132,7 +148,7 @@ export default function TrialTitleDetail() {
               <p className="text-sm text-gray-600">Sign up free to unlock all features</p>
             </div>
           </div>
-          <Link to="/signup">
+          <Link to="/signup" onClick={() => trackTrialSignupCtaClicked('title_detail_banner')}>
             <Button className="bg-hanok-teal hover:bg-hanok-teal/90 text-white whitespace-nowrap">
               Sign Up Free
             </Button>

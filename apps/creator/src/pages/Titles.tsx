@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Icon } from '@iconify/react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { titlesService, type Title } from '@/services/titlesService'
 import { draftService, type TitleDraft } from '@/services/draftService'
-import { TitleCard } from '@/components/TitleCard'
+import {
+  TitlesSectionCard,
+  TitlesStatsBar,
+  TitlesDraftCard,
+  TitlesAttentionItem,
+  TitlesPublishedCard,
+} from '@/components/titles'
 
 export default function Titles() {
   const { t } = useTranslation(['titles', 'common'])
@@ -52,7 +59,7 @@ export default function Titles() {
   }
 
   const handleDeleteDraft = async (draftId: string, e: React.MouseEvent) => {
-    e.stopPropagation() // Prevent card click navigation
+    e.stopPropagation()
 
     if (!window.confirm(t('titles:list.deleteConfirmation'))) {
       return
@@ -60,113 +67,194 @@ export default function Titles() {
 
     try {
       await draftService.deleteDraftById(draftId)
-      await loadTitles() // Refresh list
+      await loadTitles()
     } catch (error) {
       console.error('Error deleting draft:', error)
       alert(t('titles:list.deleteFailed'))
     }
   }
 
-  return (
-    <MainLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('titles:list.title')}</h1>
-          <Button
-            onClick={() => navigate('/titles/add-title')}
-            className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
-          >
-            {t('titles:list.addNewButton')}
-          </Button>
-        </div>
+  const totalCount = titles.length + drafts.length + pendingDrafts.length + rejectedDrafts.length
+  const hasNeedsAttention = pendingDrafts.length > 0 || rejectedDrafts.length > 0
 
-        {loading && (
-          <div className="text-center py-12">
+  // Loading state
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-20">
+            <Icon icon="solar:refresh-bold-duotone" className="h-12 w-12 text-gray-300 mx-auto mb-4 animate-spin" />
             <p className="text-gray-500">{t('titles:list.loadingMessage', 'Loading titles...')}</p>
           </div>
-        )}
+        </div>
+      </MainLayout>
+    )
+  }
 
-        {error && (
-          <div className="text-center py-12">
-            <p className="text-red-500">{error}</p>
+  // Error state
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-20">
+            <Icon icon="solar:danger-triangle-bold-duotone" className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <p className="text-red-500 mb-4">{error}</p>
             <Button
               onClick={loadTitles}
               variant="outline"
-              className="mt-4 border-gray-300 hover:bg-gray-100"
+              className="border-gray-300 hover:bg-gray-100"
             >
               {t('titles:list.retryButton')}
             </Button>
           </div>
-        )}
+        </div>
+      </MainLayout>
+    )
+  }
 
-        {!loading && !error && titles.length === 0 && drafts.length === 0 && pendingDrafts.length === 0 && rejectedDrafts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">{t('titles:list.emptyStateDescription')}</p>
+  // Complete empty state
+  if (totalCount === 0) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mb-6">
+              <Icon icon="solar:document-add-bold-duotone" className="h-10 w-10 text-gray-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              {t('titles:empty.title', 'Start Your Journey')}
+            </h2>
+            <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+              {t('titles:empty.description', 'Add your first title to begin showcasing your creative work to media buyers worldwide.')}
+            </p>
+            <Button
+              className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
+              onClick={() => navigate('/titles/quick-add')}
+            >
+              <Icon icon="solar:add-circle-bold" className="h-4 w-4 mr-2" />
+              {t('titles:empty.addButton', 'Add Your First Title')}
+            </Button>
           </div>
-        )}
+        </div>
+      </MainLayout>
+    )
+  }
 
-        {!loading && !error && (titles.length > 0 || drafts.length > 0 || pendingDrafts.length > 0 || rejectedDrafts.length > 0) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* In-Progress Drafts */}
-            {drafts.map((draft) => (
-              <TitleCard
-                key={draft.id}
-                draft={draft}
-                status="draft"
-                currentStep={draft.current_step}
-                lastSaved={draft.last_saved_at}
-                onClick={() => navigate(`/titles/add-title?draftId=${draft.id}`)}
-                onDelete={(e) => handleDeleteDraft(draft.id, e)}
-              />
-            ))}
-
-            {/* Pending Submissions (awaiting approval) */}
-            {pendingDrafts.map((pending) => (
-              <TitleCard
-                key={pending.id}
-                draft={pending}
-                status="pending"
-                submittedAt={pending.submitted_at}
-                onClick={() => {
-                  alert(t('titles:list.pendingReviewMessage'))
-                }}
-              />
-            ))}
-
-            {/* Rejected Submissions (can be edited and resubmitted) */}
-            {rejectedDrafts.map((rejected) => (
-              <TitleCard
-                key={rejected.id}
-                draft={rejected}
-                status="rejected"
-                rejectionReason={rejected.rejection_reason}
-                rejectedAt={rejected.rejected_at}
-                onClick={() => {
-                  alert(t('titles:list.rejectionMessage', { reason: rejected.rejection_reason || 'No reason provided' }))
-                }}
-              />
-            ))}
-
-            {/* Approved Title Cards */}
-            {titles.map((title) => (
-              <TitleCard
-                key={title.title_id}
-                title={title}
-                status="approved"
-                onClick={() => navigate(`/titles/${title.title_id}`)}
-              />
-            ))}
+  return (
+    <MainLayout>
+      <div className="max-w-7xl mx-auto">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('titles:list.title')}</h1>
+            <p className="text-gray-500 mt-1">{t('titles:list.subtitle', 'Manage and track your IP submissions')}</p>
           </div>
+          <Button
+            onClick={() => navigate('/titles/quick-add')}
+            className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
+          >
+            <Icon icon="solar:add-circle-bold" className="h-4 w-4 mr-2" />
+            {t('titles:list.addNewButton')}
+          </Button>
+        </div>
+
+        {/* Stats Bar */}
+        <TitlesStatsBar
+          draftsCount={drafts.length}
+          pendingCount={pendingDrafts.length}
+          rejectedCount={rejectedDrafts.length}
+          publishedCount={titles.length}
+        />
+
+        {/* Section: In Progress (Drafts) */}
+        <TitlesSectionCard
+          icon="solar:pen-bold-duotone"
+          iconBgColor="bg-amber-500/10"
+          iconColor="text-amber-600"
+          title={t('titles:sections.inProgress', 'In Progress')}
+          count={drafts.length}
+          className="mb-6"
+        >
+          {drafts.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-gray-500">{t('titles:sections.noDrafts', 'No drafts in progress')}</p>
+            </div>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-2 px-2">
+              {drafts.map((draft) => (
+                <TitlesDraftCard
+                  key={draft.id}
+                  draft={draft}
+                  onClick={() => navigate(`/titles/add-title?draftId=${draft.id}`)}
+                  onDelete={(e) => handleDeleteDraft(draft.id, e)}
+                />
+              ))}
+            </div>
+          )}
+        </TitlesSectionCard>
+
+        {/* Section: Needs Attention (Pending + Rejected) */}
+        {hasNeedsAttention && (
+          <TitlesSectionCard
+            icon="solar:eye-bold-duotone"
+            iconBgColor="bg-blue-500/10"
+            iconColor="text-blue-600"
+            title={t('titles:sections.needsAttention', 'Needs Attention')}
+            count={pendingDrafts.length + rejectedDrafts.length}
+            className="mb-6"
+          >
+            <div className="space-y-3">
+              {/* Pending items first */}
+              {pendingDrafts.map((item) => (
+                <TitlesAttentionItem
+                  key={item.id}
+                  item={item}
+                  status="pending"
+                  onClick={() => {
+                    alert(t('titles:list.pendingReviewMessage'))
+                  }}
+                />
+              ))}
+              {/* Rejected items */}
+              {rejectedDrafts.map((item) => (
+                <TitlesAttentionItem
+                  key={item.id}
+                  item={item}
+                  status="rejected"
+                  onClick={() => {
+                    alert(t('titles:list.rejectionMessage', { reason: item.rejection_reason || 'No reason provided' }))
+                  }}
+                />
+              ))}
+            </div>
+          </TitlesSectionCard>
         )}
 
-        {!loading && !error && (titles.length > 0 || drafts.length > 0 || pendingDrafts.length > 0 || rejectedDrafts.length > 0) && (
-          <p className="text-sm text-gray-500 text-center mt-8">
-            {t('titles:list.statsApproved', { count: titles.length })}
-            {pendingDrafts.length > 0 && ` + ${t('titles:list.statsPending', { count: pendingDrafts.length })}`}
-            {rejectedDrafts.length > 0 && ` + ${t('titles:list.statsRejected', { count: rejectedDrafts.length })}`}
-            {drafts.length > 0 && ` + ${t('titles:list.statsDrafts', { count: drafts.length })}`}
-          </p>
-        )}
+        {/* Section: Published Titles */}
+        <TitlesSectionCard
+          icon="solar:verified-check-bold-duotone"
+          iconBgColor="bg-green-500/10"
+          iconColor="text-green-600"
+          title={t('titles:sections.published', 'Published Titles')}
+          count={titles.length}
+        >
+          {titles.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-gray-500">{t('titles:sections.noPublished', 'No published titles yet')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('titles:sections.completeSubmission', 'Complete a title submission to see it here')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {titles.map((title) => (
+                <TitlesPublishedCard
+                  key={title.title_id}
+                  title={title}
+                  onClick={() => navigate(`/titles/${title.title_id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </TitlesSectionCard>
       </div>
     </MainLayout>
   )

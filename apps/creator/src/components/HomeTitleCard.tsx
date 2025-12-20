@@ -55,7 +55,7 @@ export function HomeTitleCard({
 
   return (
     <div
-      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-sunrise-coral-300 transition-colors cursor-pointer"
+      className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-sunrise-coral/50 transition-colors cursor-pointer"
       onClick={onClick}
     >
       {/* Square Cover Image */}

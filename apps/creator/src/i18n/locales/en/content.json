@@ -1,8 +1,18 @@
 {
   "learningCenter": {
     "title": "Learning Center",
+    "subtitle": "Master the platform and succeed with your content",
     "loading": "Loading learning materials...",
-    "emptyState": "No learning materials available yet. Check back soon!"
+    "emptyState": "No learning materials available yet. Check back soon!",
+    "progress": "Your Progress",
+    "completed": "completed",
+    "searchPlaceholder": "Search tutorials and guides...",
+    "categories": {
+      "all": "All",
+      "gettingStarted": "Getting Started",
+      "bestPractices": "Best Practices",
+      "advanced": "Advanced"
+    }
   },
   "news": {
     "title": "K-content News",

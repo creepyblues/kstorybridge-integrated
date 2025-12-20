@@ -1,3 +1,11 @@
+/**
+ * AddTitle Survey Page
+ *
+ * 5-step survey form for adding a new title with comprehensive information
+ * Features: Multi-step navigation, auto-save, draft resume, form validation
+ * Redesigned with sunrise-coral accents and modern layout
+ */
+
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -5,7 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowLeft, ArrowRight, Save, Check } from 'lucide-react'
+import { Icon } from '@iconify/react'
 import { supabase } from '@/lib/supabase'
 import { trackSurveyStepComplete, trackTitleCreate, trackTitleSaveDraft } from '@/utils/analytics'
 
@@ -27,12 +35,6 @@ import { draftService } from '@/services/draftService'
 // Schema
 import { surveyFormSchema, validateStep1, validateStep2, validateStep3, type SurveyFormData } from '@/lib/surveySchema'
 
-/**
- * AddTitleSurvey Page
- *
- * 5-step survey form for adding a new title with comprehensive information
- * Features: Multi-step navigation, auto-save, draft resume, form validation
- */
 export default function AddTitleSurvey() {
   const { t } = useTranslation(['survey', 'titles', 'common'])
   const navigate = useNavigate()
@@ -226,6 +228,16 @@ export default function AddTitleSurvey() {
   // Step names for analytics
   const stepNames = ['', 'Basic Info', 'Story Details', 'Narrative', 'Materials', 'Profile']
 
+  // Step icons
+  const stepIcons = [
+    '',
+    'solar:document-text-bold-duotone',
+    'solar:book-bold-duotone',
+    'solar:pen-new-round-bold-duotone',
+    'solar:folder-with-files-bold-duotone',
+    'solar:user-check-bold-duotone',
+  ]
+
   // Navigation handlers
   const goToNextStep = () => {
     if (validateCurrentStep()) {
@@ -355,7 +367,10 @@ export default function AddTitleSurvey() {
     return (
       <MainLayout>
         <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-sunrise-coral/10 mb-4">
+              <div className="w-6 h-6 animate-spin rounded-full border-2 border-sunrise-coral border-t-transparent" />
+            </div>
             <p className="text-gray-500">{t('survey:messages.loading', 'Loading survey form...')}</p>
           </div>
         </div>
@@ -366,79 +381,128 @@ export default function AddTitleSurvey() {
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-black">{t('survey:page.pageTitle')}</h1>
-          <p className="text-gray-600 mt-2">
-            {t('survey:page.pageSubtitle')}
-          </p>
+        {/* Hero Section */}
+        <div className="mb-8 sm:mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 p-3 rounded-2xl bg-gradient-to-br from-sunrise-coral to-orange-400 shadow-lg shadow-sunrise-coral/25">
+                <Icon icon={stepIcons[currentStep]} className="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-black">
+                  {t('survey:page.pageTitle')}
+                </h1>
+                <p className="text-gray-500 mt-1">
+                  {t('survey:page.pageSubtitle')}
+                </p>
+              </div>
+            </div>
+
+            {/* Auto-Save Indicator */}
+            <div className="flex-shrink-0">
+              <AutoSaveIndicator
+                status={saveStatus}
+                lastSavedAt={lastSavedAt}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Progress Bar */}
-        <MultiStepProgressBar
-          currentStep={currentStep}
-          steps={getDefaultSteps(t)}
-          onStepClick={goToStep}
-          allowNavigation={true}
-        />
+        <Card className="bg-white border-gray-200 shadow-none rounded-2xl mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <MultiStepProgressBar
+              currentStep={currentStep}
+              steps={getDefaultSteps(t)}
+              onStepClick={goToStep}
+              allowNavigation={true}
+            />
+          </CardContent>
+        </Card>
 
-        {/* Auto-Save Indicator */}
-        <div className="flex justify-end mb-4">
-          <AutoSaveIndicator
-            status={saveStatus}
-            lastSavedAt={lastSavedAt}
-          />
-        </div>
+        {/* Step Title Card */}
+        <Card className="bg-gradient-to-br from-sunrise-coral/5 to-orange-50 border-sunrise-coral/20 shadow-none rounded-2xl mb-6">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-sunrise-coral flex items-center justify-center text-white font-bold">
+                {currentStep}
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-black">
+                  {getDefaultSteps(t)[currentStep - 1]?.title || `Step ${currentStep}`}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {getStepDescription(currentStep, t)}
+                </p>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
+                <Icon icon="solar:checklist-bold-duotone" className="h-4 w-4" />
+                {t('survey:navigation.stepProgress', { current: currentStep, total: 5 })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* Step Content */}
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <Card className="bg-white border-gray-200 shadow-none rounded-2xl mb-6">
             <CardContent className="p-6 md:p-8">
               {renderStep()}
             </CardContent>
           </Card>
 
           {/* Navigation Buttons */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white border border-gray-200 rounded-2xl p-4 sm:p-5">
             <Button
               type="button"
               variant="outline"
               onClick={goToPreviousStep}
               disabled={currentStep === 1}
-              className="border-gray-300"
+              className="w-full sm:w-auto border-gray-300 hover:bg-gray-100 order-2 sm:order-1"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <Icon icon="solar:arrow-left-linear" className="w-4 h-4 mr-2" />
               {t('survey:navigation.previous')}
             </Button>
 
-            <div className="text-sm text-gray-500">
-              {t('survey:navigation.stepProgress', { current: currentStep, total: 5 })}
+            <div className="flex items-center gap-2 text-sm text-gray-500 order-1 sm:order-2">
+              {[1, 2, 3, 4, 5].map((step) => (
+                <div
+                  key={step}
+                  className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                    step === currentStep
+                      ? 'bg-sunrise-coral'
+                      : step < currentStep
+                      ? 'bg-sunrise-coral/40'
+                      : 'bg-gray-200'
+                  }`}
+                />
+              ))}
             </div>
 
             {currentStep < 5 ? (
               <Button
                 type="button"
                 onClick={goToNextStep}
-                className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
+                className="w-full sm:w-auto bg-sunrise-coral text-white hover:bg-sunrise-coral/90 shadow-lg shadow-sunrise-coral/25 order-3"
               >
                 {t('survey:navigation.next')}
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <Icon icon="solar:arrow-right-linear" className="w-4 h-4 ml-2" />
               </Button>
             ) : (
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-sunrise-coral-500 text-white hover:bg-sunrise-coral-600"
+                className="w-full sm:w-auto bg-sunrise-coral text-white hover:bg-sunrise-coral/90 shadow-lg shadow-sunrise-coral/25 order-3"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-b-2 border-white" />
+                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     {t('survey:messages.submitting')}
                   </>
                 ) : (
                   <>
-                    <Check className="w-4 h-4 mr-2" />
+                    <Icon icon="solar:check-circle-bold" className="w-4 h-4 mr-2" />
                     {t('survey:navigation.submit')}
                   </>
                 )}
@@ -448,18 +512,61 @@ export default function AddTitleSurvey() {
         </form>
 
         {/* Save Draft Button */}
-        <div className="mt-4 text-center">
+        <div className="mt-6 text-center">
           <Button
             type="button"
             variant="ghost"
             onClick={() => triggerSave(formValues, true)}
-            className="text-sm text-gray-600"
+            className="text-sm text-gray-500 hover:text-sunrise-coral hover:bg-sunrise-coral/5"
           >
-            <Save className="w-4 h-4 mr-2" />
+            <Icon icon="solar:diskette-bold-duotone" className="w-4 h-4 mr-2" />
             {t('survey:page.saveDraftNow')}
           </Button>
         </div>
+
+        {/* Tips Section */}
+        <Card className="bg-gray-50 border-gray-200 shadow-none rounded-2xl mt-8">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 p-2 rounded-xl bg-blue-500/10">
+                <Icon icon="solar:lightbulb-minimalistic-bold-duotone" className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-black mb-1">
+                  {t('survey:tips.title', 'Pro Tip')}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {getStepTip(currentStep, t)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   )
+}
+
+// Helper function to get step descriptions
+function getStepDescription(step: number, t: (key: string, fallback?: string) => string): string {
+  const descriptions: Record<number, string> = {
+    1: t('survey:steps.step1.description', 'Enter the basic information about your title'),
+    2: t('survey:steps.step2.description', 'Describe your story world and characters'),
+    3: t('survey:steps.step3.description', 'Share your narrative structure and themes'),
+    4: t('survey:steps.step4.description', 'Upload supporting materials and documents'),
+    5: t('survey:steps.step5.description', 'Complete your creator profile information'),
+  }
+  return descriptions[step] || ''
+}
+
+// Helper function to get step tips
+function getStepTip(step: number, t: (key: string, fallback?: string) => string): string {
+  const tips: Record<number, string> = {
+    1: t('survey:tips.step1', 'Make sure to include a compelling Korean title and accurate genre tags. These help buyers find your content.'),
+    2: t('survey:tips.step2', 'Rich character descriptions and unique world-building elements make your title stand out to potential buyers.'),
+    3: t('survey:tips.step3', 'A clear story structure and well-defined themes help buyers understand your content\'s potential for adaptation.'),
+    4: t('survey:tips.step4', 'High-quality pitch materials significantly increase buyer engagement. Consider adding translated samples.'),
+    5: t('survey:tips.step5', 'A complete creator profile builds credibility and helps buyers connect with your work.'),
+  }
+  return tips[step] || ''
 }

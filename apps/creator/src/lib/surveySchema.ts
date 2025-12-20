@@ -224,8 +224,21 @@ export const validateStep3 = (data: any) => {
   return errors
 }
 
+// Quick Add Title Schema (simplified form)
+export const quickAddTitleSchema = z.object({
+  // Required fields
+  title_name_kr: z.string().min(1, 'Korean title is required'),
+  title_url: z.string().url('Valid URL is required').min(1, 'Title link is required'),
+  rights_holder_name: z.string().min(1, 'Rights holder name is required'),
+  rights_available: z.array(z.string()).min(1, 'At least one right must be selected'),
+  // Optional fields
+  title_name_en: z.string().optional(),
+  title_url_en: z.string().url('Invalid URL').optional().or(z.literal('')),
+})
+
 // Type inference
 export type SurveyFormData = z.infer<typeof surveyFormSchema>
+export type QuickAddTitleData = z.infer<typeof quickAddTitleSchema>
 export type PlatformData = z.infer<typeof platformSchema>
 export type CharacterDetail = z.infer<typeof characterSchema>
 export type UploadedFile = z.infer<typeof uploadedFileSchema>

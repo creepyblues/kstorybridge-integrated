@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { ContentPost } from '@/services/contentService'
 
 interface UpdatesFeedProps {
@@ -26,24 +25,11 @@ export function UpdatesFeed({ posts, loading }: UpdatesFeedProps) {
   return (
     <Card className="bg-white border-gray-200 shadow-none rounded-2xl">
       <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-500/10">
-              <Icon icon="solar:bell-bold-duotone" className="h-5 w-5 text-blue-600" />
-            </div>
-            <CardTitle className="text-lg">{t('navigation:sidebar.updates')}</CardTitle>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-blue-500/10">
+            <Icon icon="solar:bell-bold-duotone" className="h-5 w-5 text-blue-600" />
           </div>
-          {posts.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/news')}
-              className="text-sunrise-coral hover:text-sunrise-coral hover:bg-sunrise-coral/5"
-            >
-              {t('common:viewAll')}
-              <Icon icon="solar:arrow-right-linear" className="h-4 w-4 ml-1" />
-            </Button>
-          )}
+          <CardTitle className="text-lg">{t('navigation:sidebar.updates')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -60,7 +46,7 @@ export function UpdatesFeed({ posts, loading }: UpdatesFeedProps) {
             {posts.slice(0, 3).map((post, index) => (
               <div
                 key={post.id}
-                onClick={() => navigate(`/news/${post.slug}`)}
+                onClick={() => navigate(`/updates/${post.slug}`)}
                 className={`flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer ${
                   index !== posts.slice(0, 3).length - 1 ? 'border-b border-gray-100' : ''
                 }`}

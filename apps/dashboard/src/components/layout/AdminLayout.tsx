@@ -37,10 +37,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       description: 'Manage all titles'
     },
     {
-      name: 'Drafts',
-      href: '/admin/drafts',
-      icon: 'solar:document-add-bold-duotone',
-      description: 'Review creator drafts'
+      name: 'Title Approval',
+      href: '/admin/title-approval',
+      icon: 'solar:document-check-bold-duotone',
+      description: 'Review title submissions'
     },
     {
       name: 'Content',

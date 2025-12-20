@@ -8,7 +8,6 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Button } from '@/components/ui/button'
 import { Icon } from '@iconify/react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
@@ -147,10 +146,6 @@ export default function PostDetail() {
     return Math.max(1, Math.ceil(wordCount / wordsPerMinute))
   }
 
-  const handleBack = () => {
-    navigate(post?.category === 'learning' ? '/learning-center' : '/news')
-  }
-
   if (loading) {
     return (
       <MainLayout>
@@ -179,13 +174,6 @@ export default function PostDetail() {
               />
             </div>
             <p className="text-gray-500">{t('content:postDetail.notFound')}</p>
-            <Button
-              variant="outline"
-              className="mt-4 border-gray-300 hover:bg-gray-100"
-              onClick={() => navigate('/learning-center')}
-            >
-              Back to Learning Center
-            </Button>
           </div>
         </div>
       </MainLayout>
@@ -205,22 +193,6 @@ export default function PostDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb Navigation */}
-        <nav className="mb-8">
-          <button
-            onClick={handleBack}
-            className="group inline-flex items-center gap-2 text-sm text-gray-500 hover:text-sunrise-coral transition-colors"
-          >
-            <Icon
-              icon="solar:arrow-left-linear"
-              className="h-4 w-4 group-hover:-translate-x-1 transition-transform"
-            />
-            <span>
-              {post.category === 'learning' ? 'Learning Center' : 'News'}
-            </span>
-          </button>
-        </nav>
-
         <article ref={articleRef}>
           {/* Hero Section */}
           <header className="mb-12">
@@ -341,14 +313,6 @@ export default function PostDetail() {
                   <Icon icon="solar:link-bold" className="h-4 w-4" />
                 </button>
               </div>
-              <Button
-                variant="outline"
-                className="border-gray-300 hover:bg-gray-100"
-                onClick={handleBack}
-              >
-                <Icon icon="solar:arrow-left-linear" className="h-4 w-4 mr-2" />
-                Back to {post.category === 'learning' ? 'Learning Center' : 'News'}
-              </Button>
             </div>
 
             {/* Related Articles */}
@@ -367,7 +331,7 @@ export default function PostDetail() {
                       key={related.id}
                       onClick={() =>
                         navigate(
-                          `/${post.category === 'learning' ? 'learning-center' : 'news'}/${related.slug}`
+                          `/${post.category === 'learning' ? 'learning-center' : 'updates'}/${related.slug}`
                         )
                       }
                       className="group text-left p-4 rounded-xl border border-gray-200 hover:border-sunrise-coral/30 hover:bg-sunrise-coral/5 transition-all"

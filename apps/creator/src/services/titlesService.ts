@@ -6,6 +6,7 @@ export interface Title {
   title_name_kr: string
   title_image?: string | null
   title_url?: string | null
+  title_url_en?: string | null
   story_author?: string | null
   art_author?: string | null
   genre?: string[] | string | null

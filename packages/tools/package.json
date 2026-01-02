@@ -1,0 +1,32 @@
+{
+  "name": "@kstorybridge/tools",
+  "version": "1.0.0",
+  "description": "Shared AI tools for KStoryBridge apps (Comps Generator, Format Fit Analyzer)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./services": "./src/services/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "kstorybridge",
+    "tools",
+    "comps",
+    "format-fit"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -2,6 +2,7 @@ import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
+import { LabelWithColumn } from '@/components/ui/AdminColumnHint'
 import { Textarea } from '@/components/ui/textarea'
 import { AlertCircle } from 'lucide-react'
 
@@ -46,9 +47,7 @@ export const Step3Narrative: React.FC<Step3NarrativeProps> = ({ form }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="story_structure">
-            {t('survey:step3.storyStructureLabel')} <span className="text-red-500">*</span>
-          </Label>
+          <LabelWithColumn htmlFor="story_structure" label={t('survey:step3.storyStructureLabel')} column="story_structure" required />
           <Textarea
             id="story_structure"
             placeholder={t('survey:step3.storyStructurePlaceholder')}
@@ -107,10 +106,7 @@ export const Step3Narrative: React.FC<Step3NarrativeProps> = ({ form }) => {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="planned_ending">
-            {t('survey:step3.endingLabel')}
-            {!isCompleted && <span className="text-red-500 ml-1">*</span>}
-          </Label>
+          <LabelWithColumn htmlFor="planned_ending" label={t('survey:step3.endingLabel')} column="planned_ending" required={!isCompleted} />
           <Textarea
             id="planned_ending"
             placeholder={
@@ -154,9 +150,7 @@ export const Step3Narrative: React.FC<Step3NarrativeProps> = ({ form }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="narrative_arc">
-            {t('survey:step3.narrativeArcLabel')}
-          </Label>
+          <LabelWithColumn htmlFor="narrative_arc" label={t('survey:step3.narrativeArcLabel')} column="narrative_arc" />
           <Textarea
             id="narrative_arc"
             placeholder={t('survey:step3.narrativeArcPlaceholder')}

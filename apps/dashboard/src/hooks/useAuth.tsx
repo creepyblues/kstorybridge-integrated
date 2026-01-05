@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { setAnalyticsUser, clearAnalyticsUser } from '@/utils/analytics';
 
 interface AuthContextType {
   user: User | null;
@@ -62,6 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(session?.user ?? null);
           setLoading(false);
           setError(null);
+
+          // Set GA4 user ID for cross-session tracking
+          if (session?.user) {
+            setAnalyticsUser(session.user.id, { type: 'buyer' });
+          }
         }
       } catch (err: any) {
         console.error('[AuthProvider] Initialization error:', err);
@@ -87,6 +93,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
         setError(null); // Clear errors on successful auth change
+
+        // Update GA4 user tracking on auth state change
+        if (session?.user) {
+          setAnalyticsUser(session.user.id, { type: 'buyer' });
+        } else {
+          clearAnalyticsUser();
+        }
       }
     });
 
@@ -98,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
+      clearAnalyticsUser(); // Clear GA4 user before sign out
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);

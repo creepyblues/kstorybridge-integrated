@@ -60,6 +60,71 @@ export const initializeAnalytics = (): void => {
 };
 
 /**
+ * Set authenticated user for GA4 cross-session tracking
+ * Call this when user logs in to enable user-level analytics
+ *
+ * @param userId - Supabase user UUID (not email for privacy)
+ * @param userProperties - Optional user properties for segmentation
+ *
+ * @example
+ * setAnalyticsUser(user.id, { tier: 'pro', type: 'buyer' })
+ */
+export const setAnalyticsUser = (
+  userId: string,
+  userProperties?: {
+    tier?: string;
+    type?: string;
+  }
+): void => {
+  if (!IS_ANALYTICS_ENABLED) {
+    if (IS_DEV) {
+      console.log('[Analytics] setAnalyticsUser skipped (GA4 not configured)');
+    }
+    return;
+  }
+
+  if (typeof window !== 'undefined' && window.gtag) {
+    // Set GA4 User ID for cross-session tracking
+    window.gtag('config', GA_MEASUREMENT_ID, {
+      user_id: userId,
+    });
+
+    // Set user properties for segmentation in reports
+    if (userProperties) {
+      window.gtag('set', 'user_properties', {
+        user_tier: userProperties.tier || 'unknown',
+        user_type: userProperties.type || 'unknown',
+      });
+    }
+
+    if (IS_DEV) {
+      console.log(`[Analytics] User set: ${userId.substring(0, 8)}...`, userProperties);
+    }
+  }
+};
+
+/**
+ * Clear user identity on sign out
+ * Call this when user logs out to reset GA4 user tracking
+ */
+export const clearAnalyticsUser = (): void => {
+  if (!IS_ANALYTICS_ENABLED) {
+    return;
+  }
+
+  if (typeof window !== 'undefined' && window.gtag) {
+    // Clear user ID by setting to undefined
+    window.gtag('config', GA_MEASUREMENT_ID, {
+      user_id: undefined,
+    });
+
+    if (IS_DEV) {
+      console.log('[Analytics] User cleared');
+    }
+  }
+};
+
+/**
  * Generic event tracking helper
  */
 const trackEvent = (eventName: string, params: Record<string, unknown>): void => {

@@ -14,8 +14,8 @@ import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { RightsCheckboxGroup } from '@/components/survey/RightsCheckboxGroup'
+import { LabelWithColumn } from '@/components/ui/AdminColumnHint'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/use-toast'
 import { draftService } from '@/services/draftService'
@@ -154,10 +154,12 @@ export default function QuickAddTitle() {
 
                 {/* Title Name (Korean) - Required */}
                 <div>
-                  <Label htmlFor="title_name_kr" className="text-sm font-semibold text-black flex items-center gap-1">
-                    {t('titles:quickAdd.fields.titleNameKr')}
-                    <span className="text-sunrise-coral">*</span>
-                  </Label>
+                  <LabelWithColumn
+                    htmlFor="title_name_kr"
+                    label={t('titles:quickAdd.fields.titleNameKr')}
+                    column="title_name_kr"
+                    required
+                  />
                   <Input
                     id="title_name_kr"
                     {...register('title_name_kr')}
@@ -174,9 +176,11 @@ export default function QuickAddTitle() {
 
                 {/* Title Name (English) - Optional */}
                 <div>
-                  <Label htmlFor="title_name_en" className="text-sm font-semibold text-black">
-                    {t('titles:quickAdd.fields.titleNameEn')}
-                  </Label>
+                  <LabelWithColumn
+                    htmlFor="title_name_en"
+                    label={t('titles:quickAdd.fields.titleNameEn')}
+                    column="title_name_en"
+                  />
                   <Input
                     id="title_name_en"
                     {...register('title_name_en')}
@@ -198,10 +202,12 @@ export default function QuickAddTitle() {
 
                 {/* Title Link (Korean) - Required */}
                 <div>
-                  <Label htmlFor="title_url" className="text-sm font-semibold text-black flex items-center gap-1">
-                    {t('titles:quickAdd.fields.titleUrl')}
-                    <span className="text-sunrise-coral">*</span>
-                  </Label>
+                  <LabelWithColumn
+                    htmlFor="title_url"
+                    label={t('titles:quickAdd.fields.titleUrl')}
+                    column="title_url"
+                    required
+                  />
                   <Input
                     id="title_url"
                     type="url"
@@ -223,9 +229,11 @@ export default function QuickAddTitle() {
 
                 {/* Title Link (English) - Optional */}
                 <div>
-                  <Label htmlFor="title_url_en" className="text-sm font-semibold text-black">
-                    {t('titles:quickAdd.fields.titleUrlEn')}
-                  </Label>
+                  <LabelWithColumn
+                    htmlFor="title_url_en"
+                    label={t('titles:quickAdd.fields.titleUrlEn')}
+                    column="title_url_en"
+                  />
                   <Input
                     id="title_url_en"
                     type="url"
@@ -254,10 +262,12 @@ export default function QuickAddTitle() {
 
                 {/* Rights Holder - Required */}
                 <div>
-                  <Label htmlFor="rights_holder_name" className="text-sm font-semibold text-black flex items-center gap-1">
-                    {t('titles:quickAdd.fields.rightsHolder')}
-                    <span className="text-sunrise-coral">*</span>
-                  </Label>
+                  <LabelWithColumn
+                    htmlFor="rights_holder_name"
+                    label={t('titles:quickAdd.fields.rightsHolder')}
+                    column="rights_holder_name"
+                    required
+                  />
                   <Input
                     id="rights_holder_name"
                     {...register('rights_holder_name')}
@@ -274,10 +284,11 @@ export default function QuickAddTitle() {
 
                 {/* Rights Available - Required */}
                 <div>
-                  <Label className="text-sm font-semibold text-black flex items-center gap-1">
-                    {t('titles:quickAdd.fields.rightsAvailable')}
-                    <span className="text-sunrise-coral">*</span>
-                  </Label>
+                  <LabelWithColumn
+                    label={t('titles:quickAdd.fields.rightsAvailable')}
+                    column="rights_available"
+                    required
+                  />
                   <p className="text-gray-500 text-xs mt-1 mb-3 flex items-center gap-1">
                     <Icon icon="solar:info-circle-linear" className="h-3.5 w-3.5" />
                     {t('titles:quickAdd.fields.rightsAvailableHelper')}

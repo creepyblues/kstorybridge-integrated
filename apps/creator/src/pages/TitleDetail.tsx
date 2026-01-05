@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/useAuth'
 import { titlesService } from '@/services/titlesService'
+import { formatFitService, type FormatFitRecord } from '@/services/formatFitService'
+import type { SuggestedComp } from '@/services/compsGeneratorService'
 
 // Components
 import { TitleDetailSection, FieldDisplay } from '@/components/titles/TitleDetailSection'
@@ -17,6 +19,14 @@ import { CharacterDetailsDisplay } from '@/components/titles/CharacterDetailsDis
 import { CreatorAchievementsDisplay } from '@/components/titles/CreatorAchievementsDisplay'
 import { PitchDeckThumbnail } from '@/components/titles/PitchDeckThumbnail'
 import { PitchDeckViewer } from '@/components/titles/PitchDeckViewer'
+
+// AI Tools Components
+import {
+  CompsGeneratorModal,
+  FormatFitAnalyzerModal,
+  CompsDisplayCard,
+  FormatFitDisplayCard,
+} from '@/components/tools'
 
 export default function TitleDetail() {
   const { titleId } = useParams<{ titleId: string }>()
@@ -28,6 +38,11 @@ export default function TitleDetail() {
   const [error, setError] = useState<string | null>(null)
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false)
   const [currentPdfUrl, setCurrentPdfUrl] = useState<string | null>(null)
+
+  // AI Tools state
+  const [isCompsModalOpen, setIsCompsModalOpen] = useState(false)
+  const [isFormatFitModalOpen, setIsFormatFitModalOpen] = useState(false)
+  const [formatFit, setFormatFit] = useState<FormatFitRecord | null>(null)
 
   useEffect(() => {
     if (titleId) {
@@ -41,11 +56,37 @@ export default function TitleDetail() {
       setError(null)
       const data = await titlesService.getTitleById(id)
       setTitle(data)
+      // Load format fit data
+      loadFormatFit(id)
     } catch (err) {
       console.error('Error loading title:', err)
       setError('Failed to load title details. Please try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadFormatFit = async (id: string) => {
+    try {
+      const data = await formatFitService.getFormatFit(id)
+      setFormatFit(data)
+    } catch (err) {
+      console.error('Error loading format fit:', err)
+      // Don't show error for format fit, it's optional
+    }
+  }
+
+  const handleCompsSaved = () => {
+    // Reload title to get updated comps data
+    if (titleId) {
+      loadTitle(titleId)
+    }
+  }
+
+  const handleFormatFitComplete = () => {
+    // Reload format fit data
+    if (titleId) {
+      loadFormatFit(titleId)
     }
   }
 
@@ -254,6 +295,51 @@ export default function TitleDetail() {
             </CardContent>
           </Card>
         )}
+
+        {/* AI Tools Section */}
+        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Icon icon="solar:magic-stick-3-bold-duotone" className="h-5 w-5 text-purple-500" />
+                <h3 className="text-xl font-semibold text-gray-900">AI Tools</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setIsCompsModalOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 hover:bg-gray-100"
+                >
+                  <Icon icon="solar:stars-bold" className="h-4 w-4 mr-1" />
+                  Generate Comps
+                </Button>
+                <Button
+                  onClick={() => setIsFormatFitModalOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 hover:bg-gray-100"
+                >
+                  <Icon icon="solar:chart-bold" className="h-4 w-4 mr-1" />
+                  Analyze Format Fit
+                </Button>
+              </div>
+            </div>
+
+            {/* Display saved results */}
+            <div className="space-y-4">
+              <CompsDisplayCard
+                comps={title.comps || []}
+                compsAnalysis={title.comps_analysis as SuggestedComp[] | undefined}
+                onGenerate={() => setIsCompsModalOpen(true)}
+              />
+              <FormatFitDisplayCard
+                formatFit={formatFit}
+                onAnalyze={() => setIsFormatFitModalOpen(true)}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Step 1: Basic Information */}
         <TitleDetailSection
@@ -781,6 +867,23 @@ export default function TitleDetail() {
           </div>
         </div>
       )}
+
+      {/* AI Tools Modals */}
+      <CompsGeneratorModal
+        open={isCompsModalOpen}
+        onOpenChange={setIsCompsModalOpen}
+        titleId={title.title_id}
+        titleName={title.title_name_en || title.title_name_kr}
+        onSaved={handleCompsSaved}
+      />
+
+      <FormatFitAnalyzerModal
+        open={isFormatFitModalOpen}
+        onOpenChange={setIsFormatFitModalOpen}
+        titleId={title.title_id}
+        titleName={title.title_name_en || title.title_name_kr}
+        onComplete={handleFormatFitComplete}
+      />
     </MainLayout>
   )
 }

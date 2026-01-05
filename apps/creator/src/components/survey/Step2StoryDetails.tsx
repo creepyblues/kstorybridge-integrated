@@ -3,6 +3,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LabelWithColumn } from '@/components/ui/AdminColumnHint'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -57,7 +58,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tagline">{t('survey:step2.tagline')}</Label>
+          <LabelWithColumn htmlFor="tagline" label={t('survey:step2.tagline')} column="tagline" />
           <Input
             id="tagline"
             placeholder={t('survey:step2.taglinePlaceholder')}
@@ -70,7 +71,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="synopsis">{t('survey:step2.synopsis')}</Label>
+          <LabelWithColumn htmlFor="synopsis" label={t('survey:step2.synopsis')} column="synopsis" />
           <Textarea
             id="synopsis"
             placeholder={t('survey:step2.synopsisPlaceholder')}
@@ -84,7 +85,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">{t('survey:step2.description')}</Label>
+          <LabelWithColumn htmlFor="description" label={t('survey:step2.description')} column="description" />
           <Textarea
             id="description"
             placeholder={t('survey:step2.descriptionPlaceholder')}
@@ -98,7 +99,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="note">{t('survey:step2.notes')}</Label>
+          <LabelWithColumn htmlFor="note" label={t('survey:step2.notes')} column="note" />
           <Textarea
             id="note"
             placeholder={t('survey:step2.notesPlaceholder')}
@@ -113,7 +114,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="chapters">{t('survey:step2.chapters')}</Label>
+            <LabelWithColumn htmlFor="chapters" label={t('survey:step2.chapters')} column="chapters" />
             <Input
               id="chapters"
               type="number"
@@ -149,9 +150,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="inspiration">
-            {t('survey:step2.inspiration')}
-          </Label>
+          <LabelWithColumn htmlFor="inspiration" label={t('survey:step2.inspiration')} column="inspiration" />
           <Textarea
             id="inspiration"
             placeholder={t('survey:step2.inspirationPlaceholder')}
@@ -165,9 +164,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="important_issues">
-            {t('survey:step2.importantIssues')}
-          </Label>
+          <LabelWithColumn htmlFor="important_issues" label={t('survey:step2.importantIssues')} column="important_issues" />
           <Textarea
             id="important_issues"
             placeholder={t('survey:step2.importantIssuesPlaceholder')}
@@ -184,9 +181,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
       {/* Section: Comparable Titles */}
       <div className="space-y-4">
         <div>
-          <Label className="text-base font-medium">
-            {t('survey:step2.comparableTitles')}
-          </Label>
+          <LabelWithColumn label={t('survey:step2.comparableTitles')} column="comparables" className="text-base font-medium" />
           <p className="text-sm text-gray-500 mt-1">
             {t('survey:step2.comparableTitlesSubtitle')}
           </p>
@@ -255,9 +250,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="setting_description">
-            {t('survey:step2.settingDescription')} <span className="text-red-500">*</span>
-          </Label>
+          <LabelWithColumn htmlFor="setting_description" label={t('survey:step2.settingDescription')} column="setting_description" required />
           <Textarea
             id="setting_description"
             placeholder={t('survey:step2.settingPlaceholder')}
@@ -276,9 +269,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="world_lore">
-            {t('survey:step2.worldLore')}
-          </Label>
+          <LabelWithColumn htmlFor="world_lore" label={t('survey:step2.worldLore')} column="world_lore" />
           <Textarea
             id="world_lore"
             placeholder={t('survey:step2.worldLorePlaceholder')}
@@ -292,9 +283,7 @@ export const Step2StoryDetails: React.FC<Step2StoryDetailsProps> = ({ form }) =>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="supernatural_concepts">
-            {t('survey:step2.supernaturalConcepts')}
-          </Label>
+          <LabelWithColumn htmlFor="supernatural_concepts" label={t('survey:step2.supernaturalConcepts')} column="supernatural_concepts" />
           <Textarea
             id="supernatural_concepts"
             placeholder={t('survey:step2.supernaturalPlaceholder')}

@@ -93,6 +93,29 @@
     "learningCenterDescription": "성공을 위한 리소스 및 가이드",
     "viewAllLearning": "모든 학습 자료 보기",
     "noNewsYet": "현재 뉴스 업데이트가 없습니다",
-    "noLearningYet": "아직 학습 자료가 없습니다"
-  }
+    "noLearningYet": "아직 학습 자료가 없습니다",
+    "featured": "추천",
+    "quickActions": {
+      "addTitle": "새 작품 등록",
+      "addTitleDesc": "웹툰 또는 웹소설을 해외 라이선싱을 위해 등록하세요",
+      "viewTitles": "내 작품 보기",
+      "viewTitlesDesc": "등록한 작품을 관리하고 상태를 확인하세요",
+      "learnMore": "플랫폼 알아보기",
+      "learnMoreDesc": "성공을 위한 튜토리얼과 가이드"
+    },
+    "progress": {
+      "title": "시작하기",
+      "completed": "완료",
+      "completeProfile": "프로필 완성하기",
+      "completeProfileDesc": "필명과 세부 정보를 추가하세요",
+      "addFirstTitle": "첫 작품 등록하기",
+      "addFirstTitleDesc": "웹툰 또는 웹소설을 등록하세요",
+      "publishTitle": "작품 승인 받기",
+      "publishTitleDesc": "검토 과정을 완료하세요",
+      "learnPlatform": "학습 자료 탐색하기",
+      "learnPlatformDesc": "성공적인 라이선싱을 위한 팁"
+    },
+    "welcome": "다시 오신 것을 환영합니다"
+  },
+  "viewAll": "전체 보기"
 }

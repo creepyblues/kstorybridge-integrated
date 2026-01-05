@@ -3,6 +3,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LabelWithColumn } from '@/components/ui/AdminColumnHint'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
@@ -112,7 +113,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
         {/* Awards */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>{t('survey:step5.awardsLabel')}</Label>
+            <LabelWithColumn label={t('survey:step5.awardsLabel')} column="awards" />
             <Button
               type="button"
               variant="outline"
@@ -152,7 +153,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
 
         {/* Sales Records */}
         <div className="space-y-2">
-          <Label htmlFor="sales_records">{t('survey:step5.salesRecordsLabel')}</Label>
+          <LabelWithColumn htmlFor="sales_records" label={t('survey:step5.salesRecordsLabel')} column="sales_records" />
           <Textarea
             id="sales_records"
             placeholder={t('survey:step5.salesRecordsPlaceholder')}
@@ -167,7 +168,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
 
         {/* Merchandise Deals */}
         <div className="space-y-2">
-          <Label htmlFor="merchandise_deals">{t('survey:step5.merchandiseLabel')}</Label>
+          <LabelWithColumn htmlFor="merchandise_deals" label={t('survey:step5.merchandiseLabel')} column="merchandise_deals" />
           <Textarea
             id="merchandise_deals"
             placeholder={t('survey:step5.merchandisePlaceholder')}
@@ -203,7 +204,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
 
           {printEditions && (
             <div className="ml-6 space-y-2">
-              <Label htmlFor="print_edition_details">{t('survey:step5.printEditionDetailsLabel')}</Label>
+              <LabelWithColumn htmlFor="print_edition_details" label={t('survey:step5.printEditionDetailsLabel')} column="print_edition_details" />
               <Textarea
                 id="print_edition_details"
                 placeholder={t('survey:step5.printEditionDetailsPlaceholder')}
@@ -217,7 +218,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
 
         {/* Media Coverage */}
         <div className="space-y-2">
-          <Label htmlFor="media_coverage">{t('survey:step5.mediaCoverageLabel')}</Label>
+          <LabelWithColumn htmlFor="media_coverage" label={t('survey:step5.mediaCoverageLabel')} column="media_coverage" />
           <Textarea
             id="media_coverage"
             placeholder={t('survey:step5.mediaCoveragePlaceholder')}
@@ -232,7 +233,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
 
         {/* Celebrity Endorsements */}
         <div className="space-y-2">
-          <Label htmlFor="celebrity_endorsements">{t('survey:step5.celebrityEndorsementsLabel')}</Label>
+          <LabelWithColumn htmlFor="celebrity_endorsements" label={t('survey:step5.celebrityEndorsementsLabel')} column="celebrity_endorsements" />
           <Textarea
             id="celebrity_endorsements"
             placeholder={t('survey:step5.celebrityEndorsementsPlaceholder')}
@@ -257,7 +258,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
         {/* Total Titles */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="creator_total_titles">{t('survey:step5.totalTitlesLabel')}</Label>
+            <LabelWithColumn htmlFor="creator_total_titles" label={t('survey:step5.totalTitlesLabel')} column="creator_achievements.total_titles" />
             <Input
               id="creator_total_titles"
               type="number"
@@ -274,7 +275,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="creator_total_views">{t('survey:step5.totalViewsLabel')}</Label>
+            <LabelWithColumn htmlFor="creator_total_views" label={t('survey:step5.totalViewsLabel')} column="creator_achievements.total_views" />
             <Input
               id="creator_total_views"
               placeholder={t('survey:step5.totalViewsPlaceholder')}
@@ -293,7 +294,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
         {/* Notable Works */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>{t('survey:step5.notableWorksLabel')}</Label>
+            <LabelWithColumn label={t('survey:step5.notableWorksLabel')} column="creator_achievements.notable_works" />
             <Button
               type="button"
               variant="outline"
@@ -334,7 +335,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
         {/* Creator Awards */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>{t('survey:step5.creatorAwardsLabel')}</Label>
+            <LabelWithColumn label={t('survey:step5.creatorAwardsLabel')} column="creator_achievements.awards_received" />
             <Button
               type="button"
               variant="outline"
@@ -374,9 +375,7 @@ export const Step5Profile: React.FC<Step5ProfileProps> = ({ form }) => {
 
         {/* Industry Recognition */}
         <div className="space-y-2">
-          <Label htmlFor="creator_industry_recognition">
-            {t('survey:step5.industryRecognitionLabel')}
-          </Label>
+          <LabelWithColumn htmlFor="creator_industry_recognition" label={t('survey:step5.industryRecognitionLabel')} column="creator_achievements.industry_recognition" />
           <Textarea
             id="creator_industry_recognition"
             placeholder={t('survey:step5.industryRecognitionPlaceholder')}

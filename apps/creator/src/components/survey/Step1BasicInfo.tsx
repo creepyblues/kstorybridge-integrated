@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { UseFormReturn, Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LabelWithColumn } from '@/components/ui/AdminColumnHint'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
@@ -14,6 +15,17 @@ import {
 } from '@/components/ui/select'
 import { PlatformInput } from './PlatformInput'
 import { RightsCheckboxGroup } from './RightsCheckboxGroup'
+import { CollectButton, CollectionConfirmDialog, IntelligenceResultsModal } from '@/components/tools'
+import { useAuth } from '@/hooks/useAuth'
+import { useToast } from '@/hooks/use-toast'
+import {
+  collectIntelligenceByUrls,
+  getIntelligenceTitleWithSources,
+  directIngestToTitle,
+  parseUrl,
+  type IntelligenceTitleWithSources,
+  type ExtractedIntelligenceData,
+} from '@/services/intelligenceService'
 
 
 const GENRE_OPTIONS = [
@@ -42,8 +54,32 @@ const CONTENT_FORMAT_OPTIONS = [
   'other'
 ]
 
+interface TitleData {
+  title_id?: string;
+  title_name_kr?: string | null;
+  title_name_en?: string | null;
+  views?: number | null;
+  likes?: number | null;
+  rating?: number | null;
+  rating_count?: number | null;
+  chapters?: number | null;
+  synopsis_kr?: string | null;
+  genre?: string | string[] | null;
+  keywords?: string[] | null;
+  story_author?: string | null;
+  title_image?: string | null;
+  age_rating?: string | null;
+  completed?: boolean | null;
+}
+
 interface Step1BasicInfoProps {
   form: UseFormReturn<any>
+  /** Title data for pre-collection confirmation (EditTitle only) */
+  title?: TitleData | null
+  /** Title ID for ingestion (EditTitle only) */
+  titleId?: string
+  /** Callback when fields are updated via intelligence collection */
+  onFieldsUpdated?: () => void
 }
 
 /**
@@ -51,14 +87,160 @@ interface Step1BasicInfoProps {
  *
  * First step of the 5-step survey: Basic title information
  * Collects required fields, English title type, Hangul titles, rights holder info, and publishing platforms
+ *
+ * When editing an existing title, includes "Collect" buttons next to URL fields
+ * to fetch platform data and auto-populate fields.
  */
-export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
+export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({
+  form,
+  title,
+  titleId,
+  onFieldsUpdated
+}) => {
   const { t } = useTranslation(['survey', 'titles', 'common'])
   const { register, watch, setValue, control, formState: { errors } } = form
+  const { user } = useAuth()
+  const { toast } = useToast()
+
+  // Intelligence collection state
+  const [koConfirmOpen, setKoConfirmOpen] = useState(false)
+  const [enConfirmOpen, setEnConfirmOpen] = useState(false)
+  const [resultsOpen, setResultsOpen] = useState(false)
+  const [collectingKo, setCollectingKo] = useState(false)
+  const [collectingEn, setCollectingEn] = useState(false)
+  const [isIngesting, setIsIngesting] = useState(false)
+  const [intelligenceResults, setIntelligenceResults] = useState<IntelligenceTitleWithSources | null>(null)
 
   const isOfficialEnglish = watch('is_official_english_title')
   const englishTitleType = watch('english_title_type')
   const platforms = watch('platforms') || []
+  const titleUrl = watch('title_url')
+  const titleUrlEn = watch('title_url_en')
+
+  // Can only collect if we have a titleId (editing existing title)
+  const canCollect = !!titleId
+
+  /**
+   * Handle Korean URL collection
+   */
+  const handleKoCollect = async () => {
+    if (!titleUrl || !user?.email || !titleId) return
+
+    setCollectingKo(true)
+    try {
+      const parsed = parseUrl(titleUrl)
+      if (!parsed.valid || parsed.platform === 'unknown') {
+        toast({
+          title: 'Invalid URL',
+          description: 'Please enter a valid platform URL',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const response = await collectIntelligenceByUrls(
+        { urls: [parsed] },
+        user.email
+      )
+
+      if (response.intelligenceTitleId) {
+        const results = await getIntelligenceTitleWithSources(response.intelligenceTitleId)
+        setIntelligenceResults(results)
+        setResultsOpen(true)
+        toast({
+          title: 'Data collected',
+          description: `Successfully collected data from ${response.sourcesCollected.join(', ')}`,
+        })
+      }
+    } catch (error) {
+      console.error('Collection error:', error)
+      toast({
+        title: 'Collection failed',
+        description: error instanceof Error ? error.message : 'Failed to collect data',
+        variant: 'destructive',
+      })
+    } finally {
+      setCollectingKo(false)
+    }
+  }
+
+  /**
+   * Handle English URL collection
+   */
+  const handleEnCollect = async () => {
+    if (!titleUrlEn || !user?.email || !titleId) return
+
+    setCollectingEn(true)
+    try {
+      const parsed = parseUrl(titleUrlEn)
+      if (!parsed.valid || parsed.platform === 'unknown') {
+        toast({
+          title: 'Invalid URL',
+          description: 'Please enter a valid platform URL',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const response = await collectIntelligenceByUrls(
+        { urls: [parsed] },
+        user.email
+      )
+
+      if (response.intelligenceTitleId) {
+        const results = await getIntelligenceTitleWithSources(response.intelligenceTitleId)
+        setIntelligenceResults(results)
+        setResultsOpen(true)
+        toast({
+          title: 'Data collected',
+          description: `Successfully collected data from ${response.sourcesCollected.join(', ')}`,
+        })
+      }
+    } catch (error) {
+      console.error('Collection error:', error)
+      toast({
+        title: 'Collection failed',
+        description: error instanceof Error ? error.message : 'Failed to collect data',
+        variant: 'destructive',
+      })
+    } finally {
+      setCollectingEn(false)
+    }
+  }
+
+  /**
+   * Handle field ingestion into title
+   */
+  const handleIngest = async (selectedFields: Partial<ExtractedIntelligenceData>) => {
+    if (!titleId) return
+
+    setIsIngesting(true)
+    try {
+      await directIngestToTitle(titleId, selectedFields)
+
+      // Update form with new values
+      Object.entries(selectedFields).forEach(([key, value]) => {
+        setValue(key, value, { shouldDirty: true })
+      })
+
+      toast({
+        title: 'Fields updated',
+        description: `Successfully updated ${Object.keys(selectedFields).length} field(s)`,
+      })
+
+      // Notify parent to refresh data
+      onFieldsUpdated?.()
+    } catch (error) {
+      console.error('Ingestion error:', error)
+      toast({
+        title: 'Update failed',
+        description: error instanceof Error ? error.message : 'Failed to update fields',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsIngesting(false)
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -74,9 +256,12 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         {/* Title Names */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="title_name_en">
-              {t('survey:step1.titleNameEn')} <span className="text-red-500">*</span>
-            </Label>
+            <LabelWithColumn
+              htmlFor="title_name_en"
+              label={t('survey:step1.titleNameEn')}
+              column="title_name_en"
+              required
+            />
             <Input
               id="title_name_en"
               placeholder={t('survey:step1.titleNameEnPlaceholder')}
@@ -89,9 +274,12 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title_name_kr">
-              {t('survey:step1.titleNameKr')} <span className="text-red-500">*</span>
-            </Label>
+            <LabelWithColumn
+              htmlFor="title_name_kr"
+              label={t('survey:step1.titleNameKr')}
+              column="title_name_kr"
+              required
+            />
             <Input
               id="title_name_kr"
               placeholder={t('survey:step1.titleNameKrPlaceholder')}
@@ -104,48 +292,92 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
         </div>
 
-        {/* URLs */}
+        {/* URLs with Collect Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="title_url">
-              {t('survey:step1.titleUrl')} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="title_url"
-              type="url"
-              placeholder={t('survey:step1.titleUrlPlaceholder')}
-              {...register('title_url', { required: 'Title URL is required' })}
-              className="bg-white border-gray-300"
+            <LabelWithColumn
+              htmlFor="title_url"
+              label={t('survey:step1.titleUrl')}
+              column="title_url"
+              required
             />
+            <div className="flex gap-2">
+              <Input
+                id="title_url"
+                type="url"
+                placeholder={t('survey:step1.titleUrlPlaceholder')}
+                {...register('title_url', { required: 'Title URL is required' })}
+                className="bg-white border-gray-300 flex-1"
+              />
+              {canCollect && (
+                <CollectButton
+                  url={titleUrl || ''}
+                  onClick={() => setKoConfirmOpen(true)}
+                  isCollecting={collectingKo}
+                  disabled={!titleUrl?.trim()}
+                />
+              )}
+            </div>
             {errors.title_url && (
               <p className="text-sm text-red-600">{errors.title_url.message as string}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title_image">
-              {t('survey:step1.coverImage')} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="title_image"
-              type="url"
-              placeholder={t('survey:step1.coverImagePlaceholder')}
-              {...register('title_image', { required: 'Cover image URL is required' })}
-              className="bg-white border-gray-300"
+            <LabelWithColumn
+              htmlFor="title_url_en"
+              label={t('survey:step1.titleUrlEn')}
+              column="title_url_en"
             />
-            {errors.title_image && (
-              <p className="text-sm text-red-600">{errors.title_image.message as string}</p>
-            )}
+            <div className="flex gap-2">
+              <Input
+                id="title_url_en"
+                type="url"
+                placeholder={t('survey:step1.titleUrlEnPlaceholder')}
+                {...register('title_url_en')}
+                className="bg-white border-gray-300 flex-1"
+              />
+              {canCollect && (
+                <CollectButton
+                  url={titleUrlEn || ''}
+                  onClick={() => setEnConfirmOpen(true)}
+                  isCollecting={collectingEn}
+                  disabled={!titleUrlEn?.trim()}
+                />
+              )}
+            </div>
           </div>
+        </div>
+
+        {/* Cover Image */}
+        <div className="space-y-2">
+          <LabelWithColumn
+            htmlFor="title_image"
+            label={t('survey:step1.coverImage')}
+            column="title_image"
+            required
+          />
+          <Input
+            id="title_image"
+            type="url"
+            placeholder={t('survey:step1.coverImagePlaceholder')}
+            {...register('title_image', { required: 'Cover image URL is required' })}
+            className="bg-white border-gray-300"
+          />
+          {errors.title_image && (
+            <p className="text-sm text-red-600">{errors.title_image.message as string}</p>
+          )}
         </div>
 
         {/* Underlying Novel */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="underlying_novel_kr">
-              {t('survey:step1.underlyingNovelKr')}
-              <span className="text-xs text-gray-500 ml-2">{t('survey:step1.underlyingNovelKrHelper')}</span>
-            </Label>
+            <LabelWithColumn
+              htmlFor="underlying_novel_kr"
+              label={`${t('survey:step1.underlyingNovelKr')} `}
+              column="underlying_novel_kr"
+            />
+            <span className="text-xs text-gray-500 -mt-1 block">{t('survey:step1.underlyingNovelKrHelper')}</span>
             <Input
               id="underlying_novel_kr"
               placeholder={t('survey:step1.underlyingNovelKrPlaceholder')}
@@ -155,9 +387,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="underlying_novel_en">
-              {t('survey:step1.underlyingNovelEn')}
-            </Label>
+            <LabelWithColumn
+              htmlFor="underlying_novel_en"
+              label={t('survey:step1.underlyingNovelEn')}
+              column="underlying_novel_en"
+            />
             <Input
               id="underlying_novel_en"
               placeholder={t('survey:step1.underlyingNovelEnPlaceholder')}
@@ -170,9 +404,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         {/* Genre and Format */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>
-              {t('survey:step1.genre')} <span className="text-red-500">*</span>
-            </Label>
+            <LabelWithColumn
+              label={t('survey:step1.genre')}
+              column="genre"
+              required
+            />
             <Controller
               name="genre"
               control={control}
@@ -201,7 +437,10 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label>{t('survey:step1.contentFormat')}</Label>
+            <LabelWithColumn
+              label={t('survey:step1.contentFormat')}
+              column="content_format"
+            />
             <Controller
               name="content_format"
               control={control}
@@ -226,7 +465,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         {/* Keywords and Tone */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="keywords">{t('survey:step1.keywords')}</Label>
+            <LabelWithColumn
+              htmlFor="keywords"
+              label={t('survey:step1.keywords')}
+              column="keywords"
+            />
             <Input
               id="keywords"
               placeholder={t('survey:step1.keywordsPlaceholder')}
@@ -237,7 +480,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tone">{t('survey:step1.tone')}</Label>
+            <LabelWithColumn
+              htmlFor="tone"
+              label={t('survey:step1.tone')}
+              column="tone"
+            />
             <Input
               id="tone"
               placeholder={t('survey:step1.tonePlaceholder')}
@@ -309,9 +556,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="rights_holder_name">
-            {t('survey:step1.rightsHolderName')}
-          </Label>
+          <LabelWithColumn
+            htmlFor="rights_holder_name"
+            label={t('survey:step1.rightsHolderName')}
+            column="rights_holder_name"
+          />
           <Input
             id="rights_holder_name"
             placeholder={t('survey:step1.rightsHolderNamePlaceholder')}
@@ -334,9 +583,12 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="story_author">
-            {t('survey:step1.storyAuthor')} <span className="text-red-500">*</span>
-          </Label>
+          <LabelWithColumn
+            htmlFor="story_author"
+            label={t('survey:step1.storyAuthor')}
+            column="story_author"
+            required
+          />
           <Input
             id="story_author"
             placeholder={t('survey:step1.storyAuthorPlaceholder')}
@@ -350,7 +602,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="art_author">{t('survey:step1.artAuthor')}</Label>
+            <LabelWithColumn
+              htmlFor="art_author"
+              label={t('survey:step1.artAuthor')}
+              column="art_author"
+            />
             <Input
               id="art_author"
               placeholder={t('survey:step1.artAuthorPlaceholder')}
@@ -360,7 +616,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="writer">{t('survey:step1.originalAuthor')}</Label>
+            <LabelWithColumn
+              htmlFor="writer"
+              label={t('survey:step1.originalAuthor')}
+              column="writer"
+            />
             <Input
               id="writer"
               placeholder={t('survey:step1.originalAuthorPlaceholder')}
@@ -382,7 +642,10 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
         {/* Rights Available - Multi-select checkboxes */}
         <div className="space-y-2">
-          <Label>{t('survey:step1.rightsAvailable')}</Label>
+          <LabelWithColumn
+            label={t('survey:step1.rightsAvailable')}
+            column="rights_available"
+          />
           <Controller
             name="rights_available"
             control={control}
@@ -400,7 +663,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
 
         {/* Perfect For field */}
         <div className="space-y-2">
-          <Label htmlFor="perfect_for">{t('survey:step1.perfectFor')}</Label>
+          <LabelWithColumn
+            htmlFor="perfect_for"
+            label={t('survey:step1.perfectFor')}
+            column="perfect_for"
+          />
           <Input
             id="perfect_for"
             placeholder={t('survey:step1.perfectForPlaceholder')}
@@ -410,7 +677,11 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="audience">{t('survey:step1.targetAudience')}</Label>
+          <LabelWithColumn
+            htmlFor="audience"
+            label={t('survey:step1.targetAudience')}
+            column="audience"
+          />
           <Input
             id="audience"
             placeholder={t('survey:step1.targetAudiencePlaceholder')}
@@ -446,6 +717,40 @@ export const Step1BasicInfo: React.FC<Step1BasicInfoProps> = ({ form }) => {
           <li>{t('survey:step1.tip4')}</li>
         </ul>
       </div>
+
+      {/* Intelligence Collection Dialogs */}
+      {canCollect && (
+        <>
+          {/* Korean URL Pre-Collection Confirmation */}
+          <CollectionConfirmDialog
+            open={koConfirmOpen}
+            onOpenChange={setKoConfirmOpen}
+            url={titleUrl || ''}
+            currentTitle={title || null}
+            onConfirm={handleKoCollect}
+            isCollecting={collectingKo}
+          />
+
+          {/* English URL Pre-Collection Confirmation */}
+          <CollectionConfirmDialog
+            open={enConfirmOpen}
+            onOpenChange={setEnConfirmOpen}
+            url={titleUrlEn || ''}
+            currentTitle={title || null}
+            onConfirm={handleEnCollect}
+            isCollecting={collectingEn}
+          />
+
+          {/* Post-Collection Results Modal */}
+          <IntelligenceResultsModal
+            open={resultsOpen}
+            onOpenChange={setResultsOpen}
+            results={intelligenceResults}
+            onIngest={handleIngest}
+            isIngesting={isIngesting}
+          />
+        </>
+      )}
     </div>
   )
 }

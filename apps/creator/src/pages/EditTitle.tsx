@@ -23,6 +23,7 @@ interface EditTitleFormData {
   title_name_en: string
   title_name_kr: string
   title_url: string
+  title_url_en: string
   title_image: string
   story_author: string
   genre: string[]
@@ -135,6 +136,7 @@ export default function EditTitle() {
       title_name_en: '',
       title_name_kr: '',
       title_url: '',
+      title_url_en: '',
       title_image: '',
       story_author: '',
       genre: [],
@@ -189,6 +191,7 @@ export default function EditTitle() {
         title_name_en: data.title_name_en || '',
         title_name_kr: data.title_name_kr || '',
         title_url: data.title_url || '',
+        title_url_en: data.title_url_en || '',
         title_image: data.title_image || '',
         story_author: data.story_author || '',
         genre: Array.isArray(data.genre) ? data.genre : (data.genre ? [data.genre] : []),
@@ -275,6 +278,7 @@ export default function EditTitle() {
         title_name_en: values.title_name_en.trim(),
         title_name_kr: values.title_name_kr.trim(),
         title_url: values.title_url.trim(),
+        title_url_en: values.title_url_en?.trim() || null,
         title_image: values.title_image.trim(),
         story_author: values.story_author.trim(),
         genre: values.genre.length > 0 ? values.genre : null,
@@ -455,7 +459,14 @@ export default function EditTitle() {
                 </TabsList>
 
                 <TabsContent value="step1" className="space-y-6">
-                  <Step1BasicInfo form={form} />
+                  <Step1BasicInfo
+                    form={form}
+                    title={title}
+                    titleId={titleId}
+                    onFieldsUpdated={() => {
+                      if (titleId) loadTitle(titleId)
+                    }}
+                  />
                 </TabsContent>
 
                 <TabsContent value="step2" className="space-y-6">

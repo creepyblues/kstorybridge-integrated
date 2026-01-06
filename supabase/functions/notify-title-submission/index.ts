@@ -28,6 +28,11 @@ interface CreatorRecord {
   pen_name?: string
 }
 
+// Helper function to add delay between API calls
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 // Format rights array to readable string
 function formatRights(rights?: string[]): string {
   if (!rights || rights.length === 0) return 'Not specified'
@@ -347,7 +352,8 @@ serve(async (req) => {
       const emailText = generateEmailText(notificationData)
       const subject = `New Title Submitted - ${notificationData.titleKr}`
 
-      for (const admin of admins) {
+      for (let i = 0; i < admins.length; i++) {
+        const admin = admins[i]
         try {
           const emailResponse = await fetch('https://api.resend.com/emails', {
             method: 'POST',
@@ -377,6 +383,11 @@ serve(async (req) => {
           console.error(`[notify-title-submission] Email error for ${admin.email}:`, emailError)
           results.emailsFailed++
           results.errors.push(`Email to ${admin.email} error: ${emailError}`)
+        }
+
+        // Add 500ms delay between emails to avoid Resend rate limit (2 req/sec)
+        if (i < admins.length - 1) {
+          await delay(500)
         }
       }
     } else if (!resendApiKey) {

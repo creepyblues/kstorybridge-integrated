@@ -19,6 +19,7 @@ import { LabelWithColumn } from '@/components/ui/AdminColumnHint'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/use-toast'
 import { draftService } from '@/services/draftService'
+import { notifyTitleSubmission } from '@/services/notificationService'
 import { quickAddTitleSchema, type QuickAddTitleData } from '@/lib/surveySchema'
 
 export default function QuickAddTitle() {
@@ -77,6 +78,11 @@ export default function QuickAddTitle() {
 
       // Immediately submit for review
       await draftService.submitDraftById(draft.id)
+
+      // Fire-and-forget admin notification (non-blocking)
+      notifyTitleSubmission(draft.id).catch(err => {
+        console.warn('Admin notification failed (non-blocking):', err)
+      })
 
       toast({
         title: t('titles:quickAdd.submittedTitle', 'Title Submitted'),

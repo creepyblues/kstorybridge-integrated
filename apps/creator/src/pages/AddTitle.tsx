@@ -31,6 +31,7 @@ import { Step5Profile } from '@/components/survey/Step5Profile'
 
 // Services
 import { draftService } from '@/services/draftService'
+import { notifyTitleSubmission } from '@/services/notificationService'
 
 // Schema
 import { surveyFormSchema, validateStep1, validateStep2, validateStep3, type SurveyFormData } from '@/lib/surveySchema'
@@ -306,6 +307,9 @@ export default function AddTitleSurvey() {
     setIsSubmitting(true)
 
     try {
+      // Track the submitted draft ID (needed for notification)
+      let submittedDraftId: string
+
       // Ensure draft exists before submitting
       if (!currentDraftId) {
         // Create draft first if none exists
@@ -315,6 +319,7 @@ export default function AddTitleSurvey() {
           current_step: 5,
         })
         setCurrentDraftId(newDraft.id)
+        submittedDraftId = newDraft.id
         // Submit the new draft
         await draftService.submitDraftById(newDraft.id)
       } else {
@@ -323,14 +328,19 @@ export default function AddTitleSurvey() {
           draft_data: data,
           current_step: 5,
         })
+        submittedDraftId = currentDraftId
         // Submit the existing draft
         await draftService.submitDraftById(currentDraftId)
       }
 
       console.log('Title submitted for approval')
 
+      // Fire-and-forget admin notification (non-blocking)
+      notifyTitleSubmission(submittedDraftId).catch(err => {
+        console.warn('Admin notification failed (non-blocking):', err)
+      })
+
       // Track title creation (use the draft ID as title ID since it becomes the title)
-      const submittedDraftId = currentDraftId || 'new-title'
       trackTitleCreate(submittedDraftId, data.content_format)
       trackSurveyStepComplete(5, stepNames[5]) // Track final step completion
 

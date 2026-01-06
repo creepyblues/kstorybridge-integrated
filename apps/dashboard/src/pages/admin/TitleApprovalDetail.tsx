@@ -57,21 +57,24 @@ export default function TitleApprovalDetail() {
 
     try {
       setApproving(true);
-      await draftService.approveDraft(draft.id, user.id);
+      const result = await draftService.approveDraft(draft.id, user.id);
 
       toast({
         title: "Success",
-        description: "Submission has been approved"
+        description: "Submission has been approved and title has been created"
       });
+
+      console.log('[TitleApprovalDetail] Title created with ID:', result.titleId);
 
       // Reload draft to show updated status
       await loadDraft(draft.id);
       setShowApproveDialog(false);
     } catch (error) {
       console.error("Error approving submission:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to approve submission";
       toast({
         title: "Error",
-        description: "Failed to approve submission"
+        description: errorMessage
       });
     } finally {
       setApproving(false);

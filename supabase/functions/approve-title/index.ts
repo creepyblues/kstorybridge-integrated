@@ -284,7 +284,7 @@ serve(async (req) => {
       // System fields - set defaults for immediate visibility
       creator_id: creatorId,
       verified: true, // Approved titles are immediately visible
-      priority: 'medium', // Default priority for approved submissions
+      priority: '2', // Priority: 1=low, 2=medium, 3=high
       created_at: now,
       updated_at: now,
     }

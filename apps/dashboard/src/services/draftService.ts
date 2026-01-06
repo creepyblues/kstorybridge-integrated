@@ -155,31 +155,39 @@ export const draftService = {
   },
 
   /**
-   * Approve a draft and optionally add it to the titles table
+   * Approve a draft and add it to the titles table
+   * Uses edge function to bypass RLS and ensure atomic operation
    * @param draftId - The draft ID to approve
    * @param adminUserId - The admin's user ID (UUID)
+   * @returns The new title ID if successful
    */
   async approveDraft(
     draftId: string,
     adminUserId: string
-  ): Promise<void> {
-    const { error } = await supabase
-      .from('title_drafts')
-      .update({
-        status: 'approved',
-        approved_at: new Date().toISOString(),
-        approved_by: adminUserId,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', draftId)
-      .eq('status', 'submitted'); // Only approve submitted drafts
+  ): Promise<{ titleId: string }> {
+    console.log('[draftService] Approving draft via edge function:', { draftId, adminUserId });
+
+    const { data, error } = await supabase.functions.invoke('approve-title', {
+      body: { draftId, adminUserId }
+    });
 
     if (error) {
+      console.error('[draftService] Edge function error:', error);
       throw new Error(`Failed to approve draft: ${error.message}`);
     }
 
-    // TODO: Optionally create a new title record in the titles table
-    // This can be implemented later based on business requirements
+    if (!data?.success) {
+      const errorMessage = data?.error || 'Unknown error occurred';
+      console.error('[draftService] Approval failed:', errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    console.log('[draftService] Draft approved successfully:', {
+      draftId,
+      titleId: data.titleId
+    });
+
+    return { titleId: data.titleId };
   },
 
   /**
@@ -211,6 +219,30 @@ export const draftService = {
 
     if (error) {
       throw new Error(`Failed to reject draft: ${error.message}`);
+    }
+
+    // Fire-and-forget notification to creator (non-blocking)
+    this.notifyCreatorDecision(draftId, 'rejected', reason).catch(err => {
+      console.warn('[draftService] Creator rejection notification failed (non-blocking):', err);
+    });
+  },
+
+  /**
+   * Send notification to creator about approval/rejection decision
+   * Fire-and-forget pattern - failures do not block the approval flow
+   */
+  async notifyCreatorDecision(
+    draftId: string,
+    decision: 'approved' | 'rejected',
+    rejectionReason?: string
+  ): Promise<void> {
+    const { error } = await supabase.functions.invoke('notify-title-decision', {
+      body: { draftId, decision, rejectionReason }
+    });
+
+    if (error) {
+      console.error('[draftService] Notification error:', error);
+      throw error;
     }
   },
 

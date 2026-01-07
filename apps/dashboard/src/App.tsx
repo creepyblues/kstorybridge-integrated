@@ -49,6 +49,7 @@ import { ContentEditor } from '@/pages/admin/ContentEditor';
 import AssetGeneration from '@/pages/admin/AssetGeneration';
 import PitchExtractor from '@/pages/admin/PitchExtractor';
 import AdminDocs from '@/pages/admin/Docs';
+import EmailTemplates from '@/pages/admin/EmailTemplates';
 import AdminTrending from '@/pages/admin/Trending';
 import { AdminProtectedRoute } from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -332,6 +333,16 @@ function App() {
             element={
               <AdminProtectedRoute>
                 <AdminDocs />
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* Email Templates - Standalone page (no AdminLayout) */}
+          <Route
+            path="/admin/email-templates"
+            element={
+              <AdminProtectedRoute>
+                <EmailTemplates />
               </AdminProtectedRoute>
             }
           />

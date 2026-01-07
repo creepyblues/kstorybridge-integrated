@@ -24,17 +24,17 @@ describe('TrialContext', () => {
   });
 
   describe('initial state', () => {
-    it('should start with 3 remaining trials when localStorage is empty', () => {
+    it('should start with 5 remaining trials when localStorage is empty', () => {
       render(
         <TrialProvider>
           <TestConsumer />
         </TrialProvider>
       );
 
-      expect(screen.getByTestId('remaining').textContent).toBe('3');
+      expect(screen.getByTestId('remaining').textContent).toBe('5');
       expect(screen.getByTestId('hasRemaining').textContent).toBe('true');
       expect(screen.getByTestId('showModal').textContent).toBe('false');
-      expect(screen.getByTestId('maxTrials').textContent).toBe('3');
+      expect(screen.getByTestId('maxTrials').textContent).toBe('5');
     });
 
     it('should restore state from localStorage', () => {
@@ -49,7 +49,7 @@ describe('TrialContext', () => {
         </TrialProvider>
       );
 
-      expect(screen.getByTestId('remaining').textContent).toBe('1');
+      expect(screen.getByTestId('remaining').textContent).toBe('3');
       expect(screen.getByTestId('hasRemaining').textContent).toBe('true');
     });
 
@@ -62,7 +62,7 @@ describe('TrialContext', () => {
         </TrialProvider>
       );
 
-      expect(screen.getByTestId('remaining').textContent).toBe('3');
+      expect(screen.getByTestId('remaining').textContent).toBe('5');
     });
 
     it('should ignore old version localStorage data', () => {
@@ -77,7 +77,7 @@ describe('TrialContext', () => {
         </TrialProvider>
       );
 
-      expect(screen.getByTestId('remaining').textContent).toBe('3');
+      expect(screen.getByTestId('remaining').textContent).toBe('5');
     });
   });
 
@@ -89,13 +89,13 @@ describe('TrialContext', () => {
         </TrialProvider>
       );
 
-      expect(screen.getByTestId('remaining').textContent).toBe('3');
+      expect(screen.getByTestId('remaining').textContent).toBe('5');
 
       act(() => {
         screen.getByTestId('increment').click();
       });
 
-      expect(screen.getByTestId('remaining').textContent).toBe('2');
+      expect(screen.getByTestId('remaining').textContent).toBe('4');
     });
 
     it('should save usage to localStorage', () => {
@@ -116,7 +116,7 @@ describe('TrialContext', () => {
 
     it('should show limit modal when all trials are used', () => {
       localStorage.setItem('kstorybridge_trial_usage', JSON.stringify({
-        searches_used: 2,
+        searches_used: 4,
         version: 1,
       }));
 
@@ -139,7 +139,7 @@ describe('TrialContext', () => {
 
     it('should not go below 0 remaining trials', () => {
       localStorage.setItem('kstorybridge_trial_usage', JSON.stringify({
-        searches_used: 3,
+        searches_used: 5,
         version: 1,
       }));
 

@@ -145,7 +145,7 @@ describe('TrialResultsGrid', () => {
       const viewButton = screen.getByText('View Full Title Details');
       fireEvent.click(viewButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith('/trial/titles/test-1');
+      expect(mockNavigate).toHaveBeenCalledWith('/trial/titles/test-1?source=comps');
     });
   });
 });

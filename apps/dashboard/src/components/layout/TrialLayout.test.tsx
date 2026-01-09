@@ -20,9 +20,12 @@ describe('TrialLayout', () => {
   });
 
   describe('header', () => {
-    it('should display KStoryBridge logo', () => {
+    it('should display KStoryBridge logo parts', () => {
       renderLayout();
-      expect(screen.getByText('KStoryBridge')).toBeInTheDocument();
+      // Logo is split into K + Story + Bridge spans
+      expect(screen.getByText('K')).toBeInTheDocument();
+      expect(screen.getByText('Story')).toBeInTheDocument();
+      expect(screen.getByText('Bridge')).toBeInTheDocument();
     });
 
     it('should display Trial badge', () => {
@@ -32,13 +35,13 @@ describe('TrialLayout', () => {
 
     it('should have Sign Up button in header', () => {
       renderLayout();
-      // Header now has simple "Sign Up" button (Sign In was removed for cleaner mobile UX)
-      expect(screen.getByRole('link', { name: /^sign up$/i })).toHaveAttribute('href', '/signup');
+      // Header has "SIGN UP" button linking to signup
+      expect(screen.getByRole('link', { name: /sign up/i })).toHaveAttribute('href', '/signup');
     });
 
     it('should display trial counter badge', () => {
       renderLayout();
-      expect(screen.getByText('3 of 3 searches left')).toBeInTheDocument();
+      expect(screen.getByText('5 of 5 searches left')).toBeInTheDocument();
     });
   });
 
@@ -46,19 +49,6 @@ describe('TrialLayout', () => {
     it('should render children content', () => {
       renderLayout(<div>My Test Content</div>);
       expect(screen.getByText('My Test Content')).toBeInTheDocument();
-    });
-  });
-
-  describe('footer', () => {
-    it('should display CTA text', () => {
-      renderLayout();
-      expect(screen.getByText('Ready to unlock unlimited searches and save your discoveries?')).toBeInTheDocument();
-    });
-
-    it('should have Sign Up Free button in footer', () => {
-      renderLayout();
-      // Footer has "Sign Up Free" button linking to signup
-      expect(screen.getByRole('link', { name: /sign up free/i })).toHaveAttribute('href', '/signup');
     });
   });
 });

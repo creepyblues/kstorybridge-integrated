@@ -26,44 +26,51 @@ describe('TrialCounterBadge', () => {
 
   it('should display correct remaining trials count', () => {
     renderWithProvider(1);
-    expect(screen.getByText('2 of 3 searches left')).toBeInTheDocument();
+    expect(screen.getByText('4 of 5 searches left')).toBeInTheDocument();
   });
 
-  it('should show 3 remaining with no usage', () => {
+  it('should show 5 remaining with no usage', () => {
     renderWithProvider(0);
-    expect(screen.getByText('3 of 3 searches left')).toBeInTheDocument();
+    expect(screen.getByText('5 of 5 searches left')).toBeInTheDocument();
   });
 
   it('should show 0 remaining when all used', () => {
-    renderWithProvider(3);
-    expect(screen.getByText('0 of 3 searches left')).toBeInTheDocument();
+    renderWithProvider(5);
+    expect(screen.getByText('0 of 5 searches left')).toBeInTheDocument();
   });
 
   describe('color states', () => {
-    it('should have green styling with 3 trials remaining', () => {
+    it('should have green styling with 5 trials remaining (3+ = green)', () => {
       renderWithProvider(0);
-      const badge = screen.getByText('3 of 3 searches left').closest('div');
+      const badge = screen.getByText('5 of 5 searches left').closest('div');
+      expect(badge?.className).toContain('bg-green-100');
+      expect(badge?.className).toContain('text-green-700');
+    });
+
+    it('should have green styling with 3 trials remaining', () => {
+      renderWithProvider(2);
+      const badge = screen.getByText('3 of 5 searches left').closest('div');
       expect(badge?.className).toContain('bg-green-100');
       expect(badge?.className).toContain('text-green-700');
     });
 
     it('should have amber styling with 2 trials remaining', () => {
-      renderWithProvider(1);
-      const badge = screen.getByText('2 of 3 searches left').closest('div');
+      renderWithProvider(3);
+      const badge = screen.getByText('2 of 5 searches left').closest('div');
       expect(badge?.className).toContain('bg-amber-100');
       expect(badge?.className).toContain('text-amber-700');
     });
 
     it('should have orange styling with 1 trial remaining', () => {
-      renderWithProvider(2);
-      const badge = screen.getByText('1 of 3 searches left').closest('div');
+      renderWithProvider(4);
+      const badge = screen.getByText('1 of 5 searches left').closest('div');
       expect(badge?.className).toContain('bg-orange-100');
       expect(badge?.className).toContain('text-orange-700');
     });
 
     it('should have red styling with 0 trials remaining', () => {
-      renderWithProvider(3);
-      const badge = screen.getByText('0 of 3 searches left').closest('div');
+      renderWithProvider(5);
+      const badge = screen.getByText('0 of 5 searches left').closest('div');
       expect(badge?.className).toContain('bg-red-100');
       expect(badge?.className).toContain('text-red-700');
     });

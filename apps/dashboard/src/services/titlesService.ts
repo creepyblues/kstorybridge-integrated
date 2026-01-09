@@ -171,7 +171,9 @@ class TitlesService {
       let query = supabase
         .from('titles')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('priority', { ascending: true })
+        .order('verified', { ascending: false })
+        .order('views', { ascending: false, nullsFirst: false });
 
       // Apply filters
       if (filters?.genre) {
@@ -225,7 +227,9 @@ class TitlesService {
       let query = supabase
         .from('titles')
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
+        .order('priority', { ascending: true })
+        .order('verified', { ascending: false })
+        .order('views', { ascending: false, nullsFirst: false });
 
       // Apply filters (same as getTitles)
       if (filters?.genre) {

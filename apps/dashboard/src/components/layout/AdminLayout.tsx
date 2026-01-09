@@ -65,6 +65,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/docs',
       icon: 'solar:notebook-bold-duotone',
       description: 'Internal documentation'
+    },
+    {
+      name: 'Email Templates',
+      href: '/admin/email-templates',
+      icon: 'solar:letter-bold-duotone',
+      description: 'Email template preview'
     }
   ];
 

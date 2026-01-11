@@ -346,7 +346,7 @@ interface CreatorFormData {
 - `art_title_en` (text) - Art/webtoon title (English)
 - `underlying_novel_kr` (text) - Source novel title (Korean)
 - `underlying_novel_en` (text) - Source novel title (English)
-- `creator_id` (text) - Associated creator email
+- `creator_id` (uuid) - Creator's auth UUID (NOT email - used for RLS)
 
 **Rights & Business**:
 - `rights` (text) - **DEPRECATED** - Use `rights_available` instead
@@ -464,12 +464,24 @@ interface CreatorFormData {
 
 ### Query Patterns
 
-**Fetch all titles for a creator**:
+**⚠️ IMPORTANT: Query Pattern Differences by Table**
+
+The creator app uses different query patterns for different tables:
+
+| Table | Query Field | Value | Reason |
+|-------|-------------|-------|--------|
+| `user_creators` | `email` | `user.email` | User tables use email as identifier |
+| `titles` | `creator_id` | `user.id` (UUID) | Titles use UUID for RLS enforcement |
+| `title_drafts` | `creator_id` | `user.id` (UUID) | Drafts follow same pattern as titles |
+
+The `titles` table uses UUID (`user.id`) because the RLS policy is: `auth.uid() = creator_id`
+
+**Fetch all titles for a creator** (uses UUID, NOT email):
 ```typescript
 const { data: titles } = await supabase
   .from('titles')
   .select('*')
-  .eq('creator_id', user.email)
+  .eq('creator_id', user.id)  // UUID from auth, NOT email
   .order('created_at', { ascending: false })
 ```
 
@@ -479,7 +491,7 @@ const { data, error } = await supabase
   .from('titles')
   .insert({
     title_name_kr: 'Title Name',
-    creator_id: user.email,
+    creator_id: user.id,  // UUID from auth, NOT email
     content_format: 'webtoon',
     genre: ['romance', 'fantasy'],
     // Other fields optional

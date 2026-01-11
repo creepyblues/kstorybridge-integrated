@@ -51,6 +51,8 @@ import PitchExtractor from '@/pages/admin/PitchExtractor';
 import AdminDocs from '@/pages/admin/Docs';
 import EmailTemplates from '@/pages/admin/EmailTemplates';
 import AdminTrending from '@/pages/admin/Trending';
+import WeeklyTitle from '@/pages/admin/WeeklyTitle';
+import TrialConversions from '@/pages/admin/TrialConversions';
 import { AdminProtectedRoute } from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/layout/AdminLayout';
 
@@ -251,6 +253,18 @@ function App() {
             }
           />
 
+          {/* Weekly Title */}
+          <Route
+            path="/admin/weekly-title"
+            element={
+              <AdminProtectedRoute>
+                <AdminLayout>
+                  <WeeklyTitle />
+                </AdminLayout>
+              </AdminProtectedRoute>
+            }
+          />
+
           {/* Title Approval */}
           <Route
             path="/admin/title-approval"
@@ -343,6 +357,16 @@ function App() {
             element={
               <AdminProtectedRoute>
                 <EmailTemplates />
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* Trial Conversions */}
+          <Route
+            path="/admin/trial-conversions"
+            element={
+              <AdminProtectedRoute>
+                <TrialConversions />
               </AdminProtectedRoute>
             }
           />

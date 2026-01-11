@@ -44,6 +44,8 @@ export default function AddTitleSurvey() {
   const [userId, setUserId] = useState<string | null>(null)
   const [isDraftLoaded, setIsDraftLoaded] = useState(false)
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null)
+  const [draftLoadError, setDraftLoadError] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   // React Hook Form setup
   const form = useForm<SurveyFormData>({
@@ -104,6 +106,9 @@ export default function AddTitleSurvey() {
       if (!userId || isDraftLoaded) return
 
       try {
+        // Clear any previous error
+        setDraftLoadError(null)
+
         // If draftId exists in URL, load that specific draft
         if (currentDraftId) {
           const draft = await draftService.getDraftById(currentDraftId)
@@ -116,9 +121,12 @@ export default function AddTitleSurvey() {
             setCurrentStep(draft.current_step)
             console.log('Draft loaded successfully:', currentDraftId)
           } else {
-            // Draft not found, reset ID
+            // Draft not found - show error to user
             console.warn('Draft not found:', currentDraftId)
+            setDraftLoadError(t('survey:messages.draftNotFound', 'Draft not found. Starting a new form.'))
             setCurrentDraftId(null)
+            // Remove invalid draftId from URL
+            window.history.replaceState(null, '', '/titles/add-title')
           }
         }
         // If no draftId, start fresh (don't auto-load any draft)
@@ -126,12 +134,17 @@ export default function AddTitleSurvey() {
         setIsDraftLoaded(true)
       } catch (error) {
         console.error('Failed to load draft:', error)
+        // Show user-friendly error with option to continue
+        setDraftLoadError(t('survey:messages.draftLoadFailed', 'Failed to load your saved draft. You can start fresh or try again.'))
+        setCurrentDraftId(null)
+        // Remove draftId from URL to prevent repeated failures
+        window.history.replaceState(null, '', '/titles/add-title')
         setIsDraftLoaded(true)
       }
     }
 
     loadDraft()
-  }, [userId, currentDraftId, isDraftLoaded, form])
+  }, [userId, currentDraftId, isDraftLoaded, form, t])
 
   // Auto-save functionality
   const { saveStatus, lastSavedAt, triggerSave } = useAutoSave({
@@ -289,8 +302,11 @@ export default function AddTitleSurvey() {
 
   // Form submission
   const onSubmit = async (data: SurveyFormData) => {
+    // Clear any previous submit error
+    setSubmitError(null)
+
     if (!userId) {
-      alert(t('survey:messages.loginRequired'))
+      setSubmitError(t('survey:messages.loginRequired', 'Please sign in to submit your title.'))
       return
     }
 
@@ -300,7 +316,7 @@ export default function AddTitleSurvey() {
     const step3Errors = validateStep3(data)
 
     if (Object.keys(step1Errors).length > 0 || Object.keys(step2Errors).length > 0 || Object.keys(step3Errors).length > 0) {
-      alert(t('survey:messages.completeRequired'))
+      setSubmitError(t('survey:messages.completeRequired', 'Please complete all required fields before submitting.'))
       return
     }
 
@@ -349,7 +365,15 @@ export default function AddTitleSurvey() {
       navigate('/titles')
     } catch (error) {
       console.error('Submission error:', error)
-      alert(t('survey:messages.submitFailed'))
+      // Preserve form state and show inline error - user can retry
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      setSubmitError(
+        t('survey:messages.submitFailedRetry',
+          'Failed to submit your title. Your data has been saved. Please try again. Error: {{error}}',
+          { error: errorMessage }
+        )
+      )
+      // Don't navigate - form state is preserved, user can retry
     } finally {
       setIsSubmitting(false)
     }
@@ -430,6 +454,31 @@ export default function AddTitleSurvey() {
           </CardContent>
         </Card>
 
+        {/* Draft Load Error Alert */}
+        {draftLoadError && (
+          <Card className="bg-amber-50 border-amber-200 shadow-none rounded-2xl mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 p-1.5 rounded-lg bg-amber-500/10">
+                  <Icon icon="solar:danger-triangle-bold-duotone" className="h-5 w-5 text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-amber-800">{draftLoadError}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDraftLoadError(null)}
+                  className="flex-shrink-0 text-amber-600 hover:text-amber-800 hover:bg-amber-100"
+                >
+                  <Icon icon="solar:close-circle-bold" className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Step Title Card */}
         <Card className="bg-gradient-to-br from-sunrise-coral/5 to-orange-50 border-sunrise-coral/20 shadow-none rounded-2xl mb-6">
           <CardContent className="p-5">
@@ -461,6 +510,34 @@ export default function AddTitleSurvey() {
               {renderStep()}
             </CardContent>
           </Card>
+
+          {/* Submit Error Alert */}
+          {submitError && (
+            <Card className="bg-red-50 border-red-200 shadow-none rounded-2xl mb-6">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 p-1.5 rounded-lg bg-red-500/10">
+                    <Icon icon="solar:danger-circle-bold-duotone" className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-red-800 mb-1">
+                      {t('survey:messages.submitErrorTitle', 'Submission Failed')}
+                    </p>
+                    <p className="text-sm text-red-700">{submitError}</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSubmitError(null)}
+                    className="flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100"
+                  >
+                    <Icon icon="solar:close-circle-bold" className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Navigation Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white border border-gray-200 rounded-2xl p-4 sm:p-5">

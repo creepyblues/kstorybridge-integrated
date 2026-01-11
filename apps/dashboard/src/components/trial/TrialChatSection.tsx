@@ -146,7 +146,7 @@ export function TrialChatSection() {
       trackTrialSearchCompleted('chat', searchesUsed, newRemainingTrials);
 
       // Increment trial usage on success
-      incrementUsage();
+      incrementUsage('chat', { chat_query: message });
 
       setProcessingPhase('complete');
 

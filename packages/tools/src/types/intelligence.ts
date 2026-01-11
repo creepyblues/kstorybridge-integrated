@@ -251,3 +251,27 @@ export interface FanSignalData {
   comick?: ComickData;
   errors: Record<string, string>;
 }
+
+// =====================================================================
+// AUDIT/INGESTION LOG TYPES
+// =====================================================================
+
+/**
+ * Represents a single field change during ingestion
+ * Used for audit logging in intelligence_ingestion_log table
+ */
+export interface IngestedField {
+  old_value: unknown;
+  new_value: unknown;
+  source: string;  // 'intelligence' | 'admin' | 'creator' | 'ai'
+  source_id: string;  // intelligence_title_id, admin email, etc.
+}
+
+/**
+ * Options for audited ingestion
+ */
+export interface IngestToTitleOptions {
+  intelligenceTitleId: string;
+  ingestedBy: string;  // email of user performing ingestion
+  notes?: string;
+}

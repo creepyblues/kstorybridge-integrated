@@ -128,7 +128,7 @@ export function TrialCompsSection() {
       trackTrialSearchCompleted('comps', searchesUsed, newRemainingTrials);
 
       // Increment trial usage only on success
-      incrementUsage();
+      incrementUsage('comps', { comps_query: titleStrings });
 
       toast({
         title: "Matches Found",

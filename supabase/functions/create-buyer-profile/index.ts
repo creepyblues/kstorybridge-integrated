@@ -37,6 +37,8 @@ serve(async (req) => {
     const linkedinUrl = requestBody.linkedin_url || requestBody.linkedinUrl
     const tier = requestBody.tier
     const requested = requestBody.requested
+    // Trial tracking fields
+    const trialSessionId = requestBody.trial_session_id || requestBody.trialSessionId
 
     // Validate required fields
     if (!userId || !email || !fullName || !buyerCompany || !buyerRole) {
@@ -85,6 +87,9 @@ serve(async (req) => {
         linkedin_url: linkedinUrl || null,
         tier: tier || 'basic',
         requested: requested || false,
+        // Trial tracking
+        trial_session_id: trialSessionId || null,
+        came_from_trial: !!trialSessionId,
         created_at: new Date().toISOString()
       })
       .select()
@@ -95,11 +100,34 @@ serve(async (req) => {
       throw insertError
     }
 
+    // If user came from trial, link the trial session to their account
+    if (trialSessionId) {
+      console.log('Linking trial session to user:', { trialSessionId, userId, email })
+
+      const { error: trialLinkError } = await supabaseAdmin
+        .from('trial_sessions')
+        .update({
+          converted: true,
+          converted_at: new Date().toISOString(),
+          user_id: userId,
+          user_email: email.toLowerCase()
+        })
+        .eq('session_id', trialSessionId)
+
+      if (trialLinkError) {
+        // Log but don't fail - profile was created successfully
+        console.error('Error linking trial session:', trialLinkError)
+      } else {
+        console.log('Trial session linked successfully')
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Buyer profile created successfully',
-        profile: newProfile
+        profile: newProfile,
+        trialLinked: !!trialSessionId
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

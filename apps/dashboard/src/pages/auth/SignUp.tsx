@@ -10,6 +10,7 @@ import { Icon } from '@iconify/react';
 import { trackSignup } from '@/utils/analytics';
 import { sendWelcomeEmail } from '@/services/emailService';
 import { notifyBuyerSignup } from '@/utils/slack';
+import { getTrialSessionId } from '@/contexts/TrialContext';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -105,11 +106,15 @@ export default function SignUp() {
     trackSignup('attempted', 'email', { role: formData.buyer_role });
 
     try {
+      // Get trial session ID if user came from trial
+      const trialSessionId = getTrialSessionId();
+
       await signUpWithEmail(formData.email, formData.password, {
         full_name: formData.full_name,
         buyer_company: formData.buyer_company,
         buyer_role: formData.buyer_role,
         linkedin_url: formData.linkedin_url,
+        trial_session_id: trialSessionId || undefined,
       });
 
       // Track successful signup

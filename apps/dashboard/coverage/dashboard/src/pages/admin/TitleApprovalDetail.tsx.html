@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for dashboard/src/pages/admin/DraftDetail.tsx</title>
+    <title>Code coverage report for dashboard/src/pages/admin/TitleApprovalDetail.tsx</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../../prettify.css" />
     <link rel="stylesheet" href="../../../../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../../index.html">All files</a> / <a href="index.html">dashboard/src/pages/admin</a> DraftDetail.tsx</h1>
+        <h1><a href="../../../../index.html">All files</a> / <a href="index.html">dashboard/src/pages/admin</a> TitleApprovalDetail.tsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/344</span>
+                <span class='fraction'>0/345</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/344</span>
+                <span class='fraction'>0/345</span>
             </div>
         
             
@@ -560,9 +560,19 @@
 <a name='L495'></a><a href='#L495'>495</a>
 <a name='L496'></a><a href='#L496'>496</a>
 <a name='L497'></a><a href='#L497'>497</a>
-<a name='L498'></a><a href='#L498'>498</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L498'></a><a href='#L498'>498</a>
+<a name='L499'></a><a href='#L499'>499</a>
+<a name='L500'></a><a href='#L500'>500</a>
+<a name='L501'></a><a href='#L501'>501</a>
+<a name='L502'></a><a href='#L502'>502</a>
+<a name='L503'></a><a href='#L503'>503</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1057,7 +1067,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { useState, useEffect } from "react";<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >/**</span></span></span>
+ * Title Approval Detail Page (Admin)
+ * Review and approve/reject a single title submission
+<span class="cstat-no" title="statement not covered" > */</span>
+&nbsp;
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Icon } from '@iconify/react';
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -1071,7 +1086,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export default function AdminDraftDetail() {</span>
+<span class="cstat-no" title="statement not covered" >export default function TitleApprovalDetail() {</span>
 <span class="cstat-no" title="statement not covered" >  const { toast } = useToast();</span>
 <span class="cstat-no" title="statement not covered" >  const { user } = useAuth();</span>
 <span class="cstat-no" title="statement not covered" >  const { draftId } = useParams&lt;{ draftId: string }&gt;();</span>
@@ -1099,7 +1114,7 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >      console.error("Error loading draft:", error);</span>
 <span class="cstat-no" title="statement not covered" >      toast({</span>
 <span class="cstat-no" title="statement not covered" >        title: "Error",</span>
-<span class="cstat-no" title="statement not covered" >        description: "Failed to load draft"</span>
+<span class="cstat-no" title="statement not covered" >        description: "Failed to load submission"</span>
 <span class="cstat-no" title="statement not covered" >      });</span>
 <span class="cstat-no" title="statement not covered" >    } finally {</span>
 <span class="cstat-no" title="statement not covered" >      setLoading(false);</span>
@@ -1115,17 +1130,17 @@ import { Textarea } from "@/components/ui/textarea";
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      toast({</span>
 <span class="cstat-no" title="statement not covered" >        title: "Success",</span>
-<span class="cstat-no" title="statement not covered" >        description: "Draft has been approved"</span>
+<span class="cstat-no" title="statement not covered" >        description: "Submission has been approved"</span>
 <span class="cstat-no" title="statement not covered" >      });</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      // Reload draft to show updated status</span>
 <span class="cstat-no" title="statement not covered" >      await loadDraft(draft.id);</span>
 <span class="cstat-no" title="statement not covered" >      setShowApproveDialog(false);</span>
 <span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error("Error approving draft:", error);</span>
+<span class="cstat-no" title="statement not covered" >      console.error("Error approving submission:", error);</span>
 <span class="cstat-no" title="statement not covered" >      toast({</span>
 <span class="cstat-no" title="statement not covered" >        title: "Error",</span>
-<span class="cstat-no" title="statement not covered" >        description: "Failed to approve draft"</span>
+<span class="cstat-no" title="statement not covered" >        description: "Failed to approve submission"</span>
 <span class="cstat-no" title="statement not covered" >      });</span>
 <span class="cstat-no" title="statement not covered" >    } finally {</span>
 <span class="cstat-no" title="statement not covered" >      setApproving(false);</span>
@@ -1149,7 +1164,7 @@ import { Textarea } from "@/components/ui/textarea";
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      toast({</span>
 <span class="cstat-no" title="statement not covered" >        title: "Success",</span>
-<span class="cstat-no" title="statement not covered" >        description: "Draft has been rejected"</span>
+<span class="cstat-no" title="statement not covered" >        description: "Submission has been rejected"</span>
 <span class="cstat-no" title="statement not covered" >      });</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      // Reload draft to show updated status</span>
@@ -1157,10 +1172,10 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >      setShowRejectDialog(false);</span>
 <span class="cstat-no" title="statement not covered" >      setRejectionReason('');</span>
 <span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error("Error rejecting draft:", error);</span>
+<span class="cstat-no" title="statement not covered" >      console.error("Error rejecting submission:", error);</span>
 <span class="cstat-no" title="statement not covered" >      toast({</span>
 <span class="cstat-no" title="statement not covered" >        title: "Error",</span>
-<span class="cstat-no" title="statement not covered" >        description: "Failed to reject draft"</span>
+<span class="cstat-no" title="statement not covered" >        description: "Failed to reject submission"</span>
 <span class="cstat-no" title="statement not covered" >      });</span>
 <span class="cstat-no" title="statement not covered" >    } finally {</span>
 <span class="cstat-no" title="statement not covered" >      setRejecting(false);</span>
@@ -1250,7 +1265,7 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >    return (</span>
 <span class="cstat-no" title="statement not covered" >      &lt;AdminLayout&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;PageContainer&gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;div className="text-center text-gray-600 py-8"&gt;Loading draft...&lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="text-center text-gray-600 py-8"&gt;Loading submission...&lt;/div&gt;</span>
         &lt;/PageContainer&gt;
       &lt;/AdminLayout&gt;
     );
@@ -1260,7 +1275,7 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >    return (</span>
 <span class="cstat-no" title="statement not covered" >      &lt;AdminLayout&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;PageContainer&gt;</span>
-<span class="cstat-no" title="statement not covered" >          &lt;div className="text-center text-gray-600 py-8"&gt;Draft not found&lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="text-center text-gray-600 py-8"&gt;Submission not found&lt;/div&gt;</span>
         &lt;/PageContainer&gt;
       &lt;/AdminLayout&gt;
     );
@@ -1275,12 +1290,12 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >        &lt;div className="space-y-6"&gt;</span>
           {/* Back Button */}
 <span class="cstat-no" title="statement not covered" >          &lt;Button</span>
-<span class="cstat-no" title="statement not covered" >            onClick={() =&gt; navigate('/admin/drafts')}</span>
+<span class="cstat-no" title="statement not covered" >            onClick={() =&gt; navigate('/admin/title-approval')}</span>
 <span class="cstat-no" title="statement not covered" >            variant="ghost"</span>
 <span class="cstat-no" title="statement not covered" >            className="text-gray-600 hover:text-gray-800"</span>
           &gt;
 <span class="cstat-no" title="statement not covered" >            &lt;Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" /&gt;</span>
-            Back to Drafts
+            Back to Title Approval
           &lt;/Button&gt;
 &nbsp;
           {/* Header Card */}
@@ -1291,7 +1306,7 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >                  &lt;div className="flex items-center gap-3 mb-2"&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;Icon icon="solar:document-text-bold-duotone" className="w-6 h-6 text-gray-700" /&gt;</span>
 <span class="cstat-no" title="statement not covered" >                    &lt;h1 className="text-2xl font-bold text-gray-900"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                      {draftData.title_name_en || draftData.title_name_kr || 'Untitled Draft'}</span>
+<span class="cstat-no" title="statement not covered" >                      {draftData.title_name_en || draftData.title_name_kr || 'Untitled Submission'}</span>
                     &lt;/h1&gt;
                   &lt;/div&gt;
 <span class="cstat-no" title="statement not covered" >                  {draftData.title_name_kr &amp;&amp; draftData.title_name_en &amp;&amp; (</span>
@@ -1348,7 +1363,7 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >            { label: "Tagline (English)", value: draftData.tagline },</span>
 <span class="cstat-no" title="statement not covered" >            { label: "Tagline (Korean)", value: draftData.tagline_kr },</span>
 <span class="cstat-no" title="statement not covered" >            { label: "Synopsis", value: draftData.synopsis },</span>
-<span class="cstat-no" title="statement not covered" >            { label: "Description (Korean)", value: draftData.description_kr },</span>
+<span class="cstat-no" title="statement not covered" >            { label: "Synopsis (Korean)", value: draftData.synopsis_kr },</span>
 <span class="cstat-no" title="statement not covered" >            { label: "Genre", value: draftData.genre },</span>
 <span class="cstat-no" title="statement not covered" >            { label: "Genre (Korean)", value: draftData.genre_kr },</span>
 <span class="cstat-no" title="statement not covered" >            { label: "Content Format", value: draftData.content_format },</span>
@@ -1469,14 +1484,14 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >                className="border-red-300 text-red-700 hover:bg-red-50"</span>
               &gt;
 <span class="cstat-no" title="statement not covered" >                &lt;Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-2" /&gt;</span>
-                Reject Draft
+                Reject
               &lt;/Button&gt;
 <span class="cstat-no" title="statement not covered" >              &lt;Button</span>
 <span class="cstat-no" title="statement not covered" >                onClick={() =&gt; setShowApproveDialog(true)}</span>
 <span class="cstat-no" title="statement not covered" >                className="bg-green-600 hover:bg-green-700 text-white"</span>
               &gt;
 <span class="cstat-no" title="statement not covered" >                &lt;Icon icon="solar:check-circle-bold-duotone" className="h-4 w-4 mr-2" /&gt;</span>
-                Approve Draft
+                Approve
               &lt;/Button&gt;
             &lt;/div&gt;
           )}
@@ -1486,9 +1501,9 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >        &lt;Dialog open={showApproveDialog} onOpenChange={setShowApproveDialog}&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;DialogContent&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;DialogHeader&gt;</span>
-<span class="cstat-no" title="statement not covered" >              &lt;DialogTitle&gt;Approve Draft&lt;/DialogTitle&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;DialogTitle&gt;Approve Submission&lt;/DialogTitle&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;DialogDescription&gt;</span>
-                Are you sure you want to approve this draft? This will change the status to approved.
+                Are you sure you want to approve this submission? This will change the status to approved.
               &lt;/DialogDescription&gt;
             &lt;/DialogHeader&gt;
 <span class="cstat-no" title="statement not covered" >            &lt;DialogFooter&gt;</span>
@@ -1514,9 +1529,9 @@ import { Textarea } from "@/components/ui/textarea";
 <span class="cstat-no" title="statement not covered" >        &lt;Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;DialogContent&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;DialogHeader&gt;</span>
-<span class="cstat-no" title="statement not covered" >              &lt;DialogTitle&gt;Reject Draft&lt;/DialogTitle&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;DialogTitle&gt;Reject Submission&lt;/DialogTitle&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;DialogDescription&gt;</span>
-                Please provide a reason for rejecting this draft. The creator will see this feedback.
+                Please provide a reason for rejecting this submission. The creator will see this feedback.
               &lt;/DialogDescription&gt;
             &lt;/DialogHeader&gt;
 <span class="cstat-no" title="statement not covered" >            &lt;div className="py-4"&gt;</span>
@@ -1525,8 +1540,8 @@ import { Textarea } from "@/components/ui/textarea";
               &lt;/label&gt;
 <span class="cstat-no" title="statement not covered" >              &lt;Textarea</span>
 <span class="cstat-no" title="statement not covered" >                value={rejectionReason}</span>
-<span class="cstat-no" title="statement not covered" >                onChange={(e: React.FormEvent) =&gt; setRejectionReason((e as React.ChangeEvent&lt;HTMLTextAreaElement&gt;).target.value)}</span>
-<span class="cstat-no" title="statement not covered" >                placeholder="Explain why this draft is being rejected..."</span>
+<span class="cstat-no" title="statement not covered" >                onChange={(e: React.ChangeEvent&lt;HTMLTextAreaElement&gt;) =&gt; setRejectionReason(e.target.value)}</span>
+<span class="cstat-no" title="statement not covered" >                placeholder="Explain why this submission is being rejected..."</span>
 <span class="cstat-no" title="statement not covered" >                rows={4}</span>
 <span class="cstat-no" title="statement not covered" >                className="w-full"</span>
 <span class="cstat-no" title="statement not covered" >                required</span>
@@ -1561,7 +1576,7 @@ import { Textarea } from "@/components/ui/textarea";
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-14T20:41:27.862Z
+                at 2026-01-06T01:19:27.563Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

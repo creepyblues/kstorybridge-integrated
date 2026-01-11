@@ -10,6 +10,7 @@ import { completeOAuthProfile } from '@/lib/auth';
 import { Icon } from '@iconify/react';
 import { sendWelcomeEmail } from '@/services/emailService';
 import { notifyBuyerSignup } from '@/utils/slack';
+import { getTrialSessionId } from '@/contexts/TrialContext';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles profile completion only - no business logic
@@ -96,11 +97,15 @@ export default function CompleteProfile() {
     }
 
     try {
+      // Get trial session ID if user came from trial
+      const trialSessionId = getTrialSessionId();
+
       await completeOAuthProfile(userId, email, {
         full_name: formData.full_name,
         buyer_company: formData.buyer_company,
         buyer_role: formData.buyer_role,
         linkedin_url: formData.linkedin_url,
+        trial_session_id: trialSessionId || undefined,
       }, session);
 
       // Send Slack notification (non-blocking)

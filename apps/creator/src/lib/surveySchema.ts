@@ -15,10 +15,22 @@ export const platformSchema = z.object({
   other_metrics: z.record(z.any()).optional(),
 })
 
+// Character role enum matching database
+export const characterRoleEnum = z.enum([
+  'protagonist',
+  'antagonist',
+  'supporting',
+  'love_interest',
+  'mentor',
+  'sidekick',
+  'other',
+])
+
 // Character details schema
 export const characterSchema = z.object({
   id: z.string(),
   name: z.string().min(1, 'Character name is required'),
+  role: characterRoleEnum.optional(),
   age: z.string().optional(),
   gender: z.string().optional(),
   sexuality: z.string().optional(),
@@ -93,7 +105,6 @@ export const surveyFormSchema = z.object({
   rights_holder_company: z.string().optional(),
 
   // Step 1: Rights & business
-  rights: z.string().optional(), // @deprecated - Use rights_available instead
   rights_available: z.array(z.string()).optional(), // Multi-select rights: film_tv, animation, publication, merchandising, game, other
   perfect_for: z.string().optional(),
   audience: z.string().optional(),
@@ -119,11 +130,9 @@ export const surveyFormSchema = z.object({
     .or(z.literal('')),
   world_lore: z.string().optional(),
   supernatural_concepts: z.string().optional(),
-  character_details: z
-    .array(characterSchema)
-    .min(1, 'At least one character is required')
-    .optional()
-    .or(z.array(characterSchema).length(0)),
+  // Note: min(1) validation is enforced by validateStep2(), not schema
+  // Schema allows empty array for form initialization
+  character_details: z.array(characterSchema).default([]),
 
   // Step 3: Narrative
   story_structure: z

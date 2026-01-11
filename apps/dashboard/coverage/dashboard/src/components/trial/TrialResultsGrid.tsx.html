@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">94.97% </span>
+                <span class="strong">95.26% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>170/179</span>
+                <span class='fraction'>181/190</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">72.41% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>21/28</span>
+                <span class='fraction'>21/29</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">94.97% </span>
+                <span class="strong">95.26% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>170/179</span>
+                <span class='fraction'>181/190</span>
             </div>
         
             
@@ -360,7 +360,21 @@
 <a name='L295'></a><a href='#L295'>295</a>
 <a name='L296'></a><a href='#L296'>296</a>
 <a name='L297'></a><a href='#L297'>297</a>
-<a name='L298'></a><a href='#L298'>298</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -386,6 +400,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">42x</span>
 <span class="cline-any cline-yes">42x</span>
@@ -415,6 +430,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">42x</span>
 <span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">42x</span>
 <span class="cline-any cline-yes">42x</span>
@@ -645,6 +672,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-yes">25x</span>
 <span class="cline-any cline-yes">25x</span>
@@ -678,13 +706,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { trackTrialResultClicked } from '@/utils/analytics';
 &nbsp;
 interface TrialResultsGridProps {
   results: TitleMatch[];
 }
 &nbsp;
 // Trial-specific card
-function TrialTitleMatchCard({ match, enableTypewriter = false }: { match: TitleMatch; enableTypewriter?: boolean }) {
+function TrialTitleMatchCard({ match, enableTypewriter = false, position }: { match: TitleMatch; enableTypewriter?: boolean; position: number }) {
   const [showModal, setShowModal] = useState(false);
   const [typewriterDone, setTypewriterDone] = useState(!enableTypewriter);
 &nbsp;
@@ -713,11 +742,23 @@ function TrialTitleMatchCard({ match, enableTypewriter = false }: { match: Title
   const score = getMatchScore(match);
   const matchBadge = getMatchScoreBadge(score);
 &nbsp;
+  const handleCardClick = () =&gt; {
+    // Track result click
+    trackTrialResultClicked(
+      'comps',
+      match.title_id,
+      match.title_name_en<span class="branch-0 cbranch-no" title="branch not covered" > || match.title_name_kr,</span>
+      score,
+      position
+    );
+    setShowModal(true);
+  };
+&nbsp;
   return (
     &lt;&gt;
       &lt;Card
         className="bg-white border border-gray-300 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group overflow-hidden cursor-pointer"
-        onClick={() =&gt; setShowModal(true)}
+        onClick={handleCardClick}
       &gt;
         &lt;CardContent className="p-0"&gt;
           &lt;div className="relative w-full h-64 bg-gray-100 overflow-hidden"&gt;
@@ -807,7 +848,7 @@ function TrialMatchDetailModal({ match, onClose }: { match: TitleMatch; onClose:
   const score = getMatchScore(match);
 &nbsp;
   const handleViewFullTitle = () =&gt; {
-    navigate(`/trial/titles/${match.title_id}`);
+    navigate(`/trial/titles/${match.title_id}?source=comps`);
   };
 &nbsp;
   return (
@@ -943,11 +984,12 @@ export function TrialResultsGrid({ results }: TrialResultsGridProps) {
       &lt;/div&gt;
 &nbsp;
       &lt;div className="grid grid-cols-1 md:grid-cols-2 gap-6"&gt;
-        {results.map((match) =&gt; (
+        {results.map((match, index) =&gt; (
           &lt;TrialTitleMatchCard
             key={match.title_id}
             match={match}
             enableTypewriter={isNewResults}
+            position={index + 1}
           /&gt;
         ))}
       &lt;/div&gt;
@@ -961,7 +1003,7 @@ export function TrialResultsGrid({ results }: TrialResultsGridProps) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-14T20:41:27.862Z
+                at 2026-01-06T01:19:27.563Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

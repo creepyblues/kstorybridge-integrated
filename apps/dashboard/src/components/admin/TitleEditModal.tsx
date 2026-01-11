@@ -30,7 +30,7 @@ import {
   parseUrl,
   collectIntelligenceByUrls,
   getIntelligenceTitleWithSources,
-  directIngestToTitle,
+  ingestToTitleWithAudit,
   collectFanEngagement,
   type IntelligenceTitleWithSources,
   type ExtractedIntelligenceData,
@@ -217,7 +217,7 @@ export function TitleEditModal({
   };
 
   const handleSave = async () => {
-    if (!titleId) return;
+    if (!titleId || !user?.email) return;
 
     setSaving(true);
     try {
@@ -234,11 +234,47 @@ export function TitleEditModal({
         ...updates
       } = formData as Record<string, unknown>;
 
-      await titlesService.updateTitle(titleId, updates);
+      // Build changed fields audit record by comparing formData with original title
+      const changedFields: Record<string, { old: unknown; new: unknown }> = {};
+      if (title) {
+        const originalTitle = title as unknown as Record<string, unknown>;
+        for (const [key, newValue] of Object.entries(updates)) {
+          const oldValue = originalTitle[key];
+          // Only track fields that actually changed
+          if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+            changedFields[key] = { old: oldValue ?? null, new: newValue };
+          }
+        }
+      }
+
+      // Update the title with provenance tracking
+      // Cast to Record to include new provenance columns not yet in generated types
+      const updateWithProvenance = {
+        ...updates,
+        last_modified_by: user.email,
+        last_modified_source: 'admin',
+      } as Record<string, unknown>;
+      await titlesService.updateTitle(titleId, updateWithProvenance);
+
+      // Log to title_edit_history if there were changes
+      if (Object.keys(changedFields).length > 0) {
+        const { error: auditError } = await supabase.from('title_edit_history').insert({
+          title_id: titleId,
+          edited_by: user.email,
+          edit_source: 'admin',
+          changed_fields: changedFields,
+          edit_reason: null, // Could add a reason input field in the future
+        });
+
+        if (auditError) {
+          console.error('Failed to log edit history:', auditError.message);
+          // Don't fail the save, just log the error
+        }
+      }
 
       toast({
         title: 'Success',
-        description: 'Title updated successfully',
+        description: `Title updated successfully${Object.keys(changedFields).length > 0 ? ` (${Object.keys(changedFields).length} field${Object.keys(changedFields).length !== 1 ? 's' : ''} changed)` : ''}`,
       });
 
       onSaved?.();
@@ -340,11 +376,25 @@ export function TitleEditModal({
   };
 
   const handleIngest = async (selectedFields: Partial<ExtractedIntelligenceData>) => {
-    if (!titleId) return;
+    if (!titleId || !intelligenceResults?.id || !user?.email) {
+      toast({
+        title: 'Error',
+        description: 'Missing required information for ingestion',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsIngesting(true);
     try {
-      await directIngestToTitle(titleId, selectedFields);
+      // Use audited ingestion with full tracking
+      await ingestToTitleWithAudit(
+        titleId,
+        selectedFields,
+        intelligenceResults.id, // intelligence_title_id
+        user.email, // ingestedBy
+        `Admin ingestion via TitleEditModal` // notes
+      );
 
       // Refresh form data
       const updatedTitle = await titlesService.getTitleById(titleId);
@@ -355,7 +405,7 @@ export function TitleEditModal({
 
       toast({
         title: 'Success',
-        description: `Successfully ingested ${Object.keys(selectedFields).length} field(s)`,
+        description: `Successfully ingested ${Object.keys(selectedFields).length} field(s) with audit log`,
       });
       setResultsModalOpen(false);
       setIntelligenceResults(null);

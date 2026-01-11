@@ -80,7 +80,7 @@ export function TrialMandatesSection() {
       trackTrialSearchCompleted('mandates', searchesUsed, newRemainingTrials);
 
       // Increment trial usage only on success
-      incrementUsage();
+      incrementUsage('mandates', { mandate_query: mandateText });
 
       toast({
         title: 'Search Complete',

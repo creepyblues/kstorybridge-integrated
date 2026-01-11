@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/106</span>
+                <span class='fraction'>0/109</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/106</span>
+                <span class='fraction'>0/109</span>
             </div>
         
             
@@ -241,7 +241,13 @@
 <a name='L176'></a><a href='#L176'>176</a>
 <a name='L177'></a><a href='#L177'>177</a>
 <a name='L178'></a><a href='#L178'>178</a>
-<a name='L179'></a><a href='#L179'>179</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -294,16 +300,12 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -406,11 +408,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -419,7 +431,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >// Component: MandateTitleCard</span></span></span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >// Component: MandateTitleCard<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
 <span class="cstat-no" title="statement not covered" >// Created: 2025-11-21</span>
 <span class="cstat-no" title="statement not covered" >// Description: Title card for mandate matches with AI explanation chat bubble</span>
 &nbsp;
@@ -468,21 +480,17 @@ interface MandateTitleCardProps {
 <span class="cstat-no" title="statement not covered" >    };</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  // Generate AI explanation based on match score and title metadata</span>
-<span class="cstat-no" title="statement not covered" >  const getAIExplanation = () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    const score = match.match_score;</span>
-<span class="cstat-no" title="statement not covered" >    const genres = match.genre.slice(0, 2).join(' and ');</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    if (score &gt;= 85) {</span>
-<span class="cstat-no" title="statement not covered" >      return `Excellent match! This ${match.content_format || 'title'} strongly aligns with your mandate. The ${genres} genre${match.tone ? ` with ${match.tone} tone` : ''} perfectly fits your requirements.`;</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >    if (score &gt;= 70) {</span>
-<span class="cstat-no" title="statement not covered" >      return `Strong match! This ${match.content_format || 'title'} fits well with your mandate. The ${genres} elements${match.tone ? ` and ${match.tone} atmosphere` : ''} align with what you're looking for.`;</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >    return `Good match! This ${match.content_format || 'title'} shares key themes with your mandate. Consider the ${genres} aspects${match.tone ? ` and ${match.tone} tone` : ''} for your project.`;</span>
+<span class="cstat-no" title="statement not covered" >  // Fallback explanation when server AI explanation is not available</span>
+<span class="cstat-no" title="statement not covered" >  const getFallbackExplanation = () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    const format = match.content_format || 'title';</span>
+<span class="cstat-no" title="statement not covered" >    const mainGenre = match.genre?.[0] || 'story';</span>
+<span class="cstat-no" title="statement not covered" >    const toneDesc = match.tone ? ` with ${match.tone} tone` : '';</span>
+<span class="cstat-no" title="statement not covered" >    return `This ${format} may align with your mandate based on its ${mainGenre} elements${toneDesc}. Review the synopsis for detailed story information.`;</span>
 <span class="cstat-no" title="statement not covered" >  };</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  const matchBadge = getMatchScoreBadge(match.match_score);</span>
+<span class="cstat-no" title="statement not covered" >  const aiExplanation = match.ai_explanation || getFallbackExplanation();</span>
+<span class="cstat-no" title="statement not covered" >  const matchHighlights = match.match_highlights || [];</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
 <span class="cstat-no" title="statement not covered" >    &lt;Card</span>
@@ -588,8 +596,18 @@ interface MandateTitleCardProps {
 <span class="cstat-no" title="statement not covered" >            &lt;div className="flex-1"&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;p className="text-xs font-medium text-hanok-teal mb-1"&gt;AI Analysis&lt;/p&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;p className="text-sm text-gray-700 leading-relaxed"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                {getAIExplanation()}</span>
+<span class="cstat-no" title="statement not covered" >                {aiExplanation}</span>
               &lt;/p&gt;
+<span class="cstat-no" title="statement not covered" >              {matchHighlights.length &gt; 0 &amp;&amp; (</span>
+<span class="cstat-no" title="statement not covered" >                &lt;ul className="mt-2 space-y-1"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                  {matchHighlights.map((highlight, i) =&gt; (</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;li key={i} className="flex items-start gap-1.5 text-xs text-gray-600"&gt;</span>
+<span class="cstat-no" title="statement not covered" >                      &lt;Icon icon="solar:check-circle-bold" className="w-3 h-3 text-hanok-teal mt-0.5 flex-shrink-0" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                      &lt;span&gt;{highlight}&lt;/span&gt;</span>
+                    &lt;/li&gt;
+                  ))}
+                &lt;/ul&gt;
+              )}
             &lt;/div&gt;
           &lt;/div&gt;
         &lt;/div&gt;
@@ -604,7 +622,7 @@ interface MandateTitleCardProps {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-14T20:41:27.862Z
+                at 2026-01-06T01:19:27.563Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

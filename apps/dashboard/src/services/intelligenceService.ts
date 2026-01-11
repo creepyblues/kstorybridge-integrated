@@ -11,6 +11,7 @@ import {
   collectIntelligenceByUrls as _collectIntelligenceByUrls,
   getIntelligenceTitleWithSources as _getIntelligenceTitleWithSources,
   directIngestToTitle as _directIngestToTitle,
+  ingestToTitleWithAudit as _ingestToTitleWithAudit,
   collectFanEngagement as _collectFanEngagement,
   // Utility functions (no supabase needed)
   parseUrl,
@@ -87,12 +88,27 @@ export async function getIntelligenceTitleWithSources(id: string) {
 
 /**
  * Directly ingest selected fields into a title
+ * @deprecated Use ingestToTitleWithAudit for proper audit logging
  */
 export async function directIngestToTitle(
   titleId: string,
   fields: Partial<import('@kstorybridge/tools').ExtractedIntelligenceData>
 ) {
   return _directIngestToTitle(supabase, titleId, fields);
+}
+
+/**
+ * Ingest fields into a title WITH full audit logging
+ * Captures old values, updates title, and logs to intelligence_ingestion_log
+ */
+export async function ingestToTitleWithAudit(
+  titleId: string,
+  fields: Partial<import('@kstorybridge/tools').ExtractedIntelligenceData>,
+  intelligenceTitleId: string,
+  ingestedBy: string,
+  notes?: string
+) {
+  return _ingestToTitleWithAudit(supabase, titleId, fields, intelligenceTitleId, ingestedBy, notes);
 }
 
 /**
@@ -115,7 +131,8 @@ export const intelligenceService = {
   getIntelligenceTitleWithSources,
   collectFanEngagement,
   // Ingestion
-  directIngestToTitle,
+  directIngestToTitle, // deprecated - use ingestToTitleWithAudit
+  ingestToTitleWithAudit,
   // Utilities
   parseUrl,
   getPlatformDisplayName,

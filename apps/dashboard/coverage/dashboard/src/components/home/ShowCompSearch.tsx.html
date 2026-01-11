@@ -411,7 +411,8 @@
 <a name='L346'></a><a href='#L346'>346</a>
 <a name='L347'></a><a href='#L347'>347</a>
 <a name='L348'></a><a href='#L348'>348</a>
-<a name='L349'></a><a href='#L349'>349</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L349'></a><a href='#L349'>349</a>
+<a name='L350'></a><a href='#L350'>350</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -423,8 +424,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -435,6 +434,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -759,7 +761,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { useState, useEffect, useRef, useCallback } from 'react';<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { useState, useEffect, useRef, useCallback, useMemo } from 'react';<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
@@ -769,9 +771,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { HomeResultCard } from './HomeResultCard';
 import { useToast } from '@/hooks/use-toast';
 import { useOMDBAutocomplete } from '@/hooks/useOMDBAutocomplete';
-&nbsp;
-<span class="cstat-no" title="statement not covered" >// Constants</span>
-<span class="cstat-no" title="statement not covered" >const EXAMPLE_SHOWS = ['The Bear', 'Squid Game', 'Succession', 'Emily in Paris'];</span>
+import { getRandomShowSuggestions } from '@/data/examplesData';
 <span class="cstat-no" title="statement not covered" >const MAX_PREVIEW_RESULTS = 5;</span>
 &nbsp;
 interface ShowCompSearchProps {
@@ -785,6 +785,9 @@ interface ShowCompSearchProps {
 <span class="cstat-no" title="statement not covered" >  const [hasSearched, setHasSearched] = useState(false);</span>
 <span class="cstat-no" title="statement not covered" >  const { user } = useAuth();</span>
 <span class="cstat-no" title="statement not covered" >  const { toast } = useToast();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  // Use centralized suggestion data from examplesData.ts</span>
+<span class="cstat-no" title="statement not covered" >  const exampleShows = useMemo(() =&gt; getRandomShowSuggestions(4), []);</span>
 <span class="cstat-no" title="statement not covered" >  const hasTriggeredInitialSearch = useRef(false);</span>
 <span class="cstat-no" title="statement not covered" >  const abortControllerRef = useRef&lt;AbortController | null&gt;(null);</span>
 &nbsp;
@@ -1031,7 +1034,7 @@ interface ShowCompSearchProps {
         {/* Example suggestions - clicking triggers search immediately */}
 <span class="cstat-no" title="statement not covered" >        &lt;div className="flex flex-wrap gap-2 mt-3 justify-center"&gt;</span>
 <span class="cstat-no" title="statement not covered" >          &lt;span className="text-sm text-gray-400"&gt;Try:&lt;/span&gt;</span>
-<span class="cstat-no" title="statement not covered" >          {EXAMPLE_SHOWS.map((example) =&gt; (</span>
+<span class="cstat-no" title="statement not covered" >          {exampleShows.map((example) =&gt; (</span>
 <span class="cstat-no" title="statement not covered" >            &lt;button</span>
 <span class="cstat-no" title="statement not covered" >              key={example}</span>
 <span class="cstat-no" title="statement not covered" >              onClick={() =&gt; {</span>
@@ -1114,7 +1117,7 @@ interface ShowCompSearchProps {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-14T20:41:27.862Z
+                at 2026-01-06T01:19:27.563Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

@@ -38,6 +38,7 @@ export async function signUpWithEmail(
     buyer_company?: string;
     buyer_role?: string;
     linkedin_url?: string;
+    trial_session_id?: string; // From trial flow
   }
 ) {
   log('Starting email signup for buyer', { email });
@@ -78,6 +79,7 @@ export async function signUpWithEmail(
           buyer_role: metadata.buyer_role,
           linkedin_url: metadata.linkedin_url,
           tier: 'basic', // Default tier
+          trial_session_id: metadata.trial_session_id, // Link trial to signup
         },
       }
     );
@@ -159,6 +161,7 @@ export async function completeOAuthProfile(
     buyer_company?: string;
     buyer_role?: string;
     linkedin_url?: string;
+    trial_session_id?: string; // From trial flow
   },
   session?: any
 ) {
@@ -177,6 +180,7 @@ export async function completeOAuthProfile(
           buyer_role: metadata.buyer_role,
           linkedin_url: metadata.linkedin_url,
           tier: 'basic', // Default tier
+          trial_session_id: metadata.trial_session_id, // Link trial to signup
         },
       }
     );

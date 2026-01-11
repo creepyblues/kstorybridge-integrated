@@ -11,7 +11,7 @@ function TestConsumer() {
       <span data-testid="hasRemaining">{String(hasTrialRemaining)}</span>
       <span data-testid="showModal">{String(showLimitModal)}</span>
       <span data-testid="maxTrials">{maxTrials}</span>
-      <button data-testid="increment" onClick={incrementUsage}>
+      <button data-testid="increment" onClick={() => incrementUsage('comps')}>
         Increment
       </button>
     </div>
@@ -39,8 +39,14 @@ describe('TrialContext', () => {
 
     it('should restore state from localStorage', () => {
       localStorage.setItem('kstorybridge_trial_usage', JSON.stringify({
+        session_id: 'test-session-123',
         searches_used: 2,
-        version: 1,
+        tools_used: ['comps'],
+        last_comps_query: null,
+        last_mandate_query: null,
+        last_chat_query: null,
+        first_visit_at: new Date().toISOString(),
+        version: 2,
       }));
 
       render(
@@ -111,13 +117,21 @@ describe('TrialContext', () => {
 
       const stored = JSON.parse(localStorage.getItem('kstorybridge_trial_usage') || '{}');
       expect(stored.searches_used).toBe(1);
-      expect(stored.version).toBe(1);
+      expect(stored.version).toBe(2);
+      expect(stored.session_id).toBeDefined();
+      expect(stored.tools_used).toContain('comps');
     });
 
     it('should show limit modal when all trials are used', () => {
       localStorage.setItem('kstorybridge_trial_usage', JSON.stringify({
+        session_id: 'test-session-123',
         searches_used: 4,
-        version: 1,
+        tools_used: ['comps', 'mandates'],
+        last_comps_query: null,
+        last_mandate_query: null,
+        last_chat_query: null,
+        first_visit_at: new Date().toISOString(),
+        version: 2,
       }));
 
       render(
@@ -139,8 +153,14 @@ describe('TrialContext', () => {
 
     it('should not go below 0 remaining trials', () => {
       localStorage.setItem('kstorybridge_trial_usage', JSON.stringify({
+        session_id: 'test-session-123',
         searches_used: 5,
-        version: 1,
+        tools_used: ['comps', 'mandates', 'chat'],
+        last_comps_query: null,
+        last_mandate_query: null,
+        last_chat_query: null,
+        first_visit_at: new Date().toISOString(),
+        version: 2,
       }));
 
       render(

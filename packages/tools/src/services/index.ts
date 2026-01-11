@@ -51,6 +51,7 @@ export {
   collectFanEngagement,
   // Ingestion
   directIngestToTitle,
+  ingestToTitleWithAudit,
   // Utilities
   parseUrl,
   getPlatformDisplayName,

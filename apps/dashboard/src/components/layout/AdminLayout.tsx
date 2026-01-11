@@ -31,6 +31,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       description: 'Manage featured titles'
     },
     {
+      name: 'Weekly Title',
+      href: '/admin/weekly-title',
+      icon: 'solar:calendar-bold-duotone',
+      description: 'Weekly title spotlight'
+    },
+    {
       name: 'Titles',
       href: '/admin/titles',
       icon: 'solar:library-bold-duotone',
@@ -71,6 +77,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: '/admin/email-templates',
       icon: 'solar:letter-bold-duotone',
       description: 'Email template preview'
+    },
+    {
+      name: 'Trial Conversions',
+      href: '/admin/trial-conversions',
+      icon: 'solar:user-check-rounded-bold-duotone',
+      description: 'Trial to signup tracking'
     }
   ];
 

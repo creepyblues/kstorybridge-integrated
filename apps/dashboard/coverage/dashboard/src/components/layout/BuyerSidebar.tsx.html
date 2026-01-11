@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/96</span>
+                <span class='fraction'>0/103</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/96</span>
+                <span class='fraction'>0/103</span>
             </div>
         
             
@@ -230,7 +230,14 @@
 <a name='L165'></a><a href='#L165'>165</a>
 <a name='L166'></a><a href='#L166'>166</a>
 <a name='L167'></a><a href='#L167'>167</a>
-<a name='L168'></a><a href='#L168'>168</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -262,6 +269,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -311,7 +321,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -365,10 +377,12 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -397,7 +411,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { Link, useLocation } from 'react-router-dom';<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { Link, useLocation } from 'react-router-dom';</span></span></span>
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -425,9 +439,12 @@ interface MenuItem {
 <span class="cstat-no" title="statement not covered" >  ];</span>
 <span class="cstat-no" title="statement not covered" >};</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >// Admin menu item - single link to admin panel</span>
-<span class="cstat-no" title="statement not covered" >const getAdminItem = (): MenuItem =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  return { title: 'Admin Panel', href: '/admin', icon: 'solar:shield-bold-duotone' };</span>
+<span class="cstat-no" title="statement not covered" >// Admin menu items - admin panel and docs</span>
+<span class="cstat-no" title="statement not covered" >const getAdminItems = (): MenuItem[] =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  return [</span>
+<span class="cstat-no" title="statement not covered" >    { title: 'Admin Panel', href: '/admin', icon: 'solar:shield-bold-duotone' },</span>
+<span class="cstat-no" title="statement not covered" >    { title: 'Docs', href: '/admin/docs', icon: 'solar:notebook-bold-duotone' },</span>
+<span class="cstat-no" title="statement not covered" >  ];</span>
 <span class="cstat-no" title="statement not covered" >};</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >export function BuyerSidebar() {</span>
@@ -438,7 +455,7 @@ interface MenuItem {
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  const userEmail = user?.email;</span>
 <span class="cstat-no" title="statement not covered" >  const discoverItems = getDiscoverItems();</span>
-<span class="cstat-no" title="statement not covered" >  const adminItem = getAdminItem();</span>
+<span class="cstat-no" title="statement not covered" >  const adminItems = getAdminItems();</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  const handleLinkClick = () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    setIsMobileMenuOpen(false);</span>
@@ -477,8 +494,10 @@ interface MenuItem {
 <span class="cstat-no" title="statement not covered" >        &lt;div className="flex flex-col h-full"&gt;</span>
           {/* Logo */}
 <span class="cstat-no" title="statement not covered" >          &lt;div className="p-6 border-b border-gray-200"&gt;</span>
-<span class="cstat-no" title="statement not covered" >            &lt;h1 className="text-2xl font-bold text-hanok-teal"&gt;</span>
-              KStoryBridge
+<span class="cstat-no" title="statement not covered" >            &lt;h1 className="text-2xl font-bold"&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;span className="text-black"&gt;K&lt;/span&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;span className="text-hanok-teal"&gt;Story&lt;/span&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;span className="text-black"&gt;Bridge&lt;/span&gt;</span>
             &lt;/h1&gt;
 <span class="cstat-no" title="statement not covered" >            &lt;p className="text-xs text-gray-500 mt-1"&gt;Dashboard for Producers&lt;/p&gt;</span>
           &lt;/div&gt;
@@ -523,21 +542,23 @@ interface MenuItem {
                   Admin
                 &lt;/h3&gt;
 <span class="cstat-no" title="statement not covered" >                &lt;ul className="space-y-1"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                  &lt;li&gt;</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;Link</span>
-<span class="cstat-no" title="statement not covered" >                      to={adminItem.href}</span>
-<span class="cstat-no" title="statement not covered" >                      onClick={handleLinkClick}</span>
-<span class="cstat-no" title="statement not covered" >                      className={cn(</span>
-<span class="cstat-no" title="statement not covered" >                        'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',</span>
-<span class="cstat-no" title="statement not covered" >                        location.pathname.startsWith('/admin')</span>
-<span class="cstat-no" title="statement not covered" >                          ? 'bg-hanok-teal/10 text-hanok-teal shadow-sm border border-hanok-teal/20'</span>
-<span class="cstat-no" title="statement not covered" >                          : 'text-gray-700 hover:bg-hanok-teal/5'</span>
-                      )}
-                    &gt;
-<span class="cstat-no" title="statement not covered" >                      &lt;Icon icon={adminItem.icon} className={cn("h-5 w-5", location.pathname.startsWith('/admin') ? "" : "text-gray-400")} /&gt;</span>
-<span class="cstat-no" title="statement not covered" >                      &lt;span&gt;{adminItem.title}&lt;/span&gt;</span>
-                    &lt;/Link&gt;
-                  &lt;/li&gt;
+<span class="cstat-no" title="statement not covered" >                  {adminItems.map((item) =&gt; (</span>
+<span class="cstat-no" title="statement not covered" >                    &lt;li key={item.href}&gt;</span>
+<span class="cstat-no" title="statement not covered" >                      &lt;Link</span>
+<span class="cstat-no" title="statement not covered" >                        to={item.href}</span>
+<span class="cstat-no" title="statement not covered" >                        onClick={handleLinkClick}</span>
+<span class="cstat-no" title="statement not covered" >                        className={cn(</span>
+<span class="cstat-no" title="statement not covered" >                          'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',</span>
+<span class="cstat-no" title="statement not covered" >                          location.pathname === item.href || (item.href === '/admin' &amp;&amp; location.pathname.startsWith('/admin') &amp;&amp; location.pathname !== '/admin/docs')</span>
+<span class="cstat-no" title="statement not covered" >                            ? 'bg-hanok-teal/10 text-hanok-teal shadow-sm border border-hanok-teal/20'</span>
+<span class="cstat-no" title="statement not covered" >                            : 'text-gray-700 hover:bg-hanok-teal/5'</span>
+                        )}
+                      &gt;
+<span class="cstat-no" title="statement not covered" >                        &lt;Icon icon={item.icon} className={cn("h-5 w-5", location.pathname === item.href || (item.href === '/admin' &amp;&amp; location.pathname.startsWith('/admin') &amp;&amp; location.pathname !== '/admin/docs') ? "" : "text-gray-400")} /&gt;</span>
+<span class="cstat-no" title="statement not covered" >                        &lt;span&gt;{item.title}&lt;/span&gt;</span>
+                      &lt;/Link&gt;
+                    &lt;/li&gt;
+                  ))}
                 &lt;/ul&gt;
               &lt;/div&gt;
             )}
@@ -571,7 +592,7 @@ interface MenuItem {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-14T20:41:27.862Z
+                at 2026-01-06T01:19:27.563Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

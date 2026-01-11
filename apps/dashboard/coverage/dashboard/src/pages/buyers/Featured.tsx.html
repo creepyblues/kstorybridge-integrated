@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/79</span>
+                <span class='fraction'>0/82</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/79</span>
+                <span class='fraction'>0/82</span>
             </div>
         
             
@@ -205,16 +205,8 @@
 <a name='L140'></a><a href='#L140'>140</a>
 <a name='L141'></a><a href='#L141'>141</a>
 <a name='L142'></a><a href='#L142'>142</a>
-<a name='L143'></a><a href='#L143'>143</a>
-<a name='L144'></a><a href='#L144'>144</a>
-<a name='L145'></a><a href='#L145'>145</a>
-<a name='L146'></a><a href='#L146'>146</a>
-<a name='L147'></a><a href='#L147'>147</a>
-<a name='L148'></a><a href='#L148'>148</a>
-<a name='L149'></a><a href='#L149'>149</a>
-<a name='L150'></a><a href='#L150'>150</a>
-<a name='L151'></a><a href='#L151'>151</a>
-<a name='L152'></a><a href='#L152'>152</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L143'></a><a href='#L143'>143</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -301,34 +293,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -370,8 +352,9 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Icon } from '@iconify/react';
 import { useQuery } from '@tanstack/react-query';
 import { featuredService } from '@/services/featuredService';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import FeaturedTitleCard from '@/components/featured/FeaturedTitleCard';
+import { OverflowTabNavigation, type TabItem } from '@/components/navigation/OverflowTabNavigation';
 &nbsp;
 <span class="cstat-no" title="statement not covered" >export default function Featured() {</span>
 <span class="cstat-no" title="statement not covered" >  const [activeTab, setActiveTab] = useState&lt;string | null&gt;(null);</span>
@@ -450,37 +433,27 @@ import FeaturedTitleCard from '@/components/featured/FeaturedTitleCard';
 <span class="cstat-no" title="statement not covered" >        {!isLoading &amp;&amp; !error &amp;&amp; data &amp;&amp; totalCount &gt; 0 &amp;&amp; activeTab &amp;&amp; (</span>
 <span class="cstat-no" title="statement not covered" >          &lt;Tabs value={activeTab} onValueChange={setActiveTab} className="w-full"&gt;</span>
             {/* Section Navigation Bar */}
-<span class="cstat-no" title="statement not covered" >            &lt;div className="bg-gray-50 rounded-2xl p-2 mb-6"&gt;</span>
-<span class="cstat-no" title="statement not covered" >              &lt;TabsList className="w-full justify-start bg-transparent rounded-none h-auto p-0 gap-2 flex-wrap"&gt;</span>
-                {/* Section Tabs */}
-<span class="cstat-no" title="statement not covered" >                {data.sections.map((section) =&gt; (</span>
-<span class="cstat-no" title="statement not covered" >                  &lt;TabsTrigger</span>
-<span class="cstat-no" title="statement not covered" >                    key={section.id}</span>
-<span class="cstat-no" title="statement not covered" >                    value={section.id}</span>
-<span class="cstat-no" title="statement not covered" >                    className="data-[state=active]:bg-hanok-teal data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl px-5 py-3 text-gray-700 hover:bg-gray-200 font-semibold text-base transition-all duration-200"</span>
-                  &gt;
-<span class="cstat-no" title="statement not covered" >                    {section.name}</span>
-<span class="cstat-no" title="statement not covered" >                    &lt;span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/20 data-[state=active]:bg-white/30"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                      {section.featured.length}</span>
-                    &lt;/span&gt;
-                  &lt;/TabsTrigger&gt;
-                ))}
-&nbsp;
-                {/* Uncategorized Tab (if any) */}
-<span class="cstat-no" title="statement not covered" >                {data.uncategorized.length &gt; 0 &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >                  &lt;TabsTrigger</span>
-<span class="cstat-no" title="statement not covered" >                    value="uncategorized"</span>
-<span class="cstat-no" title="statement not covered" >                    className="data-[state=active]:bg-hanok-teal data-[state=active]:text-white data-[state=active]:shadow-md rounded-xl px-5 py-3 text-gray-700 hover:bg-gray-200 font-semibold text-base transition-all duration-200"</span>
-<span class="cstat-no" title="statement not covered" >                  &gt;</span>
-                    More Titles
-<span class="cstat-no" title="statement not covered" >                    &lt;span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/20 data-[state=active]:bg-white/30"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                      {data.uncategorized.length}</span>
-                    &lt;/span&gt;
-                  &lt;/TabsTrigger&gt;
-                )}
-&nbsp;
-              &lt;/TabsList&gt;
-            &lt;/div&gt;
+<span class="cstat-no" title="statement not covered" >            &lt;OverflowTabNavigation</span>
+<span class="cstat-no" title="statement not covered" >              tabs={(() =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                const tabItems: TabItem[] = data.sections.map((section) =&gt; ({</span>
+<span class="cstat-no" title="statement not covered" >                  id: section.id,</span>
+<span class="cstat-no" title="statement not covered" >                  name: section.name,</span>
+<span class="cstat-no" title="statement not covered" >                  count: section.featured.length,</span>
+<span class="cstat-no" title="statement not covered" >                }));</span>
+<span class="cstat-no" title="statement not covered" >                if (data.uncategorized.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >                  tabItems.push({</span>
+<span class="cstat-no" title="statement not covered" >                    id: 'uncategorized',</span>
+<span class="cstat-no" title="statement not covered" >                    name: 'More Titles',</span>
+<span class="cstat-no" title="statement not covered" >                    count: data.uncategorized.length,</span>
+<span class="cstat-no" title="statement not covered" >                  });</span>
+<span class="cstat-no" title="statement not covered" >                }</span>
+<span class="cstat-no" title="statement not covered" >                return tabItems;</span>
+<span class="cstat-no" title="statement not covered" >              })()}</span>
+<span class="cstat-no" title="statement not covered" >              activeTab={activeTab}</span>
+<span class="cstat-no" title="statement not covered" >              onTabChange={setActiveTab}</span>
+<span class="cstat-no" title="statement not covered" >              maxVisibleTabs={5}</span>
+<span class="cstat-no" title="statement not covered" >              className="mb-6"</span>
+            /&gt;
 &nbsp;
             {/* Tab Contents */}
 <span class="cstat-no" title="statement not covered" >            &lt;div className="mt-6"&gt;</span>
@@ -523,7 +496,7 @@ import FeaturedTitleCard from '@/components/featured/FeaturedTitleCard';
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-14T20:41:27.862Z
+                at 2026-01-06T01:19:27.563Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

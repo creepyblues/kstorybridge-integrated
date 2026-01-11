@@ -26,6 +26,7 @@ import type {
   RedditSubreddit,
   AO3Work,
   AO3Tag,
+  IngestedField,
 } from '../types';
 
 // =====================================================================
@@ -343,6 +344,11 @@ export function extractIntelligenceData(
  * Directly ingest selected fields into a title
  * No approval workflow - immediate update
  *
+ * @deprecated Use `ingestToTitleWithAudit()` instead for proper audit logging.
+ * This function bypasses the intelligence_ingestion_log table and does not
+ * track field changes for data governance. Only use this for legacy code
+ * that cannot provide intelligenceTitleId and ingestedBy parameters.
+ *
  * @param supabase - Supabase client instance
  * @param titleId - UUID of the title to update
  * @param fields - Fields to ingest
@@ -355,6 +361,8 @@ export async function directIngestToTitle(
   const updateData: Record<string, unknown> = {
     ...fields,
     updated_at: new Date().toISOString(),
+    // Provenance tracking - use 'system' as source since we don't have user context
+    last_modified_source: 'system',
   };
 
   const { error } = await supabase
@@ -364,6 +372,92 @@ export async function directIngestToTitle(
 
   if (error) {
     throw new Error(`Failed to update title: ${error.message}`);
+  }
+}
+
+/**
+ * Ingest fields into a title WITH full audit logging
+ *
+ * This function captures old values, updates the title, and creates
+ * an audit record in intelligence_ingestion_log for data governance.
+ *
+ * @param supabase - Supabase client instance
+ * @param titleId - UUID of the title to update
+ * @param fields - Fields to ingest from intelligence data
+ * @param intelligenceTitleId - UUID of the source intelligence_title
+ * @param ingestedBy - Email of user performing the ingestion
+ * @param notes - Optional notes about the ingestion
+ */
+export async function ingestToTitleWithAudit(
+  supabase: SupabaseClientType,
+  titleId: string,
+  fields: Partial<ExtractedIntelligenceData>,
+  intelligenceTitleId: string,
+  ingestedBy: string,
+  notes?: string
+): Promise<void> {
+  // 1. Fetch current title for old values (needed for audit)
+  const { data: currentTitle, error: fetchError } = await supabase
+    .from('titles')
+    .select('*')
+    .eq('title_id', titleId)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch current title: ${fetchError.message}`);
+  }
+
+  // 2. Build audit record with old/new values
+  const ingestedFields: Record<string, IngestedField> = {};
+  for (const [key, newValue] of Object.entries(fields)) {
+    // Only log fields that are actually changing
+    const oldValue = currentTitle?.[key] ?? null;
+    if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+      ingestedFields[key] = {
+        old_value: oldValue,
+        new_value: newValue,
+        source: 'intelligence',
+        source_id: intelligenceTitleId,
+      };
+    }
+  }
+
+  // Skip if no fields actually changed
+  if (Object.keys(ingestedFields).length === 0) {
+    return;
+  }
+
+  // 3. Update title with provenance tracking
+  const updateData: Record<string, unknown> = {
+    ...fields,
+    updated_at: new Date().toISOString(),
+    last_modified_by: ingestedBy,
+    last_modified_source: 'intelligence',
+  };
+
+  const { error: updateError } = await supabase
+    .from('titles')
+    .update(updateData)
+    .eq('title_id', titleId);
+
+  if (updateError) {
+    throw new Error(`Failed to update title: ${updateError.message}`);
+  }
+
+  // 4. Create audit log entry
+  const { error: auditError } = await supabase
+    .from('intelligence_ingestion_log')
+    .insert({
+      intelligence_title_id: intelligenceTitleId,
+      target_title_id: titleId,
+      ingested_fields: ingestedFields,
+      ingested_by: ingestedBy,
+      notes: notes || null,
+    });
+
+  if (auditError) {
+    // Log but don't fail the operation - audit is secondary to data update
+    console.error('Failed to create audit log:', auditError.message);
   }
 }
 
@@ -596,6 +690,13 @@ export function createIntelligenceService(supabase: SupabaseClientType) {
     // Ingestion
     directIngestToTitle: (titleId: string, fields: Partial<ExtractedIntelligenceData>) =>
       directIngestToTitle(supabase, titleId, fields),
+    ingestToTitleWithAudit: (
+      titleId: string,
+      fields: Partial<ExtractedIntelligenceData>,
+      intelligenceTitleId: string,
+      ingestedBy: string,
+      notes?: string
+    ) => ingestToTitleWithAudit(supabase, titleId, fields, intelligenceTitleId, ingestedBy, notes),
     // Utilities (no supabase needed)
     parseUrl,
     getPlatformDisplayName,

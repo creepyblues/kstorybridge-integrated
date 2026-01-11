@@ -554,7 +554,7 @@ export default function WeeklyTitle() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Icon icon="solar:bookmark-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-            Select Title
+            Step 1. Select Title
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -587,7 +587,7 @@ export default function WeeklyTitle() {
                 className="border-gray-300"
               >
                 <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-1" />
-                Change
+                Remove
               </Button>
             </div>
           ) : (
@@ -640,192 +640,103 @@ export default function WeeklyTitle() {
       </Card>
 
       {/* Editorial Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Icon icon="solar:pen-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-            Editorial Content
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium">Logline</Label>
-            <Textarea
-              placeholder="A compelling one-line summary of the story..."
-              value={inputLogline}
-              onChange={(e) => setInputLogline(e.target.value)}
-              className="mt-1"
-              rows={2}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: tagline</p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Comparables</Label>
-            <Textarea
-              placeholder="Similar titles or franchises, comma-separated (e.g., Squid Game, Parasite, Train to Busan)"
-              value={inputComparables}
-              onChange={(e) => setInputComparables(e.target.value)}
-              className="mt-1"
-              rows={2}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: comps (array)</p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Characters</Label>
-            <Textarea
-              placeholder="Key characters and their descriptions..."
-              value={inputCharacters}
-              onChange={(e) => setInputCharacters(e.target.value)}
-              className="mt-1"
-              rows={3}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: character_details</p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Synopsis</Label>
-            <Textarea
-              placeholder="A detailed plot summary..."
-              value={inputSynopsis}
-              onChange={(e) => setInputSynopsis(e.target.value)}
-              className="mt-1"
-              rows={4}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: synopsis</p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Selling Points</Label>
-            <Textarea
-              placeholder="Key reasons why this title is marketable..."
-              value={inputSellingPoints}
-              onChange={(e) => setInputSellingPoints(e.target.value)}
-              className="mt-1"
-              rows={3}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: selling_points (new field)</p>
-          </div>
-
-          <Button
-            onClick={handleSaveWeeklyTitle}
-            disabled={!selectedTitle || saving}
-            className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
-          >
-            {saving ? (
-              <>
-                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
-                Save Weekly Title
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Title Data Display */}
       {selectedTitle && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Icon icon="solar:database-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Title Data (from database)
+              <Icon icon="solar:pen-bold-duotone" className="h-5 w-5 text-hanok-teal" />
+              Step 2. Editorial Content
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Basic Info */}
-            <Collapsible
-              open={openSections.includes('basic')}
-              onOpenChange={() => toggleSection('basic')}
-            >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
-                <span className="font-medium">Basic Info</span>
-                <Icon
-                  icon={openSections.includes('basic') ? 'solar:alt-arrow-up-bold-duotone' : 'solar:alt-arrow-down-bold-duotone'}
-                  className="h-4 w-4"
-                />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="p-4 space-y-2 text-sm">
-                <div><strong>English Title:</strong> {selectedTitle.title_name_en || '-'}</div>
-                <div><strong>Korean Title:</strong> {selectedTitle.title_name_kr || '-'}</div>
-                <div><strong>Format:</strong> {selectedTitle.content_format || '-'}</div>
-                <div><strong>Genre:</strong> {formatFieldValue(selectedTitle.genre)}</div>
-                <div><strong>Tagline:</strong> {selectedTitle.tagline || '-'}</div>
-              </CollapsibleContent>
-            </Collapsible>
+            <div>
+              <Label className="text-sm font-medium">Logline</Label>
+              <Textarea
+                placeholder="A compelling one-line summary of the story..."
+                value={inputLogline}
+                onChange={(e) => setInputLogline(e.target.value)}
+                className="mt-1"
+                rows={2}
+              />
+              <p className="text-xs text-gray-500 mt-1">Maps to: tagline</p>
+            </div>
 
-            {/* Content */}
-            <Collapsible
-              open={openSections.includes('content')}
-              onOpenChange={() => toggleSection('content')}
-            >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
-                <span className="font-medium">Content</span>
-                <Icon
-                  icon={openSections.includes('content') ? 'solar:alt-arrow-up-bold-duotone' : 'solar:alt-arrow-down-bold-duotone'}
-                  className="h-4 w-4"
-                />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="p-4 space-y-2 text-sm">
-                <div><strong>Synopsis:</strong> {selectedTitle.synopsis || '-'}</div>
-                <div><strong>Comps:</strong> {formatFieldValue(selectedTitle.comps)}</div>
-                <div><strong>Character Details:</strong> {formatFieldValue(selectedTitle.character_details)}</div>
-                <div><strong>Selling Points:</strong> {(selectedTitle as Title & { selling_points?: string }).selling_points || '-'}</div>
-              </CollapsibleContent>
-            </Collapsible>
+            <div>
+              <Label className="text-sm font-medium">Comparables</Label>
+              <Textarea
+                placeholder="Similar titles or franchises, comma-separated (e.g., Squid Game, Parasite, Train to Busan)"
+                value={inputComparables}
+                onChange={(e) => setInputComparables(e.target.value)}
+                className="mt-1"
+                rows={2}
+              />
+              <p className="text-xs text-gray-500 mt-1">Maps to: comps (array)</p>
+            </div>
 
-            {/* Metrics */}
-            <Collapsible
-              open={openSections.includes('metrics')}
-              onOpenChange={() => toggleSection('metrics')}
-            >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
-                <span className="font-medium">Metrics</span>
-                <Icon
-                  icon={openSections.includes('metrics') ? 'solar:alt-arrow-up-bold-duotone' : 'solar:alt-arrow-down-bold-duotone'}
-                  className="h-4 w-4"
-                />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="p-4 space-y-2 text-sm">
-                <div><strong>Views:</strong> {selectedTitle.views?.toLocaleString() || '-'}</div>
-                <div><strong>Rating:</strong> {selectedTitle.rating || '-'}</div>
-                <div><strong>Chapters:</strong> {selectedTitle.chapters || '-'}</div>
-              </CollapsibleContent>
-            </Collapsible>
+            <div>
+              <Label className="text-sm font-medium">Characters</Label>
+              <Textarea
+                placeholder="Key characters and their descriptions..."
+                value={inputCharacters}
+                onChange={(e) => setInputCharacters(e.target.value)}
+                className="mt-1"
+                rows={3}
+              />
+              <p className="text-xs text-gray-500 mt-1">Maps to: character_details</p>
+            </div>
 
-            {/* Authors */}
-            <Collapsible
-              open={openSections.includes('authors')}
-              onOpenChange={() => toggleSection('authors')}
+            <div>
+              <Label className="text-sm font-medium">Synopsis</Label>
+              <Textarea
+                placeholder="A detailed plot summary..."
+                value={inputSynopsis}
+                onChange={(e) => setInputSynopsis(e.target.value)}
+                className="mt-1"
+                rows={4}
+              />
+              <p className="text-xs text-gray-500 mt-1">Maps to: synopsis</p>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium">Selling Points</Label>
+              <Textarea
+                placeholder="Key reasons why this title is marketable..."
+                value={inputSellingPoints}
+                onChange={(e) => setInputSellingPoints(e.target.value)}
+                className="mt-1"
+                rows={3}
+              />
+              <p className="text-xs text-gray-500 mt-1">Maps to: selling_points (new field)</p>
+            </div>
+
+            <Button
+              onClick={handleSaveWeeklyTitle}
+              disabled={!selectedTitle || saving}
+              className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
-                <span className="font-medium">Authors</span>
-                <Icon
-                  icon={openSections.includes('authors') ? 'solar:alt-arrow-up-bold-duotone' : 'solar:alt-arrow-down-bold-duotone'}
-                  className="h-4 w-4"
-                />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="p-4 space-y-2 text-sm">
-                <div><strong>Story Author:</strong> {selectedTitle.story_author || '-'}</div>
-                <div><strong>Art Author:</strong> {selectedTitle.art_author || '-'}</div>
-              </CollapsibleContent>
-            </Collapsible>
+              {saving ? (
+                <>
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
+                  Save and Make This the Weekly Title
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
       )}
 
       {/* Analyzer Tools */}
-      {selectedTitle && (
+      {selectedTitle && weeklyTitle && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Icon icon="solar:magic-stick-3-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Analyzer Tools
+              Step 3. Analyzer Tools
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -911,13 +822,104 @@ export default function WeeklyTitle() {
         </Card>
       )}
 
+      {/* Title Data Display */}
+      {selectedTitle && weeklyTitle && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Icon icon="solar:database-bold-duotone" className="h-5 w-5 text-hanok-teal" />
+              Step 4. Confirm Title Data
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Basic Info */}
+            <Collapsible
+              open={openSections.includes('basic')}
+              onOpenChange={() => toggleSection('basic')}
+            >
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                <span className="font-medium">Basic Info</span>
+                <Icon
+                  icon={openSections.includes('basic') ? 'solar:alt-arrow-up-bold-duotone' : 'solar:alt-arrow-down-bold-duotone'}
+                  className="h-4 w-4"
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 space-y-2 text-sm">
+                <div><strong>English Title:</strong> {selectedTitle.title_name_en || '-'}</div>
+                <div><strong>Korean Title:</strong> {selectedTitle.title_name_kr || '-'}</div>
+                <div><strong>Format:</strong> {selectedTitle.content_format || '-'}</div>
+                <div><strong>Genre:</strong> {formatFieldValue(selectedTitle.genre)}</div>
+                <div><strong>Tagline:</strong> {selectedTitle.tagline || '-'}</div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Content */}
+            <Collapsible
+              open={openSections.includes('content')}
+              onOpenChange={() => toggleSection('content')}
+            >
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                <span className="font-medium">Content</span>
+                <Icon
+                  icon={openSections.includes('content') ? 'solar:alt-arrow-up-bold-duotone' : 'solar:alt-arrow-down-bold-duotone'}
+                  className="h-4 w-4"
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 space-y-2 text-sm">
+                <div><strong>Synopsis:</strong> {selectedTitle.synopsis || '-'}</div>
+                <div><strong>Comps:</strong> {formatFieldValue(selectedTitle.comps)}</div>
+                <div><strong>Character Details:</strong> {formatFieldValue(selectedTitle.character_details)}</div>
+                <div><strong>Selling Points:</strong> {(selectedTitle as Title & { selling_points?: string }).selling_points || '-'}</div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Metrics */}
+            <Collapsible
+              open={openSections.includes('metrics')}
+              onOpenChange={() => toggleSection('metrics')}
+            >
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                <span className="font-medium">Metrics</span>
+                <Icon
+                  icon={openSections.includes('metrics') ? 'solar:alt-arrow-up-bold-duotone' : 'solar:alt-arrow-down-bold-duotone'}
+                  className="h-4 w-4"
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 space-y-2 text-sm">
+                <div><strong>Views:</strong> {selectedTitle.views?.toLocaleString() || '-'}</div>
+                <div><strong>Rating:</strong> {selectedTitle.rating || '-'}</div>
+                <div><strong>Chapters:</strong> {selectedTitle.chapters || '-'}</div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Authors */}
+            <Collapsible
+              open={openSections.includes('authors')}
+              onOpenChange={() => toggleSection('authors')}
+            >
+              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                <span className="font-medium">Authors</span>
+                <Icon
+                  icon={openSections.includes('authors') ? 'solar:alt-arrow-up-bold-duotone' : 'solar:alt-arrow-down-bold-duotone'}
+                  className="h-4 w-4"
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 space-y-2 text-sm">
+                <div><strong>Story Author:</strong> {selectedTitle.story_author || '-'}</div>
+                <div><strong>Art Author:</strong> {selectedTitle.art_author || '-'}</div>
+              </CollapsibleContent>
+            </Collapsible>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Update to Database */}
       {selectedTitle && weeklyTitle && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Icon icon="solar:cloud-upload-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Sync to Database
+              Step 5. Sync to Database
             </CardTitle>
           </CardHeader>
           <CardContent>

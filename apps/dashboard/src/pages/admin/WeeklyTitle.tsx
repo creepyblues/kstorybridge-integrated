@@ -29,7 +29,9 @@ import {
 } from '@/services/weeklyTitleService';
 import { ConflictResolutionDialog } from '@/components/admin/ConflictResolutionDialog';
 import { CompsGeneratorModal } from '@/components/admin/CompsGeneratorModal';
+import { ManualCompSearch } from '@/components/admin/ManualCompSearch';
 import { FormatFitGeneratorModal } from '@/components/format-fit/FormatFitGeneratorModal';
+import { type SuggestedComp } from '@kstorybridge/tools';
 import { IntelligenceResultsModal } from '@/components/admin/IntelligenceResultsModal';
 import { KeyVisualsCollectorModal } from '@/components/admin/KeyVisualsCollectorModal';
 import { FanSignalResultsModal } from '@/components/admin/FanSignalResultsModal';
@@ -43,6 +45,12 @@ import {
   type FanSignalData,
   type ExtractedIntelligenceData,
 } from '@/services/intelligenceService';
+import {
+  CharacterDetailsInput,
+  serializeCharacters,
+  deserializeCharacters,
+  type CharacterFormDetail,
+} from '@/components/admin/CharacterDetailsInput';
 
 export default function WeeklyTitle() {
   const { toast } = useToast();
@@ -65,8 +73,8 @@ export default function WeeklyTitle() {
 
   // Editorial form state
   const [inputLogline, setInputLogline] = useState('');
-  const [inputComparables, setInputComparables] = useState('');
-  const [inputCharacters, setInputCharacters] = useState('');
+  const [inputComparables, setInputComparables] = useState<SuggestedComp[]>([]);
+  const [inputCharacters, setInputCharacters] = useState<CharacterFormDetail[]>([]);
   const [inputSynopsis, setInputSynopsis] = useState('');
   const [inputSellingPoints, setInputSellingPoints] = useState('');
 
@@ -89,7 +97,7 @@ export default function WeeklyTitle() {
   const [intelligenceResults, setIntelligenceResults] = useState<IntelligenceTitleWithSources | null>(null);
   const [fanSignalResults, setFanSignalResults] = useState<FanSignalData | null>(null);
   const [collectingIntelligence, setCollectingIntelligence] = useState(false);
-  const [collectingFanSignal, setCollectingFanSignal] = useState(false);
+  const [_collectingFanSignal, _setCollectingFanSignal] = useState(false); // Disabled feature
   const [isIngesting, setIsIngesting] = useState(false);
 
   // Title display sections
@@ -143,6 +151,35 @@ export default function WeeklyTitle() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Helper to parse comparables string into SuggestedComp array
+  const parseComparables = (str: string | null | undefined): SuggestedComp[] => {
+    if (!str) return [];
+    return str.split(',').map(s => s.trim()).filter(Boolean).map(title => ({
+      comp_title: title,
+      comp_type: '',
+      overall_match_score: 0,
+      dimension_scores: [],
+      explanation: 'Loaded from saved data',
+      match_reasons: [],
+      source: 'manual' as const,
+    }));
+  };
+
+  // Handlers for comparables
+  const handleAddComparable = (comp: SuggestedComp) => {
+    if (!inputComparables.find(c => c.imdb_id === comp.imdb_id)) {
+      setInputComparables(prev => [...prev, comp]);
+    }
+  };
+
+  const handleRemoveComparable = (imdbId: string) => {
+    setInputComparables(prev => prev.filter(c => c.imdb_id !== imdbId));
+  };
+
+  const existingComparableIds = new Set(
+    inputComparables.map(c => c.imdb_id).filter(Boolean) as string[]
+  );
+
   const loadWeeklyTitle = async () => {
     setLoading(true);
     try {
@@ -154,16 +191,16 @@ export default function WeeklyTitle() {
         // Populate form with existing data
         setSelectedTitle(data.titles);
         setInputLogline(data.input_logline || '');
-        setInputComparables(data.input_comparables || '');
-        setInputCharacters(data.input_characters || '');
+        setInputComparables(parseComparables(data.input_comparables));
+        setInputCharacters(deserializeCharacters(data.input_characters));
         setInputSynopsis(data.input_synopsis || '');
         setInputSellingPoints(data.input_selling_points || '');
       } else {
         // Clear form
         setSelectedTitle(null);
         setInputLogline('');
-        setInputComparables('');
-        setInputCharacters('');
+        setInputComparables([]);
+        setInputCharacters([]);
         setInputSynopsis('');
         setInputSellingPoints('');
       }
@@ -215,12 +252,13 @@ export default function WeeklyTitle() {
     setSaving(true);
     try {
       const weekOf = formatDateToISO(selectedWeek);
+      const serializedCharacters = serializeCharacters(inputCharacters);
       const inputData = {
         week_of: weekOf,
         title_id: selectedTitle.title_id,
         input_logline: inputLogline || undefined,
-        input_comparables: inputComparables || undefined,
-        input_characters: inputCharacters || undefined,
+        input_comparables: inputComparables.length > 0 ? inputComparables.map(c => c.comp_title).join(', ') : undefined,
+        input_characters: serializedCharacters.length > 0 ? JSON.stringify(serializedCharacters) : undefined,
         input_synopsis: inputSynopsis || undefined,
         input_selling_points: inputSellingPoints || undefined,
         created_by: user.email,
@@ -265,12 +303,14 @@ export default function WeeklyTitle() {
 
     try {
       // Detect conflicts
+      const serializedChars = serializeCharacters(inputCharacters);
+      const comparablesString = inputComparables.map(c => c.comp_title).join(', ');
       const detectedConflicts = await weeklyTitleService.detectConflicts(
         selectedTitle.title_id,
         {
           input_logline: inputLogline,
-          input_comparables: inputComparables,
-          input_characters: inputCharacters,
+          input_comparables: comparablesString,
+          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
         }
@@ -284,8 +324,8 @@ export default function WeeklyTitle() {
         // No conflicts, sync directly
         await weeklyTitleService.syncToTitlesTable(selectedTitle.title_id, {
           input_logline: inputLogline,
-          input_comparables: inputComparables,
-          input_characters: inputCharacters,
+          input_comparables: comparablesString,
+          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
         });
@@ -313,12 +353,14 @@ export default function WeeklyTitle() {
 
     setIsApplyingConflicts(true);
     try {
+      const serializedChars = serializeCharacters(inputCharacters);
+      const comparablesString = inputComparables.map(c => c.comp_title).join(', ');
       await weeklyTitleService.syncToTitlesTable(
         selectedTitle.title_id,
         {
           input_logline: inputLogline,
-          input_comparables: inputComparables,
-          input_characters: inputCharacters,
+          input_comparables: comparablesString,
+          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
         },
@@ -414,10 +456,11 @@ export default function WeeklyTitle() {
     }
   };
 
+  // Disabled feature - kept for future use
   const handleCollectFanSignal = async () => {
     if (!selectedTitle) return;
 
-    setCollectingFanSignal(true);
+    _setCollectingFanSignal(true);
     try {
       const titleName = selectedTitle.title_name_en || selectedTitle.title_name_kr || '';
       const results = await collectFanEngagement(
@@ -438,7 +481,7 @@ export default function WeeklyTitle() {
         variant: 'destructive',
       });
     } finally {
-      setCollectingFanSignal(false);
+      _setCollectingFanSignal(false);
     }
   };
 
@@ -449,9 +492,7 @@ export default function WeeklyTitle() {
     const analyzers = [
       { name: 'Comps Generator', action: () => setCompsModalOpen(true) },
       { name: 'Format Fit', action: () => setFormatFitModalOpen(true) },
-      { name: 'Intelligence', action: handleCollectIntelligence },
-      { name: 'Key Visuals', action: () => setKeyVisualsModalOpen(true) },
-      { name: 'Fan Signals', action: handleCollectFanSignal },
+      { name: 'Title Scraper', action: handleCollectIntelligence },
     ];
 
     for (const analyzer of analyzers) {
@@ -665,29 +706,40 @@ export default function WeeklyTitle() {
               <p className="text-xs text-gray-500 mt-1">Maps to: tagline</p>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label className="text-sm font-medium">Comparables</Label>
-              <Textarea
-                placeholder="Similar titles or franchises, comma-separated (e.g., Squid Game, Parasite, Train to Busan)"
-                value={inputComparables}
-                onChange={(e) => setInputComparables(e.target.value)}
-                className="mt-1"
-                rows={2}
+              <ManualCompSearch
+                onAdd={handleAddComparable}
+                existingImdbIds={existingComparableIds}
+                disabled={saving}
               />
-              <p className="text-xs text-gray-500 mt-1">Maps to: comps (array)</p>
+              {inputComparables.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {inputComparables.map((comp) => (
+                    <div
+                      key={comp.imdb_id || comp.comp_title}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full text-sm"
+                    >
+                      <span>{comp.comp_title}</span>
+                      {comp.comp_year && <span className="text-gray-500">({comp.comp_year})</span>}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveComparable(comp.imdb_id || comp.comp_title)}
+                        className="text-gray-400 hover:text-red-500"
+                      >
+                        <Icon icon="solar:close-circle-bold" className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-gray-500">Maps to: comps (array)</p>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium">Characters</Label>
-              <Textarea
-                placeholder="Key characters and their descriptions..."
-                value={inputCharacters}
-                onChange={(e) => setInputCharacters(e.target.value)}
-                className="mt-1"
-                rows={3}
-              />
-              <p className="text-xs text-gray-500 mt-1">Maps to: character_details</p>
-            </div>
+            <CharacterDetailsInput
+              characters={inputCharacters}
+              onChange={setInputCharacters}
+            />
 
             <div>
               <Label className="text-sm font-medium">Synopsis</Label>
@@ -776,14 +828,14 @@ export default function WeeklyTitle() {
                 ) : (
                   <Icon icon="solar:link-bold-duotone" className="h-4 w-4 mr-2" />
                 )}
-                Intelligence
+                Title Scraper
               </Button>
 
               <Button
                 variant="outline"
                 onClick={() => setKeyVisualsModalOpen(true)}
-                disabled={runningAll}
-                className="border-gray-300 justify-start"
+                disabled={true}
+                className="border-gray-300 justify-start opacity-50 cursor-not-allowed"
               >
                 <Icon icon="solar:gallery-bold-duotone" className="h-4 w-4 mr-2" />
                 Key Visuals
@@ -792,14 +844,10 @@ export default function WeeklyTitle() {
               <Button
                 variant="outline"
                 onClick={handleCollectFanSignal}
-                disabled={collectingFanSignal || runningAll}
-                className="border-gray-300 justify-start"
+                disabled={true}
+                className="border-gray-300 justify-start opacity-50 cursor-not-allowed"
               >
-                {collectingFanSignal ? (
-                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Icon icon="solar:users-group-rounded-bold-duotone" className="h-4 w-4 mr-2" />
-                )}
+                <Icon icon="solar:users-group-rounded-bold-duotone" className="h-4 w-4 mr-2" />
                 Fan Signals
               </Button>
 

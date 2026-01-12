@@ -11,6 +11,7 @@ import { Icon } from '@iconify/react';
 import { sendWelcomeEmail } from '@/services/emailService';
 import { notifyBuyerSignup } from '@/utils/slack';
 import { getTrialSessionId } from '@/contexts/TrialContext';
+import { trackSignup } from '@/utils/analytics';
 
 // 🚨 AUTH ISOLATION BOUNDARY
 // This page handles profile completion only - no business logic
@@ -35,6 +36,11 @@ export default function CompleteProfile() {
   // Always prefer authenticated user data - sessionStorage is backup only
   const userId = user?.id ?? storedUserId;
   const email = user?.email ?? storedEmail;
+
+  // Track form view on mount
+  useEffect(() => {
+    trackSignup('form_viewed', 'google');
+  }, []);
 
   useEffect(() => {
     if (user && user.user_metadata?.full_name) {
@@ -108,6 +114,9 @@ export default function CompleteProfile() {
         trial_session_id: trialSessionId || undefined,
       }, session);
 
+      // Track successful OAuth signup completion
+      trackSignup('completed', 'google', { role: formData.buyer_role });
+
       // Send Slack notification (non-blocking)
       notifyBuyerSignup({
         fullName: formData.full_name,
@@ -141,6 +150,11 @@ export default function CompleteProfile() {
 
       navigate('/buyers/home');
     } catch (error: any) {
+      // Track signup error
+      trackSignup('error', 'google', {
+        error: error.message?.substring(0, 50) || 'Unknown error'
+      });
+
       toast({
         title: 'Profile Creation Failed',
         description: error.message || 'Please try again',

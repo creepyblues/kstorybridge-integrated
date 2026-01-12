@@ -38,6 +38,27 @@ export interface SuggestedComp {
   imdb_id?: string;   // e.g., "tt6994104"
   imdb_url?: string;  // e.g., "https://www.imdb.com/title/tt6994104"
   poster_url?: string; // e.g., "https://m.media-amazon.com/images/M/..."
+  // Source tracking for manual vs AI-generated comps
+  source?: 'ai' | 'manual';  // Optional for backward compatibility
+}
+
+// =====================================================================
+// OMDB API TYPES
+// =====================================================================
+
+export interface OMDBSearchResult {
+  Title: string;
+  Year: string;
+  imdbID: string;
+  Type: 'movie' | 'series' | 'episode';
+  Poster: string;
+}
+
+export interface OMDBSearchResponse {
+  Search?: OMDBSearchResult[];
+  totalResults?: string;
+  Response: 'True' | 'False';
+  Error?: string;
 }
 
 export interface CompsGeneratorResponse {

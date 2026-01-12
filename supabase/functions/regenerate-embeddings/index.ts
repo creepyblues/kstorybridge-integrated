@@ -10,6 +10,7 @@ const corsHeaders = {
 interface RegenerateRequest {
   limit?: number; // Number of titles to regenerate (default: 50)
   start_index?: number; // Start from this index (for pagination)
+  title_id?: string; // Single title mode: regenerate embedding for specific title
 }
 
 serve(async (req) => {
@@ -40,10 +41,16 @@ serve(async (req) => {
       console.log('[REGEN] No request body, using defaults')
     }
 
+    // Single title mode: process specific title by ID
+    if (requestData.title_id) {
+      console.log('[REGEN] Single title mode:', requestData.title_id)
+      return await processSingleTitle(supabaseClient, requestData.title_id, startTime)
+    }
+
     const limit = requestData.limit || 50
     const startIndex = requestData.start_index || 0
 
-    console.log('[REGEN] Starting embedding regeneration', {
+    console.log('[REGEN] Starting batch embedding regeneration', {
       limit,
       start_index: startIndex
     })
@@ -188,6 +195,140 @@ serve(async (req) => {
     )
   }
 })
+
+async function processSingleTitle(
+  supabaseClient: any,
+  titleId: string,
+  startTime: number
+): Promise<Response> {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
+
+  try {
+    // Fetch single title by ID
+    const { data: title, error: fetchError } = await supabaseClient
+      .from('titles')
+      .select(`
+        title_id,
+        title_name_en,
+        title_name_kr,
+        synopsis,
+        synopsis_kr,
+        genre,
+        tone,
+        perfect_for,
+        audience
+      `)
+      .eq('title_id', titleId)
+      .single()
+
+    if (fetchError) {
+      console.error('[REGEN] Failed to fetch title:', fetchError.message)
+      return new Response(
+        JSON.stringify({ error: `Title not found: ${fetchError.message}` }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!title) {
+      return new Response(
+        JSON.stringify({ error: 'Title not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const titleName = title.title_name_en || title.title_name_kr || 'Unknown'
+    console.log('[REGEN] Processing single title:', titleName)
+
+    // Create embedding text from multiple fields
+    const embeddingParts = [
+      title.title_name_en || '',
+      title.title_name_kr || '',
+      title.synopsis || '',
+      title.synopsis_kr || '',
+      (title.genre || []).join(' '),
+      title.tone || '',
+      title.perfect_for || '',
+      title.audience || ''
+    ].filter(Boolean)
+
+    const embeddingText = embeddingParts.join(' ').trim()
+
+    if (!embeddingText) {
+      console.log('[REGEN] Skipped (no text):', titleName)
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Title has no text content for embedding',
+          title_id: titleId,
+          skipped: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Generate embedding using OpenAI
+    const embedding = await generateEmbedding(embeddingText.substring(0, 8000))
+
+    if (!embedding) {
+      console.error('[REGEN] Failed to generate embedding for:', titleName)
+      return new Response(
+        JSON.stringify({ error: 'Failed to generate embedding' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate dimension
+    if (embedding.length !== 1536) {
+      console.error('[REGEN] Wrong dimension:', embedding.length)
+      return new Response(
+        JSON.stringify({ error: `Wrong embedding dimension: ${embedding.length}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Update database
+    const { error: updateError } = await supabaseClient
+      .from('titles')
+      .update({
+        combined_embedding: embedding,
+        embedding_model: 'text-embedding-ada-002',
+        embedding_updated_at: new Date().toISOString()
+      })
+      .eq('title_id', titleId)
+
+    if (updateError) {
+      console.error('[REGEN] Failed to update title:', updateError.message)
+      return new Response(
+        JSON.stringify({ error: `Failed to update: ${updateError.message}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const totalDuration = Date.now() - startTime
+    console.log('[REGEN] Single title success:', titleName, 'in', totalDuration, 'ms')
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        title_id: titleId,
+        title_name: titleName,
+        total_duration_ms: totalDuration,
+        estimated_cost: 0.0001
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
+  } catch (error) {
+    console.error('[REGEN] Single title error:', error)
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+}
 
 async function generateEmbedding(text: string): Promise<number[] | null> {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY')

@@ -7,3 +7,6 @@ export type { UseCompsGeneratorOptions, UseCompsGeneratorReturn } from './useCom
 
 export { useFormatFitAnalyzer } from './useFormatFitAnalyzer';
 export type { UseFormatFitAnalyzerOptions, UseFormatFitAnalyzerReturn } from './useFormatFitAnalyzer';
+
+export { useOMDBAutocomplete } from './useOMDBAutocomplete';
+export type { UseOMDBAutocompleteOptions, UseOMDBAutocompleteReturn } from './useOMDBAutocomplete';

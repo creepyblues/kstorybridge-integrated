@@ -43,6 +43,12 @@ import {
   type FanSignalData,
   type ExtractedIntelligenceData,
 } from '@/services/intelligenceService';
+import {
+  CharacterDetailsInput,
+  serializeCharacters,
+  deserializeCharacters,
+  type CharacterFormDetail,
+} from '@/components/admin/CharacterDetailsInput';
 
 export default function WeeklyTitle() {
   const { toast } = useToast();
@@ -65,13 +71,14 @@ export default function WeeklyTitle() {
 
   // Editorial form state
   const [inputLogline, setInputLogline] = useState('');
-  const [inputComparables, setInputComparables] = useState('');
-  const [inputCharacters, setInputCharacters] = useState('');
+  const [inputCharacters, setInputCharacters] = useState<CharacterFormDetail[]>([]);
   const [inputSynopsis, setInputSynopsis] = useState('');
   const [inputSellingPoints, setInputSellingPoints] = useState('');
 
   // Save state
   const [saving, setSaving] = useState(false);
+  const [isSavedAsWeeklyTitle, setIsSavedAsWeeklyTitle] = useState(false);
+  const [isSyncedToDatabase, setIsSyncedToDatabase] = useState(false);
 
   // Conflict resolution state
   const [conflicts, setConflicts] = useState<FieldConflict[]>([]);
@@ -89,7 +96,7 @@ export default function WeeklyTitle() {
   const [intelligenceResults, setIntelligenceResults] = useState<IntelligenceTitleWithSources | null>(null);
   const [fanSignalResults, setFanSignalResults] = useState<FanSignalData | null>(null);
   const [collectingIntelligence, setCollectingIntelligence] = useState(false);
-  const [collectingFanSignal, setCollectingFanSignal] = useState(false);
+  const [_collectingFanSignal, _setCollectingFanSignal] = useState(false); // Disabled feature
   const [isIngesting, setIsIngesting] = useState(false);
 
   // Title display sections
@@ -115,7 +122,11 @@ export default function WeeklyTitle() {
     const timeoutId = setTimeout(async () => {
       setSearching(true);
       try {
-        const results = await titlesService.getTitles({ search: query });
+        // Use prioritizeTitleName for admin search - title name matches appear first
+        const results = await titlesService.getTitles({
+          search: query,
+          prioritizeTitleName: true
+        });
         setSearchResults(results.slice(0, 10));
       } catch (error) {
         console.error('Search error:', error);
@@ -146,20 +157,22 @@ export default function WeeklyTitle() {
       const data = await weeklyTitleService.getWeeklyTitleByWeek(weekOf);
       setWeeklyTitle(data);
 
+      // Reset save indicators on load
+      setIsSavedAsWeeklyTitle(false);
+      setIsSyncedToDatabase(false);
+
       if (data) {
         // Populate form with existing data
         setSelectedTitle(data.titles);
         setInputLogline(data.input_logline || '');
-        setInputComparables(data.input_comparables || '');
-        setInputCharacters(data.input_characters || '');
+        setInputCharacters(deserializeCharacters(data.input_characters));
         setInputSynopsis(data.input_synopsis || '');
         setInputSellingPoints(data.input_selling_points || '');
       } else {
         // Clear form
         setSelectedTitle(null);
         setInputLogline('');
-        setInputComparables('');
-        setInputCharacters('');
+        setInputCharacters([]);
         setInputSynopsis('');
         setInputSellingPoints('');
       }
@@ -211,12 +224,12 @@ export default function WeeklyTitle() {
     setSaving(true);
     try {
       const weekOf = formatDateToISO(selectedWeek);
+      const serializedCharacters = serializeCharacters(inputCharacters);
       const inputData = {
         week_of: weekOf,
         title_id: selectedTitle.title_id,
         input_logline: inputLogline || undefined,
-        input_comparables: inputComparables || undefined,
-        input_characters: inputCharacters || undefined,
+        input_characters: serializedCharacters.length > 0 ? JSON.stringify(serializedCharacters) : undefined,
         input_synopsis: inputSynopsis || undefined,
         input_selling_points: inputSellingPoints || undefined,
         created_by: user.email,
@@ -236,6 +249,7 @@ export default function WeeklyTitle() {
       });
 
       await loadWeeklyTitle();
+      setIsSavedAsWeeklyTitle(true);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to save weekly title';
       console.error('Error saving weekly title:', error);
@@ -261,12 +275,12 @@ export default function WeeklyTitle() {
 
     try {
       // Detect conflicts
+      const serializedChars = serializeCharacters(inputCharacters);
       const detectedConflicts = await weeklyTitleService.detectConflicts(
         selectedTitle.title_id,
         {
           input_logline: inputLogline,
-          input_comparables: inputComparables,
-          input_characters: inputCharacters,
+          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
         }
@@ -280,8 +294,7 @@ export default function WeeklyTitle() {
         // No conflicts, sync directly
         await weeklyTitleService.syncToTitlesTable(selectedTitle.title_id, {
           input_logline: inputLogline,
-          input_comparables: inputComparables,
-          input_characters: inputCharacters,
+          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
         });
@@ -292,6 +305,7 @@ export default function WeeklyTitle() {
         });
 
         await loadWeeklyTitle();
+        setIsSyncedToDatabase(true);
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to update title data';
@@ -309,12 +323,12 @@ export default function WeeklyTitle() {
 
     setIsApplyingConflicts(true);
     try {
+      const serializedChars = serializeCharacters(inputCharacters);
       await weeklyTitleService.syncToTitlesTable(
         selectedTitle.title_id,
         {
           input_logline: inputLogline,
-          input_comparables: inputComparables,
-          input_characters: inputCharacters,
+          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
         },
@@ -328,6 +342,7 @@ export default function WeeklyTitle() {
 
       setConflictDialogOpen(false);
       await loadWeeklyTitle();
+      setIsSyncedToDatabase(true);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to apply changes';
       console.error('Error applying conflict resolutions:', error);
@@ -410,10 +425,11 @@ export default function WeeklyTitle() {
     }
   };
 
+  // Disabled feature - kept for future use
   const handleCollectFanSignal = async () => {
     if (!selectedTitle) return;
 
-    setCollectingFanSignal(true);
+    _setCollectingFanSignal(true);
     try {
       const titleName = selectedTitle.title_name_en || selectedTitle.title_name_kr || '';
       const results = await collectFanEngagement(
@@ -434,7 +450,7 @@ export default function WeeklyTitle() {
         variant: 'destructive',
       });
     } finally {
-      setCollectingFanSignal(false);
+      _setCollectingFanSignal(false);
     }
   };
 
@@ -445,9 +461,7 @@ export default function WeeklyTitle() {
     const analyzers = [
       { name: 'Comps Generator', action: () => setCompsModalOpen(true) },
       { name: 'Format Fit', action: () => setFormatFitModalOpen(true) },
-      { name: 'Intelligence', action: handleCollectIntelligence },
-      { name: 'Key Visuals', action: () => setKeyVisualsModalOpen(true) },
-      { name: 'Fan Signals', action: handleCollectFanSignal },
+      { name: 'Title Scraper', action: handleCollectIntelligence },
     ];
 
     for (const analyzer of analyzers) {
@@ -554,7 +568,7 @@ export default function WeeklyTitle() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Icon icon="solar:bookmark-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-            Select Title
+            Step 1. Select Title
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -587,7 +601,7 @@ export default function WeeklyTitle() {
                 className="border-gray-300"
               >
                 <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-1" />
-                Change
+                Remove
               </Button>
             </div>
           ) : (
@@ -640,101 +654,194 @@ export default function WeeklyTitle() {
       </Card>
 
       {/* Editorial Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Icon icon="solar:pen-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-            Editorial Content
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium">Logline</Label>
-            <Textarea
-              placeholder="A compelling one-line summary of the story..."
-              value={inputLogline}
-              onChange={(e) => setInputLogline(e.target.value)}
-              className="mt-1"
-              rows={2}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: tagline</p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Comparables</Label>
-            <Textarea
-              placeholder="Similar titles or franchises, comma-separated (e.g., Squid Game, Parasite, Train to Busan)"
-              value={inputComparables}
-              onChange={(e) => setInputComparables(e.target.value)}
-              className="mt-1"
-              rows={2}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: comps (array)</p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Characters</Label>
-            <Textarea
-              placeholder="Key characters and their descriptions..."
-              value={inputCharacters}
-              onChange={(e) => setInputCharacters(e.target.value)}
-              className="mt-1"
-              rows={3}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: character_details</p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Synopsis</Label>
-            <Textarea
-              placeholder="A detailed plot summary..."
-              value={inputSynopsis}
-              onChange={(e) => setInputSynopsis(e.target.value)}
-              className="mt-1"
-              rows={4}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: synopsis</p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Selling Points</Label>
-            <Textarea
-              placeholder="Key reasons why this title is marketable..."
-              value={inputSellingPoints}
-              onChange={(e) => setInputSellingPoints(e.target.value)}
-              className="mt-1"
-              rows={3}
-            />
-            <p className="text-xs text-gray-500 mt-1">Maps to: selling_points (new field)</p>
-          </div>
-
-          <Button
-            onClick={handleSaveWeeklyTitle}
-            disabled={!selectedTitle || saving}
-            className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
-          >
-            {saving ? (
-              <>
-                <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
-                Save Weekly Title
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Title Data Display */}
       {selectedTitle && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
+              <Icon icon="solar:pen-bold-duotone" className="h-5 w-5 text-hanok-teal" />
+              Step 2. Editorial Content
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">Logline</Label>
+              <Textarea
+                placeholder="A compelling one-line summary of the story..."
+                value={inputLogline}
+                onChange={(e) => setInputLogline(e.target.value)}
+                className="mt-1"
+                rows={2}
+              />
+              <p className="text-xs text-gray-500 mt-1">Maps to: tagline</p>
+            </div>
+
+            <div className="space-y-2 opacity-50">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium text-gray-400">Comparables</Label>
+                <div className="relative inline-flex items-center">
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <Icon icon="solar:info-circle-bold" className="h-3.5 w-3.5" />
+                    <span>Use Comps Generator in Step 3</span>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-sm text-gray-400 cursor-not-allowed">
+                Comparables will be generated using AI in Step 3
+              </div>
+              <p className="text-xs text-gray-400">Maps to: comps (array)</p>
+            </div>
+
+            <CharacterDetailsInput
+              characters={inputCharacters}
+              onChange={setInputCharacters}
+            />
+
+            <div>
+              <Label className="text-sm font-medium">Synopsis</Label>
+              <Textarea
+                placeholder="A detailed plot summary..."
+                value={inputSynopsis}
+                onChange={(e) => setInputSynopsis(e.target.value)}
+                className="mt-1"
+                rows={4}
+              />
+              <p className="text-xs text-gray-500 mt-1">Maps to: synopsis</p>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium">Selling Points</Label>
+              <Textarea
+                placeholder="Key reasons why this title is marketable..."
+                value={inputSellingPoints}
+                onChange={(e) => setInputSellingPoints(e.target.value)}
+                className="mt-1"
+                rows={3}
+              />
+              <p className="text-xs text-gray-500 mt-1">Maps to: selling_points (new field)</p>
+            </div>
+
+            <Button
+              onClick={handleSaveWeeklyTitle}
+              disabled={!selectedTitle || saving}
+              className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
+            >
+              {saving ? (
+                <>
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
+                  Save and Make This the Weekly Title
+                </>
+              )}
+            </Button>
+            {isSavedAsWeeklyTitle && (
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-green-600">
+                <Icon icon="solar:check-circle-bold" className="h-4 w-4" />
+                <span className="text-sm">Saved as weekly title</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Analyzer Tools */}
+      {selectedTitle && weeklyTitle && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Icon icon="solar:magic-stick-3-bold-duotone" className="h-5 w-5 text-hanok-teal" />
+              Step 3. Analyzer Tools
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+              <Button
+                variant="outline"
+                onClick={() => setCompsModalOpen(true)}
+                disabled={runningAll}
+                className="border-gray-300 justify-start"
+              >
+                <Icon icon="solar:clapperboard-open-play-bold-duotone" className="h-4 w-4 mr-2" />
+                Comps Generator
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => setFormatFitModalOpen(true)}
+                disabled={runningAll}
+                className="border-gray-300 justify-start"
+              >
+                <Icon icon="solar:chart-square-bold-duotone" className="h-4 w-4 mr-2" />
+                Format Fit
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleCollectIntelligence}
+                disabled={collectingIntelligence || runningAll}
+                className="border-gray-300 justify-start"
+              >
+                {collectingIntelligence ? (
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Icon icon="solar:link-bold-duotone" className="h-4 w-4 mr-2" />
+                )}
+                Title Scraper
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => setKeyVisualsModalOpen(true)}
+                disabled={true}
+                className="border-gray-300 justify-start opacity-50 cursor-not-allowed"
+              >
+                <Icon icon="solar:gallery-bold-duotone" className="h-4 w-4 mr-2" />
+                Key Visuals
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleCollectFanSignal}
+                disabled={true}
+                className="border-gray-300 justify-start opacity-50 cursor-not-allowed"
+              >
+                <Icon icon="solar:users-group-rounded-bold-duotone" className="h-4 w-4 mr-2" />
+                Fan Signals
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleRunAllAnalyzers}
+                disabled={runningAll}
+                className="border-hanok-teal text-hanok-teal hover:bg-hanok-teal/10 justify-start"
+              >
+                {runningAll ? (
+                  <>
+                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
+                    {currentAnalyzer}...
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="solar:play-bold-duotone" className="h-4 w-4 mr-2" />
+                    Run All
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Title Data Display */}
+      {selectedTitle && weeklyTitle && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
               <Icon icon="solar:database-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Title Data (from database)
+              Step 4. Confirm Title Data
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -819,105 +926,13 @@ export default function WeeklyTitle() {
         </Card>
       )}
 
-      {/* Analyzer Tools */}
-      {selectedTitle && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Icon icon="solar:magic-stick-3-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Analyzer Tools
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-              <Button
-                variant="outline"
-                onClick={() => setCompsModalOpen(true)}
-                disabled={runningAll}
-                className="border-gray-300 justify-start"
-              >
-                <Icon icon="solar:clapperboard-open-play-bold-duotone" className="h-4 w-4 mr-2" />
-                Comps Generator
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => setFormatFitModalOpen(true)}
-                disabled={runningAll}
-                className="border-gray-300 justify-start"
-              >
-                <Icon icon="solar:chart-square-bold-duotone" className="h-4 w-4 mr-2" />
-                Format Fit
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={handleCollectIntelligence}
-                disabled={collectingIntelligence || runningAll}
-                className="border-gray-300 justify-start"
-              >
-                {collectingIntelligence ? (
-                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Icon icon="solar:link-bold-duotone" className="h-4 w-4 mr-2" />
-                )}
-                Intelligence
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => setKeyVisualsModalOpen(true)}
-                disabled={runningAll}
-                className="border-gray-300 justify-start"
-              >
-                <Icon icon="solar:gallery-bold-duotone" className="h-4 w-4 mr-2" />
-                Key Visuals
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={handleCollectFanSignal}
-                disabled={collectingFanSignal || runningAll}
-                className="border-gray-300 justify-start"
-              >
-                {collectingFanSignal ? (
-                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Icon icon="solar:users-group-rounded-bold-duotone" className="h-4 w-4 mr-2" />
-                )}
-                Fan Signals
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={handleRunAllAnalyzers}
-                disabled={runningAll}
-                className="border-hanok-teal text-hanok-teal hover:bg-hanok-teal/10 justify-start"
-              >
-                {runningAll ? (
-                  <>
-                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
-                    {currentAnalyzer}...
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="solar:play-bold-duotone" className="h-4 w-4 mr-2" />
-                    Run All
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Update to Database */}
       {selectedTitle && weeklyTitle && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Icon icon="solar:cloud-upload-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Sync to Database
+              Step 5. Sync to Database
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -931,6 +946,12 @@ export default function WeeklyTitle() {
               <Icon icon="solar:database-bold-duotone" className="h-4 w-4 mr-2" />
               Update Title Data
             </Button>
+            {isSyncedToDatabase && (
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-green-600">
+                <Icon icon="solar:check-circle-bold" className="h-4 w-4" />
+                <span className="text-sm">Updated to database</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

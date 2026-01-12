@@ -32,6 +32,41 @@ const RIGHTS_LABELS: Record<string, string> = {
   other: 'Other',
 };
 
+// Platform detection and icon mapping for URLs (with brand colors)
+const getPlatformInfo = (url: string): { name: string; icon: string; color: string } => {
+  const urlLower = url.toLowerCase();
+
+  if (urlLower.includes('naver.com') || urlLower.includes('comic.naver')) {
+    return { name: 'Naver', icon: 'simple-icons:naver', color: '#03C75A' };
+  }
+  if (urlLower.includes('kakaopage') || urlLower.includes('page.kakao')) {
+    return { name: 'Kakao Page', icon: 'simple-icons:kakao', color: '#FFCD00' };
+  }
+  if (urlLower.includes('kakao')) {
+    return { name: 'Kakao', icon: 'simple-icons:kakao', color: '#FFCD00' };
+  }
+  if (urlLower.includes('manta')) {
+    return { name: 'Manta', icon: 'simple-icons:googleplay', color: '#6B5CE7' }; // Purple brand color
+  }
+  if (urlLower.includes('tapas')) {
+    return { name: 'Tapas', icon: 'mdi:alpha-t-circle', color: '#FF6B35' }; // Orange brand
+  }
+  if (urlLower.includes('webtoons.com') || urlLower.includes('webtoon.com')) {
+    return { name: 'Webtoon', icon: 'simple-icons:webtoon', color: '#00D564' };
+  }
+  if (urlLower.includes('tappytoon')) {
+    return { name: 'Tappytoon', icon: 'mdi:alpha-t-box', color: '#4A90D9' }; // Blue brand
+  }
+  if (urlLower.includes('lezhin')) {
+    return { name: 'Lezhin', icon: 'mdi:alpha-l-circle', color: '#E73C3C' }; // Red brand
+  }
+  if (urlLower.includes('ridibooks') || urlLower.includes('ridi')) {
+    return { name: 'Ridi', icon: 'simple-icons:rss', color: '#1F8CE6' }; // Blue brand
+  }
+  // Default fallback
+  return { name: 'Website', icon: 'solar:globe-bold-duotone', color: '#4C9C9B' };
+};
+
 export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps) {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
@@ -153,35 +188,41 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
             </Card>
           )}
 
-          {/* Quick Links Card */}
+          {/* Official Websites Card */}
           {hasQuickLinks && (
             <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
               <CardContent className="p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Icon icon="solar:link-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
-                  <h3 className="text-lg font-semibold text-black">Quick Links</h3>
+                  <h3 className="text-lg font-semibold text-black">Official Websites</h3>
                 </div>
                 <div className="flex flex-col gap-2">
-                  {title.title_url && (
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
-                      onClick={() => window.open(title.title_url, '_blank')}
-                    >
-                      <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
-                      Korean Original
-                    </Button>
-                  )}
-                  {title.title_url_en && (
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start border-gray-200 hover:bg-[#4C9C9B]/5 hover:border-[#4C9C9B]/30"
-                      onClick={() => window.open(title.title_url_en, '_blank')}
-                    >
-                      <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
-                      English Translation
-                    </Button>
-                  )}
+                  {title.title_url && (() => {
+                    const platform = getPlatformInfo(title.title_url);
+                    return (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start border-gray-200 hover:bg-gray-50"
+                        onClick={() => window.open(title.title_url, '_blank')}
+                      >
+                        <Icon icon={platform.icon} className="w-4 h-4 mr-2" style={{ color: platform.color }} />
+                        {platform.name} (Korean)
+                      </Button>
+                    );
+                  })()}
+                  {title.title_url_en && (() => {
+                    const platform = getPlatformInfo(title.title_url_en);
+                    return (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start border-gray-200 hover:bg-gray-50"
+                        onClick={() => window.open(title.title_url_en, '_blank')}
+                      >
+                        <Icon icon={platform.icon} className="w-4 h-4 mr-2" style={{ color: platform.color }} />
+                        {platform.name} (English)
+                      </Button>
+                    );
+                  })()}
                 </div>
               </CardContent>
             </Card>
@@ -374,25 +415,6 @@ export function OverviewTab({ title, pitchAnalysis, userTier }: OverviewTabProps
 
       {/* Key Visuals Gallery */}
       <KeyVisualsGallery titleId={title.title_id} maxDisplay={10} />
-
-      {/* Synopsis Card */}
-      {title.synopsis && (
-        <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
-          <CardContent className="p-5">
-            <h3 className="text-lg font-semibold text-black mb-4">Synopsis</h3>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-              {title.synopsis}
-            </p>
-
-            {/* Korean tagline if different */}
-            {title.tagline_kr && title.tagline_kr !== title.tagline && (
-              <div className="mt-4 p-3 bg-gray-50 border-l-4 border-gray-300 rounded-r-lg">
-                <p className="text-gray-600 font-medium italic">"{title.tagline_kr}"</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Achievements & Recognition */}
       {hasAchievements && (

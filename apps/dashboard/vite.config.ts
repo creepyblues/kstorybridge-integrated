@@ -9,10 +9,15 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@kstorybridge/tools': path.resolve(__dirname, '../../packages/tools/src/index.ts'),
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    // Don't exclude @kstorybridge/tools - let Vite pre-bundle it
+  },
   server: {
-    port: 8085,
+    port: 8081,
     fs: {
       // Allow serving files from the monorepo root docs folder
       allow: ['../..'],

@@ -6,6 +6,31 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  compsGeneratorService,
+  type CompsGeneratorResponse,
+  type SuggestedComp,
+} from '@/services/compsGeneratorService';
+import { Icon } from '@iconify/react';
+import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { ManualCompSearch } from './ManualCompSearch';
 
 // =====================================================================
 // LOADING UX CONFIGURATION
@@ -43,31 +68,6 @@ const FUN_FACTS = [
   'Parasite was the first non-English film to win Best Picture at the Oscars',
   'K-dramas are now available in 190+ countries worldwide',
 ];
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import {
-  compsGeneratorService,
-  type CompsGeneratorResponse,
-  type SuggestedComp,
-} from '@/services/compsGeneratorService';
-import { Icon } from '@iconify/react';
-import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import { ManualCompSearch } from './ManualCompSearch';
 
 interface CompsGeneratorModalProps {
   titleId: string | null;
@@ -245,7 +245,7 @@ export function CompsGeneratorModal({
 
   // Get all imdbIDs for duplicate prevention
   const existingImdbIds = new Set([
-    ...(response?.suggested_comps.map((c) => c.imdb_id).filter(Boolean) as string[]),
+    ...(response?.suggested_comps?.map((c) => c.imdb_id).filter(Boolean) ?? []),
     ...manualComps.map((c) => c.imdb_id).filter(Boolean) as string[],
   ]);
 

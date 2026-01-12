@@ -49,6 +49,7 @@ import { ContentEditor } from '@/pages/admin/ContentEditor';
 import AssetGeneration from '@/pages/admin/AssetGeneration';
 import PitchExtractor from '@/pages/admin/PitchExtractor';
 import AdminDocs from '@/pages/admin/Docs';
+import TitleDataStructure from '@/pages/admin/TitleDataStructure';
 import EmailTemplates from '@/pages/admin/EmailTemplates';
 import AdminTrending from '@/pages/admin/Trending';
 import WeeklyTitle from '@/pages/admin/WeeklyTitle';
@@ -347,6 +348,16 @@ function App() {
             element={
               <AdminProtectedRoute>
                 <AdminDocs />
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* Title Data Structure - Standalone page (no AdminLayout) */}
+          <Route
+            path="/admin/title-structure"
+            element={
+              <AdminProtectedRoute>
+                <TitleDataStructure />
               </AdminProtectedRoute>
             }
           />

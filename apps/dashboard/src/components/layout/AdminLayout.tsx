@@ -73,6 +73,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       description: 'Internal documentation'
     },
     {
+      name: 'Title Structure',
+      href: '/admin/title-structure',
+      icon: 'solar:database-bold-duotone',
+      description: 'Titles table schema reference'
+    },
+    {
       name: 'Email Templates',
       href: '/admin/email-templates',
       icon: 'solar:letter-bold-duotone',

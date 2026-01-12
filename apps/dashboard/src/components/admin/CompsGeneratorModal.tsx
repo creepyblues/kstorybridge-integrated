@@ -67,6 +67,7 @@ import {
 } from '@/services/compsGeneratorService';
 import { Icon } from '@iconify/react';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { ManualCompSearch } from './ManualCompSearch';
 
 interface CompsGeneratorModalProps {
   titleId: string | null;
@@ -93,6 +94,7 @@ export function CompsGeneratorModal({
   const [error, setError] = useState<string | null>(null);
   const [selectedComps, setSelectedComps] = useState<Set<string>>(new Set());
   const [expandedComps, setExpandedComps] = useState<Set<string>>(new Set());
+  const [manualComps, setManualComps] = useState<SuggestedComp[]>([]);
 
   // Loading progress state
   const [currentPhase, setCurrentPhase] = useState(0);
@@ -109,6 +111,7 @@ export function CompsGeneratorModal({
       setError(null);
       setSelectedComps(new Set());
       setExpandedComps(new Set());
+      setManualComps([]);
       // Reset loading progress state
       setCurrentPhase(0);
       setCurrentMessage(0);
@@ -212,25 +215,64 @@ export function CompsGeneratorModal({
   };
 
   const handleSelectAll = () => {
-    if (response) {
-      setSelectedComps(new Set(response.suggested_comps.map((c) => c.comp_title)));
-    }
+    const allCompTitles = [
+      ...(response?.suggested_comps.map((c) => c.comp_title) || []),
+      ...manualComps.map((c) => c.comp_title),
+    ];
+    setSelectedComps(new Set(allCompTitles));
   };
 
   const handleDeselectAll = () => {
     setSelectedComps(new Set());
   };
 
+  // Handler for adding manual comps
+  const handleAddManualComp = (comp: SuggestedComp) => {
+    setManualComps((prev) => [...prev, comp]);
+    // Auto-select the newly added comp
+    setSelectedComps((prev) => new Set([...prev, comp.comp_title]));
+  };
+
+  // Handler for removing manual comps
+  const handleRemoveManualComp = (compTitle: string) => {
+    setManualComps((prev) => prev.filter((c) => c.comp_title !== compTitle));
+    setSelectedComps((prev) => {
+      const next = new Set(prev);
+      next.delete(compTitle);
+      return next;
+    });
+  };
+
+  // Get all imdbIDs for duplicate prevention
+  const existingImdbIds = new Set([
+    ...(response?.suggested_comps.map((c) => c.imdb_id).filter(Boolean) as string[]),
+    ...manualComps.map((c) => c.imdb_id).filter(Boolean) as string[],
+  ]);
+
+  // Combined comps (AI + manual)
+  const allComps = [
+    ...(response?.suggested_comps || []),
+    ...manualComps,
+  ];
+
+  const totalCompCount = allComps.length;
+
   const handleSave = async () => {
-    if (!titleId || selectedComps.size === 0 || !response) return;
+    if (!titleId || selectedComps.size === 0) return;
 
     setSaving(true);
     try {
+      // Combine AI and manual comps for saving
+      const allCompsForSave = [
+        ...(response?.suggested_comps || []),
+        ...manualComps,
+      ];
+
       // Save both comp titles AND full analysis
       await compsGeneratorService.saveCompsWithAnalysis(
         titleId,
         Array.from(selectedComps),
-        response.suggested_comps
+        allCompsForSave
       );
 
       toast({
@@ -416,14 +458,19 @@ export function CompsGeneratorModal({
             {/* Selection Controls */}
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-gray-600">
-                {selectedComps.size} of {response.suggested_comps.length} selected
+                {selectedComps.size} of {totalCompCount} selected
+                {manualComps.length > 0 && (
+                  <span className="text-gray-400 ml-1">
+                    ({manualComps.length} manual)
+                  </span>
+                )}
               </p>
               <div className="flex gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleSelectAll}
-                  disabled={selectedComps.size === response.suggested_comps.length}
+                  disabled={selectedComps.size === totalCompCount}
                 >
                   Select All
                 </Button>
@@ -438,12 +485,12 @@ export function CompsGeneratorModal({
               </div>
             </div>
 
-            {/* Comp Cards */}
+            {/* AI-Generated Comp Cards */}
             <div className="space-y-3">
               {response.suggested_comps.map((comp) => (
                 <CompCard
                   key={comp.comp_title}
-                  comp={comp}
+                  comp={{ ...comp, source: comp.source || 'ai' }}
                   selected={selectedComps.has(comp.comp_title)}
                   expanded={expandedComps.has(comp.comp_title)}
                   onToggleSelect={() => handleToggleComp(comp.comp_title)}
@@ -454,6 +501,42 @@ export function CompsGeneratorModal({
                 />
               ))}
             </div>
+
+            {/* Manual Comp Search Section */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="flex items-center gap-2 mb-3">
+                <Icon icon="solar:add-circle-bold-duotone" className="h-5 w-5 text-teal-500" />
+                <h4 className="font-medium text-gray-700">Add Manual Comp</h4>
+              </div>
+              <p className="text-sm text-gray-500 mb-3">
+                Search IMDB to add Hollywood/global titles not in the AI suggestions
+              </p>
+              <ManualCompSearch
+                onAdd={handleAddManualComp}
+                existingImdbIds={existingImdbIds}
+                disabled={loading || saving}
+              />
+            </div>
+
+            {/* Manual Comp Cards */}
+            {manualComps.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {manualComps.map((comp) => (
+                  <CompCard
+                    key={comp.comp_title}
+                    comp={comp}
+                    selected={selectedComps.has(comp.comp_title)}
+                    expanded={expandedComps.has(comp.comp_title)}
+                    onToggleSelect={() => handleToggleComp(comp.comp_title)}
+                    onToggleExpand={() => handleToggleExpand(comp.comp_title)}
+                    onRemove={() => handleRemoveManualComp(comp.comp_title)}
+                    getScoreColor={getScoreColor}
+                    getScoreBgColor={getScoreBgColor}
+                    getTypeIcon={getTypeIcon}
+                  />
+                ))}
+              </div>
+            )}
           </>
         )}
 
@@ -501,6 +584,7 @@ interface CompCardProps {
   expanded: boolean;
   onToggleSelect: () => void;
   onToggleExpand: () => void;
+  onRemove?: () => void;  // Optional remove handler for manual comps
   getScoreColor: (score: number) => string;
   getScoreBgColor: (score: number) => string;
   getTypeIcon: (type: string) => JSX.Element;
@@ -512,14 +596,21 @@ function CompCard({
   expanded,
   onToggleSelect,
   onToggleExpand,
+  onRemove,
   getScoreColor,
   getScoreBgColor,
   getTypeIcon,
 }: CompCardProps) {
+  const isManual = comp.source === 'manual';
+
   return (
     <div
       className={`border rounded-lg transition-colors ${
-        selected ? 'border-purple-300 bg-purple-50/30' : 'border-gray-200'
+        selected
+          ? isManual
+            ? 'border-teal-300 bg-teal-50/30'
+            : 'border-purple-300 bg-purple-50/30'
+          : 'border-gray-200'
       }`}
     >
       {/* Card Header */}
@@ -549,10 +640,16 @@ function CompCard({
                 </span>
               </div>
 
-              {/* Score Badge */}
-              <Badge className={`${getScoreColor(comp.overall_match_score)} text-white`}>
-                {comp.overall_match_score}% Match
-              </Badge>
+              {/* Score Badge or Manually Added Badge */}
+              {isManual ? (
+                <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200">
+                  Manually Added
+                </Badge>
+              ) : (
+                <Badge className={`${getScoreColor(comp.overall_match_score)} text-white`}>
+                  {comp.overall_match_score}% Match
+                </Badge>
+              )}
             </div>
 
             {/* Explanation */}
@@ -560,27 +657,57 @@ function CompCard({
               {comp.explanation}
             </p>
 
-            {/* Match Reasons */}
-            <div className="flex flex-wrap gap-1 mt-2">
-              {comp.match_reasons.slice(0, 3).map((reason, idx) => (
-                <span
-                  key={idx}
-                  className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+            {/* Match Reasons (only for AI comps) */}
+            {!isManual && comp.match_reasons.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {comp.match_reasons.slice(0, 3).map((reason, idx) => (
+                  <span
+                    key={idx}
+                    className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                  >
+                    {reason}
+                  </span>
+                ))}
+                {comp.match_reasons.length > 3 && (
+                  <span className="text-xs text-gray-400">
+                    +{comp.match_reasons.length - 3} more
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* IMDB Link for manual comps */}
+            {isManual && comp.imdb_url && (
+              <div className="mt-2">
+                <a
+                  href={comp.imdb_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-teal-600 hover:text-teal-700 inline-flex items-center gap-1"
                 >
-                  {reason}
-                </span>
-              ))}
-              {comp.match_reasons.length > 3 && (
-                <span className="text-xs text-gray-400">
-                  +{comp.match_reasons.length - 3} more
-                </span>
-              )}
-            </div>
+                  <Icon icon="solar:link-bold" className="h-3 w-3" />
+                  View on IMDB
+                </a>
+              </div>
+            )}
           </div>
+
+          {/* Remove button for manual comps */}
+          {isManual && onRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+              title="Remove comp"
+            >
+              <Icon icon="solar:trash-bin-trash-bold-duotone" className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Expandable Dimension Scores */}
+      {/* Expandable Dimension Scores (only for AI comps with dimension data) */}
+      {!isManual && comp.dimension_scores.length > 0 && (
       <Collapsible open={expanded} onOpenChange={onToggleExpand}>
         <CollapsibleTrigger asChild>
           <button
@@ -629,6 +756,7 @@ function CompCard({
           </div>
         </CollapsibleContent>
       </Collapsible>
+      )}
     </div>
   );
 }

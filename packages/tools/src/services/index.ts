@@ -67,5 +67,13 @@ export {
   PLATFORM_DISPLAY_NAMES,
 } from './intelligenceService';
 
+// OMDB Service
+export {
+  searchOMDBTitles,
+  getIMDBUrl,
+  createManualComp,
+  createOMDBService,
+} from './omdbService';
+
 // Re-export FormatFitSummary from types for convenience
 export type { FormatFitSummary } from '../types';

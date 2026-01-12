@@ -8,6 +8,25 @@ import { type PitchAnalysis } from '@/types/pitchAnalysis';
 import { AIInsightCard } from './AIInsightCard';
 import { Icon } from '@iconify/react';
 
+// Helper to safely get character details as array
+// Handles cases where character_details might be string, object, or malformed data
+function getCharacterDetailsArray(details: unknown): CharacterDetail[] {
+  if (!details) return [];
+  if (Array.isArray(details)) return details;
+  // If it's an object but not an array, wrap it in array (single character case)
+  if (typeof details === 'object') return [details as CharacterDetail];
+  // If it's a string, try to parse as JSON
+  if (typeof details === 'string') {
+    try {
+      const parsed = JSON.parse(details);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 interface StoryDetailsTabProps {
   title: Title;
   pitchAnalysis?: PitchAnalysis | null;
@@ -91,11 +110,14 @@ function CharacterCard({ character }: { character: CharacterDetail }) {
 export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) {
   const [showAllCharacters, setShowAllCharacters] = useState(false);
 
+  const hasSynopsisEn = !!title.synopsis;
   const hasSynopsis = !!title.synopsis_kr;
   const hasDescription = !!title.description;
   const hasThemesContent = title.tone || title.important_issues;
   const hasWorldContent = title.setting_description || title.world_lore || title.supernatural_concepts;
-  const hasCharacters = title.character_details && title.character_details.length > 0;
+  // Safely parse character_details to handle malformed data
+  const characterDetails = getCharacterDetailsArray(title.character_details);
+  const hasCharacters = characterDetails.length > 0;
   const hasNarrativeContent = title.story_structure || title.narrative_arc || title.planned_ending;
 
   // AI Pitch Analysis availability checks
@@ -118,12 +140,33 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
   const hasAIKoreanCultural = pitchAnalysis?.korean_cultural_elements && pitchAnalysis.korean_cultural_elements.length > 0;
 
   const displayedCharacters = showAllCharacters
-    ? title.character_details
-    : title.character_details?.slice(0, 3);
+    ? characterDetails
+    : characterDetails.slice(0, 3);
 
   return (
     <div className="space-y-6">
-      {/* 시놉시스 (Synopsis) Card */}
+      {/* Synopsis (English) Card */}
+      {hasSynopsisEn && (
+        <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Icon icon="solar:book-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
+              <h3 className="text-lg font-semibold text-black">Synopsis</h3>
+            </div>
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {title.synopsis}
+            </p>
+            {/* Korean tagline if different */}
+            {title.tagline_kr && title.tagline_kr !== title.tagline && (
+              <div className="mt-4 p-3 bg-gray-50 border-l-4 border-gray-300 rounded-r-lg">
+                <p className="text-gray-600 font-medium italic">"{title.tagline_kr}"</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 시놉시스 (Korean Synopsis) Card */}
       {hasSynopsis && (
         <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
           <CardContent className="p-5">
@@ -236,7 +279,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
               <Icon icon="solar:users-group-rounded-bold-duotone" className="w-5 h-5 text-[#4C9C9B]" />
               <h3 className="text-lg font-semibold text-black">Key Characters</h3>
               <span className="text-sm text-gray-500">
-                ({title.character_details!.length} characters)
+                ({characterDetails.length} characters)
               </span>
             </div>
 
@@ -246,7 +289,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
               ))}
             </div>
 
-            {title.character_details!.length > 3 && (
+            {characterDetails.length > 3 && (
               <Button
                 variant="ghost"
                 className="w-full mt-4 text-[#4C9C9B] hover:text-[#4C9C9B]/80 hover:bg-[#4C9C9B]/5"
@@ -260,7 +303,7 @@ export function StoryDetailsTab({ title, pitchAnalysis }: StoryDetailsTabProps) 
                 ) : (
                   <>
                     <Icon icon="solar:alt-arrow-down-bold-duotone" className="w-4 h-4 mr-2" />
-                    Show All {title.character_details!.length} Characters
+                    Show All {characterDetails.length} Characters
                   </>
                 )}
               </Button>

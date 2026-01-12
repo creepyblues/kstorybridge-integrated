@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Last Updated**: 2025-12-19
+**Last Updated**: 2026-01-11
 
 ---
 
@@ -234,6 +234,19 @@ if (!hasAccess('pro')) {
   - Collapsible sections: Basic Info, Classification, Metrics, Authors, Content, Story Details, Rights, Achievements
   - Intelligence collection buttons for auto-populating data from platform URLs
   - Analyzer tools: Key Visuals, Fan Signal, Comps Generator, Format Fit
+
+### Comps Generator (Admin Tool)
+- **Modal**: `src/components/admin/CompsGeneratorModal.tsx` - AI-powered comparable title generation
+- **Manual Search**: `src/components/admin/ManualCompSearch.tsx` - IMDB title search via OMDB API
+- **Shared Package**: `@kstorybridge/tools` - Service, types, and autocomplete hook
+- **Used In**: WeeklyTitle page, TitleEditModal
+- **Features**:
+  - AI-generated comps with dimension scoring (narrative, themes, tone, etc.)
+  - Manual IMDB search to add titles not suggested by AI
+  - Visual differentiation: purple border (AI), teal border (manual)
+  - Duplicate prevention by imdbID
+  - Combined save of AI + manual comps to `comps_analysis` JSONB
+- **Environment**: Requires `VITE_OMDB_API_KEY` for manual search
 
 ### GA4 Analytics (Fully Implemented)
 - **Measurement ID**: `G-DWL6MV0MC2`
@@ -485,6 +498,6 @@ Only create new files when:
 
 ---
 
-**Last Updated**: 2025-12-19
+**Last Updated**: 2026-01-11
 **Version**: 2.0
 **Status**: ✅ Production Ready - Primary Buyer Dashboard

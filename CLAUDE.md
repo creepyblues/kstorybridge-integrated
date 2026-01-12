@@ -1,6 +1,6 @@
 # CLAUDE.md - KStoryBridge Monorepo
 
-**Last Updated**: 2025-12-17
+**Last Updated**: 2026-01-11
 
 > 📜 For historical changes and system evolution, see [CHANGELOG.md](CHANGELOG.md)
 
@@ -169,7 +169,11 @@ npm run preview           # Preview production build
 │   ├── dashboard-legacy/  # 🗄️ ARCHIVED (Nov 2025) - Previous buyer dashboard
 │   ├── creator/           # Creator dashboard (port 8083)
 │   └── website/           # Marketing website (port 5173)
-├── packages/              # Shared libraries
+├── packages/
+│   └── tools/             # Shared AI tools (@kstorybridge/tools)
+│       ├── services/      # Comps Generator, Format Fit, OMDB API
+│       ├── hooks/         # useOMDBAutocomplete
+│       └── types/         # SuggestedComp, OMDBSearchResult, etc.
 └── docs/                  # Documentation
 ```
 

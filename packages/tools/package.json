@@ -1,6 +1,7 @@
 {
   "name": "@kstorybridge/tools",
   "version": "1.0.0",
+  "type": "module",
   "description": "Shared AI tools for KStoryBridge apps (Comps Generator, Format Fit Analyzer)",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

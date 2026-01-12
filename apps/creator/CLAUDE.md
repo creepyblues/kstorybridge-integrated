@@ -2,7 +2,7 @@
 
 **App Scope**: Creator-focused dashboard for content management, title submissions, and profile management. Dedicated app for Korean content creators (webtoon artists, web novel authors, agents).
 
-**Last Updated**: 2025-12-03
+**Last Updated**: 2026-01-11
 
 **Status**: ✅ PRODUCTION - Primary creator app (V1 archived as reference)
 
@@ -270,6 +270,53 @@ if (session) {
   session = result.data.session
 }
 ```
+
+### 5. Comps Generator Tool
+**Status**: ✅ LIVE (2026-01-11)
+**Location**: `src/components/tools/CompsGeneratorModal.tsx`
+
+**Purpose**: Generate Hollywood comparable titles for Korean content to help with pitching and positioning.
+
+**Components**:
+- `src/components/tools/CompsGeneratorModal.tsx` - Main modal with AI + manual comp selection
+- `src/components/tools/ManualCompSearch.tsx` - IMDB title search via OMDB API
+- `src/services/compsGeneratorService.ts` - Edge function wrapper
+
+**Shared Package**: `@kstorybridge/tools`
+- Types: `SuggestedComp`, `OMDBSearchResult`
+- Service: `searchOMDBTitles()`, `createManualComp()`, `getIMDBUrl()`
+- Hook: `useOMDBAutocomplete()` - Debounced search with keyboard navigation
+
+**Features**:
+- AI-generated comps with dimension scoring (narrative, themes, tone, audience, etc.)
+- Manual IMDB search to add titles not suggested by AI
+- Visual differentiation: purple border (AI), teal border (manual)
+- "Manually Added" badge vs match score percentage
+- Duplicate prevention by imdbID
+- Remove button for manual comps
+- Dimension breakdown expandable (AI comps only)
+- Combined save of AI + manual comps to `comps_analysis` JSONB
+
+**Data Format** (Manual Comps):
+```typescript
+const manualComp: SuggestedComp = {
+  comp_title: 'Squid Game',
+  comp_year: 2021,
+  comp_type: 'TV Series',
+  overall_match_score: 0,           // No AI scoring
+  dimension_scores: [],              // Empty for manual
+  explanation: 'Manually added by user',
+  match_reasons: [],                 // Empty for manual
+  imdb_id: 'tt10919420',
+  imdb_url: 'https://www.imdb.com/title/tt10919420',
+  poster_url: 'https://...',
+  source: 'manual',                  // Track origin
+};
+```
+
+**Environment**: Requires `VITE_OMDB_API_KEY` for manual search feature.
+
+**See Also**: [packages/tools/README.md](../../packages/tools/README.md) - Shared tools documentation
 
 ---
 
@@ -761,6 +808,19 @@ See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for OAuth configuration details.
 
 ## 📝 Recent Changes
 
+### 2026-01-11: Comps Generator Manual IMDB Search
+- **Added**: Manual IMDB title search feature to Comps Generator
+- **New Component**: `src/components/tools/ManualCompSearch.tsx`
+- **Updated**: `src/components/tools/CompsGeneratorModal.tsx` with manual comp support
+- **Shared Package**: `@kstorybridge/tools` - OMDB service, types, autocomplete hook
+- **Features**:
+  - OMDB API search with debounced autocomplete (300ms)
+  - Duplicate prevention by imdbID
+  - Visual differentiation: teal border for manual, purple for AI
+  - Combined save of AI + manual comps
+- **Environment**: Requires `VITE_OMDB_API_KEY`
+- **See Also**: [packages/tools/README.md](../../packages/tools/README.md)
+
 ### 2025-12-03: Analytics Implementation Documentation
 - **Added**: Comprehensive analytics documentation at `docs/tracking/CREATOR_ANALYTICS_IMPLEMENTATION.md`
 - **GTM Container**: `GTM-PZBC4XQT` (shared across all apps)
@@ -814,6 +874,6 @@ See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for OAuth configuration details.
 
 ---
 
-**Last Updated**: 2025-11-12
+**Last Updated**: 2026-01-11
 **Status**: ✅ PRODUCTION READY
-**Version**: 2.0.0
+**Version**: 2.1.0

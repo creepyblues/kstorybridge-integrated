@@ -29,9 +29,7 @@ import {
 } from '@/services/weeklyTitleService';
 import { ConflictResolutionDialog } from '@/components/admin/ConflictResolutionDialog';
 import { CompsGeneratorModal } from '@/components/admin/CompsGeneratorModal';
-import { ManualCompSearch } from '@/components/admin/ManualCompSearch';
 import { FormatFitGeneratorModal } from '@/components/format-fit/FormatFitGeneratorModal';
-import { type SuggestedComp } from '@kstorybridge/tools';
 import { IntelligenceResultsModal } from '@/components/admin/IntelligenceResultsModal';
 import { KeyVisualsCollectorModal } from '@/components/admin/KeyVisualsCollectorModal';
 import { FanSignalResultsModal } from '@/components/admin/FanSignalResultsModal';
@@ -73,13 +71,14 @@ export default function WeeklyTitle() {
 
   // Editorial form state
   const [inputLogline, setInputLogline] = useState('');
-  const [inputComparables, setInputComparables] = useState<SuggestedComp[]>([]);
   const [inputCharacters, setInputCharacters] = useState<CharacterFormDetail[]>([]);
   const [inputSynopsis, setInputSynopsis] = useState('');
   const [inputSellingPoints, setInputSellingPoints] = useState('');
 
   // Save state
   const [saving, setSaving] = useState(false);
+  const [isSavedAsWeeklyTitle, setIsSavedAsWeeklyTitle] = useState(false);
+  const [isSyncedToDatabase, setIsSyncedToDatabase] = useState(false);
 
   // Conflict resolution state
   const [conflicts, setConflicts] = useState<FieldConflict[]>([]);
@@ -151,35 +150,6 @@ export default function WeeklyTitle() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Helper to parse comparables string into SuggestedComp array
-  const parseComparables = (str: string | null | undefined): SuggestedComp[] => {
-    if (!str) return [];
-    return str.split(',').map(s => s.trim()).filter(Boolean).map(title => ({
-      comp_title: title,
-      comp_type: '',
-      overall_match_score: 0,
-      dimension_scores: [],
-      explanation: 'Loaded from saved data',
-      match_reasons: [],
-      source: 'manual' as const,
-    }));
-  };
-
-  // Handlers for comparables
-  const handleAddComparable = (comp: SuggestedComp) => {
-    if (!inputComparables.find(c => c.imdb_id === comp.imdb_id)) {
-      setInputComparables(prev => [...prev, comp]);
-    }
-  };
-
-  const handleRemoveComparable = (imdbId: string) => {
-    setInputComparables(prev => prev.filter(c => c.imdb_id !== imdbId));
-  };
-
-  const existingComparableIds = new Set(
-    inputComparables.map(c => c.imdb_id).filter(Boolean) as string[]
-  );
-
   const loadWeeklyTitle = async () => {
     setLoading(true);
     try {
@@ -187,11 +157,14 @@ export default function WeeklyTitle() {
       const data = await weeklyTitleService.getWeeklyTitleByWeek(weekOf);
       setWeeklyTitle(data);
 
+      // Reset save indicators on load
+      setIsSavedAsWeeklyTitle(false);
+      setIsSyncedToDatabase(false);
+
       if (data) {
         // Populate form with existing data
         setSelectedTitle(data.titles);
         setInputLogline(data.input_logline || '');
-        setInputComparables(parseComparables(data.input_comparables));
         setInputCharacters(deserializeCharacters(data.input_characters));
         setInputSynopsis(data.input_synopsis || '');
         setInputSellingPoints(data.input_selling_points || '');
@@ -199,7 +172,6 @@ export default function WeeklyTitle() {
         // Clear form
         setSelectedTitle(null);
         setInputLogline('');
-        setInputComparables([]);
         setInputCharacters([]);
         setInputSynopsis('');
         setInputSellingPoints('');
@@ -257,7 +229,6 @@ export default function WeeklyTitle() {
         week_of: weekOf,
         title_id: selectedTitle.title_id,
         input_logline: inputLogline || undefined,
-        input_comparables: inputComparables.length > 0 ? inputComparables.map(c => c.comp_title).join(', ') : undefined,
         input_characters: serializedCharacters.length > 0 ? JSON.stringify(serializedCharacters) : undefined,
         input_synopsis: inputSynopsis || undefined,
         input_selling_points: inputSellingPoints || undefined,
@@ -278,6 +249,7 @@ export default function WeeklyTitle() {
       });
 
       await loadWeeklyTitle();
+      setIsSavedAsWeeklyTitle(true);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to save weekly title';
       console.error('Error saving weekly title:', error);
@@ -304,12 +276,10 @@ export default function WeeklyTitle() {
     try {
       // Detect conflicts
       const serializedChars = serializeCharacters(inputCharacters);
-      const comparablesString = inputComparables.map(c => c.comp_title).join(', ');
       const detectedConflicts = await weeklyTitleService.detectConflicts(
         selectedTitle.title_id,
         {
           input_logline: inputLogline,
-          input_comparables: comparablesString,
           input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
@@ -324,7 +294,6 @@ export default function WeeklyTitle() {
         // No conflicts, sync directly
         await weeklyTitleService.syncToTitlesTable(selectedTitle.title_id, {
           input_logline: inputLogline,
-          input_comparables: comparablesString,
           input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
@@ -336,6 +305,7 @@ export default function WeeklyTitle() {
         });
 
         await loadWeeklyTitle();
+        setIsSyncedToDatabase(true);
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to update title data';
@@ -354,12 +324,10 @@ export default function WeeklyTitle() {
     setIsApplyingConflicts(true);
     try {
       const serializedChars = serializeCharacters(inputCharacters);
-      const comparablesString = inputComparables.map(c => c.comp_title).join(', ');
       await weeklyTitleService.syncToTitlesTable(
         selectedTitle.title_id,
         {
           input_logline: inputLogline,
-          input_comparables: comparablesString,
           input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
           input_synopsis: inputSynopsis,
           input_selling_points: inputSellingPoints,
@@ -374,6 +342,7 @@ export default function WeeklyTitle() {
 
       setConflictDialogOpen(false);
       await loadWeeklyTitle();
+      setIsSyncedToDatabase(true);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to apply changes';
       console.error('Error applying conflict resolutions:', error);
@@ -706,34 +675,20 @@ export default function WeeklyTitle() {
               <p className="text-xs text-gray-500 mt-1">Maps to: tagline</p>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Comparables</Label>
-              <ManualCompSearch
-                onAdd={handleAddComparable}
-                existingImdbIds={existingComparableIds}
-                disabled={saving}
-              />
-              {inputComparables.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {inputComparables.map((comp) => (
-                    <div
-                      key={comp.imdb_id || comp.comp_title}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full text-sm"
-                    >
-                      <span>{comp.comp_title}</span>
-                      {comp.comp_year && <span className="text-gray-500">({comp.comp_year})</span>}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveComparable(comp.imdb_id || comp.comp_title)}
-                        className="text-gray-400 hover:text-red-500"
-                      >
-                        <Icon icon="solar:close-circle-bold" className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
+            <div className="space-y-2 opacity-50">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium text-gray-400">Comparables</Label>
+                <div className="relative inline-flex items-center">
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <Icon icon="solar:info-circle-bold" className="h-3.5 w-3.5" />
+                    <span>Use Comps Generator in Step 3</span>
+                  </div>
                 </div>
-              )}
-              <p className="text-xs text-gray-500">Maps to: comps (array)</p>
+              </div>
+              <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-sm text-gray-400 cursor-not-allowed">
+                Comparables will be generated using AI in Step 3
+              </div>
+              <p className="text-xs text-gray-400">Maps to: comps (array)</p>
             </div>
 
             <CharacterDetailsInput
@@ -782,6 +737,12 @@ export default function WeeklyTitle() {
                 </>
               )}
             </Button>
+            {isSavedAsWeeklyTitle && (
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-green-600">
+                <Icon icon="solar:check-circle-bold" className="h-4 w-4" />
+                <span className="text-sm">Saved as weekly title</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -985,6 +946,12 @@ export default function WeeklyTitle() {
               <Icon icon="solar:database-bold-duotone" className="h-4 w-4 mr-2" />
               Update Title Data
             </Button>
+            {isSyncedToDatabase && (
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-green-600">
+                <Icon icon="solar:check-circle-bold" className="h-4 w-4" />
+                <span className="text-sm">Updated to database</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

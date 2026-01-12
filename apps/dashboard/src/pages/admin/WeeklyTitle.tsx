@@ -75,10 +75,15 @@ export default function WeeklyTitle() {
   const [inputSynopsis, setInputSynopsis] = useState('');
   const [inputSellingPoints, setInputSellingPoints] = useState('');
 
+  // Step 6: Why This Title (description)
+  const [inputDescription, setInputDescription] = useState('');
+
   // Save state
   const [saving, setSaving] = useState(false);
+  const [savingDescription, setSavingDescription] = useState(false);
   const [isSavedAsWeeklyTitle, setIsSavedAsWeeklyTitle] = useState(false);
   const [isSyncedToDatabase, setIsSyncedToDatabase] = useState(false);
+  const [isSavedDescription, setIsSavedDescription] = useState(false);
 
   // Conflict resolution state
   const [conflicts, setConflicts] = useState<FieldConflict[]>([]);
@@ -160,6 +165,7 @@ export default function WeeklyTitle() {
       // Reset save indicators on load
       setIsSavedAsWeeklyTitle(false);
       setIsSyncedToDatabase(false);
+      setIsSavedDescription(false);
 
       if (data) {
         // Populate form with existing data
@@ -168,6 +174,7 @@ export default function WeeklyTitle() {
         setInputCharacters(deserializeCharacters(data.input_characters));
         setInputSynopsis(data.input_synopsis || '');
         setInputSellingPoints(data.input_selling_points || '');
+        setInputDescription(data.titles?.description || '');
       } else {
         // Clear form
         setSelectedTitle(null);
@@ -175,6 +182,7 @@ export default function WeeklyTitle() {
         setInputCharacters([]);
         setInputSynopsis('');
         setInputSellingPoints('');
+        setInputDescription('');
       }
     } catch (error) {
       console.error('Error loading weekly title:', error);
@@ -353,6 +361,43 @@ export default function WeeklyTitle() {
       });
     } finally {
       setIsApplyingConflicts(false);
+    }
+  };
+
+  // Step 6: Save description to titles table
+  const handleSaveDescription = async () => {
+    if (!selectedTitle) {
+      toast({
+        title: 'Error',
+        description: 'Please select a title first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSavingDescription(true);
+    try {
+      await titlesService.updateTitle(selectedTitle.title_id, {
+        description: inputDescription || undefined,
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Description saved successfully',
+      });
+
+      setIsSavedDescription(true);
+      await loadWeeklyTitle();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to save description';
+      console.error('Error saving description:', error);
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingDescription(false);
     }
   };
 
@@ -952,6 +997,60 @@ export default function WeeklyTitle() {
                 <span className="text-sm">Updated to database</span>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Why This Title */}
+      {selectedTitle && weeklyTitle && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Icon icon="solar:document-text-bold-duotone" className="h-5 w-5 text-hanok-teal" />
+              Step 6. Why This Title
+            </CardTitle>
+            <p className="text-sm text-gray-500 mt-1">
+              A source for marketing asset generation
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">Description</Label>
+                <Textarea
+                  placeholder="Explain why this title stands out and what makes it appealing for adaptation. This content will be used to generate marketing materials..."
+                  value={inputDescription}
+                  onChange={(e) => setInputDescription(e.target.value)}
+                  className="mt-1"
+                  rows={10}
+                />
+                <p className="text-xs text-gray-500 mt-1">Maps to: description</p>
+              </div>
+
+              <Button
+                onClick={handleSaveDescription}
+                disabled={savingDescription}
+                className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
+              >
+                {savingDescription ? (
+                  <>
+                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
+                    Save Description
+                  </>
+                )}
+              </Button>
+              {isSavedDescription && (
+                <div className="flex items-center justify-center gap-1.5 mt-3 text-green-600">
+                  <Icon icon="solar:check-circle-bold" className="h-4 w-4" />
+                  <span className="text-sm">Description saved</span>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

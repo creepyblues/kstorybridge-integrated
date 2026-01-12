@@ -115,7 +115,11 @@ export default function WeeklyTitle() {
     const timeoutId = setTimeout(async () => {
       setSearching(true);
       try {
-        const results = await titlesService.getTitles({ search: query });
+        // Use prioritizeTitleName for admin search - title name matches appear first
+        const results = await titlesService.getTitles({
+          search: query,
+          prioritizeTitleName: true
+        });
         setSearchResults(results.slice(0, 10));
       } catch (error) {
         console.error('Search error:', error);

@@ -245,7 +245,7 @@ export function CompsGeneratorModal({
 
   // Get all imdbIDs for duplicate prevention
   const existingImdbIds = new Set([
-    ...(response?.suggested_comps?.map((c) => c.imdb_id).filter(Boolean) ?? []),
+    ...((response?.suggested_comps?.map((c) => c.imdb_id).filter(Boolean) ?? []) as string[]),
     ...manualComps.map((c) => c.imdb_id).filter(Boolean) as string[],
   ]);
 

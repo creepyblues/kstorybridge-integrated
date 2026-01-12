@@ -160,6 +160,7 @@ export interface TitleFilters {
   search?: string;
   minRating?: number;
   completed?: boolean;
+  prioritizeTitleName?: boolean; // For admin searches - title name matches appear first
 }
 
 class TitlesService {
@@ -168,6 +169,11 @@ class TitlesService {
    */
   async getTitles(filters?: TitleFilters): Promise<Title[]> {
     try {
+      // Special handling for admin searches that prioritize title name matches
+      if (filters?.search && filters?.prioritizeTitleName) {
+        return this.getTitlesWithTitleNamePriority(filters);
+      }
+
       let query = supabase
         .from('titles')
         .select('*')
@@ -213,6 +219,85 @@ class TitlesService {
       console.error('❌ Titles service error:', error);
       throw error;
     }
+  }
+
+  /**
+   * Fetch titles with title name matches prioritized over synopsis matches.
+   * Used for admin searches where users typically search by title name.
+   */
+  private async getTitlesWithTitleNamePriority(filters: TitleFilters): Promise<Title[]> {
+    const searchTerm = filters.search!;
+
+    // First query: titles where name matches the search
+    let titleNameQuery = supabase
+      .from('titles')
+      .select('*')
+      .or(`title_name_en.ilike.%${searchTerm}%,title_name_kr.ilike.%${searchTerm}%`)
+      .order('priority', { ascending: true })
+      .order('verified', { ascending: false })
+      .order('views', { ascending: false, nullsFirst: false });
+
+    // Apply other filters
+    if (filters.genre) {
+      titleNameQuery = titleNameQuery.contains('genre', [filters.genre]);
+    }
+    if (filters.format) {
+      titleNameQuery = titleNameQuery.eq('content_format', filters.format);
+    }
+    if (filters.minRating !== undefined) {
+      titleNameQuery = titleNameQuery.gte('rating', filters.minRating);
+    }
+    if (filters.completed !== undefined) {
+      titleNameQuery = titleNameQuery.eq('completed', filters.completed);
+    }
+
+    const { data: titleMatches, error: titleError } = await titleNameQuery;
+
+    if (titleError) {
+      console.error('❌ Error fetching title name matches:', titleError);
+      throw new Error(`Failed to fetch titles: ${titleError.message}`);
+    }
+
+    // Get IDs of title name matches to exclude from synopsis search
+    const titleMatchIds = (titleMatches || []).map(t => t.title_id);
+
+    // Second query: titles where synopsis or genre matches, but not title name
+    let synopsisQuery = supabase
+      .from('titles')
+      .select('*')
+      .or(`synopsis.ilike.%${searchTerm}%,genre.cs.{${searchTerm}}`)
+      .order('priority', { ascending: true })
+      .order('verified', { ascending: false })
+      .order('views', { ascending: false, nullsFirst: false });
+
+    // Apply other filters
+    if (filters.genre) {
+      synopsisQuery = synopsisQuery.contains('genre', [filters.genre]);
+    }
+    if (filters.format) {
+      synopsisQuery = synopsisQuery.eq('content_format', filters.format);
+    }
+    if (filters.minRating !== undefined) {
+      synopsisQuery = synopsisQuery.gte('rating', filters.minRating);
+    }
+    if (filters.completed !== undefined) {
+      synopsisQuery = synopsisQuery.eq('completed', filters.completed);
+    }
+
+    const { data: synopsisMatches, error: synopsisError } = await synopsisQuery;
+
+    if (synopsisError) {
+      console.error('❌ Error fetching synopsis matches:', synopsisError);
+      throw new Error(`Failed to fetch titles: ${synopsisError.message}`);
+    }
+
+    // Filter out synopsis matches that are already in title matches
+    const uniqueSynopsisMatches = (synopsisMatches || []).filter(
+      t => !titleMatchIds.includes(t.title_id)
+    );
+
+    // Combine: title name matches first, then synopsis-only matches
+    return [...(titleMatches || []), ...uniqueSynopsisMatches];
   }
 
   /**

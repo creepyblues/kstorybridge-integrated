@@ -5,8 +5,10 @@ import { Card, CardContent } from '../components/ui/card';
 import FeaturedTitlesCarousel from '../components/FeaturedTitlesCarousel';
 import Footer from '../components/Footer';
 import { TypewriterText } from '../components/TypewriterText';
+import { LazyVideo } from '../components/LazyVideo';
 import { useTranslation } from 'react-i18next';
 import { getDashboardUrl } from '../config/urls';
+import { trackButtonClick } from '../utils/analytics';
 import {
   Bot,
   Shield,
@@ -106,30 +108,32 @@ const ProducersPage = () => {
                 id="buyers-hero-try-ai-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${getDashboardUrl()}/trial`}
+                onClick={() => {
+                  trackButtonClick('try-ai-trial', 'hero_section');
+                  window.location.href = `${getDashboardUrl()}/trial`;
+                }}
               >
                 {t('hero.cta')}
               </Button>
+
+              {/* Trust signal */}
+              <p className="mt-4 text-sm text-midnight-ink-600">
+                {t('hero.trust')}
+              </p>
             </div>
           </div>
         </section>
 
         {/* ========================================
-            SECTION 2: VIDEO SHOWCASE
+            SECTION 2: VIDEO SHOWCASE (Lazy-loaded)
             ======================================== */}
         <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-porcelain-blue-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  className="absolute top-0 left-0 w-full h-full rounded-2xl shadow-lg"
-                  src="https://www.youtube.com/embed/BJS2m-MfOFg"
-                  title="KStoryBridge Video"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
+              <LazyVideo
+                videoId="BJS2m-MfOFg"
+                title="KStoryBridge - Find Your Next Korean Hit"
+              />
             </div>
           </div>
         </section>
@@ -418,7 +422,10 @@ const ProducersPage = () => {
               <Button
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${getDashboardUrl()}/signup/producer`}
+                onClick={() => {
+                  trackButtonClick('get-started-signup', 'final_cta_section');
+                  window.location.href = `${getDashboardUrl()}/signup/producer`;
+                }}
               >
                 Get Started Today
               </Button>

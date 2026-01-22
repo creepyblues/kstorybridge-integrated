@@ -58,7 +58,7 @@ export default function ChatTest() {
 
   // Access control - admin only
   const { accountType, loading: accountTypeLoading } = useAccountType();
-  const isAuthorized = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  const isAuthorized = user?.email === 'sungho@kstorybridge.com' || user?.email === 'kevin@sandstoneartists.com';
 
   // Handle applying config changes
   const handleApplyChanges = () => {

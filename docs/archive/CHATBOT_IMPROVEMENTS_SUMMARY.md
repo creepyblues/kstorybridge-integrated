@@ -110,7 +110,7 @@ What is it about survival stories that draws you in? The psychological aspect or
 
 **Access**: Dashboard running on http://localhost:8082/
 **Page**: Navigate to Profile → OpenAI Chatbot
-**Authorized Users**: sungho@dadble.com, kevin@sandstoneartists.com
+**Authorized Users**: sungho@kstorybridge.com, kevin@sandstoneartists.com
 
 **Test Queries**:
 1. "I love action movies like John Wick"

@@ -8,7 +8,7 @@ const corsHeaders = {
 // Email addresses and domains to exclude from Slack notifications
 const EXCLUDED_EMAILS = [
   'kevin@sandstoneartists.com',
-  'sungho@dadble.com',
+  'sungho@kstorybridge.com',
   'creepyblues@gmail.com'
 ]
 

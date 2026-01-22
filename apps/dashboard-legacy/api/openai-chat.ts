@@ -130,7 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Check user authorization
-    const ALLOWED_USERS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+    const ALLOWED_USERS = ['sungho@kstorybridge.com', 'kevin@sandstoneartists.com'];
     if (!ALLOWED_USERS.includes(user.email || '')) {
       console.log('❌ User not authorized:', user.email);
       return res.status(403).json({ error: 'Forbidden - User not authorized for OpenAI chatbot' });

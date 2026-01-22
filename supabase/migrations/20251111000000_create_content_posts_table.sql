@@ -75,13 +75,13 @@ CREATE POLICY "Admins can manage content posts"
   TO authenticated
   USING (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   )
   WITH CHECK (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );

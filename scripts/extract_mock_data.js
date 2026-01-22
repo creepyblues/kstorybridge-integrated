@@ -5,7 +5,7 @@
  * 
  * This script extracts real data from the Supabase database to create
  * mock data for localhost development, including:
- * - User data for sungho@dadble.com from user_buyers table
+ * - User data for sungho@kstorybridge.com from user_buyers table
  * - Top 6 featured titles from featured table with titles data
  */
 
@@ -36,13 +36,13 @@ async function extractMockData() {
   };
 
   try {
-    // 1. Extract user data for sungho@dadble.com
-    console.log('👤 Extracting user data for sungho@dadble.com...');
+    // 1. Extract user data for sungho@kstorybridge.com
+    console.log('👤 Extracting user data for sungho@kstorybridge.com...');
     
     const { data: userData, error: userError } = await supabase
       .from('user_buyers')
       .select('*')
-      .eq('email', 'sungho@dadble.com')
+      .eq('email', 'sungho@kstorybridge.com')
       .single();
 
     if (userError) {

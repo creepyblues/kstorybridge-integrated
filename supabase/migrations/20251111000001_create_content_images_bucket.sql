@@ -33,7 +33,7 @@ CREATE POLICY "Admins can upload content images"
   WITH CHECK (
     bucket_id = 'content-posts-images' AND
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -46,14 +46,14 @@ CREATE POLICY "Admins can update content images"
   USING (
     bucket_id = 'content-posts-images' AND
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   )
   WITH CHECK (
     bucket_id = 'content-posts-images' AND
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -66,7 +66,7 @@ CREATE POLICY "Admins can delete content images"
   USING (
     bucket_id = 'content-posts-images' AND
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );

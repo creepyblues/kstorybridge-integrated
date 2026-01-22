@@ -127,10 +127,10 @@ npm run test:watch
 **Problem**:
 ```typescript
 // Edge function
-const AUTHORIZED_ADMINS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+const AUTHORIZED_ADMINS = ['sungho@kstorybridge.com', 'kevin@sandstoneartists.com'];
 
 // RLS policies (4 separate instances)
-USING ((auth.jwt() ->> 'email') IN ('sungho@dadble.com', 'kevin@sandstoneartists.com'))
+USING ((auth.jwt() ->> 'email') IN ('sungho@kstorybridge.com', 'kevin@sandstoneartists.com'))
 ```
 
 **Impact**:

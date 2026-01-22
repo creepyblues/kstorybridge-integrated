@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS title_marketing_assets (
 
   -- Approval workflow (admin info stored as text, NO foreign key)
   approved BOOLEAN DEFAULT FALSE,
-  approved_by_email TEXT,               -- Email stored directly (e.g., 'sungho@dadble.com')
+  approved_by_email TEXT,               -- Email stored directly (e.g., 'sungho@kstorybridge.com')
   approved_at TIMESTAMP WITH TIME ZONE,
 
   -- Timestamps
@@ -111,7 +111,7 @@ CREATE POLICY "Admins can view all marketing assets"
   TO authenticated
   USING (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -122,7 +122,7 @@ CREATE POLICY "Admins can insert marketing assets"
   TO authenticated
   WITH CHECK (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -133,13 +133,13 @@ CREATE POLICY "Admins can update marketing assets"
   TO authenticated
   USING (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   )
   WITH CHECK (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -150,7 +150,7 @@ CREATE POLICY "Admins can delete marketing assets"
   TO authenticated
   USING (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -187,7 +187,7 @@ COMMENT ON COLUMN title_marketing_assets.title_name IS
   'Title name stored directly to avoid lookups. Passed as parameter during creation.';
 
 COMMENT ON COLUMN title_marketing_assets.approved_by_email IS
-  'Admin email stored directly (no FK to admin table). E.g., sungho@dadble.com';
+  'Admin email stored directly (no FK to admin table). E.g., sungho@kstorybridge.com';
 
 COMMENT ON COLUMN title_marketing_assets.generation_cost IS
   'Cost in USD for generating this asset (e.g., $0.08 for DALL-E 3 HD)';
@@ -206,4 +206,4 @@ COMMENT ON COLUMN title_marketing_assets.generation_cost IS
 
 -- To add a new admin, create a new migration:
 -- ALTER POLICY "Admins can view all marketing assets" ...
--- USING ((auth.jwt() ->> 'email') IN ('sungho@dadble.com', 'kevin@sandstoneartists.com', 'new@admin.com'))
+-- USING ((auth.jwt() ->> 'email') IN ('sungho@kstorybridge.com', 'kevin@sandstoneartists.com', 'new@admin.com'))

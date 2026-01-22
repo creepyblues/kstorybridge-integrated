@@ -41,7 +41,7 @@ async function testThisIsUsSearch() {
   const { data, error } = await supabase.functions.invoke('comp-navigator', {
     body: {
       comp_titles: ['This Is Us'],
-      user_email: 'sungho@dadble.com',
+      user_email: 'sungho@kstorybridge.com',
       save_search: false
     },
     headers: {

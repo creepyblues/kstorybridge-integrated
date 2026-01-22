@@ -182,7 +182,7 @@
 ## Admin Users
 
 Current admin emails (check `admin` table):
-- sungho@dadble.com
+- sungho@kstorybridge.com
 - kevin@sandstoneartists.com
 
 **To add new admin:**

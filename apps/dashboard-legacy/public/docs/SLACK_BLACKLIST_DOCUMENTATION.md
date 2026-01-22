@@ -8,7 +8,7 @@ The KStoryBridge monorepo implements a comprehensive blacklist system to filter 
 
 ### ✅ Blacklisted Emails
 All Slack notifications are filtered to exclude these specific email addresses:
-- `sungho@dadble.com` - Added as requested
+- `sungho@kstorybridge.com` - Added as requested
 - `kevin@sandstoneartists.com` - Added as requested
 - `creepyblues@gmail.com` - Existing blacklisted account
 
@@ -27,7 +27,7 @@ The blacklist is implemented consistently across all applications using identica
 // Email addresses and domains to exclude from Slack notifications
 const EXCLUDED_EMAILS = [
   'kevin@sandstoneartists.com',
-  'sungho@dadble.com',
+  'sungho@kstorybridge.com',
   'creepyblues@gmail.com'
 ];
 
@@ -127,7 +127,7 @@ Update the `EXCLUDED_EMAILS` array in both:
 ```typescript
 const EXCLUDED_EMAILS = [
   'kevin@sandstoneartists.com',
-  'sungho@dadble.com',
+  'sungho@kstorybridge.com',
   'creepyblues@gmail.com',
   'new-email@example.com' // Add new email here
 ];
@@ -174,7 +174,7 @@ import { sendSlackNotification } from './slack';
 ### Console Logging
 When an email is filtered, you'll see console logs:
 ```
-🚫 Skipping Slack notification for excluded email: sungho@dadble.com
+🚫 Skipping Slack notification for excluded email: sungho@kstorybridge.com
 🚫 Skipping Slack notification for excluded domain: dadble.com
 ```
 
@@ -208,7 +208,7 @@ window.testSlackNotification();
 ## Quick Reference
 
 **Current Blacklisted Emails:**
-- `sungho@dadble.com`
+- `sungho@kstorybridge.com`
 - `kevin@sandstoneartists.com`
 - `creepyblues@gmail.com`
 

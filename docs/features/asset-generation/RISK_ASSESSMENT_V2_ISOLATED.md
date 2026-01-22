@@ -61,7 +61,7 @@ EXISTS (SELECT 1 FROM admin WHERE ...)      -- ❌ Queries admin table
 **V2 (Isolated - APPROVED)**:
 ```sql
 (auth.jwt() ->> 'email') IN (               -- ✅ Hardcoded list
-  'sungho@dadble.com',
+  'sungho@kstorybridge.com',
   'kevin@sandstoneartists.com'
 )
 ```
@@ -215,7 +215,7 @@ CREATE POLICY "Admins can view all marketing assets"
   TO authenticated
   USING (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com',
       'newadmin@kstorybridge.com'
     )

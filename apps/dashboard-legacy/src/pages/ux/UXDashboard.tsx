@@ -12,7 +12,7 @@ export default function UXDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('journey');
 
-  const isAdmin = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  const isAdmin = user?.email === 'sungho@kstorybridge.com' || user?.email === 'kevin@sandstoneartists.com';
 
   if (!isAdmin) {
     return <Navigate to="/docs" replace />;

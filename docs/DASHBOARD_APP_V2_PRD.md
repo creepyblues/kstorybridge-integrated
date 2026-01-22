@@ -196,7 +196,7 @@ const tierHierarchy = {
 
 #### Admin Access Control
 **Admin Emails** (hardcoded whitelist):
-- `sungho@dadble.com`
+- `sungho@kstorybridge.com`
 - `kevin@sandstoneartists.com`
 
 **Admin Routes** (accessible via `/experiment` gateway):

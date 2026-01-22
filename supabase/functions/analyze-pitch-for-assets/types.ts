@@ -20,7 +20,7 @@ export interface AnalyzePitchRequest {
   pitch_analysis?: PitchAnalysis; // Optional: Pre-extracted pitch analysis from title_content_analysis
 
   // Admin context (passed from auth)
-  admin_email: string;         // Email of requesting admin (e.g., 'sungho@dadble.com')
+  admin_email: string;         // Email of requesting admin (e.g., 'sungho@kstorybridge.com')
 }
 
 /**

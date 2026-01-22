@@ -8,7 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA';
 
-const TEST_EMAIL = process.env.TEST_EMAIL || 'sungho@dadble.com';
+const TEST_EMAIL = process.env.TEST_EMAIL || 'sungho@kstorybridge.com';
 const TEST_PASSWORD = process.env.TEST_PASSWORD;
 
 const TEST_QUERIES = [
@@ -33,7 +33,7 @@ async function verifyDeployment() {
 
   if (!TEST_PASSWORD) {
     console.error('❌ Error: TEST_PASSWORD environment variable required');
-    console.log('   Usage: TEST_EMAIL="sungho@dadble.com" TEST_PASSWORD="..." node verify-deployment.js');
+    console.log('   Usage: TEST_EMAIL="sungho@kstorybridge.com" TEST_PASSWORD="..." node verify-deployment.js');
     process.exit(1);
   }
 

@@ -236,7 +236,7 @@ Deploy is successful if after 4 weeks:
 
 ## 👥 Stakeholders
 
-**Technical Owner**: Sungho Lee (sungho@dadble.com)
+**Technical Owner**: Sungho Lee (sungho@kstorybridge.com)
 **AI Assistant**: Claude Code (Anthropic)
 **Monitoring Responsibility**: Product team (daily check Week 1)
 

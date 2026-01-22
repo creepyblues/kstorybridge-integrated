@@ -62,7 +62,7 @@ CREATE POLICY "Users can update their own feedback" ON chat_message_feedback
 CREATE POLICY "Admins can view all feedback" ON chat_message_feedback
     FOR SELECT 
     USING (
-        auth.jwt() ->> 'email' IN ('sungho@dadble.com', 'kevin@sandstoneartists.com')
+        auth.jwt() ->> 'email' IN ('sungho@kstorybridge.com', 'kevin@sandstoneartists.com')
     );
 
 -- Add trigger for updating updated_at timestamp

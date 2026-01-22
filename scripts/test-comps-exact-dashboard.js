@@ -14,7 +14,7 @@ async function testDashboardCall() {
 
   const requestBody = {
     comp_titles: ['This Is Us'],
-    user_email: 'sungho@dadble.com',
+    user_email: 'sungho@kstorybridge.com',
     save_search: true,
     search_name: 'Test Search'
   };
@@ -37,7 +37,7 @@ async function testDashboardCall() {
   const { data: searches, error: searchError } = await supabase
     .from('comp_searches')
     .select('*')
-    .eq('user_email', 'sungho@dadble.com')
+    .eq('user_email', 'sungho@kstorybridge.com')
     .order('created_at', { ascending: false })
     .limit(5);
 

@@ -32,10 +32,10 @@ create policy "Allow admins to manage ux_messaging"
   on ux_messaging for all
   to authenticated
   using (
-    auth.jwt() ->> 'email' in ('sungho@dadble.com', 'kevin@sandstoneartists.com')
+    auth.jwt() ->> 'email' in ('sungho@kstorybridge.com', 'kevin@sandstoneartists.com')
   )
   with check (
-    auth.jwt() ->> 'email' in ('sungho@dadble.com', 'kevin@sandstoneartists.com')
+    auth.jwt() ->> 'email' in ('sungho@kstorybridge.com', 'kevin@sandstoneartists.com')
   );
 
 -- Insert initial messaging data extracted from existing pages

@@ -37,7 +37,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
 ```typescript
 {
   "asset_id": "123e4567-e89b-12d3-a456-426614174000",  // Required
-  "admin_email": "sungho@dadble.com",                   // Required
+  "admin_email": "sungho@kstorybridge.com",                   // Required
   "custom_prompt": "Optional custom prompt...",         // Optional
   "use_hd": false                                       // Optional (default: false)
 }
@@ -107,7 +107,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
 ## 🔒 Authorization
 
 **Authorized Admins:**
-- `sungho@dadble.com`
+- `sungho@kstorybridge.com`
 - `kevin@sandstoneartists.com`
 
 ---

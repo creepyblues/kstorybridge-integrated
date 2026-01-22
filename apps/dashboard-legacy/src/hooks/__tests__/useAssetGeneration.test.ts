@@ -171,7 +171,7 @@ describe('useAssetGeneration hooks', () => {
         title_id: 'title-123',
         title_name: 'Test Title',
         pitch_deck_url: 'https://example.com/pitch.pdf',
-        admin_email: 'sungho@dadble.com',
+        admin_email: 'sungho@kstorybridge.com',
       };
 
       result.current.mutate(request);
@@ -207,7 +207,7 @@ describe('useAssetGeneration hooks', () => {
 
       const request = {
         asset_id: 'asset-123',
-        admin_email: 'sungho@dadble.com',
+        admin_email: 'sungho@kstorybridge.com',
         use_hd: false,
       };
 
@@ -231,7 +231,7 @@ describe('useAssetGeneration hooks', () => {
       const params = {
         assetId: 'asset-123',
         approved: true,
-        adminEmail: 'sungho@dadble.com',
+        adminEmail: 'sungho@kstorybridge.com',
       };
 
       result.current.mutate(params);

@@ -23,7 +23,7 @@ const ChatbotFeedbackAnalysis: React.FC<FeedbackAnalysisProps> = () => {
   const [selectedQuality, setSelectedQuality] = useState<string | null>(null);
 
   // Authorization check - restrict to admin users
-  const isAuthorized = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  const isAuthorized = user?.email === 'sungho@kstorybridge.com' || user?.email === 'kevin@sandstoneartists.com';
 
   useEffect(() => {
     if (!isAuthorized) {

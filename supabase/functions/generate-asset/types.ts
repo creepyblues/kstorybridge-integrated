@@ -297,7 +297,7 @@ export const DEFAULT_CONFIG: GenerationConfig = {
  * Must match the list in analyze-pitch-for-assets function
  */
 export const AUTHORIZED_ADMINS = [
-  'sungho@dadble.com',
+  'sungho@kstorybridge.com',
   'kevin@sandstoneartists.com',
 ];
 

@@ -102,7 +102,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
   },
 
   // Admin context (from auth)
-  "admin_email": "sungho@dadble.com"
+  "admin_email": "sungho@kstorybridge.com"
 }
 ```
 
@@ -185,7 +185,7 @@ Authorization: Bearer <SUPABASE_ANON_KEY>
 ### Authorized Admins
 
 Only these email addresses can call this function:
-- `sungho@dadble.com`
+- `sungho@kstorybridge.com`
 - `kevin@sandstoneartists.com`
 
 To add a new admin, create a new database migration that updates the RLS policies.
@@ -314,7 +314,7 @@ curl -X POST http://localhost:54321/functions/v1/analyze-pitch-for-assets \
     "title_id": "test-123",
     "title_name": "Test Title",
     "pitch_deck_url": "https://...",
-    "admin_email": "sungho@dadble.com"
+    "admin_email": "sungho@kstorybridge.com"
   }'
 ```
 

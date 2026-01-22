@@ -307,7 +307,7 @@ If issues persist after deployment:
 1. Check edge function logs for specific errors
 2. Verify database migration applied: Check for `match_titles_by_embedding_optimized` in Supabase
 3. Test with simple 2-title queries first
-4. Contact: sungho@dadble.com
+4. Contact: sungho@kstorybridge.com
 
 ---
 

@@ -130,7 +130,7 @@ async function runPerformanceTest() {
   console.log('🚀 Tier Access Performance Test');
   console.log('================================\n');
   
-  const testEmail = 'sungho@dadble.com';
+  const testEmail = 'sungho@kstorybridge.com';
   const scenarios = [
     { name: 'Single Title Detail Page', checks: 4 },
     { name: 'Titles Page (10 titles)', checks: 20 },  // 2 premium columns per title

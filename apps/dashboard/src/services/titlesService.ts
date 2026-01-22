@@ -6,7 +6,7 @@ import { vectorSearchService, type VectorSearchResult } from './vectorSearchServ
 export interface CharacterDetail {
   name: string;
   name_kr?: string;
-  role: 'protagonist' | 'antagonist' | 'supporting' | 'minor';
+  role: 'protagonist' | 'antagonist' | 'supporting' | 'minor' | 'romantic_foil' | 'romantic_false_foil';
   age?: number | string;
   gender?: string;
   ethnicity?: string;
@@ -104,6 +104,7 @@ export interface Title {
   rights_holder_company?: string;
   cp?: string;
   pitch?: string;
+  selling_points?: string;
   perfect_for?: string;
   comps?: string[];
 

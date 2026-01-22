@@ -51,6 +51,12 @@ import {
   getFitLevelLabel,
 } from '@/services/formatFitService';
 import { Icon } from '@iconify/react';
+import {
+  CharacterDetailsInput,
+  serializeCharacters,
+  deserializeCharacters,
+  type CharacterFormDetail,
+} from '@/components/admin/CharacterDetailsInput';
 
 // Genre options
 const GENRE_OPTIONS = [
@@ -142,6 +148,9 @@ export function TitleEditModal({
   const [hasFormatFit, setHasFormatFit] = useState(false);
   const [formatFitData, setFormatFitData] = useState<FormatFitRecord | null>(null);
 
+  // Character details state for structured input
+  const [inputCharacters, setInputCharacters] = useState<CharacterFormDetail[]>([]);
+
   // Check which analyzers have data for this title
   const checkAnalyzerDataExists = async (id: string, titleData: Title | null) => {
     try {
@@ -184,6 +193,8 @@ export function TitleEditModal({
       if (data) {
         setTitle(data);
         setFormData(data);
+        // Initialize character details for structured input
+        setInputCharacters(deserializeCharacters(data.character_details ?? null));
         // Check which analyzers have data
         checkAnalyzerDataExists(id, data);
       } else {
@@ -247,10 +258,15 @@ export function TitleEditModal({
         }
       }
 
+      // Serialize characters from structured input
+      const serializedCharacters = serializeCharacters(inputCharacters);
+
       // Update the title with provenance tracking
       // Cast to Record to include new provenance columns not yet in generated types
       const updateWithProvenance = {
         ...updates,
+        // Override character_details with serialized data from structured input
+        character_details: serializedCharacters.length > 0 ? serializedCharacters : null,
         last_modified_by: user.email,
         last_modified_source: 'admin',
       } as Record<string, unknown>;
@@ -1223,22 +1239,29 @@ export function TitleEditModal({
                         className="resize-none"
                       />
                     </div>
+                    {/* Character Details - using structured input */}
                     <div className="space-y-1">
-                      <Label htmlFor="character_details" className="text-sm">Character Details (JSON) <span className="text-gray-400 font-normal">{'{character_details}'}</span></Label>
+                      <Label className="text-xs font-medium text-gray-700">
+                        Character Details <span className="text-gray-400 font-normal">{'{character_details}'}</span>
+                      </Label>
+                      <CharacterDetailsInput
+                        characters={inputCharacters}
+                        onChange={setInputCharacters}
+                      />
+                    </div>
+
+                    {/* Selling Points */}
+                    <div className="space-y-1">
+                      <Label htmlFor="selling_points" className="text-sm">
+                        Selling Points <span className="text-gray-400 font-normal">{'{selling_points}'}</span>
+                      </Label>
                       <Textarea
-                        id="character_details"
-                        value={formData.character_details ? JSON.stringify(formData.character_details, null, 2) : ''}
-                        onChange={(e) => {
-                          try {
-                            const parsed = e.target.value ? JSON.parse(e.target.value) : [];
-                            handleInputChange('character_details', parsed);
-                          } catch {
-                            // Keep raw value for continued editing
-                          }
-                        }}
-                        rows={4}
-                        className="resize-none font-mono text-sm"
-                        placeholder='[{"name": "Character Name", "role": "protagonist"}]'
+                        id="selling_points"
+                        placeholder="Key reasons why this title is marketable..."
+                        value={formData.selling_points || ''}
+                        onChange={(e) => handleInputChange('selling_points', e.target.value)}
+                        rows={3}
+                        className="resize-none mt-1 bg-white border-gray-300 text-sm"
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

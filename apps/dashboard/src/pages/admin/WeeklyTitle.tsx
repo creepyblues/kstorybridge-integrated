@@ -49,6 +49,12 @@ import {
   deserializeCharacters,
   type CharacterFormDetail,
 } from '@/components/admin/CharacterDetailsInput';
+import { CompsAnalysisCard } from '@/components/title-detail/CompsAnalysisCard';
+import { FormatFitDetailPanel } from '@/components/format-fit/FormatFitDetailPanel';
+import {
+  compsGeneratorService,
+  type SuggestedComp,
+} from '@/services/compsGeneratorService';
 
 export default function WeeklyTitle() {
   const { toast } = useToast();
@@ -103,6 +109,10 @@ export default function WeeklyTitle() {
   const [collectingIntelligence, setCollectingIntelligence] = useState(false);
   const [_collectingFanSignal, _setCollectingFanSignal] = useState(false); // Disabled feature
   const [isIngesting, setIsIngesting] = useState(false);
+
+  // Analyzer results state
+  const [compsAnalysis, setCompsAnalysis] = useState<SuggestedComp[] | null>(null);
+  const [loadingComps, setLoadingComps] = useState(false);
 
   // Title display sections
   const [openSections, setOpenSections] = useState<string[]>(['basic', 'content', 'metrics']);
@@ -175,6 +185,10 @@ export default function WeeklyTitle() {
         setInputSynopsis(data.input_synopsis || '');
         setInputSellingPoints(data.input_selling_points || '');
         setInputDescription(data.titles?.description || '');
+        // Load comps analysis
+        if (data.titles?.title_id) {
+          loadCompsAnalysis(data.titles.title_id);
+        }
       } else {
         // Clear form
         setSelectedTitle(null);
@@ -183,6 +197,7 @@ export default function WeeklyTitle() {
         setInputSynopsis('');
         setInputSellingPoints('');
         setInputDescription('');
+        setCompsAnalysis(null);
       }
     } catch (error) {
       console.error('Error loading weekly title:', error);
@@ -196,15 +211,30 @@ export default function WeeklyTitle() {
     }
   };
 
+  const loadCompsAnalysis = async (titleId: string) => {
+    setLoadingComps(true);
+    try {
+      const { analysis } = await compsGeneratorService.getCompsWithAnalysis(titleId);
+      setCompsAnalysis(analysis);
+    } catch (error) {
+      console.error('Error loading comps analysis:', error);
+      setCompsAnalysis(null);
+    } finally {
+      setLoadingComps(false);
+    }
+  };
+
   const handleSelectTitle = (title: Title) => {
     setSelectedTitle(title);
     setSearchQuery('');
     setShowResults(false);
+    loadCompsAnalysis(title.title_id);
   };
 
   const clearSelectedTitle = () => {
     setSelectedTitle(null);
     setSearchQuery('');
+    setCompsAnalysis(null);
   };
 
   const handlePrevWeek = () => {
@@ -880,13 +910,97 @@ export default function WeeklyTitle() {
         </Card>
       )}
 
+      {/* Analyzer Results - Step 4 */}
+      {selectedTitle && weeklyTitle && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Icon icon="solar:chart-2-bold-duotone" className="h-5 w-5 text-hanok-teal" />
+              Step 4. Analyzer Results
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Comps Analysis Section */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <Icon icon="solar:clapperboard-open-play-bold-duotone" className="h-4 w-4 text-purple-500" />
+                  Comparable Titles
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCompsModalOpen(true)}
+                  className="text-xs text-purple-600 hover:text-purple-700"
+                >
+                  <Icon icon="solar:refresh-bold-duotone" className="h-3 w-3 mr-1" />
+                  {compsAnalysis && compsAnalysis.length > 0 ? 'Regenerate' : 'Generate'}
+                </Button>
+              </div>
+
+              {loadingComps ? (
+                <div className="flex items-center justify-center py-8">
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-6 w-6 animate-spin text-gray-400" />
+                </div>
+              ) : compsAnalysis && compsAnalysis.length > 0 ? (
+                <CompsAnalysisCard
+                  compsAnalysis={compsAnalysis}
+                  showTitle={false}
+                />
+              ) : (
+                <div className="border border-dashed border-gray-300 rounded-xl p-6 text-center">
+                  <Icon icon="solar:clapperboard-open-play-bold-duotone" className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">No comps analysis yet</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCompsModalOpen(true)}
+                    className="mt-3 border-purple-300 text-purple-600 hover:bg-purple-50"
+                  >
+                    <Icon icon="solar:play-bold-duotone" className="h-3.5 w-3.5 mr-1.5" />
+                    Run Comps Generator
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200" />
+
+            {/* Format Fit Section */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <Icon icon="solar:chart-square-bold-duotone" className="h-4 w-4 text-blue-500" />
+                  Format Fit Analysis
+                </h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFormatFitModalOpen(true)}
+                  className="text-xs text-blue-600 hover:text-blue-700"
+                >
+                  <Icon icon="solar:refresh-bold-duotone" className="h-3 w-3 mr-1" />
+                  Regenerate
+                </Button>
+              </div>
+
+              <FormatFitDetailPanel
+                titleId={selectedTitle.title_id}
+                className="border-blue-200"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Title Data Display */}
       {selectedTitle && weeklyTitle && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Icon icon="solar:database-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Step 4. Confirm Title Data
+              Step 5. Confirm Title Data
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -977,7 +1091,7 @@ export default function WeeklyTitle() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Icon icon="solar:cloud-upload-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Step 5. Sync to Database
+              Step 6. Sync to Database
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1007,7 +1121,7 @@ export default function WeeklyTitle() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Icon icon="solar:document-text-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Step 6. Why This Title
+              Step 7. Why This Title
             </CardTitle>
             <p className="text-sm text-gray-500 mt-1">
               A source for marketing asset generation
@@ -1071,7 +1185,10 @@ export default function WeeklyTitle() {
             titleId={selectedTitle.title_id}
             open={compsModalOpen}
             onOpenChange={setCompsModalOpen}
-            onSaved={loadWeeklyTitle}
+            onSaved={() => {
+              loadWeeklyTitle();
+              loadCompsAnalysis(selectedTitle.title_id);
+            }}
           />
 
           <FormatFitGeneratorModal

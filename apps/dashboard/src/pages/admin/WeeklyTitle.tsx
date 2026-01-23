@@ -6,11 +6,13 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { TitleEditModal } from '@/components/admin/TitleEditModal';
 import {
   Collapsible,
   CollapsibleContent,
@@ -23,11 +25,9 @@ import { titlesService, type Title } from '@/services/titlesService';
 import {
   weeklyTitleService,
   type WeeklyTitleWithTitle,
-  type FieldConflict,
   getMondayOfWeek,
   formatDateToISO,
 } from '@/services/weeklyTitleService';
-import { ConflictResolutionDialog } from '@/components/admin/ConflictResolutionDialog';
 import { CompsGeneratorModal } from '@/components/admin/CompsGeneratorModal';
 import { FormatFitGeneratorModal } from '@/components/format-fit/FormatFitGeneratorModal';
 import { IntelligenceResultsModal } from '@/components/admin/IntelligenceResultsModal';
@@ -43,12 +43,6 @@ import {
   type FanSignalData,
   type ExtractedIntelligenceData,
 } from '@/services/intelligenceService';
-import {
-  CharacterDetailsInput,
-  serializeCharacters,
-  deserializeCharacters,
-  type CharacterFormDetail,
-} from '@/components/admin/CharacterDetailsInput';
 import { CompsAnalysisCard } from '@/components/title-detail/CompsAnalysisCard';
 import { FormatFitDetailPanel } from '@/components/format-fit/FormatFitDetailPanel';
 import {
@@ -75,26 +69,13 @@ export default function WeeklyTitle() {
   const [showResults, setShowResults] = useState(false);
   const [selectedTitle, setSelectedTitle] = useState<Title | null>(null);
 
-  // Editorial form state
-  const [inputLogline, setInputLogline] = useState('');
-  const [inputCharacters, setInputCharacters] = useState<CharacterFormDetail[]>([]);
-  const [inputSynopsis, setInputSynopsis] = useState('');
-  const [inputSellingPoints, setInputSellingPoints] = useState('');
-
   // Step 6: Why This Title (description)
   const [inputDescription, setInputDescription] = useState('');
 
   // Save state
   const [saving, setSaving] = useState(false);
   const [savingDescription, setSavingDescription] = useState(false);
-  const [isSavedAsWeeklyTitle, setIsSavedAsWeeklyTitle] = useState(false);
-  const [isSyncedToDatabase, setIsSyncedToDatabase] = useState(false);
   const [isSavedDescription, setIsSavedDescription] = useState(false);
-
-  // Conflict resolution state
-  const [conflicts, setConflicts] = useState<FieldConflict[]>([]);
-  const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
-  const [isApplyingConflicts, setIsApplyingConflicts] = useState(false);
 
   // Analyzer modals
   const [compsModalOpen, setCompsModalOpen] = useState(false);
@@ -102,6 +83,10 @@ export default function WeeklyTitle() {
   const [intelligenceModalOpen, setIntelligenceModalOpen] = useState(false);
   const [keyVisualsModalOpen, setKeyVisualsModalOpen] = useState(false);
   const [fanSignalModalOpen, setFanSignalModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // Submit state
+  const [submitting, setSubmitting] = useState(false);
 
   // Intelligence data
   const [intelligenceResults, setIntelligenceResults] = useState<IntelligenceTitleWithSources | null>(null);
@@ -173,17 +158,11 @@ export default function WeeklyTitle() {
       setWeeklyTitle(data);
 
       // Reset save indicators on load
-      setIsSavedAsWeeklyTitle(false);
-      setIsSyncedToDatabase(false);
       setIsSavedDescription(false);
 
       if (data) {
         // Populate form with existing data
         setSelectedTitle(data.titles);
-        setInputLogline(data.input_logline || '');
-        setInputCharacters(deserializeCharacters(data.input_characters));
-        setInputSynopsis(data.input_synopsis || '');
-        setInputSellingPoints(data.input_selling_points || '');
         setInputDescription(data.titles?.description || '');
         // Load comps analysis
         if (data.titles?.title_id) {
@@ -192,10 +171,6 @@ export default function WeeklyTitle() {
       } else {
         // Clear form
         setSelectedTitle(null);
-        setInputLogline('');
-        setInputCharacters([]);
-        setInputSynopsis('');
-        setInputSellingPoints('');
         setInputDescription('');
         setCompsAnalysis(null);
       }
@@ -229,12 +204,45 @@ export default function WeeklyTitle() {
     setSearchQuery('');
     setShowResults(false);
     loadCompsAnalysis(title.title_id);
+    // Auto-open TitleEditModal when title is selected
+    setEditModalOpen(true);
   };
 
   const clearSelectedTitle = () => {
     setSelectedTitle(null);
     setSearchQuery('');
     setCompsAnalysis(null);
+  };
+
+  const handleSubmitWeeklyTitle = async () => {
+    if (!weeklyTitle) {
+      toast({
+        title: 'Error',
+        description: 'Please save the weekly title first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await weeklyTitleService.submitWeeklyTitle(weeklyTitle.id);
+      toast({
+        title: 'Success',
+        description: 'Weekly title submitted successfully',
+      });
+      await loadWeeklyTitle();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to submit weekly title';
+      console.error('Error submitting weekly title:', error);
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handlePrevWeek = () => {
@@ -262,20 +270,17 @@ export default function WeeklyTitle() {
     setSaving(true);
     try {
       const weekOf = formatDateToISO(selectedWeek);
-      const serializedCharacters = serializeCharacters(inputCharacters);
       const inputData = {
         week_of: weekOf,
         title_id: selectedTitle.title_id,
-        input_logline: inputLogline || undefined,
-        input_characters: serializedCharacters.length > 0 ? JSON.stringify(serializedCharacters) : undefined,
-        input_synopsis: inputSynopsis || undefined,
-        input_selling_points: inputSellingPoints || undefined,
         created_by: user.email,
       };
 
       if (weeklyTitle) {
-        // Update existing
-        await weeklyTitleService.updateWeeklyTitle(weeklyTitle.id, inputData);
+        // Update existing - just update title_id
+        await weeklyTitleService.updateWeeklyTitle(weeklyTitle.id, {
+          title_id: selectedTitle.title_id,
+        });
       } else {
         // Create new
         await weeklyTitleService.createWeeklyTitle(inputData);
@@ -287,7 +292,6 @@ export default function WeeklyTitle() {
       });
 
       await loadWeeklyTitle();
-      setIsSavedAsWeeklyTitle(true);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to save weekly title';
       console.error('Error saving weekly title:', error);
@@ -301,100 +305,7 @@ export default function WeeklyTitle() {
     }
   };
 
-  const handleUpdateToDatabase = async () => {
-    if (!selectedTitle || !weeklyTitle) {
-      toast({
-        title: 'Error',
-        description: 'Please save the weekly title first',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      // Detect conflicts
-      const serializedChars = serializeCharacters(inputCharacters);
-      const detectedConflicts = await weeklyTitleService.detectConflicts(
-        selectedTitle.title_id,
-        {
-          input_logline: inputLogline,
-          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
-          input_synopsis: inputSynopsis,
-          input_selling_points: inputSellingPoints,
-        }
-      );
-
-      if (detectedConflicts.length > 0) {
-        // Show conflict resolution dialog
-        setConflicts(detectedConflicts);
-        setConflictDialogOpen(true);
-      } else {
-        // No conflicts, sync directly
-        await weeklyTitleService.syncToTitlesTable(selectedTitle.title_id, {
-          input_logline: inputLogline,
-          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
-          input_synopsis: inputSynopsis,
-          input_selling_points: inputSellingPoints,
-        });
-
-        toast({
-          title: 'Success',
-          description: 'Title data updated successfully',
-        });
-
-        await loadWeeklyTitle();
-        setIsSyncedToDatabase(true);
-      }
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to update title data';
-      console.error('Error updating title data:', error);
-      toast({
-        title: 'Error',
-        description: message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleConflictResolve = async (resolutions: FieldConflict[]) => {
-    if (!selectedTitle) return;
-
-    setIsApplyingConflicts(true);
-    try {
-      const serializedChars = serializeCharacters(inputCharacters);
-      await weeklyTitleService.syncToTitlesTable(
-        selectedTitle.title_id,
-        {
-          input_logline: inputLogline,
-          input_characters: serializedChars.length > 0 ? JSON.stringify(serializedChars) : '',
-          input_synopsis: inputSynopsis,
-          input_selling_points: inputSellingPoints,
-        },
-        resolutions
-      );
-
-      toast({
-        title: 'Success',
-        description: 'Title data updated with conflict resolutions',
-      });
-
-      setConflictDialogOpen(false);
-      await loadWeeklyTitle();
-      setIsSyncedToDatabase(true);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to apply changes';
-      console.error('Error applying conflict resolutions:', error);
-      toast({
-        title: 'Error',
-        description: message,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsApplyingConflicts(false);
-    }
-  };
-
-  // Step 6: Save description to titles table
+  // Step 7: Save description to titles table
   const handleSaveDescription = async () => {
     if (!selectedTitle) {
       toast({
@@ -657,9 +568,15 @@ export default function WeeklyTitle() {
                 />
               )}
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-black truncate">
+                <Link
+                  to={`/buyers/titles/${selectedTitle.title_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-black truncate hover:text-hanok-teal hover:underline flex items-center gap-1"
+                >
                   {selectedTitle.title_name_en || selectedTitle.title_name_kr}
-                </div>
+                  <Icon icon="solar:arrow-right-up-linear" className="h-3 w-3 text-gray-400" />
+                </Link>
                 {selectedTitle.title_name_en && selectedTitle.title_name_kr && (
                   <div className="text-sm text-gray-600 truncate">
                     {selectedTitle.title_name_kr}
@@ -669,15 +586,26 @@ export default function WeeklyTitle() {
                   {selectedTitle.content_format} • {(selectedTitle.genre as string[])?.join(', ') || 'No genre'}
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearSelectedTitle}
-                className="border-gray-300"
-              >
-                <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-1" />
-                Remove
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditModalOpen(true)}
+                  className="border-gray-300"
+                >
+                  <Icon icon="solar:pen-bold-duotone" className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearSelectedTitle}
+                  className="border-gray-300"
+                >
+                  <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-1" />
+                  Remove
+                </Button>
+              </div>
             </div>
           ) : (
             <div ref={searchRef} className="relative">
@@ -728,95 +656,86 @@ export default function WeeklyTitle() {
         </CardContent>
       </Card>
 
-      {/* Editorial Content */}
+      {/* Step 2. Save & Submit */}
       {selectedTitle && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Icon icon="solar:pen-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Step 2. Editorial Content
+              <Icon icon="solar:check-circle-bold-duotone" className="h-5 w-5 text-hanok-teal" />
+              Step 2. Save & Submit
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label className="text-sm font-medium">Logline</Label>
-              <Textarea
-                placeholder="A compelling one-line summary of the story..."
-                value={inputLogline}
-                onChange={(e) => setInputLogline(e.target.value)}
-                className="mt-1"
-                rows={2}
-              />
-              <p className="text-xs text-gray-500 mt-1">Maps to: tagline</p>
-            </div>
-
-            <div className="space-y-2 opacity-50">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium text-gray-400">Comparables</Label>
-                <div className="relative inline-flex items-center">
-                  <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                    <Icon icon="solar:info-circle-bold" className="h-3.5 w-3.5" />
-                    <span>Use Comps Generator in Step 3</span>
-                  </div>
+            {!weeklyTitle ? (
+              <>
+                <p className="text-sm text-gray-600">
+                  Save this title as the weekly featured title. You can edit the title details using the Edit button above.
+                </p>
+                <Button
+                  onClick={handleSaveWeeklyTitle}
+                  disabled={!selectedTitle || saving}
+                  className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
+                >
+                  {saving ? (
+                    <>
+                      <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
+                      Save as Weekly Title
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : weeklyTitle.submitted ? (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                <div className="flex items-center gap-2 text-green-700">
+                  <Icon icon="solar:check-circle-bold" className="h-5 w-5" />
+                  <span className="font-medium">Submitted</span>
                 </div>
+                {weeklyTitle.submitted_at && (
+                  <p className="text-sm text-green-600 mt-1">
+                    Submitted on {new Date(weeklyTitle.submitted_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                )}
               </div>
-              <div className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-sm text-gray-400 cursor-not-allowed">
-                Comparables will be generated using AI in Step 3
-              </div>
-              <p className="text-xs text-gray-400">Maps to: comps (array)</p>
-            </div>
-
-            <CharacterDetailsInput
-              characters={inputCharacters}
-              onChange={setInputCharacters}
-            />
-
-            <div>
-              <Label className="text-sm font-medium">Synopsis</Label>
-              <Textarea
-                placeholder="A detailed plot summary..."
-                value={inputSynopsis}
-                onChange={(e) => setInputSynopsis(e.target.value)}
-                className="mt-1"
-                rows={4}
-              />
-              <p className="text-xs text-gray-500 mt-1">Maps to: synopsis</p>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium">Selling Points</Label>
-              <Textarea
-                placeholder="Key reasons why this title is marketable..."
-                value={inputSellingPoints}
-                onChange={(e) => setInputSellingPoints(e.target.value)}
-                className="mt-1"
-                rows={3}
-              />
-              <p className="text-xs text-gray-500 mt-1">Maps to: selling_points (new field)</p>
-            </div>
-
-            <Button
-              onClick={handleSaveWeeklyTitle}
-              disabled={!selectedTitle || saving}
-              className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
-            >
-              {saving ? (
-                <>
-                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
-                  Save and Make This the Weekly Title
-                </>
-              )}
-            </Button>
-            {isSavedAsWeeklyTitle && (
-              <div className="flex items-center justify-center gap-1.5 mt-3 text-green-600">
-                <Icon icon="solar:check-circle-bold" className="h-4 w-4" />
-                <span className="text-sm">Saved as weekly title</span>
-              </div>
+            ) : (
+              <>
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Icon icon="solar:diskette-bold" className="h-5 w-5" />
+                    <span className="font-medium">Saved as Weekly Title</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    The title data will be pulled from the database. Use the Edit button to update title details before submitting.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleSubmitWeeklyTitle}
+                  disabled={submitting}
+                  className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
+                >
+                  {submitting ? (
+                    <>
+                      <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="solar:check-circle-bold-duotone" className="h-4 w-4 mr-2" />
+                      Submit Weekly Title
+                    </>
+                  )}
+                </Button>
+              </>
             )}
           </CardContent>
         </Card>
@@ -1085,43 +1004,13 @@ export default function WeeklyTitle() {
         </Card>
       )}
 
-      {/* Update to Database */}
-      {selectedTitle && weeklyTitle && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Icon icon="solar:cloud-upload-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Step 6. Sync to Database
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600 mb-4">
-              Push the editorial content to the titles table. If there are existing values, you&apos;ll be asked to choose how to handle conflicts.
-            </p>
-            <Button
-              onClick={handleUpdateToDatabase}
-              className="w-full bg-hanok-teal hover:bg-hanok-teal/90"
-            >
-              <Icon icon="solar:database-bold-duotone" className="h-4 w-4 mr-2" />
-              Update Title Data
-            </Button>
-            {isSyncedToDatabase && (
-              <div className="flex items-center justify-center gap-1.5 mt-3 text-green-600">
-                <Icon icon="solar:check-circle-bold" className="h-4 w-4" />
-                <span className="text-sm">Updated to database</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       {/* Why This Title */}
       {selectedTitle && weeklyTitle && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Icon icon="solar:document-text-bold-duotone" className="h-5 w-5 text-hanok-teal" />
-              Step 7. Why This Title
+              Step 6. Why This Title
             </CardTitle>
             <p className="text-sm text-gray-500 mt-1">
               A source for marketing asset generation
@@ -1130,7 +1019,7 @@ export default function WeeklyTitle() {
           <CardContent>
             <div className="space-y-4">
               <div>
-                <Label className="text-sm font-medium">Description</Label>
+                <Label className="text-sm font-medium">Description by Admin</Label>
                 <Textarea
                   placeholder="Explain why this title stands out and what makes it appealing for adaptation. This content will be used to generate marketing materials..."
                   value={inputDescription}
@@ -1168,15 +1057,6 @@ export default function WeeklyTitle() {
           </CardContent>
         </Card>
       )}
-
-      {/* Conflict Resolution Dialog */}
-      <ConflictResolutionDialog
-        open={conflictDialogOpen}
-        onOpenChange={setConflictDialogOpen}
-        conflicts={conflicts}
-        onResolve={handleConflictResolve}
-        isApplying={isApplyingConflicts}
-      />
 
       {/* Analyzer Modals */}
       {selectedTitle && (
@@ -1227,6 +1107,13 @@ export default function WeeklyTitle() {
               results={fanSignalResults}
             />
           )}
+
+          <TitleEditModal
+            titleId={selectedTitle.title_id}
+            open={editModalOpen}
+            onOpenChange={setEditModalOpen}
+            onSaved={loadWeeklyTitle}
+          />
         </>
       )}
     </div>

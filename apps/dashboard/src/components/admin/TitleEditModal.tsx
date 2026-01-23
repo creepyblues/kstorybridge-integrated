@@ -1099,7 +1099,7 @@ export function TitleEditModal({
                         id="synopsis"
                         value={formData.synopsis || ''}
                         onChange={(e) => handleInputChange('synopsis', e.target.value)}
-                        rows={3}
+                        rows={6}
                         className="resize-none"
                       />
                     </div>
@@ -1109,7 +1109,7 @@ export function TitleEditModal({
                         id="synopsis_kr"
                         value={formData.synopsis_kr || ''}
                         onChange={(e) => handleInputChange('synopsis_kr', e.target.value)}
-                        rows={3}
+                        rows={6}
                         className="resize-none"
                       />
                     </div>
@@ -1123,9 +1123,34 @@ export function TitleEditModal({
                         id="description"
                         value={formData.description || ''}
                         onChange={(e) => handleInputChange('description', e.target.value)}
-                        rows={4}
+                        rows={8}
                         placeholder="Full description for admin use..."
                         className="resize-none border-purple-400 bg-purple-50 focus:border-purple-500 focus:ring-purple-500"
+                      />
+                    </div>
+                    {/* Character Details - using structured input */}
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-gray-700">
+                        Character Details <span className="text-gray-400 font-normal">{'{character_details}'}</span>
+                      </Label>
+                      <CharacterDetailsInput
+                        characters={inputCharacters}
+                        onChange={setInputCharacters}
+                      />
+                    </div>
+
+                    {/* Selling Points */}
+                    <div className="space-y-1">
+                      <Label htmlFor="selling_points" className="text-sm">
+                        Selling Points <span className="text-gray-400 font-normal">{'{selling_points}'}</span>
+                      </Label>
+                      <Textarea
+                        id="selling_points"
+                        placeholder="Key reasons why this title is marketable..."
+                        value={formData.selling_points || ''}
+                        onChange={(e) => handleInputChange('selling_points', e.target.value)}
+                        rows={3}
+                        className="resize-none mt-1 bg-white border-gray-300 text-sm"
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1237,31 +1262,6 @@ export function TitleEditModal({
                         onChange={(e) => handleInputChange('supernatural_concepts', e.target.value)}
                         rows={2}
                         className="resize-none"
-                      />
-                    </div>
-                    {/* Character Details - using structured input */}
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium text-gray-700">
-                        Character Details <span className="text-gray-400 font-normal">{'{character_details}'}</span>
-                      </Label>
-                      <CharacterDetailsInput
-                        characters={inputCharacters}
-                        onChange={setInputCharacters}
-                      />
-                    </div>
-
-                    {/* Selling Points */}
-                    <div className="space-y-1">
-                      <Label htmlFor="selling_points" className="text-sm">
-                        Selling Points <span className="text-gray-400 font-normal">{'{selling_points}'}</span>
-                      </Label>
-                      <Textarea
-                        id="selling_points"
-                        placeholder="Key reasons why this title is marketable..."
-                        value={formData.selling_points || ''}
-                        onChange={(e) => handleInputChange('selling_points', e.target.value)}
-                        rows={3}
-                        className="resize-none mt-1 bg-white border-gray-300 text-sm"
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

@@ -16,7 +16,7 @@ import { CharacterDetail } from '@/services/titlesService';
 // Extended type with temp ID for form management
 export interface CharacterFormDetail extends Omit<CharacterDetail, 'role'> {
   id: string;
-  role: 'protagonist' | 'antagonist' | 'supporting' | 'minor' | '';
+  role: 'protagonist' | 'antagonist' | 'supporting' | 'minor' | 'romantic_foil' | 'romantic_false_foil' | '';
 }
 
 interface CharacterDetailsInputProps {
@@ -30,6 +30,8 @@ const ROLE_OPTIONS = [
   { value: 'antagonist', label: 'Antagonist' },
   { value: 'supporting', label: 'Supporting' },
   { value: 'minor', label: 'Minor' },
+  { value: 'romantic_foil', label: 'Romantic Foil' },
+  { value: 'romantic_false_foil', label: 'Romantic False Foil' },
 ] as const;
 
 /**

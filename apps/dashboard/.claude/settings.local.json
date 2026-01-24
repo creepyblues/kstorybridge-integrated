@@ -86,7 +86,9 @@
       "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud auth login)",
       "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud services enable analyticsdata.googleapis.com --project=celtic-origin-481615-n9)",
       "Bash(/opt/homebrew/share/google-cloud-sdk/bin/gcloud auth application-default set-quota-project celtic-origin-481615-n9)",
-      "WebFetch(domain:dashboard.kstorybridge.com)"
+      "WebFetch(domain:dashboard.kstorybridge.com)",
+      "Bash(npm run dev:dashboard:*)",
+      "Skill(push)"
     ],
     "deny": [],
     "ask": []

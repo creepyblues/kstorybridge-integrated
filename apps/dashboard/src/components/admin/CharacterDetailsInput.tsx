@@ -106,7 +106,7 @@ export const CharacterDetailsInput: React.FC<CharacterDetailsInputProps> = ({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {characters.map((character, index) => (
             <div
               key={character.id}
@@ -176,30 +176,32 @@ export const CharacterDetailsInput: React.FC<CharacterDetailsInputProps> = ({
                   placeholder="Background..."
                   value={character.background || ''}
                   onChange={(e) => updateCharacter(character.id, 'background', e.target.value)}
-                  rows={2}
-                  className="bg-white border-gray-300 text-xs resize-none min-h-[48px]"
+                  rows={3}
+                  className="bg-white border-gray-300 text-xs resize-none"
                 />
               </div>
 
               {/* Personality */}
               <div className="space-y-0.5">
                 <Label className="text-[10px] text-gray-500">Personality</Label>
-                <Input
+                <Textarea
                   placeholder="Traits..."
                   value={character.personality || ''}
                   onChange={(e) => updateCharacter(character.id, 'personality', e.target.value)}
-                  className="bg-white border-gray-300 h-7 text-xs"
+                  rows={3}
+                  className="bg-white border-gray-300 text-xs resize-none"
                 />
               </div>
 
               {/* Arc */}
               <div className="space-y-0.5">
                 <Label className="text-[10px] text-gray-500">Arc</Label>
-                <Input
+                <Textarea
                   placeholder="Growth..."
                   value={character.arc || ''}
                   onChange={(e) => updateCharacter(character.id, 'arc', e.target.value)}
-                  className="bg-white border-gray-300 h-7 text-xs"
+                  rows={3}
+                  className="bg-white border-gray-300 text-xs resize-none"
                 />
               </div>
             </div>

@@ -1,0 +1,1 @@
+export { MandateMiniDemo } from './MandateMiniDemo';

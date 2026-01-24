@@ -28,6 +28,11 @@ const NewsPage = lazy(() => import("./pages/NewsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 
+// Feature promo pages
+const ChatbotFeaturePage = lazy(() => import("./pages/features/ChatbotFeaturePage"));
+const CompsNavigatorFeaturePage = lazy(() => import("./pages/features/CompsNavigatorFeaturePage"));
+const MandateMatcherFeaturePage = lazy(() => import("./pages/features/MandateMatcherFeaturePage"));
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -49,6 +54,12 @@ const App = () => (
           <Route path="/new-design" element={<HomePageNew />} />
           <Route path="/creators" element={<CreatorsPage />} />
           <Route path="/producers" element={<ProducersPage />} />
+
+          {/* Feature promo pages */}
+          <Route path="/features/chatbot" element={<ChatbotFeaturePage />} />
+          <Route path="/features/comps-navigator" element={<CompsNavigatorFeaturePage />} />
+          <Route path="/features/mandate-matcher" element={<MandateMatcherFeaturePage />} />
+
           {/* PREVIEW ROUTES - Only available in development */}
           {import.meta.env.DEV && <Route path="/producers-preview" element={<ProducersPagePreview />} />}
           {import.meta.env.DEV && <Route path="/creators-preview" element={<CreatorsPagePreview />} />}

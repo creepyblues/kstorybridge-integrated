@@ -1,10 +1,32 @@
 {
   "hero": {
-    "title": "Find Your Next Hit with ",
-    "titleHighlight": "AI Assistant",
-    "subtitle": "AI assistant + verified rights + expert deal support = Korean hits discovered faster",
+    "title": "Discover Korean Content ",
+    "titleHighlight": "3 Ways",
+    "subtitle": "AI-powered discovery tools + verified rights + expert deal support = Korean hits found faster",
     "cta": "Experience Free Trial",
     "trust": "No credit card required • Free to start"
+  },
+  "discoveryTools": {
+    "title": "Three Ways to Discover",
+    "subtitle": "Choose the discovery method that fits your workflow",
+    "chatbot": {
+      "title": "AI Chatbot",
+      "badge": "Jinu",
+      "description": "Ask anything about Korean content in natural language. Get instant, expert recommendations.",
+      "cta": "Learn More"
+    },
+    "comps": {
+      "title": "Comps Navigator",
+      "badge": "Reference",
+      "description": "Select Hollywood titles you love. Find Korean stories with similar themes and tone.",
+      "cta": "Learn More"
+    },
+    "mandates": {
+      "title": "Mandate Matcher",
+      "badge": "Search",
+      "description": "Describe your production mandate. Get ranked matches with relevance scores.",
+      "cta": "Learn More"
+    }
   },
   "aiAssistant": {
     "badge": "Meet Jinu",

@@ -486,6 +486,14 @@ export function TitleEditModal({
     }
   };
 
+  // Helper function to get empty field highlight class
+  const getEmptyHighlight = (value: unknown): string => {
+    if (value === null || value === undefined) return 'bg-red-50';
+    if (typeof value === 'string' && value.trim() === '') return 'bg-red-50';
+    if (Array.isArray(value) && value.length === 0) return 'bg-red-50';
+    return '';
+  };
+
   const SectionHeader = ({ id, title }: { id: string; title: string }) => (
     <CollapsibleTrigger
       className="flex items-center justify-between w-full py-3 text-left hover:bg-gray-50 rounded px-2 -mx-2"
@@ -634,7 +642,7 @@ export function TitleEditModal({
                         id="title_name_en"
                         value={formData.title_name_en || ''}
                         onChange={(e) => handleInputChange('title_name_en', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.title_name_en)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -643,7 +651,7 @@ export function TitleEditModal({
                         id="title_name_kr"
                         value={formData.title_name_kr || ''}
                         onChange={(e) => handleInputChange('title_name_kr', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.title_name_kr)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -653,7 +661,7 @@ export function TitleEditModal({
                           id="title_url"
                           value={formData.title_url || ''}
                           onChange={(e) => handleInputChange('title_url', e.target.value)}
-                          className="h-9 flex-1"
+                          className={`h-9 flex-1 ${getEmptyHighlight(formData.title_url)}`}
                         />
                         <Button
                           type="button"
@@ -681,7 +689,7 @@ export function TitleEditModal({
                           id="title_url_en"
                           value={formData.title_url_en || ''}
                           onChange={(e) => handleInputChange('title_url_en', e.target.value)}
-                          className="h-9 flex-1"
+                          className={`h-9 flex-1 ${getEmptyHighlight(formData.title_url_en)}`}
                         />
                         <Button
                           type="button"
@@ -708,7 +716,7 @@ export function TitleEditModal({
                         id="title_image"
                         value={formData.title_image || ''}
                         onChange={(e) => handleInputChange('title_image', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.title_image)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -760,7 +768,7 @@ export function TitleEditModal({
                         value={arrayToString(formData.genre)}
                         onChange={(e) => handleArrayChange('genre', e.target.value)}
                         placeholder="romance, fantasy, action"
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.genre)}`}
                       />
                       <p className="text-xs text-gray-500">
                         Options: {GENRE_OPTIONS.join(', ')}
@@ -772,7 +780,7 @@ export function TitleEditModal({
                         id="genre_kr"
                         value={arrayToString(formData.genre_kr)}
                         onChange={(e) => handleArrayChange('genre_kr', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.genre_kr)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -799,7 +807,7 @@ export function TitleEditModal({
                         id="tone"
                         value={formData.tone || ''}
                         onChange={(e) => handleInputChange('tone', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.tone)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -808,7 +816,7 @@ export function TitleEditModal({
                         id="audience"
                         value={formData.audience || ''}
                         onChange={(e) => handleInputChange('audience', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.audience)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -817,7 +825,7 @@ export function TitleEditModal({
                         id="age_rating"
                         value={formData.age_rating || ''}
                         onChange={(e) => handleInputChange('age_rating', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.age_rating)}`}
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
@@ -826,7 +834,7 @@ export function TitleEditModal({
                         id="keywords"
                         value={arrayToString(formData.keywords)}
                         onChange={(e) => handleArrayChange('keywords', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.keywords)}`}
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
@@ -836,7 +844,7 @@ export function TitleEditModal({
                         value={arrayToString(formData.comps)}
                         onChange={(e) => handleArrayChange('comps', e.target.value)}
                         placeholder="Similar titles for comparison"
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.comps)}`}
                       />
                     </div>
 
@@ -950,7 +958,7 @@ export function TitleEditModal({
                         type="number"
                         value={formData.views ?? ''}
                         onChange={(e) => handleInputChange('views', e.target.value ? parseInt(e.target.value) : null)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.views)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -960,7 +968,7 @@ export function TitleEditModal({
                         type="number"
                         value={formData.likes ?? ''}
                         onChange={(e) => handleInputChange('likes', e.target.value ? parseInt(e.target.value) : null)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.likes)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -973,7 +981,7 @@ export function TitleEditModal({
                         max="10"
                         value={formData.rating ?? ''}
                         onChange={(e) => handleInputChange('rating', e.target.value ? parseFloat(e.target.value) : null)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.rating)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -983,7 +991,7 @@ export function TitleEditModal({
                         type="number"
                         value={formData.rating_count ?? ''}
                         onChange={(e) => handleInputChange('rating_count', e.target.value ? parseInt(e.target.value) : null)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.rating_count)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -993,7 +1001,7 @@ export function TitleEditModal({
                         type="number"
                         value={formData.chapters ?? ''}
                         onChange={(e) => handleInputChange('chapters', e.target.value ? parseInt(e.target.value) : null)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.chapters)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1018,7 +1026,7 @@ export function TitleEditModal({
                         value={formData.perfect_for || ''}
                         onChange={(e) => handleInputChange('perfect_for', e.target.value)}
                         placeholder="e.g., Fans of romance, K-drama lovers"
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.perfect_for)}`}
                       />
                     </div>
                   </div>
@@ -1036,7 +1044,7 @@ export function TitleEditModal({
                         id="story_author"
                         value={formData.story_author || ''}
                         onChange={(e) => handleInputChange('story_author', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.story_author)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1045,7 +1053,7 @@ export function TitleEditModal({
                         id="story_author_kr"
                         value={formData.story_author_kr || ''}
                         onChange={(e) => handleInputChange('story_author_kr', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.story_author_kr)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1054,7 +1062,7 @@ export function TitleEditModal({
                         id="art_author"
                         value={formData.art_author || ''}
                         onChange={(e) => handleInputChange('art_author', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.art_author)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1063,7 +1071,7 @@ export function TitleEditModal({
                         id="art_author_kr"
                         value={formData.art_author_kr || ''}
                         onChange={(e) => handleInputChange('art_author_kr', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.art_author_kr)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1072,7 +1080,7 @@ export function TitleEditModal({
                         id="original_author"
                         value={formData.original_author || ''}
                         onChange={(e) => handleInputChange('original_author', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.original_author)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1081,7 +1089,7 @@ export function TitleEditModal({
                         id="original_author_kr"
                         value={formData.original_author_kr || ''}
                         onChange={(e) => handleInputChange('original_author_kr', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.original_author_kr)}`}
                       />
                     </div>
                   </div>
@@ -1100,7 +1108,7 @@ export function TitleEditModal({
                         value={formData.synopsis || ''}
                         onChange={(e) => handleInputChange('synopsis', e.target.value)}
                         rows={6}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.synopsis)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1110,7 +1118,7 @@ export function TitleEditModal({
                         value={formData.synopsis_kr || ''}
                         onChange={(e) => handleInputChange('synopsis_kr', e.target.value)}
                         rows={6}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.synopsis_kr)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1125,7 +1133,7 @@ export function TitleEditModal({
                         onChange={(e) => handleInputChange('description', e.target.value)}
                         rows={8}
                         placeholder="Full description for admin use..."
-                        className="resize-none border-purple-400 bg-purple-50 focus:border-purple-500 focus:ring-purple-500"
+                        className={`resize-none border-purple-400 focus:border-purple-500 focus:ring-purple-500 ${formData.description ? 'bg-purple-50' : 'bg-red-50'}`}
                       />
                     </div>
                     {/* Character Details - using structured input */}
@@ -1150,7 +1158,7 @@ export function TitleEditModal({
                         value={formData.selling_points || ''}
                         onChange={(e) => handleInputChange('selling_points', e.target.value)}
                         rows={3}
-                        className="resize-none mt-1 bg-white border-gray-300 text-sm"
+                        className={`resize-none mt-1 border-gray-300 text-sm ${getEmptyHighlight(formData.selling_points)}`}
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1160,7 +1168,7 @@ export function TitleEditModal({
                           id="tagline"
                           value={formData.tagline || ''}
                           onChange={(e) => handleInputChange('tagline', e.target.value)}
-                          className="h-9"
+                          className={`h-9 ${getEmptyHighlight(formData.tagline)}`}
                         />
                       </div>
                       <div className="space-y-1">
@@ -1169,7 +1177,7 @@ export function TitleEditModal({
                           id="tagline_kr"
                           value={formData.tagline_kr || ''}
                           onChange={(e) => handleInputChange('tagline_kr', e.target.value)}
-                          className="h-9"
+                          className={`h-9 ${getEmptyHighlight(formData.tagline_kr)}`}
                         />
                       </div>
                     </div>
@@ -1180,7 +1188,7 @@ export function TitleEditModal({
                         value={formData.pitch || ''}
                         onChange={(e) => handleInputChange('pitch', e.target.value)}
                         rows={3}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.pitch)}`}
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1191,7 +1199,7 @@ export function TitleEditModal({
                           value={formData.note || ''}
                           onChange={(e) => handleInputChange('note', e.target.value)}
                           rows={2}
-                          className="resize-none"
+                          className={`resize-none ${getEmptyHighlight(formData.note)}`}
                         />
                       </div>
                       <div className="space-y-1">
@@ -1201,7 +1209,7 @@ export function TitleEditModal({
                           value={formData.note_kr || ''}
                           onChange={(e) => handleInputChange('note_kr', e.target.value)}
                           rows={2}
-                          className="resize-none"
+                          className={`resize-none ${getEmptyHighlight(formData.note_kr)}`}
                         />
                       </div>
                     </div>
@@ -1221,7 +1229,7 @@ export function TitleEditModal({
                         value={formData.inspiration || ''}
                         onChange={(e) => handleInputChange('inspiration', e.target.value)}
                         rows={2}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.inspiration)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1231,7 +1239,7 @@ export function TitleEditModal({
                         value={formData.important_issues || ''}
                         onChange={(e) => handleInputChange('important_issues', e.target.value)}
                         rows={2}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.important_issues)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1241,7 +1249,7 @@ export function TitleEditModal({
                         value={formData.setting_description || ''}
                         onChange={(e) => handleInputChange('setting_description', e.target.value)}
                         rows={2}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.setting_description)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1251,7 +1259,7 @@ export function TitleEditModal({
                         value={formData.world_lore || ''}
                         onChange={(e) => handleInputChange('world_lore', e.target.value)}
                         rows={2}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.world_lore)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1261,7 +1269,7 @@ export function TitleEditModal({
                         value={formData.supernatural_concepts || ''}
                         onChange={(e) => handleInputChange('supernatural_concepts', e.target.value)}
                         rows={2}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.supernatural_concepts)}`}
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -1271,7 +1279,7 @@ export function TitleEditModal({
                           id="story_structure"
                           value={formData.story_structure || ''}
                           onChange={(e) => handleInputChange('story_structure', e.target.value)}
-                          className="h-9"
+                          className={`h-9 ${getEmptyHighlight(formData.story_structure)}`}
                         />
                       </div>
                       <div className="space-y-1">
@@ -1280,7 +1288,7 @@ export function TitleEditModal({
                           id="planned_ending"
                           value={formData.planned_ending || ''}
                           onChange={(e) => handleInputChange('planned_ending', e.target.value)}
-                          className="h-9"
+                          className={`h-9 ${getEmptyHighlight(formData.planned_ending)}`}
                         />
                       </div>
                       <div className="space-y-1">
@@ -1289,7 +1297,7 @@ export function TitleEditModal({
                           id="narrative_arc"
                           value={formData.narrative_arc || ''}
                           onChange={(e) => handleInputChange('narrative_arc', e.target.value)}
-                          className="h-9"
+                          className={`h-9 ${getEmptyHighlight(formData.narrative_arc)}`}
                         />
                       </div>
                     </div>
@@ -1335,7 +1343,7 @@ export function TitleEditModal({
                         id="rights_holder_name"
                         value={formData.rights_holder_name || ''}
                         onChange={(e) => handleInputChange('rights_holder_name', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.rights_holder_name)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1344,7 +1352,7 @@ export function TitleEditModal({
                         id="rights_holder_company"
                         value={formData.rights_holder_company || ''}
                         onChange={(e) => handleInputChange('rights_holder_company', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.rights_holder_company)}`}
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
@@ -1353,7 +1361,7 @@ export function TitleEditModal({
                         id="cp"
                         value={formData.cp || ''}
                         onChange={(e) => handleInputChange('cp', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.cp)}`}
                       />
                     </div>
                   </div>
@@ -1371,7 +1379,7 @@ export function TitleEditModal({
                         id="awards"
                         value={arrayToString(formData.awards)}
                         onChange={(e) => handleArrayChange('awards', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.awards)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1380,7 +1388,7 @@ export function TitleEditModal({
                         id="sales_records"
                         value={formData.sales_records || ''}
                         onChange={(e) => handleInputChange('sales_records', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.sales_records)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1389,7 +1397,7 @@ export function TitleEditModal({
                         id="merchandise_deals"
                         value={formData.merchandise_deals || ''}
                         onChange={(e) => handleInputChange('merchandise_deals', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.merchandise_deals)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -1413,7 +1421,7 @@ export function TitleEditModal({
                         id="print_edition_details"
                         value={formData.print_edition_details || ''}
                         onChange={(e) => handleInputChange('print_edition_details', e.target.value)}
-                        className="h-9"
+                        className={`h-9 ${getEmptyHighlight(formData.print_edition_details)}`}
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
@@ -1423,7 +1431,7 @@ export function TitleEditModal({
                         value={formData.media_coverage || ''}
                         onChange={(e) => handleInputChange('media_coverage', e.target.value)}
                         rows={2}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.media_coverage)}`}
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
@@ -1433,7 +1441,7 @@ export function TitleEditModal({
                         value={formData.celebrity_endorsements || ''}
                         onChange={(e) => handleInputChange('celebrity_endorsements', e.target.value)}
                         rows={2}
-                        className="resize-none"
+                        className={`resize-none ${getEmptyHighlight(formData.celebrity_endorsements)}`}
                       />
                     </div>
                   </div>

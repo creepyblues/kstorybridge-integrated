@@ -117,7 +117,6 @@ export function TitleEditModal({
   const { user } = useAuth();
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [title, setTitle] = useState<Title | null>(null);
   const [formData, setFormData] = useState<Partial<Title>>({});
   const [openSections, setOpenSections] = useState<string[]>(ALL_SECTIONS);
@@ -230,87 +229,6 @@ export function TitleEditModal({
   const handleArrayChange = (field: keyof Title, value: string) => {
     const arrayValue = value.split(',').map((item) => item.trim()).filter(Boolean);
     setFormData((prev) => ({ ...prev, [field]: arrayValue }));
-  };
-
-  const handleSave = async () => {
-    if (!titleId || !user?.email) return;
-
-    setSaving(true);
-    try {
-      const {
-        title_id,
-        created_at,
-        updated_at,
-        creator_id,
-        platforms,
-        documents,
-        pitch_analysis,
-        processing_confidence,
-        title_content_analysis,
-        ...updates
-      } = formData as Record<string, unknown>;
-
-      // Build changed fields audit record by comparing formData with original title
-      const changedFields: Record<string, { old: unknown; new: unknown }> = {};
-      if (title) {
-        const originalTitle = title as unknown as Record<string, unknown>;
-        for (const [key, newValue] of Object.entries(updates)) {
-          const oldValue = originalTitle[key];
-          // Only track fields that actually changed
-          if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-            changedFields[key] = { old: oldValue ?? null, new: newValue };
-          }
-        }
-      }
-
-      // Serialize characters from structured input
-      const serializedCharacters = serializeCharacters(inputCharacters);
-
-      // Update the title with provenance tracking
-      // Cast to Record to include new provenance columns not yet in generated types
-      const updateWithProvenance = {
-        ...updates,
-        // Override character_details with serialized data from structured input
-        character_details: serializedCharacters.length > 0 ? serializedCharacters : null,
-        last_modified_by: user.email,
-        last_modified_source: 'admin',
-      } as Record<string, unknown>;
-      await titlesService.updateTitle(titleId, updateWithProvenance);
-
-      // Log to title_edit_history if there were changes
-      if (Object.keys(changedFields).length > 0) {
-        const { error: auditError } = await supabase.from('title_edit_history').insert({
-          title_id: titleId,
-          edited_by: user.email,
-          edit_source: 'admin',
-          changed_fields: changedFields,
-          edit_reason: null, // Could add a reason input field in the future
-        });
-
-        if (auditError) {
-          console.error('Failed to log edit history:', auditError.message);
-          // Don't fail the save, just log the error
-        }
-      }
-
-      toast({
-        title: 'Success',
-        description: `Title updated successfully${Object.keys(changedFields).length > 0 ? ` (${Object.keys(changedFields).length} field${Object.keys(changedFields).length !== 1 ? 's' : ''} changed)` : ''}`,
-      });
-
-      onSaved?.();
-      onOpenChange(false);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to update title';
-      console.error('Error updating title:', error);
-      toast({
-        title: 'Error',
-        description: message,
-        variant: 'destructive',
-      });
-    } finally {
-      setSaving(false);
-    }
   };
 
   // Auto-save function (doesn't close modal or show toast)

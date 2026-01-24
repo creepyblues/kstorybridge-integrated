@@ -18,6 +18,8 @@ export interface WeeklyTitle {
   input_characters: string | null;
   input_synopsis: string | null;
   input_selling_points: string | null;
+  submitted: boolean;
+  submitted_at: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -136,6 +138,7 @@ export async function getWeeklyTitleByWeek(
         title_image,
         tagline,
         synopsis,
+        description,
         comps,
         character_details,
         selling_points,
@@ -218,6 +221,28 @@ export async function deleteWeeklyTitle(id: string): Promise<void> {
   }
 }
 
+/**
+ * Submit/finalize a weekly title
+ */
+export async function submitWeeklyTitle(id: string): Promise<WeeklyTitle> {
+  const { data, error } = await supabase
+    .from('weekly_titles')
+    .update({
+      submitted: true,
+      submitted_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error submitting weekly title:', error);
+    throw new Error(error.message);
+  }
+
+  return data as WeeklyTitle;
+}
+
 // =====================================================================
 // CONFLICT DETECTION & RESOLUTION
 // =====================================================================
@@ -255,7 +280,7 @@ export async function detectConflicts(
   const conflicts: FieldConflict[] = [];
 
   for (const [inputField, mapping] of Object.entries(FIELD_MAPPING)) {
-    const inputValue = inputData[inputField as keyof WeeklyTitle];
+    const inputValue = inputData[inputField as keyof WeeklyTitle] as string | string[] | object | null;
     const existingValue = title[mapping.titleField as keyof typeof title];
 
     // Only flag as conflict if both have values
@@ -349,7 +374,7 @@ export async function syncToTitlesTable(
   }
 
   for (const [inputField, mapping] of Object.entries(FIELD_MAPPING)) {
-    const inputValue = inputData[inputField as keyof WeeklyTitle];
+    const inputValue = inputData[inputField as keyof WeeklyTitle] as string | string[] | object | null;
 
     // Skip if no input value
     if (!inputValue) continue;
@@ -407,6 +432,7 @@ export const weeklyTitleService = {
   createWeeklyTitle,
   updateWeeklyTitle,
   deleteWeeklyTitle,
+  submitWeeklyTitle,
   // Conflict resolution
   detectConflicts,
   syncToTitlesTable,

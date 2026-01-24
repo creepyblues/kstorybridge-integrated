@@ -48,7 +48,7 @@ The KStoryBridge AI chatbot is a **dual-mode conversational recommendation engin
 ### Mode 1: Standard Mode (Database Search Only)
 **File**: `AIChatbot.tsx`
 
-- **Access**: Admin only (`sungho@dadble.com`, `kevin@sandstoneartists.com`)
+- **Access**: Admin only (`sungho@kstorybridge.com`, `kevin@sandstoneartists.com`)
 - **Model**: Pure database search (no LLM)
 - **Service**: `chatbotService.searchTitles()`
 - **Search Method**: Text-based keyword matching with scoring

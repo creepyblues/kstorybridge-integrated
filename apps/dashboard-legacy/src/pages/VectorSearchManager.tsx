@@ -30,7 +30,7 @@ export default function VectorSearchManager() {
   const [isLoading, setIsLoading] = useState(false);
   
   // Check if user is authorized (same users as OpenAI chatbot)
-  const isAuthorized = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  const isAuthorized = user?.email === 'sungho@kstorybridge.com' || user?.email === 'kevin@sandstoneartists.com';
 
   useEffect(() => {
     if (!isAuthorized) {

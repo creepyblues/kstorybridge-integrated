@@ -19,7 +19,7 @@ export default function Experiment() {
   const navigate = useNavigate();
 
   // Admin check
-  const isAdmin = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  const isAdmin = user?.email === 'sungho@kstorybridge.com' || user?.email === 'kevin@sandstoneartists.com';
 
   if (!isAdmin) {
     return (

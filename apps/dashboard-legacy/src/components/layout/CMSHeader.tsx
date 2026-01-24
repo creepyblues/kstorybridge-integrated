@@ -28,7 +28,7 @@ const getDiscoverItems = (accountType: string) => {
 };
 
 const getSettingsItems = (accountType: string, userEmail?: string) => {
-  const isAuthorizedForChatbot = userEmail === 'sungho@dadble.com' || userEmail === 'kevin@sandstoneartists.com';
+  const isAuthorizedForChatbot = userEmail === 'sungho@kstorybridge.com' || userEmail === 'kevin@sandstoneartists.com';
   
   const baseItems = accountType === "creator" 
     ? [

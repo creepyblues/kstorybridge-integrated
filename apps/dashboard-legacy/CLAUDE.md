@@ -699,7 +699,7 @@ Standardized to `'buyer'` and `'creator'` only.
 - `/chat` - AI chatbot (changed from admin-only 2025-01-14)
 - `/buyers/home`, `/buyers/titles`, `/buyers/saved`, `/buyers/news`
 
-**Admin-Only** (`sungho@dadble.com`, `kevin@sandstoneartists.com`):
+**Admin-Only** (`sungho@kstorybridge.com`, `kevin@sandstoneartists.com`):
 - `/experiment` - Feature testing (gateway to admin tools)
 
 **Creator Access**:

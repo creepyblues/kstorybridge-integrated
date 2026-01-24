@@ -8,6 +8,16 @@ export type FeaturedWithTitle = Featured & {
   titles: Title;
 };
 
+// Fisher-Yates shuffle helper
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export const featuredService = {
   async getFeaturedTitles(): Promise<FeaturedWithTitle[]> {
     const { data, error } = await supabase
@@ -33,5 +43,10 @@ export const featuredService = {
     }
 
     return data || [];
+  },
+
+  async getRandomFeaturedTitles(count: number = 6): Promise<FeaturedWithTitle[]> {
+    const allFeatured = await this.getFeaturedTitles();
+    return shuffleArray(allFeatured).slice(0, Math.min(count, allFeatured.length));
   }
 };

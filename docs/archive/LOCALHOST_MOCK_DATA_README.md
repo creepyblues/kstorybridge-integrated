@@ -6,7 +6,7 @@ This document explains how to use the extracted mock data for localhost developm
 
 ### 1. `localhost_mock_data_updated.json`
 **Comprehensive mock data file with:**
-- **User Profile**: Complete buyer profile for `sungho@dadble.com`
+- **User Profile**: Complete buyer profile for `sungho@kstorybridge.com`
 - **Featured Titles**: Top 6 featured titles with enhanced data
 - **Regular Titles**: Top 6 general titles from the titles table
 - **Enhanced Fields**: Ratings, view counts, descriptions, comps, and more
@@ -19,11 +19,11 @@ This document explains how to use the extracted mock data for localhost developm
 
 ## Mock User Profile
 
-### Sungho Lee (`sungho@dadble.com`)
+### Sungho Lee (`sungho@kstorybridge.com`)
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "email": "sungho@dadble.com",
+  "email": "sungho@kstorybridge.com",
   "full_name": "Sungho Lee",
   "tier": "pro",
   "company": "Dadble Inc.",
@@ -122,7 +122,7 @@ Use the extracted data to seed your local database:
 ```sql
 -- Insert mock user
 INSERT INTO user_buyers (id, email, full_name, tier, company) 
-VALUES ('550e8400-e29b-41d4-a716-446655440000', 'sungho@dadble.com', 'Sungho Lee', 'pro', 'Dadble Inc.');
+VALUES ('550e8400-e29b-41d4-a716-446655440000', 'sungho@kstorybridge.com', 'Sungho Lee', 'pro', 'Dadble Inc.');
 
 -- Insert featured titles (use the JSON data)
 -- Insert regular titles (use the JSON data)
@@ -130,7 +130,7 @@ VALUES ('550e8400-e29b-41d4-a716-446655440000', 'sungho@dadble.com', 'Sungho Lee
 
 #### 2. **API Endpoint Testing**
 Test endpoints with realistic data:
-- `/api/users/sungho@dadble.com` → Returns mock user
+- `/api/users/sungho@kstorybridge.com` → Returns mock user
 - `/api/featured` → Returns 6 featured titles
 - `/api/titles` → Returns diverse title collection
 

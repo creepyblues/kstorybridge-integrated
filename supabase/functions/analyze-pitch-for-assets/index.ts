@@ -211,7 +211,7 @@ function validateRequest(request: AnalyzePitchRequest): { code: string; message:
   }
 
   // Validate admin email is authorized
-  const authorizedAdmins = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+  const authorizedAdmins = ['sungho@kstorybridge.com', 'kevin@sandstoneartists.com'];
   if (!authorizedAdmins.includes(request.admin_email.toLowerCase())) {
     return { code: 'UNAUTHORIZED', message: 'Admin email not authorized' };
   }

@@ -338,7 +338,7 @@ export class EmailService {
     console.log(`📧 Sending transaction notification for ${data.userEmail} (${data.plan})`);
 
     const result = await this.sendEmail({
-      to: 'sungho@dadble.com', // Admin email
+      to: 'sungho@kstorybridge.com', // Admin email
       subject,
       template: 'transaction_notification',
       templateData: data,
@@ -347,7 +347,7 @@ export class EmailService {
 
     // Log the attempt (won't fail if table doesn't exist)
     await this.logEmailAttempt(
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       emailType,
       result.success ? 'sent' : 'failed',
       result.messageId,

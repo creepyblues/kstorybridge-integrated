@@ -464,7 +464,7 @@ graph TD
 ```typescript
 // Filtered Notifications:
 EXCLUDED_EMAILS = [
-  'sungho@dadble.com',
+  'sungho@kstorybridge.com',
   'kevin@sandstoneartists.com',
   'creepyblues@gmail.com'
 ];

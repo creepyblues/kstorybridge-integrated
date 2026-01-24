@@ -66,7 +66,7 @@ module.exports = async function handler(req, res) {
       console.log('✅ Step 4 passed - user:', user.email);
       
       // Check authorization
-      const ALLOWED_USERS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+      const ALLOWED_USERS = ['sungho@kstorybridge.com', 'kevin@sandstoneartists.com'];
       if (!ALLOWED_USERS.includes(user.email)) {
         return res.status(403).json({ 
           error: 'User not authorized',

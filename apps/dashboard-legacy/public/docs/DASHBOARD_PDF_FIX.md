@@ -27,7 +27,7 @@ The dashboard was using direct PDF links which failed when the bucket became pri
 
 ## Testing
 1. **Start dashboard**: `npm run dev` (running on http://localhost:8082/)
-2. **Login as sungho@dadble.com**
+2. **Login as sungho@kstorybridge.com**
 3. **Navigate to**: http://localhost:8082/titles/d6cdcc3a-b7a0-446b-97e0-1310d672c6aa
 4. **Click "View Pitch (Premium)"** - Should open secure modal viewer
 5. **Verify security**: Direct URL access should still be blocked

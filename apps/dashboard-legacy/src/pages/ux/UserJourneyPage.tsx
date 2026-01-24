@@ -6,7 +6,7 @@ import { UserJourneyTab } from './UserJourneyTab';
 export default function UserJourneyPage() {
   const { user } = useAuth();
 
-  const isAdmin = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+  const isAdmin = user?.email === 'sungho@kstorybridge.com' || user?.email === 'kevin@sandstoneartists.com';
 
   if (!isAdmin) {
     return <Navigate to="/docs" replace />;

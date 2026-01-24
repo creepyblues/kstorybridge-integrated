@@ -329,7 +329,7 @@ const isCreator = accountType === 'creator';
 const isBuyer = accountType === 'buyer';
 
 // Admin access patterns:
-const isAdmin = user?.email === 'sungho@dadble.com' || user?.email === 'kevin@sandstoneartists.com';
+const isAdmin = user?.email === 'sungho@kstorybridge.com' || user?.email === 'kevin@sandstoneartists.com';
 ```
 
 ## Identified Inconsistencies & Edge Cases

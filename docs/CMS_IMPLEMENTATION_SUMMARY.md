@@ -39,7 +39,7 @@ A simple, database-driven CMS system for managing Learning Center and News conte
 - `author_email`
 
 **RLS Policies:**
-1. **Admin write access**: Hardcoded email list (sungho@dadble.com, kevin@sandstoneartists.com)
+1. **Admin write access**: Hardcoded email list (sungho@kstorybridge.com, kevin@sandstoneartists.com)
 2. **Public read access**: All users can read published posts (anon + authenticated)
 
 **Triggers:**
@@ -185,7 +185,7 @@ A simple, database-driven CMS system for managing Learning Center and News conte
   - [ ] Draft posts are not visible to public
 
 ### Admin Interface Testing (Dashboard)
-- [ ] Login as admin (sungho@dadble.com or kevin@sandstoneartists.com)
+- [ ] Login as admin (sungho@kstorybridge.com or kevin@sandstoneartists.com)
 - [ ] Navigate to `/admin/content`
 - [ ] Create new post:
   - [ ] Draft a learning post
@@ -428,8 +428,8 @@ vercel --prod
 ## Contact for Questions
 
 - **Implementation**: Claude Code (Anthropic)
-- **Deployment**: Sungho Lee (sungho@dadble.com)
-- **Admin Access**: sungho@dadble.com, kevin@sandstoneartists.com
+- **Deployment**: Sungho Lee (sungho@kstorybridge.com)
+- **Admin Access**: sungho@kstorybridge.com, kevin@sandstoneartists.com
 
 ---
 

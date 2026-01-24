@@ -26,7 +26,7 @@ The feedback system allows users to rate and provide detailed feedback on chatbo
 
 **Location**: `/src/pages/ChatbotFeedbackAnalysis.tsx`  
 **Route**: `/chatbot-feedback`  
-**Access**: Admin only (`sungho@dadble.com`, `kevin@sandstoneartists.com`)
+**Access**: Admin only (`sungho@kstorybridge.com`, `kevin@sandstoneartists.com`)
 
 **Features**:
 - Key metrics dashboard (total feedback, average rating, poor ratings)

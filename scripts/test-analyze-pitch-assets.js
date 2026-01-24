@@ -41,7 +41,7 @@ const TEST_TITLE = {
   title_id: 'test-' + Date.now(),
   title_name: '환생했더니 슬라임이었던 건에 대하여 (Reincarnated as a Slime)',
   pitch_deck_url: 'https://example.com/pitch.pdf', // Mock URL for testing
-  admin_email: 'sungho@dadble.com',
+  admin_email: 'sungho@kstorybridge.com',
   pitch_analysis: {
     characters: {
       main_characters: [
@@ -214,7 +214,7 @@ async function testValidRequestWithoutPitchAnalysis() {
       title_id: 'test-no-analysis-' + Date.now(),
       title_name: 'Test Title Without Analysis',
       pitch_deck_url: 'https://example.com/pitch2.pdf',
-      admin_email: 'sungho@dadble.com'
+      admin_email: 'sungho@kstorybridge.com'
       // No pitch_analysis field
     };
 
@@ -285,7 +285,7 @@ async function testMissingRequiredFields() {
   try {
     const testData = {
       title_name: 'Test Title',
-      admin_email: 'sungho@dadble.com'
+      admin_email: 'sungho@kstorybridge.com'
       // Missing title_id and pitch_deck_url
     };
 

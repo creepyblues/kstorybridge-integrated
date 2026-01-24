@@ -7,7 +7,7 @@
  * Uses user authentication (not service role) for secure deletion.
  *
  * Usage:
- *   TEST_EMAIL="sungho@dadble.com" TEST_PASSWORD="password" node clear-chat-history.js
+ *   TEST_EMAIL="sungho@kstorybridge.com" TEST_PASSWORD="password" node clear-chat-history.js
  */
 
 import { createClient } from '@supabase/supabase-js';

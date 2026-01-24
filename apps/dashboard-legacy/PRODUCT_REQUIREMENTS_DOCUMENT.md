@@ -2403,7 +2403,7 @@ WHERE synopsis LIKE '%romantic%';
 **Admin Access**:
 - Separate `admin` table for admin users
 - Admin routes: Email-based access control
-- Admin emails: `sungho@dadble.com`, `kevin@sandstoneartists.com`
+- Admin emails: `sungho@kstorybridge.com`, `kevin@sandstoneartists.com`
 - No UI for admin management (manual database edits only)
 
 ### 14.4 Input Validation
@@ -2994,7 +2994,7 @@ test('Buyer signup flow', async ({ page }) => {
 - Slack: #kstorybridge-dashboard
 
 **Key Personnel**:
-- Product Owner: Sungho Lee (sungho@dadble.com)
+- Product Owner: Sungho Lee (sungho@kstorybridge.com)
 - Technical Lead: Kevin (kevin@sandstoneartists.com)
 
 ### D. Related Documentation

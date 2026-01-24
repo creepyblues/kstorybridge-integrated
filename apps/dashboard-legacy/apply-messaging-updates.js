@@ -92,7 +92,7 @@ async function applyMessagingUpdates() {
 
   console.log('\n🎯 NEXT STEPS:');
   console.log('1. Open http://localhost:8084/docs/messaging in your browser');
-  console.log('2. Sign in as admin (sungho@dadble.com or kevin@sandstoneartists.com)');
+  console.log('2. Sign in as admin (sungho@kstorybridge.com or kevin@sandstoneartists.com)');
   console.log('3. Use the inline editing interface to update each page');
   console.log('4. Start with the PRIORITY UPDATES listed above');
   console.log('5. Click "Update" button after making changes to each row');

@@ -276,7 +276,7 @@ module.exports = async function handler(req, res) {
     console.log('✅ User authenticated:', user.email);
 
     // Admin users (always allowed)
-    const ADMIN_USERS = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+    const ADMIN_USERS = ['sungho@kstorybridge.com', 'kevin@sandstoneartists.com'];
     if (ADMIN_USERS.includes(user.email)) {
       console.log('✅ Admin user authorized for OpenAI chatbot:', user.email);
     } else {

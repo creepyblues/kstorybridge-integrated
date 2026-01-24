@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
-import FeaturedTitlesCarousel from '../components/FeaturedTitlesCarousel';
+import RandomFeaturedGrid from '../components/RandomFeaturedGrid';
 import Footer from '../components/Footer';
 import { TypewriterText } from '../components/TypewriterText';
 import { LazyVideo } from '../components/LazyVideo';
@@ -398,7 +398,7 @@ const ProducersPage = () => {
             </div>
 
             <div>
-              <FeaturedTitlesCarousel />
+              <RandomFeaturedGrid />
             </div>
           </div>
         </section>

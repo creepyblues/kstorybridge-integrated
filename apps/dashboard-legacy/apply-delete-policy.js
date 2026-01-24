@@ -33,7 +33,7 @@ async function applyPolicy() {
   console.log('━'.repeat(80));
   console.log(SQL);
   console.log('━'.repeat(80));
-  console.log('\nAfter running, execute: TEST_EMAIL="sungho@dadble.com" TEST_PASSWORD="abcdefGH1234%" node clear-chat-history.js');
+  console.log('\nAfter running, execute: TEST_EMAIL="sungho@kstorybridge.com" TEST_PASSWORD="abcdefGH1234%" node clear-chat-history.js');
 }
 
 applyPolicy();

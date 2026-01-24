@@ -76,7 +76,7 @@ async function testMissingTitleId() {
       // Missing title_id
       title_name: 'Test Title',
       pitch_deck_url: 'https://example.com/pitch.pdf',
-      admin_email: 'sungho@dadble.com'
+      admin_email: 'sungho@kstorybridge.com'
     };
 
     const { data, error } = await supabase.functions.invoke('analyze-pitch-for-assets', {
@@ -115,7 +115,7 @@ async function testMissingTitleName() {
       title_id: 'test-123',
       // Missing title_name
       pitch_deck_url: 'https://example.com/pitch.pdf',
-      admin_email: 'sungho@dadble.com'
+      admin_email: 'sungho@kstorybridge.com'
     };
 
     const { data, error } = await supabase.functions.invoke('analyze-pitch-for-assets', {
@@ -154,7 +154,7 @@ async function testMissingPitchDeckUrl() {
       title_id: 'test-123',
       title_name: 'Test Title',
       // Missing pitch_deck_url
-      admin_email: 'sungho@dadble.com'
+      admin_email: 'sungho@kstorybridge.com'
     };
 
     const { data, error } = await supabase.functions.invoke('analyze-pitch-for-assets', {

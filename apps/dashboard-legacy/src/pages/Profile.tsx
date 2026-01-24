@@ -67,7 +67,7 @@ type UnifiedProfile = {
 // Mock profile data for localhost development
 const mockProfile: UnifiedProfile = {
   id: "550e8400-e29b-41d4-a716-446655440000",
-  email: "sungho@dadble.com",
+  email: "sungho@kstorybridge.com",
   full_name: "Sungho Lee",
   account_type: "buyer",
   buyer_company: "Dadble Inc.",
@@ -1053,7 +1053,7 @@ export default function Profile() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 {/* How KStoryBridge works? Button */}
-                {(profile.email?.toLowerCase() === 'sungho@dadble.com' || profile.email?.toLowerCase() === 'kevin@sandstoneartists.com') ? (
+                {(profile.email?.toLowerCase() === 'sungho@kstorybridge.com' || profile.email?.toLowerCase() === 'kevin@sandstoneartists.com') ? (
                   <Button
                     onClick={() => setShowVideoDialog(true)}
                     variant="outline"

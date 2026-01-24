@@ -42,7 +42,7 @@ async function testMissingAssetId() {
     const { data, error } = await supabase.functions.invoke('generate-asset', {
       body: {
         // Missing asset_id
-        admin_email: 'sungho@dadble.com'
+        admin_email: 'sungho@kstorybridge.com'
       }
     });
 
@@ -104,7 +104,7 @@ async function testAssetNotFound() {
     const { data, error } = await supabase.functions.invoke('generate-asset', {
       body: {
         asset_id: '00000000-0000-0000-0000-000000000000',
-        admin_email: 'sungho@dadble.com'
+        admin_email: 'sungho@kstorybridge.com'
       }
     });
 
@@ -178,7 +178,7 @@ async function testFullGeneration() {
     const { data, error } = await supabase.functions.invoke('generate-asset', {
       body: {
         asset_id: assetId,
-        admin_email: 'sungho@dadble.com',
+        admin_email: 'sungho@kstorybridge.com',
         use_hd: false  // Use standard quality to save cost
       }
     });

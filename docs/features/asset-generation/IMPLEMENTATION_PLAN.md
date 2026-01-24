@@ -183,7 +183,7 @@ CREATE TABLE title_marketing_assets (
 
   -- Approval workflow (NO foreign key)
   approved BOOLEAN DEFAULT FALSE,
-  approved_by_email TEXT,              -- Email stored directly (e.g., 'sungho@dadble.com')
+  approved_by_email TEXT,              -- Email stored directly (e.g., 'sungho@kstorybridge.com')
   approved_at TIMESTAMP WITH TIME ZONE,
 
   -- Timestamps
@@ -204,7 +204,7 @@ CREATE POLICY "Admins can manage assets"
   TO authenticated
   USING (
     (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -231,7 +231,7 @@ CREATE POLICY "Admins can manage assets"
   title_name: string,                   // Passed from UI (no lookup)
   pitch_deck_url: string,              // Direct Supabase Storage URL
   pitch_analysis?: object,             // Optional pre-extracted data
-  admin_email: string                  // From JWT (e.g., 'sungho@dadble.com')
+  admin_email: string                  // From JWT (e.g., 'sungho@kstorybridge.com')
 }
 ```
 
@@ -397,7 +397,7 @@ AssetGeneration (main page)
 - **GPT-4 Integration**: Generates 10-15 diverse asset ideas (social media, ad creative, pitch material)
 - **Cost Tracking**: ~$0.05-0.08 per analysis with detailed metadata
 - **Error Handling**: Exponential backoff retry, comprehensive validation
-- **Authorized Admins**: `sungho@dadble.com`, `kevin@sandstoneartists.com`
+- **Authorized Admins**: `sungho@kstorybridge.com`, `kevin@sandstoneartists.com`
 
 **Deployment**: ✅ Successfully deployed to production (2025-11-06)
 - Function: `analyze-pitch-for-assets` (Version 2)

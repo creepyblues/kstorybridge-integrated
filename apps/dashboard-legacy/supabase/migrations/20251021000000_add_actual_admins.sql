@@ -5,7 +5,7 @@
 -- Safety: Uses ON CONFLICT to avoid duplicate errors if already exists
 
 INSERT INTO public.admin (email, full_name, active) VALUES
-  ('sungho@dadble.com', 'Sungho Lee', true),
+  ('sungho@kstorybridge.com', 'Sungho Lee', true),
   ('kevin@sandstoneartists.com', 'Kevin', true)
 ON CONFLICT (email) DO UPDATE
   SET active = EXCLUDED.active,

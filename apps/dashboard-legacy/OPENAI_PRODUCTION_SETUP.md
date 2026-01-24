@@ -4,7 +4,7 @@
 The OpenAI chatbot is already implemented with secure production architecture:
 - ✅ Frontend automatically switches to backend API in production
 - ✅ Backend API endpoint exists at `/api/openai-chat.ts`
-- ✅ User authorization (only `sungho@dadble.com` and `kevin@sandstoneartists.com`)
+- ✅ User authorization (only `sungho@kstorybridge.com` and `kevin@sandstoneartists.com`)
 - ✅ Secure server-side OpenAI API key handling
 
 ## Required Environment Variables
@@ -108,7 +108,7 @@ Set `NODE_ENV=production` temporarily to test API flow.
 
 ### "Authentication required" Error
 - Check that user is logged in to dashboard
-- Verify user email is in allowed list (`sungho@dadble.com`, `kevin@sandstoneartists.com`)
+- Verify user email is in allowed list (`sungho@kstorybridge.com`, `kevin@sandstoneartists.com`)
 
 ### "Server configuration error" 
 - Check `OPENAI_API_KEY` is set in deployment environment

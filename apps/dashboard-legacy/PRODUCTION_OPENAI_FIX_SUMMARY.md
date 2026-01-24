@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
 - ✅ **Comprehensive error handling** 
 - ✅ **Proper CORS configuration**
 - ✅ **Authentication with Supabase**
-- ✅ **User authorization** (sungho@dadble.com, kevin@sandstoneartists.com)
+- ✅ **User authorization** (sungho@kstorybridge.com, kevin@sandstoneartists.com)
 - ✅ **OpenAI API integration** with gpt-4o-mini model
 
 ### Frontend Integration
@@ -98,7 +98,7 @@ All required environment variables are properly configured in Vercel production:
 
 ## Authorized Users
 The OpenAI chatbot is accessible to these users only:
-- ✅ sungho@dadble.com
+- ✅ sungho@kstorybridge.com
 - ✅ kevin@sandstoneartists.com
 
 ## Next Steps (Optional Improvements)

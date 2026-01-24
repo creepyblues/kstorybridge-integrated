@@ -41,7 +41,7 @@ export const useCreatorAccess = (): CreatorAccess => {
   const useRealDataOnLocalhost = true;
 
   // Test email for real data queries (replace with your test account)
-  const testEmail = 'sungho@dadble.com';
+  const testEmail = 'sungho@kstorybridge.com';
 
   useEffect(() => {
     const fetchCreatorProfile = async () => {

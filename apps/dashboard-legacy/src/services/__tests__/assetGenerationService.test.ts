@@ -126,7 +126,7 @@ describe('assetGenerationService', () => {
         title_id: 'title-123',
         title_name: 'Test Title',
         pitch_deck_url: 'https://example.com/pitch.pdf',
-        admin_email: 'sungho@dadble.com',
+        admin_email: 'sungho@kstorybridge.com',
       };
 
       const mockResponse = {
@@ -166,7 +166,7 @@ describe('assetGenerationService', () => {
         title_id: 'title-123',
         title_name: 'Test Title',
         pitch_deck_url: 'https://example.com/pitch.pdf',
-        admin_email: 'sungho@dadble.com',
+        admin_email: 'sungho@kstorybridge.com',
       };
 
       const mockError = new Error('Edge function error');
@@ -184,7 +184,7 @@ describe('assetGenerationService', () => {
         title_id: 'title-123',
         title_name: 'Test Title',
         pitch_deck_url: 'https://example.com/pitch.pdf',
-        admin_email: 'sungho@dadble.com',
+        admin_email: 'sungho@kstorybridge.com',
       };
 
       const mockResponse = {
@@ -208,7 +208,7 @@ describe('assetGenerationService', () => {
     it('should call edge function with correct parameters', async () => {
       const request = {
         asset_id: 'asset-123',
-        admin_email: 'sungho@dadble.com',
+        admin_email: 'sungho@kstorybridge.com',
         use_hd: false,
       };
 
@@ -244,7 +244,7 @@ describe('assetGenerationService', () => {
     it('should update asset approval status', async () => {
       const assetId = 'asset-123';
       const approved = true;
-      const adminEmail = 'sungho@dadble.com';
+      const adminEmail = 'sungho@kstorybridge.com';
 
       const mockUpdate = vi.fn().mockReturnThis();
       const mockEq = vi.fn().mockResolvedValue({ error: null });
@@ -272,7 +272,7 @@ describe('assetGenerationService', () => {
     it('should clear approval data when unapproving', async () => {
       const assetId = 'asset-123';
       const approved = false;
-      const adminEmail = 'sungho@dadble.com';
+      const adminEmail = 'sungho@kstorybridge.com';
 
       const mockUpdate = vi.fn().mockReturnThis();
       const mockEq = vi.fn().mockResolvedValue({ error: null });

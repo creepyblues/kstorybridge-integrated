@@ -123,7 +123,7 @@ Most relevant titles from our database for this query:
 
 **Access Control:**
 - ✅ **Supabase Authentication**: Valid user tokens required
-- ✅ **User Authorization**: Limited to specific users (sungho@dadble.com, kevin@sandstoneartists.com)
+- ✅ **User Authorization**: Limited to specific users (sungho@kstorybridge.com, kevin@sandstoneartists.com)
 - ✅ **Database Security**: Uses service role for secure access
 - ✅ **CORS Protection**: Configured for specific domains
 

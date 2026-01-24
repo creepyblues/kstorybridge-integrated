@@ -1170,7 +1170,7 @@ def _download_pdf_from_url(self, url):
 **Implementation**:
 ```typescript
 // In PitchExtractionTest.tsx
-const isAuthorized = user?.email === 'sungho@dadble.com' ||
+const isAuthorized = user?.email === 'sungho@kstorybridge.com' ||
                      user?.email === 'kevin@sandstoneartists.com'
 
 if (!isAuthorized) {

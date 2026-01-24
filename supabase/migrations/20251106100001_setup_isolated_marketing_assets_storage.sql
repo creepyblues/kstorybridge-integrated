@@ -38,7 +38,7 @@ CREATE POLICY "Admins can view marketing assets"
   USING (
     bucket_id = 'marketing-assets'
     AND (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -51,7 +51,7 @@ CREATE POLICY "Admins can upload marketing assets"
   WITH CHECK (
     bucket_id = 'marketing-assets'
     AND (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -64,14 +64,14 @@ CREATE POLICY "Admins can update marketing assets"
   USING (
     bucket_id = 'marketing-assets'
     AND (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   )
   WITH CHECK (
     bucket_id = 'marketing-assets'
     AND (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -84,7 +84,7 @@ CREATE POLICY "Admins can delete marketing assets"
   USING (
     bucket_id = 'marketing-assets'
     AND (auth.jwt() ->> 'email') IN (
-      'sungho@dadble.com',
+      'sungho@kstorybridge.com',
       'kevin@sandstoneartists.com'
     )
   );
@@ -128,7 +128,7 @@ CREATE POLICY "Admins can delete marketing assets"
 --   USING (
 --     bucket_id = 'marketing-assets'
 --     AND (auth.jwt() ->> 'email') IN (
---       'sungho@dadble.com',
+--       'sungho@kstorybridge.com',
 --       'kevin@sandstoneartists.com',
 --       'new@admin.com'
 --     )

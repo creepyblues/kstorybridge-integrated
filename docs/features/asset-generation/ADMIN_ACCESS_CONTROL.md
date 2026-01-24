@@ -12,7 +12,7 @@
 The creative asset generation system uses **hardcoded admin email validation** for the following reasons:
 
 1. **MVP Scope**: This is an internal admin-only tool, not a public-facing feature
-2. **Limited User Base**: Only 2 authorized admins (`sungho@dadble.com`, `kevin@sandstoneartists.com`)
+2. **Limited User Base**: Only 2 authorized admins (`sungho@kstorybridge.com`, `kevin@sandstoneartists.com`)
 3. **Controlled Environment**: All access is authenticated through Supabase + requires valid JWT
 4. **Cost Control**: Prevents unauthorized users from triggering expensive AI API calls ($0.05-0.20 per operation)
 5. **Simplicity**: No need for complex role management system for 2 users
@@ -26,7 +26,7 @@ The creative asset generation system uses **hardcoded admin email validation** f
 
 **Validation Pattern:**
 ```typescript
-const authorizedAdmins = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+const authorizedAdmins = ['sungho@kstorybridge.com', 'kevin@sandstoneartists.com'];
 if (!authorizedAdmins.includes(request.admin_email.toLowerCase())) {
   return { code: 'UNAUTHORIZED', message: 'Admin email not authorized' };
 }
@@ -110,7 +110,7 @@ CREATE POLICY "Only service role can manage admins"
 
 -- Insert existing admins
 INSERT INTO admin_users (email, role, permissions, created_by) VALUES
-  ('sungho@dadble.com', 'super_admin', '{"can_generate_assets": true, "can_manage_admins": true}'::jsonb, 'system'),
+  ('sungho@kstorybridge.com', 'super_admin', '{"can_generate_assets": true, "can_manage_admins": true}'::jsonb, 'system'),
   ('kevin@sandstoneartists.com', 'admin', '{"can_generate_assets": true}'::jsonb, 'system');
 ```
 
@@ -120,7 +120,7 @@ Replace hardcoded validation:
 
 ```typescript
 // OLD (current)
-const authorizedAdmins = ['sungho@dadble.com', 'kevin@sandstoneartists.com'];
+const authorizedAdmins = ['sungho@kstorybridge.com', 'kevin@sandstoneartists.com'];
 if (!authorizedAdmins.includes(request.admin_email.toLowerCase())) {
   return { code: 'UNAUTHORIZED', message: 'Admin email not authorized' };
 }
@@ -268,7 +268,7 @@ CREATE TABLE admin_audit_log (
 describe('Admin Access Control', () => {
   it('should allow authorized admin', async () => {
     const response = await supabase.functions.invoke('analyze-pitch-for-assets', {
-      body: { admin_email: 'sungho@dadble.com', ... }
+      body: { admin_email: 'sungho@kstorybridge.com', ... }
     });
     expect(response.error).toBeNull();
   });
@@ -301,7 +301,7 @@ describe('Admin Access Control', () => {
 ---
 
 **For Questions or Changes:**
-Contact: sungho@dadble.com
+Contact: sungho@kstorybridge.com
 
 **Related Documentation:**
 - [Feature Testing Report](TESTING_REPORT.md) - Code review findings

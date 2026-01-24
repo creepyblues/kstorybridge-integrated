@@ -1,8 +1,17 @@
-# CLAUDE.md - Dashboard App
+# 🗄️ ARCHIVED - Dashboard Legacy
+
+> **⚠️ This app has been archived and replaced by the new dashboard (apps/dashboard).**
+> It remains for historical reference only and should not be deployed.
+> **Archived**: 2025-11-27
+
+---
+
+# CLAUDE.md - Dashboard App (LEGACY)
 
 **App Scope**: Buyer-focused dashboard with AI chatbot, tier-based access control, premium content, and Stripe integration. **Authentication**: Handles BUYER auth only (creator auth moved to creator app as of 2025-11-04).
 
 **Last Updated**: 2025-11-11
+**Status**: 🗄️ ARCHIVED - Replaced by apps/dashboard (v2.0)
 
 > 📖 **See also**: [Root CLAUDE.md](../../CLAUDE.md) for monorepo commands, shared architecture, and cross-app patterns.
 
@@ -690,7 +699,7 @@ Standardized to `'buyer'` and `'creator'` only.
 - `/chat` - AI chatbot (changed from admin-only 2025-01-14)
 - `/buyers/home`, `/buyers/titles`, `/buyers/saved`, `/buyers/news`
 
-**Admin-Only** (`sungho@dadble.com`, `kevin@sandstoneartists.com`):
+**Admin-Only** (`sungho@kstorybridge.com`, `kevin@sandstoneartists.com`):
 - `/experiment` - Feature testing (gateway to admin tools)
 
 **Creator Access**:

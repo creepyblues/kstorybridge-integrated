@@ -131,7 +131,7 @@ npx supabase functions deploy analyze-pitch-for-assets --no-verify-jwt
 
 ### Authorization
 **Authorized Admins** (hardcoded in function):
-- `sungho@dadble.com`
+- `sungho@kstorybridge.com`
 - `kevin@sandstoneartists.com`
 
 **To add a new admin**: Modify `validateRequest()` function in `index.ts` and redeploy

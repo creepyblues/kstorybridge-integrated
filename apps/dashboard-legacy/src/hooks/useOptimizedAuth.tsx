@@ -275,7 +275,7 @@ export function OptimizedAuthProvider({ children }: { children: ReactNode }) {
   const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const useRealDataOnLocalhost = true;
   const mockTier: UserTier = 'basic';
-  const testEmail = 'sungho@dadble.com';
+  const testEmail = 'sungho@kstorybridge.com';
   
   const refreshProfile = useCallback(async (): Promise<void> => {
     if (!user) return;

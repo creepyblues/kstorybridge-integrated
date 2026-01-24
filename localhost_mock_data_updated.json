@@ -2,7 +2,7 @@
   "timestamp": "2025-08-12T06:15:00.000Z",
   "user_buyers": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
-    "email": "sungho@dadble.com",
+    "email": "sungho@kstorybridge.com",
     "full_name": "Sungho Lee",
     "tier": "pro",
     "company": "Dadble Inc.",
@@ -624,7 +624,7 @@
     "featured_count": 6,
     "titles_count": 6,
     "enhancements_added": [
-      "Comprehensive user profile for sungho@dadble.com",
+      "Comprehensive user profile for sungho@kstorybridge.com",
       "Enhanced title data with ratings, rating counts, and realistic view numbers",
       "Added missing fields like taglines, comps, and notes",
       "Improved descriptions and Korean translations",

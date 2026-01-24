@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -150,6 +150,11 @@ export function TitleEditModal({
 
   // Character details state for structured input
   const [inputCharacters, setInputCharacters] = useState<CharacterFormDetail[]>([]);
+
+  // Auto-save state
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const isInitialLoad = useRef(true);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check which analyzers have data for this title
   const checkAnalyzerDataExists = async (id: string, titleData: Title | null) => {
@@ -307,6 +312,90 @@ export function TitleEditModal({
       setSaving(false);
     }
   };
+
+  // Auto-save function (doesn't close modal or show toast)
+  const performAutoSave = useCallback(async () => {
+    if (!titleId || !user?.email || !title) return;
+
+    setAutoSaveStatus('saving');
+    try {
+      const {
+        title_id,
+        created_at,
+        updated_at,
+        creator_id,
+        platforms,
+        documents,
+        pitch_analysis,
+        processing_confidence,
+        title_content_analysis,
+        ...updates
+      } = formData as Record<string, unknown>;
+
+      // Serialize characters from structured input
+      const serializedCharacters = serializeCharacters(inputCharacters);
+
+      // Update the title with provenance tracking
+      const updateWithProvenance = {
+        ...updates,
+        character_details: serializedCharacters.length > 0 ? serializedCharacters : null,
+        last_modified_by: user.email,
+        last_modified_source: 'admin',
+      } as Record<string, unknown>;
+
+      await titlesService.updateTitle(titleId, updateWithProvenance);
+      setAutoSaveStatus('saved');
+
+      // Reset to idle after 2 seconds
+      setTimeout(() => setAutoSaveStatus('idle'), 2000);
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      setAutoSaveStatus('error');
+    }
+  }, [titleId, user?.email, title, formData, inputCharacters]);
+
+  // Auto-save effect with debounce
+  useEffect(() => {
+    // Skip auto-save on initial load
+    if (isInitialLoad.current) {
+      return;
+    }
+
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save (1.5 second debounce)
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      performAutoSave();
+    }, 1500);
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData, inputCharacters, performAutoSave]);
+
+  // Reset initial load flag when title is fetched
+  useEffect(() => {
+    if (title && !loading) {
+      // Small delay to ensure form data is set before enabling auto-save
+      const timer = setTimeout(() => {
+        isInitialLoad.current = false;
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [title, loading]);
+
+  // Reset initial load flag when modal closes
+  useEffect(() => {
+    if (!open) {
+      isInitialLoad.current = true;
+      setAutoSaveStatus('idle');
+    }
+  }, [open]);
 
   const arrayToString = (arr?: string[] | null): string => {
     if (!arr || !Array.isArray(arr)) return '';
@@ -517,26 +606,21 @@ export function TitleEditModal({
             <div className="flex items-center gap-2">
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
                 onClick={() => setKeyVisualsModalOpen(true)}
                 disabled={!titleId}
-                className={`whitespace-nowrap text-xs ${
-                  hasKeyVisuals
-                    ? 'bg-blue-50 border-2 border-blue-500 text-blue-700 hover:bg-blue-100'
-                    : ''
-                }`}
+                className="whitespace-nowrap text-xs text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
               >
                 <Icon icon="solar:gallery-bold-duotone" className="h-3.5 w-3.5 mr-1" />
                 Key Visuals
+                {hasKeyVisuals && <Icon icon="mdi:check-bold" className="h-3.5 w-3.5 ml-1 text-sunrise-coral" />}
               </Button>
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
                 onClick={handleCollectFanSignal}
                 disabled={collectingFanSignal || (!formData.title_name_en && !formData.title_name_kr)}
-                className="whitespace-nowrap text-xs"
+                className="whitespace-nowrap text-xs text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
               >
                 {collectingFanSignal ? (
                   <>
@@ -552,33 +636,25 @@ export function TitleEditModal({
               </Button>
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
                 onClick={() => setCompsModalOpen(true)}
                 disabled={!titleId}
-                className={`whitespace-nowrap text-xs ${
-                  hasComps
-                    ? 'bg-blue-50 border-2 border-blue-500 text-blue-700 hover:bg-blue-100'
-                    : ''
-                }`}
+                className="whitespace-nowrap text-xs text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
               >
                 <Icon icon="solar:stars-bold-duotone" className="h-3.5 w-3.5 mr-1" />
                 Generate Comps
+                {hasComps && <Icon icon="mdi:check-bold" className="h-3.5 w-3.5 ml-1 text-sunrise-coral" />}
               </Button>
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
                 onClick={() => setFormatFitModalOpen(true)}
                 disabled={!titleId}
-                className={`whitespace-nowrap text-xs ${
-                  hasFormatFit
-                    ? 'bg-blue-50 border-2 border-blue-500 text-blue-700 hover:bg-blue-100'
-                    : ''
-                }`}
+                className="whitespace-nowrap text-xs text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
               >
                 <Icon icon="solar:chart-bold-duotone" className="h-3.5 w-3.5 mr-1" />
                 Format Fit
+                {hasFormatFit && <Icon icon="mdi:check-bold" className="h-3.5 w-3.5 ml-1 text-sunrise-coral" />}
               </Button>
             </div>
           </DialogTitle>
@@ -597,10 +673,9 @@ export function TitleEditModal({
             {/* Toggle All Button */}
             <div className="flex justify-end">
               <Button
-                variant="outline"
                 size="sm"
                 onClick={toggleAllSections}
-                className="text-xs"
+                className="text-xs text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
               >
                 {openSections.length === ALL_SECTIONS.length ? 'Collapse All' : 'Expand All'}
               </Button>
@@ -665,11 +740,10 @@ export function TitleEditModal({
                         />
                         <Button
                           type="button"
-                          variant="outline"
                           size="sm"
                           onClick={() => handleCollectData('kr')}
                           disabled={!formData.title_url || collectingUrl !== null}
-                          className="h-9 whitespace-nowrap text-xs px-2"
+                          className="h-9 whitespace-nowrap text-xs px-2 text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
                         >
                           {collectingUrl === 'kr' ? (
                             <Icon icon="solar:refresh-circle-bold-duotone" className="h-3.5 w-3.5 animate-spin" />
@@ -693,11 +767,10 @@ export function TitleEditModal({
                         />
                         <Button
                           type="button"
-                          variant="outline"
                           size="sm"
                           onClick={() => handleCollectData('en')}
                           disabled={!formData.title_url_en || collectingUrl !== null}
-                          className="h-9 whitespace-nowrap text-xs px-2"
+                          className="h-9 whitespace-nowrap text-xs px-2 text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
                         >
                           {collectingUrl === 'en' ? (
                             <Icon icon="solar:refresh-circle-bold-duotone" className="h-3.5 w-3.5 animate-spin" />
@@ -720,37 +793,49 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="priority" className="text-sm">Priority <span className="text-gray-400 font-normal">{'{priority}'}</span></Label>
-                      <Select
-                        value={formData.priority || '2'}
-                        onValueChange={(value) => handleInputChange('priority', value)}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PRIORITY_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-sm">Priority <span className="text-gray-400 font-normal">{'{priority}'}</span></Label>
+                      <div className="flex items-center gap-4 h-9">
+                        {PRIORITY_OPTIONS.map((opt) => (
+                          <label key={opt.value} className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="priority"
+                              value={opt.value}
+                              checked={(formData.priority || '2') === opt.value}
+                              onChange={(e) => handleInputChange('priority', e.target.value)}
+                              className="h-4 w-4 text-hanok-teal border-gray-300 focus:ring-hanok-teal"
+                            />
+                            <span className="text-sm">{opt.label}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="verified" className="text-sm">Verified <span className="text-gray-400 font-normal">{'{verified}'}</span></Label>
-                      <Select
-                        value={formData.verified ? 'true' : 'false'}
-                        onValueChange={(value) => handleInputChange('verified', value === 'true')}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select verification status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Yes</SelectItem>
-                          <SelectItem value="false">No</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-sm">Verified <span className="text-gray-400 font-normal">{'{verified}'}</span></Label>
+                      <div className="flex items-center gap-4 h-9">
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="verified"
+                            value="true"
+                            checked={formData.verified === true}
+                            onChange={() => handleInputChange('verified', true)}
+                            className="h-4 w-4 text-hanok-teal border-gray-300 focus:ring-hanok-teal"
+                          />
+                          <span className="text-sm">Yes</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="verified"
+                            value="false"
+                            checked={formData.verified === false}
+                            onChange={() => handleInputChange('verified', false)}
+                            className="h-4 w-4 text-hanok-teal border-gray-300 focus:ring-hanok-teal"
+                          />
+                          <span className="text-sm">No</span>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </CollapsibleContent>
@@ -838,14 +923,45 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
-                      <Label htmlFor="comps" className="text-sm">Comps (comma-separated) <span className="text-gray-400 font-normal">{'{comps}'}</span></Label>
-                      <Input
-                        id="comps"
-                        value={arrayToString(formData.comps)}
-                        onChange={(e) => handleArrayChange('comps', e.target.value)}
-                        placeholder="Similar titles for comparison"
-                        className={`h-9 ${getEmptyHighlight(formData.comps)}`}
-                      />
+                      <Label htmlFor="comps" className="text-sm">
+                        Comps (comma-separated) <span className="text-gray-400 font-normal">{'{comps}'}</span>
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="comps"
+                          value={arrayToString(formData.comps)}
+                          onChange={(e) => handleArrayChange('comps', e.target.value)}
+                          placeholder="Similar titles for comparison"
+                          disabled
+                          className={`h-9 flex-1 ${getEmptyHighlight(formData.comps)} disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => setCompsModalOpen(true)}
+                          disabled={!titleId}
+                          className="h-9 whitespace-nowrap text-xs text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
+                        >
+                          <Icon icon="solar:stars-bold-duotone" className="h-3.5 w-3.5 mr-1" />
+                          Generate Comps
+                          {hasComps && <Icon icon="mdi:check-bold" className="h-3.5 w-3.5 ml-1 text-sunrise-coral" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Format Fit Button */}
+                    <div className="md:col-span-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setFormatFitModalOpen(true)}
+                        disabled={!titleId}
+                        className="whitespace-nowrap text-xs text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
+                      >
+                        <Icon icon="solar:chart-bold-duotone" className="h-3.5 w-3.5 mr-1" />
+                        Analyze Format Fit
+                        {hasFormatFit && <Icon icon="mdi:check-bold" className="h-3.5 w-3.5 ml-1 text-sunrise-coral" />}
+                      </Button>
                     </div>
 
                     {/* Show saved comps analysis if available */}
@@ -1164,31 +1280,37 @@ export function TitleEditModal({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <Label htmlFor="tagline" className="text-sm">Tagline <span className="text-gray-400 font-normal">{'{tagline}'}</span></Label>
-                        <Input
+                        <Textarea
                           id="tagline"
                           value={formData.tagline || ''}
                           onChange={(e) => handleInputChange('tagline', e.target.value)}
-                          className={`h-9 ${getEmptyHighlight(formData.tagline)}`}
+                          rows={3}
+                          className={`resize-none ${getEmptyHighlight(formData.tagline)}`}
                         />
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="tagline_kr" className="text-sm">Tagline (Korean) <span className="text-gray-400 font-normal">{'{tagline_kr}'}</span></Label>
-                        <Input
+                        <Textarea
                           id="tagline_kr"
                           value={formData.tagline_kr || ''}
                           onChange={(e) => handleInputChange('tagline_kr', e.target.value)}
-                          className={`h-9 ${getEmptyHighlight(formData.tagline_kr)}`}
+                          rows={3}
+                          className={`resize-none ${getEmptyHighlight(formData.tagline_kr)}`}
                         />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="pitch" className="text-sm">Pitch <span className="text-gray-400 font-normal">{'{pitch}'}</span></Label>
+                      <Label htmlFor="pitch" className="text-sm">
+                        Pitch <span className="text-gray-400 font-normal">{'{pitch}'}</span>
+                        <span className="text-gray-400 text-xs font-normal ml-1">(this is the url of the pitch deck)</span>
+                      </Label>
                       <Textarea
                         id="pitch"
                         value={formData.pitch || ''}
                         onChange={(e) => handleInputChange('pitch', e.target.value)}
                         rows={3}
-                        className={`resize-none ${getEmptyHighlight(formData.pitch)}`}
+                        disabled
+                        className={`resize-none ${getEmptyHighlight(formData.pitch)} disabled:bg-gray-100 disabled:cursor-not-allowed`}
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1275,29 +1397,32 @@ export function TitleEditModal({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="space-y-1">
                         <Label htmlFor="story_structure" className="text-sm">Story Structure <span className="text-gray-400 font-normal">{'{story_structure}'}</span></Label>
-                        <Input
+                        <Textarea
                           id="story_structure"
                           value={formData.story_structure || ''}
                           onChange={(e) => handleInputChange('story_structure', e.target.value)}
-                          className={`h-9 ${getEmptyHighlight(formData.story_structure)}`}
+                          rows={3}
+                          className={`resize-none ${getEmptyHighlight(formData.story_structure)}`}
                         />
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="planned_ending" className="text-sm">Planned Ending <span className="text-gray-400 font-normal">{'{planned_ending}'}</span></Label>
-                        <Input
+                        <Textarea
                           id="planned_ending"
                           value={formData.planned_ending || ''}
                           onChange={(e) => handleInputChange('planned_ending', e.target.value)}
-                          className={`h-9 ${getEmptyHighlight(formData.planned_ending)}`}
+                          rows={3}
+                          className={`resize-none ${getEmptyHighlight(formData.planned_ending)}`}
                         />
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="narrative_arc" className="text-sm">Narrative Arc <span className="text-gray-400 font-normal">{'{narrative_arc}'}</span></Label>
-                        <Input
+                        <Textarea
                           id="narrative_arc"
                           value={formData.narrative_arc || ''}
                           onChange={(e) => handleInputChange('narrative_arc', e.target.value)}
-                          className={`h-9 ${getEmptyHighlight(formData.narrative_arc)}`}
+                          rows={3}
+                          className={`resize-none ${getEmptyHighlight(formData.narrative_arc)}`}
                         />
                       </div>
                     </div>
@@ -1401,19 +1526,31 @@ export function TitleEditModal({
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="print_editions" className="text-sm">Print Editions <span className="text-gray-400 font-normal">{'{print_editions}'}</span></Label>
-                      <Select
-                        value={formData.print_editions ? 'true' : 'false'}
-                        onValueChange={(value) => handleInputChange('print_editions', value === 'true')}
-                      >
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Yes</SelectItem>
-                          <SelectItem value="false">No</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-sm">Print Editions <span className="text-gray-400 font-normal">{'{print_editions}'}</span></Label>
+                      <div className="flex items-center gap-4 h-9">
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="print_editions"
+                            value="true"
+                            checked={formData.print_editions === true}
+                            onChange={() => handleInputChange('print_editions', true)}
+                            className="h-4 w-4 text-hanok-teal border-gray-300 focus:ring-hanok-teal"
+                          />
+                          <span className="text-sm">Yes</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="print_editions"
+                            value="false"
+                            checked={formData.print_editions === false}
+                            onChange={() => handleInputChange('print_editions', false)}
+                            className="h-4 w-4 text-hanok-teal border-gray-300 focus:ring-hanok-teal"
+                          />
+                          <span className="text-sm">No</span>
+                        </label>
+                      </div>
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor="print_edition_details" className="text-sm">Print Edition Details <span className="text-gray-400 font-normal">{'{print_edition_details}'}</span></Label>
@@ -1449,24 +1586,40 @@ export function TitleEditModal({
               </Collapsible>
             </div>
 
-            {/* Save Button */}
-            <div className="flex justify-end pt-4 border-t">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="bg-hanok-teal hover:bg-hanok-teal/90"
-              >
-                {saving ? (
+            {/* Auto-save Status & Close Button */}
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="flex items-center gap-2 text-sm">
+                {autoSaveStatus === 'saving' && (
                   <>
-                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="solar:diskette-bold-duotone" className="h-4 w-4 mr-2" />
-                    Save Changes
+                    <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 animate-spin text-gray-500" />
+                    <span className="text-gray-500">Saving...</span>
                   </>
                 )}
+                {autoSaveStatus === 'saved' && (
+                  <>
+                    <Icon icon="solar:check-circle-bold-duotone" className="h-4 w-4 text-green-500" />
+                    <span className="text-green-600">Saved</span>
+                  </>
+                )}
+                {autoSaveStatus === 'error' && (
+                  <>
+                    <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 text-red-500" />
+                    <span className="text-red-600">Save failed</span>
+                  </>
+                )}
+                {autoSaveStatus === 'idle' && (
+                  <span className="text-gray-400 text-xs">Auto-save enabled</span>
+                )}
+              </div>
+              <Button
+                onClick={() => {
+                  onSaved?.();
+                  onOpenChange(false);
+                }}
+                className="text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
+              >
+                <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-2" />
+                Close
               </Button>
             </div>
           </div>

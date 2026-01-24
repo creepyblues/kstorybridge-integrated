@@ -1,0 +1,190 @@
+{
+  "chatbot": {
+    "meta": {
+      "title": "AI Chatbot - Jinu | KStoryBridge",
+      "description": "Korean content discovery in 2-4 seconds with Jinu, your AI story expert"
+    },
+    "hero": {
+      "headline": "Korean Content Discovery in 2-4 Seconds",
+      "subhead": "Ask Jinu anything about 245+ curated Korean titles",
+      "primaryCta": "Try Free Trial",
+      "secondaryCta": "Sign Up for Full Access"
+    },
+    "demo": {
+      "placeholder": "Ask me about Korean webtoons, web novels, or dramas...",
+      "exampleQueries": [
+        "Show me romantic comedy webtoons with strong female leads",
+        "Find action series similar to Solo Leveling",
+        "What Korean thrillers would work as limited series?"
+      ],
+      "response": {
+        "title": "Great choice! Here's what I found...",
+        "body": "I found some delightful titles that blend those elements well! \"You Get Me Going\" is a standout choice featuring playful banter and evolving dynamics that make it engaging and fun."
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Ask a Question",
+        "description": "Natural language, no syntax. Just describe what you're looking for."
+      },
+      "step2": {
+        "title": "Jinu Analyzes",
+        "description": "GPT-4 + vector search processes your query across 245+ titles."
+      },
+      "step3": {
+        "title": "Get Recommendations",
+        "description": "Receive 10 expert recommendations instantly with context."
+      }
+    },
+    "values": {
+      "title": "Why Use Jinu",
+      "instant": {
+        "title": "Instant Answers",
+        "description": "No endless scrolling. Ask, get recommendations in 2-4 seconds."
+      },
+      "expert": {
+        "title": "Expert Intelligence",
+        "description": "GPT-4 + vector search = Korean content expert in your pocket."
+      },
+      "simple": {
+        "title": "Zero Learning Curve",
+        "description": "Just type. No complex filters or syntax to learn."
+      }
+    },
+    "stats": {
+      "titles": "245+",
+      "titlesLabel": "Curated Titles",
+      "response": "2-4s",
+      "responseLabel": "Response Time",
+      "cost": "$0.02",
+      "costLabel": "Per Query"
+    }
+  },
+  "comps": {
+    "meta": {
+      "title": "Comps Navigator | KStoryBridge",
+      "description": "Find Korean stories using Hollywood shows you love"
+    },
+    "hero": {
+      "headline": "Find Korean Stories Using Shows You Love",
+      "subhead": "Select Hollywood hits, discover matching Korean IP",
+      "primaryCta": "Try Free Trial",
+      "secondaryCta": "Sign Up for Full Access"
+    },
+    "demo": {
+      "instruction": "Select 1-3 Hollywood titles to find matches",
+      "exampleTitles": ["Twilight", "Squid Game", "Succession", "Breaking Bad", "The Bear"],
+      "resultPreview": "Finding Korean titles that match your selection...",
+      "matchExplanation": "Strong thematic overlap with power dynamics and family drama"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Select Comparables",
+        "description": "Choose 1-3 Hollywood titles you know and love."
+      },
+      "step2": {
+        "title": "AI Understands",
+        "description": "Our AI analyzes narrative, themes, and tone patterns."
+      },
+      "step3": {
+        "title": "Get Matches",
+        "description": "Receive ranked Korean titles with match explanations."
+      }
+    },
+    "values": {
+      "title": "Why Use Comps Navigator",
+      "precision": {
+        "title": "Reference-Based Precision",
+        "description": "Use shows you know to find shows you'll love."
+      },
+      "validation": {
+        "title": "Market Validation",
+        "description": "Hollywood comps = proven market demand and audience appeal."
+      },
+      "explanations": {
+        "title": "AI Match Explanations",
+        "description": "Understand exactly why each title matches your selection."
+      }
+    },
+    "stats": {
+      "titles": "245+",
+      "titlesLabel": "Searchable Titles",
+      "comps": "3",
+      "compsLabel": "Max Selections",
+      "results": "15",
+      "resultsLabel": "Top Matches"
+    }
+  },
+  "mandates": {
+    "meta": {
+      "title": "Mandate Matcher | KStoryBridge",
+      "description": "Describe your production vision, find matching Korean IP"
+    },
+    "hero": {
+      "headline": "Describe Your Vision. Find Your Match.",
+      "subhead": "Natural language search across 245+ Korean titles",
+      "primaryCta": "Try Free Trial",
+      "secondaryCta": "Sign Up for Full Access"
+    },
+    "demo": {
+      "placeholder": "Looking for a supernatural thriller with a female lead...",
+      "exampleMandates": [
+        "Premium drama with global appeal, proven IP, strong ensemble cast",
+        "Limited series potential, revenge-driven protagonist, Korean noir aesthetic",
+        "Animation-ready fantasy with world-building, YA audience"
+      ],
+      "resultPreview": "Matching your mandate to our catalog...",
+      "relevanceScore": "92% Match"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Describe Your Mandate",
+        "description": "Write your production needs in plain English."
+      },
+      "step2": {
+        "title": "Semantic Understanding",
+        "description": "AI converts your description to semantic search vectors."
+      },
+      "step3": {
+        "title": "Get Best Matches",
+        "description": "Receive 15 best-matching titles with relevance scores."
+      }
+    },
+    "values": {
+      "title": "Why Use Mandate Matcher",
+      "natural": {
+        "title": "Write Naturally",
+        "description": "Describe production needs in plain English, no syntax required."
+      },
+      "semantic": {
+        "title": "Semantic Understanding",
+        "description": "AI captures intent, not just keywords. Understands context."
+      },
+      "production": {
+        "title": "Production-Ready Results",
+        "description": "Every match includes rights availability and pitch materials."
+      }
+    },
+    "stats": {
+      "titles": "245+",
+      "titlesLabel": "Verified Titles",
+      "results": "15",
+      "resultsLabel": "Best Matches",
+      "cost": "$0.0015",
+      "costLabel": "Per Search"
+    }
+  },
+  "shared": {
+    "cta": {
+      "title": "Ready to Discover Korean Content?",
+      "subtitle": "Join producers finding their next hit with AI-powered discovery",
+      "primaryCta": "Start Free Trial",
+      "secondaryCta": "Sign Up for Full Access",
+      "trust": "No credit card required • Free to start"
+    },
+    "backToProducers": "← Back to Producers"
+  }
+}

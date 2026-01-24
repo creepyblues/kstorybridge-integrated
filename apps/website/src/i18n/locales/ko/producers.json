@@ -1,9 +1,32 @@
 {
   "hero": {
-    "title": "다음 히트작을 찾고 계신가요?",
-    "titleHighlight": "",
-    "subtitle": "AI 어시스턴트가 도와드립니다\n\nAI 어시스턴트 x 검증된 권리 정보 x 전문가 거래 지원\n= 한국의 뛰어난 IP를 더 빠르고 정확하게 발견할 수 있습니다.",
-    "cta": "무료 체험하기"
+    "title": "한국 콘텐츠 발견, ",
+    "titleHighlight": "3가지 방법",
+    "subtitle": "AI 기반 발견 도구 + 검증된 권리 정보 + 전문가 거래 지원 = 한국의 뛰어난 IP를 더 빠르게 발견",
+    "cta": "무료 체험하기",
+    "trust": "신용카드 불필요 • 무료로 시작"
+  },
+  "discoveryTools": {
+    "title": "3가지 발견 방법",
+    "subtitle": "워크플로우에 맞는 발견 방법을 선택하세요",
+    "chatbot": {
+      "title": "AI 챗봇",
+      "badge": "Jinu",
+      "description": "자연어로 한국 콘텐츠에 대해 무엇이든 물어보세요. 즉각적인 전문가 추천을 받으세요.",
+      "cta": "자세히 보기"
+    },
+    "comps": {
+      "title": "Comps Navigator",
+      "badge": "레퍼런스",
+      "description": "좋아하는 할리우드 작품을 선택하세요. 비슷한 테마와 톤의 한국 스토리를 찾으세요.",
+      "cta": "자세히 보기"
+    },
+    "mandates": {
+      "title": "Mandate Matcher",
+      "badge": "검색",
+      "description": "프로덕션 맨데이트를 설명하세요. 관련성 점수와 함께 순위별 매칭을 받으세요.",
+      "cta": "자세히 보기"
+    }
   },
   "aiAssistant": {
     "badge": "Jinu 소개",

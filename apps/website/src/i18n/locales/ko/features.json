@@ -1,0 +1,190 @@
+{
+  "chatbot": {
+    "meta": {
+      "title": "AI 챗봇 - Jinu | KStoryBridge",
+      "description": "AI 스토리 전문가 Jinu와 함께 2-4초 만에 한국 콘텐츠 발견"
+    },
+    "hero": {
+      "headline": "2-4초 만에 한국 콘텐츠 발견",
+      "subhead": "245+ 큐레이션된 한국 작품에 대해 Jinu에게 물어보세요",
+      "primaryCta": "무료 체험하기",
+      "secondaryCta": "전체 액세스 가입"
+    },
+    "demo": {
+      "placeholder": "한국 웹툰, 웹소설, 드라마에 대해 물어보세요...",
+      "exampleQueries": [
+        "강한 여성 주인공이 나오는 로맨틱 코미디 웹툰 보여줘",
+        "나 혼자만 레벨업과 비슷한 액션 시리즈 찾아줘",
+        "리미티드 시리즈로 좋을 한국 스릴러는?"
+      ],
+      "response": {
+        "title": "좋은 선택이에요! 여기 제가 찾은 것들이에요...",
+        "body": "이 요소들을 잘 조합한 작품들을 찾았습니다! '네가 날 미치게 해'는 재치있는 대화와 발전하는 관계 역학이 재미있고 매력적인 작품입니다."
+      }
+    },
+    "howItWorks": {
+      "title": "작동 방식",
+      "step1": {
+        "title": "질문하기",
+        "description": "자연어로, 문법 걱정 없이. 찾고 있는 것을 설명하세요."
+      },
+      "step2": {
+        "title": "Jinu가 분석",
+        "description": "GPT-4 + 벡터 검색이 245+ 작품에서 쿼리를 처리합니다."
+      },
+      "step3": {
+        "title": "추천 받기",
+        "description": "맥락과 함께 10개의 전문가 추천을 즉시 받으세요."
+      }
+    },
+    "values": {
+      "title": "Jinu를 사용하는 이유",
+      "instant": {
+        "title": "즉각적인 답변",
+        "description": "끝없는 스크롤 없이. 물어보면 2-4초 만에 추천을 받으세요."
+      },
+      "expert": {
+        "title": "전문가 수준 인텔리전스",
+        "description": "GPT-4 + 벡터 검색 = 주머니 속 한국 콘텐츠 전문가."
+      },
+      "simple": {
+        "title": "학습 곡선 제로",
+        "description": "그냥 타이핑하세요. 복잡한 필터나 문법 없음."
+      }
+    },
+    "stats": {
+      "titles": "245+",
+      "titlesLabel": "큐레이션 작품",
+      "response": "2-4초",
+      "responseLabel": "응답 시간",
+      "cost": "$0.02",
+      "costLabel": "쿼리당 비용"
+    }
+  },
+  "comps": {
+    "meta": {
+      "title": "Comps Navigator | KStoryBridge",
+      "description": "좋아하는 할리우드 작품으로 한국 스토리 찾기"
+    },
+    "hero": {
+      "headline": "좋아하는 작품으로 한국 스토리 찾기",
+      "subhead": "할리우드 히트작을 선택하고, 매칭되는 한국 IP를 발견하세요",
+      "primaryCta": "무료 체험하기",
+      "secondaryCta": "전체 액세스 가입"
+    },
+    "demo": {
+      "instruction": "매칭을 위해 1-3개의 할리우드 작품을 선택하세요",
+      "exampleTitles": ["트와일라잇", "오징어 게임", "석세션", "브레이킹 배드", "더 베어"],
+      "resultPreview": "선택에 맞는 한국 작품을 찾는 중...",
+      "matchExplanation": "권력 역학과 가족 드라마에서 강한 주제적 유사성"
+    },
+    "howItWorks": {
+      "title": "작동 방식",
+      "step1": {
+        "title": "비교 작품 선택",
+        "description": "알고 좋아하는 할리우드 작품 1-3개를 선택하세요."
+      },
+      "step2": {
+        "title": "AI가 이해",
+        "description": "AI가 내러티브, 테마, 톤 패턴을 분석합니다."
+      },
+      "step3": {
+        "title": "매칭 결과 받기",
+        "description": "매칭 설명과 함께 순위별 한국 작품을 받으세요."
+      }
+    },
+    "values": {
+      "title": "Comps Navigator를 사용하는 이유",
+      "precision": {
+        "title": "레퍼런스 기반 정확성",
+        "description": "아는 작품으로 좋아할 작품을 찾으세요."
+      },
+      "validation": {
+        "title": "시장 검증",
+        "description": "할리우드 비교작 = 검증된 시장 수요와 관객 어필."
+      },
+      "explanations": {
+        "title": "AI 매칭 설명",
+        "description": "각 작품이 왜 선택에 맞는지 정확히 이해하세요."
+      }
+    },
+    "stats": {
+      "titles": "245+",
+      "titlesLabel": "검색 가능 작품",
+      "comps": "3",
+      "compsLabel": "최대 선택",
+      "results": "15",
+      "resultsLabel": "상위 매칭"
+    }
+  },
+  "mandates": {
+    "meta": {
+      "title": "Mandate Matcher | KStoryBridge",
+      "description": "프로덕션 비전을 설명하고, 매칭되는 한국 IP를 찾으세요"
+    },
+    "hero": {
+      "headline": "비전을 설명하세요. 매칭을 찾으세요.",
+      "subhead": "245+ 한국 작품에서 자연어 검색",
+      "primaryCta": "무료 체험하기",
+      "secondaryCta": "전체 액세스 가입"
+    },
+    "demo": {
+      "placeholder": "여성 주인공이 나오는 초자연 스릴러를 찾고 있어요...",
+      "exampleMandates": [
+        "글로벌 어필이 있는 프리미엄 드라마, 검증된 IP, 강력한 앙상블 캐스트",
+        "리미티드 시리즈 잠재력, 복수 주도 주인공, 한국 누아르 미학",
+        "세계관이 있는 애니메이션 판타지, YA 관객"
+      ],
+      "resultPreview": "카탈로그에서 맨데이트 매칭 중...",
+      "relevanceScore": "92% 매칭"
+    },
+    "howItWorks": {
+      "title": "작동 방식",
+      "step1": {
+        "title": "맨데이트 설명",
+        "description": "프로덕션 요구사항을 일반 영어로 작성하세요."
+      },
+      "step2": {
+        "title": "시맨틱 이해",
+        "description": "AI가 설명을 시맨틱 검색 벡터로 변환합니다."
+      },
+      "step3": {
+        "title": "최적 매칭 받기",
+        "description": "관련성 점수와 함께 15개 최적 매칭 작품을 받으세요."
+      }
+    },
+    "values": {
+      "title": "Mandate Matcher를 사용하는 이유",
+      "natural": {
+        "title": "자연스럽게 작성",
+        "description": "프로덕션 요구사항을 일반 영어로 설명, 문법 불필요."
+      },
+      "semantic": {
+        "title": "시맨틱 이해",
+        "description": "AI가 키워드가 아닌 의도를 포착. 맥락을 이해합니다."
+      },
+      "production": {
+        "title": "프로덕션 레디 결과",
+        "description": "모든 매칭에 권리 가용성과 피치 자료 포함."
+      }
+    },
+    "stats": {
+      "titles": "245+",
+      "titlesLabel": "검증된 작품",
+      "results": "15",
+      "resultsLabel": "최적 매칭",
+      "cost": "$0.0015",
+      "costLabel": "검색당 비용"
+    }
+  },
+  "shared": {
+    "cta": {
+      "title": "한국 콘텐츠를 발견할 준비가 되셨나요?",
+      "subtitle": "AI 기반 발견으로 다음 히트작을 찾는 프로듀서들과 함께하세요",
+      "primaryCta": "무료 체험 시작",
+      "secondaryCta": "전체 액세스 가입",
+      "trust": "신용카드 불필요 • 무료로 시작"
+    },
+    "backToProducers": "← 프로듀서로 돌아가기"
+  }
+}

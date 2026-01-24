@@ -66,7 +66,7 @@
     },
     "expertSupport": {
       "title": "Expert Curation",
-      "description": "We don't just send you titles—we curate perfect matches for your mandate and present each with a custom pitch deck, complete with story arcs, character breakdowns, comps, and everything needed to evaluate its potential."
+      "description": "We don't just send you titles. We curate perfect matches for your mandate and present each with a custom pitch deck, complete with story arcs, character breakdowns, comps, and everything needed to evaluate its potential."
     }
   },
   "rightsDeepDive": {
@@ -112,7 +112,7 @@
   "expertCuration": {
     "title": "Expert Curation",
     "headline": "Every Title Comes Battle-Tested",
-    "subtitle": "We don't just send you titles—we curate perfect matches for your mandate and present each with a custom pitch deck",
+    "subtitle": "We don't just send you titles. We curate perfect matches for your mandate and present each with a custom pitch deck",
     "benefits": {
       "research": {
         "title": "Save Weeks of Research",

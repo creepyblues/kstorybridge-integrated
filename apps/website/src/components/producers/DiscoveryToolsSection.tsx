@@ -25,29 +25,23 @@ export function DiscoveryToolsSection() {
   const tools = [
     {
       icon: <Bot className="h-8 w-8" />,
-      badge: t('discoveryTools.chatbot.badge'),
       title: t('discoveryTools.chatbot.title'),
       description: t('discoveryTools.chatbot.description'),
       link: '/features/chatbot',
-      color: 'hanok-teal',
       preview: <ChatbotPreview />
     },
     {
       icon: <Film className="h-8 w-8" />,
-      badge: t('discoveryTools.comps.badge'),
       title: t('discoveryTools.comps.title'),
       description: t('discoveryTools.comps.description'),
       link: '/features/comps-navigator',
-      color: 'hanok-teal',
       preview: <CompsPreview />
     },
     {
       icon: <Target className="h-8 w-8" />,
-      badge: t('discoveryTools.mandates.badge'),
       title: t('discoveryTools.mandates.title'),
       description: t('discoveryTools.mandates.description'),
       link: '/features/mandate-matcher',
-      color: '[#AF52DE]',
       preview: <MandatePreview />
     }
   ];
@@ -70,35 +64,18 @@ export function DiscoveryToolsSection() {
           {tools.map((tool, index) => (
             <ScrollReveal key={index} delay={index * 100}>
               <Link to={tool.link} className="block h-full group">
-                <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-all duration-300 h-full overflow-hidden">
-                  <CardContent className="p-0">
+                <Card className="bg-white border-gray-300 shadow-none rounded-2xl hover:shadow-lg transition-all duration-300 h-full overflow-hidden flex flex-col">
+                  <CardContent className="p-0 flex flex-col flex-grow">
                     {/* Mini Preview */}
-                    <div className={`h-32 bg-gradient-to-br ${
-                      tool.color === 'hanok-teal'
-                        ? 'from-hanok-teal/10 to-porcelain-blue-100'
-                        : 'from-[#AF52DE]/10 to-porcelain-blue-100'
-                    } relative overflow-hidden`}>
+                    <div className="h-32 bg-gradient-to-br from-hanok-teal/10 to-porcelain-blue-100 relative overflow-hidden flex-shrink-0">
                       {tool.preview}
                     </div>
 
                     {/* Content */}
-                    <div className="p-6">
-                      {/* Badge */}
-                      <span className={`inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full mb-4 ${
-                        tool.color === 'hanok-teal'
-                          ? 'bg-hanok-teal/10 text-hanok-teal'
-                          : 'bg-[#AF52DE]/10 text-[#AF52DE]'
-                      }`}>
-                        {tool.badge}
-                      </span>
-
+                    <div className="p-6 flex flex-col flex-grow">
                       {/* Icon + Title */}
                       <div className="flex items-start gap-3 mb-3">
-                        <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
-                          tool.color === 'hanok-teal'
-                            ? 'bg-hanok-teal/10 text-hanok-teal'
-                            : 'bg-[#AF52DE]/10 text-[#AF52DE]'
-                        }`}>
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-hanok-teal/10 text-hanok-teal">
                           {tool.icon}
                         </div>
                         <h3 className="text-xl font-bold text-midnight-ink pt-2">
@@ -107,16 +84,12 @@ export function DiscoveryToolsSection() {
                       </div>
 
                       {/* Description */}
-                      <p className="text-midnight-ink-600 leading-relaxed mb-4">
+                      <p className="text-midnight-ink-600 leading-relaxed flex-grow">
                         {tool.description}
                       </p>
 
                       {/* Learn More Link */}
-                      <div className={`inline-flex items-center gap-2 font-medium transition-all group-hover:gap-3 ${
-                        tool.color === 'hanok-teal'
-                          ? 'text-hanok-teal'
-                          : 'text-[#AF52DE]'
-                      }`}>
+                      <div className="inline-flex items-center gap-2 font-medium transition-all group-hover:gap-3 mt-4 text-hanok-teal">
                         {t('discoveryTools.chatbot.cta')}
                         <ArrowRight className="h-4 w-4" />
                       </div>
@@ -182,13 +155,13 @@ function MandatePreview() {
     <div className="absolute inset-0 flex items-center justify-center p-4">
       <div className="w-full max-w-[180px] space-y-2">
         <div className="bg-white rounded-lg shadow-sm p-2">
-          <div className="h-2 bg-[#AF52DE]/20 rounded w-full mb-1"></div>
-          <div className="h-2 bg-[#AF52DE]/20 rounded w-2/3"></div>
+          <div className="h-2 bg-hanok-teal/20 rounded w-full mb-1"></div>
+          <div className="h-2 bg-hanok-teal/20 rounded w-2/3"></div>
         </div>
         <div className="flex gap-1">
           <div className="flex-1 bg-white rounded-lg shadow-sm p-2 flex items-center justify-between">
             <div className="h-2 bg-gray-100 rounded w-1/2"></div>
-            <span className="text-[8px] text-[#AF52DE] font-bold">92%</span>
+            <span className="text-[8px] text-hanok-teal font-bold">92%</span>
           </div>
         </div>
       </div>

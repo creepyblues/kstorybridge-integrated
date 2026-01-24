@@ -35,13 +35,13 @@ export function FeatureHero({
   const colorClasses = {
     teal: {
       cursor: 'text-hanok-teal',
-      primaryBtn: 'bg-hanok-teal hover:bg-hanok-teal-600',
-      secondaryBtn: 'border-hanok-teal text-hanok-teal hover:bg-hanok-teal/10'
+      primaryBtn: 'bg-hanok-teal hover:bg-hanok-teal-600 text-white hover:text-white',
+      secondaryBtn: 'bg-sunrise-coral hover:bg-sunrise-coral-600 text-white hover:text-white border-sunrise-coral'
     },
     purple: {
       cursor: 'text-[#AF52DE]',
-      primaryBtn: 'bg-[#AF52DE] hover:bg-[#9B47C4]',
-      secondaryBtn: 'border-[#AF52DE] text-[#AF52DE] hover:bg-[#AF52DE]/10'
+      primaryBtn: 'bg-[#AF52DE] hover:bg-[#9B47C4] text-white hover:text-white',
+      secondaryBtn: 'bg-sunrise-coral hover:bg-sunrise-coral-600 text-white hover:text-white border-sunrise-coral'
     }
   };
 
@@ -88,7 +88,7 @@ export function FeatureHero({
                 className={`${colors.secondaryBtn} px-8 py-4 text-base sm:text-lg rounded-full font-medium transition-all duration-300`}
                 onClick={() => {
                   trackButtonClick('feature-signup', 'hero_section');
-                  window.location.href = `${getDashboardUrl()}/signup/producer`;
+                  window.location.href = `${getDashboardUrl()}/signup`;
                 }}
               >
                 {secondaryCtaText}

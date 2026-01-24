@@ -82,8 +82,8 @@ export function HowItWorksSection({
 
                 {/* Arrow (only for first two cards on desktop) */}
                 {index < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 lg:-right-5 transform -translate-y-1/2 z-10">
-                    <div className={`${colors.iconText} text-2xl`}>→</div>
+                  <div className="hidden md:block absolute top-1/2 -right-[1.2rem] lg:-right-[1.5rem] -translate-y-1/2 z-10">
+                    <div className="text-gray-400 text-xl">→</div>
                   </div>
                 )}
               </Card>

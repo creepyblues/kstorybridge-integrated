@@ -58,7 +58,7 @@ export function MandateMiniDemo() {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="bg-[#AF52DE] px-4 py-3 flex items-center gap-3">
+      <div className="bg-hanok-teal px-4 py-3 flex items-center gap-3">
         <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
           <Target className="h-5 w-5 text-white" />
         </div>
@@ -75,14 +75,14 @@ export function MandateMiniDemo() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={exampleMandates[currentPlaceholder]}
-            className="w-full h-20 px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#AF52DE]/50 focus:border-[#AF52DE] transition-all"
+            className="w-full h-20 px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-hanok-teal/50 focus:border-hanok-teal transition-all"
             disabled={isSearching}
           />
           <button
             className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isSearching
-                ? 'bg-[#AF52DE]/50 cursor-not-allowed'
-                : 'bg-[#AF52DE] hover:bg-[#9B47C4] cursor-pointer'
+                ? 'bg-hanok-teal/50 cursor-not-allowed'
+                : 'bg-hanok-teal hover:bg-hanok-teal-600 cursor-pointer'
             }`}
             disabled={isSearching}
           >
@@ -102,8 +102,8 @@ export function MandateMiniDemo() {
               disabled={isSearching}
               className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
                 inputValue === mandate
-                  ? 'bg-[#AF52DE] text-white border-[#AF52DE]'
-                  : 'bg-white text-midnight-ink-600 border-gray-300 hover:border-[#AF52DE] hover:text-[#AF52DE]'
+                  ? 'bg-hanok-teal text-white border-hanok-teal'
+                  : 'bg-white text-midnight-ink-600 border-gray-300 hover:border-hanok-teal hover:text-hanok-teal'
               } ${isSearching ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               {mandate.length > 50 ? mandate.substring(0, 50) + '...' : mandate}
@@ -117,9 +117,9 @@ export function MandateMiniDemo() {
         {isSearching ? (
           <div className="flex flex-col items-center justify-center py-4">
             <div className="relative">
-              <Search className="h-6 w-6 text-[#AF52DE] animate-pulse" />
+              <Search className="h-6 w-6 text-hanok-teal animate-pulse" />
               <div className="absolute inset-0 animate-ping">
-                <Search className="h-6 w-6 text-[#AF52DE] opacity-30" />
+                <Search className="h-6 w-6 text-hanok-teal opacity-30" />
               </div>
             </div>
             <p className="text-sm text-midnight-ink-600 mt-2">{t('mandates.demo.resultPreview')}</p>
@@ -127,7 +127,7 @@ export function MandateMiniDemo() {
         ) : showResults ? (
           <div className="space-y-3 animate-fade-in-up">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-[#AF52DE]" />
+              <Sparkles className="h-4 w-4 text-hanok-teal" />
               <span className="text-sm font-medium text-midnight-ink">Top Matches Found</span>
             </div>
             <div className="space-y-2">
@@ -140,7 +140,7 @@ export function MandateMiniDemo() {
                     <FileText className="h-4 w-4 text-midnight-ink-600" />
                     <span className="text-sm font-medium text-midnight-ink">{title.name}</span>
                   </div>
-                  <span className="text-xs text-[#AF52DE] bg-[#AF52DE]/10 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-xs text-hanok-teal bg-hanok-teal/10 px-2 py-0.5 rounded-full font-medium">
                     {title.score}% Match
                   </span>
                 </div>

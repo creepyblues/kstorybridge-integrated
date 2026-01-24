@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { MessageSquare, Zap, Brain, ArrowLeft } from 'lucide-react';
+import { MessageSquare, Zap, Brain } from 'lucide-react';
 import {
   FeaturePageLayout,
   FeatureHero,
@@ -29,17 +28,6 @@ const ChatbotFeaturePage = () => {
 
   return (
     <FeaturePageLayout>
-      {/* Back Link */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <Link
-          to="/producers"
-          className="inline-flex items-center gap-2 text-sm text-midnight-ink-600 hover:text-hanok-teal transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t('shared.backToProducers')}
-        </Link>
-      </div>
-
       {/* Hero Section */}
       <FeatureHero
         headline={t('chatbot.hero.headline')}

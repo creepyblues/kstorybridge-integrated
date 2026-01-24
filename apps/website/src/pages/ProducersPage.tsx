@@ -217,7 +217,7 @@ const ProducersPage = () => {
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => {
                   trackButtonClick('get-started-signup', 'final_cta_section');
-                  window.location.href = `${getDashboardUrl()}/signup/producer`;
+                  window.location.href = `${getDashboardUrl()}/signup`;
                 }}
               >
                 Get Started Today

@@ -1,12 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { FileText, Brain, Target, Sparkles, ArrowLeft } from 'lucide-react';
+import { FileText, Brain, Target, Sparkles } from 'lucide-react';
 import {
   FeaturePageLayout,
   FeatureHero,
   HowItWorksSection,
   ValuePropsGrid,
-  StatsSection,
   FinalCTASection
 } from '../../components/features/shared';
 import { MandateMiniDemo } from '../../components/features/mandates/MandateMiniDemo';
@@ -24,24 +22,13 @@ import { MandateMiniDemo } from '../../components/features/mandates/MandateMiniD
  * 4. Stats section
  * 5. Final CTA
  *
- * Uses purple (#AF52DE) as accent color.
+ * Uses teal (hanok-teal) as accent color to match other feature pages.
  */
 const MandateMatcherFeaturePage = () => {
   const { t } = useTranslation('features');
 
   return (
     <FeaturePageLayout>
-      {/* Back Link */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <Link
-          to="/producers"
-          className="inline-flex items-center gap-2 text-sm text-midnight-ink-600 hover:text-[#AF52DE] transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t('shared.backToProducers')}
-        </Link>
-      </div>
-
       {/* Hero Section */}
       <FeatureHero
         headline={t('mandates.hero.headline')}
@@ -49,7 +36,7 @@ const MandateMatcherFeaturePage = () => {
         primaryCtaText={t('mandates.hero.primaryCta')}
         secondaryCtaText={t('mandates.hero.secondaryCta')}
         storageKey="mandates-feature-hero"
-        accentColor="purple"
+        accentColor="teal"
       >
         <MandateMiniDemo />
       </FeatureHero>
@@ -74,7 +61,7 @@ const MandateMatcherFeaturePage = () => {
             icon: <Sparkles className="h-8 w-8" />
           }
         ]}
-        accentColor="purple"
+        accentColor="teal"
       />
 
       {/* Value Props */}
@@ -97,21 +84,11 @@ const MandateMatcherFeaturePage = () => {
             icon: <Target className="h-8 w-8" />
           }
         ]}
-        accentColor="purple"
-      />
-
-      {/* Stats */}
-      <StatsSection
-        stats={[
-          { value: t('mandates.stats.titles'), label: t('mandates.stats.titlesLabel') },
-          { value: t('mandates.stats.results'), label: t('mandates.stats.resultsLabel') },
-          { value: t('mandates.stats.cost'), label: t('mandates.stats.costLabel') }
-        ]}
-        accentColor="purple"
+        accentColor="teal"
       />
 
       {/* Final CTA */}
-      <FinalCTASection accentColor="purple" />
+      <FinalCTASection accentColor="teal" />
     </FeaturePageLayout>
   );
 };

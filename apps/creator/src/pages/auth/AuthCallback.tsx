@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { checkCreatorProfileExists } from '@/lib/auth'
 import { trackLogin } from '@/utils/analytics'
 import { sendWelcomeEmail } from '@/services/emailService'
+import { notifyCreatorSignup, notifyCreatorSignin } from '@/utils/slack'
 
 /**
  * Auth Callback Handler
@@ -178,18 +179,37 @@ export default function AuthCallback() {
 
           const { data: profile } = await supabase
             .from('user_creators')
-            .select('full_name')
+            .select('full_name, pen_name, ip_owner_role, ip_owner_company')
             .eq('email', session.user.email)
             .single()
 
           if (profile?.full_name && session.user.email) {
             await sendWelcomeEmailOnce(profile.full_name, session.user.email)
+
+            // Slack notification for new OAuth creator signup (fire-and-forget)
+            notifyCreatorSignup({
+              fullName: profile.full_name,
+              email: session.user.email,
+              penName: profile.pen_name || '',
+              ipOwnerRole: profile.ip_owner_role || '',
+              company: profile.ip_owner_company,
+              authType: 'google',
+            }).catch(() => {})
           }
         }
 
         // Existing user - redirect to home
         console.log('✅ Existing user, redirecting to home')
         trackLogin('google')
+
+        // Slack notification for creator signin (fire-and-forget)
+        if (session.user.email) {
+          notifyCreatorSignin({
+            email: session.user.email,
+            authType: 'google',
+            fullName: session.user.user_metadata?.full_name,
+          }).catch(() => {})
+        }
         setStatus('Welcome back! Redirecting...')
         navigate('/home')
       } else {

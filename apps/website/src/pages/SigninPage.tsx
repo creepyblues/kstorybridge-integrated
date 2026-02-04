@@ -75,13 +75,13 @@ const SigninPage = () => {
                       </Button>
                     </a>
 
-                    {/* Sign In Link - Hidden on mobile */}
+                    {/* Sign In Link */}
                     <a
                       href={`${creatorUrl}/signin`}
-                      className="hidden sm:flex items-center justify-center text-black hover:text-gray-700 transition-colors text-sm"
+                      className="flex items-center justify-center text-black hover:text-gray-700 transition-colors text-xs sm:text-sm"
                     >
                       {t('signinPage.creator.signinLink')}
-                      <ArrowRight className="w-4 h-4 ml-1" />
+                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                     </a>
                   </div>
                 </CardContent>
@@ -117,13 +117,13 @@ const SigninPage = () => {
                       </Button>
                     </a>
 
-                    {/* Sign In Link - Hidden on mobile */}
+                    {/* Sign In Link */}
                     <a
-                      href={`${dashboardUrl}/signin/buyer`}
-                      className="hidden sm:flex items-center justify-center text-black hover:text-gray-700 transition-colors text-sm"
+                      href={`${dashboardUrl}/signin`}
+                      className="flex items-center justify-center text-black hover:text-gray-700 transition-colors text-xs sm:text-sm"
                     >
                       {t('signinPage.buyer.signinLink')}
-                      <ArrowRight className="w-4 h-4 ml-1" />
+                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                     </a>
                   </div>
                 </CardContent>

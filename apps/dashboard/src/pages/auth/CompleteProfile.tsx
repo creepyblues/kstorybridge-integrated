@@ -82,25 +82,6 @@ export default function CompleteProfile() {
       return;
     }
 
-    if (!formData.buyer_company.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Company is required',
-        variant: 'destructive',
-      });
-      setLoading(false);
-      return;
-    }
-
-    if (!formData.buyer_role) {
-      toast({
-        title: 'Error',
-        description: 'Role is required',
-        variant: 'destructive',
-      });
-      setLoading(false);
-      return;
-    }
 
     try {
       // Get trial session ID if user came from trial
@@ -108,9 +89,9 @@ export default function CompleteProfile() {
 
       await completeOAuthProfile(userId, email, {
         full_name: formData.full_name,
-        buyer_company: formData.buyer_company,
-        buyer_role: formData.buyer_role,
-        linkedin_url: formData.linkedin_url,
+        buyer_company: formData.buyer_company || undefined,
+        buyer_role: formData.buyer_role || undefined,
+        linkedin_url: formData.linkedin_url || undefined,
         trial_session_id: trialSessionId || undefined,
       }, session);
 
@@ -193,7 +174,7 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="buyer_company">Company <span className="text-red-500">*</span></Label>
+              <Label htmlFor="buyer_company">Company <span className="text-gray-400 text-xs font-normal">(optional)</span></Label>
               <Input
                 id="buyer_company"
                 name="buyer_company"
@@ -206,7 +187,7 @@ export default function CompleteProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="buyer_role">Role <span className="text-red-500">*</span></Label>
+              <Label htmlFor="buyer_role">Role <span className="text-gray-400 text-xs font-normal">(optional)</span></Label>
               <select
                 id="buyer_role"
                 name="buyer_role"

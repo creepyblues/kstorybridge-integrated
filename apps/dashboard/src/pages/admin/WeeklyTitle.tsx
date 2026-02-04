@@ -44,6 +44,7 @@ export default function WeeklyTitle() {
 
   // Save state
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Analyzer modals
   const [compsModalOpen, setCompsModalOpen] = useState(false);
@@ -125,8 +126,32 @@ export default function WeeklyTitle() {
     setEditModalOpen(true);
   };
 
-  const clearSelectedTitle = () => {
-    setSelectedTitle(null);
+  const handleRemoveWeeklyTitle = async () => {
+    if (weeklyTitle) {
+      const confirmed = window.confirm('Remove this weekly title? This will delete it from the database.');
+      if (!confirmed) return;
+
+      setDeleting(true);
+      try {
+        await weeklyTitleService.deleteWeeklyTitle(weeklyTitle.id);
+        toast({
+          title: 'Removed',
+          description: 'Weekly title has been removed',
+        });
+        await loadWeeklyTitle();
+      } catch (error) {
+        console.error('Error deleting weekly title:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to remove weekly title',
+          variant: 'destructive',
+        });
+      } finally {
+        setDeleting(false);
+      }
+    } else {
+      setSelectedTitle(null);
+    }
     setSearchQuery('');
   };
 
@@ -293,11 +318,16 @@ export default function WeeklyTitle() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={clearSelectedTitle}
+                    onClick={handleRemoveWeeklyTitle}
+                    disabled={deleting}
                     className="border-gray-300"
                   >
-                    <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-1" />
-                    Remove
+                    {deleting ? (
+                      <Icon icon="solar:refresh-circle-bold-duotone" className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <Icon icon="solar:close-circle-bold-duotone" className="h-4 w-4 mr-1" />
+                    )}
+                    {deleting ? 'Removing...' : 'Remove'}
                   </Button>
                 </div>
               </div>

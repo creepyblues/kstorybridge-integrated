@@ -33,7 +33,8 @@ export default defineConfig(({ mode }) => ({
       overlay: false
     },
     fs: {
-      strict: false
+      strict: false,
+      allow: ['../..']
     }
   },
   plugins: [

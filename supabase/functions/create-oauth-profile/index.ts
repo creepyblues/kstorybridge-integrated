@@ -57,11 +57,11 @@ serve(async (req) => {
       } = profile_data
 
       // Validate buyer-specific required fields
-      if (!email || !full_name || !buyer_company || !buyer_role) {
+      if (!email || !full_name) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: 'Missing required buyer fields: email, full_name, buyer_company, and buyer_role are required'
+            error: 'Missing required buyer fields: email and full_name are required'
           }),
           {
             status: 400,

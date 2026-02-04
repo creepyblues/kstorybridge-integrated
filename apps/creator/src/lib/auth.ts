@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { createCreatorViaEdgeFunction } from '../services/emailSignupEdgeFunction'
 import { sendWelcomeEmail } from '../services/emailService'
+import { notifyCreatorSignup } from '../utils/slack'
 
 // Types
 export interface CreatorProfile {
@@ -118,6 +119,16 @@ export async function signUpWithEmail(data: SignUpData) {
     }
 
     console.log('✅ Creator profile created successfully via edge function')
+
+    // Send Slack notification (fire-and-forget)
+    notifyCreatorSignup({
+      fullName: sanitizedData.full_name,
+      email: normalizedEmail,
+      penName: sanitizedData.pen_name,
+      ipOwnerRole: sanitizedData.ip_owner_role,
+      company: sanitizedData.ip_owner_company,
+      authType: 'email',
+    }).catch(() => {}) // Silently ignore errors
   } catch (profileError) {
     console.error('❌ Profile creation failed:', profileError)
     console.warn('⚠️ Orphaned auth user may exist. User should retry signup with same email.')

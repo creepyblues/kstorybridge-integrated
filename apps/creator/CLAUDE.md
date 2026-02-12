@@ -180,29 +180,24 @@ React-based creator dashboard built from scratch to eliminate OAuth authenticati
 **Features**:
 - **Per-Title Subscriptions**: Each title requires separate subscription
 - **Two Plans**: Packaging ($100-200/mo) and Premium ($200-400/mo)
-- **Billing Options**: Monthly or yearly
+- **Billing**: Monthly only
 - **Environment-Based**: Staging uses test mode, production uses live mode
 
 **Plans**:
-- **Packaging Plan** (Launch Promo):
-  - Monthly: $100/month
-  - Yearly: $1,000/year
+- **Packaging Plan** (Launch Promo): $100/month (Regular: $200/month)
   - Features: Basic packaging and distribution support
 
-- **Premium Plan** (Launch Promo):
-  - Monthly: $200/month
-  - Yearly: $2,000/year
+- **Premium Plan** (Launch Promo): $200/month (Regular: $400/month)
   - Features: Advanced packaging, priority support, analytics
 
 **Checkout Flow**:
 1. Creator goes to `/plan` page
 2. Selects plan (Packaging or Premium)
-3. Selects billing period (Monthly or Yearly)
-4. Selects title from dropdown
-5. Redirected to Stripe checkout
-6. Completes payment
-7. Webhook creates subscription record
-8. Returns to billing page to see active subscription
+3. Selects title from dropdown
+4. Redirected to Stripe checkout
+5. Completes payment
+6. Webhook creates subscription record
+7. Returns to billing page to see active subscription
 
 **Billing Page**:
 - Active subscriptions by title

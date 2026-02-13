@@ -1,11 +1,8 @@
 import { ReactNode } from 'react'
-import { Icon } from '@iconify/react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface TitlesSectionCardProps {
-  icon: string
-  iconBgColor: string
-  iconColor: string
+  borderColor: string
+  bgTint: string
   title: string
   count: number
   children: ReactNode
@@ -13,26 +10,22 @@ interface TitlesSectionCardProps {
 }
 
 export function TitlesSectionCard({
-  icon,
-  iconBgColor,
-  iconColor,
+  borderColor,
+  bgTint,
   title,
   count,
   children,
   className = '',
 }: TitlesSectionCardProps) {
   return (
-    <Card className={`bg-white border-gray-200 shadow-none rounded-2xl ${className}`}>
-      <CardHeader className="pb-4">
+    <div className={`${bgTint} border border-gray-200 rounded-2xl p-5 sm:p-6 ${className}`}>
+      <div className="mb-5">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-xl ${iconBgColor}`}>
-            <Icon icon={icon} className={`h-5 w-5 ${iconColor}`} />
-          </div>
-          <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+          <h2 className={`border-l-4 ${borderColor} pl-3 text-xl font-semibold text-black`}>{title}</h2>
           <span className="text-sm text-gray-500">({count})</span>
         </div>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+      </div>
+      <div>{children}</div>
+    </div>
   )
 }

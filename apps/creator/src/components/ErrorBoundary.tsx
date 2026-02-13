@@ -43,8 +43,9 @@ class ErrorBoundary extends Component<Props, State> {
             </CardHeader>
             <CardContent className="space-y-4">
               {this.state.error && (
-                <div className="p-3 rounded-md bg-red-50 border border-red-200 text-red-800 text-sm font-mono overflow-auto">
-                  {this.state.error.message}
+                <div className="p-3 rounded-md bg-red-50 border border-red-200 text-red-800 text-sm font-mono overflow-auto max-h-64">
+                  <div className="font-bold mb-2">{this.state.error.message}</div>
+                  <div className="text-xs whitespace-pre-wrap opacity-80">{this.state.error.stack}</div>
                 </div>
               )}
               <Button onClick={this.handleReset} className="w-full">

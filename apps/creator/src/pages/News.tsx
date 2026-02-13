@@ -261,7 +261,7 @@ export default function News() {
               size="sm"
               onClick={fetchNewsArticles}
               disabled={loading}
-              className="border-gray-300 hover:bg-gray-100"
+              className="border-gray-200 hover:bg-gray-100"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               {t('content:news.refreshButton')}
@@ -282,7 +282,7 @@ export default function News() {
               <Button
                 onClick={fetchNewsArticles}
                 variant="outline"
-                className="mt-4 border-gray-300 hover:bg-gray-100"
+                className="mt-4 border-gray-200 hover:bg-gray-100"
               >
                 {t('content:news.retryButton')}
               </Button>
@@ -291,7 +291,7 @@ export default function News() {
 
           {/* Empty State */}
           {!loading && !error && sections.length === 0 && (
-            <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
+            <Card className="bg-white border border-gray-200 shadow-none rounded-2xl">
               <CardContent className="p-6">
                 <p className="text-center text-gray-500">
                   {t('content:news.emptyState')}
@@ -306,7 +306,7 @@ export default function News() {
               {sections.map((section, index) => (
                 <Card
                   key={`section-${index}`}
-                  className="bg-transparent border-gray-300 shadow-none rounded-2xl newsletter-section"
+                  className="bg-white border border-gray-200 shadow-none rounded-2xl newsletter-section"
                 >
                   <CardContent className="p-4 sm:p-6">
                     {/* Tags */}

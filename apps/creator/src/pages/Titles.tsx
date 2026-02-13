@@ -168,12 +168,11 @@ export default function Titles() {
 
         {/* Section: In Progress (Drafts) */}
         <TitlesSectionCard
-          icon="solar:pen-bold-duotone"
-          iconBgColor="bg-amber-500/10"
-          iconColor="text-amber-600"
+          borderColor="border-amber-500"
+          bgTint="bg-amber-50/30"
           title={t('titles:sections.inProgress', 'In Progress')}
           count={drafts.length}
-          className="mb-6"
+          className="mb-8"
         >
           {drafts.length === 0 ? (
             <div className="text-center py-8">
@@ -196,12 +195,11 @@ export default function Titles() {
         {/* Section: Needs Attention (Pending + Rejected) */}
         {hasNeedsAttention && (
           <TitlesSectionCard
-            icon="solar:eye-bold-duotone"
-            iconBgColor="bg-blue-500/10"
-            iconColor="text-blue-600"
+            borderColor="border-blue-500"
+            bgTint="bg-blue-50/30"
             title={t('titles:sections.needsAttention', 'Needs Attention')}
             count={pendingDrafts.length + rejectedDrafts.length}
-            className="mb-6"
+            className="mb-8"
           >
             <div className="space-y-3">
               {/* Pending items first */}
@@ -232,9 +230,8 @@ export default function Titles() {
 
         {/* Section: Published Titles */}
         <TitlesSectionCard
-          icon="solar:verified-check-bold-duotone"
-          iconBgColor="bg-green-500/10"
-          iconColor="text-green-600"
+          borderColor="border-emerald-500"
+          bgTint="bg-emerald-50/30"
           title={t('titles:sections.published', 'Published Titles')}
           count={titles.length}
         >

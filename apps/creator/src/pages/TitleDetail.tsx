@@ -281,7 +281,7 @@ export default function TitleDetail() {
 
         {/* Pitch Deck Section */}
         {title.pitch && title.pitch.trim() !== '' && (
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+          <Card className="bg-white border border-gray-200 shadow-none rounded-2xl mb-8">
             <CardContent className="p-4 sm:p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Pitch Deck</h3>
               <PitchDeckThumbnail
@@ -297,7 +297,7 @@ export default function TitleDetail() {
         )}
 
         {/* AI Tools Section */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
+        <Card className="bg-white border border-gray-200 shadow-none rounded-2xl mb-8">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">

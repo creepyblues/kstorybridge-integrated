@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Title } from '@/services/titlesService'
 import { TitleDraft } from '@/services/draftService'
@@ -19,74 +18,70 @@ export function TitleShelf({ titles, drafts, loading }: TitleShelfProps) {
   const hasContent = titles.length > 0 || drafts.length > 0
 
   return (
-    <Card className="bg-white border-gray-200 shadow-none rounded-2xl">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-sunrise-coral/10">
-              <Icon icon="solar:book-bold-duotone" className="h-5 w-5 text-sunrise-coral" />
-            </div>
-            <CardTitle className="text-lg">{t('titles:list.title')}</CardTitle>
-          </div>
-          {hasContent && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/titles')}
-              className="text-sunrise-coral hover:text-sunrise-coral hover:bg-sunrise-coral/5"
-            >
-              {t('common:viewAll')}
-              <Icon icon="solar:arrow-right-linear" className="h-4 w-4 ml-1" />
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Icon icon="solar:spinner-bold" className="h-6 w-6 animate-spin text-sunrise-coral" />
-          </div>
-        ) : !hasContent ? (
-          <div className="text-center py-12 px-6">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-              <Icon icon="solar:document-add-bold-duotone" className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="font-medium text-gray-900 mb-1">{t('titles:list.emptyState')}</h3>
-            <p className="text-sm text-gray-500 mb-4">{t('titles:list.emptyStateDescription')}</p>
-            <Button
-              onClick={() => navigate('/titles/add-title')}
-              className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
-            >
-              <Icon icon="solar:add-circle-bold" className="h-4 w-4 mr-2" />
-              {t('common:home.quickActions.addTitle')}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-4 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-            {/* Drafts first */}
-            {drafts.map((draft) => (
-              <TitleShelfCard
-                key={draft.id}
-                title={draft.draft_data?.title_name_kr || t('titles:untitledDraft')}
-                status="draft"
-                step={draft.current_step}
-                onClick={() => navigate(`/titles/add-title?draftId=${draft.id}`)}
-              />
-            ))}
-            {/* Published titles */}
-            {titles.map((title) => (
-              <TitleShelfCard
-                key={title.title_id}
-                title={title.title_name_kr || title.title_name_en || t('titles:untitled')}
-                imageUrl={title.title_image}
-                status="published"
-                onClick={() => navigate(`/titles/${title.title_id}`)}
-              />
-            ))}
-          </div>
+    <div className="bg-orange-50/30 border border-gray-200 rounded-2xl p-5 sm:p-6">
+      {/* Section Header - Option C style */}
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="border-l-4 border-sunrise-coral pl-3 text-xl font-semibold text-black">
+          {t('titles:list.title')}
+        </h2>
+        {hasContent && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/titles')}
+            className="text-sunrise-coral hover:text-sunrise-coral hover:bg-sunrise-coral/5"
+          >
+            {t('common:viewAll')}
+            <Icon icon="solar:arrow-right-linear" className="h-4 w-4 ml-1" />
+          </Button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Icon icon="solar:spinner-bold" className="h-6 w-6 animate-spin text-sunrise-coral" />
+        </div>
+      ) : !hasContent ? (
+        <div className="text-center py-12 px-6">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-white/60 flex items-center justify-center mb-4">
+            <Icon icon="solar:document-add-bold-duotone" className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="font-medium text-gray-900 mb-1">{t('titles:list.emptyState')}</h3>
+          <p className="text-sm text-gray-500 mb-4">{t('titles:list.emptyStateDescription')}</p>
+          <Button
+            onClick={() => navigate('/titles/add-title')}
+            className="bg-sunrise-coral text-white hover:bg-sunrise-coral/90"
+          >
+            <Icon icon="solar:add-circle-bold" className="h-4 w-4 mr-2" />
+            {t('common:home.quickActions.addTitle')}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex gap-4 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+          {/* Drafts first */}
+          {drafts.map((draft) => (
+            <TitleShelfCard
+              key={draft.id}
+              title={draft.draft_data?.title_name_kr || t('titles:untitledDraft')}
+              status="draft"
+              step={draft.current_step}
+              onClick={() => navigate(`/titles/add-title?draftId=${draft.id}`)}
+            />
+          ))}
+          {/* Published titles */}
+          {titles.map((title) => (
+            <TitleShelfCard
+              key={title.title_id}
+              title={title.title_name_kr || title.title_name_en || t('titles:untitled')}
+              imageUrl={title.title_image}
+              status="published"
+              onClick={() => navigate(`/titles/${title.title_id}`)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -107,7 +102,7 @@ function TitleShelfCard({ title, imageUrl, status, step, onClick }: TitleShelfCa
       className="flex-shrink-0 w-36 cursor-pointer group"
     >
       {/* Cover Image */}
-      <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 mb-2 border border-gray-200 group-hover:border-sunrise-coral/30 transition-colors">
+      <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-white/60 mb-2 border border-gray-200 group-hover:border-sunrise-coral/30 transition-colors">
         {imageUrl ? (
           <img
             src={imageUrl}

@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/hooks/useAuth'
 import { Title } from '@/services/titlesService'
 import { TitleDraft } from '@/services/draftService'
@@ -71,18 +70,16 @@ export function CreatorProgressCard({ titles, drafts }: CreatorProgressCardProps
   const progressPercent = (completedCount / steps.length) * 100
 
   return (
-    <Card className="bg-white border-gray-200 shadow-none rounded-2xl">
-      <CardHeader className="pb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-emerald-500/10">
-            <Icon icon="solar:checklist-bold-duotone" className="h-5 w-5 text-emerald-600" />
-          </div>
-          <div className="flex-1">
-            <CardTitle className="text-lg">{t('common:home.progress.title')}</CardTitle>
-            <p className="text-sm text-gray-500 mt-0.5">
-              {completedCount}/{steps.length} {t('common:home.progress.completed')}
-            </p>
-          </div>
+    <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6">
+      {/* Section Header - Option C style */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between">
+          <h2 className="border-l-4 border-emerald-500 pl-3 text-xl font-semibold text-black">
+            {t('common:home.progress.title')}
+          </h2>
+          <span className="text-sm text-gray-500">
+            {completedCount}/{steps.length} {t('common:home.progress.completed')}
+          </span>
         </div>
         {/* Progress Bar */}
         <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -91,45 +88,45 @@ export function CreatorProgressCard({ titles, drafts }: CreatorProgressCardProps
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          {steps.map((step) => (
-            <div
-              key={step.id}
-              onClick={() => step.href && navigate(step.href)}
-              className={`flex items-start gap-3 p-3 rounded-xl transition-colors cursor-pointer ${
-                step.completed
-                  ? 'bg-emerald-50/50'
-                  : 'hover:bg-gray-50'
-              }`}
-            >
-              <div className={`p-1.5 rounded-lg ${
-                step.completed ? 'bg-emerald-500' : 'bg-gray-200'
-              }`}>
-                <Icon
-                  icon={step.completed ? 'solar:check-circle-bold' : step.icon}
-                  className={`h-4 w-4 ${step.completed ? 'text-white' : 'text-gray-500'}`}
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${
-                  step.completed ? 'text-emerald-700 line-through' : 'text-gray-900'
-                }`}>
-                  {step.title}
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">{step.description}</p>
-              </div>
-              {!step.completed && (
-                <Icon
-                  icon="solar:arrow-right-linear"
-                  className="h-4 w-4 text-gray-300"
-                />
-              )}
+      </div>
+
+      {/* Steps */}
+      <div className="space-y-3">
+        {steps.map((step) => (
+          <div
+            key={step.id}
+            onClick={() => step.href && navigate(step.href)}
+            className={`flex items-start gap-3 p-3 rounded-xl transition-colors cursor-pointer ${
+              step.completed
+                ? 'bg-emerald-50/50'
+                : 'hover:bg-gray-50'
+            }`}
+          >
+            <div className={`p-1.5 rounded-lg ${
+              step.completed ? 'bg-emerald-500' : 'bg-gray-200'
+            }`}>
+              <Icon
+                icon={step.completed ? 'solar:check-circle-bold' : step.icon}
+                className={`h-4 w-4 ${step.completed ? 'text-white' : 'text-gray-500'}`}
+              />
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium ${
+                step.completed ? 'text-emerald-700 line-through' : 'text-gray-900'
+              }`}>
+                {step.title}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">{step.description}</p>
+            </div>
+            {!step.completed && (
+              <Icon
+                icon="solar:arrow-right-linear"
+                className="h-4 w-4 text-gray-300"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

@@ -28,8 +28,8 @@
         "feature3": "'Verified Creator' Badge: instant credibility with buyers",
         "feature4": "Buyer Insights: track who's viewing your title, which regions show interest",
         "feature5": "Adaptation Strategy Consultation: 60-minute session",
-        "feature6": "Regular: $200/month or $2,000/year per title",
-        "feature7": "🎉 Launch Promo: $100/month or $1,000/year (50% off first year)"
+        "feature6": "Regular: $200/month per title",
+        "feature7": "🎉 Launch Promo: $100/month (50% off first year)"
       },
       "buttonText": "Go Packaging",
       "popularBadge": "Most Popular"
@@ -48,12 +48,12 @@
         "feature5": "Homepage spotlight positioning",
         "feature6": "3 customized pitch versions (film, series, microdrama)",
         "feature7": "Producer coaching on how to present in meetings",
-        "feature8": "Regular: $400/month or $4,000/year per title",
-        "feature9": "🎉 Launch Promo: $200/month or $2,000/year (50% off first year)"
+        "feature8": "Regular: $400/month per title",
+        "feature9": "🎉 Launch Promo: $200/month (50% off first year)"
       },
       "buttonText": "Go Premium"
     },
-    "commitmentNotice": "* Paid plans require 1 year commitment (because building momentum takes time)"
+    "commitmentNotice": "* Paid plans require 1 year commitment with title exclusivity (because building momentum takes time)"
   },
   "differentiators": {
     "title": "What Makes KStoryBridge Different?",
@@ -94,21 +94,6 @@
         "label": "Film market + consultant",
         "value": "Often $10,000+ with zero guarantee"
       }
-    },
-    "bundle": {
-      "title": "Special Bundle Pricing",
-      "subtitle": "For Publishers and Studios with Multiple Titles",
-      "tier1": {
-        "discount": "25% OFF",
-        "requirement": "5+ Titles",
-        "description": "Additional discount on all plans"
-      },
-      "tier2": {
-        "discount": "40% OFF",
-        "requirement": "10+ Titles",
-        "description": "Maximum savings for publishers"
-      },
-      "contactButton": "Contact Us"
     }
   },
   "comparisons": {

@@ -115,7 +115,8 @@
       "learnPlatform": "Explore learning resources",
       "learnPlatformDesc": "Tips for successful licensing"
     },
-    "welcome": "Welcome back"
+    "welcome": "Welcome back",
+    "welcomeSubtitle": "Let's get your story out to the world"
   },
   "viewAll": "View All"
 }

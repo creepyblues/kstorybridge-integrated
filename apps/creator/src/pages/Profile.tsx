@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -185,7 +184,7 @@ export default function Profile() {
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-black">Profile</h1>
             <p className="text-gray-600 mt-1">Manage your creator account information</p>
@@ -193,20 +192,18 @@ export default function Profile() {
         </div>
 
         {error && (
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-            <CardContent className="p-4">
-              <p className="text-red-500 text-sm">{error}</p>
-            </CardContent>
-          </Card>
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 mb-8">
+            <p className="text-red-500 text-sm">{error}</p>
+          </div>
         )}
 
         {/* Profile Information Card */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-          <CardHeader>
+        <div className="bg-hanok-teal/5 border border-gray-200 rounded-2xl p-5 sm:p-6 mb-8">
+          <div className="mb-5">
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Creator Profile</CardTitle>
-                <CardDescription>Your personal and professional information</CardDescription>
+                <h2 className="border-l-4 border-hanok-teal pl-3 text-xl font-semibold text-black">Creator Profile</h2>
+                <p className="text-sm text-gray-500 mt-1 pl-7">Your personal and professional information</p>
               </div>
               {!isEditing ? (
                 <Button
@@ -235,8 +232,8 @@ export default function Profile() {
                 </div>
               )}
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column - Basic Information */}
               <div className="space-y-6">
@@ -360,27 +357,25 @@ export default function Profile() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Account Actions Section */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl">
-          <CardHeader>
-            <CardTitle>Account Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                type="button"
-                onClick={handleSignOut}
-                variant="outline"
-                className="w-full sm:w-auto border-gray-300 hover:bg-gray-100 text-red-600"
-              >
-                Sign Out
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6">
+          <div className="mb-5">
+            <h2 className="border-l-4 border-gray-400 pl-3 text-xl font-semibold text-black">Account Actions</h2>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              type="button"
+              onClick={handleSignOut}
+              variant="outline"
+              className="w-full sm:w-auto border-gray-300 hover:bg-gray-100 text-red-600"
+            >
+              Sign Out
+            </Button>
+          </div>
+        </div>
       </div>
     </MainLayout>
   )

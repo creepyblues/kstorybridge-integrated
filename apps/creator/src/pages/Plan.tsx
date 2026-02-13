@@ -21,7 +21,7 @@ export default function Plan() {
   const [checkoutModal, setCheckoutModal] = useState<{
     isOpen: boolean
     planType: 'packaging' | 'premium'
-    billingPeriod: 'monthly' | 'yearly'
+    billingPeriod: 'monthly'
   }>({
     isOpen: false,
     planType: 'packaging',
@@ -317,65 +317,6 @@ export default function Plan() {
             </CardContent>
           </Card>
 
-          {/* Bundle Pricing */}
-          <Card className="bg-gradient-to-br from-sunrise-coral/5 to-orange-50 border-sunrise-coral/20 shadow-none rounded-2xl overflow-hidden">
-            <CardContent className="p-6 sm:p-8 lg:p-10">
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sunrise-coral text-white text-sm font-medium mb-4">
-                  <Icon icon="solar:gift-bold" className="h-4 w-4" />
-                  Bundle Discount
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-black mb-2">
-                  {t('pricing:commission.bundle.title')}
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  {t('pricing:commission.bundle.subtitle')}
-                </p>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-8">
-                <Card className="bg-white border-gray-200 shadow-none rounded-xl">
-                  <CardContent className="p-5 text-center">
-                    <div className="text-3xl font-bold text-sunrise-coral mb-1">
-                      {t('pricing:commission.bundle.tier1.discount')}
-                    </div>
-                    <div className="font-semibold text-black mb-1">
-                      {t('pricing:commission.bundle.tier1.requirement')}
-                    </div>
-                    <p className="text-gray-500 text-xs">
-                      {t('pricing:commission.bundle.tier1.description')}
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white border-gray-200 shadow-none rounded-xl">
-                  <CardContent className="p-5 text-center">
-                    <div className="text-3xl font-bold text-sunrise-coral mb-1">
-                      {t('pricing:commission.bundle.tier2.discount')}
-                    </div>
-                    <div className="font-semibold text-black mb-1">
-                      {t('pricing:commission.bundle.tier2.requirement')}
-                    </div>
-                    <p className="text-gray-500 text-xs">
-                      {t('pricing:commission.bundle.tier2.description')}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="text-center">
-                <Button
-                  onClick={() =>
-                    (window.location.href = 'mailto:sales@kstorybridge.com')
-                  }
-                  className="bg-sunrise-coral hover:bg-sunrise-coral/90 text-white px-8 py-3 h-auto text-sm font-medium shadow-lg shadow-sunrise-coral/25"
-                >
-                  <Icon icon="solar:letter-bold" className="h-4 w-4 mr-2" />
-                  {t('pricing:commission.bundle.contactButton')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </section>
 
         {/* Comparison Section */}

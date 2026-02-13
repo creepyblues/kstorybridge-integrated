@@ -115,7 +115,8 @@
       "learnPlatform": "학습 자료 탐색하기",
       "learnPlatformDesc": "성공적인 라이선싱을 위한 팁"
     },
-    "welcome": "다시 오신 것을 환영합니다"
+    "welcome": "다시 오신 것을 환영합니다",
+    "welcomeSubtitle": "당신의 이야기를 세상에 알려보세요"
   },
   "viewAll": "전체 보기"
 }

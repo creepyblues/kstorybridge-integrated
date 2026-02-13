@@ -59,29 +59,44 @@ export default function Home() {
     || user?.user_metadata?.pen_name
     || 'Creator'
 
+  // Quick stats for welcome card
+  const titleCount = titles.length
+  const draftCount = drafts.length
+
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-black">
-            {t('common:home.welcome')}, {displayName} 👋
-          </h1>
+        {/* Welcome Card */}
+        <div className="bg-gradient-to-r from-sunrise-coral/5 via-orange-50/50 to-amber-50/40 rounded-2xl p-6 sm:p-8 mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-black">
+                {t('common:home.welcome')}, {displayName}
+              </h1>
+              <p className="text-gray-500 mt-1 text-sm sm:text-base">
+                {titleCount > 0 || draftCount > 0 ? (
+                  <span>
+                    {titleCount} {titleCount === 1 ? 'title' : 'titles'}{draftCount > 0 && `, ${draftCount} ${draftCount === 1 ? 'draft' : 'drafts'}`}
+                  </span>
+                ) : (
+                  t('common:home.welcomeSubtitle')
+                )}
+              </p>
+            </div>
+            <QuickActionsRow />
+          </div>
         </div>
 
-        {/* Quick Actions */}
-        <QuickActionsRow />
-
         {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Column - 2 cols */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             <TitleShelf titles={titles} drafts={drafts} loading={loading} />
             <LearningSpotlight posts={learningPosts} loading={loading} />
           </div>
 
           {/* Sidebar Column - 1 col */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <CreatorProgressCard titles={titles} drafts={drafts} />
             <UpdatesFeed posts={newsPosts} loading={loading} />
           </div>

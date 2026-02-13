@@ -24,8 +24,6 @@
 |--------|------|--------|----------|--------------|--------|
 | Monthly | Launch Promo | $100/mo | `price_____________________` | YYYY-MM-DD | ⬜ Pending |
 | Monthly | Regular | $150/mo | `price_____________________` | YYYY-MM-DD | ⬜ Pending |
-| Yearly | Launch Promo | $1,080/yr | `price_____________________` | YYYY-MM-DD | ⬜ Pending |
-| Yearly | Regular | $1,620/yr | `price_____________________` | YYYY-MM-DD | ⬜ Pending |
 
 ---
 
@@ -35,17 +33,6 @@
 |--------|------|--------|----------|--------------|--------|
 | Monthly | Launch Promo | $200/mo | `price_____________________` | YYYY-MM-DD | ⬜ Pending |
 | Monthly | Regular | $300/mo | `price_____________________` | YYYY-MM-DD | ⬜ Pending |
-| Yearly | Launch Promo | $2,160/yr | `price_____________________` | YYYY-MM-DD | ⬜ Pending |
-| Yearly | Regular | $3,240/yr | `price_____________________` | YYYY-MM-DD | ⬜ Pending |
-
----
-
-## Coupon IDs
-
-| Coupon Name | Coupon ID | Discount | Applies To | Created Date | Status |
-|-------------|-----------|----------|------------|--------------|--------|
-| Bundle 2 Titles | `BUNDLE25` | 25% off | Both plans | YYYY-MM-DD | ⬜ Pending |
-| Bundle 3+ Titles | `BUNDLE40` | 40% off | Both plans | YYYY-MM-DD | ⬜ Pending |
 
 ---
 
@@ -59,23 +46,15 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_____________________
 
 # Price IDs - Launch Promo (Currently Active)
 VITE_STRIPE_PRICE_PACKAGING_MONTHLY_LAUNCH=price_____________________
-VITE_STRIPE_PRICE_PACKAGING_YEARLY_LAUNCH=price_____________________
 VITE_STRIPE_PRICE_PREMIUM_MONTHLY_LAUNCH=price_____________________
-VITE_STRIPE_PRICE_PREMIUM_YEARLY_LAUNCH=price_____________________
 
 # Price IDs - Regular (Future Use)
 VITE_STRIPE_PRICE_PACKAGING_MONTHLY_REGULAR=price_____________________
-VITE_STRIPE_PRICE_PACKAGING_YEARLY_REGULAR=price_____________________
 VITE_STRIPE_PRICE_PREMIUM_MONTHLY_REGULAR=price_____________________
-VITE_STRIPE_PRICE_PREMIUM_YEARLY_REGULAR=price_____________________
 
 # Product IDs
 VITE_STRIPE_PRODUCT_PACKAGING=prod_____________________
 VITE_STRIPE_PRODUCT_PREMIUM=prod_____________________
-
-# Coupon IDs
-VITE_STRIPE_COUPON_BUNDLE_2=BUNDLE25
-VITE_STRIPE_COUPON_BUNDLE_3=BUNDLE40
 
 # Launch Promo Settings
 VITE_LAUNCH_PROMO_ACTIVE=true
@@ -89,8 +68,7 @@ VITE_LAUNCH_PROMO_END_DATE=2026-01-31
 After filling in all IDs above:
 
 - [ ] All 2 product IDs start with `prod_`
-- [ ] All 8 price IDs start with `price_`
-- [ ] Coupon IDs are exactly `BUNDLE25` and `BUNDLE40`
+- [ ] All 4 price IDs start with `price_`
 - [ ] IDs copied to `apps/creator/.env.local`
 - [ ] IDs added to Vercel environment variables (staging)
 - [ ] Run validation script: `cd apps/creator && npx tsx scripts/validate-stripe-config.ts`

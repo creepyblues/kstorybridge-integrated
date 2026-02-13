@@ -233,17 +233,9 @@ export default function Billing() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-sunrise-coral/10">
-                <Icon
-                  icon="solar:wallet-money-bold-duotone"
-                  className="h-6 w-6 text-sunrise-coral"
-                />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-black">
-                {t('billing:pageHeader.title')}
-              </h1>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">
+              {t('billing:pageHeader.title')}
+            </h1>
             <p className="text-gray-500">{t('billing:pageHeader.subtitle')}</p>
           </div>
           <Button
@@ -313,15 +305,9 @@ export default function Billing() {
           <div className="lg:col-span-2 space-y-8">
             {/* Active Subscriptions */}
             <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Icon
-                  icon="solar:document-text-bold-duotone"
-                  className="h-5 w-5 text-sunrise-coral"
-                />
-                <h2 className="text-lg font-bold text-black">
-                  {t('billing:subscriptions.title')}
-                </h2>
-              </div>
+              <h2 className="border-l-4 border-sunrise-coral pl-3 text-xl font-semibold text-black mb-5">
+                {t('billing:subscriptions.title')}
+              </h2>
 
               {!hasSubscriptions ? (
                 <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center">
@@ -446,15 +432,9 @@ export default function Billing() {
 
             {/* Transaction History */}
             <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Icon
-                  icon="solar:history-bold-duotone"
-                  className="h-5 w-5 text-sunrise-coral"
-                />
-                <h2 className="text-lg font-bold text-black">
-                  {t('billing:transactions.title')}
-                </h2>
-              </div>
+              <h2 className="border-l-4 border-blue-500 pl-3 text-xl font-semibold text-black mb-5">
+                {t('billing:transactions.title')}
+              </h2>
 
               {!hasTransactions ? (
                 <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 p-8 text-center">
@@ -558,15 +538,9 @@ export default function Billing() {
           <div className="space-y-6">
             {/* Payment Method Card */}
             <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Icon
-                  icon="solar:card-bold-duotone"
-                  className="h-5 w-5 text-sunrise-coral"
-                />
-                <h2 className="text-lg font-bold text-black">
-                  {t('billing:paymentMethod.title')}
-                </h2>
-              </div>
+              <h2 className="border-l-4 border-gray-500 pl-3 text-xl font-semibold text-black mb-5">
+                {t('billing:paymentMethod.title')}
+              </h2>
 
               {billingData?.paymentMethod?.card ? (
                 <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-900 to-gray-800 p-5 text-white">
@@ -618,13 +592,9 @@ export default function Billing() {
 
             {/* Quick Links */}
             <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Icon
-                  icon="solar:link-bold-duotone"
-                  className="h-5 w-5 text-sunrise-coral"
-                />
-                <h2 className="text-lg font-bold text-black">Quick Links</h2>
-              </div>
+              <h2 className="border-l-4 border-emerald-500 pl-3 text-xl font-semibold text-black mb-5">
+                Quick Links
+              </h2>
 
               <div className="space-y-2">
                 <button

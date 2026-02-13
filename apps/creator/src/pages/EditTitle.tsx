@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FileText, BookMarked, Lightbulb, FolderOpen, Trophy } from 'lucide-react'
@@ -418,16 +417,13 @@ export default function EditTitle() {
 
         {/* Error Alert */}
         {error && (
-          <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8">
-            <CardContent className="p-4">
-              <p className="text-red-500 text-sm">{error}</p>
-            </CardContent>
-          </Card>
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 mb-8">
+            <p className="text-red-500 text-sm">{error}</p>
+          </div>
         )}
 
         {/* Tabbed Form */}
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-6 sm:mb-8 lg:mb-12">
-          <CardContent className="p-4 sm:p-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 mb-8">
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-5 mb-8">
@@ -508,8 +504,7 @@ export default function EditTitle() {
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
 
         {/* Pitch Deck Upload Section */}
         {titleId && (

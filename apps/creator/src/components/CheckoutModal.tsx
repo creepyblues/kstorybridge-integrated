@@ -11,7 +11,7 @@ interface CheckoutModalProps {
   isOpen: boolean
   onClose: () => void
   planType: 'packaging' | 'premium'
-  billingPeriod: 'monthly' | 'yearly'
+  billingPeriod: 'monthly'
 }
 
 export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: CheckoutModalProps) {
@@ -104,11 +104,9 @@ export function CheckoutModal({ isOpen, onClose, planType, billingPeriod }: Chec
   const planDetails = {
     packaging: {
       monthly: { price: '$100', period: '/month', description: 'Launch Promo (Regular: $200)' },
-      yearly: { price: '$2,000', period: '/year', description: 'Launch Promo (Regular: $2,400)' },
     },
     premium: {
       monthly: { price: '$200', period: '/month', description: 'Launch Promo (Regular: $400)' },
-      yearly: { price: '$2,000', period: '/year', description: 'Launch Promo (Regular: $4,000)' },
     },
   }
 

@@ -71,7 +71,9 @@ export default function SignIn() {
       await signInWithEmail(formData.email, formData.password)
       console.log('✅ Signin successful, redirecting to home')
       trackLogin('email')
-      navigate('/home')
+      const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/home'
+      sessionStorage.removeItem('redirect_after_login')
+      navigate(redirectUrl)
     } catch (err: any) {
       console.error('❌ Signin error:', err)
 

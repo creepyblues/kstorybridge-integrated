@@ -70,7 +70,9 @@ export default function SignIn() {
         variant: 'success',
       });
 
-      navigate('/buyers/home');
+      const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/buyers/home';
+      sessionStorage.removeItem('redirect_after_login');
+      navigate(redirectUrl);
     } catch (error: any) {
       trackSignin('error', 'email', { error: error.message?.substring(0, 50) });
 

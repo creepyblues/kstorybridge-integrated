@@ -18,6 +18,7 @@ const CALLBACK_TIMEOUT_MS = 15000; // 15 seconds max for entire callback flow
 function clearOAuthStorage() {
   sessionStorage.removeItem('oauth_account_type');
   sessionStorage.removeItem('oauth_flow');
+  sessionStorage.removeItem('redirect_after_login');
 }
 
 export default function AuthCallback() {
@@ -100,7 +101,9 @@ export default function AuthCallback() {
           description: 'Successfully signed in',
           variant: 'success',
         });
-        navigate('/buyers/home');
+        const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/buyers/home';
+        sessionStorage.removeItem('redirect_after_login');
+        navigate(redirectUrl);
       } else {
         // Signup flow - store user data in sessionStorage for CompleteProfile page
         sessionStorage.setItem('oauth_user_id', user.id);

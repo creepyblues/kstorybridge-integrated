@@ -103,20 +103,10 @@ const HowToProducersPage = () => {
               any room.
             </p>
 
-            <Button
-              size="lg"
-              className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-10 sm:px-14 py-5 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => {
-                trackButtonClick('how-to-request-access', 'hero_section');
-                window.location.href = signupUrl();
-              }}
-            >
-              Request Access &rarr;
-            </Button>
-
-            <p className="mt-5 text-sm text-white/70">
-              Used by development teams at streaming platforms worldwide.
-            </p>
+            <div className="mt-10 flex flex-col items-center gap-2 text-white/60">
+              <p className="text-sm tracking-wide">Scroll to explore</p>
+              <span className="text-xl animate-bounce">↓</span>
+            </div>
           </div>
         </div>
       </section>

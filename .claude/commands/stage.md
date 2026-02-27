@@ -1,7 +1,7 @@
 ---
 description: Commit, push to v2 branch, and deploy to staging
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(git branch:*), Bash(git pull:*), Bash(npm run build:*), Bash(cd apps/* && vercel:*), Bash(vercel:*), Bash(curl:*)
-argument-hint: <app> [commit-message] (app: dashboard, creator, or all)
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(git branch:*), Bash(git pull:*), Bash(npm run build:*), Bash(cd apps/* && vercel:*), Bash(vercel:*), Bash(curl:*), Bash(cp:*), Bash(rm:*), Bash(cat:*)
+argument-hint: <app> [commit-message] (app: dashboard, creator, website, or all)
 ---
 
 ## Context
@@ -19,7 +19,8 @@ Complete the following steps to commit, push, and deploy to staging:
 The first argument must be the app to deploy:
 - `dashboard` - Deploy dashboard-staging
 - `creator` - Deploy creator-staging
-- `all` - Deploy both apps
+- `website` - Deploy kstorybridge-website (production, no staging project)
+- `all` - Deploy all three apps
 
 If no app is specified or an invalid app name is given, show an error message listing the valid options. Do not proceed.
 
@@ -40,7 +41,7 @@ Ensure we're on the `v2` branch. If not, warn the user and stop. Do not switch b
    - Create commit with message:
      - If commit message provided in arguments: use that message
      - If no message: analyze the staged changes and generate a concise commit message following conventional commits format (feat:, fix:, chore:, etc.)
-   - End commit message with: `Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>`
+   - End commit message with: `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
 
 ### Step 4: Push to v2
 
@@ -57,35 +58,60 @@ npm run build:dashboard
 # For creator
 npm run build:creator
 
+# For website
+npm run build:website
+
 # For all
 npm run build
 ```
 
 If build fails, stop and report the error. Do not proceed to deployment.
 
-### Step 6: Deploy to Vercel Staging
+### Step 6: Deploy to Vercel
 
-**CRITICAL**: Always deploy from the monorepo ROOT directory, not from app directories.
+**CRITICAL**: Always deploy from the monorepo ROOT directory (`/Users/sungholee/code/kstorybridge`), not from app directories. The root `.vercel/project.json` must be swapped to target the correct project, then restored afterward.
+
+#### Vercel project mapping
+
+| App | Vercel Project | Deploy Flag | URL |
+|-----|---------------|-------------|-----|
+| dashboard | `dashboard-staging` | `--prod` | dashboard-staging.kstorybridge.com |
+| creator | `creator-staging` | `--prod` | creator-staging.kstorybridge.com |
+| website | `kstorybridge-website` | `--prod` | kstorybridge.com |
+
+#### Deploy procedure (per app)
 
 ```bash
-# For dashboard
-cd /Users/sungholee/code/kstorybridge
-vercel link --project dashboard-staging --yes
-vercel --prod
+# 1. Save current link
+cp .vercel/project.json .vercel/project.json.bak
 
-# For creator
-cd /Users/sungholee/code/kstorybridge
-vercel link --project creator-staging --yes
-vercel --prod
+# 2. Link to target project
+vercel link --yes --project <vercel-project-name>
+
+# 3. Deploy
+vercel --yes --prod
+
+# 4. Restore original link
+cp .vercel/project.json.bak .vercel/project.json
+rm .vercel/project.json.bak
 ```
 
-For `all`, deploy apps in sequence:
-1. Deploy dashboard first
-2. Then deploy creator
+For `all`, deploy apps in sequence: dashboard → creator → website.
 
 Capture the deployment URL from Vercel output for the report.
 
-### Step 7: Report Results
+### Step 7: Smoke Test
+
+After deployment, verify the app is reachable:
+
+```bash
+# Check HTTP status
+curl -s -o /dev/null -w "%{http_code}" https://<staging-url>/
+```
+
+Expected: 200.
+
+### Step 8: Report Results
 
 Show deployment summary:
 
@@ -94,9 +120,10 @@ Show deployment summary:
 
 **App**: [app name]
 **Commit**: [hash] - [message]
-**Staging URL**: https://dashboard-staging.kstorybridge.com (or creator-staging)
+**URL**: [staging/production URL]
+**Smoke Test**: [PASS/FAIL]
 
-Test your changes at the staging URL.
+Test your changes at the URL above.
 When ready for production, run: /push
 ```
 
@@ -105,6 +132,7 @@ When ready for production, run: /push
 - Never force push
 - Never skip pre-commit hooks
 - Always deploy from monorepo root, not app directory
+- Always restore `.vercel/project.json` after deployment (backup/restore pattern)
 - If build fails, do not attempt deployment
 - If not on v2 branch, stop and warn user
 - Exclude .env files and secrets from commits

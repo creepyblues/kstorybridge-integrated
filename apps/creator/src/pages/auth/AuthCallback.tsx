@@ -155,6 +155,7 @@ export default function AuthCallback() {
 
       if (sessionError || !session) {
         console.error('❌ OAuth session error:', sessionError)
+        sessionStorage.removeItem('redirect_after_login')
         setStatus('Authentication failed. Please try again.')
         setTimeout(() => navigate('/signin'), 3000)
         return
@@ -211,7 +212,9 @@ export default function AuthCallback() {
           }).catch(() => {})
         }
         setStatus('Welcome back! Redirecting...')
-        navigate('/home')
+        const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/home'
+        sessionStorage.removeItem('redirect_after_login')
+        navigate(redirectUrl)
       } else {
         // New user - redirect to profile completion
         console.log('📝 New user, redirecting to profile completion')
@@ -221,6 +224,7 @@ export default function AuthCallback() {
 
     } catch (error: any) {
       console.error('❌ Auth callback error:', error)
+      sessionStorage.removeItem('redirect_after_login')
       setStatus('Authentication failed: ' + error.message)
       setTimeout(() => navigate('/signin'), 3000)
     }

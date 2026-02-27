@@ -32,6 +32,7 @@ const TermsPage = lazy(() => import("./pages/TermsPage"));
 const ChatbotFeaturePage = lazy(() => import("./pages/features/ChatbotFeaturePage"));
 const CompsNavigatorFeaturePage = lazy(() => import("./pages/features/CompsNavigatorFeaturePage"));
 const MandateMatcherFeaturePage = lazy(() => import("./pages/features/MandateMatcherFeaturePage"));
+const HowToProducersPage = lazy(() => import("./pages/HowToProducersPage"));
 const DiaryPage = lazy(() => import("./pages/DiaryPage"));
 const DiaryEntryPage = lazy(() => import("./pages/DiaryEntryPage"));
 
@@ -61,6 +62,7 @@ const App = () => (
           <Route path="/features/chatbot" element={<ChatbotFeaturePage />} />
           <Route path="/features/comps-navigator" element={<CompsNavigatorFeaturePage />} />
           <Route path="/features/mandate-matcher" element={<MandateMatcherFeaturePage />} />
+          <Route path="/how-to/producers" element={<HowToProducersPage />} />
           <Route path="/diary" element={<DiaryPage />} />
           <Route path="/diary/:date" element={<DiaryEntryPage />} />
 

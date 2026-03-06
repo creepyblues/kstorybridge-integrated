@@ -1796,6 +1796,40 @@ export const trackTrialSignupCtaClicked = (
   });
 };
 
+// --- FORMAT SPOTLIGHT ---
+
+/**
+ * Track format spotlight page view
+ * @param formatType - The format type being viewed
+ */
+export const trackFormatSpotlightView = (
+  formatType: string
+): void => {
+  trackEvent('format_spotlight_view', {
+    format_type: formatType,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track format spotlight card click
+ * @param titleId - UUID of the title
+ * @param formatType - The format type
+ * @param rank - Position in the list (1-indexed)
+ */
+export const trackFormatSpotlightCardClick = (
+  titleId: string,
+  formatType: string,
+  rank: number
+): void => {
+  trackEvent('format_spotlight_card_click', {
+    title_id: titleId,
+    format_type: formatType,
+    rank,
+    timestamp: new Date().toISOString(),
+  });
+};
+
 // Extend Window interface for TypeScript
 declare global {
   interface Window {

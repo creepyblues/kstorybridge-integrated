@@ -38,6 +38,7 @@ import Checkout from '@/pages/buyers/Checkout';
 import CheckoutSuccess from '@/pages/buyers/CheckoutSuccess';
 import CheckoutCancel from '@/pages/buyers/CheckoutCancel';
 import Featured from '@/pages/buyers/Featured';
+import FormatSpotlight from '@/pages/buyers/FormatSpotlight';
 
 // Admin pages
 import AdminTitles from '@/pages/admin/AdminTitles';
@@ -186,6 +187,16 @@ function App() {
               <TierProvider>
                 <ProtectedRoute>
                   <Featured />
+                </ProtectedRoute>
+              </TierProvider>
+            }
+          />
+          <Route
+            path="/buyers/format-spotlight/:formatType"
+            element={
+              <TierProvider>
+                <ProtectedRoute>
+                  <FormatSpotlight />
                 </ProtectedRoute>
               </TierProvider>
             }

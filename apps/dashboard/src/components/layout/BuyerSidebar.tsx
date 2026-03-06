@@ -20,6 +20,7 @@ const getDiscoverItems = (): MenuItem[] => {
     { title: 'Comps Navigator', href: '/buyers/comps-navigator', icon: 'solar:compass-bold-duotone' },
     { title: 'Mandate Matcher', href: '/buyers/mandates', icon: 'solar:stars-bold-duotone' },
     { title: 'Trending', href: '/buyers/trending', icon: 'solar:graph-up-bold-duotone' },
+    { title: 'Microdrama Spotlight', href: '/buyers/format-spotlight/microdrama', icon: 'solar:smartphone-bold-duotone' },
     { title: 'Titles', href: '/buyers/titles', icon: 'solar:book-bold-duotone' },
     { title: 'Saved', href: '/buyers/saved', icon: 'solar:heart-bold-duotone' },
     { title: 'Plan', href: '/buyers/plan', icon: 'solar:card-bold-duotone' },
@@ -104,12 +105,12 @@ export function BuyerSidebar() {
                       onClick={handleLinkClick}
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200',
-                        location.pathname === item.href
+                        location.pathname === item.href || location.pathname.startsWith(item.href + '/')
                           ? 'bg-hanok-teal/10 text-hanok-teal shadow-sm border border-hanok-teal/20'
                           : 'text-gray-700 hover:bg-hanok-teal/5'
                       )}
                     >
-                      <Icon icon={item.icon} className={cn("h-5 w-5", location.pathname === item.href ? "" : "text-gray-400")} />
+                      <Icon icon={item.icon} className={cn("h-5 w-5", location.pathname === item.href || location.pathname.startsWith(item.href + '/') ? "" : "text-gray-400")} />
                       <span>{item.title}</span>
                       {item.badge && (
                         <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">

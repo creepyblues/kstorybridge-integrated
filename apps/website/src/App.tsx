@@ -1,10 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster, TooltipProvider } from "@kstorybridge/ui";
 import { lazy, Suspense } from "react";
 
 import AnalyticsProvider from "./components/AnalyticsProvider";
 import SessionTracker from "./components/SessionTracker";
 import CookieBanner from "./components/CookieBanner";
+
+const queryClient = new QueryClient();
 
 // Lazy load page components for code splitting
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -35,6 +38,7 @@ const MandateMatcherFeaturePage = lazy(() => import("./pages/features/MandateMat
 const HowToProducersPage = lazy(() => import("./pages/HowToProducersPage"));
 const DiaryPage = lazy(() => import("./pages/DiaryPage"));
 const DiaryEntryPage = lazy(() => import("./pages/DiaryEntryPage"));
+const FormatSpotlightPage = lazy(() => import("./pages/FormatSpotlightPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -44,9 +48,10 @@ const PageLoader = () => (
 );
 
 const App = () => (
-  <TooltipProvider>
-    <Toaster />
-    <BrowserRouter>
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <BrowserRouter>
         <AnalyticsProvider />
         <SessionTracker />
         <CookieBanner />
@@ -65,6 +70,7 @@ const App = () => (
           <Route path="/how-to/producers" element={<HowToProducersPage />} />
           <Route path="/diary" element={<DiaryPage />} />
           <Route path="/diary/:date" element={<DiaryEntryPage />} />
+          <Route path="/format-spotlight/:formatType" element={<FormatSpotlightPage />} />
 
           {/* PREVIEW ROUTES - Only available in development */}
           {import.meta.env.DEV && <Route path="/producers-preview" element={<ProducersPagePreview />} />}
@@ -88,8 +94,9 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-      </BrowserRouter>
-    </TooltipProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+  </QueryClientProvider>
 );
 
 export default App;

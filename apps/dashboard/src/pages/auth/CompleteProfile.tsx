@@ -129,7 +129,9 @@ export default function CompleteProfile() {
         description: 'Welcome to KStoryBridge',
       });
 
-      navigate('/buyers/home');
+      const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/buyers/home';
+      sessionStorage.removeItem('redirect_after_login');
+      navigate(redirectUrl);
     } catch (error: any) {
       // Track signup error
       trackSignup('error', 'google', {
@@ -210,7 +212,7 @@ export default function CompleteProfile() {
               <Input
                 id="linkedin_url"
                 name="linkedin_url"
-                type="url"
+                type="text"
                 placeholder="https://linkedin.com/in/yourprofile"
                 value={formData.linkedin_url}
                 onChange={handleInputChange}

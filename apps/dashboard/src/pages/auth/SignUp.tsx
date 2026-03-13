@@ -25,6 +25,16 @@ export default function SignUp() {
     linkedin_url: '',
   });
 
+  // Store title redirect if coming from public title page CTA
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const titleRedirect = params.get('title_redirect');
+    // Validate as UUID to prevent path injection
+    if (titleRedirect && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(titleRedirect)) {
+      sessionStorage.setItem('redirect_after_login', '/buyers/titles/' + titleRedirect);
+    }
+  }, []);
+
   // Track form viewed on mount
   useEffect(() => {
     trackSignup('form_viewed', 'email');

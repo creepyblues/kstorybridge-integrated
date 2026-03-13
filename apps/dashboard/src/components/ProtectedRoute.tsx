@@ -23,6 +23,15 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (intendedPath !== '/' && intendedPath !== '/signin') {
       sessionStorage.setItem('redirect_after_login', intendedPath);
     }
+
+    // Title pages: redirect to public page on website instead of signin
+    const titleMatch = location.pathname.match(/^\/buyers\/titles\/([0-9a-f-]+)$/);
+    if (titleMatch) {
+      const websiteUrl = import.meta.env.VITE_WEBSITE_URL || 'https://kstorybridge.com';
+      window.location.href = `${websiteUrl}/title/${titleMatch[1]}`;
+      return null;
+    }
+
     return <Navigate to="/signin" replace />;
   }
 

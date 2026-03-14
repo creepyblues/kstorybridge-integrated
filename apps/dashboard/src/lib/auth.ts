@@ -68,7 +68,7 @@ export async function signUpWithEmail(
 
   // Create buyer profile via edge function
   try {
-    const { error: functionError } = await supabase.functions.invoke(
+    const { data: profileData, error: functionError } = await supabase.functions.invoke(
       'create-buyer-profile',
       {
         body: {
@@ -87,6 +87,13 @@ export async function signUpWithEmail(
     if (functionError) {
       log('Profile creation error', functionError);
       throw new Error(`Profile creation failed: ${functionError.message}`);
+    }
+
+    // Also check for application-level errors (supabase.functions.invoke returns
+    // HTTP 400/500 responses in data, not in error)
+    if (profileData && typeof profileData === 'object' && profileData.success === false) {
+      log('Profile creation returned error', profileData);
+      throw new Error(`Profile creation failed: ${profileData.error || 'Unknown error'}`);
     }
 
     log('Buyer profile created successfully');
@@ -169,7 +176,7 @@ export async function completeOAuthProfile(
 
   // Create buyer profile via edge function
   try {
-    const { error: functionError } = await supabase.functions.invoke(
+    const { data: profileData, error: functionError } = await supabase.functions.invoke(
       'create-buyer-profile',
       {
         body: {
@@ -188,6 +195,12 @@ export async function completeOAuthProfile(
     if (functionError) {
       log('OAuth profile creation error', functionError);
       throw new Error(`Profile creation failed: ${functionError.message}`);
+    }
+
+    // Check for application-level errors (HTTP 400/500 returned in data, not error)
+    if (profileData && typeof profileData === 'object' && profileData.success === false) {
+      log('OAuth profile creation returned error', profileData);
+      throw new Error(`Profile creation failed: ${profileData.error || 'Unknown error'}`);
     }
 
     log('OAuth buyer profile created successfully');

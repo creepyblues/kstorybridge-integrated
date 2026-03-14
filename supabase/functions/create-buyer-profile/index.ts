@@ -40,13 +40,13 @@ serve(async (req) => {
     // Trial tracking fields
     const trialSessionId = requestBody.trial_session_id || requestBody.trialSessionId
 
-    // Validate required fields
-    if (!userId || !email || !fullName || !buyerCompany || !buyerRole) {
+    // Validate required fields (buyerCompany and buyerRole are optional)
+    if (!userId || !email || !fullName) {
       console.error('Missing required fields for buyer profile creation')
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Missing required fields: userId, email, fullName, buyerCompany, and buyerRole are required'
+          error: 'Missing required fields: userId, email, and fullName are required'
         }),
         {
           status: 400,
@@ -82,8 +82,8 @@ serve(async (req) => {
         id: userId,
         email: email.toLowerCase(),
         full_name: fullName,
-        buyer_company: buyerCompany,
-        buyer_role: buyerRole,
+        buyer_company: buyerCompany || null,
+        buyer_role: buyerRole || null,
         linkedin_url: linkedinUrl || null,
         tier: tier || 'basic',
         requested: requested || false,

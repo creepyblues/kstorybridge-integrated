@@ -1,6 +1,6 @@
 ---
 name: diary
-description: Development diary automation for KStoryBridge. This skill should be used when capturing development session insights, generating daily diary entries from Claude Code history and git commits, or managing entries for the public development diary at kstorybridge.com/development_diary.
+description: Development diary automation for KStoryBridge. This skill should be used when capturing development session insights, generating daily diary entries from Claude Code history and git commits, or managing entries for the public development diary at kstorybridge.com/diary.
 ---
 
 # Development Diary Skill
@@ -228,7 +228,7 @@ Create the directory structure (`published/YYYY/MM/`) if it doesn't exist. Set `
 
 ## Web Dashboard
 
-- Public: `kstorybridge.com/development_diary`
+- Public: `kstorybridge.com/diary`
 - Admin: `kstorybridge.com/marketing/diary`
 
 ## Example Generated Entry

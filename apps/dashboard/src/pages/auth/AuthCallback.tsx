@@ -18,7 +18,7 @@ const CALLBACK_TIMEOUT_MS = 15000; // 15 seconds max for entire callback flow
 function clearOAuthStorage() {
   sessionStorage.removeItem('oauth_account_type');
   sessionStorage.removeItem('oauth_flow');
-  sessionStorage.removeItem('redirect_after_login');
+  // DO NOT clear redirect_after_login — consumed at final destination
 }
 
 export default function AuthCallback() {

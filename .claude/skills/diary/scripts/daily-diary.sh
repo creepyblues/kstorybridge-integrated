@@ -111,7 +111,7 @@ if [ -n "$SLACK_WEBHOOK_URL" ]; then
     DATE_FORMATTED=$(date -j -f "%Y-%m-%d" "$TARGET_DATE" "+%B %d, %Y" 2>/dev/null || echo "$TARGET_DATE")
 
     # Web link to diary (will be live after publishing)
-    DIARY_LINK="https://kstorybridge.com/development_diary/$TARGET_DATE"
+    DIARY_LINK="https://kstorybridge.com/diary/$TARGET_DATE"
 
     # Create Slack message with rich formatting
     SLACK_MESSAGE=$(cat <<EOF

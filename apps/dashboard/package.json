@@ -64,6 +64,7 @@
     "stripe": "^14.0.0",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
+    "lucide-react": "^0.462.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {

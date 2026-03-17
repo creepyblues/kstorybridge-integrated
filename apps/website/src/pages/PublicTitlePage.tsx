@@ -227,7 +227,7 @@ export default function PublicTitlePage() {
               className="w-full sm:w-auto bg-black hover:bg-gray-800 text-white rounded-full px-8 py-3 text-base font-medium"
               onClick={() => { window.location.href = signupUrl; }}
             >
-              Express Interest &mdash; It's Free
+              Sign Up to View the Full Analysis
             </Button>
           </div>
         </div>
@@ -268,7 +268,7 @@ export default function PublicTitlePage() {
             className="bg-black hover:bg-gray-800 text-white rounded-full px-8 py-3 text-base font-medium"
             onClick={() => { window.location.href = signupUrl; }}
           >
-            Get Access &mdash; It's Free
+            Join Now! It's Free
           </Button>
         </div>
 

@@ -85,6 +85,7 @@ export interface CreatorProfileData {
   ip_owner_company?: string | null;
   website_url?: string | null;
   invitation_status?: string;
+  newsletter_consent?: boolean;
 }
 
 export interface EdgeFunctionResult {
@@ -195,7 +196,8 @@ export async function createCreatorViaEdgeFunction(
           penName: profileData.pen_name,
           ipOwnerRole: profileData.ip_owner_role,
           ipOwnerCompany: profileData.ip_owner_company || null,
-          websiteUrl: profileData.website_url || null
+          websiteUrl: profileData.website_url || null,
+          newsletterConsent: profileData.newsletter_consent ?? false
         })
       }
     );

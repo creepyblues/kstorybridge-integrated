@@ -10,11 +10,13 @@ export interface CreatorProfile {
   ip_owner_role: 'author' | 'agent'
   ip_owner_company?: string
   website_url?: string
+  newsletter_consent?: boolean
 }
 
 export interface SignUpData extends CreatorProfile {
   email: string
   password: string
+  newsletter_consent?: boolean
 }
 
 // ============================================================================
@@ -86,6 +88,7 @@ export async function signUpWithEmail(data: SignUpData) {
       data: {
         account_type: 'creator', // ✅ Set during signup, not after
         full_name: sanitizedData.full_name,
+        newsletter_consent: data.newsletter_consent ?? false,
       },
     },
   })
@@ -112,6 +115,7 @@ export async function signUpWithEmail(data: SignUpData) {
       ip_owner_role: sanitizedData.ip_owner_role,
       ip_owner_company: sanitizedData.ip_owner_company || null,
       website_url: sanitizedData.website_url || null,
+      newsletter_consent: data.newsletter_consent ?? false,
     })
 
     if (!result.success) {
@@ -257,6 +261,7 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
       ip_owner_role: sanitizedData.ip_owner_role,
       ip_owner_company: sanitizedData.ip_owner_company || null,
       website_url: sanitizedData.website_url || null,
+      newsletter_consent: profileData.newsletter_consent ?? false,
     })
 
     if (!result.success) {
@@ -273,7 +278,7 @@ export async function completeOAuthProfile(profileData: CreatorProfile) {
   // This is a SINGLE updateUser call, no race conditions
   try {
     const { error: metadataError } = await supabase.auth.updateUser({
-      data: { account_type: 'creator' },
+      data: { account_type: 'creator', newsletter_consent: profileData.newsletter_consent ?? false },
     })
 
     if (metadataError) {

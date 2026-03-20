@@ -39,6 +39,7 @@ export async function signUpWithEmail(
     buyer_role?: string;
     linkedin_url?: string;
     trial_session_id?: string; // From trial flow
+    newsletter_consent?: boolean;
   }
 ) {
   log('Starting email signup for buyer', { email });
@@ -51,6 +52,7 @@ export async function signUpWithEmail(
       data: {
         account_type: 'buyer', // ✅ Set during signup
         full_name: metadata.full_name,
+        newsletter_consent: metadata.newsletter_consent ?? false,
       },
     },
   });
@@ -80,6 +82,7 @@ export async function signUpWithEmail(
           linkedin_url: metadata.linkedin_url,
           tier: 'basic', // Default tier
           trial_session_id: metadata.trial_session_id, // Link trial to signup
+          newsletter_consent: metadata.newsletter_consent ?? false,
         },
       }
     );
@@ -169,6 +172,7 @@ export async function completeOAuthProfile(
     buyer_role?: string;
     linkedin_url?: string;
     trial_session_id?: string; // From trial flow
+    newsletter_consent?: boolean;
   },
   session?: any
 ) {
@@ -188,6 +192,7 @@ export async function completeOAuthProfile(
           linkedin_url: metadata.linkedin_url,
           tier: 'basic', // Default tier
           trial_session_id: metadata.trial_session_id, // Link trial to signup
+          newsletter_consent: metadata.newsletter_consent ?? false,
         },
       }
     );
@@ -208,7 +213,7 @@ export async function completeOAuthProfile(
     // Update metadata with account_type (use provided session if available)
     if (session?.access_token) {
       const { error: updateError } = await supabase.auth.updateUser({
-        data: { account_type: 'buyer' },
+        data: { account_type: 'buyer', newsletter_consent: metadata.newsletter_consent ?? false },
       });
       if (updateError) {
         // Log but don't throw - profile was created successfully, metadata update is secondary

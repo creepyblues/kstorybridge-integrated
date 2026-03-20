@@ -23,6 +23,7 @@ export default function SignUp() {
     buyer_company: '',
     buyer_role: '',
     linkedin_url: '',
+    newsletter_consent: false,
   });
 
   // Store title redirect if coming from public title page CTA
@@ -105,6 +106,7 @@ export default function SignUp() {
         buyer_role: formData.buyer_role || undefined,
         linkedin_url: formData.linkedin_url || undefined,
         trial_session_id: trialSessionId || undefined,
+        newsletter_consent: formData.newsletter_consent,
       });
 
       // Track successful signup
@@ -303,6 +305,30 @@ export default function SignUp() {
                 <option value="content_scout">Content Scout</option>
                 <option value="other">Other</option>
               </select>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <input
+                id="newsletter_consent"
+                name="newsletter_consent"
+                type="checkbox"
+                checked={formData.newsletter_consent}
+                onChange={(e) => setFormData({ ...formData, newsletter_consent: e.target.checked })}
+                disabled={loading}
+                className="mt-1 h-4 w-4 rounded border-gray-300"
+              />
+              <label htmlFor="newsletter_consent" className="text-sm text-gray-600">
+                I agree to receive product updates and newsletters from KStoryBridge.
+                {' '}
+                <a
+                  href="https://kstorybridge.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-hanok-teal hover:text-hanok-teal/80 underline"
+                >
+                  Privacy Policy
+                </a>
+              </label>
             </div>
 
             <Button

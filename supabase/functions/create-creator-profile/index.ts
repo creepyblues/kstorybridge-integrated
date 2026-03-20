@@ -26,7 +26,7 @@ serve(async (req) => {
     )
 
     // Get request data
-    const { userId, email, fullName, penName, ipOwnerRole, ipOwnerCompany, websiteUrl } = await req.json()
+    const { userId, email, fullName, penName, ipOwnerRole, ipOwnerCompany, websiteUrl, newsletterConsent } = await req.json()
 
     console.log('Creating creator profile for user:', { userId, email, fullName })
 
@@ -62,6 +62,8 @@ serve(async (req) => {
         ip_owner_role: ipOwnerRole ? ipOwnerRole as 'author' | 'agent' : null,
         ip_owner_company: ipOwnerCompany || null,
         website_url: websiteUrl || null,
+        newsletter_consent: newsletterConsent ?? false,
+        newsletter_consented_at: newsletterConsent ? new Date().toISOString() : null,
       })
       .select()
       .single()

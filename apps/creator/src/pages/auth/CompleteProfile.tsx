@@ -22,7 +22,7 @@ export default function CompleteProfile() {
     ip_owner_role: 'author' as 'author' | 'agent',
     ip_owner_company: '',
     website_url: '',
-    newsletter_consent: false,
+    newsletter_consent: true,
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

@@ -26,7 +26,7 @@ export default function CompleteProfile() {
     buyer_company: '',
     buyer_role: '',
     linkedin_url: '',
-    newsletter_consent: false,
+    newsletter_consent: true,
   });
 
   // 🚨 CRITICAL: Prefer authenticated user data over sessionStorage to prevent tampering

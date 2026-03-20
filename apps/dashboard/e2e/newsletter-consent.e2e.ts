@@ -5,7 +5,7 @@ test.describe('Newsletter consent checkbox — Producer signup', () => {
     await page.goto('/signup');
     const checkbox = page.locator('#newsletter_consent');
     await expect(checkbox).toBeVisible();
-    await expect(checkbox).not.toBeChecked();
+    await expect(checkbox).toBeChecked();
   });
 
   test('checkbox can be checked', async ({ page }) => {

@@ -23,7 +23,7 @@ export default function SignUp() {
     buyer_company: '',
     buyer_role: '',
     linkedin_url: '',
-    newsletter_consent: false,
+    newsletter_consent: true,
   });
 
   // Store title redirect if coming from public title page CTA

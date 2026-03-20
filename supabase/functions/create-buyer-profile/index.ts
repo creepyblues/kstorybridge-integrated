@@ -37,6 +37,8 @@ serve(async (req) => {
     const linkedinUrl = requestBody.linkedin_url || requestBody.linkedinUrl
     const tier = requestBody.tier
     const requested = requestBody.requested
+    // Newsletter consent
+    const newsletterConsent = requestBody.newsletter_consent ?? requestBody.newsletterConsent ?? false
     // Trial tracking fields
     const trialSessionId = requestBody.trial_session_id || requestBody.trialSessionId
 
@@ -87,6 +89,9 @@ serve(async (req) => {
         linkedin_url: linkedinUrl || null,
         tier: tier || 'basic',
         requested: requested || false,
+        // Newsletter consent
+        newsletter_consent: newsletterConsent,
+        newsletter_consented_at: newsletterConsent ? new Date().toISOString() : null,
         // Trial tracking
         trial_session_id: trialSessionId || null,
         came_from_trial: !!trialSessionId,

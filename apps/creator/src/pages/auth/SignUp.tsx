@@ -26,6 +26,7 @@ export default function SignUp() {
     ip_owner_role: 'author' as 'author' | 'agent',
     ip_owner_company: '',
     website_url: '',
+    newsletter_consent: false,
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -66,6 +67,7 @@ export default function SignUp() {
         ip_owner_role: formData.ip_owner_role,
         ip_owner_company: formData.ip_owner_company || undefined,
         website_url: formData.website_url || undefined,
+        newsletter_consent: formData.newsletter_consent,
       })
 
       console.log('✅ Signup successful, showing confirmation message')
@@ -286,6 +288,30 @@ export default function SignUp() {
                 onChange={handleInputChange}
                 disabled={loading}
               />
+            </div>
+
+            <div className="flex items-start gap-2">
+              <input
+                id="newsletter_consent"
+                name="newsletter_consent"
+                type="checkbox"
+                checked={formData.newsletter_consent}
+                onChange={(e) => setFormData({ ...formData, newsletter_consent: e.target.checked })}
+                disabled={loading}
+                className="mt-1 h-4 w-4 rounded border-gray-300"
+              />
+              <label htmlFor="newsletter_consent" className="text-sm text-gray-600">
+                I agree to receive product updates and newsletters from KStoryBridge.
+                {' '}
+                <a
+                  href="https://kstorybridge.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sunrise-coral hover:text-sunrise-coral/80 underline"
+                >
+                  Privacy Policy
+                </a>
+              </label>
             </div>
 
             <Button

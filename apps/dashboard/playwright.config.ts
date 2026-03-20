@@ -1,72 +1,71 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright E2E Test Configuration
- * @see https://playwright.dev/docs/test-configuration
+ * Environment-aware Playwright config.
+ *
+ * Usage:
+ *   TEST_ENV=local      npm run test:e2e          (default — auto-starts dev server)
+ *   TEST_ENV=staging    npm run test:e2e:staging
+ *   TEST_ENV=production npm run test:e2e:prod
+ *
+ * Env URLs are resolved from env vars so they work on CI too:
+ *   STAGING_URL   override staging base URL
+ *   PROD_URL      override production base URL
  */
+
+const ENV = process.env.TEST_ENV || 'local';
+
+const BASE_URLS: Record<string, string> = {
+  local:      'http://localhost:8082',
+  staging:    process.env.STAGING_URL    || 'https://kstorybridge-dashboard-v2.vercel.app',
+  production: process.env.PROD_URL       || 'https://app.kstorybridge.com',
+};
+
+const BASE_URL = BASE_URLS[ENV] ?? BASE_URLS.local;
+const IS_LOCAL = ENV === 'local';
+
+console.log(`\n🧪 Playwright running against: ${ENV.toUpperCase()} → ${BASE_URL}\n`);
+
 export default defineConfig({
   testDir: './e2e',
-
-  /* Test files pattern */
   testMatch: '**/*.e2e.ts',
-
-  /* Run tests in files in parallel */
   fullyParallel: true,
-
-  /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
-
-  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-
-  /* Opt out of parallel tests on CI */
   workers: process.env.CI ? 1 : undefined,
 
-  /* Reporter to use */
   reporter: [
     ['html', { open: 'never' }],
     ['list'],
   ],
 
-  /* Shared settings for all the projects below */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')` */
-    baseURL: 'http://localhost:8081',
-
-    /* Collect trace when retrying the failed test */
+    baseURL: BASE_URL,
     trace: 'on-first-retry',
-
-    /* Screenshot on failure */
     screenshot: 'only-on-failure',
   },
 
-  /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // Uncomment for cross-browser testing
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
-    // Mobile viewports
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:8081',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  /*
+   * webServer only applies for local env.
+   * For staging/production, the server is already running — no auto-start needed.
+   */
+  ...(IS_LOCAL && {
+    webServer: {
+      command: 'npm run dev',
+      url: 'http://localhost:8082',
+      reuseExistingServer: true,   // reuse if already running (speeds up dev loop)
+      timeout: 120 * 1000,
+      env: {
+        // ensure dev server binds to all interfaces for Tailscale access
+        VITE_HOST: '0.0.0.0',
+      },
+    },
+  }),
 });

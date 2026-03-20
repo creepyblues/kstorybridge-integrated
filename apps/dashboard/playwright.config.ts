@@ -17,8 +17,8 @@ const ENV = process.env.TEST_ENV || 'local';
 
 const BASE_URLS: Record<string, string> = {
   local:      'http://localhost:8082',
-  staging:    process.env.STAGING_URL    || 'https://kstorybridge-dashboard-git-v2-creepyblues-9060s-projects.vercel.app',
-  production: process.env.PROD_URL       || 'https://app.kstorybridge.com',
+  staging:    process.env.STAGING_URL    || 'https://dashboard-staging.kstorybridge.com',
+  production: process.env.PROD_URL       || 'https://dashboard.kstorybridge.com',
 };
 
 const BASE_URL = BASE_URLS[ENV] ?? BASE_URLS.local;

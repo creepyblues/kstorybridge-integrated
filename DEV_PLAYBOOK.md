@@ -245,3 +245,33 @@ npm run dev:creator     # localhost:8083
 | `apps/website/src/pages/PublicTitlePage.tsx` | Website title listing/preview page |
 | `supabase/migrations/` | ALL DB migrations — run `supabase db push` to apply to production |
 | `tests/helpers/test-config.ts` | E2E environment URLs |
+
+---
+
+## 12. Agent Orchestration & MD File Policy
+
+### Neo is the Orchestrator (set 2026-03-21)
+Neo (@Creepyblues_bot) monitors ALL council topics and chats without exception.
+- Neo receives messages in all council topics (Tim/6, Steve/8, Beast/10, Ted/11, Jamie/12) without needing to be tagged
+- Neo mediates any conflicts or coordination gaps between agents proactively
+- When an agent is silent or unavailable, Neo steps in — but MUST document what was decided in briefing.md immediately
+- briefing.md is the single source of truth all agents read before acting
+
+### MD File Ownership
+| File | Location | Owner | Purpose |
+|---|---|---|---|
+| CLAUDE.md | repo root | Sungho | Build commands for Claude Code |
+| DEV_PLAYBOOK.md | repo root | Neo + Steve | Dev rules, architecture decisions, patterns |
+| briefing.md | council-shared/ | Neo | Cross-agent ground truth — updated after every decision |
+| KB research files | raw/kstorybridge/ | Neo (Archie) | Research, specs, reports — one file per topic, no duplicates |
+
+### No Duplicate Files Rule
+- One canonical file per topic. Before creating any new MD file, check if one already exists.
+- If two agents create conflicting files: Neo reconciles into one, deletes the duplicate, updates briefing.md.
+- All significant architectural or product decisions go into BOTH briefing.md (for agents) AND DEV_PLAYBOOK.md (for Claude Code).
+
+### Decision Protocol
+1. Product/UX decisions → Steve leads, Neo documents in briefing.md
+2. Operations/execution decisions → Neo leads, posts summary in relevant topic
+3. When agents conflict: Neo mediates, Sungho has final call
+4. After any decision: Neo updates briefing.md within the same session

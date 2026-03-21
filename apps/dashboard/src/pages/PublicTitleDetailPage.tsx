@@ -341,8 +341,23 @@ export default function PublicTitleDetailPage() {
                 {/* One visible static comp card */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                   <div className="border border-gray-200 rounded-xl p-4 bg-white">
-                    <div className="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center">
-                      <Film className="h-8 w-8 text-gray-400" />
+                    <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
+                      <img
+                        src="https://m.media-amazon.com/images/M/MV5BMjE4MDgwNTM2NF5BMl5BanBnXkFtZTgwMTU4NzI5NjM@._V1_SX300.jpg"
+                        alt="To All the Boys I've Loved Before"
+                        className="w-full h-full object-cover rounded-lg"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.classList.add('bg-gradient-to-br', 'from-gray-100', 'to-gray-200', 'flex', 'items-center', 'justify-center');
+                            const icon = document.createElement('div');
+                            icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect width="18" height="18" x="2" y="2" rx="2"/><path d="m10 8 4 4-4 4"/></svg>';
+                            parent.appendChild(icon);
+                          }
+                        }}
+                      />
                     </div>
                     <p className="font-medium text-sm text-black truncate">To All the Boys I've Loved Before</p>
                     <div className="flex items-center gap-2 mt-1">
@@ -388,23 +403,36 @@ export default function PublicTitleDetailPage() {
             ) : (
               /* Anonymous: blurred format bars */
               <div className="space-y-4">
-                {FORMAT_LABELS.map(f => (
+                {FORMAT_LABELS.map((f, idx) => (
                   <div key={f.key} className="flex items-center gap-4">
                     <div className="flex items-center gap-2 w-32 flex-shrink-0">
                       <f.icon className="h-4 w-4 text-gray-500" />
                       <span className="text-sm text-gray-700">{f.label}</span>
                     </div>
-                    <div className="flex-1 relative">
-                      <div className="h-6 bg-gray-100 rounded-full overflow-hidden blur-sm">
-                        <div
-                          className="h-full bg-gradient-to-r from-gray-300 to-gray-400 rounded-full"
-                          style={{ width: `${40 + Math.random() * 40}%` }}
-                        />
+                    {idx === 0 ? (
+                      /* Film: reveal score bar (no label) */
+                      <div className="flex-1 relative">
+                        <div className="h-6 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-black to-gray-700 rounded-full"
+                            style={{ width: '72%' }}
+                          />
+                        </div>
                       </div>
-                      <div className="absolute inset-0 flex items-center justify-end pr-2">
-                        <Lock className="h-3.5 w-3.5 text-gray-400" />
+                    ) : (
+                      /* Other formats: blurred + locked */
+                      <div className="flex-1 relative">
+                        <div className="h-6 bg-gray-100 rounded-full overflow-hidden blur-sm">
+                          <div
+                            className="h-full bg-gradient-to-r from-gray-300 to-gray-400 rounded-full"
+                            style={{ width: `${40 + Math.random() * 40}%` }}
+                          />
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-end pr-2">
+                          <Lock className="h-3.5 w-3.5 text-gray-400" />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
                 <div className="text-center mt-4">
@@ -458,19 +486,14 @@ export default function PublicTitleDetailPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-green-50 text-green-700 border-green-200">
-                    <CheckCircle className="h-3 w-3 mr-1" /> Rights Verified
-                  </Badge>
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Lock className="h-4 w-4" />
+                  <span className="text-sm font-medium">Rights Info</span>
                 </div>
-                <div className="flex items-center gap-3 blur-sm pointer-events-none">
-                  <div className="h-4 bg-gray-200 rounded w-48" />
-                  <div className="h-4 bg-gray-100 rounded w-32" />
-                </div>
+                <p className="text-sm text-gray-500">Sign in to view rights availability and licensing contacts</p>
                 <Button disabled className="rounded-full px-6 opacity-50">
                   <Lock className="h-3.5 w-3.5 mr-2" /> Contact for Licensing
                 </Button>
-                <p className="text-xs text-gray-500">Sign up to view rights holder details and contact information.</p>
               </div>
             )}
           </CardContent>
@@ -480,7 +503,7 @@ export default function PublicTitleDetailPage() {
         {!isLoggedIn && (
           <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 sm:p-10 text-center mb-12">
             <h3 className="text-xl font-semibold text-black mb-3">
-              You are 30 seconds away from the full picture on this title.
+              You are seconds away from the full picture on this title.
             </h3>
             <p className="text-gray-600 mb-6 max-w-lg mx-auto">
               <CheckCircle className="h-4 w-4 inline mr-1" />

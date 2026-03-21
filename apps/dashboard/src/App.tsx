@@ -69,6 +69,9 @@ import Design3CompsNavigator from '@/pages/preview/Design3CompsNavigator';
 // Trial pages (public, no auth required)
 import Trial from '@/pages/Trial';
 import TrialTitleDetail from '@/pages/TrialTitleDetail';
+
+// Public title detail page (no auth required, auth-aware)
+import PublicTitleDetailPage from '@/pages/PublicTitleDetailPage';
 import { TrialProvider } from '@/contexts/TrialContext';
 
 // 🚨 AUTH ISOLATION ARCHITECTURE
@@ -91,6 +94,9 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/signup/complete" element={<CompleteProfile />} />
+
+          {/* Public title detail page - No auth required, auth-aware */}
+          <Route path="/titles/:slug" element={<PublicTitleDetailPage />} />
 
           {/* Public trial routes - No auth required */}
           <Route

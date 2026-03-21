@@ -1,7 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster, TooltipProvider } from "@kstorybridge/ui";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 import AnalyticsProvider from "./components/AnalyticsProvider";
 import SessionTracker from "./components/SessionTracker";
@@ -40,6 +40,16 @@ const HowToProducersPage = lazy(() => import("./pages/HowToProducersPage"));
 const DiaryPage = lazy(() => import("./pages/DiaryPage"));
 const DiaryEntryPage = lazy(() => import("./pages/DiaryEntryPage"));
 const FormatSpotlightPage = lazy(() => import("./pages/FormatSpotlightPage"));
+
+// Redirect /titles/:slug to dashboard app
+const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || 'https://dashboard.kstorybridge.com';
+function TitleSlugRedirect() {
+  const { slug } = useParams();
+  useEffect(() => {
+    window.location.replace(`${DASHBOARD_URL}/titles/${slug}`);
+  }, [slug]);
+  return null;
+}
 
 // Loading fallback component
 const PageLoader = () => (
@@ -86,7 +96,7 @@ const App = () => (
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/signup" element={<SigninPage />} />
           <Route path="/news" element={<NewsPage />} />
-          <Route path="/titles/:slug" element={<PublicTitlePage />} />
+          <Route path="/titles/:slug" element={<TitleSlugRedirect />} />
           <Route path="/title/:titleId" element={<TitleDetailPage />} />
           <Route path="/sample/werewolves-going-crazy-over-me" element={<SampleTitleDetailPage />} />
           

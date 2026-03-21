@@ -132,13 +132,28 @@ feature branch → v2 (direct push OK) → main (PR required)
 **Website staging:** Does not exist — website only deploys from `main`.
 **Supabase:** `supabase db push` and `supabase functions deploy` hit **production directly**. No staging DB.
 
+### ⚠️ Deployment Gate — MANDATORY (Ground Rule set 2026-03-21)
+
+**Neo and Claude Code must NEVER push to staging or production without explicit instruction.**
+
+The required flow is:
+1. **Develop on localhost** — build and iterate locally, run TypeScript + unit tests
+2. **Sungho explicitly says "push to staging"** → push to `v2`, run tests against staging
+3. **Sungho explicitly says "push to production" / opens PR** → merge to `main`, run tests in production
+
+**Default behavior: stop at localhost.** Do not push anywhere until told to.
+
 ### Feature branch workflow
 ```bash
 git checkout main && git pull
 git checkout -b feat/your-feature
-# ... work ...
-git push origin feat/your-feature:v2  # deploy to staging for testing
-# when ready: open PR feat/your-feature → main
+# ... develop and test locally ...
+
+# WAIT for Sungho to say "push to staging" before this:
+git push origin feat/your-feature:v2
+
+# WAIT for Sungho to open/approve PR before this:
+# PR: feat/your-feature → main
 ```
 
 ---

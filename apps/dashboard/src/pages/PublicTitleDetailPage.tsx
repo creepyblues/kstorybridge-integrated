@@ -343,11 +343,16 @@ export default function PublicTitleDetailPage() {
                   <div className="border border-gray-200 rounded-xl p-4 bg-white">
                     <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
                       <img
-                        src="https://m.media-amazon.com/images/M/MV5BMjE4MDgwNTM2NF5BMl5BanBnXkFtZTgwMTU4NzI5NjM@._V1_SX300.jpg"
+                        src="https://image.tmdb.org/t/p/w300/e0c64q3OKbCXpKfJcMbSjOEsuQV.jpg"
                         alt="To All the Boys I've Loved Before"
                         className="w-full h-full object-cover rounded-lg"
                         onError={(e) => {
                           const target = e.currentTarget;
+                          if (!target.dataset.fallback) {
+                            target.dataset.fallback = '1';
+                            target.src = 'https://img.omdbapi.com/?apikey=trilogy&i=tt3846674';
+                            return;
+                          }
                           target.style.display = 'none';
                           const parent = target.parentElement;
                           if (parent) {
@@ -410,14 +415,15 @@ export default function PublicTitleDetailPage() {
                       <span className="text-sm text-gray-700">{f.label}</span>
                     </div>
                     {idx === 0 ? (
-                      /* Film: reveal score bar (no label) */
-                      <div className="flex-1 relative">
-                        <div className="h-6 bg-gray-100 rounded-full overflow-hidden">
+                      /* Film: reveal score bar with label */
+                      <div className="flex-1 flex items-center gap-3">
+                        <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-black to-gray-700 rounded-full"
                             style={{ width: '72%' }}
                           />
                         </div>
+                        <span className="text-sm font-semibold text-black w-10 text-right">72%</span>
                       </div>
                     ) : (
                       /* Other formats: blurred + locked */
@@ -485,15 +491,12 @@ export default function PublicTitleDetailPage() {
                 </a>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center gap-2 text-gray-500">
                   <Lock className="h-4 w-4" />
                   <span className="text-sm font-medium">Rights Info</span>
                 </div>
                 <p className="text-sm text-gray-500">Sign in to view rights availability and licensing contacts</p>
-                <Button disabled className="rounded-full px-6 opacity-50">
-                  <Lock className="h-3.5 w-3.5 mr-2" /> Contact for Licensing
-                </Button>
               </div>
             )}
           </CardContent>

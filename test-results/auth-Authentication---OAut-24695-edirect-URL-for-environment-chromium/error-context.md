@@ -1,56 +1,46 @@
 # Page snapshot
 
 ```yaml
-- generic [active] [ref=e1]:
-  - link "Skip to content":
-    - /url: "#geist-skip-nav"
-  - generic [ref=e2]:
-    - banner [ref=e3]:
-      - link "Vercel logo":
-        - /url: /home
-        - button:
-          - img [ref=e4] [cursor=pointer]:
-            - img [ref=e5]
-      - navigation [ref=e9]:
-        - navigation [ref=e10]:
-          - link "Sign Up" [ref=e11] [cursor=pointer]:
-            - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fdashboard-staging.vercel.app%252Fsignup%252Fbuyer%26nonce%3D0b4da0f54558a01eb91f6cbae425163b97cb00000e5b44a21c4b93014c8e3818
-            - paragraph [ref=e13]: Sign Up
-    - main [ref=e14]:
-      - generic [ref=e15]:
-        - heading "Log in to Vercel" [level=1] [ref=e18]
-        - generic [ref=e19]:
-          - generic [ref=e20]:
-            - textbox "Email Address" [disabled] [ref=e22]
-            - button "Continue with Email" [disabled] [ref=e24]:
-              - generic [ref=e25]: Continue with Email
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - progressbar [ref=e6]
+      - main [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e18]:
+            - img [ref=e20]
+            - generic [ref=e25]: Sign in with Google
           - generic [ref=e26]:
-            - button "Continue with Google" [disabled] [ref=e27]:
-              - generic [ref=e44]: Continue with Google
-            - button "Continue with GitHub" [disabled] [ref=e45]:
-              - img [ref=e47]
-              - generic [ref=e51]: Continue with GitHub
-            - button "Continue with SAML SSO" [disabled] [ref=e53]:
-              - img [ref=e55]
-              - generic [ref=e57]: Continue with SAML SSO
-            - button "Continue with Passkey" [disabled] [ref=e58]:
-              - img [ref=e60]
-              - generic [ref=e62]: Continue with Passkey
-            - button "Show other options" [ref=e63] [cursor=pointer]:
-              - generic [ref=e64]: Show other options
-        - paragraph [ref=e65]:
-          - text: Don't have an account?
-          - link "Sign Up" [ref=e66] [cursor=pointer]:
-            - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%3A%2F%2Fdashboard-staging.vercel.app%2Fsignup%2Fbuyer%26nonce%3D0b4da0f54558a01eb91f6cbae425163b97cb00000e5b44a21c4b93014c8e3818
-      - generic [ref=e69]:
-        - link "Terms" [ref=e70] [cursor=pointer]:
-          - /url: /legal/terms
-        - link "Privacy Policy" [ref=e71] [cursor=pointer]:
-          - /url: /legal/privacy-policy
-  - alert [ref=e72]
-  - generic:
-    - generic:
-      - generic:
+            - heading "Sign in" [level=1] [ref=e27]
+            - generic [ref=e29]:
+              - text: to continue to
+              - button "dlrnrgcoguxlkkcitlpd.supabase.co" [ref=e30] [cursor=pointer]
+        - generic [ref=e38]:
+          - generic [ref=e43]:
+            - textbox "Email or phone" [active] [ref=e44]
+            - generic: Email or phone
+          - button "Forgot email?" [ref=e48] [cursor=pointer]
+        - generic [ref=e50]:
+          - button "Next" [ref=e54]:
+            - generic [ref=e57]: Next
+          - button "Create account" [ref=e62]:
+            - generic [ref=e65]: Create account
+    - contentinfo [ref=e69]:
+      - combobox "Change language English (United States)" [ref=e73] [cursor=pointer]:
+        - generic:
+          - generic: English (United States)
         - generic:
           - img
+      - list [ref=e75]:
+        - listitem [ref=e76]:
+          - link "Help" [ref=e77] [cursor=pointer]:
+            - /url: https://support.google.com/accounts?hl=en-US&p=account_iph
+        - listitem [ref=e78]:
+          - link "Privacy" [ref=e79] [cursor=pointer]:
+            - /url: https://accounts.google.com/TOS?loc=US&hl=en-US&privacy=true
+        - listitem [ref=e80]:
+          - link "Terms" [ref=e81] [cursor=pointer]:
+            - /url: https://accounts.google.com/TOS?loc=US&hl=en-US
+  - iframe [ref=e82]:
+    
 ```

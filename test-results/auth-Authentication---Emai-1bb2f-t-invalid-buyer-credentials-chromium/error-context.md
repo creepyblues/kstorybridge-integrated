@@ -1,57 +1,43 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e1]:
-  - link "Skip to content":
-    - /url: "#geist-skip-nav"
+- generic [active] [ref=e1]:
   - generic [ref=e2]:
-    - banner [ref=e3]:
-      - link "Vercel logo":
-        - /url: /home
-        - button:
-          - img [ref=e4] [cursor=pointer]:
-            - img [ref=e5]
-      - navigation [ref=e9]:
-        - navigation [ref=e10]:
-          - link "Sign Up" [ref=e11] [cursor=pointer]:
-            - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fdashboard-staging.vercel.app%252Fsignin%26nonce%3Dce78e1a5e0d694046aff733e1a0f5adde66a41c1b001e7443dba7426c43d25a1
-            - paragraph [ref=e13]: Sign Up
-    - main [ref=e14]:
-      - generic [ref=e15]:
-        - heading "Log in to Vercel" [level=1] [ref=e18]
-        - generic [ref=e19]:
-          - generic [ref=e20]:
-            - textbox "Email Address" [active] [ref=e22]: invalid@example.com
-            - button "Continue with Email" [ref=e24] [cursor=pointer]:
-              - generic [ref=e25]: Continue with Email
-          - generic [ref=e26]:
-            - button "Continue with Google" [ref=e27] [cursor=pointer]:
-              - img [ref=e29]
-              - generic [ref=e35]: Continue with Google
-            - button "Continue with GitHub" [ref=e36] [cursor=pointer]:
-              - img [ref=e38]
-              - generic [ref=e42]: Continue with GitHub
-            - button "Continue with SAML SSO" [ref=e44] [cursor=pointer]:
-              - img [ref=e46]
-              - generic [ref=e48]: Continue with SAML SSO
-            - button "Continue with Passkey" [ref=e49] [cursor=pointer]:
-              - img [ref=e51]
-              - generic [ref=e53]: Continue with Passkey
-            - button "Show other options" [ref=e54] [cursor=pointer]:
-              - generic [ref=e55]: Show other options
-        - paragraph [ref=e56]:
-          - text: Don't have an account?
-          - link "Sign Up" [ref=e57] [cursor=pointer]:
-            - /url: /signup?email=invalid%40example.com&next=%2Fsso-api%3Furl%3Dhttps%3A%2F%2Fdashboard-staging.vercel.app%2Fsignin%26nonce%3Dce78e1a5e0d694046aff733e1a0f5adde66a41c1b001e7443dba7426c43d25a1
-      - generic [ref=e60]:
-        - link "Terms" [ref=e61] [cursor=pointer]:
-          - /url: /legal/terms
-        - link "Privacy Policy" [ref=e62] [cursor=pointer]:
-          - /url: /legal/privacy-policy
-  - alert [ref=e63]
-  - generic:
-    - generic:
-      - generic:
-        - generic:
-          - img
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - heading "Producer Sign In" [level=3] [ref=e6]
+        - paragraph [ref=e7]: Welcome back! Sign in to your producer account.
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - text: Email
+            - textbox "Email" [ref=e11]:
+              - /placeholder: you@company.com
+              - text: invalid@example.com
+          - generic [ref=e12]:
+            - text: Password
+            - textbox "Password" [ref=e13]:
+              - /placeholder: ••••••••
+              - text: wrong-password
+          - button "Sign In" [ref=e14] [cursor=pointer]
+        - generic [ref=e19]: or
+        - button "Continue with Google" [ref=e20] [cursor=pointer]:
+          - img [ref=e21]
+          - text: Continue with Google
+        - link "Forgot your password?" [ref=e27] [cursor=pointer]:
+          - /url: /forgot-password
+        - generic [ref=e28]:
+          - text: Don't have a producer account?
+          - link "Sign up here" [ref=e29] [cursor=pointer]:
+            - /url: /signup
+    - region "Notifications (F8)":
+      - list [ref=e31]:
+        - status [ref=e32]:
+          - img [ref=e34]
+          - generic [ref=e36]:
+            - generic [ref=e37]: Sign In Failed
+            - generic [ref=e38]: Invalid login credentials
+          - button [ref=e39] [cursor=pointer]:
+            - img [ref=e40]
+  - status [ref=e45]: Notification Sign In FailedInvalid login credentials
 ```

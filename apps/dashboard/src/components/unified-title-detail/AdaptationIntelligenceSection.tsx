@@ -82,8 +82,8 @@ export function AdaptationIntelligenceSection({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
           {/* One visible static comp card */}
           <div className="border border-gray-200 rounded-xl p-4 bg-white">
-            <div className="w-full h-32 rounded-lg mb-3 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-              <span className="text-xs text-gray-400">Poster</span>
+            <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
+              <img src="https://image.tmdb.org/t/p/w300/e0c64q3OKbCXpKfJcMbSjOEsuQV.jpg" alt="To All the Boys I Have Loved Before" className="w-full h-full object-cover rounded-lg" />
             </div>
             <p className="font-medium text-sm text-black truncate">To All the Boys I've Loved Before</p>
             <div className="flex items-center gap-2 mt-1">

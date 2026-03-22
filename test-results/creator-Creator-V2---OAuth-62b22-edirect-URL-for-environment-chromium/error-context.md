@@ -15,16 +15,16 @@
             - generic [ref=e29]:
               - text: to continue to
               - button "dlrnrgcoguxlkkcitlpd.supabase.co" [ref=e30] [cursor=pointer]
-        - generic [ref=e39]:
-          - generic [ref=e44]:
-            - textbox "Email or phone" [active] [ref=e45]
+        - generic [ref=e38]:
+          - generic [ref=e43]:
+            - textbox "Email or phone" [active] [ref=e44]
             - generic: Email or phone
-          - button "Forgot email?" [ref=e49] [cursor=pointer]
-        - generic [ref=e51]:
-          - button "Next" [ref=e55]:
-            - generic [ref=e58]: Next
-          - button "Create account" [ref=e63]:
-            - generic [ref=e66]: Create account
+          - button "Forgot email?" [ref=e48] [cursor=pointer]
+        - generic [ref=e50]:
+          - button "Next" [ref=e54]:
+            - generic [ref=e57]: Next
+          - button "Create account" [ref=e62]:
+            - generic [ref=e65]: Create account
     - contentinfo [ref=e69]:
       - combobox "Change language English (United States)" [ref=e73] [cursor=pointer]:
         - generic:

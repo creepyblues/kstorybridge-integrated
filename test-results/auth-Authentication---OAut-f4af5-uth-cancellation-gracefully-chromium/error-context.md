@@ -1,57 +1,46 @@
 # Page snapshot
 
 ```yaml
-- generic [active] [ref=e1]:
-  - link "Skip to content":
-    - /url: "#geist-skip-nav"
-  - generic [ref=e2]:
-    - banner [ref=e3]:
-      - link "Vercel logo":
-        - /url: /home
-        - button:
-          - img [ref=e4] [cursor=pointer]:
-            - img [ref=e5]
-      - navigation [ref=e9]:
-        - navigation [ref=e10]:
-          - link "Sign Up" [ref=e11] [cursor=pointer]:
-            - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fdashboard-staging.vercel.app%252Fsignup%252Fbuyer%26nonce%3D0c47012ef4d3b39124de064785dee10eaa4c6addccda5511a579759b0edc1c01
-            - paragraph [ref=e13]: Sign Up
-    - main [ref=e14]:
-      - generic [ref=e15]:
-        - heading "Log in to Vercel" [level=1] [ref=e18]
-        - generic [ref=e19]:
-          - generic [ref=e20]:
-            - textbox "Email Address" [ref=e22]
-            - button "Continue with Email" [ref=e24] [cursor=pointer]:
-              - generic [ref=e25]: Continue with Email
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - progressbar [ref=e6]
+      - main [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e18]:
+            - img [ref=e20]
+            - generic [ref=e25]: Sign in with Google
           - generic [ref=e26]:
-            - button "Continue with Google" [ref=e27] [cursor=pointer]:
-              - img [ref=e29]
-              - generic [ref=e35]: Continue with Google
-            - button "Continue with GitHub" [ref=e36] [cursor=pointer]:
-              - img [ref=e38]
-              - generic [ref=e42]: Continue with GitHub
-            - button "Continue with SAML SSO" [ref=e44] [cursor=pointer]:
-              - img [ref=e46]
-              - generic [ref=e48]: Continue with SAML SSO
-            - button "Continue with Passkey" [ref=e49] [cursor=pointer]:
-              - img [ref=e51]
-              - generic [ref=e53]: Continue with Passkey
-            - button "Show other options" [ref=e54] [cursor=pointer]:
-              - generic [ref=e55]: Show other options
-        - paragraph [ref=e56]:
-          - text: Don't have an account?
-          - link "Sign Up" [ref=e57] [cursor=pointer]:
-            - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%3A%2F%2Fdashboard-staging.vercel.app%2Fsignup%2Fbuyer%26nonce%3D0c47012ef4d3b39124de064785dee10eaa4c6addccda5511a579759b0edc1c01
-      - generic [ref=e60]:
-        - link "Terms" [ref=e61] [cursor=pointer]:
-          - /url: /legal/terms
-        - link "Privacy Policy" [ref=e62] [cursor=pointer]:
-          - /url: /legal/privacy-policy
-  - alert [ref=e63]
-  - generic:
-    - generic:
-      - generic:
+            - heading "Sign in" [level=1] [ref=e27]
+            - generic [ref=e29]:
+              - text: to continue to
+              - button "dlrnrgcoguxlkkcitlpd.supabase.co" [ref=e30] [cursor=pointer]
+        - generic [ref=e38]:
+          - generic [ref=e43]:
+            - textbox "Email or phone" [active] [ref=e44]
+            - generic: Email or phone
+          - button "Forgot email?" [ref=e48] [cursor=pointer]
+        - generic [ref=e50]:
+          - button "Next" [ref=e54]:
+            - generic [ref=e57]: Next
+          - button "Create account" [ref=e62]:
+            - generic [ref=e65]: Create account
+    - contentinfo [ref=e69]:
+      - combobox "Change language English (United States)" [ref=e73] [cursor=pointer]:
+        - generic:
+          - generic: English (United States)
         - generic:
           - img
+      - list [ref=e75]:
+        - listitem [ref=e76]:
+          - link "Help" [ref=e77] [cursor=pointer]:
+            - /url: https://support.google.com/accounts?hl=en-US&p=account_iph
+        - listitem [ref=e78]:
+          - link "Privacy" [ref=e79] [cursor=pointer]:
+            - /url: https://accounts.google.com/TOS?loc=US&hl=en-US&privacy=true
+        - listitem [ref=e80]:
+          - link "Terms" [ref=e81] [cursor=pointer]:
+            - /url: https://accounts.google.com/TOS?loc=US&hl=en-US
+  - iframe [ref=e82]:
+    
 ```

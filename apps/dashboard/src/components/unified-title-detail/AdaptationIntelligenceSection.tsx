@@ -83,7 +83,7 @@ export function AdaptationIntelligenceSection({
           {/* One visible static comp card */}
           <div className="border border-gray-200 rounded-xl p-4 bg-white">
             <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
-              <img src="https://image.tmdb.org/t/p/w300/e0c64q3OKbCXpKfJcMbSjOEsuQV.jpg" alt="To All the Boys I Have Loved Before" className="w-full h-full object-cover rounded-lg" />
+              <img src="https://m.media-amazon.com/images/M/MV5BNjE1NmQ0OGYtZGNlNS00ZTlhLWE4YjItODkwYjc5NjBkYThhXkEyXkFqcGc@._V1_SX300.jpg" alt="To All the Boys" style={{width: "100%", height: "100%", objectFit: "cover", borderRadius: "0.5rem"}} />
             </div>
             <p className="font-medium text-sm text-black truncate">To All the Boys I've Loved Before</p>
             <div className="flex items-center gap-2 mt-1">

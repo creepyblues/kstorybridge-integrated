@@ -78,6 +78,7 @@ export class EmailService {
     requestorName: string;
     titleName: string;
     titleId: string;
+    titleSlug?: string;
     requestDate: string;
   }): Promise<{ success: boolean; messageId?: string; error?: string }> {
     const emailBody = `
@@ -88,7 +89,7 @@ Title: ${data.titleName}
 Title ID: ${data.titleId}
 Date: ${data.requestDate}
 
-Dashboard Link: https://dashboard-v2.kstorybridge.com/buyers/titles/${data.titleId}
+Dashboard Link: https://dashboard-v2.kstorybridge.com/buyers/titles/${data.titleSlug || data.titleId}
     `.trim();
 
     return this.sendEmail({
@@ -155,6 +156,7 @@ Dashboard Link: https://dashboard-v2.kstorybridge.com/buyers/titles/${data.title
     requestorName: string;
     titleName: string;
     titleId: string;
+    titleSlug?: string;
     message: string;
     requestDate: string;
   }): Promise<{ success: boolean; messageId?: string; error?: string }> {
@@ -169,7 +171,7 @@ Date: ${data.requestDate}
 Message:
 ${data.message}
 
-Dashboard Link: https://dashboard-v2.kstorybridge.com/buyers/titles/${data.titleId}
+Dashboard Link: https://dashboard-v2.kstorybridge.com/buyers/titles/${data.titleSlug || data.titleId}
     `.trim();
 
     return this.sendEmail({

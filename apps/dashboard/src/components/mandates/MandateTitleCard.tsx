@@ -21,7 +21,7 @@ export default function MandateTitleCard({ match }: MandateTitleCardProps) {
     );
 
     // Open title detail page in new tab
-    window.open(`/buyers/titles/${match.title_id}`, '_blank');
+    window.open(`/buyers/titles/${match.slug || match.title_id}`, '_blank');
   };
 
   // Get gradient badge styling based on match score

@@ -37,7 +37,7 @@ export default function MatchDetailModal({ match, onClose }: MatchDetailModalPro
   const score = getMatchScore(match);
 
   const handleViewFullTitle = () => {
-    navigate(`/buyers/titles/${match.title_id}`);
+    navigate(`/buyers/titles/${match.slug || match.title_id}`);
   };
 
   // Get dimension score bar color

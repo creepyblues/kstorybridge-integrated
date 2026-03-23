@@ -1,9 +1,9 @@
 /**
  * UnifiedTitleDetailPage
  *
- * Authenticated buyer title detail at /buyers/titles/:titleId.
+ * Authenticated buyer title detail at /buyers/titles/:slug.
  * Uses UnifiedTitleDetail wrapped in BuyerLayout (sidebar).
- * Fetches by titleId (UUID) from titles table.
+ * Fetches by slug from titles table.
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -20,7 +20,7 @@ import { UnifiedTitleDetail } from '@/components/unified-title-detail';
 import { trackTitleDetailView, trackFavorite, trackFeatureUsage } from '@/utils/analytics';
 
 export default function UnifiedTitleDetailPage() {
-  const { titleId } = useParams<{ titleId: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -52,10 +52,10 @@ export default function UnifiedTitleDetailPage() {
 
   useEffect(() => {
     const fetchTitle = async () => {
-      if (!titleId) return;
+      if (!slug) return;
       setLoading(true);
       try {
-        const data = await titlesService.getTitleById(titleId);
+        const data = await titlesService.getTitleBySlug(slug);
         setTitle(data);
 
         if (data && !hasTrackedView.current) {
@@ -76,7 +76,7 @@ export default function UnifiedTitleDetailPage() {
         }
 
         if (data && user?.id) {
-          const favorited = await titlesService.isFavorited(titleId, user.id);
+          const favorited = await titlesService.isFavorited(data.title_id, user.id);
           setIsFavorited(favorited);
         }
       } catch (error: unknown) {
@@ -89,7 +89,7 @@ export default function UnifiedTitleDetailPage() {
     };
 
     fetchTitle();
-  }, [titleId, user?.id, toast]);
+  }, [slug, user?.id, toast]);
 
   const handleFavoriteToggle = async () => {
     if (!title || !user?.id) return;

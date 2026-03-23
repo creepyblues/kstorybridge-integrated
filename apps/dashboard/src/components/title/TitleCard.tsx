@@ -14,6 +14,7 @@ import {
 // Chat service title format
 interface ChatTitle {
   id: string;
+  slug?: string;
   nameEn?: string;
   nameKr?: string;
   genre?: string;
@@ -47,6 +48,7 @@ function normalizeTitle(title: Title | ChatTitle): Title {
   const chatTitle = title as ChatTitle;
   return {
     title_id: chatTitle.id,
+    slug: chatTitle.slug,
     title_name_en: chatTitle.nameEn,
     title_name_kr: chatTitle.nameKr,
     genre: chatTitle.genre,
@@ -96,10 +98,11 @@ export function TitleCard({ title: rawTitle, variant = 'grid', onRemove, removin
     );
 
     // Open in new tab for chat, navigate in same tab for other sources
+    const titleSlug = title.slug || title.title_id;
     if (source === 'chat') {
-      window.open(`/buyers/titles/${title.title_id}`, '_blank');
+      window.open(`/buyers/titles/${titleSlug}`, '_blank');
     } else {
-      navigate(`/buyers/titles/${title.title_id}`, { state: { from: source } });
+      navigate(`/buyers/titles/${titleSlug}`, { state: { from: source } });
     }
   };
 

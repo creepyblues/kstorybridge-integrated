@@ -173,7 +173,7 @@ function App() {
             }
           />
           <Route
-            path="/buyers/titles/:titleId"
+            path="/buyers/titles/:slug"
             element={
               <TierProvider>
                 <ProtectedRoute>

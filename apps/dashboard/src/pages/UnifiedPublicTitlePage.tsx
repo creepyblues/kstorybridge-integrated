@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,8 @@ export default function UnifiedPublicTitlePage() {
   const { slug } = useParams<{ slug: string }>();
   const { user, loading: authLoading } = useAuth();
 
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState<PublicTitle | Title | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,16 +50,9 @@ export default function UnifiedPublicTitlePage() {
       setLoading(true);
 
       if (isLoggedIn) {
-        const query = supabase
-          .from('titles' as any)
-          .select('*') as any;
-        const { data, error: fetchError } = await query
-          .eq('slug', s)
-          .single() as { data: Title | null; error: any };
-
-        if (fetchError) throw fetchError;
-        if (!data) throw new Error('Not found');
-        setTitle(data);
+        // Redirect logged-in users to dashboard title page with sidebar
+        navigate(`/buyers/titles/${s}`, { replace: true });
+        return;
       } else {
         const query = supabase
           .from('public_titles' as any)

@@ -129,11 +129,6 @@ export function HeroSection({
                 {isFavorited ? 'Saved' : 'Save'}
               </Button>
             )}
-            <Link to="/buyers/home">
-              <Button className="bg-black hover:bg-gray-800 text-white rounded-full px-8 py-3 text-base font-medium">
-                Go to Dashboard
-              </Button>
-            </Link>
           </div>
         ) : (
           <div>

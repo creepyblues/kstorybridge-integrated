@@ -3,6 +3,9 @@
  *
  * Public title detail at /titles/:slug — no auth required, auth-aware.
  * Uses UnifiedTitleDetail with PublicLayout (minimal header, no sidebar).
+ *
+ * Auth redirect: logged-in users are redirected to /buyers/titles/:slug.
+ * Sign-in redirect: stores return URL so user lands back on the title after login.
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -84,6 +87,10 @@ export default function UnifiedPublicTitlePage() {
   }, [title?.title_id]);
 
   const handleCtaClick = (position: string) => {
+    // Store return URL so user lands back on title after signup
+    if (slug) {
+      sessionStorage.setItem('redirect_after_login', '/buyers/titles/' + slug);
+    }
     trackPublicTitleEvent('title_cta_clicked', {
       title_slug: slug || '',
       cta_position: position,
@@ -91,9 +98,16 @@ export default function UnifiedPublicTitlePage() {
     });
   };
 
+  // Store return URL for sign-in redirect
+  const handleSignInClick = () => {
+    if (slug) {
+      sessionStorage.setItem('redirect_after_login', '/buyers/titles/' + slug);
+    }
+  };
+
   if (loading || authLoading) {
     return (
-      <PublicLayout isLoggedIn={false} user={null}>
+      <PublicLayout isLoggedIn={false} user={null} onSignInClick={handleSignInClick}>
         <div className="max-w-5xl mx-auto px-4 py-20 text-center text-gray-500">Loading...</div>
       </PublicLayout>
     );
@@ -101,7 +115,7 @@ export default function UnifiedPublicTitlePage() {
 
   if (error || !title) {
     return (
-      <PublicLayout isLoggedIn={false} user={null}>
+      <PublicLayout isLoggedIn={false} user={null} onSignInClick={handleSignInClick}>
         <div className="max-w-5xl mx-auto px-4 py-20 text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Title Not Found</h1>
           <p className="text-gray-500">This title may have been removed or the link is invalid.</p>
@@ -111,7 +125,7 @@ export default function UnifiedPublicTitlePage() {
   }
 
   return (
-    <PublicLayout isLoggedIn={isLoggedIn} user={user}>
+    <PublicLayout isLoggedIn={isLoggedIn} user={user} onSignInClick={handleSignInClick}>
       <UnifiedTitleDetail
         title={title}
         authState={isLoggedIn ? 'authenticated' : 'anon'}
@@ -143,10 +157,12 @@ function PublicLayout({
   children,
   isLoggedIn,
   user,
+  onSignInClick,
 }: {
   children: React.ReactNode;
   isLoggedIn: boolean;
   user: any;
+  onSignInClick?: () => void;
 }) {
   const websiteUrl = WEBSITE_URL;
 
@@ -176,7 +192,7 @@ function PublicLayout({
                   </Link>
                 </>
               ) : (
-                <Link to="/signin">
+                <Link to="/signin" onClick={onSignInClick}>
                   <Button variant="outline" className="border-gray-300 hover:bg-gray-100 rounded-full text-sm">
                     Sign In
                   </Button>

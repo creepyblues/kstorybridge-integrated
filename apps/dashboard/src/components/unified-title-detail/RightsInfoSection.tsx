@@ -70,11 +70,6 @@ export function RightsInfoSection({ authState, title, onCtaClick }: RightsInfoSe
             {!hasRightsAvailable && fullTitle.rights && (
               <p className="text-gray-600">{fullTitle.rights}</p>
             )}
-            <a href="mailto:contact@kstorybridge.com?subject=Licensing Inquiry">
-              <Button className="bg-black hover:bg-gray-800 text-white rounded-full px-6 mt-2">
-                Contact for Licensing
-              </Button>
-            </a>
           </div>
         </CardContent>
       </Card>

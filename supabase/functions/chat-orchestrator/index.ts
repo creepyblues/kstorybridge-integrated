@@ -47,6 +47,7 @@ interface UserProfile {
 
 interface VectorSearchResult {
   title_id: string;
+  slug?: string;
   title_name_en?: string;
   title_name_kr?: string;
   synopsis?: string;
@@ -696,6 +697,7 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
                   },
                   topTitles: searchResults.slice(0, 10).map(r => ({
                     title_id: r.title_id,
+                    slug: r.slug,
                     title_name_en: r.title_name_en,
                     title_name_kr: r.title_name_kr,
                     title_image: r.title_image,
@@ -1127,6 +1129,7 @@ async function performKeywordSearch(
       .from('titles')
       .select(`
         title_id,
+        slug,
         title_name_en,
         title_name_kr,
         synopsis,
@@ -1316,6 +1319,7 @@ async function executeCompsSearch(
     // Convert TitleMatchV2 results to VectorSearchResult format
     const results: VectorSearchResult[] = (data.results || []).map((match: TitleMatchV2) => ({
       title_id: match.title_id,
+      slug: match.slug,
       title_name_en: match.title_name_en,
       title_name_kr: match.title_name_kr,
       synopsis: match.synopsis,
@@ -1379,6 +1383,7 @@ async function executeMandateSearch(
     // Convert mandate results to VectorSearchResult format
     const results: VectorSearchResult[] = (data.results || []).map((match: any) => ({
       title_id: match.title_id,
+      slug: match.slug,
       title_name_en: match.title_name_en,
       title_name_kr: match.title_name_kr,
       synopsis: match.synopsis,

@@ -111,7 +111,7 @@ export default function Chat() {
         debug.log('📚 Loading title cache for fuzzy matching...');
         const { data: allTitles, error: titlesError } = await supabase
           .from('titles')
-          .select('title_id, title_name_en, title_name_kr')
+          .select('title_id, slug, title_name_en, title_name_kr')
           .order('created_at', { ascending: false })
           .limit(TITLE_CACHE_SIZE);
 

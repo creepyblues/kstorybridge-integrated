@@ -191,7 +191,7 @@ export async function getFormatSpotlightData(
   const titleIds = filtered.map((r) => r.title_id);
   const { data: titles, error: titlesError } = await supabase
     .from('titles')
-    .select('title_id, title_name_en, title_name_kr, title_image, genre, content_format, tone, story_author, art_author, rating, views')
+    .select('title_id, slug, title_name_en, title_name_kr, title_image, genre, content_format, tone, story_author, art_author, rating, views')
     .in('title_id', titleIds);
 
   if (titlesError) {

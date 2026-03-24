@@ -389,6 +389,7 @@ serve(async (req) => {
           if (!candidate) return null
           return {
             ...ranking,
+            slug: candidate.slug,
             title_image: candidate.title_image,
             synopsis: candidate.synopsis,
             genre: candidate.genre || [],
@@ -771,6 +772,7 @@ function combineEmbeddings(
 
 interface CandidateWithPriority {
   title_id: string;
+  slug?: string;
   title_name_en: string;
   title_name_kr: string;
   synopsis: string;
@@ -1003,6 +1005,7 @@ async function llmRerank(
 
       return {
         title_id: candidate.title_id,
+        slug: candidate.slug,
         title_name_en: candidate.title_name_en,
         title_name_kr: candidate.title_name_kr,
         overall_match_score: overallScore,

@@ -99,8 +99,8 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
     return maxLength === 0 ? 1 : 1 - distance / maxLength;
   };
 
-  // Helper function to find title ID by title name from available title data
-  const findTitleIdByName = (titleName: string): string | null => {
+  // Helper function to find title slug (or ID fallback) by title name from available title data
+  const findTitleSlugByName = (titleName: string): string | null => {
     // Clean the title name by extracting from markdown links and normalizing
     const cleanedName = titleName
       .replace(/^\[([^\]]+)\]\([^)]*\)$/, '$1')  // Extract title from [title](url) markdown links
@@ -129,7 +129,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
         return titleEn === cleanedName || titleKr === cleanedName;
       });
 
-      if (exactMatch) return exactMatch.title_id;
+      if (exactMatch) return exactMatch.slug || exactMatch.title_id;
 
       // Try case-insensitive match
       const caseInsensitiveMatch = titleData.find(title => {
@@ -139,7 +139,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
         return titleEn === searchName || titleKr === searchName;
       });
 
-      if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
+      if (caseInsensitiveMatch) return caseInsensitiveMatch.slug || caseInsensitiveMatch.title_id;
     }
 
     // Then, search across ALL messages' titles (for cross-references)
@@ -164,7 +164,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
           return titleEn === cleanedName || titleKr === cleanedName;
         });
 
-        if (exactMatch) return exactMatch.title_id;
+        if (exactMatch) return exactMatch.slug || exactMatch.title_id;
 
         // Try case-insensitive match
         const caseInsensitiveMatch = uniqueTitles.find(title => {
@@ -174,7 +174,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
           return titleEn === searchName || titleKr === searchName;
         });
 
-        if (caseInsensitiveMatch) return caseInsensitiveMatch.title_id;
+        if (caseInsensitiveMatch) return caseInsensitiveMatch.slug || caseInsensitiveMatch.title_id;
 
         // Try partial match (contains) - last resort
         const partialMatch = uniqueTitles.find(title => {
@@ -184,7 +184,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
           return titleEn?.includes(searchName) || titleKr?.includes(searchName);
         });
 
-        if (partialMatch) return partialMatch.title_id;
+        if (partialMatch) return partialMatch.slug || partialMatch.title_id;
       }
     }
 
@@ -208,7 +208,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
 
       if (exactCacheMatch) {
         debug.log('✅ Found exact match in title cache:', exactCacheMatch.title_name_en || exactCacheMatch.title_name_kr);
-        return exactCacheMatch.title_id;
+        return exactCacheMatch.slug || exactCacheMatch.title_id;
       }
 
       // Try case-insensitive match in cache
@@ -221,7 +221,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
 
       if (caseInsensitiveCacheMatch) {
         debug.log('✅ Found case-insensitive match in title cache:', caseInsensitiveCacheMatch.title_name_en || caseInsensitiveCacheMatch.title_name_kr);
-        return caseInsensitiveCacheMatch.title_id;
+        return caseInsensitiveCacheMatch.slug || caseInsensitiveCacheMatch.title_id;
       }
 
       // FUZZY MATCHING - Final fallback using Levenshtein distance
@@ -246,7 +246,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
           similarity: (bestMatch.similarity * 100).toFixed(1) + '%',
           searchTerm: cleanedName
         });
-        return bestMatch.title.title_id;
+        return bestMatch.title.slug || bestMatch.title.title_id;
       }
     }
 
@@ -285,7 +285,7 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
 
     while ((quoteMatch = quoteRegex.exec(text)) !== null) {
       const quotedContent = quoteMatch[1];
-      const foundTitleId = findTitleIdByName(quotedContent);
+      const foundTitleId = findTitleSlugByName(quotedContent);
       quotedSegments.push({
         start: quoteMatch.index,
         end: quoteMatch.index + quoteMatch[0].length,
@@ -305,16 +305,18 @@ export const ConversationalMessage: React.FC<ConversationalMessageProps> = ({
       // Add titles from titleData
       if (titleData) {
         titleData.forEach(title => {
-          if (title.title_name_en) availableTitles.push({ name: title.title_name_en, titleId: title.title_id });
-          if (title.title_name_kr) availableTitles.push({ name: title.title_name_kr, titleId: title.title_id });
+          const id = title.slug || title.title_id;
+          if (title.title_name_en) availableTitles.push({ name: title.title_name_en, titleId: id });
+          if (title.title_name_kr) availableTitles.push({ name: title.title_name_kr, titleId: id });
         });
       }
 
       // Add titles from titleCache
       if (titleCache) {
         titleCache.forEach(title => {
-          if (title.title_name_en) availableTitles.push({ name: title.title_name_en, titleId: title.title_id });
-          if (title.title_name_kr) availableTitles.push({ name: title.title_name_kr, titleId: title.title_id });
+          const id = title.slug || title.title_id;
+          if (title.title_name_en) availableTitles.push({ name: title.title_name_en, titleId: id });
+          if (title.title_name_kr) availableTitles.push({ name: title.title_name_kr, titleId: id });
         });
       }
 

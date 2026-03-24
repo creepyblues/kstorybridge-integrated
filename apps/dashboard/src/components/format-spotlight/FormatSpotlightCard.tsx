@@ -8,6 +8,7 @@ import { getFitLevel, getFitLevelLabel } from '@/services/formatFitService';
 
 interface TitleData {
   title_id: string;
+  slug?: string | null;
   title_name_en: string | null;
   title_name_kr: string | null;
   title_image: string | null;
@@ -58,9 +59,9 @@ export default function FormatSpotlightCard({
 
   const handleClick = () => {
     if (onCardClick) {
-      onCardClick(title.title_id);
+      onCardClick(title.slug || title.title_id);
     } else {
-      navigate(`/buyers/titles/${title.title_id}`);
+      navigate(`/buyers/titles/${title.slug || title.title_id}`);
     }
   };
 

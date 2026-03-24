@@ -288,7 +288,7 @@ export default function WeeklyTitle() {
                 )}
                 <div className="flex-1 min-w-0">
                   <Link
-                    to={`/buyers/titles/${selectedTitle.title_id}`}
+                    to={`/buyers/titles/${selectedTitle.slug || selectedTitle.title_id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-semibold text-black truncate hover:text-hanok-teal hover:underline flex items-center gap-1"

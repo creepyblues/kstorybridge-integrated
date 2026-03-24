@@ -49,6 +49,7 @@ export interface TitleDocument {
 
 export interface Title {
   title_id: string;
+  slug?: string;
 
   // Basic Info
   title_name_en?: string;
@@ -498,6 +499,40 @@ class TitlesService {
       return data;
     } catch (error: unknown) {
       console.error('❌ Title detail service error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch a single title by slug with pitch analysis, platforms, and documents
+   */
+  async getTitleBySlug(slug: string): Promise<Title | null> {
+    try {
+      // Backward compatibility: if slug is actually a UUID, fetch by ID directly
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (uuidPattern.test(slug)) {
+        return this.getTitleById(slug);
+      }
+
+      const { data, error } = await supabase
+        .from('titles')
+        .select('title_id')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (error) {
+        console.error('❌ Error resolving slug:', error);
+        throw new Error(`Failed to resolve slug: ${error.message}`);
+      }
+
+      if (!data) {
+        console.log('ℹ️ Title not found for slug:', slug);
+        return null;
+      }
+
+      return this.getTitleById(data.title_id);
+    } catch (error: unknown) {
+      console.error('❌ Title by slug service error:', error);
       throw error;
     }
   }

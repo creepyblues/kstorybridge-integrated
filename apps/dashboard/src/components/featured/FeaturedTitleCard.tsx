@@ -16,6 +16,7 @@ interface FeaturedTitle {
   note: string | null;
   titles: {
     title_id: string;
+    slug?: string | null;
     title_name_en?: string | null;
     title_name_kr?: string;
     title_image?: string | null;
@@ -38,7 +39,7 @@ export default function FeaturedTitleCard({ featured }: FeaturedTitleCardProps) 
   const title = featured.titles;
 
   const handleCardClick = () => {
-    navigate(`/buyers/titles/${title.title_id}`);
+    navigate(`/buyers/titles/${title.slug || title.title_id}`);
   };
 
   return (

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 
 export interface TitleMatch {
   title_id: string;
+  slug?: string;
   title_name_en: string;
   title_name_kr: string;
   match_score: number;

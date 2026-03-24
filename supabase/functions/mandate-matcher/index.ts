@@ -34,6 +34,7 @@ interface MandateMatchRequest {
 
 interface TitleMatch {
   title_id: string;
+  slug?: string;
   title_name_en: string;
   title_name_kr: string;
   match_score: number;
@@ -337,6 +338,7 @@ serve(async (req) => {
     // Step 4: Format initial results
     const initialResults: TitleMatch[] = (searchResults || []).map((result: any) => ({
       title_id: result.title_id,
+      slug: result.slug,
       title_name_en: result.title_name_en,
       title_name_kr: result.title_name_kr,
       match_score: Math.round(result.similarity * 100),

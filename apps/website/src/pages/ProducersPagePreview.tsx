@@ -87,14 +87,11 @@ const ProducersPagePreview = () => {
                 id="buyers-hero-try-ai-btn"
                 size="lg"
                 className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/signup/producer`}
+                onClick={() => { gtag && gtag('event', 'trial_cta_clicked', {page: 'producers_hero'}); window.location.href = `${import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8081'}/trial`; }}
               >
-                Experience Free Trial
+                Try it — no account needed
               </Button>
 
-              <p className="mt-4 text-sm text-midnight-ink-400">
-                No credit card required • Free to start
-              </p>
             </div>
           </div>
         </section>

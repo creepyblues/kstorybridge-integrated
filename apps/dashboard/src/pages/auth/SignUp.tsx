@@ -30,8 +30,8 @@ export default function SignUp() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const titleRedirect = params.get('title_redirect');
-    // Validate as UUID to prevent path injection
-    if (titleRedirect && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(titleRedirect)) {
+    // Validate as slug (alphanumeric, hyphens) or UUID to prevent path injection
+    if (titleRedirect && /^[a-z0-9-]+$/i.test(titleRedirect)) {
       sessionStorage.setItem('redirect_after_login', '/buyers/titles/' + titleRedirect);
     }
   }, []);

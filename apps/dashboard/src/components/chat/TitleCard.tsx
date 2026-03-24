@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 interface TitleCardProps {
   title: {
     id: string;
+    slug?: string;
     nameEn?: string;
     nameKr?: string;
     genre?: string;
@@ -22,7 +23,7 @@ export function TitleCard({ title }: TitleCardProps) {
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
-    navigate(`/buyers/titles/${title.id}`);
+    navigate(`/buyers/titles/${title.slug || title.id}`);
   };
 
   const formatNumber = (num?: number) => {

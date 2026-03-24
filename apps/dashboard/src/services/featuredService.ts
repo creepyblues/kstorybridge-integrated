@@ -30,6 +30,7 @@ export const featuredService = {
         updated_at,
         titles (
           title_id,
+          slug,
           title_name_en,
           title_name_kr,
           title_image,
@@ -272,6 +273,7 @@ export const featuredService = {
         updated_at,
         titles (
           title_id,
+          slug,
           title_name_en,
           title_name_kr,
           title_image,

@@ -21,7 +21,7 @@ export function HomeResultCard({ title, matchScore, explanation }: HomeResultCar
   const navigate = useNavigate();
 
   // Normalize data based on type
-  const titleId = isTitle(title) ? title.title_id : title.title_id;
+  const titleSlug = isTitle(title) ? (title.slug || title.title_id) : (title.slug || title.title_id);
   const nameEn = isTitle(title) ? title.title_name_en : title.title_name_en;
   const nameKr = isTitle(title) ? title.title_name_kr : title.title_name_kr;
   const image = isTitle(title) ? title.title_image : title.title_image;
@@ -31,8 +31,8 @@ export function HomeResultCard({ title, matchScore, explanation }: HomeResultCar
   const matchExplanation = explanation ?? (isTitle(title) ? undefined : (title as TitleMatch).explanation);
 
   const handleClick = useCallback(() => {
-    navigate(`/buyers/titles/${titleId}`);
-  }, [navigate, titleId]);
+    navigate(`/buyers/titles/${titleSlug}`);
+  }, [navigate, titleSlug]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {

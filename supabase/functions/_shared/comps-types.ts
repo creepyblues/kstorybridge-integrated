@@ -234,6 +234,7 @@ export interface CompNavigatorResponse {
  */
 export interface TitleMatchV2 {
   title_id: string;
+  slug?: string;
   title_name_en: string;
   title_name_kr: string;
 

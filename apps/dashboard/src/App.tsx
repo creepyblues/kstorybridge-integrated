@@ -30,7 +30,8 @@ import Chat from '@/pages/buyers/Chat';
 import CompsNavigator from '@/pages/buyers/CompsNavigator';
 import Mandates from '@/pages/buyers/Mandates';
 import Titles from '@/pages/buyers/Titles';
-import TitleDetail from '@/pages/buyers/TitleDetail';
+// Old TitleDetail kept for reference, now replaced by UnifiedTitleDetailPage
+// import TitleDetail from '@/pages/buyers/TitleDetail';
 import Saved from '@/pages/buyers/Saved';
 import Profile from '@/pages/buyers/Profile';
 import Plan from '@/pages/buyers/Plan';
@@ -69,6 +70,13 @@ import Design3CompsNavigator from '@/pages/preview/Design3CompsNavigator';
 // Trial pages (public, no auth required)
 import Trial from '@/pages/Trial';
 import TrialTitleDetail from '@/pages/TrialTitleDetail';
+
+// Old PublicTitleDetailPage kept for reference, now replaced by UnifiedPublicTitlePage
+// import PublicTitleDetailPage from '@/pages/PublicTitleDetailPage';
+
+// Unified title detail pages (progressive disclosure)
+import UnifiedPublicTitlePage from '@/pages/UnifiedPublicTitlePage';
+import UnifiedTitleDetailPage from '@/pages/buyers/UnifiedTitleDetailPage';
 import { TrialProvider } from '@/contexts/TrialContext';
 
 // 🚨 AUTH ISOLATION ARCHITECTURE
@@ -91,6 +99,9 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/signup/complete" element={<CompleteProfile />} />
+
+          {/* Public title detail page - No auth required, auth-aware */}
+          <Route path="/titles/:slug" element={<UnifiedPublicTitlePage />} />
 
           {/* Public trial routes - No auth required */}
           <Route
@@ -162,11 +173,11 @@ function App() {
             }
           />
           <Route
-            path="/buyers/titles/:titleId"
+            path="/buyers/titles/:slug"
             element={
               <TierProvider>
                 <ProtectedRoute>
-                  <TitleDetail />
+                  <UnifiedTitleDetailPage />
                 </ProtectedRoute>
               </TierProvider>
             }

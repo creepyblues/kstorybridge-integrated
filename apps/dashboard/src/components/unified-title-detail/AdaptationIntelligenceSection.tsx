@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Lock } from 'lucide-react';
+import { Lock, Sparkles } from 'lucide-react';
 import { CompsAnalysisCard } from '@/components/title-detail/CompsAnalysisCard';
 import { type SuggestedComp } from '@/services/compsGeneratorService';
 import { type AuthState } from './types';
+import { SectionCard } from './SectionCard';
 
 interface AdaptationIntelligenceSectionProps {
   authState: AuthState;
@@ -27,7 +27,7 @@ export function AdaptationIntelligenceSection({
   if (isLoggedIn) {
     if (hasCompsAnalysis) {
       return (
-        <div className="mb-8">
+        <div className="min-h-0">
           <CompsAnalysisCard compsAnalysis={compsAnalysis!} />
         </div>
       );
@@ -35,85 +35,77 @@ export function AdaptationIntelligenceSection({
 
     if (hasComps) {
       return (
-        <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl text-black">Comparable Titles</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {comps!.map((comp, idx) => (
-                <Badge
-                  key={idx}
-                  variant="secondary"
-                  className="bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1.5 font-medium"
-                >
-                  {comp}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <SectionCard title="Comparable Titles" icon={<Sparkles className="h-5 w-5" />}>
+          <div className="flex flex-wrap gap-2">
+            {comps!.map((comp, idx) => (
+              <Badge
+                key={idx}
+                variant="secondary"
+                className="bg-gray-100 text-gray-700 border border-gray-200 px-3 py-1.5 font-medium"
+              >
+                {comp}
+              </Badge>
+            ))}
+          </div>
+        </SectionCard>
       );
     }
 
     return (
-      <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-8">
-        <CardHeader>
-          <CardTitle className="text-xl text-black">Adaptation Intelligence</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <p className="font-medium mb-1">Coming Soon</p>
-            <p className="text-sm">Comp analysis is being generated for this title.</p>
-          </div>
-        </CardContent>
-      </Card>
+      <SectionCard title="Adaptation Intelligence" icon={<Sparkles className="h-5 w-5" />}>
+        <div className="text-center py-8 text-gray-500">
+          <p className="font-medium mb-1">Coming Soon</p>
+          <p className="text-sm">Comp analysis is being generated for this title.</p>
+        </div>
+      </SectionCard>
     );
   }
 
-  // Anonymous: teaser with one visible comp + blurred placeholders
+  // Anonymous: teaser
   return (
-    <Card className="bg-transparent border-gray-300 shadow-none rounded-2xl mb-8">
-      <CardHeader>
-        <CardTitle className="text-xl text-black">Adaptation Intelligence</CardTitle>
-        <p className="text-sm text-gray-500 mt-1">AI-matched to titles in active production mandates</p>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-          {/* One visible static comp card */}
-          <div className="border border-gray-200 rounded-xl p-4 bg-white">
-            <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
-              <img src="https://image.tmdb.org/t/p/w300/hKHZhUbIyUAjcSrqJThFGYIR6kI.jpg" alt="To All the Boys" style={{width: "100%", height: "100%", objectFit: "cover", borderRadius: "0.5rem"}} />
-            </div>
-            <p className="font-medium text-sm text-black truncate">To All the Boys I've Loved Before</p>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">88% match</Badge>
-            </div>
-            <p className="text-xs text-gray-500 mt-2 line-clamp-2">Strong YA romance with cross-cultural appeal</p>
+    <SectionCard
+      title="Adaptation Intelligence"
+      subtitle="AI-matched to titles in active production mandates"
+      icon={<Sparkles className="h-5 w-5" />}
+    >
+      <div className="space-y-3 mb-4">
+        {/* One visible comp */}
+        <div className="border border-gray-200 rounded-xl p-4 bg-white flex items-center gap-4">
+          <img
+            src="https://image.tmdb.org/t/p/w300/hKHZhUbIyUAjcSrqJThFGYIR6kI.jpg"
+            alt="To All the Boys"
+            className="w-16 h-20 rounded-lg object-cover flex-shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm text-gray-900 truncate">To All the Boys I've Loved Before</p>
+            <Badge className="bg-green-50 text-green-700 border-green-200 text-xs mt-1">88% match</Badge>
+            <p className="text-xs text-gray-500 mt-1">Strong YA romance with cross-cultural appeal</p>
           </div>
+        </div>
 
-          {/* 4 blurred locked cards */}
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="border border-gray-200 rounded-xl p-4 bg-white relative overflow-hidden">
-              <div className="blur-sm pointer-events-none">
-                <div className="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3" />
+        {/* Blurred placeholders */}
+        {[1, 2].map(i => (
+          <div key={i} className="border border-gray-200 rounded-xl p-4 bg-white relative overflow-hidden">
+            <div className="blur-sm pointer-events-none flex items-center gap-4">
+              <div className="w-16 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex-shrink-0" />
+              <div className="flex-1">
                 <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                 <div className="h-3 bg-gray-100 rounded w-1/2" />
               </div>
-              <div className="absolute inset-0 flex items-center justify-center bg-white/60">
-                <Lock className="h-5 w-5 text-gray-400" />
-              </div>
             </div>
-          ))}
-        </div>
-        <div className="text-center mt-4">
-          <Link to="/signup" onClick={() => onCtaClick?.('comps')}>
-            <Button variant="outline" className="border-gray-300 hover:bg-gray-100 rounded-full px-6">
-              Unlock All Comparables — Free
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+            <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+              <Lock className="h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="text-center">
+        <Link to="/signup" onClick={() => onCtaClick?.('comps')}>
+          <Button variant="outline" className="border-gray-300 hover:bg-gray-100 rounded-full px-6">
+            Unlock All Comparables — Free
+          </Button>
+        </Link>
+      </div>
+    </SectionCard>
   );
 }

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { type Title } from '@/services/titlesService';
 import { type SuggestedComp } from '@/services/compsGeneratorService';
 import { KeyVisualsGallery } from '@/components/title-detail/KeyVisualsGallery';
 import { type UnifiedTitleDetailProps, type SimilarTitle } from './types';
 import { HeroSection } from './HeroSection';
+import { SectionNav } from './SectionNav';
 import { SynopsisSection } from './SynopsisSection';
 import { MetricsSection } from './MetricsSection';
 import { AdaptationIntelligenceSection } from './AdaptationIntelligenceSection';
@@ -16,12 +17,17 @@ import { AchievementsSection } from './AchievementsSection';
 import { SimilarTitlesSection } from './SimilarTitlesSection';
 import { BottomCta } from './BottomCta';
 
+const SECTIONS = [
+  { id: 'story', label: 'Story' },
+  { id: 'intelligence', label: 'Intelligence' },
+  { id: 'business', label: 'Business' },
+];
+
 export function UnifiedTitleDetail({
   title,
   authState,
   user,
   tier,
-  // pitchAnalysis reserved for future AI insight cards
   isFavorited,
   favoriteLoading,
   onFavoriteToggle,
@@ -29,8 +35,8 @@ export function UnifiedTitleDetail({
 }: UnifiedTitleDetailProps) {
   const isLoggedIn = authState === 'authenticated';
   const [similar, setSimilar] = useState<SimilarTitle[]>([]);
+  const heroRef = useRef<HTMLDivElement>(null);
 
-  // Fetch similar titles by genre overlap
   useEffect(() => {
     if (!title.genre) return;
     const genres = Array.isArray(title.genre) ? title.genre : [title.genre];
@@ -47,90 +53,129 @@ export function UnifiedTitleDetail({
       });
   }, [title.title_id, title.genre]);
 
-  // Auth-only fields
   const fullTitle = isLoggedIn ? (title as Title) : null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const compsAnalysis = (fullTitle as any)?.comps_analysis as SuggestedComp[] | undefined;
   const hasPitchDeck = fullTitle?.pitch && fullTitle.pitch.trim() !== '';
   const titleName = title.title_name_en || title.title_name_kr || 'Unknown';
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
-      {/* 1. Hero */}
-      <HeroSection
-        title={title}
-        authState={authState}
-        user={user}
-        isFavorited={isFavorited}
-        favoriteLoading={favoriteLoading}
-        onFavoriteToggle={onFavoriteToggle}
-        onCtaClick={onCtaClick}
-      />
+    <>
+      {/* Sticky section nav */}
+      <SectionNav sections={SECTIONS} heroRef={heroRef} />
 
-      {/* 2. Synopsis + Editorial Take */}
-      <SynopsisSection synopsis={title.synopsis ?? null} note={title.note ?? null} />
-
-      {/* 3. Metrics (auth only — rich data card) */}
-      {isLoggedIn && fullTitle && (
-        <MetricsSection title={fullTitle} />
-      )}
-
-      {/* 4. Adaptation Intelligence (comps) */}
-      <AdaptationIntelligenceSection
-        authState={authState}
-        compsAnalysis={compsAnalysis}
-        comps={title.comps}
-        onCtaClick={onCtaClick}
-      />
-
-      {/* 5. Format Fit */}
-      <FormatFitSection
-        authState={authState}
-        titleId={title.title_id}
-        onCtaClick={onCtaClick}
-      />
-
-      {/* 6. Rights Info */}
-      <RightsInfoSection
-        authState={authState}
-        title={title}
-        onCtaClick={onCtaClick}
-      />
-
-      {/* 7. Target Market (auth only) */}
-      {isLoggedIn && fullTitle && (
-        <TargetMarketSection title={fullTitle} />
-      )}
-
-      {/* 8. Pitch Deck (auth only, if available) */}
-      {isLoggedIn && fullTitle && hasPitchDeck && tier && (
-        <PitchDeckSection
-          titleId={fullTitle.title_id}
-          titleName={titleName}
-          pitchUrl={fullTitle.pitch!}
-          userTier={tier}
-        />
-      )}
-
-      {/* 9. Key Visuals (auth only) */}
-      {isLoggedIn && (
-        <div className="mb-8">
-          <KeyVisualsGallery titleId={title.title_id} maxDisplay={10} />
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        {/* Hero */}
+        <div ref={heroRef}>
+          <HeroSection
+            title={title}
+            authState={authState}
+            user={user}
+            isFavorited={isFavorited}
+            favoriteLoading={favoriteLoading}
+            onFavoriteToggle={onFavoriteToggle}
+            onCtaClick={onCtaClick}
+          />
         </div>
-      )}
 
-      {/* 10. Achievements (auth only) */}
-      {isLoggedIn && fullTitle && (
-        <AchievementsSection title={fullTitle} />
-      )}
+        {/* ═══ ACT 1: THE STORY ═══ */}
+        <section id="story" className="scroll-mt-20 mb-12">
+          <SynopsisSection
+            synopsis={title.synopsis ?? null}
+            note={title.note ?? null}
+          />
 
-      {/* 11. Bottom CTA (anon only) */}
-      {!isLoggedIn && (
-        <BottomCta onCtaClick={onCtaClick} />
-      )}
+          {/* Key Visuals (auth only, inside Story act) */}
+          {isLoggedIn && (
+            <div className="mt-6">
+              <KeyVisualsGallery titleId={title.title_id} maxDisplay={10} />
+            </div>
+          )}
+        </section>
 
-      {/* 12. Similar Titles */}
-      <SimilarTitlesSection similar={similar} />
-    </main>
+        {/* ═══ ACT 2: ADAPTATION INTELLIGENCE ═══ */}
+        <section id="intelligence" className="scroll-mt-20 mb-12">
+          {isLoggedIn ? (
+            <>
+              {/* Auth: full-width stacked — comps are too data-rich to share space */}
+              <div className="mb-6">
+                <AdaptationIntelligenceSection
+                  authState={authState}
+                  compsAnalysis={compsAnalysis}
+                  comps={title.comps}
+                  onCtaClick={onCtaClick}
+                />
+              </div>
+              <div className="mb-6">
+                <FormatFitSection
+                  authState={authState}
+                  titleId={title.title_id}
+                  onCtaClick={onCtaClick}
+                />
+              </div>
+            </>
+          ) : (
+            /* Anon: side by side — teasers are compact enough */
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <AdaptationIntelligenceSection
+                authState={authState}
+                compsAnalysis={compsAnalysis}
+                comps={title.comps}
+                onCtaClick={onCtaClick}
+              />
+              <FormatFitSection
+                authState={authState}
+                titleId={title.title_id}
+                onCtaClick={onCtaClick}
+              />
+            </div>
+          )}
+
+          {/* Target Market — compact row */}
+          {isLoggedIn && fullTitle && (
+            <TargetMarketSection title={fullTitle} />
+          )}
+        </section>
+
+        {/* ═══ ACT 3: BUSINESS ═══ */}
+        <section id="business" className="scroll-mt-20 mb-12">
+          {/* Rights + Metrics side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <RightsInfoSection
+              authState={authState}
+              title={title}
+              onCtaClick={onCtaClick}
+            />
+            {isLoggedIn && fullTitle ? (
+              <MetricsSection title={fullTitle} />
+            ) : (
+              <div /> /* Empty grid cell for anon */
+            )}
+          </div>
+
+          {/* Pitch Deck */}
+          {isLoggedIn && fullTitle && hasPitchDeck && tier && (
+            <PitchDeckSection
+              titleId={fullTitle.title_id}
+              titleName={titleName}
+              pitchUrl={fullTitle.pitch!}
+              userTier={tier}
+            />
+          )}
+
+          {/* Achievements */}
+          {isLoggedIn && fullTitle && (
+            <AchievementsSection title={fullTitle} />
+          )}
+        </section>
+
+        {/* Bottom CTA (anon) */}
+        {!isLoggedIn && (
+          <BottomCta onCtaClick={onCtaClick} />
+        )}
+
+        {/* Similar Titles */}
+        <SimilarTitlesSection similar={similar} />
+      </main>
+    </>
   );
 }

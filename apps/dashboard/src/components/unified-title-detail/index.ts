@@ -1,2 +1,15 @@
 export { UnifiedTitleDetail } from './UnifiedTitleDetail';
-export type { UnifiedTitleDetailProps, AuthState, PublicTitle, SimilarTitle } from './types';
+export { SectionNav } from './SectionNav';
+export { SectionCard } from './SectionCard';
+export { HeroSection } from './HeroSection';
+export { SynopsisSection } from './SynopsisSection';
+export { MetricsSection } from './MetricsSection';
+export { AdaptationIntelligenceSection } from './AdaptationIntelligenceSection';
+export { FormatFitSection } from './FormatFitSection';
+export { RightsInfoSection } from './RightsInfoSection';
+export { TargetMarketSection } from './TargetMarketSection';
+export { PitchDeckSection } from './PitchDeckSection';
+export { AchievementsSection } from './AchievementsSection';
+export { SimilarTitlesSection } from './SimilarTitlesSection';
+export { BottomCta } from './BottomCta';
+export type { PublicTitle, AuthState, UnifiedTitleDetailProps, SimilarTitle } from './types';

@@ -13,7 +13,7 @@ const Footer = () => {
         <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           {/* Copyright */}
           <div className="text-sm text-gray-600">
-            © 2025 KStoryBridge
+            © {new Date().getFullYear()} The Story Bridge, LLC
           </div>
 
           {/* Links */}

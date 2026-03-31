@@ -35,7 +35,7 @@ export const Footer: React.FC<FooterProps> = ({
               <Text color="inverse" weight="medium">KStoryBridge</Text>
             </div>
             <Text color="inverse" size="sm">
-              © {currentYear} KStoryBridge. All rights reserved.
+              © {currentYear} The Story Bridge, LLC. All rights reserved.
             </Text>
           </div>
         </Container>
@@ -242,7 +242,7 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Bottom Footer */}
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 pt-8">
             <Text color="inverse" size="sm">
-              © {currentYear} KStoryBridge. All rights reserved.
+              © {currentYear} The Story Bridge, LLC. All rights reserved.
             </Text>
             
             <div className="flex items-center space-x-6">

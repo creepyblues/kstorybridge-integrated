@@ -129,7 +129,7 @@ serve(async (req) => {
               </p>
               
               <div class="footer">
-                <p>© 2025 KStoryBridge. All rights reserved.</p>
+                <p>© ${new Date().getFullYear()} The Story Bridge, LLC. All rights reserved.</p>
                 <p>This is an automated message. Please do not reply to this email.</p>
               </div>
             </div>

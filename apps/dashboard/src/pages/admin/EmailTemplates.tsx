@@ -252,7 +252,7 @@ function getEmailFooter(): string {
         <a href="mailto:${BRAND.contact.support}" class="footer-link">Contact Support</a>
       </div>
       <p class="footer-text">${BRAND.contact.address}</p>
-      <p class="footer-text">&copy; ${BRAND.year} KStoryBridge. All rights reserved.</p>
+      <p class="footer-text">&copy; ${BRAND.year} The Story Bridge, LLC. All rights reserved.</p>
       <p class="footer-text" style="margin-top: 12px;">
         <a href="#" style="color: ${BRAND.colors.textMuted}; text-decoration: underline;">Unsubscribe</a>
         &nbsp;&bull;&nbsp;

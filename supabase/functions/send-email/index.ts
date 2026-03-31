@@ -360,7 +360,7 @@ function getEmailFooter(options: { loginUrl?: string; showUnsubscribe?: boolean 
       </div>
 
       <div class="footer-address">
-        © ${BRAND.year} ${BRAND.logo.text}. All rights reserved.<br>
+        © ${BRAND.year} The Story Bridge, LLC. All rights reserved.<br>
         ${BRAND.contact.address}
       </div>
 
@@ -664,7 +664,7 @@ Best regards,
 The KStoryBridge Team
 
 ---
-© ${BRAND.year} KStoryBridge. All rights reserved.
+© ${BRAND.year} The Story Bridge, LLC. All rights reserved.
 You're receiving this email because you created an account with us.
 `
 
@@ -727,7 +727,7 @@ ${ctaText && ctaUrl ? `${ctaText}: ${ctaUrl}` : ''}
 If you have any questions about these changes, contact us at ${BRAND.contact.support}
 
 ---
-© ${BRAND.year} KStoryBridge. All rights reserved.
+© ${BRAND.year} The Story Bridge, LLC. All rights reserved.
 `
 
       return { html, text }
@@ -934,7 +934,7 @@ Start exploring premium content: https://dashboard.kstorybridge.com/buyers/title
 Questions about your subscription? Contact us at ${BRAND.contact.support}
 
 ---
-© ${BRAND.year} KStoryBridge. All rights reserved.
+© ${BRAND.year} The Story Bridge, LLC. All rights reserved.
 Thank you for being a valued member of KStoryBridge.
 `
 
@@ -1004,7 +1004,7 @@ ${ctaText && ctaUrl ? `${ctaText}: ${ctaUrl}` : ''}
 If you have any questions, contact us at ${BRAND.contact.support}
 
 ---
-© ${BRAND.year} KStoryBridge. All rights reserved.
+© ${BRAND.year} The Story Bridge, LLC. All rights reserved.
 `
 
       return { html, text }

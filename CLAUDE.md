@@ -226,3 +226,7 @@ All apps share one Supabase project. Each app needs `.env.local` with:
 | Creator | localhost:8083 | creator-staging.kstorybridge.com | creator.kstorybridge.com |
 | Website | localhost:5173 | - | kstorybridge.com |
 | Supabase | - | - | app.supabase.com/project/dlrnrgcoguxlkkcitlpd |
+
+## Test Account (Automated QA)
+
+For browser-based QA testing that requires authentication, use the `/test-account` skill which provides a suite-tier buyer account. This account should be used by all automated testing (QA, browse, design-review, E2E) that needs sign-in.

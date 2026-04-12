@@ -281,9 +281,57 @@ export const titlesService = {
   },
 
   /**
+   * Check if a title with the same EN+KR name pair already exists for this creator.
+   * A creator can have multiple titles with the same EN name if KR names differ.
+   */
+  async checkForDuplicate(
+    creatorId: string,
+    titleNameEn?: string | null,
+    titleNameKr?: string | null
+  ): Promise<{ isDuplicate: boolean; existingTitle?: { title_id: string; title_name_en: string; title_name_kr: string } }> {
+    if (!titleNameEn?.trim() && !titleNameKr?.trim()) return { isDuplicate: false }
+
+    let query = supabase
+      .from('titles')
+      .select('title_id, title_name_en, title_name_kr')
+      .eq('creator_id', creatorId)
+
+    // Match on both names together (not OR) — same EN + same KR = duplicate
+    if (titleNameEn?.trim()) {
+      query = query.ilike('title_name_en', titleNameEn.trim())
+    } else {
+      query = query.or('title_name_en.is.null,title_name_en.eq.')
+    }
+
+    if (titleNameKr?.trim()) {
+      query = query.eq('title_name_kr', titleNameKr.trim())
+    } else {
+      query = query.or('title_name_kr.is.null,title_name_kr.eq.')
+    }
+
+    const { data } = await query.limit(1).maybeSingle()
+
+    if (data) {
+      return { isDuplicate: true, existingTitle: data }
+    }
+    return { isDuplicate: false }
+  },
+
+  /**
    * Create new title
    */
   async createTitle(input: CreateTitleInput): Promise<Title> {
+    const { isDuplicate, existingTitle } = await this.checkForDuplicate(
+      input.creator_id,
+      input.title_name_en,
+      input.title_name_kr
+    )
+    if (isDuplicate) {
+      throw new Error(
+        `A title with this name already exists: "${existingTitle?.title_name_en || existingTitle?.title_name_kr}". Please use a different name or edit the existing title.`
+      )
+    }
+
     const { data, error } = await supabase
       .from('titles')
       .insert([input])
@@ -303,6 +351,17 @@ export const titlesService = {
    * Sets verified: false by default
    */
   async createQuickTitle(input: QuickAddTitleInput): Promise<Title> {
+    const { isDuplicate, existingTitle } = await this.checkForDuplicate(
+      input.creator_id,
+      input.title_name_en,
+      input.title_name_kr
+    )
+    if (isDuplicate) {
+      throw new Error(
+        `A title with this name already exists: "${existingTitle?.title_name_en || existingTitle?.title_name_kr}". Please use a different name or edit the existing title.`
+      )
+    }
+
     const { data, error } = await supabase
       .from('titles')
       .insert([{

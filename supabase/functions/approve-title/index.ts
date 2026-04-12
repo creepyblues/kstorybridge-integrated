@@ -182,19 +182,33 @@ serve(async (req) => {
       creatorId,
     })
 
-    // Check for duplicate title (same Korean name)
-    if (draftData.title_name_kr) {
-      const { data: existingTitle } = await supabaseAdmin
+    // Check for duplicate title (same creator with same EN+KR name pair)
+    // A creator can have multiple titles with same EN name if KR names differ
+    {
+      let dupQuery = supabaseAdmin
         .from('titles')
-        .select('title_id, title_name_kr')
-        .eq('title_name_kr', draftData.title_name_kr)
-        .single()
+        .select('title_id, title_name_kr, title_name_en')
+        .eq('creator_id', creatorId)
+
+      if (draftData.title_name_en?.trim()) {
+        dupQuery = dupQuery.ilike('title_name_en', draftData.title_name_en.trim())
+      } else {
+        dupQuery = dupQuery.or('title_name_en.is.null,title_name_en.eq.')
+      }
+
+      if (draftData.title_name_kr?.trim()) {
+        dupQuery = dupQuery.eq('title_name_kr', draftData.title_name_kr.trim())
+      } else {
+        dupQuery = dupQuery.or('title_name_kr.is.null,title_name_kr.eq.')
+      }
+
+      const { data: existingTitle } = await dupQuery.maybeSingle()
 
       if (existingTitle) {
         console.warn('[approve-title] Duplicate title found:', existingTitle.title_id)
         return new Response(
           JSON.stringify({
-            error: 'A title with this Korean name already exists',
+            error: 'A title with this name already exists for this creator',
             existingTitleId: existingTitle.title_id
           }),
           {

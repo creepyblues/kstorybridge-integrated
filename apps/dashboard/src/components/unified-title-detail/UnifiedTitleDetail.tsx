@@ -7,6 +7,7 @@ import { type UnifiedTitleDetailProps, type SimilarTitle } from './types';
 import { HeroSection } from './HeroSection';
 import { SectionNav } from './SectionNav';
 import { SynopsisSection } from './SynopsisSection';
+import { DescriptionSection } from './DescriptionSection';
 import { MetricsSection } from './MetricsSection';
 import { AdaptationIntelligenceSection } from './AdaptationIntelligenceSection';
 import { FormatFitSection } from './FormatFitSection';
@@ -83,6 +84,13 @@ export function UnifiedTitleDetail({
             synopsis={title.synopsis ?? null}
             note={title.note ?? null}
           />
+
+          {/* Description (auth only — field lives on titles table, not public_titles view) */}
+          {fullTitle?.description && (
+            <div className="mt-6">
+              <DescriptionSection description={fullTitle.description} />
+            </div>
+          )}
 
           {/* Key Visuals (auth only, inside Story act) */}
           {isLoggedIn && (

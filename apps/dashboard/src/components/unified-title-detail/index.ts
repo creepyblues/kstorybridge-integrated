@@ -3,6 +3,7 @@ export { SectionNav } from './SectionNav';
 export { SectionCard } from './SectionCard';
 export { HeroSection } from './HeroSection';
 export { SynopsisSection } from './SynopsisSection';
+export { DescriptionSection } from './DescriptionSection';
 export { MetricsSection } from './MetricsSection';
 export { AdaptationIntelligenceSection } from './AdaptationIntelligenceSection';
 export { FormatFitSection } from './FormatFitSection';

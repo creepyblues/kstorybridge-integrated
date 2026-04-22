@@ -26,6 +26,22 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operation: strin
 // Email validation removed - all email addresses allowed for buyer signups
 // (Previously blocked consumer domains like Gmail, Yahoo, etc.)
 
+// FunctionsHttpError.message is a generic "Edge Function returned a non-2xx status code".
+// The real JSON body lives on the attached Response (supabase-js v2 exposes it via .context).
+async function extractEdgeFunctionError(functionError: any): Promise<string> {
+  try {
+    const ctx = functionError?.context;
+    const res = ctx && typeof ctx.json === 'function' ? ctx : ctx?.response;
+    if (res && typeof res.json === 'function') {
+      const body = await res.clone().json();
+      if (body?.error) return body.error;
+    }
+  } catch {
+    // fall through to generic message
+  }
+  return functionError?.message || 'Unknown error';
+}
+
 /**
  * Email/Password Signup for Buyers
  * Sets account_type='buyer' during signup (not after)
@@ -88,8 +104,9 @@ export async function signUpWithEmail(
     );
 
     if (functionError) {
-      log('Profile creation error', functionError);
-      throw new Error(`Profile creation failed: ${functionError.message}`);
+      const serverError = await extractEdgeFunctionError(functionError);
+      log('Profile creation error', { functionError, serverError });
+      throw new Error(`Profile creation failed: ${serverError}`);
     }
 
     // Also check for application-level errors (supabase.functions.invoke returns
@@ -198,8 +215,9 @@ export async function completeOAuthProfile(
     );
 
     if (functionError) {
-      log('OAuth profile creation error', functionError);
-      throw new Error(`Profile creation failed: ${functionError.message}`);
+      const serverError = await extractEdgeFunctionError(functionError);
+      log('OAuth profile creation error', { functionError, serverError });
+      throw new Error(`Profile creation failed: ${serverError}`);
     }
 
     // Check for application-level errors (HTTP 400/500 returned in data, not error)

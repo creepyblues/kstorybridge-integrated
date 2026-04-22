@@ -90,6 +90,7 @@ describe('Auth Service', () => {
           data: {
             account_type: 'buyer',
             full_name: testMetadata.full_name,
+            newsletter_consent: false,
           },
         },
       });
@@ -104,6 +105,8 @@ describe('Auth Service', () => {
           buyer_role: testMetadata.buyer_role,
           linkedin_url: undefined,
           tier: 'basic',
+          trial_session_id: undefined,
+          newsletter_consent: false,
         },
       });
     });
@@ -259,6 +262,8 @@ describe('Auth Service', () => {
           buyer_role: testMetadata.buyer_role,
           linkedin_url: undefined,
           tier: 'basic',
+          trial_session_id: undefined,
+          newsletter_consent: false,
         },
       });
     });
@@ -272,7 +277,7 @@ describe('Auth Service', () => {
       });
 
       expect(mockUpdateUser).toHaveBeenCalledWith({
-        data: { account_type: 'buyer' },
+        data: { account_type: 'buyer', newsletter_consent: false },
       });
     });
 

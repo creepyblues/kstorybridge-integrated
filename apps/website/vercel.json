@@ -7,7 +7,7 @@
   },
   "rewrites": [
     {
-      "source": "/((?!assets|js|docs).*)",
+      "source": "/((?!assets|js|docs|intro).*)",
       "destination": "/index.html"
     }
   ]

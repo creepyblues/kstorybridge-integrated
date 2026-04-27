@@ -1,0 +1,72 @@
+{
+  "kevin": {
+    "hero": {
+      "eyebrow": "Team",
+      "headlineLine1": "Few understand Korean stories",
+      "headlineLine2": "as deeply as he does.",
+      "sub": "He understands what makes Korean stories resonate — and translates them into the language of Hollywood.",
+      "name": "Kevin Nicklaus",
+      "role": "Co-Founder & Partner, KStoryBridge",
+      "portraitAlt": "Kevin Nicklaus"
+    },
+    "lead": "Kevin Nicklaus has spent decades in Hollywood adapting source IP for the screen. He built a long career at The Wolper Organization at Warner Bros., rising from Director of Development to Senior Vice President of Development at a single company. He has since advised Tapas Media and RIDI / Manta on the global expansion of Korean platform IP. He is currently Executive Producer on <title>The Beginning After The End</title> — a flagship Tapas webcomic now airing as a global anime on Crunchyroll and Fuji TV.",
+    "trust": {
+      "eyebrow": "Trust",
+      "headlineLine1": "The world Korean creators work in",
+      "headlineLine2": "isn't new to him.",
+      "intro": "Kevin is still working inside Korean platforms today.",
+      "tapasBullet": "<strong>Tapas Media</strong> (a Kakao company) — Consulting Producer",
+      "ridiBullet": "<strong>RIDI / Manta</strong> — Consulting Producer",
+      "rare": "Few American producers advise two Korean platforms at once. For him, Korean IP isn't a passing trend — it's daily work.",
+      "rights": "He already understands — through the work itself — the environment Korean creators write in and the position they stand from. So when a Korean creator's first question at KStoryBridge is — <emph>\"What happens to my rights?\"</emph> — the answer is already built into where he begins.",
+      "logos": "Tapas (Kakao) · RIDI · Manta"
+    },
+    "expertise": {
+      "eyebrow": "Expertise",
+      "headlineLine1": "A lifetime spent",
+      "headlineLine2": "on a single craft — adaptation",
+      "p1": "At The Wolper Organization, the production company at Warner Bros., Kevin spent decades focused on one thing — <strong>taking stories that already exist and bringing them to a new screen.</strong>",
+      "p2": "Almost everything he has worked on has been <strong>IP with existing source material</strong>. Novels, comics, true stories, classics — the forms vary, but the common thread is one. <strong>Taking stories that already exist and re-drawing them on screen.</strong> His expertise comes down to a single word — <strong>adaptation</strong>.",
+      "p3": "His development network reaches the major American and global studios and streamers. When a Korean story heads abroad, the people he already knows are the ones in the room.",
+      "logos": "Warner Bros. · Amazon · Netflix · FX"
+    },
+    "execution": {
+      "eyebrow": "Execution",
+      "headlineLine1": "His projects are still",
+      "headlineLine2": "moving across screens, today.",
+      "intro": "Kevin's current concurrent projects:",
+      "items": {
+        "tbate": {
+          "title": "<title>The Beginning After The End</title> — Executive Producer",
+          "description": "Tapas webcomic → global anime on Crunchyroll / Fuji TV. Season 2 currently airing."
+        },
+        "junjiIto": {
+          "title": "<title>Junji Ito's Bloodsucking Darkness</title> — Executive Producer",
+          "description": "Produced by Fangoria Studios. The first English-language live-action film based on a Junji Ito work."
+        },
+        "sandstone": {
+          "title": "Sandstone Artists — Partner & Head of Production",
+          "description": "Advising Tapas and RIDI / Manta in parallel."
+        },
+        "microdrama": {
+          "title": "Microdrama expansion",
+          "description": "Working with Crazy Maple Studio (parent of ReelShort) as Media Consultant. Expanding into the global short-form content market."
+        }
+      },
+      "outro": "When Kevin champions a project, it joins <strong>a path he is already proving with other IP</strong>."
+    },
+    "closing": {
+      "line1Part1": "Kevin has spent his life",
+      "line1Part2": "moving writers' stories to the screen.",
+      "line2Part1": "Now he is looking for his next one —",
+      "line2Part2": "among Korean writers."
+    },
+    "cta": {
+      "headlineLine1": "Your work, and the possibilities it carries —",
+      "headlineLine2": "let's explore them with KStoryBridge.",
+      "body": "It starts with a conversation about the work.",
+      "button": "▶ Request a meeting",
+      "mailtoSubject": "KStoryBridge meeting request"
+    }
+  }
+}

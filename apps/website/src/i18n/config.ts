@@ -14,6 +14,7 @@ import titlesEN from './locales/en/titles.json';
 import onboardingEN from './locales/en/onboarding.json';
 import authEN from './locales/en/auth.json';
 import featuresEN from './locales/en/features.json';
+import teamEN from './locales/en/team.json';
 
 import commonKO from './locales/ko/common.json';
 import homeKO from './locales/ko/home.json';
@@ -26,6 +27,7 @@ import titlesKO from './locales/ko/titles.json';
 import onboardingKO from './locales/ko/onboarding.json';
 import authKO from './locales/ko/auth.json';
 import featuresKO from './locales/ko/features.json';
+import teamKO from './locales/ko/team.json';
 
 // Define resources
 const resources = {
@@ -41,6 +43,7 @@ const resources = {
     onboarding: onboardingEN,
     auth: authEN,
     features: featuresEN,
+    team: teamEN,
   },
   ko: {
     common: commonKO,
@@ -54,6 +57,7 @@ const resources = {
     onboarding: onboardingKO,
     auth: authKO,
     features: featuresKO,
+    team: teamKO,
   },
 };
 
@@ -67,7 +71,7 @@ i18n
     resources,
     fallbackLng: 'en', // Fallback language
     defaultNS: 'common', // Default namespace
-    ns: ['common', 'home', 'homePreview4', 'creators', 'producers', 'about', 'news', 'titles', 'onboarding', 'auth', 'features'],
+    ns: ['common', 'home', 'homePreview4', 'creators', 'producers', 'about', 'news', 'titles', 'onboarding', 'auth', 'features', 'team'],
 
     interpolation: {
       escapeValue: false, // React already escapes by default

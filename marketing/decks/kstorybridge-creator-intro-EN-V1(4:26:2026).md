@@ -26,7 +26,7 @@ Meaningful connections are still rare.**
 
 You have fans. You have traction.
 But the chance to be seen by international
-producers — and adapted for screen — is still
+producers - and adapted for screen - is still
 hard to come by.
 
 **What your story needs now is a partner
@@ -44,17 +44,17 @@ on the creator's shoulders**
 
 Three-card grid:
 
-**01 · Cold email — rarely read**
+**01 · Cold email - rarely read**
 One in hundreds gets opened.
 Language and context barriers
 mean most go unanswered.
 
-**02 · Agents — hard to reach, costly to hire**
+**02 · Agents - hard to reach, costly to hire**
 Access alone is difficult,
 fees are high,
 and there's little room to negotiate.
 
-**03 · Film markets — millions of won, no guarantees**
+**03 · Film markets - millions of won, no guarantees**
 Booth fees are steep,
 no one promises eyes on your work,
 and every follow-up is on you.
@@ -84,11 +84,11 @@ We don't stop at registration.
 **We carry your work into actual reviews
 and follow-up conversations.**
 
-Right column — three numbered items:
+Right column - three numbered items:
 
-**01. Reframed for the global format** — pitch deck, comps, format fit
-**02. Direct line to decision-makers** — execs at Netflix, Disney, Amazon, Sony
-**03. Transparent progress reports** — reviewers, feedback, next steps shared regularly
+**01. Reframed for the global format** - pitch deck, comps, format fit
+**02. Direct line to decision-makers** - execs at Netflix, Disney, Amazon, Sony
+**03. Transparent progress reports** - reviewers, feedback, next steps shared regularly
 
 ---
 
@@ -100,26 +100,53 @@ and understands Hollywood deeply**
 
 Three trust cards:
 
-**Trust — We start on the Korean creator's side**
+**Trust - We start on the Korean creator's side**
 We start from the rights and the position
 of the Korean author.
 You don't have to give up your rights
 to show your work to the world.
 
-**Expertise — Decades of Hollywood project development**
+**Expertise - Decades of Hollywood project development**
 Kevin is the Executive Producer
 of Crunchyroll's animated series
 *The Beginning After The End*.
 
-**Experience — A team that's worked global IP firsthand**
-Netflix, Wolper/WB, RIDI, Tapas —
+**Experience - A team that's worked global IP firsthand**
+Netflix, Wolper/WB, RIDI, Tapas -
 we've handled global IP at the source.
 We understand both Korean and global markets.
 
 ---
 
-## Slide 7. How Hollywood producers see your work
-*Eyebrow: 05 · How Hollywood producers see your work*
+## Slide 7. The two-way bridge
+*Eyebrow: 05 · The two-way bridge*
+
+**Protecting the work and
+reaching the world is
+the same job**
+
+Approached only from the Korean side, the work is hard
+to render in the language a US executive can actually
+receive. Approached only from the American side, the
+central conceit gets taken and the details that make
+the work itself get lost.
+
+KStoryBridge looks at both.
+**We protect what makes the work itself,**
+**and translate only what needs to land elsewhere.**
+
+> On a recent Korean-source adaptation for the US
+> market, we kept the storyline far more intact than
+> the author expected - while making the casting and
+> budget calls (the kind original authors don't think
+> about) that get a project actually greenlit.
+
+**Visual note:** v2 Warm Publishing treatment. Two-column diagram on the right - left column "what makes the work itself," right column "the receiving market's language," joined by a soft bridge stroke. Pull-quote in a quieter weight, framed as an illustrative example.
+
+---
+
+## Slide 8. How Hollywood producers see your work
+*Eyebrow: 06 · How Hollywood producers see your work*
 
 **This is what your work
 looks like to a Hollywood producer**
@@ -129,22 +156,22 @@ The core information and appeal are organized
 **so a producer can grasp and evaluate it quickly.**
 
 - A synopsis they can read at a glance
-- AI comps analysis showing market position instantly
-- Format fit and target market — analysis from a development lens
+- AI comps analysis - anchored to projects executives already recognize as wins
+- Format fit and target market - analysis from a development lens
 - A structure that leads to actual reviews and follow-ups
 
 **Visual layout:** the right side shows a thumbnail of the full producer-facing page on the left with three highlighted zones (teal / coral / teal), connected by dashed arrows to three larger slice cards on the right:
 
-- **Synopsis** — readable in seconds
-- **AI Comps** — comparable titles
-- **Format Fit** — development lens
+- **Synopsis** - readable in seconds
+- **AI Comps** - comps tied to executive mandates
+- **Format Fit** - development lens
 
 **Proof source:** `Does Love Need a Translator?` producer-facing detail page screenshot, sliced into three highlighted sections.
 
 ---
 
-## Slide 8. How the pitching works
-*Eyebrow: 06 · How the pitching works*
+## Slide 9. How the pitching works
+*Eyebrow: 07 · How the pitching works*
 
 **A step-by-step process
 to bring your work to market
@@ -177,24 +204,24 @@ at the formal meeting with decision-makers.
 
 ---
 
-## Slide 9. Who's using KStoryBridge
-*Eyebrow: 07 · Who's using KStoryBridge*
+## Slide 10. Who's using KStoryBridge
+*Eyebrow: 08 · Who's using KStoryBridge*
 
 **Top Hollywood producers are reviewing
 their next titles on KStoryBridge**
 
-[Studio logo wall — Netflix, Walt Disney Studios, Sony Pictures, Crunchyroll, Amazon Studios, Warner Bros, Paramount, 50+ Hollywood studios and global streamers]
+[Studio logo wall - Netflix, Walt Disney Studios, Sony Pictures, Crunchyroll, Amazon Studios, Warner Bros, Paramount, 50+ Hollywood studios and global streamers]
 
 KStoryBridge helps US and global producers
 **review Korean IP the way they're used to reviewing material.**
 
-What matters isn't being seen by many — it's **being seen properly by the right people.**
+What matters isn't being seen by many - it's **being seen properly by the right people.**
 
 **Proof source:** customer / producer logos from `https://kstorybridge.com/creators`
 
 ---
 
-## Slide 10. CTA
+## Slide 11. CTA
 **It's time for your story
 to meet the world.**
 
@@ -213,13 +240,13 @@ Link: https://kstorybridge.com/creators
 ## Assembly Notes
 
 ### Screenshot choices
-- Slide 7: use the `Does Love Need a Translator?` producer detail page
+- Slide 8: use the `Does Love Need a Translator?` producer detail page
 - Show the FULL page as a small thumbnail on the left with three zones highlighted (Synopsis / AI Comps / Format Fit)
 - Connect each zone with a dashed arrow to a larger detail-slice card on the right
 - Each detail slice gets a single pill callout (no body copy on the bubble)
 
 ### Logo proof
-- Slide 9 uses one clean logo grid image (`assets/studio-logos.png`)
+- Slide 10 uses one clean logo grid image (`assets/studio-logos.png`)
 - Wrapped in a soft white card on the cream page
 - Used as proof, not decoration
 
@@ -232,15 +259,16 @@ Every slide should feel:
 - non-salesy
 
 ### What to cut first if it feels long
-1. second paragraph on slide 7
+1. second paragraph on slide 8
 2. last line of slide 3
-3. remove pitch-step 3 ("Pre-qualified interest") on slide 8 if a 3-step flow reads cleaner
+3. remove pitch-step 3 ("Pre-qualified interest") on slide 9 if a 3-step flow reads cleaner
 
 ### Structure changes from earlier draft
 - Slide 2 image now half-bleeds to match slide 1 (was a 600×600 framed card)
 - Slide 4 transition headline reordered: "expect to review" line precedes "deeply understands"
-- Slide 7 proof layout switched from "screenshot + 3 callouts" to "page thumbnail + arrows + 3 detail slices"
-- Slide 8 added — full pitching-process flow (4 steps) was previously implicit
-- Producers/logos slide moved to slide 9 (was 8); CTA is now slide 10
+- Slide 7 added - "The two-way bridge" makes the protect-and-translate value prop explicit (per Kevin's feedback). Subsequent slides shifted down by one; eyebrow numbers re-sequenced.
+- Slide 8 (was 7) proof layout switched from "screenshot + 3 callouts" to "page thumbnail + arrows + 3 detail slices"
+- Slide 9 (was 8) added - full pitching-process flow (4 steps) was previously implicit
+- Producers/logos slide is slide 10 (was 9); CTA is now slide 11
 - Logo on every slide is the wordmark only ("KStoryBridge"), no K tile
 - PDF export button + checklist modal added to every slide for in-deck PDF saving

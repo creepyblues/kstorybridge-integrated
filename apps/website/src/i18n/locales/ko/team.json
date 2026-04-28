@@ -2,8 +2,8 @@
   "kevin": {
     "hero": {
       "eyebrow": "Team",
-      "headlineLine1": "한국 이야기의 진가를",
-      "headlineLine2": "누구보다 깊이 아는 사람.",
+      "headlineLine1": "한국 콘텐츠가 할리우드에서 통하는 문법을",
+      "headlineLine2": "누구보다 잘 아는 사람.",
       "sub": "한국 이야기의 매력을 제대로 이해하고, 할리우드의 언어로 옮깁니다.",
       "name": "Kevin Nicklaus",
       "role": "Co-Founder & Partner, KStoryBridge",
@@ -15,18 +15,18 @@
       "headlineLine1": "한국 창작자의 입장은,",
       "headlineLine2": "그에게 새로운 주제가 아닙니다",
       "intro": "Kevin은 지금도 한국 플랫폼 안에서 일하고 있습니다.",
-      "tapasBullet": "<strong>Tapas Media</strong> (Kakao 산하) — Consulting Producer",
-      "ridiBullet": "<strong>RIDI / Manta</strong> — Consulting Producer",
+      "tapasBullet": "<strong>Tapas Media</strong> (Kakao 산하) - Consulting Producer",
+      "ridiBullet": "<strong>RIDI / Manta</strong> - Consulting Producer",
       "rare": "두 한국 플랫폼을 동시에 자문해온 미국 producer는 거의 없습니다. 그에게 한국 IP는 새로운 트렌드가 아니라 일상입니다.",
-      "rights": "한국 창작자가 어떤 환경에서 작품을 만들고, 어떤 입장에 서 있는지 — 그는 매일의 작업 안에서 이미 알고 있습니다. 그래서 KStoryBridge에서 한국 작가가 가장 먼저 묻는 질문 — <emph>\"권리는 어떻게 되나요\"</emph> — 에 대한 답이, 그가 출발하는 자리에 이미 들어 있습니다.",
+      "rights": "한국 창작자가 어떤 환경에서 작품을 만들고, 어떤 입장에 서 있는지 - 그는 매일의 작업 안에서 이미 알고 있습니다. 그래서 KStoryBridge에서 한국 작가가 가장 먼저 묻는 질문 - <emph>\"권리는 어떻게 되나요\"</emph> - 에 대한 답이, 그가 출발하는 자리에 이미 들어 있습니다.",
       "logos": "Tapas (Kakao) · RIDI · Manta"
     },
     "expertise": {
       "eyebrow": "전문성",
       "headlineLine1": "평생 한 가지 일에",
-      "headlineLine2": "깊이 파고들었습니다 — 각색(adaptation)",
-      "p1": "Kevin은 Warner Bros. 계열의 The Wolper Organization에서 한 가지 일에 오래 집중해왔습니다 — <strong>이미 존재하는 이야기를 새로운 화면 위로 옮기는 일.</strong>",
-      "p2": "그가 다뤄온 작품들은 거의 모두 <strong>원작이 있는 IP</strong>입니다. 소설, 만화, 실화, 클래식 — 형태는 다양하지만 공통점은 하나입니다. <strong>이미 존재하는 이야기를 영상으로 다시 그리는 일.</strong> 그의 전문 분야는 한 단어로 정리됩니다 — <strong>각색(adaptation)</strong>.",
+      "headlineLine2": "깊이 파고들었습니다 - 각색(adaptation)",
+      "p1": "Kevin은 Warner Bros. 계열의 The Wolper Organization에서 한 가지 일에 오래 집중해왔습니다 - <strong>이미 존재하는 이야기를 새로운 화면 위로 옮기는 일.</strong>",
+      "p2": "그가 다뤄온 작품들은 거의 모두 <strong>원작이 있는 IP</strong>입니다. 소설, 만화, 실화, 클래식 - 형태는 다양하지만 공통점은 하나입니다. <strong>이미 존재하는 이야기를 영상으로 다시 그리는 일.</strong> 그의 전문 분야는 한 단어로 정리됩니다 - <strong>각색(adaptation)</strong>.",
       "p3": "그의 개발 네트워크는 미국과 글로벌 메이저 스튜디오·스트리머와 닿아 있습니다. 한국의 이야기가 글로벌로 향할 때, 그가 이미 아는 사람들이 그 자리에 있습니다.",
       "logos": "Warner Bros. · Amazon · Netflix · FX"
     },
@@ -45,7 +45,7 @@
           "description": "Fangoria Studios 제작. Junji Ito 작품 최초의 영어 실사 영화화."
         },
         "sandstone": {
-          "title": "Sandstone Artists — Partner & Head of Production",
+          "title": "Sandstone Artists - Partner & Head of Production",
           "description": "Tapas, RIDI / Manta 자문 동시 진행."
         },
         "microdrama": {

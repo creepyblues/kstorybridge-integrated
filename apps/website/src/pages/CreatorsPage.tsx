@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
@@ -12,8 +11,6 @@ import {
   Users,
   MessageSquare,
   FileCheck,
-  CheckCircle2,
-  Star,
   AlertCircle,
   ArrowRight,
   Sparkles
@@ -135,16 +132,6 @@ const CreatorsPage = () => {
                   <p className="text-midnight-ink-600 text-center text-xs leading-tight">{t('access.studios.statLabel')}</p>
                 </div>
               </div>
-            </div>
-
-            <div className="text-center mt-12">
-              <Button
-                size="lg"
-                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
-                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
-              >
-                {t('access.cta')}
-              </Button>
             </div>
           </div>
         </section>
@@ -315,16 +302,6 @@ const CreatorsPage = () => {
                 </CardContent>
               </Card>
             </div>
-
-            <div className="text-center mt-12">
-              <Button
-                size="lg"
-                className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-4 text-base rounded-full font-medium transition-all duration-300"
-                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
-              >
-                {t('expertDeepDive.cta')}
-              </Button>
-            </div>
           </div>
         </section>
 
@@ -409,68 +386,6 @@ const CreatorsPage = () => {
         </section>
 
         {/* ========================================
-            SECTION 6: THREE STEPS
-            Simplified journey
-            ======================================== */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-porcelain-blue-50 to-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-midnight-ink mb-6">
-                {t('steps.title')}
-              </h2>
-              <p className="text-lg sm:text-xl text-midnight-ink-600 leading-relaxed max-w-3xl mx-auto">
-                {t('steps.subtitle')}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {/* Step 1: Join & Showcase */}
-              <div className="text-center">
-                <div className="w-16 h-16 bg-hanok-teal text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  {t('steps.step1.number')}
-                </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step1.title')}</h3>
-                <p className="text-midnight-ink-600 leading-relaxed">
-                  {t('steps.step1.description')}
-                </p>
-              </div>
-
-              {/* Step 2: Get Hollywood-Ready */}
-              <div className="text-center">
-                <div className="w-16 h-16 bg-hanok-teal text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  {t('steps.step2.number')}
-                </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step2.title')}</h3>
-                <p className="text-midnight-ink-600 leading-relaxed">
-                  {t('steps.step2.description')}
-                </p>
-              </div>
-
-              {/* Step 3: Connect & Close */}
-              <div className="text-center">
-                <div className="w-16 h-16 bg-porcelain-blue-600 text-white rounded-2xl flex items-center justify-center text-xl font-bold mx-auto mb-6 shadow-lg">
-                  {t('steps.step3.number')}
-                </div>
-                <h3 className="text-xl font-bold text-midnight-ink mb-4">{t('steps.step3.title')}</h3>
-                <p className="text-midnight-ink-600 leading-relaxed">
-                  {t('steps.step3.description')}
-                </p>
-              </div>
-            </div>
-
-            <div className="text-center mt-12">
-              <Button
-                size="lg"
-                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
-              >
-                {t('steps.cta')}
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================
             SECTION 7: FINAL CTA
             Signup + Newsletter
             ======================================== */}
@@ -488,18 +403,11 @@ const CreatorsPage = () => {
 
               <Button
                 size="lg"
-                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 mb-6"
+                className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
               >
                 {t('finalCta.cta')}
               </Button>
-
-              {/* Trust signals */}
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-midnight-ink-600">
-                <span>{t('finalCta.trustSignals.free')}</span>
-                <span>{t('finalCta.trustSignals.noExclusivity')}</span>
-                <span>{t('finalCta.trustSignals.creativeControl')}</span>
-              </div>
             </div>
 
           </div>

@@ -3,7 +3,7 @@
     "title": "Your Story Deserves the ",
     "titleHighlight": "Global Stage",
     "subtitle": "Pitch directly to Hollywood IP scouts, writers, and producers",
-    "cta": "Join the Platform"
+    "cta": "Join the stage"
   },
   "access": {
     "title": "Stop Being Invisible to Hollywood",
@@ -24,8 +24,7 @@
         "title": "No Gatekeepers",
         "description": "You pitch directly. They respond directly. No one filters your voice."
       }
-    },
-    "cta": "See Who's Waiting"
+    }
   },
   "guarantees": {
     "title": "Everything You Need to Succeed Globally",
@@ -65,8 +64,7 @@
         "title": "Veteran Guidance",
         "description": "Direct support from Hollywood producer with 20+ years of development experience"
       }
-    },
-    "cta": "Get Your Pitch Developed"
+    }
   },
   "comparison": {
     "title": "Why Creators Choose KStoryBridge",
@@ -84,34 +82,9 @@
       "description": "Keep creative control while we handle the business. Fair commission structure with full transparency. Legal protection at every step. Your Korean story, perfectly positioned for the global stage."
     }
   },
-  "steps": {
-    "title": "Your Journey from Korea to Hollywood",
-    "subtitle": "Three simple steps",
-    "step1": {
-      "number": "01",
-      "title": "Join & Showcase",
-      "description": "Create your profile, upload your webtoon/novel, tell us your idea and vision"
-    },
-    "step2": {
-      "number": "02",
-      "title": "Get Hollywood-Ready",
-      "description": "Our team develops your professional pitch deck with Hollywood veteran guidance"
-    },
-    "step3": {
-      "number": "03",
-      "title": "Connect & Close",
-      "description": "Hollywood producers see your pitch and connect with you. We support you through deal closure"
-    },
-    "cta": "Get Started"
-  },
   "finalCta": {
     "title": "Your Story Is Ready. Hollywood Is Waiting.",
     "subtitle": "Join the platform connecting Korean creators with global studios",
-    "cta": "Create Your Profile",
-    "trustSignals": {
-      "free": "✓ Free to join",
-      "noExclusivity": "✓ No exclusivity required",
-      "creativeControl": "✓ Keep your rights"
-    }
+    "cta": "Join the stage"
   }
 }

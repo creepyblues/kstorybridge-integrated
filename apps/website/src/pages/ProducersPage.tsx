@@ -98,11 +98,6 @@ const ProducersPage = () => {
               >
                 {t('hero.cta')}
               </Button>
-
-              {/* Trust signal */}
-              <p className="mt-4 text-sm text-midnight-ink-600">
-                {t('hero.trust')}
-              </p>
             </div>
           </div>
         </section>
@@ -224,6 +219,33 @@ const ProducersPage = () => {
               </Button>
             </div>
 
+          </div>
+        </section>
+
+        {/* ========================================
+            NEWSLETTER
+            ======================================== */}
+        <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-white to-porcelain-blue-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
+              <iframe
+                src="https://subscribe-forms.beehiiv.com/44fe1ec1-b67e-4431-9ed2-84a8bb05dbbc"
+                className="beehiiv-embed"
+                data-test-id="beehiiv-embed"
+                frameBorder="0"
+                scrolling="no"
+                style={{
+                  width: '1014px',
+                  height: '288px',
+                  margin: '0 auto',
+                  borderRadius: '0px',
+                  backgroundColor: 'transparent',
+                  boxShadow: '0 0 #0000',
+                  maxWidth: '100%',
+                  display: 'block'
+                }}
+              />
+            </div>
           </div>
         </section>
 

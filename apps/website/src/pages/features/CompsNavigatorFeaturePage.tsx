@@ -5,7 +5,6 @@ import {
   FeatureHero,
   HowItWorksSection,
   ValuePropsGrid,
-  StatsSection,
   FinalCTASection
 } from '../../components/features/shared';
 import { CompsMiniDemo } from '../../components/features/comps/CompsMiniDemo';
@@ -82,16 +81,6 @@ const CompsNavigatorFeaturePage = () => {
             description: t('comps.values.explanations.description'),
             icon: <Brain className="h-8 w-8" />
           }
-        ]}
-        accentColor="teal"
-      />
-
-      {/* Stats */}
-      <StatsSection
-        stats={[
-          { value: t('comps.stats.titles'), label: t('comps.stats.titlesLabel') },
-          { value: t('comps.stats.comps'), label: t('comps.stats.compsLabel') },
-          { value: t('comps.stats.results'), label: t('comps.stats.resultsLabel') }
         ]}
         accentColor="teal"
       />

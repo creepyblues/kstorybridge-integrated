@@ -25,11 +25,6 @@ const AboutPage = () => {
                       text: t('hero.title'),
                       className: 'text-5xl lg:text-6xl font-bold text-midnight-ink',
                     },
-                    {
-                      text: t('hero.subtitle'),
-                      className: 'text-xl lg:text-2xl text-midnight-ink-600 block mt-6',
-                      delay: 400,
-                    },
                   ]}
                   cursorClassName="text-hanok-teal"
                 />

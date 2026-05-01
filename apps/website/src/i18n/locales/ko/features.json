@@ -7,7 +7,7 @@
     "hero": {
       "headline": "2-4초 만에 한국 콘텐츠 발견",
       "subhead": "245+ 큐레이션된 한국 작품에 대해 Jinu에게 물어보세요",
-      "primaryCta": "무료 체험하기",
+      "primaryCta": "로그인 없이 먼저 체험하기",
       "secondaryCta": "전체 액세스 가입"
     },
     "demo": {
@@ -51,14 +51,6 @@
         "title": "학습 곡선 제로",
         "description": "그냥 타이핑하세요. 복잡한 필터나 문법 없음."
       }
-    },
-    "stats": {
-      "titles": "245+",
-      "titlesLabel": "큐레이션 작품",
-      "response": "2-4초",
-      "responseLabel": "응답 시간",
-      "cost": "$0.02",
-      "costLabel": "쿼리당 비용"
     }
   },
   "comps": {
@@ -69,7 +61,7 @@
     "hero": {
       "headline": "좋아하는 작품으로 한국 스토리 찾기",
       "subhead": "할리우드 히트작을 선택하고, 매칭되는 한국 IP를 발견하세요",
-      "primaryCta": "무료 체험하기",
+      "primaryCta": "로그인 없이 먼저 체험하기",
       "secondaryCta": "전체 액세스 가입"
     },
     "demo": {
@@ -107,14 +99,6 @@
         "title": "AI 매칭 설명",
         "description": "각 작품이 왜 선택에 맞는지 정확히 이해하세요."
       }
-    },
-    "stats": {
-      "titles": "245+",
-      "titlesLabel": "검색 가능 작품",
-      "comps": "3",
-      "compsLabel": "최대 선택",
-      "results": "15",
-      "resultsLabel": "상위 매칭"
     }
   },
   "mandates": {
@@ -125,7 +109,7 @@
     "hero": {
       "headline": "비전을 설명하세요. 매칭을 찾으세요.",
       "subhead": "245+ 한국 작품에서 자연어 검색",
-      "primaryCta": "무료 체험하기",
+      "primaryCta": "로그인 없이 먼저 체험하기",
       "secondaryCta": "전체 액세스 가입"
     },
     "demo": {
@@ -181,9 +165,8 @@
     "cta": {
       "title": "한국 콘텐츠를 발견할 준비가 되셨나요?",
       "subtitle": "AI 기반 발견으로 다음 히트작을 찾는 프로듀서들과 함께하세요",
-      "primaryCta": "무료 체험 시작",
-      "secondaryCta": "전체 액세스 가입",
-      "trust": "신용카드 불필요 • 무료로 시작"
+      "primaryCta": "로그인 없이 먼저 체험하기",
+      "secondaryCta": "전체 액세스 가입"
     },
     "backToProducers": "← 프로듀서로 돌아가기"
   }

@@ -5,7 +5,6 @@ import {
   FeatureHero,
   HowItWorksSection,
   ValuePropsGrid,
-  StatsSection,
   FinalCTASection
 } from '../../components/features/shared';
 import { ChatbotMiniDemo } from '../../components/features/chatbot/ChatbotMiniDemo';
@@ -82,16 +81,6 @@ const ChatbotFeaturePage = () => {
             description: t('chatbot.values.simple.description'),
             icon: <MessageSquare className="h-8 w-8" />
           }
-        ]}
-        accentColor="teal"
-      />
-
-      {/* Stats */}
-      <StatsSection
-        stats={[
-          { value: t('chatbot.stats.titles'), label: t('chatbot.stats.titlesLabel') },
-          { value: t('chatbot.stats.response'), label: t('chatbot.stats.responseLabel') },
-          { value: t('chatbot.stats.cost'), label: t('chatbot.stats.costLabel') }
         ]}
         accentColor="teal"
       />

@@ -7,7 +7,7 @@
     "hero": {
       "headline": "Korean Content Discovery in 2-4 Seconds",
       "subhead": "Ask Jinu anything about 245+ curated Korean titles",
-      "primaryCta": "Try Free Trial",
+      "primaryCta": "Try before signing in",
       "secondaryCta": "Sign Up for Full Access"
     },
     "demo": {
@@ -51,14 +51,6 @@
         "title": "Zero Learning Curve",
         "description": "Just type. No complex filters or syntax to learn."
       }
-    },
-    "stats": {
-      "titles": "245+",
-      "titlesLabel": "Curated Titles",
-      "response": "2-4s",
-      "responseLabel": "Response Time",
-      "cost": "$0.02",
-      "costLabel": "Per Query"
     }
   },
   "comps": {
@@ -69,7 +61,7 @@
     "hero": {
       "headline": "Find Korean Stories Using Shows You Love",
       "subhead": "Select Hollywood hits, discover matching Korean IP",
-      "primaryCta": "Try Free Trial",
+      "primaryCta": "Try before signing in",
       "secondaryCta": "Sign Up for Full Access"
     },
     "demo": {
@@ -107,14 +99,6 @@
         "title": "AI Match Explanations",
         "description": "Understand exactly why each title matches your selection."
       }
-    },
-    "stats": {
-      "titles": "245+",
-      "titlesLabel": "Searchable Titles",
-      "comps": "3",
-      "compsLabel": "Max Selections",
-      "results": "15",
-      "resultsLabel": "Top Matches"
     }
   },
   "mandates": {
@@ -125,7 +109,7 @@
     "hero": {
       "headline": "Describe Your Vision. Find Your Match.",
       "subhead": "Natural language search across 245+ Korean titles",
-      "primaryCta": "Try Free Trial",
+      "primaryCta": "Try before signing in",
       "secondaryCta": "Sign Up for Full Access"
     },
     "demo": {
@@ -181,9 +165,8 @@
     "cta": {
       "title": "Ready to Discover Korean Content?",
       "subtitle": "Join producers finding their next hit with AI-powered discovery",
-      "primaryCta": "Start Free Trial",
-      "secondaryCta": "Sign Up for Full Access",
-      "trust": "No credit card required • Free to start"
+      "primaryCta": "Try before signing in",
+      "secondaryCta": "Sign Up for Full Access"
     },
     "backToProducers": "← Back to Producers"
   }

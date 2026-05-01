@@ -69,10 +69,6 @@ export function FinalCTASection({ accentColor = 'teal' }: FinalCTASectionProps) 
                 {t('shared.cta.secondaryCta')}
               </Button>
             </div>
-
-            <p className="mt-6 text-sm text-midnight-ink-600">
-              {t('shared.cta.trust')}
-            </p>
           </div>
         </ScrollReveal>
       </div>

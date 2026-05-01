@@ -182,7 +182,7 @@ export default function SignUp() {
         <CardHeader className="space-y-1 pb-6">
           <CardTitle className="text-3xl font-bold text-midnight-ink">Producer Sign Up</CardTitle>
           <CardDescription className="text-base text-midnight-ink-600">
-            Create your producer account
+            Create your free producer account
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

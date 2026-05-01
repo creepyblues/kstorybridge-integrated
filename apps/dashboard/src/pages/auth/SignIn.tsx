@@ -204,7 +204,8 @@ export default function SignIn() {
               className="text-hanok-teal hover:text-hanok-teal/80 font-medium"
             >
               Sign up here
-            </Link>
+            </Link>{' '}
+            (it's free)
           </div>
         </CardContent>
       </Card>

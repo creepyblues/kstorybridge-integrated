@@ -1,26 +1,9 @@
 {
   "hero": {
     "title": "Connecting Korean Stories to Global Audiences",
-    "subtitle": "KStoryBridge doesn't just connect—it catalyzes Korean stories into a global movement, powered by the world's leading producers",
-    "ctaCreator": "I'm a Creator",
-    "ctaBuyer": "I'm a Producer"
-  },
-  "trialPromo": {
-    "title": "See It in Action",
-    "subtitle": "3 free searches. No signup required.",
-    "cta": "Try It Now",
-    "comps": {
-      "title": "Comps Navigator",
-      "description": "Find by similar titles"
-    },
-    "mandates": {
-      "title": "Mandate Matcher",
-      "description": "Find by production brief"
-    },
-    "trending": {
-      "title": "Trending Titles",
-      "description": "Browse curated picks"
-    }
+    "subtitle": "KStoryBridge doesn't just connect. We catalyzes Korean stories into a global movement, powered by the world's leading producers",
+    "ctaCreator": "I have IP to license",
+    "ctaBuyer": "I'm looking for IP to adapt"
   },
   "coreValues": {
     "sectionTitle": "Three Core Values",

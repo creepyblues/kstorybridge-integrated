@@ -3,8 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@kstorybridge/ui';
 import { Menu, X } from 'lucide-react';
-import { getDashboardUrl } from '../config/urls';
+import { getDashboardUrl, getCreatorUrl } from '../config/urls';
 import LanguageSelector from './header/LanguageSelector';
+import SignInDropdown from './header/SignInDropdown';
 
 const UniversalHeader = () => {
   const navigate = useNavigate();
@@ -22,63 +23,61 @@ const UniversalHeader = () => {
       {/* Header with improved mobile padding */}
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 backdrop-blur-sm bg-white/95">
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 max-w-7xl mx-auto">
-          {/* Logo - text version */}
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={() => {
-              navigate('/');
-              setMobileMenuOpen(false);
-            }}
-          >
-            <span className="text-xl sm:text-2xl font-bold tracking-tight">
-              <span className="text-black">K</span>
-              <span className="text-hanok-teal">Story</span>
-              <span className="text-black">Bridge</span>
-            </span>
+          {/* Left: Logo + Desktop Navigation */}
+          <div className="flex items-center gap-10 lg:gap-12">
+            {/* Logo - text version */}
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() => {
+                navigate('/');
+                setMobileMenuOpen(false);
+              }}
+            >
+              <span className="text-xl sm:text-2xl font-bold tracking-tight">
+                <span className="text-black">K</span>
+                <span className="text-hanok-teal">Story</span>
+                <span className="text-black">Bridge</span>
+              </span>
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <button
+                onClick={() => navigate('/creators')}
+                className={`font-medium transition-colors ${
+                  isActive('/creators')
+                    ? 'text-hanok-teal'
+                    : 'text-midnight-ink hover:text-hanok-teal'
+                }`}
+              >
+                {t('nav.creators').toUpperCase()}
+              </button>
+              <button
+                onClick={() => navigate('/producers')}
+                className={`font-medium transition-colors ${
+                  isActive('/producers')
+                    ? 'text-hanok-teal'
+                    : 'text-midnight-ink hover:text-hanok-teal'
+                }`}
+              >
+                {t('nav.producers').toUpperCase()}
+              </button>
+              <button
+                onClick={() => navigate('/about')}
+                className={`font-medium transition-colors ${
+                  isActive('/about')
+                    ? 'text-hanok-teal'
+                    : 'text-midnight-ink hover:text-hanok-teal'
+                }`}
+              >
+                {t('nav.about').toUpperCase()}
+              </button>
+            </div>
           </div>
-          
-          {/* Desktop Navigation and Auth Buttons */}
+
+          {/* Right: Sign In + Language Selector */}
           <div className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={() => navigate('/creators')}
-              className={`font-medium transition-colors ${
-                isActive('/creators')
-                  ? 'text-hanok-teal'
-                  : 'text-midnight-ink hover:text-hanok-teal'
-              }`}
-            >
-              {t('nav.creators').toUpperCase()}
-            </button>
-            <button
-              onClick={() => navigate('/producers')}
-              className={`font-medium transition-colors ${
-                isActive('/producers')
-                  ? 'text-hanok-teal'
-                  : 'text-midnight-ink hover:text-hanok-teal'
-              }`}
-            >
-              {t('nav.producers').toUpperCase()}
-            </button>
-            <button
-              onClick={() => navigate('/about')}
-              className={`font-medium transition-colors ${
-                isActive('/about')
-                  ? 'text-hanok-teal'
-                  : 'text-midnight-ink hover:text-hanok-teal'
-              }`}
-            >
-              {t('nav.about').toUpperCase()}
-            </button>
-
-            {/* Auth Buttons */}
-            <Button
-              className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-6 py-2 rounded-full font-medium transition-colors"
-              onClick={() => navigate('/signup')}
-            >
-              {t('cta.getStarted').toUpperCase()}
-            </Button>
-
-            {/* Language Selector */}
+            <SignInDropdown />
             <LanguageSelector />
           </div>
           
@@ -151,6 +150,25 @@ const UniversalHeader = () => {
               >
                 {t('nav.about').toUpperCase()}
               </button>
+            </div>
+
+            {/* Sign In Section */}
+            <div className="pt-4 border-t border-gray-200 space-y-1">
+              <div className="px-4 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                {t('nav.signin')}
+              </div>
+              <a
+                href={`${getDashboardUrl()}/signin`}
+                className="block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors text-midnight-ink hover:bg-gray-50"
+              >
+                {t('nav.producerSignin')}
+              </a>
+              <a
+                href={`${getCreatorUrl()}/signin`}
+                className="block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors text-midnight-ink hover:bg-gray-50"
+              >
+                {t('nav.creatorSignin')}
+              </a>
             </div>
           </div>
         </div>

@@ -6,6 +6,8 @@
     "pricing": "가격",
     "signup": "회원가입",
     "signin": "로그인",
+    "producerSignin": "프로듀서 로그인",
+    "creatorSignin": "작가 로그인",
     "about": "소개",
     "news": "소식"
   },

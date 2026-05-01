@@ -147,7 +147,7 @@ export function FormatFitDetailPanel({ titleId, className = '' }: FormatFitDetai
         </div>
 
         {/* Format Cards — click to select */}
-        <div className="grid grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-6">
           {formats.map((format) => {
             const score = scores[format];
             const isBest = format === bestFormat;
@@ -157,15 +157,15 @@ export function FormatFitDetailPanel({ titleId, className = '' }: FormatFitDetai
               <button
                 key={format}
                 onClick={() => setSelectedFormat(format === selectedFormat ? null : format)}
-                className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${getCardBorder(score, isSelected, isBest)}`}
+                className={`p-2 sm:p-3 rounded-xl border text-center transition-all cursor-pointer ${getCardBorder(score, isSelected, isBest)}`}
               >
                 <div className="flex justify-center mb-2">
-                  <Icon icon={FORMAT_ICONS[format]} className={`h-8 w-8 ${isSelected ? 'text-[#4C9C9B]' : 'text-gray-500'}`} />
+                  <Icon icon={FORMAT_ICONS[format]} className={`h-6 w-6 sm:h-8 sm:w-8 ${isSelected ? 'text-[#4C9C9B]' : 'text-gray-500'}`} />
                 </div>
-                <p className={`text-sm font-medium mb-1 leading-tight ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>
+                <p className={`text-xs sm:text-sm font-medium mb-1 leading-tight ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>
                   {FORMAT_DISPLAY_NAMES[format]}
                 </p>
-                <p className={`text-2xl font-bold ${getScoreColor(score)}`}>
+                <p className={`text-xl sm:text-2xl font-bold ${getScoreColor(score)}`}>
                   {score}%
                 </p>
                 {isBest && (
@@ -182,7 +182,7 @@ export function FormatFitDetailPanel({ titleId, className = '' }: FormatFitDetai
         {selectedFormat && analysis && (
           <div className="border border-gray-200 rounded-xl p-5 bg-gray-50/50">
             {/* Title row */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-[#4C9C9B]/10">
                   <Icon icon={FORMAT_ICONS[selectedFormat]} className="h-6 w-6 text-[#4C9C9B]" />
@@ -192,7 +192,7 @@ export function FormatFitDetailPanel({ titleId, className = '' }: FormatFitDetai
                   <p className="text-sm text-gray-500">{FORMAT_DESCRIPTIONS[selectedFormat]}</p>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <span className={`text-3xl font-bold ${getScoreColor(scores[selectedFormat])}`}>
                   {scores[selectedFormat]}%
                 </span>
@@ -219,7 +219,7 @@ export function FormatFitDetailPanel({ titleId, className = '' }: FormatFitDetai
             )}
 
             {/* Strengths & Challenges */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {analysis.strengths && analysis.strengths.length > 0 && (
                 <div>
                   <h5 className="text-sm font-semibold text-emerald-700 mb-2 flex items-center gap-1">

@@ -117,3 +117,39 @@ export const notifyCreatorSignin = async (data: CreatorSigninData): Promise<void
     authType: data.authType,
   });
 };
+
+/**
+ * Notify Slack of a creator returning to the app after >12h idle.
+ * Fired by useActivityBeacon on app load when the gap between visits exceeds
+ * the threshold. Distinct from "Creator Signin" so persisted-session returns
+ * are visible separately from real sign-ins.
+ */
+export interface CreatorReturnData {
+  email: string;
+  fullName?: string;
+  penName?: string;
+  idleHours: number;
+  lastActiveAt: string;
+}
+
+export const notifyCreatorReturn = async (data: CreatorReturnData): Promise<void> => {
+  await sendSlackNotification({
+    event: 'Creator Returned',
+    userType: 'creator',
+    fullName: data.fullName || '',
+    email: data.email,
+    additionalInfo: {
+      idle_hours: formatIdleHours(data.idleHours),
+      last_active_at: data.lastActiveAt,
+      pen_name: data.penName,
+    },
+  });
+};
+
+const formatIdleHours = (hours: number): string => {
+  const rounded = Math.round(hours);
+  if (rounded < 24) return `${rounded}h`;
+  const days = Math.floor(rounded / 24);
+  const remainder = rounded % 24;
+  return remainder === 0 ? `${days}d` : `${days}d ${remainder}h`;
+};

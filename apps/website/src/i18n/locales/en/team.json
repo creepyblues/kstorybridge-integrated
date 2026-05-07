@@ -68,5 +68,57 @@
       "button": "▶ Request a meeting",
       "mailtoSubject": "KStoryBridge meeting request"
     }
+  },
+  "sungho": {
+    "hero": {
+      "eyebrow": "Team",
+      "headlineLine1": "Twenty-plus years connecting Korea and the world,",
+      "headlineLine2": "across every industry it had to be done in.",
+      "sub": "Internet services, smartphones, OTT, and now stories — the industries kept changing, but the work was always the same.",
+      "name": "Sungho Lee",
+      "role": "Co-Founder & Partner, KStoryBridge",
+      "portraitAlt": "Sungho Lee"
+    },
+    "lead": {
+      "p1": "Sungho Lee has spent over twenty years doing one job across many industries — connecting Korea and the world. He started in global internet services, running and bridging products at a time when those services were the new connective tissue between markets. He was there when Korean-built smartphones met Google's software and reached users across the planet. He led partnership work that helped Netflix find its footing in Asia. And at RIDI / Manta, he personally led the work of bringing Korean stories to Hollywood and to English-language readers.",
+      "p2": "What he is doing at KStoryBridge is the same job he had at RIDI / Manta — only this time <strong>not for one platform's catalogue, but for every Korean writer and rights-holder</strong>. While Kevin Nicklaus moves the work to the screen, Sungho builds every other path between a Korean story and the global decision-makers it needs to reach."
+    },
+    "role": {
+      "eyebrow": "Connection",
+      "headlineLine1": "The work he did at RIDI / Manta,",
+      "headlineLine2": "now opening to all of Korea.",
+      "intro": "What Sungho does at KStoryBridge is the same work he did at RIDI / Manta — only now, instead of one platform's catalogue, the path is open to any Korean writer, any platform, any work, no matter where it starts.",
+      "threeSeats": "He carries three seats here at KStoryBridge.",
+      "items": {
+        "hollywood": {
+          "title": "Connecting Korean writers and rights-holders to Hollywood",
+          "description": "The work he did at RIDI / Manta — the path a single Korean story takes to reach Hollywood — is now being laid out so that any Korean writer, on any Korean platform, can walk the same road."
+        },
+        "kevin": {
+          "title": "The bridge between Kevin and Korea",
+          "description": "Letting Kevin connect naturally with Korean writers, rights-holders, and platforms — whether the context is business or cultural — by carrying the words and tone of one side to the other. Possible because he has lived inside both."
+        },
+        "business": {
+          "title": "Everything outside of content",
+          "description": "Platform development and operations, contracts, payments, business systems — every area outside of making the work itself rests with him. The job of clearing every path outside the writing, so the writer can stay with the writing."
+        }
+      },
+      "closingLine1": "How a story is <emph>re-drawn for the screen</emph> — that's Kevin's work.",
+      "closingLine2": "<emph>Every other path</emph> between Korea and the world — that's his.",
+      "closingLine3": "That's why both seats sit together at KStoryBridge."
+    },
+    "closing": {
+      "line1": "Kevin has spent his life moving writers' stories to the screen.",
+      "line2": "Sungho has spent over twenty years connecting Korea and the world.",
+      "line3": "KStoryBridge is what stands where the two of them meet.",
+      "kevinLink": "Kevin Nicklaus"
+    },
+    "cta": {
+      "headlineLine1": "Your work, and the possibilities it carries -",
+      "headlineLine2": "let's explore them with KStoryBridge.",
+      "body": "It starts with a conversation about the work.",
+      "button": "▶ Request a meeting",
+      "mailtoSubject": "KStoryBridge meeting request"
+    }
   }
 }

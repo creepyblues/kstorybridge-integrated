@@ -1,10 +1,13 @@
 import { CMSSidebar } from './CMSSidebar'
+import { useActivityBeacon } from '@/hooks/useActivityBeacon'
 
 interface MainLayoutProps {
   children: React.ReactNode
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  useActivityBeacon()
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-rose-50/40 via-orange-50/20 to-amber-50/30">
       <CMSSidebar />

@@ -43,6 +43,7 @@ const FormatSpotlightPage = lazy(() => import("./pages/FormatSpotlightPage"));
 
 // Team bio pages
 const KevinBioPage = lazy(() => import("./pages/KevinBioPage"));
+const SunghoBioPage = lazy(() => import("./pages/SunghoBioPage"));
 
 // Redirect /titles/:slug to dashboard app
 const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || 'https://dashboard.kstorybridge.com';
@@ -96,6 +97,7 @@ const App = () => (
           <Route path="/producers/onboarding" element={<ProducersOnboardingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/team/kevin" element={<KevinBioPage />} />
+          <Route path="/team/sungho" element={<SunghoBioPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/signup" element={<SigninPage />} />

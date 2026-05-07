@@ -31,6 +31,7 @@ function formatSlackMessage(data: SlackNotificationData) {
   // Choose emoji based on event type
   const eventEmoji = data.event.toLowerCase().includes('signup') ? ':tada:' :
                      data.event.toLowerCase().includes('signin') ? ':wave:' :
+                     data.event.toLowerCase().includes('returned') ? ':back:' :
                      ':bell:';
 
   // Build the main message text

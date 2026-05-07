@@ -143,6 +143,48 @@ export const notifyUserSignin = async (data: UserSigninData): Promise<void> => {
 };
 
 /**
+ * Notify Slack of a buyer returning to the app after >12h idle.
+ * Fired by useActivityBeacon on app load when the gap between visits exceeds
+ * the threshold. Distinct from "Buyer Signin" so the two events can be told
+ * apart in Slack — these are persisted-session returns, not fresh sign-ins.
+ */
+export interface BuyerReturnData {
+  email: string;
+  fullName?: string;
+  company?: string;
+  tier?: string;
+  idleHours: number;
+  lastActiveAt: string;
+}
+
+export const notifyBuyerReturn = async (data: BuyerReturnData): Promise<void> => {
+  await sendSlackNotification({
+    event: 'Buyer Returned',
+    userType: 'buyer',
+    fullName: data.fullName || '',
+    email: data.email,
+    company: data.company,
+    additionalInfo: {
+      idle_hours: formatIdleHours(data.idleHours),
+      last_active_at: data.lastActiveAt,
+      tier: data.tier,
+    },
+  });
+};
+
+/**
+ * Format idle hours into a Slack-friendly human string.
+ * 13.4 -> "13h", 36.0 -> "1d 12h", 168 -> "7d".
+ */
+const formatIdleHours = (hours: number): string => {
+  const rounded = Math.round(hours);
+  if (rounded < 24) return `${rounded}h`;
+  const days = Math.floor(rounded / 24);
+  const remainder = rounded % 24;
+  return remainder === 0 ? `${days}d` : `${days}d ${remainder}h`;
+};
+
+/**
  * Test function for debugging - available in browser console
  */
 export const testSlackNotification = async () => {

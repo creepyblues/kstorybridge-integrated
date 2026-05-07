@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@kstorybridge/ui';
 import { Menu, X } from 'lucide-react';
-import { getDashboardUrl, getCreatorUrl } from '../config/urls';
 import LanguageSelector from './header/LanguageSelector';
 import SignInDropdown from './header/SignInDropdown';
 
@@ -81,14 +79,9 @@ const UniversalHeader = () => {
             <LanguageSelector />
           </div>
           
-          {/* Mobile: Sign Up button + Language selector + menu button */}
-          <div className="md:hidden flex items-center gap-2">
-            <Button
-              className="border-2 border-hanok-teal text-hanok-teal bg-white hover:bg-hanok-teal hover:text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
-              onClick={() => navigate('/signup')}
-            >
-              {t('cta.signUp').toUpperCase()}
-            </Button>
+          {/* Mobile: route-aware Sign In + Language selector + menu button */}
+          <div className="md:hidden flex items-center gap-3">
+            <SignInDropdown />
             <LanguageSelector />
             <button
               className="p-2 -mr-2 touch-manipulation"
@@ -150,25 +143,6 @@ const UniversalHeader = () => {
               >
                 {t('nav.about').toUpperCase()}
               </button>
-            </div>
-
-            {/* Sign In Section */}
-            <div className="pt-4 border-t border-gray-200 space-y-1">
-              <div className="px-4 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                {t('nav.signin')}
-              </div>
-              <a
-                href={`${getDashboardUrl()}/signin`}
-                className="block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors text-midnight-ink hover:bg-gray-50"
-              >
-                {t('nav.producerSignin')}
-              </a>
-              <a
-                href={`${getCreatorUrl()}/signin`}
-                className="block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors text-midnight-ink hover:bg-gray-50"
-              >
-                {t('nav.creatorSignin')}
-              </a>
             </div>
           </div>
         </div>

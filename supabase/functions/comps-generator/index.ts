@@ -17,6 +17,16 @@ import {
   estimateGeneratorCost,
 } from '../_shared/comps-utils.ts';
 
+import {
+  buildAnalysisSummary,
+  calculateDataCompleteness,
+  deconstructStory,
+  fetchWithTimeout,
+  selectMode,
+  type ContentAnalysis,
+  type TitleData,
+} from '../_shared/comps-deconstruction.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -25,33 +35,6 @@ const corsHeaders = {
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT_MS = 60000 // 60 seconds for GPT-4 calls
 const OMDB_TIMEOUT_MS = 10000    // 10 seconds for OMDB lookups
-
-/**
- * Fetch with timeout wrapper to prevent hanging requests
- */
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit,
-  timeoutMs: number = REQUEST_TIMEOUT_MS
-): Promise<Response> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    })
-    return response
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error(`Request timed out after ${timeoutMs}ms`)
-    }
-    throw error
-  } finally {
-    clearTimeout(timeoutId)
-  }
-}
 
 // =====================================================================
 // TYPE DEFINITIONS
@@ -66,37 +49,7 @@ interface CompsGeneratorRequest {
 // Use SuggestedCompV2 from shared types
 type SuggestedComp = SuggestedCompV2;
 
-interface TitleData {
-  title_id: string;
-  title_name_en: string | null;
-  title_name_kr: string | null;
-  synopsis: string | null;
-  synopsis_kr: string | null;
-  genre: string[] | null;
-  tone: string | null;
-  content_format: string | null;
-  character_details: Record<string, unknown> | null;
-  story_structure: string | null;
-  setting_description: string | null;
-  world_lore: string | null;
-  important_issues: string | null;
-  inspiration: string | null;
-  audience: string | null;
-  perfect_for: string | null;
-  comps: string[] | null;
-}
-
-interface ContentAnalysis {
-  semantic_tags: unknown[] | null;
-  plot_elements: string[] | null;
-  character_types: string[] | null;
-  cultural_elements: string[] | null;
-  mood_analysis: Record<string, unknown> | null;
-  pitch_analysis: Record<string, unknown> | null;
-  processing_confidence: number | null;
-}
-
-// StoryDeconstruction is imported from shared types
+// TitleData, ContentAnalysis, StoryDeconstruction are imported from shared modules
 
 // =====================================================================
 // MAIN HANDLER
@@ -220,14 +173,8 @@ serve(async (req) => {
       hasPitchDeck
     )
 
-    // Determine mode
-    let modeUsed: 'rich' | 'limited'
-    if (requestData.mode === 'rich' || requestData.mode === 'limited') {
-      modeUsed = requestData.mode
-    } else {
-      // Auto-detect based on completeness
-      modeUsed = completenessScore >= 50 ? 'rich' : 'limited'
-    }
+    // Determine mode (auto-detect when not explicitly requested)
+    const modeUsed = selectMode(requestData.mode, completenessScore)
 
     console.log('[COMPS-GEN] Data completeness:', {
       score: completenessScore,
@@ -320,9 +267,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('[COMPS-GEN] Error:', error)
+    // Distinguish client errors (400) from server errors (500)
+    const clientErrors = ['title_id is required', 'user_email is required'];
+    const isClientError = clientErrors.some(msg => error.message?.includes(msg));
+    const status = isClientError ? 400 : 500;
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
@@ -330,157 +281,9 @@ serve(async (req) => {
 // =====================================================================
 // HELPER FUNCTIONS
 // =====================================================================
-
-function calculateDataCompleteness(
-  title: TitleData,
-  analysis: ContentAnalysis | null,
-  hasPitchDeck: boolean
-): number {
-  let score = 0
-
-  // Core fields (required for basic analysis)
-  if (title.synopsis && title.synopsis.length > 50) score += 10
-  if (title.genre && title.genre.length > 0) score += 10
-  if (title.tone) score += 10
-
-  // Rich data fields
-  if (title.character_details && Object.keys(title.character_details).length > 0) score += 15
-  if (title.story_structure) score += 10
-  if (title.setting_description) score += 5
-  if (title.important_issues) score += 5
-  if (title.world_lore) score += 5
-  if (title.inspiration) score += 5
-
-  // Content analysis fields
-  if (analysis) {
-    if (analysis.plot_elements && analysis.plot_elements.length > 0) score += 10
-    if (analysis.semantic_tags && Array.isArray(analysis.semantic_tags) && analysis.semantic_tags.length > 0) score += 10
-    if (analysis.character_types && analysis.character_types.length > 0) score += 5
-    if (analysis.pitch_analysis && Object.keys(analysis.pitch_analysis).length > 0) score += 15
-  }
-
-  // Pitch deck bonus
-  if (hasPitchDeck) score += 10
-
-  return Math.min(score, 100)
-}
-
-async function deconstructStory(
-  title: TitleData,
-  analysis: ContentAnalysis | null,
-  mode: 'rich' | 'limited'
-): Promise<StoryDeconstruction> {
-  const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
-
-  if (!openaiApiKey) {
-    throw new Error('OPENAI_API_KEY not configured')
-  }
-
-  const prompt = mode === 'rich'
-    ? buildRichDeconstructionPrompt(title, analysis)
-    : buildLimitedDeconstructionPrompt(title)
-
-  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a story analyst expert in deconstructing narratives for Hollywood comp matching.
-You understand Blake Snyder's "Save the Cat" genre taxonomy and can identify story patterns across cultures.
-Always return valid JSON matching the requested structure.`
-        },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' }
-    })
-  }, REQUEST_TIMEOUT_MS) // 60 second timeout for GPT-4 story deconstruction
-
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`OpenAI API error: ${error}`)
-  }
-
-  const data = await response.json()
-  const content = data.choices[0].message.content
-
-  try {
-    return JSON.parse(content) as StoryDeconstruction
-  } catch (e) {
-    console.error('[COMPS-GEN] Failed to parse deconstruction:', content)
-    throw new Error('Failed to parse story deconstruction')
-  }
-}
-
-function buildRichDeconstructionPrompt(title: TitleData, analysis: ContentAnalysis | null): string {
-  return `Analyze this Korean webtoon/webnovel for Hollywood comp matching.
-
-TITLE: ${title.title_name_en || ''} / ${title.title_name_kr || ''}
-SYNOPSIS: ${title.synopsis || title.synopsis_kr || 'Not available'}
-GENRE: ${title.genre?.join(', ') || 'Not specified'}
-TONE: ${title.tone || 'Not specified'}
-FORMAT: ${title.content_format || 'Not specified'}
-TARGET AUDIENCE: ${title.audience || title.perfect_for || 'Not specified'}
-
-STORY DETAILS:
-- Characters: ${title.character_details ? JSON.stringify(title.character_details) : 'Not available'}
-- Story Structure: ${title.story_structure || 'Not available'}
-- Setting: ${title.setting_description || 'Not available'}
-- World/Lore: ${title.world_lore || 'Not available'}
-- Themes/Issues: ${title.important_issues || 'Not available'}
-- Inspiration: ${title.inspiration || 'Not available'}
-
-AI ANALYSIS DATA:
-- Semantic Tags: ${analysis?.semantic_tags ? JSON.stringify(analysis.semantic_tags) : 'Not available'}
-- Plot Elements: ${analysis?.plot_elements?.join(', ') || 'Not available'}
-- Character Types: ${analysis?.character_types?.join(', ') || 'Not available'}
-- Mood Analysis: ${analysis?.mood_analysis ? JSON.stringify(analysis.mood_analysis) : 'Not available'}
-- Pitch Analysis: ${analysis?.pitch_analysis ? JSON.stringify(analysis.pitch_analysis) : 'Not available'}
-
-Deconstruct this story into these 8 dimensions. Return a JSON object with these exact keys:
-
-{
-  "save_the_cat_genre": "Choose ONE: Monster in the House | Golden Fleece | Out of the Bottle | Dude with a Problem | Rites of Passage | Buddy Love | Whydunit | Fool Triumphant | Institutionalized | Superhero",
-  "tone_mood": "Describe the emotional register (e.g., 'Dark and suspenseful with moments of dark humor')",
-  "character_archetypes": "Identify hero type, antagonist pattern, key relationships (e.g., 'Reluctant hero with tragic backstory, system as antagonist, found family dynamics')",
-  "plot_structure": "Identify the core narrative arc (e.g., 'Survival game with elimination rounds, revenge subplot, social commentary')",
-  "setting_world": "Describe time/place/worldbuilding (e.g., 'Contemporary Korea, isolated game facility, dystopian undertones')",
-  "themes": "Core messages and social commentary (e.g., 'Class inequality, desperation under capitalism, human nature under pressure')",
-  "target_audience": "Demographics and appeal factors (e.g., 'Adults 18-45, thriller fans, social drama enthusiasts')",
-  "format_style": "Narrative style and pacing (e.g., 'High-stakes action sequences, ensemble cast, episodic challenges')"
-}`
-}
-
-function buildLimitedDeconstructionPrompt(title: TitleData): string {
-  return `Analyze this Korean webtoon/webnovel for Hollywood comp matching. Note: Limited data available.
-
-TITLE: ${title.title_name_en || ''} / ${title.title_name_kr || ''}
-SYNOPSIS: ${title.synopsis || title.description_kr || 'Not available'}
-GENRE: ${title.genre?.join(', ') || 'Not specified'}
-TONE: ${title.tone || 'Not specified'}
-FORMAT: ${title.content_format || 'Not specified'}
-
-Based on the limited information available, deconstruct this story. Make reasonable inferences from the title, genre, and synopsis.
-
-Return a JSON object with these exact keys:
-
-{
-  "save_the_cat_genre": "Choose ONE: Monster in the House | Golden Fleece | Out of the Bottle | Dude with a Problem | Rites of Passage | Buddy Love | Whydunit | Fool Triumphant | Institutionalized | Superhero",
-  "tone_mood": "Describe the emotional register based on genre and synopsis",
-  "character_archetypes": "Infer likely hero type and relationships from genre conventions",
-  "plot_structure": "Infer the core narrative arc from genre and synopsis",
-  "setting_world": "Describe likely setting based on available information",
-  "themes": "Infer themes from genre and synopsis",
-  "target_audience": "Estimate target demographics from genre",
-  "format_style": "Infer narrative style from genre conventions"
-}`
-}
+// `calculateDataCompleteness`, `deconstructStory`, `buildRichDeconstructionPrompt`,
+// `buildLimitedDeconstructionPrompt`, and `buildAnalysisSummary` live in
+// ../_shared/comps-deconstruction.ts so that `score-manual-comp` can share them.
 
 async function generateComps(
   title: TitleData,
@@ -608,16 +411,6 @@ Requirements:
 - Rank by overall_match_score (highest first)`
 }
 
-function buildAnalysisSummary(deconstruction: StoryDeconstruction, mode: 'rich' | 'limited'): string {
-  const modeNote = mode === 'limited'
-    ? ' (Note: Analysis based on limited data - some inferences may be approximate)'
-    : ''
-
-  return `Story Type: ${deconstruction.save_the_cat_genre}
-Tone: ${deconstruction.tone_mood}
-Core Appeal: ${deconstruction.target_audience}${modeNote}`
-}
-
 // =====================================================================
 // OMDB ENRICHMENT (IMDB IDs)
 // =====================================================================
@@ -637,6 +430,102 @@ interface OMDBSearchResponse {
   Error?: string;
 }
 
+interface OMDBDetailResponse {
+  Response: string;
+  Error?: string;
+  Poster?: string;
+  imdbID?: string;
+  Title?: string;
+  Year?: string;
+}
+
+/**
+ * Run an OMDB Search query. Returns parsed body or null on transport/parse error.
+ */
+async function omdbSearch(
+  apiKey: string,
+  title: string,
+  type: string,
+  year?: number
+): Promise<OMDBSearchResponse | null> {
+  let url = `https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(title)}&type=${type}`
+  if (year) url += `&y=${year}`
+  try {
+    const response = await fetchWithTimeout(url, {}, OMDB_TIMEOUT_MS)
+    return await response.json() as OMDBSearchResponse
+  } catch (error) {
+    console.warn(`[COMPS-GEN] OMDB search transport error for "${title}":`, error)
+    return null
+  }
+}
+
+/**
+ * Fetch poster URL via OMDB Detail endpoint (?i=). Detail returns Poster reliably
+ * even for titles where Search returns Poster: 'N/A'.
+ */
+async function omdbFetchPoster(apiKey: string, imdbId: string): Promise<string | undefined> {
+  try {
+    const url = `https://www.omdbapi.com/?apikey=${apiKey}&i=${imdbId}`
+    const response = await fetchWithTimeout(url, {}, OMDB_TIMEOUT_MS)
+    const data = await response.json() as OMDBDetailResponse
+    if (data.Response === 'True' && data.Poster && data.Poster !== 'N/A') {
+      return data.Poster
+    }
+  } catch (error) {
+    console.warn(`[COMPS-GEN] OMDB detail lookup failed for ${imdbId}:`, error)
+  }
+  return undefined
+}
+
+/**
+ * Pick best match from OMDB Search results, preferring exact year match.
+ */
+function pickBestMatch(results: OMDBSearchResult[], year?: number): OMDBSearchResult {
+  if (year) {
+    const exact = results.find((s) => parseInt(s.Year) === year)
+    if (exact) return exact
+  }
+  return results[0]
+}
+
+/**
+ * Find an OMDB match for a comp using progressive fallbacks:
+ *   1. Search title + type + year
+ *   2. Retry without year
+ *   3. Strip subtitle after ":" and retry without year (handles season/installment names
+ *      like "American Horror Story: Murder House" → "American Horror Story")
+ */
+async function findOMDBMatch(
+  apiKey: string,
+  comp: SuggestedComp,
+  omdbType: string
+): Promise<OMDBSearchResult | null> {
+  // Attempt 1: full title + year
+  const r1 = await omdbSearch(apiKey, comp.comp_title, omdbType, comp.comp_year)
+  if (r1?.Response === 'True' && r1.Search && r1.Search.length > 0) {
+    return pickBestMatch(r1.Search, comp.comp_year)
+  }
+
+  // Attempt 2: full title without year
+  const r2 = await omdbSearch(apiKey, comp.comp_title, omdbType)
+  if (r2?.Response === 'True' && r2.Search && r2.Search.length > 0) {
+    return pickBestMatch(r2.Search, comp.comp_year)
+  }
+
+  // Attempt 3: strip subtitle after ":" (e.g. season names) and retry without year
+  if (comp.comp_title.includes(':')) {
+    const baseTitle = comp.comp_title.split(':')[0].trim()
+    if (baseTitle && baseTitle !== comp.comp_title) {
+      const r3 = await omdbSearch(apiKey, baseTitle, omdbType)
+      if (r3?.Response === 'True' && r3.Search && r3.Search.length > 0) {
+        return pickBestMatch(r3.Search, comp.comp_year)
+      }
+    }
+  }
+
+  return null
+}
+
 async function enrichCompsWithIMDB(comps: SuggestedComp[]): Promise<SuggestedComp[]> {
   const omdbApiKey = Deno.env.get('OMDB_API_KEY')
 
@@ -650,52 +539,45 @@ async function enrichCompsWithIMDB(comps: SuggestedComp[]): Promise<SuggestedCom
   const enrichedComps = await Promise.all(
     comps.map(async (comp) => {
       try {
-        // Map comp_type to OMDB type parameter
         const omdbType = comp.comp_type.toLowerCase().includes('series') ? 'series' : 'movie'
 
-        // Build search URL with title and optional year
-        let searchUrl = `https://www.omdbapi.com/?apikey=${omdbApiKey}&s=${encodeURIComponent(comp.comp_title)}&type=${omdbType}`
-        if (comp.comp_year) {
-          searchUrl += `&y=${comp.comp_year}`
+        const match = await findOMDBMatch(omdbApiKey, comp, omdbType)
+        if (!match) {
+          console.log(`[COMPS-GEN] No OMDB match for "${comp.comp_title}"`)
+          return comp
         }
 
-        const response = await fetchWithTimeout(searchUrl, {}, OMDB_TIMEOUT_MS)
-        const data: OMDBSearchResponse = await response.json()
+        // Prefer Search poster; fall back to Detail endpoint when Search returns N/A.
+        // Detail (?i=) reliably returns posters when the title has one.
+        let posterUrl: string | undefined =
+          match.Poster && match.Poster !== 'N/A' ? match.Poster : undefined
+        if (!posterUrl) {
+          posterUrl = await omdbFetchPoster(omdbApiKey, match.imdbID)
+        }
 
-        if (data.Response === 'True' && data.Search && data.Search.length > 0) {
-          // Find best match - prefer exact year match if available
-          let match = data.Search[0]
-          if (comp.comp_year) {
-            const exactYearMatch = data.Search.find(
-              (s) => parseInt(s.Year) === comp.comp_year
-            )
-            if (exactYearMatch) {
-              match = exactYearMatch
-            }
-          }
+        console.log(
+          `[COMPS-GEN] OMDB match for "${comp.comp_title}": ${match.imdbID} (poster=${!!posterUrl})`
+        )
 
-          console.log(`[COMPS-GEN] OMDB match for "${comp.comp_title}": ${match.imdbID}`)
-
-          return {
-            ...comp,
-            imdb_id: match.imdbID,
-            imdb_url: `https://www.imdb.com/title/${match.imdbID}`,
-            poster_url: match.Poster && match.Poster !== 'N/A' ? match.Poster : undefined,
-          }
-        } else {
-          console.log(`[COMPS-GEN] No OMDB match for "${comp.comp_title}": ${data.Error || 'No results'}`)
+        return {
+          ...comp,
+          imdb_id: match.imdbID,
+          imdb_url: `https://www.imdb.com/title/${match.imdbID}`,
+          poster_url: posterUrl,
         }
       } catch (error) {
         console.warn(`[COMPS-GEN] OMDB lookup failed for "${comp.comp_title}":`, error)
       }
 
-      // Return unchanged if lookup fails
       return comp
     })
   )
 
   const enrichedCount = enrichedComps.filter((c) => c.imdb_id).length
-  console.log(`[COMPS-GEN] IMDB enrichment complete: ${enrichedCount}/${comps.length} comps enriched`)
+  const posterCount = enrichedComps.filter((c) => c.poster_url).length
+  console.log(
+    `[COMPS-GEN] IMDB enrichment complete: ${enrichedCount}/${comps.length} matched, ${posterCount}/${comps.length} with posters`
+  )
 
   return enrichedComps
 }

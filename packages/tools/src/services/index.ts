@@ -75,5 +75,11 @@ export {
   createOMDBService,
 } from './omdbService';
 
+// Manual Comp Scorer Service
+export {
+  scoreManualComps,
+  createManualCompScorerService,
+} from './manualCompScorer';
+
 // Re-export FormatFitSummary from types for convenience
 export type { FormatFitSummary } from '../types';

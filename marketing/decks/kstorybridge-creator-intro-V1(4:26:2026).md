@@ -268,8 +268,12 @@ partners@kstorybridge.com (클릭하면 복사됨)
 
 ---
 
+![bg right:42%](../assets/appendix/crunchyroll-keyvisual.jpg)
+
 ## Slide 14. Crunchyroll (크런치롤)
 *Eyebrow: 부록 · 01 · 애니메이션 · Crunchyroll*
+
+![h:56](../assets/appendix/crunchyroll-wordmark.svg)
 
 **소니가 소유한 세계 최대 애니메이션 스트리밍**
 
@@ -283,16 +287,19 @@ partners@kstorybridge.com (클릭하면 복사됨)
 **한국 작가에게 의미하는 것**
 > 한국 웹소설 원작 **《나 혼자만 레벨업》**은 크런치롤의 2024년 최대 흥행 애니메이션이 되었습니다. 한국 IP가 글로벌 시장으로 진입하는 가장 직접적이고 검증된 통로 중 하나입니다.
 
-**Visual note:** Crunchyroll wordmark (오렌지) + 우측 half-bleed에 *Solo Leveling* 키 비주얼 또는 크런치롤 앱 UI 스크린샷. 자산 위치: `assets/appendix/crunchyroll-wordmark.png`, `assets/appendix/crunchyroll-keyvisual.jpg`.
+<!-- Visual: Crunchyroll wordmark (top-left) + Solo Leveling cover half-bleed right -->
+
 
 ---
+
+![bg right:42%](../assets/appendix/tbate-keyvisual.jpg)
 
 ## Slide 15. The Beginning After The End
 *Eyebrow: 부록 · 02 · 애니메이션 · The Beginning After The End*
 
 **미국 웹소설이 크런치롤 오리지널 애니메이션이 되기까지**
 
-TurtleMe라는 미국 작가가 2015년부터 무료 웹소설 사이트 Royalroad에 연재한 이세계물입니다. 2018년 Tapas에서 웹툰으로 확장되었고, 2025년 크런치롤 오리지널 애니메이션으로 제작되었습니다. **KStoryBridge의 Kevin이 본 작품의 Executive Producer입니다.**
+TurtleMe라는 **한국계 미국인 작가**가 2015년부터 무료 웹소설 사이트 Royalroad에 연재한 이세계물입니다. 2018년 Tapas에서 웹툰으로 확장되었고, 2025년 크런치롤 오리지널 애니메이션으로 제작되었습니다. **KStoryBridge의 Kevin이 본 작품의 Executive Producer입니다.**
 
 **규모 (Scale)**
 - 원작 웹소설: 529화 (2015–2025, Royalroad/Patreon)
@@ -302,9 +309,12 @@ TurtleMe라는 미국 작가가 2015년부터 무료 웹소설 사이트 Royalro
 **한국 작가에게 의미하는 것**
 > 일본이 아닌 지역의 웹 연재 원작이 정상급 애니메이션 IP로 확장된 정확한 사례입니다. **한국 웹소설·웹툰이 같은 경로를 밟을 수 있다는 검증된 모델**이며, 이 길을 직접 걸어본 사람이 KStoryBridge를 만들었습니다.
 
-**Visual note:** TBATE 시즌 1 또는 시즌 2 공식 키 비주얼 (Arthur Leywin) — 우측 half-bleed. 자산 위치: `assets/appendix/tbate-keyvisual.jpg`.
+<!-- Visual: TBATE anime cover half-bleed right -->
+
 
 ---
+
+![bg right:42%](../assets/appendix/junji-ito-keyvisual.jpg)
 
 ## Slide 16. 이토 준지 (Junji Ito)
 *Eyebrow: 부록 · 03 · 장르 IP · 이토 준지*
@@ -314,38 +324,48 @@ TurtleMe라는 미국 작가가 2015년부터 무료 웹소설 사이트 Royalro
 《소용돌이(うずまき)》《토미에》《어둠의 목소리》로 알려진 일본 호러 만화가입니다. 미국 만화 산업의 최고 권위상인 **아이즈너상을 4회 수상**했고, 2025년 명예의 전당에 헌액되었습니다.
 
 **규모 (Scale)**
-- Eisner Award: 4회 수상 (2019 · 2021 ×2 · 2022) → 명예의 전당 (2025)
+- Eisner Award: 4회 수상 (2019–2022) → 명예의 전당 (2025)
 - Netflix 《Junji Ito Maniac: Japanese Tales of the Macabre》: 12화 (2023.01)
 - Adult Swim 《Uzumaki》: 미니시리즈 (2024.09–10), Production I.G USA 제작
 
 **한국 작가에게 의미하는 것**
 > 아시아 호러 작가가 단순 라이선스를 넘어 **Netflix·Warner와 직접 작가 단위로 계약**할 수 있다는 증거입니다. 한국 호러 웹툰/웹소설 작가가 자신의 커리어 지도를 그릴 때 참고할 수 있는 가장 명확한 사례.
 
-**Visual note:** *Uzumaki* 소용돌이 페이지 또는 Netflix 《Junji Ito Maniac》 키 아트 — half-bleed. 스캔이 아닌 정식 프레스 이미지 사용. 자산 위치: `assets/appendix/junji-ito-keyvisual.jpg`.
+<!-- Visual: Uzumaki manga cover half-bleed right -->
+
 
 ---
+
+![bg right:38%](../assets/appendix/reelshort-screenshot.jpg)
 
 ## Slide 17. ReelShort (릴쇼트)
 *Eyebrow: 부록 · 04 · 수직형 드라마 · ReelShort*
 
+![h:72](../assets/appendix/reelshort-wordmark.png)
+
 **미국에서 가장 큰 세로형 단편 드라마 앱**
 
-1–2분짜리 세로형 드라마 에피소드를 모바일에서 마이크로 결제로 풀어보는 미국 플랫폼입니다. 2023년 11월 미국 앱스토어에서 **잠시 TikTok을 제치고 엔터테인먼트 1위**에 올랐고, 2024년 TIME100 Most Influential Companies에 선정되었습니다.
+1–2분짜리 세로형 드라마 에피소드를 모바일에서 마이크로 결제로 풀어보는 미국 플랫폼입니다. 2023년 11월 미국 앱스토어 **엔터테인먼트 카테고리 1위**에 올라 일시적으로 TikTok 다운로드를 추월했고, 모기업 Crazy Maple Studio는 **2024년 TIME100 Most Influential Companies**에 선정되었습니다.
 
 **규모 (Scale)**
 - 매출: **약 $700M (2025)**
 - 누적 다운로드: 3,700만 (2024 초) → **3.7억+ (2025)**
-- 모기업: Crazy Maple Studio (中 COL Group 계열)
+- 모기업: Crazy Maple Studio (실리콘밸리 본사, 中 COL Group 49% 지분 투자)
 
 **한국 작가에게 의미하는 것**
 > 회귀, 재벌, 복수, 알파메일 — ReelShort가 가장 많이 쓰는 트로프가 **한국 웹소설이 이미 가장 잘 쓰는 트로프와 정확히 일치**합니다. 이미 익숙한 글의 형식이 새로 열린 글로벌 매출로 이어지는 시장입니다.
 
-**Visual note:** 세로 폰 프레임 안에 ReelShort 에피소드 스크린샷 (예: *Fated to My Forbidden Alpha*) + ReelShort 워드마크. 자산 위치: `assets/appendix/reelshort-wordmark.png`, `assets/appendix/reelshort-screenshot.jpg`.
+<!-- Visual: ReelShort wordmark (top-left) + app screenshot half-bleed right (vertical phone aesthetic) -->
+
 
 ---
 
+![bg right:38%](../assets/appendix/dramabox-screenshot.jpg)
+
 ## Slide 18. DramaBox (드라마박스)
 *Eyebrow: 부록 · 05 · 수직형 드라마 · DramaBox*
+
+![h:72](../assets/appendix/dramabox-wordmark.png)
 
 **같은 포맷, 또 하나의 거대 바이어**
 
@@ -354,17 +374,22 @@ ReelShort와 동일한 세로형 단편 드라마 포맷에서 가장 큰 경쟁
 **규모 (Scale)**
 - 매출 / 순이익: **$323M / $10M (2024)**
 - 글로벌 MAU: 5천만+ (2025), H1 평균 4,400만
-- 모기업: 디안종 테크놀로지(中) · Singapore StoryMatrix 운영; Google Play 2024 올해의 엔터테인먼트 앱
+- 모기업: 디안종 테크놀로지(中) · Singapore StoryMatrix 운영; Google Play Best of 2024 'Best for Fun' 수상 (HK·ID 등 일부 국가)
 
 **한국 작가에게 의미하는 것**
 > 같은 작품을 두 플랫폼에 동시에 제안할 수 있는 구조입니다. 단일 바이어가 아니라 **입찰 경쟁이 가능한 시장**이라는 뜻이며, 한국 IP 입장에서 협상 카드가 두 장이 됩니다.
 
-**Visual note:** 세로 폰 프레임 안에 DramaBox 앱 스크린샷 + DramaBox 워드마크. ReelShort 슬라이드와 동일한 레이아웃으로 시리즈 느낌을 강화. 자산 위치: `assets/appendix/dramabox-wordmark.png`, `assets/appendix/dramabox-screenshot.jpg`.
+<!-- Visual: DramaBox wordmark (top-left) + app screenshot half-bleed right (matches ReelShort slide series feel) -->
+
 
 ---
 
+![bg right:42%](../assets/appendix/fangoria-keyvisual.jpg)
+
 ## Slide 19. Fangoria Studios (팡고리아 스튜디오)
 *Eyebrow: 부록 · 06 · 장르 IP · Fangoria Studios*
+
+![h:64](../assets/appendix/fangoria-wordmark.svg)
 
 **미국 호러의 가장 오래된 권위 브랜드**
 
@@ -373,12 +398,13 @@ Fangoria는 **1979년 창간**된 미국 호러 전문 잡지로, 호러 장르�
 **규모 (Scale)**
 - 모 브랜드 창간: **1979년** (Kerry O'Quinn & Norman Jacobs)
 - Chainsaw Awards: 1992년부터, 미국 호러 최고 권위상
-- 최근작: 《Satanic Hispanics》 (2022) · **《Suitable Flesh》** (Joe Lynch · Barbara Crampton, 2023)
+- 최근작 (Fangoria Presents): **《Suitable Flesh》** (감독 Joe Lynch · 제작 Barbara Crampton · 주연 Heather Graham, 2023)
 
 **한국 작가에게 의미하는 것**
 > 호러는 글로벌 시장에서 작가의 색을 **가장 진하게 인정해주는 장르**입니다. Fangoria라는 이름 자체가 장르 신뢰도이며, 한국 호러 IP가 미국 실사 제작으로 가장 빠르게 도착할 수 있는 자연스러운 첫 목적지입니다.
 
-**Visual note:** Fangoria 매거진 표지 또는 *Suitable Flesh* 포스터 + Fangoria 빨강/검정 워드마크 — half-bleed. 자산 위치: `assets/appendix/fangoria-wordmark.png`, `assets/appendix/fangoria-keyvisual.jpg`.
+<!-- Visual: Fangoria wordmark (top-left) + Suitable Flesh poster half-bleed right -->
+
 
 ---
 

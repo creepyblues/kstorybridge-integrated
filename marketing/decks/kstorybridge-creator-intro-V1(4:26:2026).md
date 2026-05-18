@@ -10,7 +10,7 @@ Korean creators evaluating whether KStoryBridge is a trustworthy way to present 
 
 ## Slide 1. Cover
 **이제 당신의 스토리가
-더 큰 세상과 만날 차례입니다**
+더 넓은 세상과 만날 차례입니다**
 
 한국 스토리텔러를 위한 KStoryBridge의 제안
 
@@ -84,7 +84,7 @@ Three-card grid:
 
 Right column - three numbered items:
 
-**01. 글로벌 포맷으로 재구성** - 피치덱, Comps, Format Fit
+**01. 글로벌 포맷으로 재구성** - 피치덱, Comps(비교작 분석), 포맷 적합도 분석
 **02. 결정권자에게 직접 연결** - 넷플릭스·디즈니·아마존·소니 담당자
 **03. 진행 과정의 투명한 공유** - 검토자·피드백·다음 단계를 정기 보고
 
@@ -129,13 +129,15 @@ Co-Founder · 할리우드 IP 어댑테이션 20년
 - Executive Producer, *The Beginning After The End* (Crunchyroll · Fuji TV)
 - Executive Producer, *이토 준지의 피를 마시는 어둠(Bloodsucking Darkness)* (Fangoria)
 - Consulting Producer · **Tapas Media · RIDI/Manta**
+- [프로필 보기 →](https://kstorybridge.com/team/kevin)
 
 **Sungho Lee (이성호)**
 Co-Founder · 한국-글로벌 커넥터 20년
-- **Netflix Asia** 진출 파트너십 리드
-- **RIDI / Manta** 한국 스토리 할리우드 진출 총괄
+- **Netflix** 아시아 사업개발 디렉터
+- **RIDI / Manta** IP확장 및 할리우드 진출 총괄
 - 모바일 · 소프트웨어 · OTT 글로벌 사업 20년
 - Cornell Johnson MBA
+- [프로필 보기 →](https://kstorybridge.com/team/sungho)
 
 ---
 
@@ -280,7 +282,7 @@ partners@kstorybridge.com (클릭하면 복사됨)
 2006년 미국에서 시작해 2021년 소니가 약 **11.75억 달러**에 인수한 글로벌 애니메이션 전문 플랫폼입니다. 일본 작품 중심에서 출발했지만, 지금은 한국·중국·미국 원작 IP가 글로벌 시장으로 가는 핵심 통로입니다.
 
 **규모 (Scale)**
-- 유료 구독자: 1,500만+ (2024) → **2,100만+ (2026 회계연도)**
+- 유료 구독자: **2천백만+ (2026 기준)**
 - 라이브러리: 50,000+ 에피소드 / 25,000+ 시간
 - 모기업: 소니 픽처스 엔터테인먼트
 
@@ -321,7 +323,7 @@ TurtleMe라는 **한국계 미국인 작가**가 2015년부터 무료 웹소설 
 
 **서구가 인정한 일본 호러 만화의 거장**
 
-《소용돌이(うずまき)》《토미에》《어둠의 목소리》로 알려진 일본 호러 만화가입니다. 미국 만화 산업의 최고 권위상인 **아이즈너상을 4회 수상**했고, 2025년 명예의 전당에 헌액되었습니다.
+《소용돌이(うずまき)》《토미에》《어둠의 목소리》로 알려진 일본 호러 만화가입니다. 미국 만화 산업의 최고 권위상인 **아이즈너상을 4회 수상**했고, 2025년 명예의 전당에 헌액되었습니다. **KStoryBridge의 Kevin이 이토 준지의 《피를 마시는 어둠》 실사화 프로젝트의 Executive Producer로 참여중입니다.**
 
 **규모 (Scale)**
 - Eisner Award: 4회 수상 (2019–2022) → 명예의 전당 (2025)

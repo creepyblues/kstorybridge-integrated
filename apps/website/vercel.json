@@ -5,6 +5,13 @@
       "main": true
     }
   },
+  "redirects": [
+    {
+      "source": "/intro",
+      "destination": "/intro/kr",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!assets|js|docs|intro).*)",

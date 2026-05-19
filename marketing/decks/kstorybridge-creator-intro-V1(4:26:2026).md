@@ -1,5 +1,7 @@
 # KStoryBridge Creator Deck v6
 
+> Sister deck (English): [kstorybridge-creator-intro-EN-V1(4:26:2026).md](./kstorybridge-creator-intro-EN-V1%284:26:2026%29.md) · Deployed at [/intro/en](https://kstorybridge.com/intro/en) · This deck deploys at [/intro/kr](https://kstorybridge.com/intro/kr). Keep the two in sync when editing.
+
 ## Audience
 Korean creators evaluating whether KStoryBridge is a trustworthy way to present their work to US and global producers.
 

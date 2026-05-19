@@ -131,7 +131,7 @@ Co-Founder · 할리우드 IP 어댑테이션 20년
 - Executive Producer, *The Beginning After The End* (Crunchyroll · Fuji TV)
 - Executive Producer, *이토 준지의 피를 마시는 어둠(Bloodsucking Darkness)* (Fangoria)
 - Consulting Producer · **Tapas Media · RIDI/Manta**
-- [프로필 보기 →](https://kstorybridge.com/team/kevin)
+- [프로필 보기 →](https://www.linkedin.com/in/kevin-nicklaus/)
 
 **Sungho Lee (이성호)**
 Co-Founder · 한국-글로벌 커넥터 20년
@@ -139,7 +139,7 @@ Co-Founder · 한국-글로벌 커넥터 20년
 - **RIDI / Manta** IP확장 및 할리우드 진출 총괄
 - 모바일 · 소프트웨어 · OTT 글로벌 사업 20년
 - Cornell Johnson MBA
-- [프로필 보기 →](https://kstorybridge.com/team/sungho)
+- [프로필 보기 →](https://www.linkedin.com/in/sungholee/)
 
 ---
 

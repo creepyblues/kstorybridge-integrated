@@ -134,7 +134,7 @@ Co-Founder · 20 years in Hollywood IP adaptation
 - Executive Producer — *The Beginning After The End* (Crunchyroll · Fuji TV)
 - Executive Producer — *Junji Ito's Bloodsucking Darkness* (Fangoria)
 - Consulting Producer — **Tapas Media · RIDI/Manta**
-- [View profile →](https://kstorybridge.com/team/kevin)
+- [View profile →](https://www.linkedin.com/in/kevin-nicklaus/)
 
 **Sungho Lee (이성호)**
 Co-Founder · 20 years connecting Korea and the world
@@ -142,7 +142,7 @@ Co-Founder · 20 years connecting Korea and the world
 - **RIDI / Manta** — Head of IP Expansion & Hollywood Strategy
 - Mobile · Software · OTT — 20 years in global business
 - Cornell Johnson MBA
-- [View profile →](https://kstorybridge.com/team/sungho)
+- [View profile →](https://www.linkedin.com/in/sungholee/)
 
 ---
 

@@ -70,6 +70,16 @@ const UniversalHeader = () => {
               >
                 {t('nav.about').toUpperCase()}
               </button>
+              <button
+                onClick={() => navigate('/team')}
+                className={`font-medium transition-colors ${
+                  isActive('/team')
+                    ? 'text-hanok-teal'
+                    : 'text-midnight-ink hover:text-hanok-teal'
+                }`}
+              >
+                {t('nav.team').toUpperCase()}
+              </button>
             </div>
           </div>
 
@@ -142,6 +152,19 @@ const UniversalHeader = () => {
                 }`}
               >
                 {t('nav.about').toUpperCase()}
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/team');
+                  setMobileMenuOpen(false);
+                }}
+                className={`block w-full text-left font-medium py-3 px-4 rounded-lg transition-colors ${
+                  isActive('/team')
+                    ? 'bg-hanok-teal/10 text-hanok-teal'
+                    : 'text-midnight-ink hover:bg-gray-50'
+                }`}
+              >
+                {t('nav.team').toUpperCase()}
               </button>
             </div>
           </div>

@@ -120,5 +120,77 @@
       "button": "▶ Request a meeting",
       "mailtoSubject": "KStoryBridge meeting request"
     }
+  },
+  "together": {
+    "hero": {
+      "eyebrow": "Team",
+      "headlineLine1": "One brings stories to the screen.",
+      "headlineLine2": "One bridges Korea and the world.",
+      "sub": "Two seats sitting in one room — that is KStoryBridge.",
+      "namesLine": "Kevin Nicklaus · Sungho Lee",
+      "role": "Co-Founders & Partners, KStoryBridge",
+      "kevinPortraitAlt": "Kevin Nicklaus",
+      "sunghoPortraitAlt": "Sungho Lee"
+    },
+    "lead": {
+      "p1": "Kevin Nicklaus has spent decades in Hollywood adapting source IP for the screen, with a long career at Warner Bros.' The Wolper Organization and current Consulting Producer roles at Tapas Media and RIDI / Manta. Sungho Lee has spent twenty-plus years connecting Korea and the world across many industries — internet services, smartphones, OTT, and most recently leading Korean stories to Hollywood and English-language readers at RIDI / Manta. <strong>One brings the work to the screen; one builds every other path between Korea and the world.</strong> KStoryBridge is what stands where those two seats meet."
+    },
+    "pairing": {
+      "sectionEyebrow": "The pairing",
+      "sectionHeadline": "Two seats, one room.",
+      "kevin": {
+        "eyebrow": "Adaptation",
+        "name": "Kevin Nicklaus",
+        "role": "Co-Founder & Partner",
+        "headline": "Bringing stories to the screen",
+        "bullet1": "Built a long career at Warner Bros.' The Wolper Organization, devoted to a single craft — adapting source IP for the screen.",
+        "bullet2": "Consulting Producer at both Tapas Media and RIDI / Manta today, working inside two Korean platforms in parallel.",
+        "bullet3": "Executive Producer on <title>The Beginning After The End</title> (Crunchyroll / Fuji TV) and <title>Junji Ito's Bloodsucking Darkness</title> (Fangoria Studios).",
+        "ctaLink": "Kevin on LinkedIn"
+      },
+      "sungho": {
+        "eyebrow": "Bridge",
+        "name": "Sungho Lee",
+        "role": "Co-Founder & Partner",
+        "headline": "Connecting Korea and the world",
+        "bullet1": "Twenty-plus years across internet services, smartphones, OTT, and stories — the industries kept changing, but the work was always the same.",
+        "bullet2": "At RIDI / Manta, personally led the work of bringing Korean stories to Hollywood and to English-language readers.",
+        "bullet3": "At KStoryBridge, owns every path between a Korean writer and the global decision-maker, plus every business area outside of the work itself.",
+        "ctaLink": "Sungho on LinkedIn"
+      }
+    },
+    "pillars": {
+      "sectionEyebrow": "Why this pair",
+      "sectionHeadline": "What this means for a Korean creator.",
+      "rights": {
+        "eyebrow": "Trust",
+        "headline": "Rights are protected from the start.",
+        "body": "Kevin is one of very few American producers working daily inside two Korean platforms — Tapas and RIDI / Manta. Sungho ran the same kind of work from the Korean side. So when a Korean creator's first question is <emph>\"What happens to my rights?\"</emph>, the answer is already built into where they begin."
+      },
+      "path": {
+        "eyebrow": "Path",
+        "headline": "The road to Hollywood is already laid.",
+        "body": "Kevin's development network reaches the major American and global studios and streamers, and his current credits — Crunchyroll, Fuji TV, Fangoria Studios — are proof that the road is real, not theoretical. Sungho is the one who puts the work onto that road, in language both sides will read correctly."
+      },
+      "focus": {
+        "eyebrow": "Focus",
+        "headline": "The writer can stay with the work.",
+        "body": "Kevin owns the craft of adaptation. Sungho owns everything outside it — platform, contracts, payments, business systems. The writer is asked to do one thing — <emph>keep writing</emph>."
+      }
+    },
+    "closing": {
+      "line1": "Kevin has spent his life moving writers' stories to the screen.",
+      "line2": "Sungho has spent over twenty years connecting Korea and the world.",
+      "line3": "KStoryBridge is what stands where the two of them meet.",
+      "kevinLink": "Kevin's full bio",
+      "sunghoLink": "Sungho's full bio"
+    },
+    "cta": {
+      "headlineLine1": "Your work, and the possibilities it carries —",
+      "headlineLine2": "let's explore them with KStoryBridge.",
+      "body": "It starts with a conversation about the work.",
+      "button": "▶ Request a meeting",
+      "mailtoSubject": "KStoryBridge meeting request"
+    }
   }
 }

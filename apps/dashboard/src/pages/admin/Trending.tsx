@@ -98,7 +98,7 @@ export default function AdminTrending() {
     const timeoutId = setTimeout(async () => {
       setSearching(true);
       try {
-        const results = await titlesService.getTitles({ search: query });
+        const results = await titlesService.getTitles({ search: query, includeAllPriorities: true });
         setSearchResults(results.slice(0, 10));
       } catch (error) {
         console.error('Search error:', error);
@@ -120,7 +120,7 @@ export default function AdminTrending() {
       ]);
       setFeatured(featuredData);
       setSections(sectionsData);
-      const allTitles = await titlesService.getTitles();
+      const allTitles = await titlesService.getTitles({ includeAllPriorities: true });
       setTotalTitlesCount(allTitles.length);
     } catch (error: any) {
       console.error('Error loading data:', error);

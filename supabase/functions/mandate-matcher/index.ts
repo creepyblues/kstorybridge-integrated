@@ -314,10 +314,27 @@ serve(async (req) => {
       throw new Error(`Vector search error: ${searchError.message}`);
     }
 
-    console.log(`✅ Found ${searchResults?.length || 0} matching titles (${vectorSearchDuration}ms)`);
+    // Drop Low-priority (priority='3' or null) titles — buyer-facing surface.
+    let publishedResults: any[] = searchResults || [];
+    if (publishedResults.length > 0) {
+      const allIds = publishedResults.map((r: any) => r.title_id);
+      const { data: pubRows } = await supabase
+        .from('titles')
+        .select('title_id')
+        .in('title_id', allIds)
+        .in('priority', ['1', '2']);
+      const allowed = new Set((pubRows || []).map((r: { title_id: string }) => r.title_id));
+      const dropped = publishedResults.length - allowed.size;
+      publishedResults = publishedResults.filter((r: any) => allowed.has(r.title_id));
+      if (dropped > 0) {
+        console.log(`🚫 Filtered ${dropped} Low-priority titles from mandate matches`);
+      }
+    }
+
+    console.log(`✅ Found ${publishedResults.length} matching titles (${vectorSearchDuration}ms)`);
 
     // Step 3: Fetch pitch deck availability for matching titles
-    const titleIds = (searchResults || []).map((r: any) => r.title_id);
+    const titleIds = publishedResults.map((r: any) => r.title_id);
     let titlesWithPitchDeck = new Set<string>();
 
     if (titleIds.length > 0) {
@@ -336,7 +353,7 @@ serve(async (req) => {
     }
 
     // Step 4: Format initial results
-    const initialResults: TitleMatch[] = (searchResults || []).map((result: any) => ({
+    const initialResults: TitleMatch[] = publishedResults.map((result: any) => ({
       title_id: result.title_id,
       slug: result.slug,
       title_name_en: result.title_name_en,

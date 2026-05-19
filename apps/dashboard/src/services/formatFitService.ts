@@ -187,12 +187,14 @@ export async function getFormatSpotlightData(
 
   if (filtered.length === 0) return [];
 
-  // Fetch title details for matching titles
+  // Fetch title details for matching titles. Format Spotlight is buyer-facing,
+  // so hide Low-priority (priority='3'/null) titles.
   const titleIds = filtered.map((r) => r.title_id);
   const { data: titles, error: titlesError } = await supabase
     .from('titles')
     .select('title_id, slug, title_name_en, title_name_kr, title_image, genre, content_format, tone, story_author, art_author, rating, views')
-    .in('title_id', titleIds);
+    .in('title_id', titleIds)
+    .in('priority', ['1', '2']);
 
   if (titlesError) {
     console.error('[FormatSpotlight] Titles fetch error:', titlesError);

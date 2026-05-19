@@ -163,6 +163,34 @@ export interface TitleFilters {
   minRating?: number;
   completed?: boolean;
   prioritizeTitleName?: boolean; // For admin searches - title name matches appear first
+  /**
+   * When true, returns titles regardless of priority. Admin-only callers
+   * (AdminTitles, WeeklyTitle, Trending, admin detail views) should set this
+   * to true. Default (false/undefined) hides priority = '3' / null titles so
+   * Low-priority entries never reach the buyer dashboard.
+   */
+  includeAllPriorities?: boolean;
+}
+
+/**
+ * Priority encoding (string column on `titles`):
+ *   '1' = High   → visible on dashboard
+ *   '2' = Medium → visible on dashboard
+ *   '3' = Low    → hidden on dashboard (treated as unpublished)
+ *   null/missing → also treated as Low (matches the AdminTitles UI default)
+ *
+ * Buyer-facing queries should call applyPublishedFilter on the query
+ * builder; admin callers opt out via filters.includeAllPriorities = true.
+ */
+const PUBLISHED_PRIORITIES = ['1', '2'];
+
+/**
+ * Adds the `priority IN ('1', '2')` filter to a Supabase query.
+ * Typed loosely as `any` because the PostgrestFilterBuilder's generics are
+ * deep enough that wrapping them in a constrained generic trips TS 2589.
+ */
+function applyPublishedFilter(query: any): any {
+  return query.in('priority', PUBLISHED_PRIORITIES);
 }
 
 class TitlesService {
@@ -182,6 +210,11 @@ class TitlesService {
         .order('priority', { ascending: true })
         .order('verified', { ascending: false })
         .order('views', { ascending: false, nullsFirst: false });
+
+      // Hide priority='3'/null from buyer surfaces unless admin opted out.
+      if (!filters?.includeAllPriorities) {
+        query = applyPublishedFilter(query);
+      }
 
       // Apply filters
       if (filters?.genre) {
@@ -239,6 +272,10 @@ class TitlesService {
       .order('verified', { ascending: false })
       .order('views', { ascending: false, nullsFirst: false });
 
+    if (!filters.includeAllPriorities) {
+      titleNameQuery = applyPublishedFilter(titleNameQuery);
+    }
+
     // Apply other filters
     if (filters.genre) {
       titleNameQuery = titleNameQuery.contains('genre', [filters.genre]);
@@ -271,6 +308,10 @@ class TitlesService {
       .order('priority', { ascending: true })
       .order('verified', { ascending: false })
       .order('views', { ascending: false, nullsFirst: false });
+
+    if (!filters.includeAllPriorities) {
+      synopsisQuery = applyPublishedFilter(synopsisQuery);
+    }
 
     // Apply other filters
     if (filters.genre) {
@@ -317,6 +358,10 @@ class TitlesService {
         .order('priority', { ascending: true })
         .order('verified', { ascending: false })
         .order('views', { ascending: false, nullsFirst: false });
+
+      if (!filters?.includeAllPriorities) {
+        query = applyPublishedFilter(query);
+      }
 
       // Apply filters (same as getTitles)
       if (filters?.genre) {
@@ -367,16 +412,24 @@ class TitlesService {
   }
 
   /**
-   * Fetch multiple titles by their IDs
+   * Fetch multiple titles by their IDs.
+   * Hides priority=Low entries by default; pass includeAllPriorities=true
+   * for admin contexts that need every row regardless of priority.
    */
-  async getTitlesByIds(titleIds: string[]): Promise<Title[]> {
+  async getTitlesByIds(titleIds: string[], options?: { includeAllPriorities?: boolean }): Promise<Title[]> {
     if (titleIds.length === 0) return [];
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('titles')
         .select('*')
         .in('title_id', titleIds);
+
+      if (!options?.includeAllPriorities) {
+        query = applyPublishedFilter(query);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('❌ Error fetching titles by IDs:', error);
@@ -395,10 +448,14 @@ class TitlesService {
   }
 
   /**
-   * Fetch a single title by ID with pitch analysis, platforms, and documents
-   * Uses multiple queries for better reliability
+   * Fetch a single title by ID with pitch analysis, platforms, and documents.
+   * Uses multiple queries for better reliability.
+   *
+   * Buyer-facing pages (TitleDetail) leave options undefined and Low-priority
+   * titles return null — the buyer sees a 404 even via direct URL. Admin
+   * detail pages pass { includeAllPriorities: true } so they can edit any row.
    */
-  async getTitleById(titleId: string): Promise<Title | null> {
+  async getTitleById(titleId: string, options?: { includeAllPriorities?: boolean }): Promise<Title | null> {
     try {
       // Query 1: Get title data with content analysis
       const { data, error } = await supabase
@@ -420,6 +477,12 @@ class TitlesService {
 
       if (!data) {
         console.log('ℹ️ Title not found:', titleId);
+        return null;
+      }
+
+      // Block Low-priority titles from buyer pages: treat as 404.
+      if (!options?.includeAllPriorities && (data.priority === '3' || data.priority == null)) {
+        console.log('ℹ️ Title not visible to buyers (Low priority):', titleId);
         return null;
       }
 
@@ -504,14 +567,15 @@ class TitlesService {
   }
 
   /**
-   * Fetch a single title by slug with pitch analysis, platforms, and documents
+   * Fetch a single title by slug with pitch analysis, platforms, and documents.
+   * Same priority gate as getTitleById — pass includeAllPriorities for admin views.
    */
-  async getTitleBySlug(slug: string): Promise<Title | null> {
+  async getTitleBySlug(slug: string, options?: { includeAllPriorities?: boolean }): Promise<Title | null> {
     try {
       // Backward compatibility: if slug is actually a UUID, fetch by ID directly
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidPattern.test(slug)) {
-        return this.getTitleById(slug);
+        return this.getTitleById(slug, options);
       }
 
       const { data, error } = await supabase
@@ -530,7 +594,7 @@ class TitlesService {
         return null;
       }
 
-      return this.getTitleById(data.title_id);
+      return this.getTitleById(data.title_id, options);
     } catch (error: unknown) {
       console.error('❌ Title by slug service error:', error);
       throw error;
@@ -607,7 +671,8 @@ class TitlesService {
   }
 
   /**
-   * Get all favorited titles for a user
+   * Get all favorited titles for a user. Buyer-only surface — Low-priority
+   * titles are filtered out even if the user previously saved one.
    */
   async getFavorites(userId: string): Promise<Title[]> {
     try {
@@ -622,8 +687,11 @@ class TitlesService {
         throw new Error(`Failed to fetch favorites: ${error.message}`);
       }
 
-      // Extract titles from the nested structure
-      return data?.map((fav: any) => fav.title).filter(Boolean) || [];
+      // Extract titles, drop any whose priority is Low (or unset)
+      const titles = data?.map((fav: any) => fav.title).filter(Boolean) || [];
+      return titles.filter(
+        (t: Title) => t.priority === '1' || t.priority === '2',
+      );
     } catch (error: any) {
       console.error('❌ Favorites service error:', error);
       throw error;
@@ -631,14 +699,14 @@ class TitlesService {
   }
 
   /**
-   * Get unique genres from all titles
+   * Get unique genres from all titles. Buyer dropdown — scoped to published
+   * titles only so we don't surface options that have zero visible titles.
    */
   async getGenres(): Promise<string[]> {
     try {
-      const { data, error } = await supabase
-        .from('titles')
-        .select('genre')
-        .not('genre', 'is', null);
+      const { data, error } = await applyPublishedFilter(
+        supabase.from('titles').select('genre').not('genre', 'is', null),
+      );
 
       if (error) {
         console.error('❌ Error fetching genres:', error);
@@ -669,14 +737,15 @@ class TitlesService {
   }
 
   /**
-   * Get unique content formats from all titles
+   * Get unique content formats from all titles. Buyer dropdown — scoped to
+   * published titles only so we don't surface options that have zero
+   * visible titles.
    */
   async getFormats(): Promise<string[]> {
     try {
-      const { data, error } = await supabase
-        .from('titles')
-        .select('content_format')
-        .not('content_format', 'is', null);
+      const { data, error } = await applyPublishedFilter(
+        supabase.from('titles').select('content_format').not('content_format', 'is', null),
+      );
 
       if (error) {
         console.error('❌ Error fetching formats:', error);
@@ -732,11 +801,10 @@ class TitlesService {
       // Extract title IDs from vector search results
       const titleIds = vectorResults.map((result: VectorSearchResult) => result.title_id);
 
-      // Fetch full title data from database
-      const { data, error } = await supabase
-        .from('titles')
-        .select('*')
-        .in('title_id', titleIds);
+      // Fetch full title data, hiding Low-priority titles from the buyer surface.
+      const { data, error } = await applyPublishedFilter(
+        supabase.from('titles').select('*').in('title_id', titleIds),
+      );
 
       if (error) {
         console.error('❌ Error fetching title details:', error);
@@ -744,8 +812,9 @@ class TitlesService {
       }
 
       // Sort results by vector similarity order (preserve relevance ranking)
+      const dataTyped = (data ?? []) as Title[];
       const sortedTitles = titleIds
-        .map(id => data?.find(title => title.title_id === id))
+        .map(id => dataTyped.find(title => title.title_id === id))
         .filter(Boolean) as Title[];
 
       console.log(`✅ Vector search returned ${sortedTitles.length} titles`);
@@ -824,6 +893,133 @@ class TitlesService {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
+  }
+
+  /**
+   * Audit summary counts for the four admin cards.
+   * - missing_url: title_url IS NULL (Korean source URL is the primary one)
+   * - missing_image: title_image IS NULL
+   * - missing_comps: comps_analysis is null OR empty array
+   * - missing_format_fit: no row in title_format_fit
+   * - mismatches: title_audits rows where name_match_kr=false OR name_match_en=false OR image_reachable=false
+   */
+  async getAuditSummary(): Promise<{
+    total: number;
+    missing_url: number;
+    missing_image: number;
+    missing_comps: number;
+    missing_format_fit: number;
+    mismatches: number;
+    audited: number;
+  }> {
+    const [totalRes, missUrlRes, missImgRes, missCompsRes, formatFitRes, mismatchRes, auditedRes] =
+      await Promise.all([
+        supabase.from('titles').select('title_id', { count: 'exact', head: true }),
+        supabase
+          .from('titles')
+          .select('title_id', { count: 'exact', head: true })
+          .is('title_url', null),
+        supabase
+          .from('titles')
+          .select('title_id', { count: 'exact', head: true })
+          .is('title_image', null),
+        supabase
+          .from('titles')
+          .select('title_id', { count: 'exact', head: true })
+          .is('comps_analysis', null),
+        supabase.from('title_format_fit').select('title_id', { count: 'exact', head: true }),
+        supabase
+          .from('title_audits')
+          .select('title_id', { count: 'exact', head: true })
+          .or('name_match_kr.eq.false,name_match_en.eq.false,image_reachable.eq.false'),
+        supabase.from('title_audits').select('title_id', { count: 'exact', head: true }),
+      ]);
+
+    const total = totalRes.count ?? 0;
+    const formatFitRows = formatFitRes.count ?? 0;
+
+    return {
+      total,
+      missing_url: missUrlRes.count ?? 0,
+      missing_image: missImgRes.count ?? 0,
+      missing_comps: missCompsRes.count ?? 0,
+      missing_format_fit: Math.max(0, total - formatFitRows),
+      mismatches: mismatchRes.count ?? 0,
+      audited: auditedRes.count ?? 0,
+    };
+  }
+
+  /**
+   * Fetch title_ids for a given audit filter. Returns just the IDs;
+   * the caller filters the in-memory titles list to render.
+   */
+  async getTitleIdsByAuditFilter(
+    filter:
+      | 'missing_url'
+      | 'missing_image'
+      | 'missing_comps'
+      | 'missing_format_fit'
+      | 'name_mismatch'
+      | 'image_unreachable'
+      | 'never_audited',
+  ): Promise<string[]> {
+    if (filter === 'missing_url') {
+      const { data, error } = await supabase.from('titles').select('title_id').is('title_url', null);
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => r.title_id);
+    }
+    if (filter === 'missing_image') {
+      const { data, error } = await supabase
+        .from('titles')
+        .select('title_id')
+        .is('title_image', null);
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => r.title_id);
+    }
+    if (filter === 'missing_comps') {
+      const { data, error } = await supabase
+        .from('titles')
+        .select('title_id')
+        .is('comps_analysis', null);
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => r.title_id);
+    }
+    if (filter === 'missing_format_fit') {
+      // Titles minus titles-with-format-fit-row
+      const [{ data: allTitles, error: tErr }, { data: ffRows, error: ffErr }] = await Promise.all([
+        supabase.from('titles').select('title_id'),
+        supabase.from('title_format_fit').select('title_id'),
+      ]);
+      if (tErr) throw new Error(tErr.message);
+      if (ffErr) throw new Error(ffErr.message);
+      const withFF = new Set((ffRows ?? []).map((r) => r.title_id as string));
+      return (allTitles ?? []).map((r) => r.title_id).filter((id) => !withFF.has(id));
+    }
+    if (filter === 'name_mismatch') {
+      const { data, error } = await supabase
+        .from('title_audits')
+        .select('title_id')
+        .or('name_match_kr.eq.false,name_match_en.eq.false');
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => r.title_id);
+    }
+    if (filter === 'image_unreachable') {
+      const { data, error } = await supabase
+        .from('title_audits')
+        .select('title_id')
+        .eq('image_reachable', false);
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => r.title_id);
+    }
+    // never_audited
+    const [{ data: allTitles, error: tErr }, { data: audits, error: aErr }] = await Promise.all([
+      supabase.from('titles').select('title_id'),
+      supabase.from('title_audits').select('title_id'),
+    ]);
+    if (tErr) throw new Error(tErr.message);
+    if (aErr) throw new Error(aErr.message);
+    const audited = new Set((audits ?? []).map((r) => r.title_id as string));
+    return (allTitles ?? []).map((r) => r.title_id).filter((id) => !audited.has(id));
   }
 }
 

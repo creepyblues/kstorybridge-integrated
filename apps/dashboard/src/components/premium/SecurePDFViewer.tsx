@@ -191,17 +191,19 @@ export default function SecurePDFViewer({ pdfUrl, title, userTier, maxPagesForBa
             const titleId = filePath.split('/')[0];
             debug.log('🔍 SECURE PDF: Title ID:', titleId);
 
-            // Validate title exists in database (use real Supabase data)
+            // Validate title exists AND is buyer-visible (priority H/M).
+            // Low-priority titles are treated as unpublished — block PDF access.
             debug.log('🔍 SECURE PDF: Validating title exists in database...');
             const { data: titleExists, error: titleError } = await supabase
               .from('titles')
               .select('title_id')
               .eq('title_id', titleId)
+              .in('priority', ['1', '2'])
               .single();
 
             debug.log('🔍 SECURE PDF: Database validation result:', { titleExists, titleError });
             if (titleError || !titleExists) {
-              debug.log('❌ SECURE PDF: Title not found in database');
+              debug.log('❌ SECURE PDF: Title not found / not published');
               throw new Error('Content not found or access denied');
             }
           } else {

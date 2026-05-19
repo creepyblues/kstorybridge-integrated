@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 import { titlesService, Title, TitleFilters } from '@/services/titlesService';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { TitleCard } from '@/components/title/TitleCard';
@@ -65,7 +66,20 @@ export default function Titles() {
 
       try {
         const results = await formatFitService.getTitlesForFormat(formatFilter, 50, 100);
-        const ids = new Set(results.map((r) => r.title_id));
+        // The shared format-fit service in @kstorybridge/tools doesn't gate
+        // on priority; trim Low-priority IDs here so the buyer count and
+        // empty-state messages reflect only published titles.
+        const candidateIds = results.map((r) => r.title_id);
+        if (candidateIds.length === 0) {
+          setFormatFilteredTitleIds(new Set());
+          return;
+        }
+        const { data: published } = await supabase
+          .from('titles')
+          .select('title_id')
+          .in('title_id', candidateIds)
+          .in('priority', ['1', '2']);
+        const ids = new Set<string>(((published || []) as Array<{ title_id: string }>).map((r) => r.title_id));
         setFormatFilteredTitleIds(ids);
       } catch (error) {
         console.error('Error fetching format-filtered titles:', error);

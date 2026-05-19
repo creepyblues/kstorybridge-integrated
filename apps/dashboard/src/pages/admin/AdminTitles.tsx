@@ -4,12 +4,33 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { TitleEditModal } from '@/components/admin/TitleEditModal';
+import { AuditRunModal } from '@/components/admin/AuditRunModal';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
 import { Icon } from '@iconify/react';
 
 type SortField = 'title' | 'genre' | 'priority' | 'views' | 'likes' | 'rights' | 'perfect_for' | 'verified';
 type SortDirection = 'asc' | 'desc';
+
+type AuditFilter =
+  | 'all'
+  | 'missing_url'
+  | 'missing_image'
+  | 'missing_comps'
+  | 'missing_format_fit'
+  | 'name_mismatch'
+  | 'image_unreachable'
+  | 'never_audited';
+
+interface AuditSummary {
+  total: number;
+  missing_url: number;
+  missing_image: number;
+  missing_comps: number;
+  missing_format_fit: number;
+  mismatches: number;
+  audited: number;
+}
 
 export default function AdminTitles() {
   const { toast } = useToast();
@@ -24,14 +45,56 @@ export default function AdminTitles() {
   // Modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedTitleId, setSelectedTitleId] = useState<string | null>(null);
+  const [auditModalOpen, setAuditModalOpen] = useState(false);
+
+  // Audit state
+  const [auditSummary, setAuditSummary] = useState<AuditSummary | null>(null);
+  const [auditFilter, setAuditFilter] = useState<AuditFilter>('all');
+  const [auditFilterIds, setAuditFilterIds] = useState<Set<string> | null>(null);
 
   useEffect(() => {
     fetchTitles();
+    fetchAuditSummary();
   }, []);
+
+  // Re-resolve the filter id list whenever the filter chip changes
+  useEffect(() => {
+    if (auditFilter === 'all') {
+      setAuditFilterIds(null);
+      return;
+    }
+    let cancelled = false;
+    titlesService
+      .getTitleIdsByAuditFilter(auditFilter)
+      .then((ids) => {
+        if (!cancelled) setAuditFilterIds(new Set(ids));
+      })
+      .catch((err) => {
+        console.error('Failed to load filter ids:', err);
+        if (!cancelled) setAuditFilterIds(new Set());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [auditFilter]);
+
+  const fetchAuditSummary = async () => {
+    try {
+      const summary = await titlesService.getAuditSummary();
+      setAuditSummary(summary);
+    } catch (err) {
+      console.error('Failed to load audit summary:', err);
+    }
+  };
 
   // Filter and sort titles
   const filteredTitles = useMemo(() => {
     let result = [...titles];
+
+    // Apply audit filter (id set comes from titlesService)
+    if (auditFilterIds) {
+      result = result.filter((t) => auditFilterIds.has(t.title_id));
+    }
 
     // Filter by search query
     if (searchQuery) {
@@ -97,7 +160,7 @@ export default function AdminTitles() {
     }
 
     return result;
-  }, [titles, searchQuery, sortField, sortDirection]);
+  }, [titles, searchQuery, sortField, sortDirection, auditFilterIds]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -122,7 +185,9 @@ export default function AdminTitles() {
   const fetchTitles = async () => {
     setLoading(true);
     try {
-      const data = await titlesService.getTitles();
+      // Admin view must show every title regardless of priority — buyers see
+      // only priority H/M; admin uses this page to set priority in the first place.
+      const data = await titlesService.getTitles({ includeAllPriorities: true });
       setTitles(data);
     } catch (error: any) {
       console.error('Error fetching titles:', error);
@@ -231,15 +296,72 @@ export default function AdminTitles() {
               Manage all titles in the system
             </p>
           </div>
-          <Button className="bg-hanok-teal hover:bg-hanok-teal/90">
-            <Icon icon="solar:add-circle-bold-duotone" className="h-4 w-4 mr-2" />
-            Add New Title
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="border-gray-300"
+              onClick={() => setAuditModalOpen(true)}
+            >
+              <Icon icon="solar:shield-check-bold-duotone" className="h-4 w-4 mr-2" />
+              Run Audit
+            </Button>
+            <Button className="bg-hanok-teal hover:bg-hanok-teal/90">
+              <Icon icon="solar:add-circle-bold-duotone" className="h-4 w-4 mr-2" />
+              Add New Title
+            </Button>
+          </div>
+        </div>
+
+        {/* Audit Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <AuditCard
+            label="Missing source URL"
+            count={auditSummary?.missing_url ?? 0}
+            tone="amber"
+            active={auditFilter === 'missing_url'}
+            onClick={() =>
+              setAuditFilter(auditFilter === 'missing_url' ? 'all' : 'missing_url')
+            }
+          />
+          <AuditCard
+            label="Missing comps"
+            count={auditSummary?.missing_comps ?? 0}
+            tone="amber"
+            active={auditFilter === 'missing_comps'}
+            onClick={() =>
+              setAuditFilter(auditFilter === 'missing_comps' ? 'all' : 'missing_comps')
+            }
+          />
+          <AuditCard
+            label="Missing format-fit"
+            count={auditSummary?.missing_format_fit ?? 0}
+            tone="amber"
+            active={auditFilter === 'missing_format_fit'}
+            onClick={() =>
+              setAuditFilter(
+                auditFilter === 'missing_format_fit' ? 'all' : 'missing_format_fit',
+              )
+            }
+          />
+          <AuditCard
+            label="Mismatches"
+            count={auditSummary?.mismatches ?? 0}
+            tone="red"
+            active={auditFilter === 'name_mismatch' || auditFilter === 'image_unreachable'}
+            onClick={() =>
+              setAuditFilter(auditFilter === 'name_mismatch' ? 'all' : 'name_mismatch')
+            }
+            hint={
+              auditSummary && auditSummary.audited > 0
+                ? `from ${auditSummary.audited} audited`
+                : 'run audit to populate'
+            }
+          />
         </div>
 
         {/* Search & Filters */}
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-4">
               <div className="flex-1 relative">
                 <Icon icon="solar:magnifer-bold-duotone" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -253,11 +375,68 @@ export default function AdminTitles() {
               </div>
               <Button
                 variant="outline"
-                onClick={fetchTitles}
+                onClick={() => {
+                  fetchTitles();
+                  fetchAuditSummary();
+                }}
                 className="border-gray-300"
               >
                 Refresh
               </Button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-gray-500 mr-1">Audit filters:</span>
+              <FilterChip active={auditFilter === 'all'} onClick={() => setAuditFilter('all')}>
+                All
+              </FilterChip>
+              <FilterChip
+                active={auditFilter === 'missing_url'}
+                onClick={() => setAuditFilter('missing_url')}
+              >
+                Missing URL
+              </FilterChip>
+              <FilterChip
+                active={auditFilter === 'missing_image'}
+                onClick={() => setAuditFilter('missing_image')}
+              >
+                Missing image
+              </FilterChip>
+              <FilterChip
+                active={auditFilter === 'missing_comps'}
+                onClick={() => setAuditFilter('missing_comps')}
+              >
+                Missing comps
+              </FilterChip>
+              <FilterChip
+                active={auditFilter === 'missing_format_fit'}
+                onClick={() => setAuditFilter('missing_format_fit')}
+              >
+                Missing format-fit
+              </FilterChip>
+              <FilterChip
+                active={auditFilter === 'name_mismatch'}
+                onClick={() => setAuditFilter('name_mismatch')}
+              >
+                Name mismatch
+              </FilterChip>
+              <FilterChip
+                active={auditFilter === 'image_unreachable'}
+                onClick={() => setAuditFilter('image_unreachable')}
+              >
+                Image unreachable
+              </FilterChip>
+              <FilterChip
+                active={auditFilter === 'never_audited'}
+                onClick={() => setAuditFilter('never_audited')}
+              >
+                Never audited
+              </FilterChip>
+              {auditFilter !== 'all' && (
+                <span className="text-xs text-gray-500 ml-2">
+                  Showing {filteredTitles.length} of {titles.length}
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -337,6 +516,9 @@ export default function AdminTitles() {
                         <div className="flex items-center">
                           Priority
                           <SortIcon field="priority" />
+                        </div>
+                        <div className="text-[10px] font-normal normal-case text-gray-400 mt-0.5">
+                          L hidden from dashboard
                         </div>
                       </th>
                       <th
@@ -588,6 +770,87 @@ export default function AdminTitles() {
         onOpenChange={setEditModalOpen}
         onSaved={fetchTitles}
       />
+
+      {/* Audit Run Modal */}
+      <AuditRunModal
+        open={auditModalOpen}
+        onOpenChange={setAuditModalOpen}
+        titles={titles}
+        onCompleted={() => {
+          fetchAuditSummary();
+          // If a mismatch filter is active, refresh the id list
+          if (auditFilter !== 'all') {
+            titlesService
+              .getTitleIdsByAuditFilter(auditFilter)
+              .then((ids) => setAuditFilterIds(new Set(ids)))
+              .catch((err) => console.error(err));
+          }
+        }}
+      />
     </AdminLayout>
+  );
+}
+
+// =====================================================================
+// Small presentational helpers (kept local to avoid file proliferation)
+// =====================================================================
+
+interface AuditCardProps {
+  label: string;
+  count: number;
+  tone: 'amber' | 'red';
+  active: boolean;
+  onClick: () => void;
+  hint?: string;
+}
+
+function AuditCard({ label, count, tone, active, onClick, hint }: AuditCardProps) {
+  const toneRing =
+    tone === 'red'
+      ? 'ring-red-300'
+      : count > 0
+      ? 'ring-amber-300'
+      : 'ring-gray-200';
+  const toneText =
+    tone === 'red' && count > 0
+      ? 'text-red-600'
+      : count > 0
+      ? 'text-amber-600'
+      : 'text-gray-500';
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`text-left rounded-2xl bg-transparent border border-gray-300 p-4 transition-all hover:bg-gray-50 ${
+        active ? `ring-2 ${toneRing}` : ''
+      }`}
+    >
+      <div className="text-sm text-gray-600">{label}</div>
+      <div className={`text-2xl font-bold mt-1 ${toneText}`}>{count}</div>
+      {hint && <div className="text-xs text-gray-400 mt-1">{hint}</div>}
+    </button>
+  );
+}
+
+interface FilterChipProps {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+function FilterChip({ active, onClick, children }: FilterChipProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+        active
+          ? 'bg-hanok-teal text-white border-hanok-teal'
+          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+      }`}
+    >
+      {children}
+    </button>
   );
 }

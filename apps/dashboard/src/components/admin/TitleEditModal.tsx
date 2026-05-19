@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { auditService, type TitleAudit } from '@/services/auditService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -147,6 +148,11 @@ export function TitleEditModal({
   const [hasFormatFit, setHasFormatFit] = useState(false);
   const [formatFitData, setFormatFitData] = useState<FormatFitRecord | null>(null);
 
+  // Audit data
+  const [audit, setAudit] = useState<TitleAudit | null>(null);
+  const [reauditing, setReauditing] = useState(false);
+  const [refreshingImage, setRefreshingImage] = useState(false);
+
   // Character details state for structured input
   const [inputCharacters, setInputCharacters] = useState<CharacterFormDetail[]>([]);
 
@@ -173,8 +179,72 @@ export function TitleEditModal({
       const formatFit = await formatFitService.getFormatFit(id);
       setHasFormatFit(!!formatFit);
       setFormatFitData(formatFit);
+
+      // Audit row (may be null if never audited)
+      const auditRow = await auditService.getTitleAudit(id);
+      setAudit(auditRow);
     } catch (error) {
       console.error('Error checking analyzer data:', error);
+    }
+  };
+
+  const handleReaudit = async () => {
+    if (!titleId) return;
+    setReauditing(true);
+    try {
+      const fresh = await auditService.auditTitle(titleId);
+      setAudit(fresh);
+      toast({
+        title: 'Audit complete',
+        description: 'Latest scraped values fetched from source.',
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Audit failed';
+      toast({ title: 'Audit failed', description: message, variant: 'destructive' });
+    } finally {
+      setReauditing(false);
+    }
+  };
+
+  /**
+   * Pull a fresh cover image from the source URL(s) and patch the form's
+   * title_image field. Prefers the English release's og:image; falls back
+   * to the Korean source. Reuses the audit-title edge function so we also
+   * refresh the title_audits row for free.
+   */
+  const refreshTitleImage = async (): Promise<string | null> => {
+    if (!titleId) return null;
+    const fresh = await auditService.auditTitle(titleId);
+    setAudit(fresh);
+    if (fresh.title_image_scraped) {
+      handleInputChange('title_image', fresh.title_image_scraped);
+      return fresh.title_image_scraped;
+    }
+    return null;
+  };
+
+  const handleRefreshImage = async () => {
+    if (!titleId) return;
+    setRefreshingImage(true);
+    try {
+      const newImage = await refreshTitleImage();
+      if (newImage) {
+        toast({
+          title: 'Image refreshed',
+          description: 'Cover image pulled from source page.',
+        });
+      } else {
+        toast({
+          title: 'No image found',
+          description: 'Source page did not return an og:image.',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Image refresh failed';
+      toast({ title: 'Image refresh failed', description: message, variant: 'destructive' });
+    } finally {
+      setRefreshingImage(false);
     }
   };
 
@@ -192,8 +262,10 @@ export function TitleEditModal({
     setHasComps(false);
     setHasFormatFit(false);
     setFormatFitData(null);
+    setAudit(null);
     try {
-      const data = await titlesService.getTitleById(id);
+      // Admin context — every title is editable regardless of priority.
+      const data = await titlesService.getTitleById(id, { includeAllPriorities: true });
       if (data) {
         setTitle(data);
         setFormData(data);
@@ -385,6 +457,14 @@ export function TitleEditModal({
         title: 'Data Collected',
         description: `Successfully collected data from ${response.sourcesCollected.length} source(s)`,
       });
+
+      // Also refresh the cover image with EN-first priority. Best-effort —
+      // failures here don't block the collection result.
+      try {
+        await refreshTitleImage();
+      } catch (imgErr) {
+        console.warn('Auto image refresh after collect failed:', imgErr);
+      }
     } catch (error) {
       console.error('Error collecting intelligence:', error);
       const message = error instanceof Error ? error.message : 'Failed to collect data';
@@ -419,8 +499,8 @@ export function TitleEditModal({
         `Admin ingestion via TitleEditModal` // notes
       );
 
-      // Refresh form data
-      const updatedTitle = await titlesService.getTitleById(titleId);
+      // Refresh form data (admin context)
+      const updatedTitle = await titlesService.getTitleById(titleId, { includeAllPriorities: true });
       if (updatedTitle) {
         setTitle(updatedTitle);
         setFormData(updatedTitle);
@@ -621,6 +701,89 @@ export function TitleEditModal({
               </div>
             </div>
 
+            {/* Audit Section */}
+            <div className="border border-gray-300 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Icon icon="solar:shield-check-bold-duotone" className="h-4 w-4 text-hanok-teal" />
+                  <h4 className="text-sm font-medium text-black">Audit</h4>
+                  {audit && (
+                    <span className="text-xs text-gray-500">
+                      · last audited {new Date(audit.last_audited_at).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="border-gray-300 text-xs"
+                  disabled={reauditing || (!title.title_url && !title.title_url_en)}
+                  onClick={handleReaudit}
+                >
+                  {reauditing ? (
+                    <>
+                      <Icon icon="solar:refresh-circle-bold-duotone" className="h-3.5 w-3.5 mr-1 animate-spin" />
+                      Auditing...
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="solar:refresh-bold-duotone" className="h-3.5 w-3.5 mr-1" />
+                      {audit ? 'Re-audit' : 'Run audit'}
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {!audit && (
+                <p className="text-sm text-gray-500">
+                  {!title.title_url && !title.title_url_en
+                    ? 'No source URL stored for this title — nothing to audit.'
+                    : 'No audit yet for this title. Click "Run audit" to scrape the source URL and compare against stored values.'}
+                </p>
+              )}
+
+              {audit && (
+                <div className="space-y-3 text-sm">
+                  {/* Korean name comparison */}
+                  {(audit.title_name_kr_scraped || title.title_name_kr) && (
+                    <AuditRow
+                      label="Korean name"
+                      stored={title.title_name_kr || ''}
+                      scraped={audit.title_name_kr_scraped || ''}
+                      similarity={audit.name_similarity_kr}
+                      match={audit.name_match_kr}
+                    />
+                  )}
+
+                  {/* English name comparison */}
+                  {(audit.title_name_en_scraped || title.title_name_en) && (
+                    <AuditRow
+                      label="English name"
+                      stored={title.title_name_en || ''}
+                      scraped={audit.title_name_en_scraped || ''}
+                      similarity={audit.name_similarity_en}
+                      match={audit.name_match_en}
+                    />
+                  )}
+
+                  {/* Image */}
+                  <AuditImageRow
+                    storedUrl={title.title_image || ''}
+                    scrapedUrl={audit.title_image_scraped || ''}
+                    imageMatch={audit.image_match}
+                    imageReachable={audit.image_reachable}
+                  />
+
+                  {audit.scrape_error && (
+                    <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">
+                      <strong>Scrape error:</strong> {audit.scrape_error}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Collapsible Sections */}
             <div className="space-y-2 border rounded-lg p-4">
 
@@ -630,21 +793,21 @@ export function TitleEditModal({
                 <CollapsibleContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 pb-4 border-b">
                     <div className="space-y-1">
-                      <Label htmlFor="title_name_en" className="text-sm">English Name <span className="text-gray-400 font-normal">{'{title_name_en}'}</span></Label>
-                      <Input
-                        id="title_name_en"
-                        value={formData.title_name_en || ''}
-                        onChange={(e) => handleInputChange('title_name_en', e.target.value)}
-                        className={`h-9 ${getEmptyHighlight(formData.title_name_en)}`}
-                      />
-                    </div>
-                    <div className="space-y-1">
                       <Label htmlFor="title_name_kr" className="text-sm">Korean Name <span className="text-gray-400 font-normal">{'{title_name_kr}'}</span></Label>
                       <Input
                         id="title_name_kr"
                         value={formData.title_name_kr || ''}
                         onChange={(e) => handleInputChange('title_name_kr', e.target.value)}
                         className={`h-9 ${getEmptyHighlight(formData.title_name_kr)}`}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="title_name_en" className="text-sm">English Name <span className="text-gray-400 font-normal">{'{title_name_en}'}</span></Label>
+                      <Input
+                        id="title_name_en"
+                        value={formData.title_name_en || ''}
+                        onChange={(e) => handleInputChange('title_name_en', e.target.value)}
+                        className={`h-9 ${getEmptyHighlight(formData.title_name_en)}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -703,12 +866,31 @@ export function TitleEditModal({
                     </div>
                     <div className="space-y-1 md:col-span-2">
                       <Label htmlFor="title_image" className="text-sm">Image URL <span className="text-gray-400 font-normal">{'{title_image}'}</span></Label>
-                      <Input
-                        id="title_image"
-                        value={formData.title_image || ''}
-                        onChange={(e) => handleInputChange('title_image', e.target.value)}
-                        className={`h-9 ${getEmptyHighlight(formData.title_image)}`}
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          id="title_image"
+                          value={formData.title_image || ''}
+                          onChange={(e) => handleInputChange('title_image', e.target.value)}
+                          className={`h-9 flex-1 ${getEmptyHighlight(formData.title_image)}`}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleRefreshImage}
+                          disabled={refreshingImage || (!formData.title_url && !formData.title_url_en)}
+                          className="h-9 whitespace-nowrap text-xs px-2 text-white bg-gradient-to-r from-hanok-teal to-teal-600 hover:from-teal-600 hover:to-teal-700"
+                          title="Pull og:image from English URL first, fall back to Korean URL"
+                        >
+                          {refreshingImage ? (
+                            <Icon icon="solar:refresh-circle-bold-duotone" className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <>
+                              <Icon icon="solar:gallery-bold-duotone" className="h-3.5 w-3.5 mr-1" />
+                              Refresh image
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     <div className="space-y-1">
                       <Label className="text-sm">Priority <span className="text-gray-400 font-normal">{'{priority}'}</span></Label>
@@ -1605,5 +1787,138 @@ export function TitleEditModal({
         }}
       />
     </Dialog>
+  );
+}
+
+// =====================================================================
+// Audit row helpers
+// =====================================================================
+
+interface AuditRowProps {
+  label: string;
+  stored: string;
+  scraped: string;
+  similarity: number | null;
+  match: boolean | null;
+}
+
+function AuditRow({ label, stored, scraped, similarity, match }: AuditRowProps) {
+  const matchTone =
+    match === true
+      ? 'text-green-600 bg-green-50 border-green-200'
+      : match === false
+      ? 'text-red-600 bg-red-50 border-red-200'
+      : 'text-gray-500 bg-gray-50 border-gray-200';
+  const matchLabel =
+    match === true ? 'Match' : match === false ? 'Mismatch' : 'No comparison';
+
+  return (
+    <div className="grid grid-cols-[120px,1fr,1fr,120px] gap-3 items-start">
+      <div className="text-xs uppercase tracking-wide text-gray-500 pt-1">{label}</div>
+      <div>
+        <div className="text-xs text-gray-400 mb-0.5">Stored</div>
+        <div className="text-sm text-black break-words">{stored || <span className="text-gray-400">—</span>}</div>
+      </div>
+      <div>
+        <div className="text-xs text-gray-400 mb-0.5">Scraped</div>
+        <div className="text-sm text-black break-words">{scraped || <span className="text-gray-400">—</span>}</div>
+      </div>
+      <div className="flex flex-col items-end gap-1">
+        <span className={`text-xs px-2 py-0.5 rounded-full border ${matchTone}`}>{matchLabel}</span>
+        {similarity !== null && (
+          <span className="text-xs text-gray-500">sim {(similarity * 100).toFixed(0)}%</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface AuditImageRowProps {
+  storedUrl: string;
+  scrapedUrl: string;
+  imageMatch: boolean | null;
+  imageReachable: boolean | null;
+}
+
+function AuditImageRow({ storedUrl, scrapedUrl, imageMatch, imageReachable }: AuditImageRowProps) {
+  const reachableTone =
+    imageReachable === true
+      ? 'text-green-600 bg-green-50 border-green-200'
+      : imageReachable === false
+      ? 'text-red-600 bg-red-50 border-red-200'
+      : 'text-gray-500 bg-gray-50 border-gray-200';
+  const reachableLabel =
+    imageReachable === true
+      ? 'Reachable'
+      : imageReachable === false
+      ? 'Unreachable'
+      : 'Unknown';
+
+  const matchTone =
+    imageMatch === true
+      ? 'text-green-600 bg-green-50 border-green-200'
+      : 'text-gray-500 bg-gray-50 border-gray-200';
+  const matchLabel = imageMatch === true ? 'Same source' : 'Review';
+
+  return (
+    <div className="grid grid-cols-[120px,1fr,1fr,120px] gap-3 items-start">
+      <div className="text-xs uppercase tracking-wide text-gray-500 pt-1">Cover image</div>
+      <div className="min-w-0">
+        <div className="text-xs text-gray-400 mb-0.5">Stored</div>
+        {storedUrl ? (
+          <>
+            <img
+              src={storedUrl}
+              alt="Stored cover"
+              className="h-24 w-auto rounded border border-gray-200 object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.opacity = '0.3';
+              }}
+            />
+            <a
+              href={storedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-1 text-xs text-gray-500 hover:text-hanok-teal break-all leading-snug"
+              title={storedUrl}
+            >
+              {storedUrl}
+            </a>
+          </>
+        ) : (
+          <span className="text-sm text-gray-400">—</span>
+        )}
+      </div>
+      <div className="min-w-0">
+        <div className="text-xs text-gray-400 mb-0.5">Scraped (og:image)</div>
+        {scrapedUrl ? (
+          <>
+            <img
+              src={scrapedUrl}
+              alt="Scraped cover"
+              className="h-24 w-auto rounded border border-gray-200 object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.opacity = '0.3';
+              }}
+            />
+            <a
+              href={scrapedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-1 text-xs text-gray-500 hover:text-hanok-teal break-all leading-snug"
+              title={scrapedUrl}
+            >
+              {scrapedUrl}
+            </a>
+          </>
+        ) : (
+          <span className="text-sm text-gray-400">—</span>
+        )}
+      </div>
+      <div className="flex flex-col items-end gap-1">
+        <span className={`text-xs px-2 py-0.5 rounded-full border ${reachableTone}`}>{reachableLabel}</span>
+        <span className={`text-xs px-2 py-0.5 rounded-full border ${matchTone}`}>{matchLabel}</span>
+      </div>
+    </div>
   );
 }

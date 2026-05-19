@@ -29,7 +29,7 @@ export default function TitleEdit() {
   const loadTitle = async (id: string) => {
     try {
       setLoading(true);
-      const data = await titlesService.getTitleById(id);
+      const data = await titlesService.getTitleById(id, { includeAllPriorities: true });
       setTitle(data);
       setFormData(data || {});
     } catch (error: any) {

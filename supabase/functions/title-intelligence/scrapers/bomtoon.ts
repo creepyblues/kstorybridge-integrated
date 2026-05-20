@@ -119,10 +119,12 @@ export async function scrapeBomtoon(slugOrUrl: string): Promise<BomtoonData> {
 
     console.log(`[Bomtoon] Using slug: ${slug}`)
     result.data.slug = slug
-    result.data.platform_url = `https://www.bomtoon.com/comic/ep_list/${slug}`
+    result.data.platform_url = `https://www.bomtoon.com/detail/${slug}`
 
-    // Fetch HTML
-    const url = `https://www.bomtoon.com/comic/ep_list/${slug}`
+    // Fetch HTML — /detail/ is the current canonical path. The legacy
+    // /comic/ep_list/{slug} URL still resolves to the same SPA shell, but
+    // /detail/ is what bomtoon.com currently redirects users to.
+    const url = `https://www.bomtoon.com/detail/${slug}`
     const response = await fetch(url, { headers: HEADERS })
 
     if (!response.ok) {
@@ -192,8 +194,10 @@ function extractSlug(input: string): string | null {
     return trimmed
   }
 
-  // bomtoon.com URL pattern: /comic/ep_list/{slug}
-  const bomtoonMatch = trimmed.match(/bomtoon\.com\/comic\/ep_list\/([^/?]+)/)
+  // bomtoon.com URL — accept both current /detail/{slug} and legacy
+  // /comic/ep_list/{slug} paths. Query strings (e.g. ?porch=tw1386) are
+  // ignored since they're tracking-only and don't affect content lookup.
+  const bomtoonMatch = trimmed.match(/bomtoon\.com\/(?:detail|comic\/ep_list)\/([^/?#]+)/)
   if (bomtoonMatch) {
     return bomtoonMatch[1]
   }
@@ -202,18 +206,47 @@ function extractSlug(input: string): string | null {
 }
 
 /**
- * Extract data from embedded JSON in the page
- * Bomtoon embeds JSON data in the page for SEO/hydration
+ * Extract data from Bomtoon's embedded __NEXT_DATA__.
+ *
+ * Bomtoon's /detail/ pages are a Next.js SPA shell; the only server-side
+ * payload with real content data is __NEXT_DATA__.props.pageProps.openGraphData,
+ * which carries title / synopsis / creators / tags / isAdult / etc.
+ *
+ * (Prior implementation scraped these via raw regex over the HTML; that was
+ * brittle because string values containing escaped quotes or commas could
+ * break the patterns. Parsing the JSON properly is more reliable.)
  */
 function extractFromEmbeddedJson(html: string, result: BomtoonData): boolean {
   let extracted = false
 
-  // Look for JSON patterns in the HTML
-  // Pattern: "title":"죽은자를 상대하는 방법(완결)"
-  const titleMatch = html.match(/"title"\s*:\s*"([^"]+)"/)
-  if (titleMatch) {
-    let title = titleMatch[1]
-    // Check if title indicates completion
+  const startMarker = '<script id="__NEXT_DATA__" type="application/json">'
+  const endMarker = '</script>'
+  const startIdx = html.indexOf(startMarker)
+  if (startIdx === -1) {
+    console.log(`[Bomtoon] __NEXT_DATA__ not found`)
+    return false
+  }
+  const jsonStart = startIdx + startMarker.length
+  const jsonEnd = html.indexOf(endMarker, jsonStart)
+  if (jsonEnd === -1) return false
+
+  let nextData: any
+  try {
+    nextData = JSON.parse(html.substring(jsonStart, jsonEnd))
+  } catch (err) {
+    console.log(`[Bomtoon] __NEXT_DATA__ parse error:`, err)
+    return false
+  }
+
+  const pageProps = nextData?.props?.pageProps
+  if (!pageProps) return false
+
+  const og = pageProps.openGraphData || {}
+
+  // Title — strip "(완결)" suffix and use it as a completion signal.
+  const rawTitle: string | undefined = og.title || pageProps.title
+  if (rawTitle && typeof rawTitle === 'string') {
+    let title = rawTitle
     if (title.includes('(완결)')) {
       result.data.completed = true
       title = title.replace('(완결)', '').trim()
@@ -222,65 +255,73 @@ function extractFromEmbeddedJson(html: string, result: BomtoonData): boolean {
     extracted = true
   }
 
-  // Pattern: "creators":"곽병진"
-  const creatorsMatch = html.match(/"creators"\s*:\s*"([^"]+)"/)
-  if (creatorsMatch) {
-    result.data.author = creatorsMatch[1]
-    result.data.artist = creatorsMatch[1] // Same person for this platform
+  // Creators string — comma-separated for multi-author works (e.g.
+  // "징망츄, 사앙"). First entry → author, second → artist.
+  if (typeof og.creators === 'string' && og.creators.trim()) {
+    const names = og.creators
+      .split(',')
+      .map((n: string) => n.trim())
+      .filter((n: string) => n.length > 0)
+    if (names[0]) {
+      result.data.author = names[0]
+      extracted = true
+    }
+    if (names[1]) {
+      result.data.artist = names[1]
+      extracted = true
+    } else if (names[0]) {
+      // Single creator — mirror to artist (same person does both, common
+      // on this platform).
+      result.data.artist = names[0]
+    }
+  }
+
+  // Synopsis — comes from openGraphData.synopsis (NOT the og:description
+  // meta tag, which is a generic platform tagline).
+  if (typeof og.synopsis === 'string' && og.synopsis.trim()) {
+    result.data.synopsis_kr = og.synopsis
     extracted = true
   }
 
-  // Pattern: "synopsis":"잡아 먹히는 공포 속에서..."
-  const synopsisMatch = html.match(/"synopsis"\s*:\s*"([^"]+)"/)
-  if (synopsisMatch) {
-    // Unescape JSON string
-    let synopsis = synopsisMatch[1]
-    synopsis = synopsis.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-    result.data.synopsis_kr = synopsis
-    extracted = true
-  }
-
-  // Pattern: "tags":"판타지,드라마,공포·스릴러,현대물,피폐물,상처남"
-  const tagsMatch = html.match(/"tags"\s*:\s*"([^"]+)"/)
-  if (tagsMatch) {
-    const tagsStr = tagsMatch[1]
-    const tags = tagsStr.split(',').map(t => t.trim()).filter(t => t.length > 0)
+  // Tags / genre — comma-separated list, first 3 entries form the genre
+  // hint (e.g. "BL,현대물,캠퍼스물").
+  if (typeof og.tags === 'string' && og.tags.trim()) {
+    const tags = og.tags
+      .split(',')
+      .map((t: string) => t.trim())
+      .filter((t: string) => t.length > 0)
     if (tags.length > 0) {
       result.data.tags = tags
-      // First tag is usually the main genre
       result.data.genre = tags.slice(0, 3)
       extracted = true
     }
   }
 
-  // Pattern: "imagePath":"https://image.balcony.studio/ko/co_thumbnail/5401/death_man^m.webp"
-  const imageMatch = html.match(/"imagePath"\s*:\s*"([^"]+)"/)
-  if (imageMatch) {
-    let image = imageMatch[1]
-    // Remove size suffix (^m, ^s, etc.) for full size
+  // Age rating — isAdult flag → 19세이용가.
+  if (og.isAdult === true) {
+    result.data.age_rating = '19세이용가'
+    extracted = true
+  }
+
+  // Thumbnail — when openGraphData.thumbnail is populated, prefer it
+  // (more specific than og:image meta which often falls back to a generic
+  // platform banner on this site).
+  if (typeof og.thumbnail === 'string' && og.thumbnail.trim()) {
+    let image = og.thumbnail.trim()
+    if (image.startsWith('//')) image = `https:${image}`
+    // Remove size suffix (^m, ^s, etc.) for full size when present
     image = image.replace(/\^[a-z]\./, '.')
     result.data.thumbnail = image
     extracted = true
   }
 
-  // Pattern: "countOfFreeEpisodes":5 or total episodes
-  const episodesMatch = html.match(/"(?:countOf(?:Free)?Episodes|totalEpisodes|episodeCount)"\s*:\s*(\d+)/)
-  if (episodesMatch) {
-    result.data.chapters = parseInt(episodesMatch[1], 10)
-    extracted = true
-  }
-
-  // Pattern: "viewCount" or "views"
-  const viewsMatch = html.match(/"(?:viewCount|views|totalViews)"\s*:\s*(\d+)/)
-  if (viewsMatch) {
-    result.data.views = parseInt(viewsMatch[1], 10)
-    extracted = true
-  }
-
-  // Pattern: "likeCount" or "likes"
-  const likesMatch = html.match(/"(?:likeCount|likes|totalLikes)"\s*:\s*(\d+)/)
-  if (likesMatch) {
-    result.data.likes = parseInt(likesMatch[1], 10)
+  // Free episode count is exposed at the top level on /detail/ pages; we
+  // store it as chapters when no better total is available.
+  const freeCount =
+    typeof pageProps.countOfFreeEpisodes === 'number' ? pageProps.countOfFreeEpisodes :
+    typeof og.countOfFreeEpisodes === 'number' ? og.countOfFreeEpisodes : null
+  if (freeCount !== null && freeCount > 0 && !result.data.chapters) {
+    result.data.chapters = freeCount
     extracted = true
   }
 
@@ -367,25 +408,38 @@ function extractFromOgMeta(html: string, result: BomtoonData): boolean {
     }
   }
 
-  // og:description - only if not already set
+  // og:description - only if not already set, and only if it looks
+  // content-specific. Bomtoon's static <meta og:description> is the
+  // generic platform tagline (e.g. "순정, 로맨스, BL 장르가 가득한 여성
+  // 독자를 위한 프리미엄 웹툰") — storing that as synopsis would be wrong.
   if (!result.data.synopsis_kr) {
     const descMatch = html.match(/<meta\s+(?:property|name)="og:description"\s+content="([^"]+)"/i) ||
                       html.match(/<meta\s+content="([^"]+)"\s+(?:property|name)="og:description"/i)
     if (descMatch) {
-      result.data.synopsis_kr = decodeHTMLEntities(descMatch[1])
-      extracted = true
+      const desc = decodeHTMLEntities(descMatch[1])
+      const isGenericTagline = desc.includes('프리미엄 웹툰') || desc.includes('여성 독자')
+      if (desc && !isGenericTagline) {
+        result.data.synopsis_kr = desc
+        extracted = true
+      }
     }
   }
 
-  // og:image - only if not already set
+  // og:image - only if not already set, and only if it's not the generic
+  // platform banner (meta-image.jpg). Bomtoon's per-title cover lives in
+  // openGraphData.thumbnail when populated; the meta tag is shared fallback.
   if (!result.data.thumbnail) {
     const imageMatch = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i) ||
                        html.match(/<meta\s+content="([^"]+)"\s+(?:property|name)="og:image"/i)
     if (imageMatch) {
       let image = imageMatch[1]
-      if (image.startsWith('//')) image = `https:${image}`
-      result.data.thumbnail = image
-      extracted = true
+      if (image.includes('meta-image') || image.includes('common/')) {
+        // generic platform banner — skip
+      } else {
+        if (image.startsWith('//')) image = `https:${image}`
+        result.data.thumbnail = image
+        extracted = true
+      }
     }
   }
 

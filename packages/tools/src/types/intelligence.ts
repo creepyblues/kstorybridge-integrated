@@ -25,6 +25,10 @@ export interface ParsedUrl {
   originalUrl: string;
   valid: boolean;
   error?: string;
+  // Naver Series has two sub-paths: /comic/ and /novel/. Both use the same
+  // productNo namespace but render different DOMs; the scraper needs to know
+  // which one to fetch.
+  subKind?: 'comic' | 'novel';
 }
 
 // =====================================================================

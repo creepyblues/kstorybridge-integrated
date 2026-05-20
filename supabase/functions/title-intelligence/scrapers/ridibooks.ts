@@ -144,17 +144,30 @@ export async function scrapeRidibooks(bookIdOrUrl: string): Promise<RidibooksDat
     // Extract data using multiple methods
     let dataExtracted = false
 
-    // Method 1: Direct HTML parsing (most reliable for Ridibooks)
-    dataExtracted = extractFromHtmlContent(html, result)
-    if (dataExtracted) {
+    // Method 1: JSON-LD (schema.org Book) — primary, most reliable.
+    // Ridibooks renders most book detail data client-side; the only
+    // structured server-side payload is a <script type="application/ld+json">
+    // block with name/author/publisher/genre/description/rating/etc.
+    const jsonLdExtracted = extractFromJsonLd(html, result)
+    if (jsonLdExtracted) {
+      result.metadata.scraping_method = 'json_ld'
+      dataExtracted = true
+      console.log(`[Ridibooks] Extracted from JSON-LD`)
+    }
+
+    // Method 2: Direct HTML parsing — supplements (chapters, completed flag,
+    // tags from meta keywords). Patterns specific to Ridibooks DOM/meta.
+    if (extractFromHtmlContent(html, result) && !dataExtracted) {
       result.metadata.scraping_method = 'html_content'
+      dataExtracted = true
       console.log(`[Ridibooks] Extracted from HTML content`)
     }
 
-    // Method 2: Try og:meta tags to supplement
+    // Method 3: og:meta tags as fallback for any remaining gaps
     extractFromOgMeta(html, result)
 
-    // Method 3: Try __NEXT_DATA__ as additional source
+    // Method 4: __NEXT_DATA__ rarely has book data on this platform but
+    // kept as last-resort source for legacy pages.
     extractFromNextData(html, result)
 
     // Check if we got any meaningful data
@@ -601,6 +614,134 @@ function extractFromOgMeta(html: string, result: RidibooksData): boolean {
       if (image.startsWith('//')) image = `https:${image}`
       result.data.thumbnail = image
       extracted = true
+    }
+  }
+
+  return extracted
+}
+
+/**
+ * Extract data from JSON-LD (schema.org Book) blocks.
+ *
+ * Ridibooks emits a clean <script type="application/ld+json"> with the
+ * book's structured data — name, author, publisher, genre, description,
+ * aggregateRating, image, ISBN, etc. This is the only stable
+ * server-side payload that survives the page's heavy client-side rendering,
+ * so it's the primary extraction path.
+ */
+function extractFromJsonLd(html: string, result: RidibooksData): boolean {
+  let extracted = false
+
+  // Find all JSON-LD blocks (matchAll). There can be several (BreadcrumbList,
+  // Book, etc). We pick the first one whose @type is 'Book'.
+  const ldBlockRe = /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi
+  const blocks = Array.from(html.matchAll(ldBlockRe))
+
+  for (const match of blocks) {
+    const body = match[1].trim()
+    if (!body) continue
+
+    let parsed: any
+    try {
+      parsed = JSON.parse(body)
+    } catch (err) {
+      console.log(`[Ridibooks] Skipping JSON-LD block (parse error)`)
+      continue
+    }
+
+    // Some pages use an array of objects; normalize.
+    const candidates: any[] = Array.isArray(parsed) ? parsed : [parsed]
+
+    for (const candidate of candidates) {
+      if (!candidate || typeof candidate !== 'object') continue
+      const type = candidate['@type']
+      if (type !== 'Book' && type !== 'CreativeWork' && type !== 'Article') continue
+
+      // Title
+      if (!result.data.title_ko && typeof candidate.name === 'string') {
+        result.data.title_ko = decodeHTMLEntities(candidate.name)
+        extracted = true
+      }
+
+      // Author (single or array). For multi-author works (typical of
+      // webtoons listing writer + artist), populate `author` with the first
+      // entry and `artist` with the second — JSON-LD doesn't carry role
+      // tags so we use position as a best-effort heuristic. Novels have a
+      // single author and `artist` stays null.
+      const author = candidate.author
+      if (author) {
+        const toName = (v: any) =>
+          typeof v === 'string' ? v : (v && typeof v === 'object' ? v.name : null)
+        const names = (Array.isArray(author) ? author : [author])
+          .map(toName)
+          .filter((n: any): n is string => typeof n === 'string' && n.trim().length > 0)
+        if (!result.data.author && names[0]) {
+          result.data.author = decodeHTMLEntities(names[0].trim())
+          extracted = true
+        }
+        if (!result.data.artist && names[1]) {
+          result.data.artist = decodeHTMLEntities(names[1].trim())
+          extracted = true
+        }
+      }
+
+      // Publisher
+      const publisher = candidate.publisher
+      if (!result.data.publisher && publisher) {
+        const pubName = Array.isArray(publisher)
+          ? (publisher[0]?.name || publisher[0])
+          : (publisher.name || publisher)
+        if (typeof pubName === 'string' && pubName.trim()) {
+          result.data.publisher = decodeHTMLEntities(pubName.trim())
+          extracted = true
+        }
+      }
+
+      // Genre — store as single-element array to match schema
+      if ((!result.data.genre || result.data.genre.length === 0) && candidate.genre) {
+        const g = Array.isArray(candidate.genre) ? candidate.genre[0] : candidate.genre
+        if (typeof g === 'string' && g.trim()) {
+          result.data.genre = [decodeHTMLEntities(g.trim())]
+          extracted = true
+        }
+      }
+
+      // Description / synopsis
+      if (!result.data.synopsis_kr && typeof candidate.description === 'string') {
+        result.data.synopsis_kr = decodeHTMLEntities(candidate.description)
+        extracted = true
+      }
+
+      // Cover image
+      if (!result.data.thumbnail && candidate.image) {
+        const img = Array.isArray(candidate.image) ? candidate.image[0] : candidate.image
+        if (typeof img === 'string' && img.trim()) {
+          result.data.thumbnail = img.trim()
+          extracted = true
+        }
+      }
+
+      // Rating (aggregateRating.ratingValue / ratingCount)
+      const aggr = candidate.aggregateRating
+      if (aggr) {
+        if (!result.data.rating && aggr.ratingValue) {
+          const v = parseFloat(String(aggr.ratingValue))
+          if (!isNaN(v) && v >= 0 && v <= 5) {
+            result.data.rating = v
+            extracted = true
+          }
+        }
+        if (!result.data.rating_count && aggr.ratingCount) {
+          const c = parseInt(String(aggr.ratingCount), 10)
+          if (!isNaN(c) && c >= 0) {
+            result.data.rating_count = c
+            extracted = true
+          }
+        }
+      }
+
+      // First Book candidate wins; stop scanning more blocks.
+      if (type === 'Book') return extracted
     }
   }
 

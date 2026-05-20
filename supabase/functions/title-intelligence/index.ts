@@ -55,6 +55,9 @@ interface UrlBasedRequest {
     platform: 'naver_webtoon' | 'naver_series' | 'kakao' | 'kakao_webtoon' | 'manta' | 'ridibooks' | 'bomtoon'
     platformId: string
     originalUrl: string
+    // Naver Series ships comics and novels on the same productNo namespace
+    // but different paths. Default 'comic' when omitted (backward compat).
+    subKind?: 'comic' | 'novel'
   }>
   collectedBy: string
   contentType?: string
@@ -254,10 +257,11 @@ async function handleUrlBasedCollection(supabase: any, body: UrlBasedRequest) {
           break
 
         case 'naver_series':
-          // Use productNo directly with Naver Series scraper (with retry)
+          // Use productNo directly with Naver Series scraper (with retry).
+          // subKind tells the scraper whether to fetch /comic/ or /novel/.
           scraperResult = await withRetry(
-            () => scrapeNaverSeries(urlInfo.platformId),
-            { operationName: `Naver Series scrape (${urlInfo.platformId})`, maxRetries: 2, baseDelayMs: 2000 }
+            () => scrapeNaverSeries(urlInfo.platformId, urlInfo.subKind || 'comic'),
+            { operationName: `Naver Series scrape (${urlInfo.subKind || 'comic'}/${urlInfo.platformId})`, maxRetries: 2, baseDelayMs: 2000 }
           )
           break
 

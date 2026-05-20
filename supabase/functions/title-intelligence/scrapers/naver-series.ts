@@ -71,10 +71,16 @@ interface NaverSeriesData {
 
 /**
  * Main scraper function for Naver Series
- * Accepts either a productNo or full URL
+ * Accepts either a productNo or full URL, plus an optional subKind
+ * ('comic' | 'novel') that selects the path on series.naver.com.
+ * Defaults to 'comic' for backward compatibility — webtoons are the
+ * historically supported case.
  */
-export async function scrapeNaverSeries(productNoOrUrl: string): Promise<NaverSeriesData> {
-  console.log(`[NaverSeries] Scraping for: ${productNoOrUrl}`)
+export async function scrapeNaverSeries(
+  productNoOrUrl: string,
+  subKind: 'comic' | 'novel' = 'comic',
+): Promise<NaverSeriesData> {
+  console.log(`[NaverSeries] Scraping for: ${productNoOrUrl} (subKind=${subKind})`)
 
   const result: NaverSeriesData = {
     source: 'naver_series',
@@ -119,12 +125,12 @@ export async function scrapeNaverSeries(productNoOrUrl: string): Promise<NaverSe
       return result
     }
 
-    console.log(`[NaverSeries] Using productNo: ${productNo}`)
+    console.log(`[NaverSeries] Using productNo: ${productNo} (subKind=${subKind})`)
     result.data.productNo = productNo
-    result.data.platform_url = `https://series.naver.com/comic/detail.series?productNo=${productNo}`
+    result.data.platform_url = `https://series.naver.com/${subKind}/detail.series?productNo=${productNo}`
 
     // Fetch HTML and parse data
-    const htmlData = await fetchAndParseHtml(productNo)
+    const htmlData = await fetchAndParseHtml(productNo, subKind)
 
     if (htmlData) {
       result.title_found = true
@@ -182,11 +188,14 @@ function extractProductNo(input: string): string | null {
 /**
  * Fetch HTML page and extract all available data
  */
-async function fetchAndParseHtml(productNo: string): Promise<Partial<NaverSeriesData['data']> | null> {
-  console.log(`[NaverSeries] Fetching HTML for: ${productNo}`)
+async function fetchAndParseHtml(
+  productNo: string,
+  subKind: 'comic' | 'novel' = 'comic',
+): Promise<Partial<NaverSeriesData['data']> | null> {
+  console.log(`[NaverSeries] Fetching HTML for: ${productNo} (${subKind})`)
 
   try {
-    const url = `https://series.naver.com/comic/detail.series?productNo=${productNo}`
+    const url = `https://series.naver.com/${subKind}/detail.series?productNo=${productNo}`
     const response = await fetch(url, { headers: HEADERS })
 
     if (!response.ok) {

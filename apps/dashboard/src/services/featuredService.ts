@@ -260,7 +260,8 @@ export const featuredService = {
     // Fetch all active sections
     const sections = await this.getActiveSections();
 
-    // Fetch all featured titles with only needed fields (optimized for performance)
+    // Fetch all featured titles with only needed fields (optimized for performance).
+    // Include priority so we can hide Low-priority entries — buyer surface.
     const { data: featured, error } = await supabase
       .from('featured')
       .select(`
@@ -283,7 +284,8 @@ export const featuredService = {
           content_format,
           rating,
           story_author,
-          art_author
+          art_author,
+          priority
         )
       `)
       .order('display_order', { ascending: true });
@@ -292,12 +294,17 @@ export const featuredService = {
       throw new Error(`Failed to fetch featured titles: ${error.message}`);
     }
 
-    // Normalize the data - Supabase returns titles as array for join, but we expect single object
-    const normalizedFeatured = (featured || []).map(f => ({
-      ...f,
-      // Supabase returns array for joined relation, take first item
-      titles: Array.isArray(f.titles) ? f.titles[0] : f.titles
-    })) as FeaturedWithTitle[];
+    // Normalize the data - Supabase returns titles as array for join, but we expect single object.
+    // Also drop featured rows whose underlying title is Low-priority (treated as unpublished).
+    const normalizedFeatured = (featured || [])
+      .map(f => ({
+        ...f,
+        titles: Array.isArray(f.titles) ? f.titles[0] : f.titles,
+      }))
+      .filter((f) => {
+        const p = (f.titles as { priority?: string | null } | undefined)?.priority;
+        return p === '1' || p === '2';
+      }) as FeaturedWithTitle[];
 
     // Group titles by section
     const sectionsWithTitles: FeaturedSectionWithTitles[] = sections.map(section => ({

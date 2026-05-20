@@ -107,11 +107,14 @@ export default function Chat() {
       if (!user?.id || !user?.email) return;
 
       try {
-        // Load title cache for fuzzy matching (recent titles only)
+        // Load title cache for fuzzy matching (recent published titles only).
+        // Low-priority (priority='3'/null) titles are hidden from the buyer
+        // surface, so they must not be matchable in chat either.
         debug.log('📚 Loading title cache for fuzzy matching...');
         const { data: allTitles, error: titlesError } = await supabase
           .from('titles')
           .select('title_id, slug, title_name_en, title_name_kr')
+          .in('priority', ['1', '2'])
           .order('created_at', { ascending: false })
           .limit(TITLE_CACHE_SIZE);
 

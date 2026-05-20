@@ -42,6 +42,7 @@ const DiaryEntryPage = lazy(() => import("./pages/DiaryEntryPage"));
 const FormatSpotlightPage = lazy(() => import("./pages/FormatSpotlightPage"));
 
 // Team bio pages
+const TeamPage = lazy(() => import("./pages/TeamPage"));
 const KevinBioPage = lazy(() => import("./pages/KevinBioPage"));
 const SunghoBioPage = lazy(() => import("./pages/SunghoBioPage"));
 
@@ -96,6 +97,7 @@ const App = () => (
           {import.meta.env.DEV && <Route path="/home-preview4" element={<HomePagePreview4 />} />}
           <Route path="/producers/onboarding" element={<ProducersOnboardingPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/team" element={<TeamPage />} />
           <Route path="/team/kevin" element={<KevinBioPage />} />
           <Route path="/team/sungho" element={<SunghoBioPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

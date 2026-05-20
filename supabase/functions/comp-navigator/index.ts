@@ -320,16 +320,33 @@ serve(async (req) => {
     console.log('[COMPS] Vector search succeeded, candidates type:', typeof candidates, 'is array:', Array.isArray(candidates))
     console.log('[COMPS] ⏱️  Vector search took:', vectorSearchDuration, 'ms')
 
+    // Drop Low-priority titles (priority='3' or null) — buyer surface.
+    let publishedCandidates: any[] = candidates || []
+    if (publishedCandidates.length > 0) {
+      const ids = publishedCandidates.map((c: any) => c.title_id)
+      const { data: pubRows } = await supabaseClient
+        .from('titles')
+        .select('title_id')
+        .in('title_id', ids)
+        .in('priority', ['1', '2'])
+      const allowed = new Set((pubRows || []).map((r: { title_id: string }) => r.title_id))
+      const droppedCount = publishedCandidates.length - allowed.size
+      publishedCandidates = publishedCandidates.filter((c: any) => allowed.has(c.title_id))
+      if (droppedCount > 0) {
+        console.log(`[COMPS] Dropped ${droppedCount} Low-priority titles from candidates`)
+      }
+    }
+
     const phase1Duration = Date.now() - phase1Start
     console.log('[COMPS] ✅ Phase 1 complete', {
-      candidates_found: candidates?.length || 0,
+      candidates_found: publishedCandidates.length,
       total_duration_ms: phase1Duration,
       embedding_ms: embeddingDuration,
       vector_search_ms: vectorSearchDuration,
-      sample_candidate: candidates?.[0]?.title_name_en
+      sample_candidate: publishedCandidates[0]?.title_name_en
     })
 
-    if (!candidates || candidates.length === 0) {
+    if (!publishedCandidates || publishedCandidates.length === 0) {
       console.log('[COMPS] WARNING: Phase 1 returned 0 candidates!')
       return new Response(
         JSON.stringify({
@@ -347,11 +364,11 @@ serve(async (req) => {
     const prioritizationStart = Date.now()
 
     // Fetch pitch deck availability for all candidates
-    const titleIds = candidates.map((c: any) => c.title_id)
+    const titleIds = publishedCandidates.map((c: any) => c.title_id)
     const titlesWithPitchDeck = await fetchPitchDeckAvailability(supabaseClient, titleIds)
 
     // Apply weighted scoring and re-sort
-    const prioritizedCandidates = applySmartPrioritization(candidates, titlesWithPitchDeck)
+    const prioritizedCandidates = applySmartPrioritization(publishedCandidates, titlesWithPitchDeck)
 
     const prioritizationDuration = Date.now() - prioritizationStart
     console.log('[COMPS] ⏱️  Smart prioritization took:', prioritizationDuration, 'ms')

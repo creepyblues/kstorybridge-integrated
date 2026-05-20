@@ -124,7 +124,24 @@ serve(async (req) => {
       throw new Error(`Vector search error: ${searchError.message}`);
     }
 
-    const results: VectorSearchResult[] = searchResults || [];
+    const rawResults: VectorSearchResult[] = searchResults || [];
+
+    // Drop Low-priority (priority='3' or null) titles before returning to buyer.
+    let results: VectorSearchResult[] = rawResults;
+    if (rawResults.length > 0) {
+      const ids = rawResults.map((r) => r.title_id);
+      const { data: pubRows } = await supabase
+        .from('titles')
+        .select('title_id')
+        .in('title_id', ids)
+        .in('priority', ['1', '2']);
+      const allowed = new Set((pubRows || []).map((r: { title_id: string }) => r.title_id));
+      results = rawResults.filter((r) => allowed.has(r.title_id));
+      if (results.length !== rawResults.length) {
+        console.log(`🚫 Filtered ${rawResults.length - results.length} Low-priority titles`);
+      }
+    }
+
     const processingTime = Date.now() - startTime;
 
     console.log(`✅ Vector search complete: ${results.length} results in ${processingTime}ms`);

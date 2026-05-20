@@ -152,9 +152,23 @@ class VectorSearchService {
       }
 
       // Filter out the reference title itself
-      const similarTitles = (results || []).filter(
+      let similarTitles = (results || []).filter(
         (result: VectorSearchResult) => result.title_id !== titleId
-      ).slice(0, limit);
+      );
+
+      // Drop Low-priority (priority='3' or null) titles — buyer surface.
+      if (similarTitles.length > 0) {
+        const ids = similarTitles.map((r: VectorSearchResult) => r.title_id);
+        const { data: published } = await supabase
+          .from('titles')
+          .select('title_id')
+          .in('title_id', ids)
+          .in('priority', ['1', '2']);
+        const allowed = new Set((published || []).map((r: { title_id: string }) => r.title_id));
+        similarTitles = similarTitles.filter((r: VectorSearchResult) => allowed.has(r.title_id));
+      }
+
+      similarTitles = similarTitles.slice(0, limit);
 
       console.log(`✅ Found ${similarTitles.length} similar titles`);
 

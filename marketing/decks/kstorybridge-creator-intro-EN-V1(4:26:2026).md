@@ -1,5 +1,7 @@
 # KStoryBridge Creator Deck v6 (English)
 
+> Sister deck (Korean): [kstorybridge-creator-intro-V1(4:26:2026).md](./kstorybridge-creator-intro-V1%284:26:2026%29.md) · Deployed at [/intro/kr](https://kstorybridge.com/intro/kr) · This deck deploys at [/intro/en](https://kstorybridge.com/intro/en). Keep the two in sync when editing.
+
 ## Audience
 Korean creators evaluating whether KStoryBridge is a trustworthy way to present their work to US and global producers.
 
@@ -118,8 +120,35 @@ We understand both Korean and global markets.
 
 ---
 
-## Slide 7. The two-way bridge
-*Eyebrow: 05 · The two-way bridge*
+## Slide 7. Meet the founders
+*Eyebrow: 05 · Meet the founders*
+
+**Hollywood and Korea — two worlds, lived in daily,
+by the *two people* who built this company themselves**
+
+Two founder cards (with photos):
+
+**Kevin Nicklaus (케빈 니클라우스)**
+Co-Founder · 20 years in Hollywood IP adaptation
+- Warner Bros. (Wolper Org) — **SVP, Development**
+- Executive Producer — *The Beginning After The End* (Crunchyroll · Fuji TV)
+- Executive Producer — *Junji Ito's Bloodsucking Darkness* (Fangoria)
+- Consulting Producer — **Tapas Media · RIDI/Manta**
+- [View profile →](https://www.linkedin.com/in/kevin-nicklaus/)
+
+**Sungho Lee (이성호)**
+Co-Founder · 20 years connecting Korea and the world
+- **Netflix Asia** — Director, Business Development
+- **RIDI / Manta** — Head of IP Expansion & Hollywood Strategy
+- Mobile · Software · OTT — 20 years in global business
+- Cornell Johnson MBA
+- [View profile →](https://www.linkedin.com/in/sungholee/)
+
+---
+
+## Slide 8. The two-way bridge
+*Eyebrow: 06 · The two-way bridge*
+*(In the markdown but not in the deployed HTML — the deployed deck skips this slide.)*
 
 **Protecting the work and
 reaching the world is
@@ -145,7 +174,7 @@ KStoryBridge looks at both.
 
 ---
 
-## Slide 8. How Hollywood producers see your work
+## Slide 9. How Hollywood producers see your work
 *Eyebrow: 06 · How Hollywood producers see your work*
 
 **This is what your work
@@ -170,7 +199,7 @@ The core information and appeal are organized
 
 ---
 
-## Slide 9. How the pitching works
+## Slide 10. How the pitching works
 *Eyebrow: 07 · How the pitching works*
 
 **A step-by-step process
@@ -204,7 +233,7 @@ at the formal meeting with decision-makers.
 
 ---
 
-## Slide 10. Who's using KStoryBridge
+## Slide 11. Who's using KStoryBridge
 *Eyebrow: 08 · Who's using KStoryBridge*
 
 **Top Hollywood producers are reviewing
@@ -221,9 +250,9 @@ What matters isn't being seen by many - it's **being seen properly by the right 
 
 ---
 
-## Slide 11. CTA
+## Slide 12. CTA
 **It's time for your story
-to meet the world.**
+to meet the world**
 
 We'll think through the first step with you.
 **Want a conversation** about your work's potential?
@@ -234,6 +263,161 @@ partners@kstorybridge.com (click to copy)
 Link: https://kstorybridge.com/creators
 
 **Visual note:** ink (dark) background, full-bleed CTA, primary + ghost button pair.
+
+---
+
+<!-- _class: lead -->
+
+## Slide 13. Appendix
+
+# Appendix
+
+### A brief tour of the global partners, authors, and works referenced in this deck
+
+Some of these names may be unfamiliar.
+One page per reference, to fill in the context the main slides assume.
+
+**Visual note:** centered lead-style cover, soft teal/coral gradient at corners (matches Slide 1). No eyebrow number on this divider slide.
+
+---
+
+![bg right:42%](../assets/appendix/crunchyroll-keyvisual.jpg)
+
+## Slide 14. Crunchyroll
+*Eyebrow: Appendix · 01 · Animation · Crunchyroll*
+
+![h:56](../assets/appendix/crunchyroll-wordmark.svg)
+
+**Sony-owned, the world's largest anime streaming service**
+
+Founded in the US in 2006 and acquired by Sony for about **$1.175B** in 2021, Crunchyroll is the global anime-specialist streamer. Originally Japan-centric, it is now a primary route for Korean, Chinese, and US-originated IP to reach the global market.
+
+**Scale**
+- Paid subscribers: **21M+ (as of 2026)**
+- Library: 50,000+ episodes / 25,000+ hours
+- Parent: Sony Pictures Entertainment
+
+**What this means for outward-looking creators**
+> The Korean web-novel-based **《Solo Leveling》** became Crunchyroll's biggest anime release of 2024. It is one of the most direct, proven channels for Korean IP to enter the global market.
+
+<!-- Visual: Crunchyroll wordmark (top-left) + Solo Leveling cover half-bleed right -->
+
+
+---
+
+![bg right:42%](../assets/appendix/tbate-keyvisual.jpg)
+
+## Slide 15. The Beginning After The End
+*Eyebrow: Appendix · 02 · Animation · The Beginning After The End*
+
+**How a US web novel became a Crunchyroll original anime**
+
+A portal fantasy by **TurtleMe, a Korean-American author**, serialized on the free web-novel site Royalroad since 2015. It expanded into a Tapas webtoon in 2018 and was produced as a Crunchyroll original anime in 2025. **KStoryBridge's Kevin is the show's Executive Producer.**
+
+**Scale**
+- Web novel: 529 chapters (2015–2025, Royalroad/Patreon)
+- Webtoon: Tapas, serialized since 2018
+- Anime: Season 1 (Apr 2025) · Season 2 (Apr 2026), Crunchyroll original
+
+**What this means for outward-looking creators**
+> A precise case of a non-Japanese web serial scaling into a top-tier anime IP — **a proven path for Korean web novels and webtoons to follow** — and the person who walked it is the one who built KStoryBridge.
+
+<!-- Visual: TBATE anime cover half-bleed right -->
+
+
+---
+
+![bg right:42%](../assets/appendix/junji-ito-keyvisual.jpg)
+
+## Slide 16. Junji Ito
+*Eyebrow: Appendix · 03 · Genre IP · Junji Ito*
+
+**The master of Japanese horror manga recognized by the West**
+
+《Uzumaki》, 《Tomie》, and 《Voices in the Dark》 — the Japanese horror manga artist behind some of the most iconic Asian horror in print. He has won the highest honor in the US comics industry — **the Eisner Award four times** — and was inducted into the Hall of Fame in 2025. **KStoryBridge's Kevin is the Executive Producer of the live-action adaptation of Junji Ito's 《Bloodsucking Darkness》.**
+
+**Scale**
+- Eisner Award: 4 wins (2019–2022) → Hall of Fame (2025)
+- Netflix 《Junji Ito Maniac》: 12 episodes (Jan 2023)
+- Adult Swim 《Uzumaki》: miniseries (Sep–Oct 2024), produced by Production I.G USA
+
+**What this means for outward-looking creators**
+> Proof that an Asian horror author can move beyond simple licensing and **contract directly, at the author level, with Netflix and Warner.** A clear template for Korean horror webtoon and web-novel authors mapping their own trajectory.
+
+<!-- Visual: Uzumaki manga cover half-bleed right -->
+
+
+---
+
+![bg right:38%](../assets/appendix/reelshort-screenshot.jpg)
+
+## Slide 17. ReelShort
+*Eyebrow: Appendix · 04 · Vertical drama · ReelShort*
+
+![h:72](../assets/appendix/reelshort-wordmark.png)
+
+**America's largest vertical short-drama app**
+
+A US platform unlocking 1–2 minute vertical drama episodes on mobile through micro-payments. In November 2023 it hit **#1 in the App Store Entertainment category** in the US, briefly outranking TikTok in downloads. Its parent, Crazy Maple Studio, was named to **TIME100 Most Influential Companies 2024**.
+
+**Scale**
+- Revenue: **~$700M (2025)**
+- Cumulative downloads: 37M (early 2024) → **370M+ (2025)**
+- Parent: Crazy Maple Studio (Silicon Valley HQ; China's COL Group holds a 49% stake)
+
+**What this means for outward-looking creators**
+> Rebirth, chaebol, revenge, alpha male — the tropes ReelShort uses most are **the exact tropes Korean web novels already write best.** A market where a familiar form of writing connects to a newly opened global revenue stream.
+
+<!-- Visual: ReelShort wordmark (top-left) + app screenshot half-bleed right -->
+
+
+---
+
+![bg right:38%](../assets/appendix/dramabox-screenshot.jpg)
+
+## Slide 18. DramaBox
+*Eyebrow: Appendix · 05 · Vertical drama · DramaBox*
+
+![h:72](../assets/appendix/dramabox-wordmark.png)
+
+**Same format, a second giant buyer**
+
+DramaBox is the largest competing platform in the same vertical short-drama format as ReelShort. Since launching in April 2023 it has grown rapidly, posting **$323M revenue / $10M net income** in 2024, and was selected into the **2025 Disney Accelerator** cohort.
+
+**Scale**
+- Revenue / net income: **$323M / $10M (2024)**
+- Global MAU: 50M+ (2025), 44M average in H1
+- Parent: Dianzhong Technology (China) · operated by Singapore-based StoryMatrix. Won Google Play Best of 2024 "Best for Fun" (in select regions including HK and ID).
+
+**What this means for outward-looking creators**
+> A structure where the same work can be pitched to both platforms at once. Not a single buyer but **a market with bidding competition** — meaning Korean IP holds two negotiating cards instead of one.
+
+<!-- Visual: DramaBox wordmark (top-left) + app screenshot half-bleed right -->
+
+
+---
+
+![bg right:42%](../assets/appendix/fangoria-keyvisual.jpg)
+
+## Slide 19. Fangoria Studios
+*Eyebrow: Appendix · 06 · Genre IP · Fangoria Studios*
+
+![h:64](../assets/appendix/fangoria-wordmark.svg)
+
+**America's oldest authority brand in horror**
+
+Fangoria is the American horror magazine **founded in 1979** — the brand that has run horror's "Oscars", **the Chainsaw Awards**, since 1992. Fangoria Studios is the same brand's film production and investment arm.
+
+**Scale**
+- Parent brand founded: **1979** (Kerry O'Quinn & Norman Jacobs)
+- Chainsaw Awards: since 1992, the top US horror honor
+- Recent (Fangoria Presents): **《Suitable Flesh》** (dir. Joe Lynch · prod. Barbara Crampton · starring Heather Graham, 2023)
+
+**What this means for outward-looking creators**
+> Horror is the genre that **most strongly acknowledges the author's signature** in the global market. The Fangoria name itself is genre credibility. A natural first destination for Korean horror IP heading to US live-action production.
+
+<!-- Visual: Fangoria wordmark (top-left) + Suitable Flesh poster half-bleed right -->
+
 
 ---
 

@@ -230,13 +230,23 @@ describe('VectorSearchService', () => {
     ];
 
     it('should find similar titles excluding the reference', async () => {
-      // Mock the from().select().eq().single() chain
+      // Reference lookup mock: from('titles').select(...).eq().single()
       const mockSingle = vi.fn().mockResolvedValue({
         data: mockReferenceTitle,
         error: null,
       });
       const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+      // Priority filter mock (added by the buyer-visibility filter):
+      // from('titles').select('title_id').in('title_id', ids).in('priority', [...])
+      // It awaits to { data, error }, so the inner .in() must be a thenable.
+      const mockPriorityIn = vi.fn().mockResolvedValue({
+        data: mockSimilarTitles
+          .filter((r) => r.title_id !== 'reference-id')
+          .map((r) => ({ title_id: r.title_id })),
+        error: null,
+      });
+      const mockTitleIdsIn = vi.fn().mockReturnValue({ in: mockPriorityIn });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq, in: mockTitleIdsIn });
       vi.mocked(supabase.from).mockReturnValue({ select: mockSelect } as any);
 
       // Mock the RPC call
@@ -252,6 +262,9 @@ describe('VectorSearchService', () => {
       expect(results.map((r) => r.title_id)).not.toContain('reference-id');
       expect(results[0].title_id).toBe('similar-1');
       expect(results[1].title_id).toBe('similar-2');
+
+      // Priority filter must have been applied with the buyer-visible set
+      expect(mockPriorityIn).toHaveBeenCalledWith('priority', ['1', '2']);
 
       // Verify RPC was called with correct params
       expect(supabase.rpc).toHaveBeenCalledWith('match_titles_by_embedding', {
@@ -362,7 +375,13 @@ describe('VectorSearchService', () => {
         error: null,
       });
       const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
-      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+      // Priority filter returns all manyResults as published (test focuses on limit).
+      const mockPriorityIn = vi.fn().mockResolvedValue({
+        data: manyResults.map((r) => ({ title_id: r.title_id })),
+        error: null,
+      });
+      const mockTitleIdsIn = vi.fn().mockReturnValue({ in: mockPriorityIn });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq, in: mockTitleIdsIn });
       vi.mocked(supabase.from).mockReturnValue({ select: mockSelect } as any);
 
       vi.mocked(supabase.rpc).mockResolvedValue({

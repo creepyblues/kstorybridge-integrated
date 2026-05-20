@@ -66,7 +66,7 @@ export default function AdminTitleEdit() {
   const fetchTitle = async (id: string) => {
     setLoading(true);
     try {
-      const data = await titlesService.getTitleById(id);
+      const data = await titlesService.getTitleById(id, { includeAllPriorities: true });
       if (data) {
         setTitle(data);
         setFormData(data);

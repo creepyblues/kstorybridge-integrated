@@ -77,6 +77,9 @@ describe('TitlesService', () => {
       rating: 4.5,
       completed: true,
       created_at: '2024-01-01',
+      // priority '1' (High) is required for buyer-visibility — buyer-facing
+      // service methods now hide priority='3'/null titles by default.
+      priority: '1',
     },
     {
       title_id: 'title-2',
@@ -87,6 +90,7 @@ describe('TitlesService', () => {
       content_format: 'webnovel',
       rating: 4.0,
       completed: false,
+      priority: '2',
       created_at: '2024-01-02',
     },
   ];
@@ -595,6 +599,105 @@ describe('TitlesService', () => {
     it('should return 0 for undefined/null', () => {
       expect(titlesService.formatNumber(undefined)).toBe('0');
       expect(titlesService.formatNumber(0)).toBe('0');
+    });
+  });
+
+  // ===================================================================
+  // Priority filter: priority='3' / null titles hidden from buyer surface
+  // ===================================================================
+  describe('priority filter (buyer-visibility)', () => {
+    it('getTitles: applies priority IN (1,2) filter by default', async () => {
+      const mockBuilder = createMockQueryBuilder({ data: mockTitles, error: null });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      await titlesService.getTitles();
+
+      expect(mockBuilder.in).toHaveBeenCalledWith('priority', ['1', '2']);
+    });
+
+    it('getTitles: skips priority filter when includeAllPriorities=true', async () => {
+      const mockBuilder = createMockQueryBuilder({ data: mockTitles, error: null });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      await titlesService.getTitles({ includeAllPriorities: true });
+
+      const inCalls = (mockBuilder.in as any).mock.calls as unknown[][];
+      const priorityCalls = inCalls.filter((call) => call[0] === 'priority');
+      expect(priorityCalls).toHaveLength(0);
+    });
+
+    it('getTitlesPaginated: applies priority filter by default', async () => {
+      const mockBuilder = createMockQueryBuilder({ data: mockTitles, error: null, count: 2 });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      await titlesService.getTitlesPaginated();
+
+      expect(mockBuilder.in).toHaveBeenCalledWith('priority', ['1', '2']);
+    });
+
+    it('getTitlesByIds: applies priority filter by default', async () => {
+      const mockBuilder = createMockQueryBuilder({ data: mockTitles, error: null });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      await titlesService.getTitlesByIds(['title-1', 'title-2']);
+
+      expect(mockBuilder.in).toHaveBeenCalledWith('priority', ['1', '2']);
+    });
+
+    it('getTitlesByIds: skips priority filter for admin opt-out', async () => {
+      const mockBuilder = createMockQueryBuilder({ data: mockTitles, error: null });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      await titlesService.getTitlesByIds(['title-1'], { includeAllPriorities: true });
+
+      const inCalls = (mockBuilder.in as any).mock.calls as unknown[][];
+      const priorityCalls = inCalls.filter((call) => call[0] === 'priority');
+      expect(priorityCalls).toHaveLength(0);
+    });
+
+    it('getTitleById: returns null when title has priority=3 (buyer call)', async () => {
+      const lowTitle = { ...mockTitles[0], priority: '3', title_content_analysis: null };
+      const mockBuilder = createMockQueryBuilder({ data: lowTitle, error: null });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      const result = await titlesService.getTitleById('title-1');
+
+      expect(result).toBeNull();
+    });
+
+    it('getTitleById: returns null when title has priority=null (buyer call)', async () => {
+      const nullTitle = { ...mockTitles[0], priority: null, title_content_analysis: null };
+      const mockBuilder = createMockQueryBuilder({ data: nullTitle, error: null });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      const result = await titlesService.getTitleById('title-1');
+
+      expect(result).toBeNull();
+    });
+
+    it('getTitleById: returns Low-priority title when includeAllPriorities=true (admin)', async () => {
+      const lowTitle = { ...mockTitles[0], priority: '3', title_content_analysis: null };
+      const mockBuilder = createMockQueryBuilder({ data: lowTitle, error: null });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      const result = await titlesService.getTitleById('title-1', { includeAllPriorities: true });
+
+      expect(result?.title_id).toBe('title-1');
+    });
+
+    it('getFavorites: strips Low-priority titles from results', async () => {
+      const favRows = [
+        { title: { ...mockTitles[0], priority: '1' } },
+        { title: { ...mockTitles[1], priority: '3' } }, // Low — should be removed
+        { title: { ...mockTitles[0], title_id: 'title-3', priority: null } }, // null — removed
+      ];
+      const mockBuilder = createMockQueryBuilder({ data: favRows, error: null });
+      vi.mocked(supabase.from).mockReturnValue(mockBuilder as any);
+
+      const result = await titlesService.getFavorites('user-1');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].title_id).toBe('title-1');
     });
   });
 });

@@ -988,6 +988,33 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
 
 // Helper Functions
 
+/**
+ * Drop Low-priority (priority = '3' or null) titles from a result set whose
+ * shape includes `title_id`. Used to keep buyer-facing search results
+ * consistent with the dashboard's published-only rule.
+ */
+async function filterByPublishedPriority<T extends { title_id: string }>(
+  supabase: any,
+  rows: T[],
+): Promise<T[]> {
+  if (!rows.length) return rows;
+  const ids = rows.map((r) => r.title_id);
+  const { data: published, error } = await supabase
+    .from('titles')
+    .select('title_id')
+    .in('title_id', ids)
+    .in('priority', ['1', '2']);
+  if (error) {
+    // Fail closed: if the priority lookup errors, treat NOTHING as published.
+    // Better to show an empty result than leak Low-priority titles into the
+    // buyer surface when the DB is flaky.
+    console.error('[filterByPublishedPriority] lookup failed, blocking all rows:', error.message);
+    return [];
+  }
+  const allowed = new Set((published || []).map((r: { title_id: string }) => r.title_id));
+  return rows.filter((r) => allowed.has(r.title_id));
+}
+
 async function getUserProfile(supabase: any, userId: string, email: string): Promise<UserProfile> {
   // Try to get buyer profile first
   const { data: buyerProfile } = await supabase
@@ -1124,7 +1151,8 @@ async function performKeywordSearch(
       return [];
     }
 
-    // Search across title names, synopsis, genre, and tags
+    // Search across title names, synopsis, genre, and tags.
+    // Hide Low-priority (priority='3' or null) titles from buyer surfaces.
     const { data: results } = await supabase
       .from('titles')
       .select(`
@@ -1136,6 +1164,7 @@ async function performKeywordSearch(
         genre,
         tone
       `)
+      .in('priority', ['1', '2'])
       .or(`
         title_name_en.ilike.%${query}%,
         title_name_kr.ilike.%${query}%,
@@ -1210,12 +1239,18 @@ async function performVectorSearch(
       match_count: matchCount
     })
 
+    // Drop Low-priority (priority='3' or null) titles. The RPC's return
+    // shape doesn't include priority, so look it up for the matched IDs and
+    // filter in JS — at most ~matchCount rows.
+    const filteredResults = await filterByPublishedPriority(supabase, results || []);
+
     console.log('✅ Vector Search Results:', {
-      resultCount: results?.length || 0,
-      topScores: results?.slice(0, 3).map((r: any) => r.similarity.toFixed(3)) || []
+      resultCount: filteredResults.length,
+      droppedLowPriority: (results?.length || 0) - filteredResults.length,
+      topScores: filteredResults.slice(0, 3).map((r: any) => r.similarity.toFixed(3))
     });
 
-    return results || []
+    return filteredResults
   } catch (error) {
     console.error('❌ Vector search error:', error)
     return []

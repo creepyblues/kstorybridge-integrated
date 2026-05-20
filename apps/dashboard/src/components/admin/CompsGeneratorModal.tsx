@@ -28,6 +28,8 @@ import {
   type CompsGeneratorResponse,
   type SuggestedComp,
 } from '@/services/compsGeneratorService';
+import { scoreManualComps } from '@kstorybridge/tools';
+import { supabase } from '@/lib/supabase';
 import { Icon } from '@iconify/react';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { ManualCompSearch } from './ManualCompSearch';
@@ -95,6 +97,8 @@ export function CompsGeneratorModal({
   const [selectedComps, setSelectedComps] = useState<Set<string>>(new Set());
   const [expandedComps, setExpandedComps] = useState<Set<string>>(new Set());
   const [manualComps, setManualComps] = useState<SuggestedComp[]>([]);
+  // Tracks which manual comps are currently being AI-scored (keyed by imdb_id, falls back to comp_title)
+  const [scoringComps, setScoringComps] = useState<Set<string>>(new Set());
 
   // Loading progress state
   const [currentPhase, setCurrentPhase] = useState(0);
@@ -112,6 +116,7 @@ export function CompsGeneratorModal({
       setSelectedComps(new Set());
       setExpandedComps(new Set());
       setManualComps([]);
+      setScoringComps(new Set());
       // Reset loading progress state
       setCurrentPhase(0);
       setCurrentMessage(0);
@@ -226,11 +231,56 @@ export function CompsGeneratorModal({
     setSelectedComps(new Set());
   };
 
-  // Handler for adding manual comps
+  // Stable key for tracking a manual comp across re-renders.
+  // Prefers imdb_id (set by OMDB search) and falls back to title.
+  const manualCompKey = (comp: SuggestedComp) => comp.imdb_id || comp.comp_title;
+
+  // Handler for adding manual comps. Inserts the unscored comp immediately so
+  // the admin sees it in the list, then kicks off AI scoring in the background.
   const handleAddManualComp = (comp: SuggestedComp) => {
     setManualComps((prev) => [...prev, comp]);
-    // Auto-select the newly added comp
     setSelectedComps((prev) => new Set([...prev, comp.comp_title]));
+
+    if (!titleId || !user?.email) return;
+
+    const key = manualCompKey(comp);
+    setScoringComps((prev) => new Set(prev).add(key));
+
+    scoreManualComps(supabase, titleId, [comp], user.email)
+      .then((scored) => {
+        const enriched = scored[0];
+        if (!enriched) throw new Error('Empty scoring response');
+
+        setManualComps((prev) =>
+          prev.map((c) => (manualCompKey(c) === key ? { ...enriched, source: 'manual' } : c)),
+        );
+
+        // Keep the comp selected even if the model returned a different title casing.
+        setSelectedComps((prev) => {
+          if (enriched.comp_title === comp.comp_title) return prev;
+          const next = new Set(prev);
+          if (next.has(comp.comp_title)) {
+            next.delete(comp.comp_title);
+            next.add(enriched.comp_title);
+          }
+          return next;
+        });
+      })
+      .catch((err) => {
+        console.error('[CompsGenerator] Manual comp scoring failed:', err);
+        toast({
+          title: 'Could not score this comp',
+          description: 'Saved without AI details. Try removing and re-adding.',
+          variant: 'destructive',
+        });
+      })
+      .finally(() => {
+        setScoringComps((prev) => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
+        });
+      });
   };
 
   // Handler for removing manual comps
@@ -523,10 +573,11 @@ export function CompsGeneratorModal({
               <div className="mt-4 space-y-3">
                 {manualComps.map((comp) => (
                   <CompCard
-                    key={comp.comp_title}
+                    key={manualCompKey(comp)}
                     comp={comp}
                     selected={selectedComps.has(comp.comp_title)}
                     expanded={expandedComps.has(comp.comp_title)}
+                    scoring={scoringComps.has(manualCompKey(comp))}
                     onToggleSelect={() => handleToggleComp(comp.comp_title)}
                     onToggleExpand={() => handleToggleExpand(comp.comp_title)}
                     onRemove={() => handleRemoveManualComp(comp.comp_title)}
@@ -582,6 +633,7 @@ interface CompCardProps {
   comp: SuggestedComp;
   selected: boolean;
   expanded: boolean;
+  scoring?: boolean;  // True while AI scoring is in flight (manual comps)
   onToggleSelect: () => void;
   onToggleExpand: () => void;
   onRemove?: () => void;  // Optional remove handler for manual comps
@@ -594,6 +646,7 @@ function CompCard({
   comp,
   selected,
   expanded,
+  scoring = false,
   onToggleSelect,
   onToggleExpand,
   onRemove,
@@ -602,6 +655,9 @@ function CompCard({
   getTypeIcon,
 }: CompCardProps) {
   const isManual = comp.source === 'manual';
+  // A manual comp is "scored" once AI scoring has populated dimensions.
+  // Unscored = scoring in flight OR scoring failed/skipped.
+  const isScored = comp.dimension_scores && comp.dimension_scores.length > 0;
 
   return (
     <div
@@ -640,14 +696,26 @@ function CompCard({
                 </span>
               </div>
 
-              {/* Score Badge or Manually Added Badge */}
-              {isManual ? (
+              {/* Score Badge / Scoring spinner / Manually Added fallback */}
+              {scoring ? (
+                <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200 inline-flex items-center gap-1">
+                  <Icon icon="solar:refresh-circle-bold-duotone" className="h-3 w-3 animate-spin" />
+                  Scoring…
+                </Badge>
+              ) : isManual && !isScored ? (
                 <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200">
                   Manually Added
                 </Badge>
               ) : (
                 <Badge className={`${getScoreColor(comp.overall_match_score)} text-white`}>
                   {comp.overall_match_score}% Match
+                </Badge>
+              )}
+
+              {/* Small "Manual" tag alongside score for scored manual comps */}
+              {isManual && isScored && !scoring && (
+                <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200 text-xs">
+                  Manual
                 </Badge>
               )}
             </div>
@@ -657,8 +725,8 @@ function CompCard({
               {comp.explanation}
             </p>
 
-            {/* Match Reasons (only for AI comps) */}
-            {!isManual && comp.match_reasons.length > 0 && (
+            {/* Match Reasons — show whenever they exist (AI comps or scored manual comps) */}
+            {comp.match_reasons && comp.match_reasons.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {comp.match_reasons.slice(0, 3).map((reason, idx) => (
                   <span
@@ -706,8 +774,8 @@ function CompCard({
         </div>
       </div>
 
-      {/* Expandable Dimension Scores (only for AI comps with dimension data) */}
-      {!isManual && comp.dimension_scores.length > 0 && (
+      {/* Expandable Dimension Scores — show whenever dimensions exist */}
+      {comp.dimension_scores && comp.dimension_scores.length > 0 && (
       <Collapsible open={expanded} onOpenChange={onToggleExpand}>
         <CollapsibleTrigger asChild>
           <button

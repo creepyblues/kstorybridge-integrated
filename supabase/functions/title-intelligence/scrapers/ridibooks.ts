@@ -236,17 +236,24 @@ function extractBookId(input: string): string | null {
 function extractFromHtmlContent(html: string, result: RidibooksData): boolean {
   let extracted = false
 
-  // Extract title from <title> tag first
-  const titleTagMatch = html.match(/<title>([^<]+)<\/title>/i)
-  if (titleTagMatch) {
-    let title = decodeHTMLEntities(titleTagMatch[1])
-    // Clean up - remove suffixes like "- 웹툰 - 리디에만 있는 독점 작품! - 리디"
-    title = title.replace(/\s*-\s*웹툰.*$/i, '').trim()
-    title = title.replace(/\s*-\s*리디.*$/i, '').trim()
-    title = title.replace(/\s*\|\s*리디.*$/i, '').trim()
-    if (title && title.length > 0 && title.length < 100) {
-      result.data.title_ko = title
-      extracted = true
+  // Extract title from <title> tag — used only when JSON-LD didn't already
+  // populate title_ko. The <title> contains a suffix like
+  // "사탄의 아이들 - 판타지 웹소설 - 리디" that's hard to strip cleanly,
+  // so the JSON-LD `name` is preferred when available.
+  if (!result.data.title_ko) {
+    const titleTagMatch = html.match(/<title>([^<]+)<\/title>/i)
+    if (titleTagMatch) {
+      let title = decodeHTMLEntities(titleTagMatch[1])
+      // Strip platform / category suffixes
+      title = title
+        .replace(/\s*-\s*리디.*$/i, '')
+        .replace(/\s*\|\s*리디.*$/i, '')
+        .replace(/\s*-\s*(웹툰|웹소설|만화|판타지 웹소설|로맨스 웹소설|BL 웹소설|로판 웹소설)\b.*$/i, '')
+        .trim()
+      if (title && title.length > 0 && title.length < 100) {
+        result.data.title_ko = title
+        extracted = true
+      }
     }
   }
 

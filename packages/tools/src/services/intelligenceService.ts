@@ -60,12 +60,14 @@ export const COLLECTIBLE_FIELDS: CollectibleField[] = [
 const PLATFORM_PATTERNS: Record<SupportedPlatform, RegExp> = {
   // Naver Webtoon - supports /webtoon/, /challenge/, /bestChallenge/ sections
   naver_webtoon: /comic\.naver\.com\/(?:webtoon|challenge|bestChallenge)\/list\?titleId=(\d+)/,
-  naver_series: /series\.naver\.com\/comic\/detail\.series\?productNo=(\d+)/,
+  naver_series: /series\.naver\.com\/(?:comic|novel)\/detail\.series\?productNo=(\d+)/,
   kakao: /page\.kakao\.com\/content\/(\d+)|page\.kakao\.com\/.*seriesId=(\d+)/,
   kakao_webtoon: /webtoon\.kakao\.com\/content\/[^/]+\/(\d+)/,
   manta: /manta\.net\/.*seriesId=(\d+)/,
   ridibooks: /ridibooks\.com\/books\/(\d+)/,
-  bomtoon: /bomtoon\.com\/series\/(\d+)/,
+  // Bomtoon canonical detail path is /detail/{slug}; older /comic/ep_list/{slug}
+  // URLs still resolve to the same SPA shell so we accept both.
+  bomtoon: /bomtoon\.com\/(?:detail|comic\/ep_list)\/([A-Za-z0-9_-]+)/,
   unknown: /^$/,
 };
 
@@ -100,12 +102,22 @@ export function parseUrl(url: string): ParsedUrl {
     if (match) {
       // Find the first non-undefined capture group
       const platformId = match.slice(1).find((g) => g !== undefined) || null;
-      return {
+      const parsed: ParsedUrl = {
         platform: platform as SupportedPlatform,
         platformId,
         originalUrl: trimmedUrl,
         valid: true,
       };
+      // Naver Series serves /comic/ and /novel/ off the same productNo
+      // namespace but with different DOMs. Capture which path it is so the
+      // scraper builds the right fetch URL.
+      if (platform === 'naver_series') {
+        const subKindMatch = trimmedUrl.match(/series\.naver\.com\/(comic|novel)\//);
+        if (subKindMatch) {
+          parsed.subKind = subKindMatch[1] as 'comic' | 'novel';
+        }
+      }
+      return parsed;
     }
   }
 
@@ -167,6 +179,7 @@ export async function collectIntelligenceByUrls(
           platform: u.platform,
           platformId: u.platformId,
           originalUrl: u.originalUrl,
+          ...(u.subKind ? { subKind: u.subKind } : {}),
         })),
         collectedBy: userEmail,
         contentType: request.contentType,

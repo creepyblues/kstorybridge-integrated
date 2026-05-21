@@ -55,6 +55,9 @@ interface UrlBasedRequest {
     platform: 'naver_webtoon' | 'naver_series' | 'kakao' | 'kakao_webtoon' | 'manta' | 'ridibooks' | 'bomtoon'
     platformId: string
     originalUrl: string
+    // Naver Series ships comics and novels on the same productNo namespace
+    // but different paths. Default 'comic' when omitted (backward compat).
+    subKind?: 'comic' | 'novel'
   }>
   collectedBy: string
   contentType?: string
@@ -69,6 +72,25 @@ type IntelligenceRequest = LegacyIntelligenceRequest | UrlBasedRequest
 
 function isUrlBasedRequest(body: any): body is UrlBasedRequest {
   return Array.isArray(body.urls) && body.urls.length > 0
+}
+
+/**
+ * Map titles.content_format values (snake_case, e.g. 'web_novel') to the
+ * intelligence_titles.type CHECK constraint set ('webtoon', 'webnovel',
+ * 'light_novel', 'manga', 'mixed'). Values outside the constraint fall
+ * back to 'mixed' so the INSERT never trips the check.
+ */
+const INTELLIGENCE_TYPE_MAP: Record<string, string> = {
+  webtoon: 'webtoon',
+  web_novel: 'webnovel',
+  webnovel: 'webnovel',
+  light_novel: 'light_novel',
+  manga: 'manga',
+  mixed: 'mixed',
+}
+function normalizeContentType(input: string | undefined | null): string {
+  if (!input) return 'webtoon'
+  return INTELLIGENCE_TYPE_MAP[input] || 'mixed'
 }
 
 // Source category mapping
@@ -211,7 +233,7 @@ async function handleUrlBasedCollection(supabase: any, body: UrlBasedRequest) {
       original_title_ko: null,  // Will be populated from scraper results
       original_title_en: null,
       slug: tempSlug,
-      type: contentType || 'webtoon',
+      type: normalizeContentType(contentType),
       original_language: 'ko',
       primary_genres: [],
     })
@@ -254,10 +276,11 @@ async function handleUrlBasedCollection(supabase: any, body: UrlBasedRequest) {
           break
 
         case 'naver_series':
-          // Use productNo directly with Naver Series scraper (with retry)
+          // Use productNo directly with Naver Series scraper (with retry).
+          // subKind tells the scraper whether to fetch /comic/ or /novel/.
           scraperResult = await withRetry(
-            () => scrapeNaverSeries(urlInfo.platformId),
-            { operationName: `Naver Series scrape (${urlInfo.platformId})`, maxRetries: 2, baseDelayMs: 2000 }
+            () => scrapeNaverSeries(urlInfo.platformId, urlInfo.subKind || 'comic'),
+            { operationName: `Naver Series scrape (${urlInfo.subKind || 'comic'}/${urlInfo.platformId})`, maxRetries: 2, baseDelayMs: 2000 }
           )
           break
 
@@ -570,7 +593,7 @@ async function handleLegacyCollection(supabase: any, body: LegacyIntelligenceReq
         original_title_ko: titleNameInput,
         original_title_en: titleNameEn || null,
         slug: slug + '-' + Date.now(),  // Ensure unique slug
-        type: contentType || 'webtoon',
+        type: normalizeContentType(contentType),
         original_language: 'ko',
         primary_genres: [],
       })

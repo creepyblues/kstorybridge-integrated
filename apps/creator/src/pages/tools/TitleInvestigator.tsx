@@ -59,15 +59,17 @@ function parseUrl(url: string): ParsedUrl | null {
       }
     }
 
-    // Naver Series: series.naver.com/comic/detail.series?productNo=XXX
+    // Naver Series: series.naver.com/(comic|novel)/detail.series?productNo=XXX
     if (parsed.hostname === 'series.naver.com') {
       const productNo = parsed.searchParams.get('productNo');
       if (productNo) {
+        const subKindMatch = parsed.pathname.match(/^\/(comic|novel)\//);
         return {
           platform: 'naver_series',
           platformId: productNo,
           originalUrl: trimmedUrl,
           valid: true,
+          ...(subKindMatch ? { subKind: subKindMatch[1] as 'comic' | 'novel' } : {}),
         };
       }
     }
@@ -147,9 +149,10 @@ function parseUrl(url: string): ParsedUrl | null {
       }
     }
 
-    // Bomtoon: bomtoon.com/comic/ep_list/{slug}
+    // Bomtoon: bomtoon.com/detail/{slug} (current) or
+    //          bomtoon.com/comic/ep_list/{slug} (legacy, still resolves)
     if (parsed.hostname === 'www.bomtoon.com' || parsed.hostname === 'bomtoon.com') {
-      const pathMatch = parsed.pathname.match(/\/comic\/ep_list\/([^/?]+)/);
+      const pathMatch = parsed.pathname.match(/^\/(?:detail|comic\/ep_list)\/([^/?]+)/);
       if (pathMatch) {
         return {
           platform: 'bomtoon',

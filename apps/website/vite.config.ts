@@ -23,7 +23,7 @@ const introStaticPlugin = (): Plugin => ({
         res.writeHead(302, { Location: `/intro/kr/${query ? `?${query}` : ""}` });
         return res.end();
       }
-      const match = pathOnly.match(/^\/intro\/(kr|en)\/?$/);
+      const match = pathOnly.match(/^\/intro\/(kr|en|one-pager)\/?$/);
       if (match) {
         const lang = match[1];
         const file = path.join(__dirname, "public", "intro", lang, "index.html");

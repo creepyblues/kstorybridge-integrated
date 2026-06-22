@@ -288,7 +288,8 @@
 
   [role="option"]:hover,
   [role="option"]:focus {
-    background-color: rgb(243 244 246) !important; /* gray-100 */
+    background-color: hsl(var(--hanok-teal)) !important; /* teal highlight (white text set below) */
+    color: white !important;
   }
 
   [role="option"][data-state="checked"] {

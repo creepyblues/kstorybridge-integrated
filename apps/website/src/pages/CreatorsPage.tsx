@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
 import Footer from '../components/Footer';
 import { TypewriterText } from '../components/TypewriterText';
-import { getCreatorUrl } from '../config/urls';
+import CreatorInquiryDialog from '../components/CreatorInquiryDialog';
 import {
   Globe,
   Shield,
@@ -18,6 +19,7 @@ import {
 
 const CreatorsPage = () => {
   const { t } = useTranslation('creators');
+  const [inquiryOpen, setInquiryOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-porcelain-blue-50">
@@ -61,7 +63,7 @@ const CreatorsPage = () => {
                 id="creators-hero-join-btn"
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
+                onClick={() => setInquiryOpen(true)}
               >
                 {t('hero.cta')}
               </Button>
@@ -404,7 +406,7 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => window.location.href = `${getCreatorUrl()}/signup`}
+                onClick={() => setInquiryOpen(true)}
               >
                 {t('finalCta.cta')}
               </Button>
@@ -414,6 +416,8 @@ const CreatorsPage = () => {
         </section>
 
       </main>
+
+      <CreatorInquiryDialog open={inquiryOpen} onOpenChange={setInquiryOpen} />
 
       <Footer />
     </div>

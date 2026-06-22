@@ -86,5 +86,58 @@
     "title": "Your Story Is Ready. Hollywood Is Waiting.",
     "subtitle": "Join the platform connecting Korean creators with global studios",
     "cta": "Join the stage"
+  },
+  "inquiry": {
+    "title": "Let's bring your story to the world",
+    "description": "Tell us about your title and we'll reach out to you.",
+    "fields": {
+      "name": {
+        "label": "Your name",
+        "placeholder": "Jane Kim"
+      },
+      "email": {
+        "label": "Contact email",
+        "placeholder": "you@example.com"
+      },
+      "company": {
+        "label": "Company / studio name (optional)",
+        "placeholder": "Studio or agency name",
+        "helper": "If you're representing a company or studio"
+      },
+      "titleName": {
+        "label": "Your title",
+        "placeholder": "The name of your work"
+      },
+      "titleUrl": {
+        "label": "Title URL",
+        "placeholder": "https://..."
+      },
+      "role": {
+        "label": "Your role",
+        "placeholder": "Select your role",
+        "author": "Author",
+        "agent": "Agent"
+      },
+      "specialRequest": {
+        "label": "Special request (optional)",
+        "placeholder": "Anything else you'd like us to know?"
+      }
+    },
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "cancel": "Cancel",
+    "validation": {
+      "name": "Please enter your name",
+      "email": "Please enter a valid email",
+      "titleName": "Please enter your title",
+      "titleUrl": "Please enter a valid URL",
+      "role": "Please select your role"
+    },
+    "toast": {
+      "successTitle": "Thanks — we'll be in touch shortly",
+      "successDescription": "Your inquiry has been sent to our team.",
+      "errorTitle": "Something went wrong",
+      "errorDescription": "We couldn't send your inquiry. Please try again."
+    }
   }
 }

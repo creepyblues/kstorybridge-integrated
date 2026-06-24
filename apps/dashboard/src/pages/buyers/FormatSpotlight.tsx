@@ -9,8 +9,9 @@ import {
   FORMAT_DESCRIPTIONS,
   type FormatType,
 } from '@/services/formatFitService';
-import { getFormatSpotlightData } from '@/services/formatFitService';
+import { getFormatSpotlightData, getMicrodramaSpotlightFromFeaturedSection } from '@/services/formatFitService';
 import { trackFormatSpotlightView, trackFormatSpotlightCardClick } from '@/utils/analytics';
+import { useAuth } from '@/hooks/useAuth';
 import { useEffect } from 'react';
 
 const VALID_FORMATS: FormatType[] = ['film', 'tv_series', 'animation', 'microdrama', 'audio_drama'];
@@ -18,10 +19,14 @@ const VALID_FORMATS: FormatType[] = ['film', 'tv_series', 'animation', 'microdra
 export default function FormatSpotlight() {
   const { formatType } = useParams<{ formatType: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const validFormat = VALID_FORMATS.includes(formatType as FormatType)
     ? (formatType as FormatType)
     : null;
+
+  const isMicrodrama = validFormat === 'microdrama';
+  const userEmail = user?.email;
 
   useEffect(() => {
     if (validFormat) {
@@ -30,9 +35,18 @@ export default function FormatSpotlight() {
   }, [validFormat]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['format-spotlight', validFormat],
-    queryFn: () => getFormatSpotlightData(validFormat!),
-    enabled: !!validFormat,
+    queryKey: isMicrodrama
+      ? ['microdrama-spotlight-featured', userEmail]
+      : ['format-spotlight', validFormat],
+    queryFn: isMicrodrama
+      ? () => getMicrodramaSpotlightFromFeaturedSection(userEmail!)
+      : () => getFormatSpotlightData(validFormat!),
+    // Microdrama needs the user's email to auto-generate missing analysis.
+    enabled: isMicrodrama ? !!userEmail : !!validFormat,
+    // Always refetch on mount so admin reorders/curation changes show immediately
+    // (overrides the app-wide 5-min staleTime).
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   if (!validFormat) {
@@ -122,6 +136,7 @@ export default function FormatSpotlight() {
                 analysis={item.analysis}
                 formatType={validFormat}
                 rank={index + 1}
+                note={item.note}
                 onCardClick={(titleId) => handleCardClick(titleId, index + 1)}
               />
             ))}

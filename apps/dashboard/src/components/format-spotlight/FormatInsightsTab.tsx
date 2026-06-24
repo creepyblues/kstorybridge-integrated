@@ -20,7 +20,7 @@ function MicrodramaInsights({ insights }: { insights: MicrodramaSpecificInsights
       {/* Tropes */}
       {insights.trope_alignment && insights.trope_alignment.length > 0 && (
         <div>
-          <p className="text-xs text-gray-500 mb-1.5">Trope Alignment</p>
+          <p className="text-sm font-bold text-gray-900 mb-1.5">Trope Alignment</p>
           <div className="flex flex-wrap gap-1.5">
             {insights.trope_alignment.map((trope, i) => (
               <span
@@ -37,7 +37,7 @@ function MicrodramaInsights({ insights }: { insights: MicrodramaSpecificInsights
       {/* Platforms */}
       {insights.target_platform_fit && insights.target_platform_fit.length > 0 && (
         <div>
-          <p className="text-xs text-gray-500 mb-1.5">Target Platforms</p>
+          <p className="text-sm font-bold text-gray-900 mb-1.5">Target Platforms</p>
           <div className="flex flex-wrap gap-1.5">
             {insights.target_platform_fit.map((platform, i) => (
               <span
@@ -82,7 +82,7 @@ export default function FormatInsightsTab({ analysis, formatType }: FormatInsigh
   if (formatType === 'microdrama' && analysis.format_specific) {
     return (
       <div className="space-y-3">
-        <p className="text-xs font-semibold text-gray-500">
+        <p className="text-sm font-bold text-gray-900">
           {formatName} Insights
         </p>
         <MicrodramaInsights insights={analysis.format_specific} />
@@ -94,7 +94,7 @@ export default function FormatInsightsTab({ analysis, formatType }: FormatInsigh
   if (analysis.recommendations && analysis.recommendations.length > 0) {
     return (
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-gray-500">
+        <p className="text-sm font-bold text-gray-900">
           {formatName} Recommendations
         </p>
         <ul className="space-y-1.5">

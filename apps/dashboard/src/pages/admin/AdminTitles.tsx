@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { TitleEditModal } from '@/components/admin/TitleEditModal';
 import { AuditRunModal } from '@/components/admin/AuditRunModal';
+import { LowPriorityBadge } from '@/components/admin/LowPriorityBadge';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
 import { Icon } from '@iconify/react';
@@ -589,8 +590,11 @@ export default function AdminTitles() {
                               </div>
                             )}
                             <div>
-                              <div className="text-sm font-medium text-black hover:text-hanok-teal">
-                                {title.title_name_en || title.title_name_kr}
+                              <div className="flex items-center gap-2">
+                                <div className="text-sm font-medium text-black hover:text-hanok-teal">
+                                  {title.title_name_en || title.title_name_kr}
+                                </div>
+                                <LowPriorityBadge priority={title.priority} />
                               </div>
                               {title.title_name_kr && title.title_name_en && (
                                 <div className="text-xs text-gray-500">

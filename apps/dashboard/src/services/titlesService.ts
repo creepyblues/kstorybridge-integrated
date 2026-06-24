@@ -451,11 +451,12 @@ class TitlesService {
    * Fetch a single title by ID with pitch analysis, platforms, and documents.
    * Uses multiple queries for better reliability.
    *
-   * Buyer-facing pages (TitleDetail) leave options undefined and Low-priority
-   * titles return null — the buyer sees a 404 even via direct URL. Admin
-   * detail pages pass { includeAllPriorities: true } so they can edit any row.
+   * The detail page renders a title regardless of priority — Low/null titles
+   * are "unlisted" (hidden from lists, search, AI tools, and the pitch PDF) but
+   * reachable by direct link. List/search surfaces apply their own priority
+   * filter; this single-row fetch does not.
    */
-  async getTitleById(titleId: string, options?: { includeAllPriorities?: boolean }): Promise<Title | null> {
+  async getTitleById(titleId: string): Promise<Title | null> {
     try {
       // Query 1: Get title data with content analysis
       const { data, error } = await supabase
@@ -477,12 +478,6 @@ class TitlesService {
 
       if (!data) {
         console.log('ℹ️ Title not found:', titleId);
-        return null;
-      }
-
-      // Block Low-priority titles from buyer pages: treat as 404.
-      if (!options?.includeAllPriorities && (data.priority === '3' || data.priority == null)) {
-        console.log('ℹ️ Title not visible to buyers (Low priority):', titleId);
         return null;
       }
 
@@ -568,14 +563,14 @@ class TitlesService {
 
   /**
    * Fetch a single title by slug with pitch analysis, platforms, and documents.
-   * Same priority gate as getTitleById — pass includeAllPriorities for admin views.
+   * Renders regardless of priority, same as getTitleById.
    */
-  async getTitleBySlug(slug: string, options?: { includeAllPriorities?: boolean }): Promise<Title | null> {
+  async getTitleBySlug(slug: string): Promise<Title | null> {
     try {
       // Backward compatibility: if slug is actually a UUID, fetch by ID directly
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidPattern.test(slug)) {
-        return this.getTitleById(slug, options);
+        return this.getTitleById(slug);
       }
 
       const { data, error } = await supabase
@@ -594,7 +589,7 @@ class TitlesService {
         return null;
       }
 
-      return this.getTitleById(data.title_id, options);
+      return this.getTitleById(data.title_id);
     } catch (error: unknown) {
       console.error('❌ Title by slug service error:', error);
       throw error;

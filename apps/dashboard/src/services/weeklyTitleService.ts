@@ -150,7 +150,8 @@ export async function getWeeklyTitleByWeek(
         story_author,
         art_author,
         title_url,
-        title_url_en
+        title_url_en,
+        priority
       )
     `)
     .eq('week_of', weekOf)

@@ -27,6 +27,7 @@ import { TitleEditModal } from '@/components/admin/TitleEditModal';
 import { useToast } from '@/hooks/use-toast';
 import { featuredService, type FeaturedWithTitle } from '@/services/featuredService';
 import { titlesService, type Title } from '@/services/titlesService';
+import { LowPriorityBadge } from '@/components/admin/LowPriorityBadge';
 import type { FeaturedSection } from '@/types/featured';
 import { Icon } from '@iconify/react';
 
@@ -475,7 +476,10 @@ export default function AdminTrending() {
               </div>
             )}
             <div>
-              <div className="text-sm font-medium text-gray-900 hover:text-hanok-teal">{titleName}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-medium text-gray-900 hover:text-hanok-teal">{titleName}</div>
+                <LowPriorityBadge priority={item.titles?.priority} />
+              </div>
               {item.titles?.title_name_en && titleNameKr && (
                 <div className="text-xs text-gray-500">{titleNameKr}</div>
               )}
@@ -724,8 +728,11 @@ export default function AdminTrending() {
                 {selectedTitle ? (
                   <div className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-black truncate">
-                        {selectedTitle.title_name_en || selectedTitle.title_name_kr}
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-medium text-black truncate">
+                          {selectedTitle.title_name_en || selectedTitle.title_name_kr}
+                        </div>
+                        <LowPriorityBadge priority={selectedTitle.priority} />
                       </div>
                       {selectedTitle.title_name_en && selectedTitle.title_name_kr && (
                         <div className="text-xs text-gray-500 truncate">{selectedTitle.title_name_kr}</div>
@@ -780,8 +787,11 @@ export default function AdminTrending() {
                                 }`}
                               >
                                 <div className="flex items-center justify-between">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {title.title_name_en || title.title_name_kr}
+                                  <div className="flex items-center gap-2">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {title.title_name_en || title.title_name_kr}
+                                    </div>
+                                    <LowPriorityBadge priority={title.priority} />
                                   </div>
                                   {isAlreadyFeatured && (
                                     <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">

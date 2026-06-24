@@ -22,6 +22,7 @@ import AdminLayout from '@/components/layout/AdminLayout';
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
 import { Icon } from '@iconify/react';
+import { LowPriorityBadge } from '@/components/admin/LowPriorityBadge';
 
 // Genre options
 const GENRE_OPTIONS = [
@@ -66,7 +67,7 @@ export default function AdminTitleEdit() {
   const fetchTitle = async (id: string) => {
     setLoading(true);
     try {
-      const data = await titlesService.getTitleById(id, { includeAllPriorities: true });
+      const data = await titlesService.getTitleById(id);
       if (data) {
         setTitle(data);
         setFormData(data);
@@ -187,7 +188,10 @@ export default function AdminTitleEdit() {
               <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-black">Edit Title</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-black">Edit Title</h1>
+                <LowPriorityBadge priority={title.priority} />
+              </div>
               <p className="text-sm text-gray-600 mt-1">
                 {title.title_name_en || title.title_name_kr || 'Untitled'}
               </p>

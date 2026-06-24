@@ -4,6 +4,7 @@ import RadarChart from './RadarChart';
 import FormatInsightsTab from './FormatInsightsTab';
 import type { FormatAnalysis, FormatType } from '@/services/formatFitService';
 import { getFitLevel, getFitLevelLabel } from '@/services/formatFitService';
+import { LowPriorityBadge } from '@/components/admin/LowPriorityBadge';
 
 interface TitleData {
   title_id: string;
@@ -19,6 +20,7 @@ interface TitleData {
   art_author: string | null;
   rating: number | null;
   views: number | null;
+  priority?: string | null;
 }
 
 interface FormatSpotlightCardProps {
@@ -28,6 +30,8 @@ interface FormatSpotlightCardProps {
   rank?: number;
   /** Admin editorial note (only present on the curated microdrama path). */
   note?: string | null;
+  /** Show the admin-only LOW PRIORITY sticker. Buyer surfaces leave this off. */
+  showLowPriorityBadge?: boolean;
   onCardClick?: (titleId: string) => void;
 }
 
@@ -56,6 +60,7 @@ export default function FormatSpotlightCard({
   formatType,
   rank,
   note,
+  showLowPriorityBadge = false,
   onCardClick,
 }: FormatSpotlightCardProps) {
   const navigate = useNavigate();
@@ -110,9 +115,12 @@ export default function FormatSpotlightCard({
 
           {/* Title + meta */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-black leading-tight">
-              {title.title_name_en || title.title_name_kr || 'Untitled'}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold text-black leading-tight">
+                {title.title_name_en || title.title_name_kr || 'Untitled'}
+              </h3>
+              {showLowPriorityBadge && <LowPriorityBadge priority={title.priority} />}
+            </div>
             {title.title_name_kr && title.title_name_en && (
               <p className="text-sm text-gray-500 truncate">{title.title_name_kr}</p>
             )}

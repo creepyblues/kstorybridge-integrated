@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Icon } from '@iconify/react';
 import { titlesService, type Title } from '@/services/titlesService';
+import { LowPriorityBadge } from '@/components/admin/LowPriorityBadge';
 import {
   weeklyTitleService,
   type WeeklyTitleWithTitle,
@@ -289,15 +290,18 @@ export default function WeeklyTitle() {
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <Link
-                    to={`/buyers/titles/${selectedTitle.slug || selectedTitle.title_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-black truncate hover:text-hanok-teal hover:underline flex items-center gap-1"
-                  >
-                    {selectedTitle.title_name_en || selectedTitle.title_name_kr}
-                    <Icon icon="solar:arrow-right-up-linear" className="h-3 w-3 text-gray-400" />
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/buyers/titles/${selectedTitle.slug || selectedTitle.title_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-black truncate hover:text-hanok-teal hover:underline flex items-center gap-1"
+                    >
+                      {selectedTitle.title_name_en || selectedTitle.title_name_kr}
+                      <Icon icon="solar:arrow-right-up-linear" className="h-3 w-3 text-gray-400" />
+                    </Link>
+                    <LowPriorityBadge priority={selectedTitle.priority} />
+                  </div>
                   {selectedTitle.title_name_en && selectedTitle.title_name_kr && (
                     <div className="text-sm text-gray-600 truncate">
                       {selectedTitle.title_name_kr}
@@ -400,8 +404,11 @@ export default function WeeklyTitle() {
                         onClick={() => handleSelectTitle(title)}
                         className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                       >
-                        <div className="font-medium text-gray-900">
-                          {title.title_name_en || title.title_name_kr}
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium text-gray-900">
+                            {title.title_name_en || title.title_name_kr}
+                          </div>
+                          <LowPriorityBadge priority={title.priority} />
                         </div>
                         {title.title_name_en && title.title_name_kr && (
                           <div className="text-xs text-gray-500">{title.title_name_kr}</div>

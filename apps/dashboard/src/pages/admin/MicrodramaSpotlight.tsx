@@ -89,6 +89,7 @@ export default function AdminMicrodramaSpotlight() {
                 formatType={FORMAT}
                 rank={index + 1}
                 note={item.note}
+                showLowPriorityBadge
                 onCardClick={(titleId) => handleCardClick(titleId)}
               />
             ))}

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from '@/hooks/use-toast';
 import { titlesService, Title } from '@/services/titlesService';
 import { Icon } from '@iconify/react';
+import { LowPriorityBadge } from '@/components/admin/LowPriorityBadge';
 
 export default function TitleEdit() {
   const { toast } = useToast();
@@ -29,7 +30,7 @@ export default function TitleEdit() {
   const loadTitle = async (id: string) => {
     try {
       setLoading(true);
-      const data = await titlesService.getTitleById(id, { includeAllPriorities: true });
+      const data = await titlesService.getTitleById(id);
       setTitle(data);
       setFormData(data || {});
     } catch (error: any) {
@@ -110,7 +111,10 @@ export default function TitleEdit() {
               <Icon icon="solar:arrow-left-bold-duotone" className="h-4 w-4 mr-2" />
               Back to Titles
             </Button>
-            <h1 className="text-3xl font-bold text-black">Edit Title</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-black">Edit Title</h1>
+              <LowPriorityBadge priority={title.priority} />
+            </div>
             <p className="text-gray-600 mt-1">
               {title.title_name_en || title.title_name_kr}
             </p>

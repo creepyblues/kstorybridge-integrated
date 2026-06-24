@@ -40,7 +40,8 @@ export const featuredService = {
           content_format,
           rating,
           story_author,
-          art_author
+          art_author,
+          priority
         )
       `)
       .order('created_at', { ascending: false });

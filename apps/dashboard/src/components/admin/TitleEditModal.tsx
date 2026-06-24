@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { auditService, type TitleAudit } from '@/services/auditService';
 import { Button } from '@/components/ui/button';
+import { LowPriorityBadge } from '@/components/admin/LowPriorityBadge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -264,8 +265,7 @@ export function TitleEditModal({
     setFormatFitData(null);
     setAudit(null);
     try {
-      // Admin context — every title is editable regardless of priority.
-      const data = await titlesService.getTitleById(id, { includeAllPriorities: true });
+      const data = await titlesService.getTitleById(id);
       if (data) {
         setTitle(data);
         setFormData(data);
@@ -500,7 +500,7 @@ export function TitleEditModal({
       );
 
       // Refresh form data (admin context)
-      const updatedTitle = await titlesService.getTitleById(titleId, { includeAllPriorities: true });
+      const updatedTitle = await titlesService.getTitleById(titleId);
       if (updatedTitle) {
         setTitle(updatedTitle);
         setFormData(updatedTitle);
@@ -600,7 +600,10 @@ export function TitleEditModal({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center justify-between">
-            <span>Edit Title: {title?.title_name_en || title?.title_name_kr || 'Loading...'}</span>
+            <span className="flex items-center gap-2">
+              Edit Title: {title?.title_name_en || title?.title_name_kr || 'Loading...'}
+              <LowPriorityBadge priority={title?.priority} />
+            </span>
             <div className="flex items-center gap-2">
               <Button
                 type="button"

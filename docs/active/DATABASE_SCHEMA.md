@@ -352,7 +352,10 @@ CREATE TABLE public.titles (
 - `embedding_updated_at`: Last embedding update
 
 **System**:
-- `priority`: Content priority level (enum: '1' = high, '2' = medium, '3' = low)
+- `priority`: Content priority level (enum: '1' = high, '2' = medium, '3' = low; null treated as low)
+  - **Buyer visibility ("unlisted" model)**: Low/null titles are excluded from buyer lists, search, AI chat, Comps Navigator, Mandate Matcher, Format Fit, and the pitch-deck PDF (`SecurePDFViewer`). They are **not** removed.
+  - **Detail page**: The title detail page renders regardless of priority — a Low/null title is reachable by direct link (`/buyers/titles/:slug`, public `/titles/:slug`, and trial pages) even though it never appears in any list. `titlesService.getTitleById`/`getTitleBySlug` no longer filter by priority.
+  - **Admin UI**: All admin title surfaces (AdminTitles table, TitleEditModal, AdminTitleEdit/TitleEdit, Trending, WeeklyTitle, Microdrama/Format Spotlight) show a red **LOW PRIORITY** sticker via `LowPriorityBadge` (`@/components/admin/LowPriorityBadge`) on Low/null titles. High titles get a teal HIGH PRIORITY badge on the detail hero.
 - `verified`: Boolean flag indicating official/verified content (default: false)
   - **Purpose**: Marks titles as officially verified/authenticated content
   - **Default**: false for all new titles

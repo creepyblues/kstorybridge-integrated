@@ -54,6 +54,7 @@ import AdminDocs from '@/pages/admin/Docs';
 import TitleDataStructure from '@/pages/admin/TitleDataStructure';
 import EmailTemplates from '@/pages/admin/EmailTemplates';
 import AdminTrending from '@/pages/admin/Trending';
+import AdminMicrodramaSpotlight from '@/pages/admin/MicrodramaSpotlight';
 import WeeklyTitle from '@/pages/admin/WeeklyTitle';
 import TrialConversions from '@/pages/admin/TrialConversions';
 import { AdminProtectedRoute } from '@/components/AdminProtectedRoute';
@@ -272,6 +273,16 @@ function App() {
             element={
               <AdminProtectedRoute>
                 <AdminTrending />
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* Microdrama Spotlight (score-based, all priorities) */}
+          <Route
+            path="/admin/microdrama-spotlight"
+            element={
+              <AdminProtectedRoute>
+                <AdminMicrodramaSpotlight />
               </AdminProtectedRoute>
             }
           />

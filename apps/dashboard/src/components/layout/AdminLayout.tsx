@@ -31,6 +31,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       description: 'Manage featured titles'
     },
     {
+      name: 'Microdrama Spotlight',
+      href: '/admin/microdrama-spotlight',
+      icon: 'solar:smartphone-bold-duotone',
+      description: 'Score-based microdrama view'
+    },
+    {
       name: 'Weekly Title',
       href: '/admin/weekly-title',
       icon: 'solar:calendar-bold-duotone',

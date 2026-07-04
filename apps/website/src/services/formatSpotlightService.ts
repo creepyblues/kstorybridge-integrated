@@ -49,9 +49,9 @@ export async function getFormatSpotlightData(
   const scoreKey = `${formatType}_score`;
   const analysisKey = `${formatType}_analysis`;
 
-  // title_format_fit is not in the website's generated Supabase types
+  // Read from the public-safe view (anon has no direct grant on title_format_fit).
   const { data: fitData, error: fitError } = await db
-    .from('title_format_fit')
+    .from('public_title_format_fit')
     .select('title_id, film_score, tv_series_score, animation_score, microdrama_score, audio_drama_score, film_analysis, tv_series_analysis, animation_analysis, microdrama_analysis, audio_drama_analysis');
 
   if (fitError) {
@@ -75,8 +75,9 @@ export async function getFormatSpotlightData(
   if (filtered.length === 0) return [];
 
   const titleIds = filtered.map((r) => r.title_id as string);
+  // Read from the public-safe view (anon has no direct grant on titles).
   const { data: titles, error: titlesError } = await db
-    .from('titles')
+    .from('public_titles')
     .select('title_id, title_name_en, title_name_kr, title_image, genre, content_format, tone, story_author, art_author, rating, views')
     .in('title_id', titleIds);
 

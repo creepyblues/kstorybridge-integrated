@@ -15,7 +15,11 @@ const __dirname = dirname(__filename);
 
 // Supabase configuration
 const SUPABASE_URL = 'https://dlrnrgcoguxlkkcitlpd.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTc5MjMzNCwiZXhwIjoyMDY3MzY4MzM0fQ.Wz_HGtN4uLa9M6qJQW2mDonUlEqZKhUPJGP-GbQCm58';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+if (!SUPABASE_SERVICE_KEY) {
+  console.error('Missing SUPABASE_SERVICE_ROLE_KEY env var. Set it before running this script.');
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 

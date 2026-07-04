@@ -113,9 +113,11 @@ export default function SecurePDFViewer({ pdfUrl, title }: SecurePDFViewerProps)
           // Extract title ID for additional validation
           const titleId = filePath.split('/')[0];
           
-          // Verify title exists in database (additional security layer)
+          // Verify title exists (existence check only; read from the public-safe
+          // view so this works for anonymous visitors without granting anon access
+          // to the raw titles table).
           const { data: titleExists, error: titleError } = await supabase
-            .from('titles')
+            .from('public_titles' as any)
             .select('title_id')
             .eq('title_id', titleId)
             .single();

@@ -1,103 +1,68 @@
 /**
  * TrialTitleDetail Page
  *
- * Public title detail page for trial users.
- * Shows full title info without auth, with a signup CTA banner.
+ * Public title detail for trial users. Reads the public-safe `public_titles`
+ * view (NOT the raw titles table) and renders the same gated teaser view as the
+ * public /titles/:slug page (UnifiedTitleDetail, authState="anon"), so premium
+ * data (comps, format scores, rights, deep story analysis) is gated behind signup.
  */
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { titlesService, Title } from '@/services/titlesService';
-import { type PitchAnalysis } from '@/types/pitchAnalysis';
+import { supabase } from '@/lib/supabase';
 import { TrialLayout } from '@/components/layout/TrialLayout';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Icon } from '@iconify/react';
-import { Card } from '@/components/ui/card';
+import { UnifiedTitleDetail, type PublicTitle } from '@/components/unified-title-detail';
 import { trackTrialTitleDetailView, trackTrialSignupCtaClicked } from '@/utils/analytics';
 
-import {
-  TitleHero,
-  OverviewTab,
-  StoryDetailsTab,
-  CreditsTab,
-} from '@/components/title-detail';
+const PUBLIC_TITLE_COLUMNS =
+  'title_id, title_name_en, title_name_kr, slug, title_image, tagline, synopsis, genre, content_format, comps, views, rating, rating_count, chapters, completed, rights_available, note, story_author, art_author, tone, audience, age_rating';
 
 export default function TrialTitleDetail() {
   const { titleId } = useParams<{ titleId: string }>();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [title, setTitle] = useState<Title | null>(null);
+  const [title, setTitle] = useState<PublicTitle | null>(null);
   const [loading, setLoading] = useState(true);
-  const [pitchAnalysis, setPitchAnalysis] = useState<PitchAnalysis | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
   const [hasTrackedView, setHasTrackedView] = useState(false);
 
-  // Get source tool from URL params (set when navigating from result cards)
+  // Source tool from URL params (set when navigating from result cards)
   const sourceTool = searchParams.get('source') as 'comps' | 'mandates' | 'chat' | null;
 
   useEffect(() => {
     const fetchTitle = async () => {
       if (!titleId) return;
-
       setLoading(true);
       try {
-        const data = await titlesService.getTitleById(titleId);
+        const { data, error } = await supabase
+          .from('public_titles' as any)
+          .select(PUBLIC_TITLE_COLUMNS)
+          .eq('title_id', titleId)
+          .single() as { data: PublicTitle | null; error: any };
+
+        if (error) throw error;
         setTitle(data);
 
-        if (data?.pitch_analysis) {
-          setPitchAnalysis(data.pitch_analysis);
-        }
-
-        // Track title detail view once title is loaded
-        if (!hasTrackedView && data) {
+        if (data && !hasTrackedView) {
           trackTrialTitleDetailView(
             titleId,
             data.title_name_en || data.title_name_kr || 'Unknown Title',
-            sourceTool || 'comps' // Default to comps if no source param
+            sourceTool || 'comps',
           );
           setHasTrackedView(true);
         }
-      } catch (error: unknown) {
-        console.error('Error fetching title:', error);
-        const message = error instanceof Error ? error.message : 'Failed to fetch title details';
-        toast({
-          title: 'Error',
-          description: message,
-          variant: 'destructive',
-        });
+      } catch (err) {
+        console.error('Error fetching title:', err);
+        setTitle(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTitle();
-  }, [titleId, toast, sourceTool, hasTrackedView]);
-
-  // Check if tabs have content
-  const hasStoryDetails =
-    title?.synopsis_kr ||
-    title?.tone ||
-    title?.important_issues ||
-    title?.setting_description ||
-    title?.world_lore ||
-    title?.supernatural_concepts ||
-    title?.inspiration ||
-    (title?.character_details && title.character_details.length > 0) ||
-    title?.story_structure ||
-    title?.narrative_arc ||
-    title?.planned_ending;
-
-  const hasCredits =
-    title?.story_author ||
-    title?.art_author ||
-    title?.original_author ||
-    title?.underlying_novel_en ||
-    title?.underlying_novel_kr ||
-    title?.creator_achievements;
+  }, [titleId, sourceTool, hasTrackedView]);
 
   if (loading) {
     return (
@@ -155,85 +120,13 @@ export default function TrialTitleDetail() {
           </Link>
         </div>
 
-        {/* Hero Section - without favorite button */}
-        <TitleHero
+        {/* Gated title detail (same component as public /titles/:slug) */}
+        <UnifiedTitleDetail
           title={title}
-          isFavorited={false}
-          favoriteLoading={false}
-          onFavoriteToggle={() => {
-            toast({
-              title: 'Sign up to save',
-              description: 'Create a free account to save your favorite titles',
-            });
-          }}
+          authState="anon"
+          user={null}
+          onCtaClick={() => trackTrialSignupCtaClicked('title_detail_banner')}
         />
-
-        {/* AI Tagline */}
-        {title.tagline && (
-          <div className="flex gap-4 items-start p-5 bg-gradient-to-r from-hanok-teal/5 to-transparent border border-hanok-teal/20 rounded-2xl">
-            <div className="flex-shrink-0">
-              <div className="bg-hanok-teal rounded-full p-2.5 shadow-md">
-                <Icon icon="solar:chat-square-bold-duotone" className="h-5 w-5 text-white" />
-              </div>
-            </div>
-            <div className="flex-1">
-              <Card className="p-4 bg-white border-gray-200 shadow-sm">
-                <p className="text-base text-gray-800 leading-relaxed">"{title.tagline}"</p>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* Tabbed Content - Trial users see Overview, Story, Platform, Credits (no Materials for non-auth) */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start bg-transparent border-b border-gray-200 rounded-none h-auto p-0 gap-0">
-            <TabsTrigger
-              value="overview"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
-            >
-              <Icon icon="solar:square-arrow-right-up-bold-duotone" className="w-4 h-4 mr-2" />
-              Overview
-            </TabsTrigger>
-
-            {hasStoryDetails && (
-              <TabsTrigger
-                value="story"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
-              >
-                <Icon icon="solar:book-bold-duotone" className="w-4 h-4 mr-2" />
-                Story Details
-              </TabsTrigger>
-            )}
-
-            {hasCredits && (
-              <TabsTrigger
-                value="credits"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-hanok-teal data-[state=active]:text-hanok-teal data-[state=active]:bg-transparent rounded-none px-4 py-3 text-gray-600 hover:text-gray-900"
-              >
-                <Icon icon="solar:user-bold-duotone" className="w-4 h-4 mr-2" />
-                Credits
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          <div className="mt-6">
-            <TabsContent value="overview" className="mt-0">
-              <OverviewTab title={title} pitchAnalysis={pitchAnalysis} userTier="basic" />
-            </TabsContent>
-
-            {hasStoryDetails && (
-              <TabsContent value="story" className="mt-0">
-                <StoryDetailsTab title={title} pitchAnalysis={pitchAnalysis} />
-              </TabsContent>
-            )}
-
-            {hasCredits && (
-              <TabsContent value="credits" className="mt-0">
-                <CreditsTab title={title} pitchAnalysis={pitchAnalysis} />
-              </TabsContent>
-            )}
-          </div>
-        </Tabs>
       </div>
     </TrialLayout>
   );

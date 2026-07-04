@@ -59,7 +59,7 @@ export const sendSlackNotification = async (data: SlackNotificationData): Promis
   // Use Supabase Edge Function to proxy the Slack webhook request
   // This avoids CORS issues when making requests directly from the browser
   const SUPABASE_URL = "https://dlrnrgcoguxlkkcitlpd.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3OTIzMzQsImV4cCI6MjA2NzM2ODMzNH0.KWYF7TvoA0I3iyoIbyYIyTSlJcIyPH6yCfHueEEMIlA";
+  const SUPABASE_ANON_KEY = "sb_publishable_Xvhpwj9CpHUOIeFAJHm3ZQ_WdQvqJDS";
   
   const proxyUrl = `${SUPABASE_URL}/functions/v1/slack-webhook-proxy`;
   

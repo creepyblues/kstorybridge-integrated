@@ -52,3 +52,9 @@ temp/
 
 # Turborepo
 .turbo
+.gstack/
+
+# Sensitive data exports — never commit (contains real user PII / password hashes)
+csv_files/
+teamworkpm_csv_output/
+teamworkpm_final_output/

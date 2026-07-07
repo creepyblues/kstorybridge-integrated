@@ -58,3 +58,10 @@ temp/
 csv_files/
 teamworkpm_csv_output/
 teamworkpm_final_output/
+
+# macOS
+.DS_Store
+
+# Generated build artifacts
+packages/storybook/storybook-static/
+supabase/.temp/

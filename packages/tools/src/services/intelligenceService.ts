@@ -64,6 +64,8 @@ const PLATFORM_PATTERNS: Record<SupportedPlatform, RegExp> = {
   kakao: /page\.kakao\.com\/content\/(\d+)|page\.kakao\.com\/.*seriesId=(\d+)/,
   kakao_webtoon: /webtoon\.kakao\.com\/content\/[^/]+\/(\d+)/,
   manta: /manta\.net\/.*seriesId=(\d+)/,
+  // Lezhin English site (lezhinus.com) and legacy lezhin.com; alias slug after /comic/
+  lezhin: /lezhin(?:us)?\.com\/[a-z]{2}(?:-[a-z]{2})?\/comic\/([A-Za-z0-9_-]+)/,
   ridibooks: /ridibooks\.com\/books\/(\d+)/,
   // Bomtoon canonical detail path is /detail/{slug}; older /comic/ep_list/{slug}
   // URLs still resolve to the same SPA shell so we accept both.
@@ -80,6 +82,7 @@ export const PLATFORM_DISPLAY_NAMES: Record<SupportedPlatform, string> = {
   kakao: 'Kakao Page',
   kakao_webtoon: 'Kakao Webtoon',
   manta: 'Manta',
+  lezhin: 'Lezhin Comics',
   ridibooks: 'Ridibooks',
   bomtoon: 'Bomtoon',
   unknown: 'Unknown',
@@ -126,7 +129,7 @@ export function parseUrl(url: string): ParsedUrl {
     platformId: null,
     originalUrl: trimmedUrl,
     valid: false,
-    error: 'Unsupported platform. Supported: Naver Webtoon, Naver Series, Kakao Page, Kakao Webtoon, Manta, Ridibooks',
+    error: 'Unsupported platform. Supported: Naver Webtoon, Naver Series, Kakao Page, Kakao Webtoon, Manta, Lezhin Comics, Ridibooks, Bomtoon',
   };
 }
 

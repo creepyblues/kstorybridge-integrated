@@ -33,7 +33,13 @@ This skill orchestrates data collection from multiple platforms to gather metric
 | Platform | Domain | Data Collected |
 |----------|--------|----------------|
 | Manta | manta.net | Views, likes, rating |
-| Webtoons | webtoons.com | Views, subscribers, rating |
+| Lezhin Comics | lezhinus.com | Views, subscribers, chapters, tags, genre, authors, synopsis, completed status, cover |
+| Webtoons | webtoons.com | NOT wired into the live edge function — scraper exists only in packages/title-intelligence |
+
+**Lezhin notes:**
+- URL format: `https://www.lezhinus.com/{lang}/comic/{alias}` (legacy lezhin.com also accepted)
+- Data comes from the Next.js flight data embedded in the page HTML (server-rendered)
+- Adult-gated titles require the `LEZHIN_COOKIE` edge function secret — the Cookie header from a logged-in lezhinus.com session with content mode "all". Set via `npx supabase secrets set LEZHIN_COOKIE='...'`. Without it, gated titles return a descriptive error; non-gated titles work without the secret.
 
 ### Fan Engagement Sources
 
@@ -356,6 +362,7 @@ Total views: 21,246,912
 
 ## Related Skills
 
+- `/find-english-release` - Resolve a Korean title URL to its English counterpart (Webtoons, Manta, Lezhin, Tappytoon) before running intelligence collection on the English side
 - `/regenerate-embeddings` - Regenerate after data collection
 - `/health-check` - Verify intelligence system health
 - `/cost-report` - Track collection operations

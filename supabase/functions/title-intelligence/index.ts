@@ -31,6 +31,7 @@ import { scrapeKakaoWebtoon } from './scrapers/kakao-webtoon.ts'
 import { scrapeManta } from './scrapers/manta.ts'
 import { scrapeRidibooks } from './scrapers/ridibooks.ts'
 import { scrapeBomtoon } from './scrapers/bomtoon.ts'
+import { scrapeLezhin } from './scrapers/lezhin.ts'
 import { scrapeReddit } from './scrapers/reddit.ts'
 import { scrapeAO3 } from './scrapers/ao3.ts'
 import { scrapeComick } from './scrapers/comick.ts'
@@ -52,7 +53,7 @@ interface LegacyIntelligenceRequest {
 // New URL-based request format (can include fan engagement sources)
 interface UrlBasedRequest {
   urls: Array<{
-    platform: 'naver_webtoon' | 'naver_series' | 'kakao' | 'kakao_webtoon' | 'manta' | 'ridibooks' | 'bomtoon'
+    platform: 'naver_webtoon' | 'naver_series' | 'kakao' | 'kakao_webtoon' | 'manta' | 'ridibooks' | 'bomtoon' | 'lezhin'
     platformId: string
     originalUrl: string
     // Naver Series ships comics and novels on the same productNo namespace
@@ -103,6 +104,7 @@ const SOURCE_CATEGORIES: Record<string, string> = {
   'ridibooks': 'official_platform',
   'bomtoon': 'official_platform',
   'manta': 'official_platform_en',
+  'lezhin': 'official_platform_en',
   'webtoons': 'official_platform_en',
   'reddit': 'fandom_forum',
   'ao3': 'fanfiction',
@@ -119,6 +121,7 @@ const SOURCE_DOMAINS: Record<string, string> = {
   'ridibooks': 'ridibooks.com',
   'bomtoon': 'bomtoon.com',
   'manta': 'manta.net',
+  'lezhin': 'lezhinus.com',
   'webtoons': 'webtoons.com',
   'reddit': 'reddit.com',
   'ao3': 'archiveofourown.org',
@@ -316,6 +319,14 @@ async function handleUrlBasedCollection(supabase: any, body: UrlBasedRequest) {
           )
           break
 
+        case 'lezhin':
+          // Use comic alias with Lezhin scraper (with retry)
+          scraperResult = await withRetry(
+            () => scrapeLezhin(urlInfo.platformId),
+            { operationName: `Lezhin scrape (${urlInfo.platformId})`, maxRetries: 2, baseDelayMs: 1000 }
+          )
+          break
+
         case 'bomtoon':
           // Use slug with Bomtoon scraper (with retry)
           scraperResult = await withRetry(
@@ -354,7 +365,7 @@ async function handleUrlBasedCollection(supabase: any, body: UrlBasedRequest) {
         : `https://${urlInfo.originalUrl}`
 
       // Determine region/language based on platform
-      const isEnglishPlatform = urlInfo.platform === 'manta'
+      const isEnglishPlatform = urlInfo.platform === 'manta' || urlInfo.platform === 'lezhin'
       const region = isEnglishPlatform ? 'Global' : 'KR'
       const language = isEnglishPlatform ? 'en' : 'ko'
 

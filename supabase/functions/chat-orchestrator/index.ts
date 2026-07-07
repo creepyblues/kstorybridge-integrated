@@ -826,12 +826,22 @@ PERSONALITY: Conversational story nerd, enthusiastic but focused on answering th
             throw new Error('No response stream available')
           }
 
+          // Persistent decoder + line buffer so SSE lines that span network
+          // chunk boundaries aren't dropped. Without buffering, a token whose
+          // JSON straddles a chunk boundary fails JSON.parse and is silently
+          // lost, producing mangled output like "Kneel" → "Kne".
+          const sseDecoder = new TextDecoder()
+          let sseBuffer = ''
+
           while (true) {
             const { done, value } = await reader.read()
             if (done) break
 
-            const chunk = new TextDecoder().decode(value)
-            const lines = chunk.split('\n')
+            sseBuffer += sseDecoder.decode(value, { stream: true })
+
+            // Split on \n; keep the last (possibly incomplete) line in buffer
+            const lines = sseBuffer.split('\n')
+            sseBuffer = lines.pop() ?? ''
 
             for (const line of lines) {
               if (line.startsWith('data: ')) {

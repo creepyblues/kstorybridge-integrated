@@ -46,7 +46,21 @@ export async function generateComps(
 
   if (error) {
     console.error('[CompsGenerator] Edge function error:', error);
-    throw new Error(error.message || 'Failed to generate comps');
+    // Extract the actual error message from the edge function response body
+    // FunctionsHttpError wraps a generic message; the real error is in the Response body
+    let errorMessage = 'Failed to generate comps';
+    try {
+      if (error.context && typeof error.context.json === 'function') {
+        const errorBody = await error.context.json();
+        errorMessage = errorBody?.error || error.message || errorMessage;
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+    } catch {
+      errorMessage = error.message || errorMessage;
+    }
+    console.error('[CompsGenerator] Actual error:', errorMessage);
+    throw new Error(errorMessage);
   }
 
   if (!data) {
@@ -119,13 +133,16 @@ export async function saveCompsWithAnalysis(
     selectedCompTitles.includes(comp.comp_title)
   );
 
-  // 3. Merge: add new comps that don't already exist (by comp_title)
-  const existingTitles = new Set(existingAnalysis.map(c => c.comp_title));
+  // 3. Merge: replace existing entries with fresh data (by comp_title), append the rest.
+  //    Re-running the generator must heal stale rows (e.g. missing poster_url from a prior
+  //    OMDB hiccup), not skip them — see comps-generator/enrichCompsWithIMDB.
+  const newByTitle = new Map(newAnalysis.map(c => [c.comp_title, c]));
 
-  const mergedAnalysis = [
-    ...existingAnalysis,
-    ...newAnalysis.filter(c => !existingTitles.has(c.comp_title))
-  ];
+  const updatedExisting = existingAnalysis.map(c => newByTitle.get(c.comp_title) ?? c);
+  const existingTitles = new Set(existingAnalysis.map(c => c.comp_title));
+  const appended = newAnalysis.filter(c => !existingTitles.has(c.comp_title));
+
+  const mergedAnalysis = [...updatedExisting, ...appended];
 
   const mergedComps = [...new Set([
     ...existingComps,

@@ -15,6 +15,7 @@ export type SupportedPlatform =
   | 'kakao'
   | 'kakao_webtoon'
   | 'manta'
+  | 'lezhin'
   | 'ridibooks'
   | 'bomtoon'
   | 'unknown';

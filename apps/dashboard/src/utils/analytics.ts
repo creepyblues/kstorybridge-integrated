@@ -475,12 +475,12 @@ export const trackSignin = (
  * Track title search actions
  * @param query - Search query text
  * @param resultCount - Number of results returned
- * @param searchType - 'vector' | 'pagination' | 'filter'
+ * @param searchType - 'hybrid' | 'vector' | 'pagination' | 'filter'
  */
 export const trackTitleSearch = (
   query: string,
   resultCount: number,
-  searchType: 'vector' | 'pagination' | 'filter' = 'vector',
+  searchType: 'hybrid' | 'vector' | 'pagination' | 'filter' = 'vector',
   metadata?: Record<string, unknown>
 ): void => {
   trackEvent('title_search', {

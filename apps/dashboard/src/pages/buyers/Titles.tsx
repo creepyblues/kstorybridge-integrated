@@ -37,9 +37,12 @@ export default function Titles() {
   const [formatFilteredTitleIds, setFormatFilteredTitleIds] = useState<Set<string> | null>(null);
   const [formatFitSummaries, setFormatFitSummaries] = useState<Map<string, FormatFitSummary>>(new Map());
 
+  const [vectorPending, setVectorPending] = useState(false);
+
   const observerTarget = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchCountRef = useRef(0); // Track searches per session for analytics
+  const searchRequestIdRef = useRef(0); // Discard stale search responses
 
   // Track page view on mount
   useEffect(() => {
@@ -95,33 +98,53 @@ export default function Titles() {
     const fetchTitles = async () => {
       setLoading(true);
       setOffset(0); // Reset offset when filters change
+      // Any new fetch invalidates in-flight hybrid search stages
+      searchRequestIdRef.current += 1;
+      setVectorPending(false);
       try {
-        // Use vector search if there's a search query
+        // Use hybrid search if there's a search query:
+        // stage 1 = fast ilike name/synopsis matches, stage 2 = semantic vector results appended
         if (searchQuery && searchQuery.trim().length > 0) {
-          console.log('🔍 Using vector search for:', searchQuery);
+          console.log('🔍 Using hybrid search for:', searchQuery);
+          const requestId = searchRequestIdRef.current;
 
-          // Vector search returns all results at once (no pagination)
-          let vectorResults = await titlesService.searchTitlesVector(searchQuery, 50);
+          const { nameMatches, vectorPromise } = await titlesService.searchTitlesHybrid(searchQuery, 50);
+          if (requestId !== searchRequestIdRef.current) return; // stale
 
           // Apply format filter if set
-          if (formatFilteredTitleIds !== null) {
-            vectorResults = vectorResults.filter((t) => formatFilteredTitleIds.has(t.title_id));
-          }
+          const applyFormatFilter = (list: Title[]) =>
+            formatFilteredTitleIds !== null
+              ? list.filter((t) => formatFilteredTitleIds.has(t.title_id))
+              : list;
 
-          setTitles(vectorResults);
-          setHasMore(false); // Vector search returns all results at once
+          const stage1 = applyFormatFilter(nameMatches);
+          setTitles(stage1);
+          setHasMore(false); // Search returns all results at once (no pagination)
           setOffset(0);
-
-          // Track vector search
-          trackTitleSearch(searchQuery, vectorResults.length, 'vector');
+          setLoading(false); // Show exact matches immediately
+          setVectorPending(true);
 
           // Increment search counter for session analytics
           searchCountRef.current += 1;
 
-          // Track zero results for search quality analysis
-          if (vectorResults.length === 0) {
-            trackSearchZeroResults(searchQuery, 'vector');
-          }
+          // Stage 2: append semantic results (deduped) once ready
+          vectorPromise.then((vectorResults) => {
+            if (requestId !== searchRequestIdRef.current) return; // stale
+            setVectorPending(false);
+
+            const seen = new Set(stage1.map((t) => t.title_id));
+            const additions = applyFormatFilter(vectorResults).filter((t) => !seen.has(t.title_id));
+            const totalCount = stage1.length + additions.length;
+            if (additions.length > 0) {
+              setTitles((prev) => [...prev, ...additions]);
+            }
+
+            trackTitleSearch(searchQuery, totalCount, 'hybrid');
+            // Track zero results for search quality analysis
+            if (totalCount === 0) {
+              trackSearchZeroResults(searchQuery, 'hybrid');
+            }
+          });
         } else if (formatFilteredTitleIds !== null && formatFilter) {
           // Format filter is active - get those specific titles
           const titleIds = Array.from(formatFilteredTitleIds).slice(0, 30);
@@ -169,7 +192,7 @@ export default function Titles() {
     // Debounce search to avoid excessive API calls
     const debounceTimer = setTimeout(() => {
       fetchTitles();
-    }, searchQuery ? 500 : 0); // 500ms debounce for search, instant for filters
+    }, searchQuery ? 300 : 0); // 300ms debounce for search, instant for filters
 
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, formatFilteredTitleIds, toast]);
@@ -285,7 +308,14 @@ export default function Titles() {
           </div>
           {searchQuery && (
             <p className="text-xs text-gray-500 text-center mt-2">
-              Using AI-powered semantic search
+              {vectorPending ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon icon="solar:refresh-bold-duotone" className="h-3.5 w-3.5 animate-spin" />
+                  Finding similar titles with AI…
+                </span>
+              ) : (
+                'Name matches first, AI-powered similar titles below'
+              )}
             </p>
           )}
         </div>

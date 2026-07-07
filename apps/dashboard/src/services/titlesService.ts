@@ -828,6 +828,31 @@ class TitlesService {
   }
 
   /**
+   * Hybrid search: fast ilike name/synopsis matching plus semantic vector search.
+   *
+   * Returns the ilike matches immediately (title-name hits ranked first) along
+   * with a pending promise for the vector results so callers can render in two
+   * stages. The vector promise never rejects — semantic search failing must not
+   * break the search experience.
+   */
+  async searchTitlesHybrid(
+    searchQuery: string,
+    vectorLimit: number = 50
+  ): Promise<{ nameMatches: Title[]; vectorPromise: Promise<Title[]> }> {
+    const vectorPromise = this.searchTitlesVector(searchQuery, vectorLimit).catch((error) => {
+      console.error('❌ Vector stage of hybrid search failed:', error);
+      return [] as Title[];
+    });
+
+    const nameMatches = await this.getTitles({
+      search: searchQuery,
+      prioritizeTitleName: true,
+    });
+
+    return { nameMatches, vectorPromise };
+  }
+
+  /**
    * Update a title
    */
   async updateTitle(titleId: string, updates: Partial<Title>): Promise<void> {

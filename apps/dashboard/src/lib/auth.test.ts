@@ -87,6 +87,7 @@ describe('Auth Service', () => {
         email: testEmail,
         password: testPassword,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             account_type: 'buyer',
             full_name: testMetadata.full_name,

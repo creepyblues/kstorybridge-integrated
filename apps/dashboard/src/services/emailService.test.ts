@@ -336,11 +336,35 @@ describe('Conversion and Engagement Email Triggers', () => {
   });
 
   describe('triggerFirstSaveEmail', () => {
-    it('should return success (currently disabled)', async () => {
-      const result = await triggerFirstSaveEmail('user-123', 'user@example.com', 'User Name');
+    it('sends a celebration email via the send-email edge function', async () => {
+      vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+        data: { messageId: 'msg-1' },
+        error: null,
+      });
+
+      const result = await triggerFirstSaveEmail('user-123', 'user@example.com', 'User Name', 'Test Title');
 
       expect(result.success).toBe(true);
-      expect(result.error).toContain('will be enabled in a future update');
+      expect(supabase.functions.invoke).toHaveBeenCalledWith('send-email', {
+        body: expect.objectContaining({
+          to: 'user@example.com',
+          subject: expect.stringContaining('Test Title'),
+        }),
+      });
+    });
+
+    it('dedupes: does not send twice for the same email', async () => {
+      vi.mocked(supabase.functions.invoke).mockResolvedValue({
+        data: { messageId: 'msg-2' },
+        error: null,
+      });
+
+      await triggerFirstSaveEmail('user-456', 'dedupe@example.com', 'User Name');
+      const callsAfterFirst = vi.mocked(supabase.functions.invoke).mock.calls.length;
+      const result = await triggerFirstSaveEmail('user-456', 'dedupe@example.com', 'User Name');
+
+      expect(result.success).toBe(true);
+      expect(vi.mocked(supabase.functions.invoke).mock.calls.length).toBe(callsAfterFirst);
     });
   });
 });

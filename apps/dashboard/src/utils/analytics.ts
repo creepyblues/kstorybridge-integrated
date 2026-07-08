@@ -10,7 +10,7 @@
 
 // TypeScript type definitions
 export type OnboardingAction = 'start' | 'complete' | 'skip';
-export type SavedTitleSource = 'chat' | 'search' | 'featured';
+export type SavedTitleSource = 'chat' | 'search' | 'featured' | 'detail';
 
 export interface TrackingEvent {
   event_name: string;
@@ -1218,6 +1218,26 @@ export const trackTitleContactCreatorClicked = (
     title_id: titleId,
     title_name: titleName,
     user_tier: userTier,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Track a submitted Express Interest request (the fulfilled counterpart
+ * of title_contact_creator_clicked)
+ * @param titleId - UUID of the title
+ * @param titleName - Name of the title
+ * @param hasNote - Whether the buyer included a note
+ */
+export const trackTitleInterestSubmitted = (
+  titleId: string,
+  titleName: string,
+  hasNote: boolean
+): void => {
+  trackEvent('title_interest_submitted', {
+    title_id: titleId,
+    title_name: titleName,
+    has_note: hasNote,
     timestamp: new Date().toISOString(),
   });
 };

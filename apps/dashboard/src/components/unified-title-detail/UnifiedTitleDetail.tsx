@@ -71,6 +71,7 @@ export function UnifiedTitleDetail({
             title={title}
             authState={authState}
             user={user}
+            tier={tier}
             isFavorited={isFavorited}
             favoriteLoading={favoriteLoading}
             onFavoriteToggle={onFavoriteToggle}

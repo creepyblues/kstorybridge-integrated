@@ -17,7 +17,9 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
 import { UnifiedTitleDetail } from '@/components/unified-title-detail';
-import { trackTitleDetailView, trackFavorite, trackFeatureUsage } from '@/utils/analytics';
+import { trackTitleDetailView, trackFavorite, trackFeatureUsage, trackSavedTitle } from '@/utils/analytics';
+import { completeOnboardingStep } from '@/utils/onboarding';
+import { triggerFirstSaveEmail } from '@/services/emailService';
 
 export default function UnifiedTitleDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -67,6 +69,7 @@ export default function UnifiedTitleDetailPage() {
             has_pitch: !!data.pitch,
           });
           trackFeatureUsage('title_detail_view');
+          completeOnboardingStep(3);
         }
 
         if (data?.pitch_analysis) {
@@ -103,8 +106,21 @@ export default function UnifiedTitleDetailPage() {
       } else {
         await titlesService.addFavorite(title.title_id, user.id);
         setIsFavorited(true);
-        trackFavorite('add', title.title_id, title.title_name_en || title.title_name_kr || 'Unknown', 'detail');
+        const titleName = title.title_name_en || title.title_name_kr || 'Unknown';
+        trackFavorite('add', title.title_id, titleName, 'detail');
+        trackSavedTitle(title.title_id, titleName, 'detail', user.id);
+        completeOnboardingStep(4);
         toast({ title: 'Added to favorites', description: 'Title saved to your list' });
+
+        // First-save celebration email (non-blocking)
+        titlesService.getFavorites(user.id)
+          .then((favorites) => {
+            if (favorites.length === 1 && user.email) {
+              const fullName = (user.user_metadata?.full_name as string) || '';
+              return triggerFirstSaveEmail(user.id, user.email, fullName, titleName);
+            }
+          })
+          .catch((err) => console.warn('First-save email check failed:', err));
       }
     } catch (error: unknown) {
       console.error('Error toggling favorite:', error);

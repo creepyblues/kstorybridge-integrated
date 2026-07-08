@@ -3,12 +3,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, Star, BookOpen, CheckCircle, Bookmark } from 'lucide-react';
 import { type UnifiedTitleDetailProps, formatLabel } from './types';
+import { ExpressInterestButton } from './ExpressInterestButton';
 
-interface HeroSectionProps extends Pick<UnifiedTitleDetailProps, 'title' | 'authState' | 'user' | 'isFavorited' | 'favoriteLoading' | 'onFavoriteToggle' | 'onCtaClick'> {}
+interface HeroSectionProps extends Pick<UnifiedTitleDetailProps, 'title' | 'authState' | 'user' | 'tier' | 'isFavorited' | 'favoriteLoading' | 'onFavoriteToggle' | 'onCtaClick'> {}
 
 export function HeroSection({
   title,
   authState,
+  user,
+  tier,
   isFavorited,
   favoriteLoading,
   onFavoriteToggle,
@@ -118,6 +121,14 @@ export function HeroSection({
         {/* Primary CTA */}
         {isLoggedIn ? (
           <div className="flex flex-wrap gap-3">
+            {user?.email && (
+              <ExpressInterestButton
+                titleId={title.title_id}
+                titleName={title.title_name_en || title.title_name_kr || 'Unknown'}
+                userEmail={user.email}
+                userTier={tier ?? undefined}
+              />
+            )}
             {onFavoriteToggle && (
               <Button
                 variant="outline"

@@ -65,6 +65,8 @@ export async function signUpWithEmail(
     email,
     password,
     options: {
+      // Verification links land in-app so AuthCallback can restore redirect_after_login
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
       data: {
         account_type: 'buyer', // ✅ Set during signup
         full_name: metadata.full_name,

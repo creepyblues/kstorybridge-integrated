@@ -89,6 +89,7 @@ The initial GA4 audit covered June 13 through July 12, 2026, compared with May 1
 - [x] `AR-111` Classify every active database administrator as internal traffic through protected auth metadata and verify the resulting state.
 - [x] `AR-112` Release dashboard and creator analytics gating to staging and verify committed bundle markers plus root/auth smoke tests.
 - [x] `AR-113` Prove runtime network behavior on all three staging/preview apps: zero analytics by default and intentional collection only with the diagnostic override.
+- [x] `AR-114` Open a focused production release PR containing only the analytics reliability commits, excluding unrelated `v2` product and migration work.
 
 ### Phase 1 acceptance criteria
 
@@ -246,6 +247,7 @@ All of the following must be true:
 | 2026-07-13 | Recorded and pushed the scoped analytics implementation without staging unrelated workspace changes. | `v2` commit `7c9803d0`; push to `origin/v2` succeeded. | Release and validate the three frontend apps separately; do not merge unrelated `v2` product commits solely to activate the workflow. |
 | 2026-07-13 | Released and smoke-tested dashboard and creator analytics gating on staging. | Vercel `READY` deployments from `60cd75b1`; four custom-domain route checks returned 200; deployed bundle markers verified for both apps; all three local app builds pass. | Resolve the website preview deployment state, then perform runtime network validation before production release. |
 | 2026-07-13 | Resolved the website preview block and completed cross-app runtime analytics validation. | Vercel API identified `TEAM_ACCESS_REQUIRED`; metadata-free committed export reached `READY`; six default/override browser cases passed; trusted email interaction emitted one sanitized event. | Create a focused production release path, verify GA Admin filter state, and keep `AR-110` pending until production website validation. |
+| 2026-07-13 | Opened the focused analytics production release as draft PR [#141](https://github.com/creepyblues/kstorybridge-integrated/pull/141). | Five analytics-only commits cherry-picked from `v2`; all three affected app builds pass; 50 targeted tests pass; release worktree is clean; no database migration is included. The full monorepo build still exposes the unrelated existing Storybook ESM `__dirname` failure. | Review CI and the focused diff, verify the GA Admin filter under `AR-108`, then promote and validate production without closing `AR-110` early. |
 
 ## Progress update procedure
 

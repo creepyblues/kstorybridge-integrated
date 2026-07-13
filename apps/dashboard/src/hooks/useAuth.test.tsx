@@ -17,6 +17,9 @@ vi.mock('@/lib/supabase', () => ({
 vi.mock('@/utils/analytics', () => ({
   setAnalyticsUser: vi.fn(),
   clearAnalyticsUser: vi.fn(),
+  isInternalTrafficMetadata: vi.fn(
+    (metadata?: Record<string, unknown>) => metadata?.internal_traffic === true
+  ),
 }));
 
 import { supabase } from '@/lib/supabase';
@@ -182,7 +185,10 @@ describe('useAuth', () => {
         expect(screen.getByTestId('loading').textContent).toBe('false');
       });
 
-      expect(setAnalyticsUser).toHaveBeenCalledWith('user-123', { type: 'buyer' });
+      expect(setAnalyticsUser).toHaveBeenCalledWith('user-123', {
+        type: 'buyer',
+        internal: false,
+      });
     });
 
     it('should not set GA4 analytics user when session is null', async () => {
@@ -250,7 +256,10 @@ describe('useAuth', () => {
 
       expect(screen.getByTestId('user').textContent).toBe('test@example.com');
       expect(screen.getByTestId('session').textContent).toBe('exists');
-      expect(setAnalyticsUser).toHaveBeenCalledWith('user-123', { type: 'buyer' });
+      expect(setAnalyticsUser).toHaveBeenCalledWith('user-123', {
+        type: 'buyer',
+        internal: false,
+      });
     });
 
     it('should update state when auth state changes to signed out', async () => {

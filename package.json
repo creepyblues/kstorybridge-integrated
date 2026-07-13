@@ -34,6 +34,8 @@
     "test:e2e:chatbot": "playwright test chatbot.spec.ts",
     "test:e2e:creator": "playwright test creator.spec.ts",
     "test:e2e:report": "playwright show-report",
+    "analytics:progress": "node scripts/analytics-progress-report.mjs",
+    "analytics:internal-admins": "node --env-file=.env.local scripts/internal-traffic-admins.mjs",
     "clean": "turbo run clean",
     "clean:all": "turbo run clean",
     "storybook": "npm run storybook --workspace=packages/storybook",

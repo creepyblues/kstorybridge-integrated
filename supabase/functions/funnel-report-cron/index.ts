@@ -1,5 +1,9 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import {
+  buildCleanProductionFilter,
+  buildProductionHostFilter,
+} from '../_shared/analytics-filters.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +16,7 @@ const GA4_PROPERTY_ID = '496541587'
 // Funnel event names
 const FUNNEL_EVENTS = [
   'first_visit',
+  'email_landing_engaged',
   'trial_page_view',
   'trial_tool_selected',
   'trial_comps_search',
@@ -70,6 +75,13 @@ interface SourceMetrics {
   newUsers: number
   sessions: number
   engagementRate: number
+}
+
+interface TrafficSummary {
+  activeUsers: number
+  newUsers: number
+  sessions: number
+  engagedSessions: number
 }
 
 // Generate JWT for Google API authentication
@@ -274,6 +286,17 @@ function parseTrafficSources(response: GA4Response): SourceMetrics[] {
   return metrics
 }
 
+function parseTrafficSummary(response: GA4Response): TrafficSummary {
+  const values = response.rows?.[0]?.metricValues || []
+
+  return {
+    activeUsers: parseInt(values[0]?.value || '0', 10),
+    newUsers: parseInt(values[1]?.value || '0', 10),
+    sessions: parseInt(values[2]?.value || '0', 10),
+    engagedSessions: parseInt(values[3]?.value || '0', 10),
+  }
+}
+
 // Generate progress bar
 function progressBar(percentage: number): string {
   const filled = Math.round(percentage / 5)
@@ -292,6 +315,8 @@ function generateFunnelReport(
   pages: PageMetrics,
   landingPages: LandingPageMetrics[],
   sources: SourceMetrics[],
+  rawTraffic: TrafficSummary,
+  cleanTraffic: TrafficSummary,
   days: number
 ): { markdown: string; alerts: string[] } {
   const alerts: string[] = []
@@ -303,6 +328,7 @@ function generateFunnelReport(
   const searchCompleted = funnel['trial_search_completed'] || { eventCount: 0, totalUsers: 0 }
   const ctaClicked = funnel['trial_signup_cta_clicked'] || { eventCount: 0, totalUsers: 0 }
   const signupComplete = funnel['signup_completed'] || { eventCount: 0, totalUsers: 0 }
+  const emailLandingEngaged = funnel['email_landing_engaged'] || { eventCount: 0, totalUsers: 0 }
 
   // Tool breakdown
   const compsSearch = funnel['trial_comps_search'] || { eventCount: 0, totalUsers: 0 }
@@ -316,6 +342,8 @@ function generateFunnelReport(
   const ctaRate = searchCompleted.totalUsers > 0 ? (ctaClicked.totalUsers / searchCompleted.totalUsers) : 0
   const signupRate = ctaClicked.totalUsers > 0 ? (signupComplete.totalUsers / ctaClicked.totalUsers) : 0
   const overallRate = firstVisit.totalUsers > 0 ? (signupComplete.totalUsers / firstVisit.totalUsers) : 0
+  const excludedSessions = Math.max(rawTraffic.sessions - cleanTraffic.sessions, 0)
+  const excludedSessionRate = rawTraffic.sessions > 0 ? excludedSessions / rawTraffic.sessions : 0
 
   // Check for alerts
   if (overallRate < 0.01) {
@@ -326,6 +354,9 @@ function generateFunnelReport(
   }
   if (trialRate < 0.05) {
     alerts.push('Warning: First Visit to Trial rate <5%')
+  }
+  if (excludedSessionRate > 0.1) {
+    alerts.push(`Data quality: ${formatPct(excludedSessionRate)} of production-host sessions excluded as known scanner traffic`)
   }
 
   // Check landing page bounce rates
@@ -345,6 +376,27 @@ function generateFunnelReport(
   let markdown = `# KStoryBridge Signup Funnel Analysis
 
 **Period**: ${dateFormat(startDate)} - ${dateFormat(endDate)} (${days} days)
+
+---
+
+## Data Quality Guardrail
+
+| Metric | Raw production hosts | Clean external estimate | Excluded |
+|--------|---------------------:|------------------------:|---------:|
+| Sessions | ${rawTraffic.sessions} | ${cleanTraffic.sessions} | ${excludedSessions} (${formatPct(excludedSessionRate)}) |
+| Active Users | ${rawTraffic.activeUsers} | ${cleanTraffic.activeUsers} | ${Math.max(rawTraffic.activeUsers - cleanTraffic.activeUsers, 0)} |
+| New Users | ${rawTraffic.newUsers} | ${cleanTraffic.newUsers} | ${Math.max(rawTraffic.newUsers - cleanTraffic.newUsers, 0)} |
+| Engaged Sessions | ${rawTraffic.engagedSessions} | ${cleanTraffic.engagedSessions} | ${Math.max(rawTraffic.engagedSessions - cleanTraffic.engagedSessions, 0)} |
+
+The clean estimate includes only the three production hosts and excludes all observed Brevo/Sendinblue scanner referral domains. Legitimate email engagement is reconciled separately with Brevo campaign data.
+
+### Human email engagement
+
+| Signal | Users | Events |
+|--------|------:|-------:|
+| Trusted interaction after an email-attributed landing | ${emailLandingEngaged.totalUsers} | ${emailLandingEngaged.eventCount} |
+
+This is a conservative on-site signal: a tagged email landing must receive a trusted pointer, keyboard, or scroll interaction. A scanner page load alone does not count. Compare this total with Brevo's delivered and unique human-click totals; it is not a replacement for campaign-provider reporting.
 
 ---
 
@@ -490,13 +542,20 @@ serve(async (req) => {
     // Run all queries in parallel
     console.log('[funnel-report-cron] Fetching GA4 data...')
 
-    const [funnelResponse, pagesResponse, landingResponse, sourcesResponse] = await Promise.all([
+    const [
+      funnelResponse,
+      pagesResponse,
+      landingResponse,
+      sourcesResponse,
+      rawTrafficResponse,
+      cleanTrafficResponse,
+    ] = await Promise.all([
       // Query 1: Funnel events
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['eventName'],
         metrics: ['eventCount', 'totalUsers'],
-        dimensionFilter: {
+        dimensionFilter: buildCleanProductionFilter([{
           filter: {
             fieldName: 'eventName',
             inListFilter: {
@@ -504,7 +563,7 @@ serve(async (req) => {
               caseSensitive: true,
             },
           },
-        },
+        }]),
         orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
       }),
 
@@ -513,7 +572,7 @@ serve(async (req) => {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['pagePath'],
         metrics: ['activeUsers', 'sessions', 'bounceRate', 'engagementRate'],
-        dimensionFilter: {
+        dimensionFilter: buildCleanProductionFilter([{
           filter: {
             fieldName: 'pagePath',
             inListFilter: {
@@ -521,7 +580,7 @@ serve(async (req) => {
               caseSensitive: false,
             },
           },
-        },
+        }]),
         orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
       }),
 
@@ -530,6 +589,7 @@ serve(async (req) => {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['landingPage'],
         metrics: ['sessions', 'newUsers', 'engagementRate', 'bounceRate'],
+        dimensionFilter: buildCleanProductionFilter(),
         orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
         limit: 15,
       }),
@@ -539,8 +599,25 @@ serve(async (req) => {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['sessionSourceMedium'],
         metrics: ['newUsers', 'sessions', 'engagementRate'],
+        dimensionFilter: buildCleanProductionFilter(),
         orderBys: [{ metric: { metricName: 'newUsers' }, desc: true }],
         limit: 10,
+      }),
+
+      // Query 5: Raw traffic on production hosts, retained only for visibility
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: [],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildProductionHostFilter(),
+      }),
+
+      // Query 6: Clean production traffic used by customer KPIs
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: [],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildCleanProductionFilter(),
       }),
     ])
 
@@ -551,6 +628,8 @@ serve(async (req) => {
     const pageMetrics = parsePagePerformance(pagesResponse)
     const landingPages = parseLandingPages(landingResponse)
     const trafficSources = parseTrafficSources(sourcesResponse)
+    const rawTraffic = parseTrafficSummary(rawTrafficResponse)
+    const cleanTraffic = parseTrafficSummary(cleanTrafficResponse)
 
     // Generate report
     console.log('[funnel-report-cron] Generating funnel report...')
@@ -559,6 +638,8 @@ serve(async (req) => {
       pageMetrics,
       landingPages,
       trafficSources,
+      rawTraffic,
+      cleanTraffic,
       days
     )
 

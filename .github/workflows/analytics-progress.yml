@@ -1,0 +1,31 @@
+name: Analytics Program Progress
+
+on:
+  schedule:
+    # Monday 08:00 PDT / 07:00 PST. GitHub cron uses UTC.
+    - cron: '0 15 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  progress-audit:
+    name: Report analytics program progress
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate and deliver progress report
+        run: node scripts/analytics-progress-report.mjs --send
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}

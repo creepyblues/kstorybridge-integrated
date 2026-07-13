@@ -22,6 +22,7 @@ This is the master index of all active documentation for the KStoryBridge projec
 | **[AUTH_DOCUMENTATION.md](active/AUTH_DOCUMENTATION.md)** | Complete authentication system reference |
 | **[ANALYTICS_EVENT_CONTRACT.md](active/ANALYTICS_EVENT_CONTRACT.md)** | Canonical cross-app event names, triggers, parameters, ownership, and privacy rules |
 | **[ANALYTICS_RELIABILITY_EXECUTION_PLAN.md](active/ANALYTICS_RELIABILITY_EXECUTION_PLAN.md)** | Living analytics reliability plan, acceptance criteria, and progress log |
+| **[ANALYTICS_OUTCOME_SOURCE_MAP.md](active/ANALYTICS_OUTCOME_SOURCE_MAP.md)** | GA-to-Supabase/Stripe reconciliation keys, timestamps, confidence, and known truth gaps |
 | **[DATABASE_SCHEMA.md](active/DATABASE_SCHEMA.md)** | Database schema and query patterns |
 | **[DESIGN_SYSTEM.md](active/DESIGN_SYSTEM.md)** | UI/UX standards, components, color palette |
 | **[CACHE_POLICY.md](active/CACHE_POLICY.md)** | Session-based caching implementation |

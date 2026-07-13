@@ -87,6 +87,7 @@ The initial GA4 audit covered June 13 through July 12, 2026, compared with May 1
 - [ ] `AR-109` After founder approval of `AR-005`, mark approved authenticated accounts with service-role-controlled `app_metadata.internal_traffic=true` and validate a test event.
 - [ ] `AR-110` Release and validate the conservative `email_landing_engaged` website event; implementation and automated tests are complete, but production website deployment is pending.
 - [x] `AR-111` Classify every active database administrator as internal traffic through protected auth metadata and verify the resulting state.
+- [x] `AR-112` Release dashboard and creator analytics gating to staging and verify committed bundle markers plus root/auth smoke tests.
 
 ### Phase 1 acceptance criteria
 
@@ -121,6 +122,9 @@ Implemented 2026-07-13:
 - `scripts/internal-traffic-admins.mjs` derives candidates from active `admin` records, masks output, refuses partial auth matches, preserves existing app metadata, and requires a confirmation token before writing.
 - The 2026-07-13 production run found three active admins, matched all three to auth users, set `app_metadata.internal_traffic=true`, and verified all three updates. No email addresses are stored in the script or plan.
 - Active administrators must refresh their session or sign in again before the new claim is present in frontend analytics events. `AR-005` and `AR-109` remain open for any non-admin staff, contractor, investor, and automated-test accounts.
+- Dashboard and creator staging deployments for commit `60cd75b1` reached `READY`. Both custom-domain root and sign-in routes returned HTTP 200, and the served JavaScript bundles contain the app-specific production hostname, `analytics_debug`, the non-production override key, and `internal_traffic` handling.
+- The pre-existing creator build blocker was resolved by completing the Lezhin platform icon/detection mapping; the full creator TypeScript and Vite production build now passes.
+- A clean website preview was attempted twice from an isolated worktree, but Vercel left both deployments in `UNKNOWN` without build logs. The processes and temporary worktree were cleaned up; `AR-110` remains pending rather than treating the website as released.
 - The Analytics Admin API does not expose GA4 data-filter administration. The filter must therefore be inspected manually in GA Admin; no filter was activated because activation permanently affects future collected data. Reference: [GA4 data filters](https://support.google.com/analytics/answer/13296761?hl=en) and [internal traffic setup](https://support.google.com/analytics/answer/10104470?hl=en-419).
 
 ### Scheduled-report filter implementation
@@ -234,6 +238,7 @@ All of the following must be true:
 | 2026-07-13 | Activated a local weekly progress cron fallback without releasing unrelated `v2` commits. | Idempotent crontab entry at Monday 08:05; wrapper dry run and live delivery both succeeded; three admin emails and Slack delivered. | Keep the fallback active until `AR-014` is merged and its scheduled run is verified. |
 | 2026-07-13 | Classified the authoritative active-admin subset as internal traffic without maintaining a frontend email list. | Three script tests pass; dry run matched 3/3 active admins; protected auth metadata update and verification reported 3/3 internal. | Refresh admin sessions, verify a tagged event after the frontend release, and identify any additional accounts under `AR-005`. |
 | 2026-07-13 | Recorded and pushed the scoped analytics implementation without staging unrelated workspace changes. | `v2` commit `7c9803d0`; push to `origin/v2` succeeded. | Release and validate the three frontend apps separately; do not merge unrelated `v2` product commits solely to activate the workflow. |
+| 2026-07-13 | Released and smoke-tested dashboard and creator analytics gating on staging. | Vercel `READY` deployments from `60cd75b1`; four custom-domain route checks returned 200; deployed bundle markers verified for both apps; all three local app builds pass. | Resolve the website preview deployment state, then perform runtime network validation before production release. |
 
 ## Progress update procedure
 

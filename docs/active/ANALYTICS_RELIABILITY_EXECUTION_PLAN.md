@@ -233,6 +233,7 @@ All of the following must be true:
 | 2026-07-13 | Deployed the clean-production `funnel-report-cron` and completed its manual production acceptance run. | Deployment uploaded the function and shared filter; endpoint health returned HTTP 200; seven-day run delivered to three admins and Slack with zero delivery failures. | Observe seven complete production days through 2026-07-20 and evaluate `AR-106` on or after 2026-07-21. |
 | 2026-07-13 | Activated a local weekly progress cron fallback without releasing unrelated `v2` commits. | Idempotent crontab entry at Monday 08:05; wrapper dry run and live delivery both succeeded; three admin emails and Slack delivered. | Keep the fallback active until `AR-014` is merged and its scheduled run is verified. |
 | 2026-07-13 | Classified the authoritative active-admin subset as internal traffic without maintaining a frontend email list. | Three script tests pass; dry run matched 3/3 active admins; protected auth metadata update and verification reported 3/3 internal. | Refresh admin sessions, verify a tagged event after the frontend release, and identify any additional accounts under `AR-005`. |
+| 2026-07-13 | Recorded and pushed the scoped analytics implementation without staging unrelated workspace changes. | `v2` commit `7c9803d0`; push to `origin/v2` succeeded. | Release and validate the three frontend apps separately; do not merge unrelated `v2` product commits solely to activate the workflow. |
 
 ## Progress update procedure
 

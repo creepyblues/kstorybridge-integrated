@@ -88,6 +88,7 @@ The initial GA4 audit covered June 13 through July 12, 2026, compared with May 1
 - [ ] `AR-110` Release and validate the conservative `email_landing_engaged` website event; implementation and automated tests are complete, but production website deployment is pending.
 - [x] `AR-111` Classify every active database administrator as internal traffic through protected auth metadata and verify the resulting state.
 - [x] `AR-112` Release dashboard and creator analytics gating to staging and verify committed bundle markers plus root/auth smoke tests.
+- [x] `AR-113` Prove runtime network behavior on all three staging/preview apps: zero analytics by default and intentional collection only with the diagnostic override.
 
 ### Phase 1 acceptance criteria
 
@@ -124,7 +125,12 @@ Implemented 2026-07-13:
 - Active administrators must refresh their session or sign in again before the new claim is present in frontend analytics events. `AR-005` and `AR-109` remain open for any non-admin staff, contractor, investor, and automated-test accounts.
 - Dashboard and creator staging deployments for commit `60cd75b1` reached `READY`. Both custom-domain root and sign-in routes returned HTTP 200, and the served JavaScript bundles contain the app-specific production hostname, `analytics_debug`, the non-production override key, and `internal_traffic` handling.
 - The pre-existing creator build blocker was resolved by completing the Lezhin platform icon/detection mapping; the full creator TypeScript and Vite production build now passes.
-- A clean website preview was attempted twice from an isolated worktree, but Vercel left both deployments in `UNKNOWN` without build logs. The processes and temporary worktree were cleaned up; `AR-110` remains pending rather than treating the website as released.
+- Two initial clean website preview attempts appeared as `UNKNOWN` without build logs. Their processes and temporary worktree were cleaned up rather than treating either attempt as released.
+- Investigation showed the two website attempts were actually `BLOCKED`, not hung: Vercel rejected manual deployments attributed to Git author `noreply@anthropic.com`, which is not a member of the Hobby-plan team. The CLI version displayed that newer state as `UNKNOWN`.
+- A metadata-free export of committed `73bcf109` removed only the unsupported Git attribution. Vercel accepted and built preview `kstorybridge-website-cndahjcti-creepyblues-9060s-projects.vercel.app` to `READY`; the temporary export and downloaded environment file were removed afterward.
+- Dashboard staging was missing `VITE_GA_MEASUREMENT_ID`. The public measurement ID was added to its Development, Preview, and Production environments, and committed `60cd75b1` was redeployed to `READY`.
+- Headless runtime network verification passed: dashboard, creator, and website preview made zero GTM/GA requests by default; each contacted GTM/GA only with `?analytics_debug=1` in a fresh browser context.
+- On the website preview, a trusted pointer interaction on a tagged email landing emitted exactly one `email_landing_engaged` event with sanitized campaign-level fields. `utm_content`, contact identifiers, and email addresses were absent. Production website release remains pending under `AR-110`.
 - The Analytics Admin API does not expose GA4 data-filter administration. The filter must therefore be inspected manually in GA Admin; no filter was activated because activation permanently affects future collected data. Reference: [GA4 data filters](https://support.google.com/analytics/answer/13296761?hl=en) and [internal traffic setup](https://support.google.com/analytics/answer/10104470?hl=en-419).
 
 ### Scheduled-report filter implementation
@@ -239,6 +245,7 @@ All of the following must be true:
 | 2026-07-13 | Classified the authoritative active-admin subset as internal traffic without maintaining a frontend email list. | Three script tests pass; dry run matched 3/3 active admins; protected auth metadata update and verification reported 3/3 internal. | Refresh admin sessions, verify a tagged event after the frontend release, and identify any additional accounts under `AR-005`. |
 | 2026-07-13 | Recorded and pushed the scoped analytics implementation without staging unrelated workspace changes. | `v2` commit `7c9803d0`; push to `origin/v2` succeeded. | Release and validate the three frontend apps separately; do not merge unrelated `v2` product commits solely to activate the workflow. |
 | 2026-07-13 | Released and smoke-tested dashboard and creator analytics gating on staging. | Vercel `READY` deployments from `60cd75b1`; four custom-domain route checks returned 200; deployed bundle markers verified for both apps; all three local app builds pass. | Resolve the website preview deployment state, then perform runtime network validation before production release. |
+| 2026-07-13 | Resolved the website preview block and completed cross-app runtime analytics validation. | Vercel API identified `TEAM_ACCESS_REQUIRED`; metadata-free committed export reached `READY`; six default/override browser cases passed; trusted email interaction emitted one sanitized event. | Create a focused production release path, verify GA Admin filter state, and keep `AR-110` pending until production website validation. |
 
 ## Progress update procedure
 

@@ -55,6 +55,7 @@ The initial GA4 audit covered June 13 through July 12, 2026, compared with May 1
 - [x] `AR-013` Add a scheduled weekly progress audit and manual dispatch.
 - [ ] `AR-014` Merge the tracker workflow to the default branch so GitHub's schedule activates.
 - [x] `AR-015` Install and verify a local weekly cron fallback until the default-branch workflow is active.
+- [ ] `AR-016` Restore GitHub Actions execution after the account-level billing lock, then rerun and pass the focused release checks.
 
 ### Phase 0 acceptance criteria
 
@@ -248,6 +249,7 @@ All of the following must be true:
 | 2026-07-13 | Released and smoke-tested dashboard and creator analytics gating on staging. | Vercel `READY` deployments from `60cd75b1`; four custom-domain route checks returned 200; deployed bundle markers verified for both apps; all three local app builds pass. | Resolve the website preview deployment state, then perform runtime network validation before production release. |
 | 2026-07-13 | Resolved the website preview block and completed cross-app runtime analytics validation. | Vercel API identified `TEAM_ACCESS_REQUIRED`; metadata-free committed export reached `READY`; six default/override browser cases passed; trusted email interaction emitted one sanitized event. | Create a focused production release path, verify GA Admin filter state, and keep `AR-110` pending until production website validation. |
 | 2026-07-13 | Opened the focused analytics production release as draft PR [#141](https://github.com/creepyblues/kstorybridge-integrated/pull/141). | Five analytics-only commits cherry-picked from `v2`; all three affected app builds pass; 50 targeted tests pass; release worktree is clean; no database migration is included. The full monorepo build still exposes the unrelated existing Storybook ESM `__dirname` failure. | Review CI and the focused diff, verify the GA Admin filter under `AR-108`, then promote and validate production without closing `AR-110` early. |
+| 2026-07-13 | Diagnosed the immediate PR #141 GitHub Actions failures as an account-level CI outage. | Every failed check contained zero executed steps; GitHub annotations state that jobs were not started because the account is locked due to a billing issue; findings are recorded on the PR. | Restore GitHub Actions billing under `AR-016`, rerun checks, and do not treat the current red checks as product test results. |
 
 ## Progress update procedure
 

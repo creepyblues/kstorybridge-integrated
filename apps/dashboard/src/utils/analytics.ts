@@ -8,6 +8,14 @@
  * @see docs/tracking/PHASE_1_ANALYTICS.md
  */
 
+import {
+  getAuthEventName,
+  normalizeFailureReason,
+  type AuthFailureReason,
+  type AuthMethod,
+  type AuthStage,
+} from '@kstorybridge/analytics';
+
 // TypeScript type definitions
 export type OnboardingAction = 'start' | 'complete' | 'skip';
 export type SavedTitleSource = 'chat' | 'search' | 'featured' | 'detail';
@@ -514,38 +522,41 @@ export const trackPremiumPopupInteraction = (
 
 /**
  * Track signup events
- * @param action - 'form_viewed' | 'attempted' | 'completed' | 'error'
+ * @param stage - Canonical signup funnel stage
  * @param method - 'email' | 'google'
- * @param metadata - Additional context
+ * @param metadata - Allowlisted, non-PII context
  */
 export const trackSignup = (
-  action: 'form_viewed' | 'attempted' | 'completed' | 'error',
-  method: 'email' | 'google' = 'email',
-  metadata?: Record<string, unknown>
+  stage: AuthStage,
+  method: AuthMethod = 'email',
+  metadata?: { role?: string; failure_reason?: AuthFailureReason }
 ): void => {
-  trackEvent('signup', {
-    action,
+  trackEvent(getAuthEventName('signup', stage), {
     method,
-    timestamp: new Date().toISOString(),
-    ...metadata,
+    account_type: 'buyer',
+    ...(metadata?.role ? { role: metadata.role } : {}),
+    ...(metadata?.failure_reason
+      ? { failure_reason: normalizeFailureReason(metadata.failure_reason) }
+      : {}),
   });
 };
 
 /**
  * Track signin events
- * @param action - 'form_viewed' | 'attempted' | 'completed' | 'error'
+ * @param stage - Canonical signin funnel stage
  * @param method - 'email' | 'google'
  */
 export const trackSignin = (
-  action: 'form_viewed' | 'attempted' | 'completed' | 'error',
-  method: 'email' | 'google' = 'email',
-  metadata?: Record<string, unknown>
+  stage: AuthStage,
+  method: AuthMethod = 'email',
+  metadata?: { failure_reason?: AuthFailureReason }
 ): void => {
-  trackEvent('signin', {
-    action,
+  trackEvent(getAuthEventName('signin', stage), {
     method,
-    timestamp: new Date().toISOString(),
-    ...metadata,
+    account_type: 'buyer',
+    ...(metadata?.failure_reason
+      ? { failure_reason: normalizeFailureReason(metadata.failure_reason) }
+      : {}),
   });
 };
 

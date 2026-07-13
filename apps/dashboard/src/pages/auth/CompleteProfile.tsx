@@ -40,7 +40,7 @@ export default function CompleteProfile() {
 
   // Track form view on mount
   useEffect(() => {
-    trackSignup('form_viewed', 'google');
+    trackSignup('viewed', 'google');
   }, []);
 
   useEffect(() => {
@@ -136,9 +136,7 @@ export default function CompleteProfile() {
       navigate(redirectUrl);
     } catch (error: any) {
       // Track signup error
-      trackSignup('error', 'google', {
-        error: error.message?.substring(0, 50) || 'Unknown error'
-      });
+      trackSignup('failed', 'google', { failure_reason: 'profile_creation_failed' });
 
       toast({
         title: 'Profile Creation Failed',

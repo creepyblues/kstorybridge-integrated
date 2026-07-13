@@ -7,6 +7,15 @@
  * @module analytics
  */
 
+import {
+  AUTH_EVENT_NAMES,
+  getAuthEventName,
+  normalizeFailureReason,
+  type AuthFailureReason,
+  type AuthMethod,
+  type AuthStage,
+} from '@kstorybridge/analytics';
+
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
@@ -246,17 +255,31 @@ export const trackPageView = (path: string, title?: string): void => {
 // Authentication Events
 // ============================================
 
-export const trackSignup = (method: 'email' | 'google'): void => {
-  trackEvent('sign_up', {
-    method: method,
-    user_type: 'creator',
+export const trackSignup = (
+  stage: AuthStage,
+  method: AuthMethod,
+  failureReason?: AuthFailureReason
+): void => {
+  trackEvent(getAuthEventName('signup', stage), {
+    method,
+    account_type: 'creator',
+    ...(failureReason
+      ? { failure_reason: normalizeFailureReason(failureReason) }
+      : {}),
   });
 };
 
-export const trackLogin = (method: 'email' | 'google'): void => {
-  trackEvent('login', {
-    method: method,
-    user_type: 'creator',
+export const trackSignin = (
+  stage: AuthStage,
+  method: AuthMethod,
+  failureReason?: AuthFailureReason
+): void => {
+  trackEvent(getAuthEventName('signin', stage), {
+    method,
+    account_type: 'creator',
+    ...(failureReason
+      ? { failure_reason: normalizeFailureReason(failureReason) }
+      : {}),
   });
 };
 
@@ -274,10 +297,9 @@ export const trackOAuthComplete = (provider: string): void => {
   });
 };
 
-export const trackProfileComplete = (): void => {
-  trackEvent('profile_complete', {
-    event_category: 'authentication',
-    event_label: 'creator_profile_setup',
+export const trackCreatorProfileCompleted = (): void => {
+  trackEvent(AUTH_EVENT_NAMES.creatorProfileCompleted, {
+    account_type: 'creator',
   });
 };
 

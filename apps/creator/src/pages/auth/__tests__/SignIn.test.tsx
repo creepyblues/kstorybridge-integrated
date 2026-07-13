@@ -4,6 +4,7 @@ import { BrowserRouter, MemoryRouter } from 'react-router-dom'
 import SignIn from '../SignIn'
 import * as auth from '@/lib/auth'
 import * as supabaseLib from '@/lib/supabase'
+import * as analytics from '@/utils/analytics'
 
 // Mock modules
 vi.mock('@/lib/auth')
@@ -26,9 +27,7 @@ vi.mock('@/hooks/use-toast', () => ({
 
 // Mock analytics
 vi.mock('@/utils/analytics', () => ({
-  trackLogin: vi.fn(),
   trackSignin: vi.fn(),
-  trackAuthError: vi.fn(),
 }))
 
 // Mock i18n
@@ -91,7 +90,7 @@ describe('SignIn', () => {
     )
 
     const submitButton = screen.getByRole('button', { name: /^sign in$/i })
-    fireEvent.click(submitButton)
+    fireEvent.submit(submitButton.closest('form')!)
 
     await waitFor(() => {
       expect(screen.getByText(/please enter both email and password/i)).toBeInTheDocument()
@@ -121,6 +120,8 @@ describe('SignIn', () => {
     await waitFor(() => {
       expect(mockSignInWithEmail).toHaveBeenCalledWith('test@example.com', 'password123')
       expect(mockNavigate).toHaveBeenCalledWith('/home')
+      expect(analytics.trackSignin).toHaveBeenCalledWith('attempted', 'email')
+      expect(analytics.trackSignin).toHaveBeenCalledWith('completed', 'email')
     })
   })
 
@@ -172,7 +173,7 @@ describe('SignIn', () => {
         // Error message in red box
         expect(screen.getByText(/please verify your email address before signing in/i)).toBeInTheDocument()
         // Alert box title
-        expect(screen.getByText(/verify your email/i)).toBeInTheDocument()
+        expect(screen.getByRole('heading', { name: /verify your email/i })).toBeInTheDocument()
         // Resend button
         expect(screen.getByRole('button', { name: /resend verification email/i })).toBeInTheDocument()
       },

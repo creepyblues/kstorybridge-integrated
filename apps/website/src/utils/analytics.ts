@@ -1,9 +1,11 @@
 // Google Tag Manager utility functions for the website
 
+import { ANALYTICS_EVENT_NAMES } from '@kstorybridge/analytics';
+
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
     KSB_ANALYTICS_ENABLED?: boolean;
     KSB_ANALYTICS_INTERNAL?: boolean;
   }
@@ -77,7 +79,7 @@ export const initializeEmailLandingEngagement = (): (() => void) => {
     recorded = true;
 
     window.dataLayer?.push({
-      event: 'email_landing_engaged',
+      event: ANALYTICS_EVENT_NAMES.emailLandingEngaged,
       campaign_source: attribution.campaignSource,
       campaign_medium: attribution.campaignMedium,
       campaign_name: attribution.campaignName,
@@ -139,7 +141,7 @@ export const trackEvent = (action: string, category: string, label?: string, val
 };
 
 // Track user interactions specific to website
-export const trackWebsiteEvent = (action: string, details?: Record<string, any>) => {
+export const trackWebsiteEvent = (action: string, details?: Record<string, unknown>) => {
   trackEvent(action, 'website_interaction', JSON.stringify(details));
 };
 

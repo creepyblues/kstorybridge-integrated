@@ -21,6 +21,7 @@
     "test:e2e:prod": "TEST_ENV=production playwright test"
   },
   "dependencies": {
+    "@kstorybridge/analytics": "*",
     "@kstorybridge/tools": "*",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",

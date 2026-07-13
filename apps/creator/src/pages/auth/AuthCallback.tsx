@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { checkCreatorProfileExists } from '@/lib/auth'
-import { trackLogin } from '@/utils/analytics'
+import { trackSignin, trackSignup } from '@/utils/analytics'
 import { sendWelcomeEmail } from '@/services/emailService'
 import { notifyCreatorSignup, notifyCreatorSignin } from '@/utils/slack'
 
@@ -59,12 +59,12 @@ export default function AuthCallback() {
   }, [])
 
   const handleCallback = async () => {
+    const oauthFlowIntent = sessionStorage.getItem('oauth_flow')
+
     try {
       const urlParams = new URLSearchParams(window.location.search)
       const type = urlParams.get('type')
       const tokenHash = urlParams.get('token_hash')
-      const oauthFlowIntent = sessionStorage.getItem('oauth_flow')
-
       // Determine flow type
       const isEmailVerification =
         type === 'signup' ||
@@ -155,6 +155,7 @@ export default function AuthCallback() {
 
       if (sessionError || !session) {
         console.error('❌ OAuth session error:', sessionError)
+        trackSignin('failed', 'google', 'oauth_session_failed')
         sessionStorage.removeItem('redirect_after_login')
         setStatus('Authentication failed. Please try again.')
         setTimeout(() => navigate('/signin'), 3000)
@@ -201,7 +202,7 @@ export default function AuthCallback() {
 
         // Existing user - redirect to home
         console.log('✅ Existing user, redirecting to home')
-        trackLogin('google')
+        trackSignin('completed', 'google')
 
         // Slack notification for creator signin (fire-and-forget)
         if (session.user.email) {
@@ -224,6 +225,13 @@ export default function AuthCallback() {
 
     } catch (error: any) {
       console.error('❌ Auth callback error:', error)
+      if (oauthFlowIntent === 'signup') {
+        // OAuth signup completion is emitted only after the creator profile is stored.
+        // This failure event keeps the signup funnel honest without sending error text.
+        trackSignup('failed', 'google', 'oauth_callback_failed')
+      } else {
+        trackSignin('failed', 'google', 'oauth_callback_failed')
+      }
       sessionStorage.removeItem('redirect_after_login')
       setStatus('Authentication failed: ' + error.message)
       setTimeout(() => navigate('/signin'), 3000)

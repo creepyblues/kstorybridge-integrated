@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
-import { trackLogin, trackAuthError } from '@/utils/analytics'
+import { trackSignin } from '@/utils/analytics'
 
 export default function SignIn() {
   const { t } = useTranslation(['auth', 'common'])
@@ -28,6 +28,7 @@ export default function SignIn() {
 
   // Check if user is coming from signup or email verification
   useEffect(() => {
+    trackSignin('viewed', 'email')
     const fromSignup = searchParams.get('from') === 'signup'
     const emailParam = searchParams.get('email')
     const verified = searchParams.get('verified') === 'true'
@@ -59,9 +60,11 @@ export default function SignIn() {
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    trackSignin('attempted', 'email')
 
     if (!formData.email || !formData.password) {
       setError('Please enter both email and password')
+      trackSignin('failed', 'email', 'validation_required_fields')
       return
     }
 
@@ -70,7 +73,7 @@ export default function SignIn() {
     try {
       await signInWithEmail(formData.email, formData.password)
       console.log('✅ Signin successful, redirecting to home')
-      trackLogin('email')
+      trackSignin('completed', 'email')
       const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/home'
       sessionStorage.removeItem('redirect_after_login')
       navigate(redirectUrl)
@@ -89,11 +92,11 @@ export default function SignIn() {
         setError('Please verify your email address before signing in.')
         setUnverifiedEmail(formData.email)
         setShowEmailVerificationAlert(true)
-        trackAuthError('Email not confirmed', 'email')
+        trackSignin('failed', 'email', 'email_not_confirmed')
       } else {
         // Generic error for security (don't leak if email exists)
         setError('Invalid email or password')
-        trackAuthError('Login failed', 'email')
+        trackSignin('failed', 'email', 'auth_rejected')
       }
     } finally {
       setLoading(false)
@@ -103,6 +106,7 @@ export default function SignIn() {
   const handleOAuthSignIn = async () => {
     setError(null)
     setLoading(true)
+    trackSignin('attempted', 'google')
 
     try {
       await signInWithOAuth('signin')
@@ -111,7 +115,7 @@ export default function SignIn() {
     } catch (err: any) {
       console.error('❌ OAuth signin error:', err)
       setError(err.message || 'Failed to initiate Google signin')
-      trackAuthError(err.message || 'Failed to initiate Google signin', 'google')
+      trackSignin('failed', 'google', 'oauth_start_failed')
       setLoading(false)
     }
   }

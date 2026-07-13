@@ -39,7 +39,7 @@ export default function SignUp() {
 
   // Track form viewed on mount
   useEffect(() => {
-    trackSignup('form_viewed', 'email');
+    trackSignup('viewed', 'email');
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -163,7 +163,7 @@ export default function SignUp() {
       }
     } catch (error: any) {
       // Track signup error
-      trackSignup('error', 'email', { error: error.message?.substring(0, 50) });
+      trackSignup('failed', 'email', { failure_reason: 'auth_rejected' });
 
       toast({
         title: 'Sign Up Failed',
@@ -185,7 +185,7 @@ export default function SignUp() {
       // Note: 'completed' tracking happens in AuthCallback
     } catch (error: any) {
       // Track OAuth error
-      trackSignup('error', 'google', { error: error.message?.substring(0, 50) });
+      trackSignup('failed', 'google', { failure_reason: 'oauth_start_failed' });
 
       toast({
         title: 'OAuth Sign Up Failed',

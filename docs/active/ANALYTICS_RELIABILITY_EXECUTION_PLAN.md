@@ -161,9 +161,9 @@ Implemented in source on 2026-07-13; production release pending under `AR-110`:
 
 ## Phase 2: Define and normalize the event contract
 
-- [ ] `AR-200` Create one shared analytics event contract for all three apps, with owners, triggers, required parameters, and examples.
-- [ ] `AR-201` Replace aggregate buyer auth events with explicit outcomes: `signup_viewed`, `signup_attempted`, `signup_completed`, `signup_failed`, and corresponding sign-in events.
-- [ ] `AR-202` Normalize creator auth names to the same contract and instrument `creator_profile_completed`.
+- [x] `AR-200` Create one shared analytics event contract for all three apps, with owners, triggers, required parameters, and examples.
+- [x] `AR-201` Replace aggregate buyer auth events with explicit outcomes: `signup_viewed`, `signup_attempted`, `signup_completed`, `signup_failed`, and corresponding sign-in events.
+- [x] `AR-202` Normalize creator auth names to the same contract and instrument `creator_profile_completed`.
 - [ ] `AR-203` Instrument the founder-approved buyer activation event.
 - [ ] `AR-204` Instrument the founder-approved creator activation event.
 - [ ] `AR-205` Instrument server-confirmed commercial outcomes: interest submitted, introduction requested/completed, checkout started, and subscription started where applicable.
@@ -250,6 +250,7 @@ All of the following must be true:
 | 2026-07-13 | Resolved the website preview block and completed cross-app runtime analytics validation. | Vercel API identified `TEAM_ACCESS_REQUIRED`; metadata-free committed export reached `READY`; six default/override browser cases passed; trusted email interaction emitted one sanitized event. | Create a focused production release path, verify GA Admin filter state, and keep `AR-110` pending until production website validation. |
 | 2026-07-13 | Opened the focused analytics production release as draft PR [#141](https://github.com/creepyblues/kstorybridge-integrated/pull/141). | Five analytics-only commits cherry-picked from `v2`; all three affected app builds pass; 50 targeted tests pass; release worktree is clean; no database migration is included. The full monorepo build still exposes the unrelated existing Storybook ESM `__dirname` failure. | Review CI and the focused diff, verify the GA Admin filter under `AR-108`, then promote and validate production without closing `AR-110` early. |
 | 2026-07-13 | Diagnosed the immediate PR #141 GitHub Actions failures as an account-level CI outage. | Every failed check contained zero executed steps; GitHub annotations state that jobs were not started because the account is locked due to a billing issue; findings are recorded on the PR. | Restore GitHub Actions billing under `AR-016`, rerun checks, and do not treat the current red checks as product test results. |
+| 2026-07-13 | Established the shared cross-app event contract and normalized buyer and creator auth funnels. | `@kstorybridge/analytics` is consumed by all three apps; the active contract records owners, exact triggers, parameters, privacy rules, and examples; aggregate auth action parameters were replaced by directly queryable event names; arbitrary failure text normalizes to `other`; 85 focused tests and all three app builds pass; changed-file lint passes. | Release the auth contract independently, then implement founder-approved activation events and server-confirmed commercial outcomes without reopening the naming contract. |
 
 ## Progress update procedure
 

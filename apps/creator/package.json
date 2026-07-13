@@ -13,6 +13,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "@kstorybridge/analytics": "*",
     "@kstorybridge/tools": "*",
     "@hookform/resolvers": "^3.10.0",
     "@iconify-json/solar": "^1.2.5",

@@ -24,6 +24,7 @@ const PLATFORM_ICONS: Record<SupportedPlatform, string> = {
   kakao: 'simple-icons:kakaotalk',
   kakao_webtoon: 'simple-icons:kakaotalk',
   manta: 'solar:book-2-bold-duotone',
+  lezhin: 'solar:book-bold-duotone',
   ridibooks: 'solar:book-bold-duotone',
   bomtoon: 'solar:book-bold-duotone',
   unknown: 'solar:database-bold-duotone',

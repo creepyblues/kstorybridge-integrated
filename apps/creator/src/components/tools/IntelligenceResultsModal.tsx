@@ -46,6 +46,7 @@ function detectPlatformFromDomain(domain: string): SupportedPlatform {
     return domain.includes('series') ? 'naver_series' : 'naver_webtoon';
   }
   if (domain.includes('manta')) return 'manta';
+  if (domain.includes('lezhin')) return 'lezhin';
   if (domain.includes('ridibooks')) return 'ridibooks';
   if (domain.includes('bomtoon')) return 'bomtoon';
   return 'unknown';

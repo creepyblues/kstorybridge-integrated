@@ -28,6 +28,13 @@ The following data must never be sent to GA:
 - Raw exception messages. Failure reasons must come from an allowlisted enum.
 - Recipient-level email campaign identifiers, including `utm_content` and contact IDs.
 
+### Authenticated identity lifecycle
+
+- After Supabase resolves an authenticated dashboard or creator session, GA `user_id` is set to `session.user.id` (the Supabase UUID) only.
+- Email, name, company, pen name, and profile fields are never used as GA identity values or event parameters.
+- `user_id` is cleared when the auth listener reports a signed-out session and immediately before an explicit Supabase sign-out call.
+- Internal classification is read only from service-role-controlled `app_metadata.internal_traffic`.
+
 Events use lowercase snake case and past tense only for outcomes that have already occurred. A `*_completed`, `*_submitted`, or `*_started` event fires only after the authoritative server operation succeeds. UI clicks use explicit `*_clicked` names when the click itself is the measured outcome.
 
 ## Authentication contract

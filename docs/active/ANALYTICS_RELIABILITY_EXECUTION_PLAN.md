@@ -180,7 +180,7 @@ Implemented in source on 2026-07-13; production release pending under `AR-110`:
 
 ## Phase 3: Connect behavior to authoritative outcomes
 
-- [ ] `AR-300` Set GA `user_id` after authenticated sessions and clear it at sign-out without sending email or other personal data.
+- [x] `AR-300` Set GA `user_id` after authenticated sessions and clear it at sign-out without sending email or other personal data.
 - [ ] `AR-301` Create a documented mapping from GA events to Supabase source-of-truth tables and timestamps.
 - [ ] `AR-302` Build a reconciliation report for successful buyer and creator signups.
 - [ ] `AR-303` Build a reconciliation report for creator title draft, submission, approval, and publication.
@@ -251,6 +251,7 @@ All of the following must be true:
 | 2026-07-13 | Opened the focused analytics production release as draft PR [#141](https://github.com/creepyblues/kstorybridge-integrated/pull/141). | Five analytics-only commits cherry-picked from `v2`; all three affected app builds pass; 50 targeted tests pass; release worktree is clean; no database migration is included. The full monorepo build still exposes the unrelated existing Storybook ESM `__dirname` failure. | Review CI and the focused diff, verify the GA Admin filter under `AR-108`, then promote and validate production without closing `AR-110` early. |
 | 2026-07-13 | Diagnosed the immediate PR #141 GitHub Actions failures as an account-level CI outage. | Every failed check contained zero executed steps; GitHub annotations state that jobs were not started because the account is locked due to a billing issue; findings are recorded on the PR. | Restore GitHub Actions billing under `AR-016`, rerun checks, and do not treat the current red checks as product test results. |
 | 2026-07-13 | Established the shared cross-app event contract and normalized buyer and creator auth funnels. | `@kstorybridge/analytics` is consumed by all three apps; the active contract records owners, exact triggers, parameters, privacy rules, and examples; aggregate auth action parameters were replaced by directly queryable event names; arbitrary failure text normalizes to `other`; 85 focused tests and all three app builds pass; changed-file lint passes. | Release the auth contract independently, then implement founder-approved activation events and server-confirmed commercial outcomes without reopening the naming contract. |
+| 2026-07-13 | Closed the authenticated GA identity lifecycle for both product apps. | Dashboard and creator auth providers pass only the Supabase UUID to GA after session resolution, derive internal classification from protected metadata, clear identity on signed-out state and before explicit sign-out, and never pass email; dashboard lifecycle coverage plus three new creator lifecycle tests pass. | Use the non-PII `user_id` for authoritative signup reconciliation under `AR-302` after the canonical auth events reach production. |
 
 ## Progress update procedure
 

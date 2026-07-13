@@ -1,9 +1,13 @@
 # KStoryBridge Analytics Event Contract
 
-**Status:** Active contract  
-**Technical owner:** Engineering  
-**Business owner:** Founder / product  
-**Reporting owner:** Analytics operations  
+**Status:** Active contract
+
+**Technical owner:** Engineering
+
+**Business owner:** Founder / product
+
+**Reporting owner:** Analytics operations
+
 **Canonical source:** `packages/analytics/src/index.ts`
 
 This contract defines the event names and parameters used across the website, buyer dashboard, and creator app. GA reports must query the event name directly for funnel stages; an `action` parameter must never be required to distinguish viewed, attempted, completed, or failed outcomes.

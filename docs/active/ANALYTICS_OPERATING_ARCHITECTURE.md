@@ -62,7 +62,7 @@ The final named operating owner is intentionally not invented here. Assigning th
 
 - Client code recognizes `kstorybridge.com`, `www.kstorybridge.com`, `dashboard.kstorybridge.com`, and `creator.kstorybridge.com`. The intended boundary is a Vercel permanent redirect from `www` to the apex before the app loads, so automated clean reports use the canonical apex website host plus the dashboard and creator hosts. The remaining DNS/TLS defect below must be closed before relying on every `www` visit reaching that redirect.
 - Localhost, staging, previews, unknown hosts, and `(not set)` are excluded from production KPIs. Non-production collection requires the explicit diagnostic override.
-- Known Brevo/Sendinblue security-scanner sources are centrally excluded from clean reporting. Raw-versus-clean variance remains visible.
+- Known Brevo/Sendinblue security-scanner sources are centrally excluded from clean reporting. The prepared source filter also excludes localhost, loopback, staging, and Vercel-preview referrers that land on production; that extension remains release-pending. Raw-versus-clean variance remains visible.
 - Authenticated GA `user_id` is the Supabase Auth UUID. It is cleared on sign-out.
 - Internal classification comes only from service-role-controlled `app_metadata.internal_traffic=true`; client email/domain matching is prohibited.
 - Server Measurement Protocol events set an exact production `page_location` so they pass the same hostname boundary.

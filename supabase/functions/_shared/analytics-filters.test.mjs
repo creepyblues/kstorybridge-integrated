@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   BREVO_SCANNER_SOURCE_MEDIUMS,
+  NON_PRODUCTION_REFERRER_PATTERNS,
   PRODUCTION_ANALYTICS_HOSTS,
   buildCleanProductionFilter,
   buildProductionHostFilter,
@@ -29,6 +30,19 @@ test('clean filter excludes every observed Brevo scanner source', () => {
   ))
 })
 
+test('clean filter excludes development referrers that land on production', () => {
+  const filter = buildCleanProductionFilter()
+  const referrerExpressions = filter.andGroup.expressions[2].notExpression.orGroup.expressions
+  const excludedPatterns = referrerExpressions.map(expression => expression.filter.stringFilter.value)
+
+  assert.deepEqual(excludedPatterns, NON_PRODUCTION_REFERRER_PATTERNS)
+  assert.ok(referrerExpressions.every(expression =>
+    expression.filter.fieldName === 'sessionSourceMedium' &&
+    expression.filter.stringFilter.matchType === 'CONTAINS' &&
+    expression.filter.stringFilter.caseSensitive === false
+  ))
+})
+
 test('clean filter appends query-specific conditions without mutating inputs', () => {
   const eventFilter = {
     filter: {
@@ -38,7 +52,7 @@ test('clean filter appends query-specific conditions without mutating inputs', (
   }
   const filter = buildCleanProductionFilter([eventFilter])
 
-  assert.equal(filter.andGroup.expressions.length, 3)
-  assert.deepEqual(filter.andGroup.expressions[2], eventFilter)
+  assert.equal(filter.andGroup.expressions.length, 4)
+  assert.deepEqual(filter.andGroup.expressions[3], eventFilter)
   assert.deepEqual(eventFilter.filter.inListFilter.values, ['trial_page_view'])
 })

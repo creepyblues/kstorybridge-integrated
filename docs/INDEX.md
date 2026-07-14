@@ -23,6 +23,7 @@ This is the master index of all active documentation for the KStoryBridge projec
 | **[ANALYTICS_EVENT_CONTRACT.md](active/ANALYTICS_EVENT_CONTRACT.md)** | Canonical cross-app event names, triggers, parameters, ownership, and privacy rules |
 | **[ANALYTICS_FOUNDER_DECISION_BRIEF.md](active/ANALYTICS_FOUNDER_DECISION_BRIEF.md)** | Recommended north star, activation, retention, operating-model, and outcome-authority decisions awaiting founder approval |
 | **[GA4_PROPERTY_AUDIT_2026-07-13.md](active/GA4_PROPERTY_AUDIT_2026-07-13.md)** | Live GA property, stream, retention, custom-definition, key-event, and Brevo contamination audit |
+| **[ANALYTICS_WEEKLY_INTERIM_2026-07-13.md](active/ANALYTICS_WEEKLY_INTERIM_2026-07-13.md)** | Read-only weekly acquisition, app engagement, outcome, instrumentation-readiness, and data-quality analysis |
 | **[ANALYTICS_OPERATING_ARCHITECTURE.md](active/ANALYTICS_OPERATING_ARCHITECTURE.md)** | Operating data flow, responsibilities, release gates, schedules, alerts, and runbook |
 | **[ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md](active/ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md)** | Four-wave production rollout, scope boundaries, entry gates, acceptance evidence, and rollback controls |
 | **[ANALYTICS_RELIABILITY_EXECUTION_PLAN.md](active/ANALYTICS_RELIABILITY_EXECUTION_PLAN.md)** | Living analytics reliability plan, acceptance criteria, and progress log |

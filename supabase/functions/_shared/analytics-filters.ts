@@ -13,6 +13,17 @@ export const BREVO_SCANNER_SOURCE_MEDIUMS = [
   'lu001.r.bh.d.sendibt3.com / referral',
 ]
 
+// A production-host session can still originate from local, staging, or
+// preview tooling. Those referrals are development activity even though the
+// destination hostname is production, so exclude them from customer KPIs.
+export const NON_PRODUCTION_REFERRER_PATTERNS = [
+  'localhost',
+  '127.0.0.1',
+  'dashboard-staging.kstorybridge.com',
+  'creator-staging.kstorybridge.com',
+  '.vercel.app',
+]
+
 export type GA4FilterExpression = Record<string, unknown>
 
 export function buildProductionHostFilter(): GA4FilterExpression {
@@ -42,6 +53,22 @@ export function buildCleanProductionFilter(
                   fieldName: 'sessionSourceMedium',
                   stringFilter: {
                     matchType: 'EXACT',
+                    value,
+                    caseSensitive: false,
+                  },
+                },
+              })),
+            },
+          },
+        },
+        {
+          notExpression: {
+            orGroup: {
+              expressions: NON_PRODUCTION_REFERRER_PATTERNS.map(value => ({
+                filter: {
+                  fieldName: 'sessionSourceMedium',
+                  stringFilter: {
+                    matchType: 'CONTAINS',
                     value,
                     caseSensitive: false,
                   },

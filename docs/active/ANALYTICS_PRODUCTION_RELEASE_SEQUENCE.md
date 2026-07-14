@@ -44,7 +44,7 @@ No wave is considered live because its source exists, its tests pass, or a previ
 ### Entry gates
 
 1. GitHub Actions billing is restored and PR #141's actual jobs pass; zero-step billing failures are not accepted as test results.
-2. The GA internal-traffic data filter is visually verified in **Testing** mode. Do not activate it during this wave.
+2. The GA internal-traffic data filter is visually verified in **Testing** mode and recorded in [GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md](GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md). The scheduled `AR-108` gate must report healthy. Do not activate the filter during this wave.
 3. The focused PR diff still contains no database migration and no unrelated `v2` product work.
 4. A production release window and rollback owner are confirmed.
 

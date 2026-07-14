@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
 import https from 'node:https'
 import tls from 'node:tls'
 import { promisify } from 'node:util'
@@ -11,6 +12,10 @@ const DEFAULT_TIMEOUT_MS = 5_000
 const GITHUB_API_URL = 'https://api.github.com'
 const GITHUB_REPOSITORY = 'creepyblues/kstorybridge-integrated'
 const RELEASE_PR_NUMBER = 141
+const GA_INTERNAL_FILTER_EVIDENCE_URL = new URL(
+  '../docs/active/GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md',
+  import.meta.url
+)
 const BILLING_LOCK_MESSAGE = 'The job was not started because your account is locked due to a billing issue.'
 const execFileAsync = promisify(execFile)
 
@@ -230,6 +235,73 @@ export async function checkDefaultBranchWorkflow(options = {}) {
     options
   )
   return summarizeDefaultBranchWorkflow(result.status)
+}
+
+export function summarizeGaInternalFilterGate(evidence) {
+  if (typeof evidence !== 'string') {
+    return {
+      id: 'AR-108',
+      name: 'GA internal-traffic filter',
+      status: 'UNAVAILABLE',
+      summary: 'the GA Admin evidence record is missing or unreadable',
+      alert: 'AR-108 GA internal-filter evidence is unavailable; restore the tracked verification record before Wave 1',
+    }
+  }
+
+  const marker = evidence.match(
+    /<!--\s*analytics-ga-internal-filter:status=(UNVERIFIED|TESTING|INACTIVE|ACTIVE)\s*-->/
+  )
+  if (!marker) {
+    return {
+      id: 'AR-108',
+      name: 'GA internal-traffic filter',
+      status: 'UNAVAILABLE',
+      summary: 'the GA Admin evidence marker is missing or malformed',
+      alert: 'AR-108 GA internal-filter evidence marker is invalid; do not release Wave 1 until the record is repaired and verified',
+    }
+  }
+
+  if (marker[1] === 'TESTING') {
+    return {
+      id: 'AR-108',
+      name: 'GA internal-traffic filter',
+      status: 'HEALTHY',
+      summary: 'tracked GA Admin evidence records the filter in Testing mode',
+      alert: null,
+    }
+  }
+  if (marker[1] === 'ACTIVE') {
+    return {
+      id: 'AR-108',
+      name: 'GA internal-traffic filter',
+      status: 'UNSAFE',
+      summary: 'tracked GA Admin evidence records irreversible Active exclusion',
+      alert: 'AR-108 internal-traffic filter is recorded Active; pause analytics releases and verify whether incoming data is being permanently excluded',
+    }
+  }
+
+  return {
+    id: 'AR-108',
+    name: 'GA internal-traffic filter',
+    status: 'PENDING',
+    summary: marker[1] === 'INACTIVE'
+      ? 'tracked GA Admin evidence records the filter as Inactive; Testing is required'
+      : 'signed-in GA Admin verification is still required',
+    alert: marker[1] === 'INACTIVE'
+      ? 'AR-108 GA internal-traffic filter is Inactive; place it in Testing mode and capture evidence before Wave 1'
+      : 'AR-108 GA internal-traffic filter has not been visually verified in Testing mode; Wave 1 remains gated',
+  }
+}
+
+export async function checkGaInternalFilterGate({
+  readFileImpl = readFile,
+  evidenceUrl = GA_INTERNAL_FILTER_EVIDENCE_URL,
+} = {}) {
+  try {
+    return summarizeGaInternalFilterGate(await readFileImpl(evidenceUrl, 'utf8'))
+  } catch {
+    return summarizeGaInternalFilterGate(null)
+  }
 }
 
 const FAILURE_CONCLUSIONS = new Set([
@@ -520,12 +592,14 @@ export async function checkAnalyticsExternalGates(options = {}) {
     checkWwwCanonicalGate(options.www ?? options),
     checkDefaultBranchWorkflow(options.github ?? options),
     checkReleasePrGate(options.github ?? options),
+    checkGaInternalFilterGate(options.gaInternalFilter ?? options),
     checkAnalyticsDeliveryGate(options.delivery ?? options),
   ])
   const fallbacks = [
     summarizeWwwCanonicalGate([], []),
     summarizeDefaultBranchWorkflow(0),
     summarizeReleasePrGate({ pr: null, checkRuns: null }),
+    summarizeGaInternalFilterGate(null),
     summarizeAnalyticsDeliveryGate(null),
   ]
 

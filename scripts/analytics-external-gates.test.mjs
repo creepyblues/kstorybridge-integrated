@@ -3,9 +3,11 @@ import test from 'node:test'
 
 import {
   checkAnalyticsDeliveryGate,
+  checkGaInternalFilterGate,
   checkWwwCanonicalGate,
   summarizeAnalyticsDeliveryGate,
   summarizeDefaultBranchWorkflow,
+  summarizeGaInternalFilterGate,
   summarizeReleasePrGate,
   summarizeWwwCanonicalGate,
 } from './analytics-external-gates.mjs'
@@ -69,6 +71,44 @@ test('classifies default-branch workflow presence, absence, and unavailable stat
   assert.equal(summarizeDefaultBranchWorkflow(200).status, 'HEALTHY')
   assert.equal(summarizeDefaultBranchWorkflow(404).status, 'PENDING')
   assert.equal(summarizeDefaultBranchWorkflow(503).status, 'UNAVAILABLE')
+})
+
+test('requires an exact GA internal-filter evidence marker', () => {
+  assert.equal(summarizeGaInternalFilterGate(null).status, 'UNAVAILABLE')
+  assert.equal(summarizeGaInternalFilterGate('status: TESTING').status, 'UNAVAILABLE')
+  assert.equal(
+    summarizeGaInternalFilterGate('<!-- analytics-ga-internal-filter:status=UNVERIFIED -->').status,
+    'PENDING'
+  )
+})
+
+test('accepts Testing but flags Inactive and Active evidence', () => {
+  const testing = summarizeGaInternalFilterGate(
+    '<!-- analytics-ga-internal-filter:status=TESTING -->'
+  )
+  assert.equal(testing.status, 'HEALTHY')
+  assert.equal(testing.alert, null)
+
+  const inactive = summarizeGaInternalFilterGate(
+    '<!-- analytics-ga-internal-filter:status=INACTIVE -->'
+  )
+  assert.equal(inactive.status, 'PENDING')
+  assert.match(inactive.summary, /Inactive/)
+
+  const active = summarizeGaInternalFilterGate(
+    '<!-- analytics-ga-internal-filter:status=ACTIVE -->'
+  )
+  assert.equal(active.status, 'UNSAFE')
+  assert.match(active.alert, /permanently excluded/)
+})
+
+test('turns a missing GA evidence file into an unavailable gate', async () => {
+  const gate = await checkGaInternalFilterGate({
+    readFileImpl: async () => {
+      throw new Error('missing')
+    },
+  })
+  assert.equal(gate.status, 'UNAVAILABLE')
 })
 
 const actionCheck = (id, conclusion, status = 'completed') => ({

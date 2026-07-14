@@ -55,7 +55,7 @@ The final named operating owner is intentionally not invented here. Assigning th
 
 ## Environment, identity, and filtering invariants
 
-- Client collection allows `kstorybridge.com`, `www.kstorybridge.com`, `dashboard.kstorybridge.com`, and `creator.kstorybridge.com`. Automated clean reports currently accept the canonical apex website host plus the dashboard and creator hosts; the `www` behavior must be resolved as noted below.
+- Client code recognizes `kstorybridge.com`, `www.kstorybridge.com`, `dashboard.kstorybridge.com`, and `creator.kstorybridge.com`. The intended boundary is a Vercel permanent redirect from `www` to the apex before the app loads, so automated clean reports use the canonical apex website host plus the dashboard and creator hosts. The remaining DNS/TLS defect below must be closed before relying on every `www` visit reaching that redirect.
 - Localhost, staging, previews, unknown hosts, and `(not set)` are excluded from production KPIs. Non-production collection requires the explicit diagnostic override.
 - Known Brevo/Sendinblue security-scanner sources are centrally excluded from clean reporting. Raw-versus-clean variance remains visible.
 - Authenticated GA `user_id` is the Supabase Auth UUID. It is cleared on sign-out.
@@ -114,7 +114,7 @@ The prepared subscription delivery path must be released in this order: repair o
 - GitHub Actions cannot run while the account is billing locked; the local progress cron is the active fallback.
 - The root migration history fails before current analytics migrations because historical migrations reference missing `title_drafts`/`admin` objects. The prepared outbox and draft-publication linkage remain undeployed until that history is repaired or safely superseded and reset passes.
 - The GA Measurement Protocol API secret is not configured, and the prepared outbox worker is not scheduled.
-- Website collection accepts `www.kstorybridge.com`, while the clean report allowlist currently contains only the apex website host. Confirm that `www` always redirects before collection or add it consistently to report filters before Phase 5 validation.
+- `www.kstorybridge.com` is now attached to the website project with a managed certificate and path/query-preserving 308 redirect, but its legacy `76.76.21.21` A record intermittently reaches an expired wildcard certificate. Vercel recommends replacing it with project-specific CNAME `bd569acf5e1d2bd5.vercel-dns-017.com.`; Google DNS authentication is currently expired, so `AR-115` remains open.
 - There is no authoritative introduction workflow record, buyer-approval timestamp, or interest-transition timestamp.
 - A two-week fully live observation period, journey sampling, final targets, named operator, dashboard links, and founder sign-off remain Phase 5 work.
 

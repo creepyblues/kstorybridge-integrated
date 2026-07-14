@@ -60,7 +60,7 @@ The production schema was probed with zero-row PostgREST selects, so no customer
 4. Create an authoritative introduction workflow table before instrumenting introduction outcomes.
 5. Choose whether Stripe remains the sole buyer-payment ledger or add a webhook-written buyer payment table.
 6. Retire or repair older code paths that still query the nonexistent buyer `subscriptions` relation.
-7. With explicit approval, reconcile the nine missing historical ledger versions without replaying their SQL against populated production, back up and apply the two prepared current migrations, configure the GA Measurement Protocol API secret, deploy the webhook/worker chain in order, schedule delivery, and validate debug plus reconciliation results.
+7. With explicit approval, reconcile the nine missing historical ledger versions without replaying their SQL against populated production, back up affected tables, prepare server-only report credentials, and apply the four current migrations through the authenticated report schedule. Then configure the GA Measurement Protocol API secret, deploy both report boundaries and the webhook/worker chain in their coordinated order, schedule delivery, and validate debug plus reconciliation results.
 8. Persist an immutable first-shortlist milestone before adopting saved-title behavior as the buyer activation source of truth; deleting `user_favorites` must not erase activation history.
 
 These gaps do not block clean traffic reporting, auth funnels, or creator subscription reconciliation. They do block honest claims about buyer approval, introductions, draft-to-publication latency, and locally reconciled buyer payments.

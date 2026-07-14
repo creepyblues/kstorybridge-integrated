@@ -358,16 +358,110 @@ export async function checkReleasePrGate(options = {}) {
   })
 }
 
+export function summarizeAnalyticsDeliveryGate(rows, { deployed = true } = {}) {
+  if (!deployed) {
+    return {
+      id: 'AR-405',
+      name: 'scheduled analytics delivery streak',
+      status: 'PENDING',
+      summary: 'delivery audit schema is not production-live; 0/2 scheduled runs proven',
+      alert: 'AR-405 durable scheduled-delivery evidence is not deployed; legacy delivery responses do not count toward the two-run gate',
+    }
+  }
+  if (!Array.isArray(rows)) {
+    return {
+      id: 'AR-405',
+      name: 'scheduled analytics delivery streak',
+      status: 'UNAVAILABLE',
+      summary: 'privacy-safe delivery status could not be verified',
+      alert: 'AR-405 analytics delivery status is unavailable; verify the safe RPC and Supabase API health',
+    }
+  }
+
+  const scheduled = rows
+    .filter(row => row?.trigger_kind === 'scheduled')
+    .slice(0, 2)
+  const successful = scheduled.filter(row =>
+    row.status === 'succeeded'
+    && Number(row.expected_email_count) > 0
+    && Number(row.emails_sent) === Number(row.expected_email_count)
+    && Number(row.emails_failed) === 0
+    && row.slack_requested === true
+    && row.slack_sent === true
+  ).length
+
+  if (scheduled.length < 2) {
+    return {
+      id: 'AR-405',
+      name: 'scheduled analytics delivery streak',
+      status: 'PENDING',
+      summary: `${successful}/2 consecutive scheduled runs proven; ${scheduled.length} durable run${scheduled.length === 1 ? '' : 's'} available`,
+      alert: null,
+    }
+  }
+  if (successful === 2) {
+    return {
+      id: 'AR-405',
+      name: 'scheduled analytics delivery streak',
+      status: 'HEALTHY',
+      summary: '2/2 latest scheduled runs delivered every expected email and Slack',
+      alert: null,
+    }
+  }
+  return {
+    id: 'AR-405',
+    name: 'scheduled analytics delivery streak',
+    status: 'DEGRADED',
+    summary: `${successful}/2 latest scheduled runs fully succeeded`,
+    alert: `AR-405 scheduled delivery streak is degraded: only ${successful}/2 latest runs delivered every expected email and Slack`,
+  }
+}
+
+export async function checkAnalyticsDeliveryGate({
+  fetchImpl = fetch,
+  supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL,
+  anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+} = {}) {
+  if (!supabaseUrl || !anonKey) return summarizeAnalyticsDeliveryGate(null)
+
+  try {
+    const response = await fetchImpl(
+      `${supabaseUrl}/rest/v1/rpc/get_analytics_report_delivery_status`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${anonKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ p_per_trigger_limit: 2 }),
+        signal: AbortSignal.timeout(timeoutMs),
+      }
+    )
+    if (response.status === 404) {
+      return summarizeAnalyticsDeliveryGate([], { deployed: false })
+    }
+    if (!response.ok) return summarizeAnalyticsDeliveryGate(null)
+    const rows = await response.json()
+    return summarizeAnalyticsDeliveryGate(rows)
+  } catch {
+    return summarizeAnalyticsDeliveryGate(null)
+  }
+}
+
 export async function checkAnalyticsExternalGates(options = {}) {
   const checks = await Promise.allSettled([
     checkWwwCanonicalGate(options.www ?? options),
     checkDefaultBranchWorkflow(options.github ?? options),
     checkReleasePrGate(options.github ?? options),
+    checkAnalyticsDeliveryGate(options.delivery ?? options),
   ])
   const fallbacks = [
     summarizeWwwCanonicalGate([], []),
     summarizeDefaultBranchWorkflow(0),
     summarizeReleasePrGate({ pr: null, checkRuns: null }),
+    summarizeAnalyticsDeliveryGate(null),
   ]
 
   return checks.map((result, index) =>

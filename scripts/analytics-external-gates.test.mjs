@@ -2,7 +2,9 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  checkAnalyticsDeliveryGate,
   checkWwwCanonicalGate,
+  summarizeAnalyticsDeliveryGate,
   summarizeDefaultBranchWorkflow,
   summarizeReleasePrGate,
   summarizeWwwCanonicalGate,
@@ -131,4 +133,59 @@ test('reports a closed unmerged release PR as a release-path failure', () => {
   })
   assert.equal(result.status, 'CLOSED')
   assert.match(result.alert, /closed without merge/)
+})
+
+const scheduledRun = (overrides = {}) => ({
+  trigger_kind: 'scheduled',
+  status: 'succeeded',
+  expected_email_count: 3,
+  emails_sent: 3,
+  emails_failed: 0,
+  slack_requested: true,
+  slack_sent: true,
+  ...overrides,
+})
+
+test('requires two complete scheduled runs and ignores manual/progress evidence', () => {
+  const pending = summarizeAnalyticsDeliveryGate([
+    scheduledRun(),
+    { ...scheduledRun(), trigger_kind: 'manual' },
+    { ...scheduledRun(), trigger_kind: 'local_progress' },
+  ])
+  assert.equal(pending.status, 'PENDING')
+  assert.match(pending.summary, /1\/2/)
+
+  const healthy = summarizeAnalyticsDeliveryGate([scheduledRun(), scheduledRun()])
+  assert.equal(healthy.status, 'HEALTHY')
+  assert.equal(healthy.alert, null)
+})
+
+test('marks partial email, missing Slack, and inconsistent counts degraded', () => {
+  for (const broken of [
+    scheduledRun({ status: 'partial', emails_sent: 2, emails_failed: 1 }),
+    scheduledRun({ slack_sent: false }),
+    scheduledRun({ emails_sent: 2 }),
+    scheduledRun({ expected_email_count: 0, emails_sent: 0 }),
+  ]) {
+    const result = summarizeAnalyticsDeliveryGate([scheduledRun(), broken])
+    assert.equal(result.status, 'DEGRADED')
+    assert.match(result.alert, /only 1\/2/)
+  }
+})
+
+test('distinguishes an undeployed ledger from an unavailable safe RPC', async () => {
+  const missing = await checkAnalyticsDeliveryGate({
+    supabaseUrl: 'https://example.invalid',
+    anonKey: 'anon',
+    fetchImpl: async () => ({ status: 404, ok: false }),
+  })
+  assert.equal(missing.status, 'PENDING')
+  assert.match(missing.summary, /not production-live/)
+
+  const unavailable = await checkAnalyticsDeliveryGate({
+    supabaseUrl: 'https://example.invalid',
+    anonKey: 'anon',
+    fetchImpl: async () => ({ status: 503, ok: false }),
+  })
+  assert.equal(unavailable.status, 'UNAVAILABLE')
 })

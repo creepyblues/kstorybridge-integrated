@@ -28,7 +28,7 @@ This additive migration gives each newly approved creator draft a durable link t
 
 Local validation completed on 2026-07-13:
 
-- The pinned Supabase CLI completed a clean replay of all 76 root migrations.
+- The pinned Supabase CLI completed a clean replay of all 78 root migrations.
 - `supabase/tests/title_publication_linkage.sql` inserted the complete `approve-title` catalog payload, persisted matching IDs in both directions, rejected a second catalog row for the same source draft, and verified `ON DELETE SET NULL` cleanup.
 - `approve-title` and the related webhook/outbox functions pass Deno type checking with the Edge Function compiler configuration.
 - Production application, an actual authenticated Edge Function approval/retry, and production row-count verification remain pending.

@@ -40,12 +40,13 @@ Supabase CLI `2.109.1` is pinned as a root development dependency. The previousl
 
 Completed on 2026-07-13:
 
-- `npx supabase db reset` completed on branch `v2` and replayed all 76 migrations through `20260714011558`.
+- `npx supabase db reset` completed on branch `v2` and replayed all 78 migrations through `20260714041207`.
 - The rebuilt database contains one active `weekly-funnel-report` job on `0 14 * * 1`.
-- RLS is enabled on `admin`, `user_creators`, `title_drafts`, and `analytics_event_outbox`.
+- RLS is enabled on `admin`, `user_creators`, `title_drafts`, `analytics_event_outbox`, and both report-audit tables; the report tables also force RLS.
 - Canonical `titles.genre` is `text[]`; vector, localized approval fields, and draft/publication IDs exist.
 - `supabase/tests/analytics_event_outbox.sql` passes dedupe, controlled payload, claim, completion, retry, stale recovery, RLS, and privilege checks.
 - `supabase/tests/title_publication_linkage.sql` inserts the complete approval payload, persists both link directions, rejects a duplicate source draft, and verifies delete cleanup.
+- `supabase/tests/analytics_report_delivery_audit.sql` and `analytics_report_schedule.sql` pass idempotency, retry/reclaim, privacy, privilege, safe-status, and no-secret-in-cron checks.
 - Ten focused analytics outbox/Measurement Protocol tests pass.
 - `approve-title`, `deliver-analytics-outbox`, and both Stripe webhook functions pass Deno type checking with the Edge Function configuration.
 
@@ -53,7 +54,7 @@ Completed on 2026-07-13:
 
 Completed on 2026-07-13 against the single shared Supabase project:
 
-- The remote migration ledger contains 67 versions through `20260707120000`; it lacks the nine reconstructed historical versions and both prepared current migrations.
+- The remote migration ledger contains 67 versions through `20260707120000`; it lacks the nine reconstructed historical versions and four prepared current migrations.
 - Production already contains the foundational objects and live data: 4 admins, 47 buyer profiles, 13 creator profiles, 256 titles, 6 drafts, and 50 featured rows.
 - Production has pg_cron 1.6, pg_net 0.14, and vector 0.8 installed.
 - Production `titles.genre` is already the canonical `text[]` type.
@@ -65,13 +66,14 @@ The staging Vercel apps use this same Supabase project; they are not a separate 
 ## Proposed production procedure — not executed
 
 1. Obtain explicit approval for production migration-history and schema changes.
-2. Record fresh aggregate row counts and run the required critical-table backups for the tables touched by the two current migrations.
+2. Record fresh aggregate row counts, back up `title_drafts` and `titles`, and export current cron metadata without credential material.
 3. Mark only the nine reconstructed historical versions as applied in the remote migration ledger. Do not execute their SQL against the already-populated production schema.
-4. Confirm the local and remote migration ledgers then differ only by the two prepared current migrations.
-5. Apply `20260714001452_link_title_drafts_to_publications.sql` and `20260714011558_analytics_event_outbox.sql` in order.
-6. Verify columns, constraints, RLS, RPC privileges, outbox permissions, and unchanged aggregate row counts.
-7. Deploy and authenticate the dependent functions in their documented order, then perform approval/retry and Measurement Protocol debug tests.
-8. If an isolated clone becomes available, repeat the entire procedure there before production. The staging app domains alone do not provide this isolation.
+4. Confirm the local and remote migration ledgers then differ only by the four prepared current migrations.
+5. Prepare the approved Vault, Edge Function, GitHub, and local service-role credentials without logging values.
+6. Apply `20260714001452_link_title_drafts_to_publications.sql`, `20260714011558_analytics_event_outbox.sql`, `20260714035054_analytics_report_delivery_audit.sql`, and `20260714041207_schedule_authenticated_analytics_report.sql` in order.
+7. Verify columns, constraints, RLS, RPC privileges, outbox/report permissions, secure cron command, and unchanged aggregate row counts.
+8. Deploy and authenticate the dependent functions in their documented coordinated order, then perform approval/retry, report negative-auth/idempotency, and Measurement Protocol debug tests.
+9. If an isolated clone becomes available, repeat the entire procedure there before production. The staging app domains alone do not provide this isolation.
 
 ## Rollback
 

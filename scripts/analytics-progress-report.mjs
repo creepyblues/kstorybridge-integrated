@@ -4,6 +4,12 @@ import { appendFile, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 import { checkAnalyticsExternalGates } from './analytics-external-gates.mjs'
+import {
+  claimProgressReportRun,
+  detectAnalyticsAuditLedger,
+  progressInvocationKey,
+  progressTriggerKind,
+} from './analytics-report-audit-client.mjs'
 
 const PLAN_PATH = resolve('docs/active/ANALYTICS_RELIABILITY_EXECUTION_PLAN.md')
 const args = new Set(process.argv.slice(2))
@@ -111,24 +117,59 @@ if (!shouldSend) {
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('SUPABASE_URL/SUPABASE_ANON_KEY (or their VITE_ equivalents) are required with --send')
 }
 
+const auditLedgerLive = await detectAnalyticsAuditLedger({
+  supabaseUrl,
+  anonKey: supabaseAnonKey,
+})
+let reportRunId
+let authorizationKey = supabaseAnonKey
+
+if (auditLedgerLive) {
+  if (!supabaseServiceRoleKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required after analytics delivery audit cutover')
+  }
+  const triggerKind = progressTriggerKind()
+  const invocationDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+  const claim = await claimProgressReportRun({
+    supabaseUrl,
+    serviceRoleKey: supabaseServiceRoleKey,
+    invocationKey: progressInvocationKey(triggerKind, invocationDate),
+    triggerKind,
+  })
+  if (!claim.should_execute) {
+    console.log(`Progress report delivery already recorded with status ${claim.run_status}.`)
+    process.exit(0)
+  }
+  reportRunId = claim.report_run_id
+  authorizationKey = supabaseServiceRoleKey
+}
+
 const response = await fetch(`${supabaseUrl}/functions/v1/send-analytics-report`, {
   method: 'POST',
   headers: {
-    Authorization: `Bearer ${supabaseAnonKey}`,
+    Authorization: `Bearer ${authorizationKey}`,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
     reportType: 'weekly',
+    ...(reportRunId ? { auditReportType: 'progress' } : {}),
     reportDate: new Intl.DateTimeFormat('en-US', {
       dateStyle: 'long',
       timeZone: 'America/Los_Angeles',
     }).format(new Date()),
     reportMarkdown: report,
+    ...(reportRunId ? { reportRunId } : {}),
     alerts: [
       ...(pending.length > 0
         ? [`Analytics reliability program has ${pending.length} pending tasks`]

@@ -27,6 +27,8 @@ This is the master index of all active documentation for the KStoryBridge projec
 | **[ANALYTICS_OUTCOME_SOURCE_MAP.md](active/ANALYTICS_OUTCOME_SOURCE_MAP.md)** | GA-to-Supabase/Stripe reconciliation keys, timestamps, confidence, and known truth gaps |
 | **[ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md](active/ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md)** | Secure scheduled-report authentication, idempotent delivery ledger, and two-run acceptance design |
 | **[migration-root-history-reconstruction-2026-07-13.md](active/migration-root-history-reconstruction-2026-07-13.md)** | Safe root Supabase history reconstruction, local acceptance evidence, and production-ledger reconciliation procedure |
+| **[migration-analytics-report-delivery-audit-2026-07-13.md](active/migration-analytics-report-delivery-audit-2026-07-13.md)** | Authenticated, idempotent report-delivery ledger and coordinated cron/function cutover |
+| **[rollback-analytics-report-delivery-audit-2026-07-13.sql](active/rollback-analytics-report-delivery-audit-2026-07-13.sql)** | Evidence-preserving emergency pause for the report-delivery cutover |
 | **[DATABASE_SCHEMA.md](active/DATABASE_SCHEMA.md)** | Database schema and query patterns |
 | **[DESIGN_SYSTEM.md](active/DESIGN_SYSTEM.md)** | UI/UX standards, components, color palette |
 | **[CACHE_POLICY.md](active/CACHE_POLICY.md)** | Session-based caching implementation |

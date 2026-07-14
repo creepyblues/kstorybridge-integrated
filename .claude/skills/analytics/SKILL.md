@@ -346,16 +346,19 @@ After the report is generated and displayed to the user, call the `send-analytic
 
 ```bash
 curl -X POST "https://dlrnrgcoguxlkkcitlpd.supabase.co/functions/v1/send-analytics-report" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscm5yZ2NvZ3V4bGtrY2l0bHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA4NTM3NzMsImV4cCI6MjAzNjQyOTc3M30.y0KTfJlcWRLLKsJMqSjDLMsohDX7KLByQK2xwzwMHaE" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "reportType": "daily",
     "reportDate": "January 7, 2026",
     "reportMarkdown": "[FULL REPORT MARKDOWN HERE]",
+    "invocationKey": "manual-daily:2026-01-07:operator-v1",
     "alerts": ["Traffic drop >20%: -55%", "Zero signups detected"],
     "sendSlack": true
   }'
 ```
+
+Never use the anon key or a user JWT. The service-role key must come from an approved server-only environment and must not be printed. Reuse the same privacy-safe `invocationKey` for a retry so recipients already marked sent are not contacted twice.
 
 ### Payload Fields
 
@@ -364,22 +367,24 @@ curl -X POST "https://dlrnrgcoguxlkkcitlpd.supabase.co/functions/v1/send-analyti
 | `reportType` | string | Yes | One of: `daily`, `weekly`, `funnel`, `sources`, `realtime` |
 | `reportDate` | string | Yes | Human-readable date, e.g., "January 7, 2026" |
 | `reportMarkdown` | string | Yes | The full markdown report (will be converted to HTML) |
+| `invocationKey` | string | Recommended | Stable privacy-safe manual-run key for idempotent retry; never include an email, query, title, URL, or secret |
 | `alerts` | string[] | No | Array of triggered alert messages |
 | `sendSlack` | boolean | No | Send Slack notification (default: true) |
 
 ### What Happens
 
-1. Edge function queries `admin` table for all active admins
-2. Converts markdown to styled HTML email (KStoryBridge brand)
-3. Sends email to each admin (500ms delay between sends for rate limiting)
-4. Sends Slack notification with summary and alerts
-5. Returns success/failure status
+1. Edge function requires the exact service-role credential and claims one manual audit run
+2. It snapshots active admin IDs without storing email or report content in the ledger
+3. It converts markdown to styled HTML email (KStoryBridge brand)
+4. It claims and sends only unsent admin/Slack deliveries
+5. It persists aggregate success or controlled error codes and returns the durable status
 
 ### Response
 
 ```json
 {
   "success": true,
+  "status": "succeeded",
   "results": {
     "emailsSent": 2,
     "emailsFailed": 0,

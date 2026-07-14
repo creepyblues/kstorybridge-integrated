@@ -42,10 +42,15 @@ import {
   reconcileOutcome,
   type OutcomeReconciliationRow,
 } from '../_shared/outcome-reconciliation.ts'
+import {
+  authorizeFunnelReportRequest,
+  scheduledFunnelInvocationKey,
+  validateInvocationKey,
+} from '../_shared/analytics-report-auth.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-analytics-cron-secret, content-type',
 }
 
 // GA4 Property Configuration
@@ -105,6 +110,19 @@ interface TrafficSummary {
   newUsers: number
   sessions: number
   engagedSessions: number
+}
+
+interface AuditRpcClient {
+  rpc: (
+    functionName: string,
+    parameters?: Record<string, unknown>
+  ) => Promise<{ data: unknown; error: unknown }>
+}
+
+interface ReportRunClaim {
+  report_run_id: string
+  should_execute: boolean
+  run_status: string
 }
 
 async function getAuthoritativeSignupCounts(
@@ -853,18 +871,104 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  let claimedRunId: string | null = null
+  let deliveryStarted = false
+  let auditClient: AuditRpcClient | null = null
+
   try {
-    console.log('[funnel-report-cron] Starting scheduled funnel report')
+    if (req.method !== 'POST') {
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        {
+          status: 405,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const cronSecret = Deno.env.get('ANALYTICS_FUNNEL_CRON_SECRET')
+    if (!supabaseUrl || !supabaseServiceRoleKey || !cronSecret) {
+      console.error('[funnel-report-cron] Required server configuration is missing')
+      return new Response(
+        JSON.stringify({ error: 'Service unavailable' }),
+        {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    const authorization = authorizeFunnelReportRequest({
+      authorization: req.headers.get('Authorization'),
+      cronSecretHeader: req.headers.get('X-Analytics-Cron-Secret'),
+      serviceRoleKey: supabaseServiceRoleKey,
+      cronSecret,
+    })
+    if (!authorization.authorized) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    console.log(`[funnel-report-cron] Starting ${authorization.triggerKind} funnel report`)
 
     // Parse request for optional days parameter (default 7)
     let days = 7
+    let requestedInvocationKey: string | null = null
     try {
       const body = await req.json()
-      if (body.days && typeof body.days === 'number') {
+      if (Number.isInteger(body.days) && body.days >= 1 && body.days <= 90) {
         days = body.days
       }
+      requestedInvocationKey = validateInvocationKey(body.invocationKey)
     } catch {
       // No body or invalid JSON, use default
+    }
+
+    const window = reportingWindow(days)
+    const previousWindow = previousReportingWindow(days, window)
+    const startDate = window.startDate
+    const endDate = window.endDate
+    const invocationKey = authorization.triggerKind === 'scheduled'
+      ? scheduledFunnelInvocationKey(startDate, endDate)
+      : requestedInvocationKey ?? `manual-funnel:${endDate}:${crypto.randomUUID()}`
+
+    auditClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    }) as unknown as AuditRpcClient
+    const { data: rawClaimRows, error: claimError } = await auditClient.rpc(
+      'claim_analytics_report_run',
+      {
+        p_invocation_key: invocationKey,
+        p_report_type: 'funnel',
+        p_trigger_kind: authorization.triggerKind,
+        p_window_start: startDate,
+        p_window_end: endDate,
+      }
+    )
+    const claimRows = rawClaimRows as ReportRunClaim[] | null
+    if (claimError || !claimRows?.[0]) throw new Error('report_run_claim_failed')
+    claimedRunId = claimRows[0].report_run_id
+
+    if (!claimRows[0].should_execute) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          duplicate: true,
+          reportRunId: claimedRunId,
+          status: claimRows[0].run_status,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
     }
 
     // Get Google service account credentials
@@ -879,12 +983,6 @@ serve(async (req) => {
     // Get access token
     const accessToken = await getAccessToken(serviceAccount)
     console.log('[funnel-report-cron] Authentication successful')
-
-    // Calculate one shared Los Angeles calendar window for GA4 and Supabase.
-    const window = reportingWindow(days)
-    const previousWindow = previousReportingWindow(days, window)
-    const startDate = window.startDate
-    const endDate = window.endDate
 
     // Run all queries in parallel
     console.log('[funnel-report-cron] Fetching GA4 data...')
@@ -1084,12 +1182,6 @@ serve(async (req) => {
       'interest_submitted'
     )
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    if (!supabaseUrl || !supabaseServiceRoleKey) {
-      throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required')
-    }
-
     const authoritativeSignupCounts = await getAuthoritativeSignupCounts(
       supabaseUrl,
       supabaseServiceRoleKey,
@@ -1184,31 +1276,33 @@ serve(async (req) => {
     // Send report via send-analytics-report function
     console.log('[funnel-report-cron] Sending report to admins...')
 
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
-    if (!supabaseAnonKey) throw new Error('SUPABASE_ANON_KEY is required')
-
+    deliveryStarted = true
     const sendResponse = await fetch(`${supabaseUrl}/functions/v1/send-analytics-report`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Authorization': `Bearer ${supabaseServiceRoleKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         reportType: 'funnel',
         reportDate,
         reportMarkdown: markdown,
+        reportRunId: claimedRunId,
         alerts: alerts.length > 0 ? alerts : undefined,
         sendSlack: true,
       }),
     })
 
+    if (!sendResponse.ok) throw new Error('report_delivery_request_failed')
     const sendResult = await sendResponse.json()
-    console.log('[funnel-report-cron] Report delivery result:', sendResult)
+    console.log(`[funnel-report-cron] Report delivery status: ${sendResult.status ?? 'unknown'}`)
 
     return new Response(
       JSON.stringify({
-        success: true,
+        success: sendResult.success === true,
         message: `${days}-day funnel report generated and sent`,
+        reportRunId: claimedRunId,
+        triggerKind: authorization.triggerKind,
         reportDate,
         alertsTriggered: alerts.length,
         delivery: sendResult,
@@ -1219,12 +1313,19 @@ serve(async (req) => {
       }
     )
 
-  } catch (error) {
-    console.error('[funnel-report-cron] Error:', error)
+  } catch {
+    if (claimedRunId && auditClient) {
+      await auditClient.rpc('fail_analytics_report_run', {
+        p_report_run_id: claimedRunId,
+        p_error_code: deliveryStarted
+          ? 'report_delivery_request_failed'
+          : 'report_generation_failed',
+      })
+    }
+    console.error('[funnel-report-cron] Request failed with a controlled internal error')
     return new Response(
       JSON.stringify({
         error: 'Failed to generate funnel report',
-        details: error instanceof Error ? error.message : String(error),
       }),
       {
         status: 500,

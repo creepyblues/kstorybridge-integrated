@@ -357,6 +357,15 @@ verify_jwt = false
 [functions.creator-stripe-webhook]
 verify_jwt = false
 
+# Analytics reporting endpoints enforce exact service-role and Vault-backed cron
+# credentials in function code. Platform JWT verification must be disabled so
+# the dedicated non-JWT cron secret can reach the strict application boundary.
+[functions.funnel-report-cron]
+verify_jwt = false
+
+[functions.send-analytics-report]
+verify_jwt = false
+
 # Mandate Matcher - Bypass JWT for internal edge function calls
 # Called by chat-orchestrator which doesn't have a user JWT to forward
 [functions.mandate-matcher]

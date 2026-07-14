@@ -1,6 +1,6 @@
 # Analytics Report Delivery Audit Design
 
-**Status:** Required design; implementation pending
+**Status:** Local implementation and acceptance complete; production cutover pending
 
 **Prepared:** 2026-07-13
 
@@ -34,6 +34,12 @@ Supabase pg_cron
 ```
 
 Manual and progress reports use service-role authentication and distinct trigger kinds. They never count toward the scheduled funnel-delivery streak.
+
+## Local implementation status
+
+The target is implemented on `v2` without production mutation. Two additive migrations create the ledger/RPCs and replace the legacy cron command with a runtime Vault lookup. Both Edge Functions enforce exact credentials in function code with platform JWT verification disabled only for these self-authenticating endpoints. The local and GitHub progress callers feature-detect the schema, use service-role authentication after cutover, and persist distinct progress trigger kinds. The external gate now reports durable `AR-405` state and treats the undeployed production schema as pending rather than counting transient delivery responses.
+
+Production remains on the legacy path. `AR-406` stays open until the approved coordinated migration, secret, function, caller, and negative-test cutover completes. `AR-405` additionally requires two real Monday successes.
 
 ## Authentication boundary
 
@@ -140,6 +146,6 @@ Manual and progress runs are displayed separately and never satisfy `AR-405`.
 9. Enable the safe external gate and observe two actual scheduled Mondays.
 10. Close `AR-405` and `AR-406` only after the durable evidence passes.
 
-## Current blocker
+## Current release gate
 
-The historical migration chain now replays locally through all 76 migrations, and the focused outbox/linkage security suites pass. The read-only remote comparison found 67 recorded versions, populated foundational objects, and no prepared outbox/linkage objects. Because staging apps share the production Supabase project, implementation requires explicitly approved historical-ledger reconciliation, backups, and ordered production application—or a separate isolated clone if one becomes available. Vault configuration, strict endpoint cutover, and GitHub secret changes belong to one coordinated rollout after the operator authorizes those secret-bearing external changes.
+The historical migration chain now replays locally through all 78 migrations, including the report ledger and secure schedule. The read-only remote comparison found 67 recorded versions, populated foundational objects, and none of the four prepared current schemas/operations. Because staging apps share the production Supabase project, release requires explicitly approved historical-ledger reconciliation, backups, and ordered production application—or a separate isolated clone if one becomes available. Vault configuration, strict endpoint cutover, local/GitHub service-role secret configuration, and negative production tests belong to one coordinated rollout after the operator authorizes those secret-bearing external changes. Detailed evidence and rollback are in [migration-analytics-report-delivery-audit-2026-07-13.md](migration-analytics-report-delivery-audit-2026-07-13.md).

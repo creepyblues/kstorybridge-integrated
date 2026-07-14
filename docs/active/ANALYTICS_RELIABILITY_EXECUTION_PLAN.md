@@ -225,6 +225,19 @@ Implemented and production-verified on 2026-07-13; creator release, server event
 - The production function health check and manual seven-day run returned HTTP 200; the updated report reached three admins and Slack with zero delivery failures. Both title-contract timestamps are intentionally unset while their respective instrumentation remains unreleased.
 - Additive draft/publication linkage and idempotent approval recovery are prepared in source. The migration contains no destructive operation or data rewrite, and the Edge Function type-checks. They remain deliberately undeployed because Docker is stopped and the mandatory local database reset plus approval/retry integration tests have not run.
 
+### Commercial outcome reconciliation implementation
+
+Implemented and production-verified on 2026-07-13; dashboard release and one complete post-release window remain before the buyer-interest portion of `AR-304` can close, while introductions and buyer subscriptions remain source-model gaps:
+
+- `title_interests.created_at` is the authoritative timestamp for a newly created external buyer-interest row. Active admins are excluded.
+- The unique buyer/title database constraint is the dedupe gate. A duplicate can refresh profile/note data but returns `created=false`, sends no repeated team notification, and emits no repeated GA event.
+- `interest_submitted` event counts reconcile against new rows with the same 5% tolerance used elsewhere. Enforcement waits until `ANALYTICS_INTEREST_CONTRACT_LIVE_AT` predates the full window.
+- The report explicitly labels introduction requested/completed as unavailable because no authoritative introduction record exists.
+- Buyer subscription start remains unavailable because the local `stripe_customers` projection has no immutable subscription-start timestamp; buyer payment completion remains external-only in Stripe.
+- The report treats unavailable outcomes as data-model gaps, not zero conversions.
+- Four dashboard interest tests, 18 shared report tests, both affected Edge Function type checks, and the full dashboard build pass.
+- Production `express-interest` and `funnel-report-cron` health checks returned HTTP 200. A manual seven-day report run completed and reached three admins plus Slack with zero delivery failures. `ANALYTICS_INTEREST_CONTRACT_LIVE_AT` remains intentionally unset until the dashboard event is released.
+
 ## Phase 4: Reporting, alerts, and operating cadence
 
 - [ ] `AR-400` Replace obsolete funnel event names in the analytics skill and scheduled funnel report.
@@ -287,6 +300,7 @@ All of the following must be true:
 | 2026-07-13 | Normalized creator draft/submission outcomes and production-verified honest title-workflow reconciliation. | Both creator entry paths emit only after successful Supabase writes; failed writes emit no outcomes; reporting compares event counts to active-admin-excluded workflow timestamps and labels publication as an unlinked proxy; 62 focused tests, the creator build, and Deno checking pass; production health and a seven-day run returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Release the creator events, then add authoritative server events and durable draft-to-title linkage before closing `AR-303`. |
 | 2026-07-13 | Prepared migration-safe publication linkage and idempotent approval recovery without changing production. | The additive migration adds nullable bidirectional IDs, validated foreign keys, and partial unique indexes with no data rewrite; destructive-operation scan is clean; updated `approve-title` type-checks and turns a failed linkage write into a retryable error instead of silent success. Local Supabase validation could not run because Docker is stopped. | Start Docker, run the documented local reset and approval/retry tests, then apply the migration before deploying `approve-title`; do not reverse that order. |
 | 2026-07-13 | Replaced the legacy buyer-interest event with the canonical privacy-safe outcome. | `interest_submitted` fires after the Edge Function confirms the database write and includes only stable title ID plus controlled source; title name, note metadata, buyer email, and redundant timestamp are absent; focused test and full dashboard build pass. | Release the dashboard event and add authoritative interest reconciliation; keep introductions and subscriptions pending until their source-of-truth gaps are resolved. |
+| 2026-07-13 | Made buyer-interest outcomes exactly deduplicated and production-verified commercial reconciliation. | The database uniqueness constraint distinguishes new interest from note refresh; duplicates produce no repeated notification or GA event; the report compares external interest rows with canonical event counts and displays introductions/subscriptions as unavailable source gaps; 22 focused tests, both Edge Function checks, and the dashboard build pass; both production health checks and the manual report returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Release the dashboard and set the interest live-at timestamp after its production cutover; resolve the introduction and buyer-subscription source gaps before closing `AR-304`. |
 
 ## Progress update procedure
 

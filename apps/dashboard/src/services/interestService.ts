@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
  * reads use RLS (buyers see only their own rows, matched by email).
  */
 export const interestService = {
-  async submitInterest(titleId: string, note?: string): Promise<void> {
+  async submitInterest(titleId: string, note?: string): Promise<boolean> {
     const { data, error } = await supabase.functions.invoke('express-interest', {
       body: { title_id: titleId, note },
     });
@@ -17,6 +17,7 @@ export const interestService = {
     if (data && data.success === false) {
       throw new Error(data.error || 'Failed to submit interest');
     }
+    return data?.created !== false;
   },
 
   async hasExpressedInterest(titleId: string, email: string): Promise<boolean> {

@@ -23,6 +23,11 @@ import {
   type TitleWorkflowCounts,
   type TitleWorkflowReconciliationRow,
 } from '../_shared/title-workflow-reconciliation.ts'
+import {
+  parseOutcomeEventCount,
+  reconcileOutcome,
+  type OutcomeReconciliationRow,
+} from '../_shared/outcome-reconciliation.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -212,6 +217,44 @@ async function getAuthoritativeTitleWorkflowCounts(
     approved,
     published,
   }
+}
+
+async function getAuthoritativeInterestCount(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  window: ReportingWindow
+): Promise<number> {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { data: admins, error: adminError } = await supabase
+    .from('admin')
+    .select('email')
+    .eq('active', true)
+  if (adminError) throw new Error(`Failed to load active admins: ${adminError.message}`)
+
+  const adminEmails = (admins ?? [])
+    .map(admin => admin.email?.trim().toLowerCase())
+    .filter((email): email is string => Boolean(email))
+  const baseQuery = () => supabase
+    .from('title_interests')
+    .select('id', { count: 'exact', head: true })
+    .gte('created_at', window.start.toISOString())
+    .lt('created_at', window.endExclusive.toISOString())
+  const [allResult, adminResult] = await Promise.all([
+    baseQuery(),
+    adminEmails.length > 0
+      ? baseQuery().in('buyer_email', adminEmails)
+      : Promise.resolve({ count: 0, error: null }),
+  ])
+
+  if (allResult.error) {
+    throw new Error(`Failed to count title interests: ${allResult.error.message}`)
+  }
+  if (adminResult.error) {
+    throw new Error(`Failed to exclude admins from title interests: ${adminResult.error.message}`)
+  }
+  return Math.max((allResult.count ?? 0) - (adminResult.count ?? 0), 0)
 }
 
 // Generate JWT for Google API authentication
@@ -462,6 +505,16 @@ function formatTitleWorkflowStatus(status: TitleWorkflowReconciliationRow['statu
   return labels[status]
 }
 
+function formatOutcomeStatus(status: OutcomeReconciliationRow['status']): string {
+  const labels: Record<OutcomeReconciliationRow['status'], string> = {
+    matched: 'Matched',
+    drift: 'Drift detected',
+    no_activity: 'No activity',
+    instrumentation_pending: 'Instrumentation pending',
+  }
+  return labels[status]
+}
+
 // Generate funnel report markdown
 function generateFunnelReport(
   funnel: FunnelMetrics,
@@ -475,6 +528,8 @@ function generateFunnelReport(
   titleWorkflowReconciliation: TitleWorkflowReconciliationRow[],
   titleClientInstrumentationLive: boolean,
   titleServerInstrumentationLive: boolean,
+  interestReconciliation: OutcomeReconciliationRow,
+  interestInstrumentationLive: boolean,
   window: ReportingWindow,
   days: number
 ): { markdown: string; alerts: string[] } {
@@ -524,6 +579,11 @@ function generateFunnelReport(
   for (const row of titleWorkflowReconciliation.filter(row => row.status === 'drift')) {
     alerts.push(
       `Data quality: creator title ${row.stage} tracking differs from the authoritative count by ${row.variance}`
+    )
+  }
+  if (interestReconciliation.status === 'drift') {
+    alerts.push(
+      `Data quality: buyer interest tracking differs from authoritative interest rows by ${interestReconciliation.variance}`
     )
   }
   if (excludedSessionRate > 0.1) {
@@ -592,6 +652,27 @@ ${titleServerInstrumentationLive
   : 'Approval and publication server events are not yet live, so authoritative database outcomes remain the only valid counts.'}
 
 Publication currently shows all external-creator catalog rows created in the window as an **unlinked proxy**, not a reconciled conversion. \`title_drafts\` has no \`published_title_id\`, so the report cannot prove which approved draft created which title. This stage remains \`Draft-to-title linkage pending\` regardless of matching totals.
+
+### Commercial outcome reconciliation
+
+| Outcome | Authoritative count | GA events | Variance | Status |
+|---------|--------------------:|----------:|---------:|--------|
+| Buyer interest submitted | ${interestReconciliation.authoritativeCount} | ${interestReconciliation.gaEventCount} | ${interestReconciliation.variance > 0 ? '+' : ''}${interestReconciliation.variance} | ${formatOutcomeStatus(interestReconciliation.status)} |
+
+\`title_interests.created_at\` is the source of truth for a newly created buyer-interest outcome. Active admin buyers are excluded. A duplicate submission can refresh its note but does not create another outcome, team notification, or GA event.
+
+${interestInstrumentationLive
+  ? 'The canonical buyer-interest event was live before this full window, so differences are treated as tracking drift.'
+  : 'The canonical buyer-interest event was not live for this full window. GA zeros are not interpreted as zero buyer interest.'}
+
+| Outcome currently unavailable for reconciliation | Reason |
+|--------------------------------------------------|--------|
+| Introduction requested | No authoritative introduction table or timestamp exists. |
+| Introduction completed | No authoritative introduction workflow exists. |
+| Buyer subscription started | Stripe is authoritative, but the local buyer record has no immutable subscription-start timestamp. |
+| Buyer payment completed | No local buyer payment ledger exists; Stripe event time is external-only. |
+
+These rows are product/data-model gaps, not zero conversions. Creator subscriptions have a reliable local creation record, but server-side GA emission and a shared non-PII reconciliation key are still pending.
 
 ### Human email engagement
 
@@ -755,6 +836,7 @@ serve(async (req) => {
       cleanTrafficResponse,
       signupByHostResponse,
       titleWorkflowResponse,
+      interestResponse,
     ] = await Promise.all([
       // Query 1: Funnel events
       runGA4Report(accessToken, {
@@ -870,6 +952,35 @@ serve(async (req) => {
           },
         ]),
       }),
+
+      // Query 9: Canonical buyer-interest outcomes
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['eventName'],
+        metrics: ['eventCount'],
+        dimensionFilter: buildCleanProductionFilter([
+          {
+            filter: {
+              fieldName: 'hostName',
+              stringFilter: {
+                value: 'dashboard.kstorybridge.com',
+                matchType: 'EXACT',
+                caseSensitive: true,
+              },
+            },
+          },
+          {
+            filter: {
+              fieldName: 'eventName',
+              stringFilter: {
+                value: 'interest_submitted',
+                matchType: 'EXACT',
+                caseSensitive: true,
+              },
+            },
+          },
+        ]),
+      }),
     ])
 
     console.log('[funnel-report-cron] Parsing GA4 data...')
@@ -883,6 +994,10 @@ serve(async (req) => {
     const cleanTraffic = parseTrafficSummary(cleanTrafficResponse)
     const gaSignupCounts = parseSignupUsersByHost(signupByHostResponse.rows)
     const gaTitleWorkflowCounts = parseTitleWorkflowEvents(titleWorkflowResponse.rows)
+    const gaInterestCount = parseOutcomeEventCount(
+      interestResponse.rows,
+      'interest_submitted'
+    )
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -924,6 +1039,21 @@ serve(async (req) => {
       titleServerInstrumentationLive,
       false
     )
+    const authoritativeInterestCount = await getAuthoritativeInterestCount(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      window
+    )
+    const interestInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_INTEREST_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const interestReconciliation = reconcileOutcome(
+      'interest_submitted',
+      authoritativeInterestCount,
+      gaInterestCount,
+      interestInstrumentationLive
+    )
 
     // Generate report
     console.log('[funnel-report-cron] Generating funnel report...')
@@ -939,6 +1069,8 @@ serve(async (req) => {
       titleWorkflowReconciliation,
       titleClientInstrumentationLive,
       titleServerInstrumentationLive,
+      interestReconciliation,
+      interestInstrumentationLive,
       window,
       days
     )

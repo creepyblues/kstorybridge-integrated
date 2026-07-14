@@ -74,6 +74,14 @@ npx supabase secrets set ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT='ACTUAL_SERVER_
 
 Publication remains a labeled catalog-creation proxy until `title_drafts` durably stores its published title ID. A coincidental equality between approval and catalog counts must not be called a reconciliation.
 
+Buyer-interest reconciliation starts enforcement only after the canonical dashboard event has covered a full reporting window:
+
+```bash
+npx supabase secrets set ANALYTICS_INTEREST_CONTRACT_LIVE_AT='ACTUAL_DASHBOARD_DEPLOYMENT_TIMESTAMP'
+```
+
+Leave the secret unset until the updated dashboard is in production. The authoritative count comes from newly created `title_interests` rows; duplicate requests that merely refresh a note are not additional outcomes.
+
 **Important**: The JSON must be on a single line. You can use:
 ```bash
 # Convert multi-line JSON to single line

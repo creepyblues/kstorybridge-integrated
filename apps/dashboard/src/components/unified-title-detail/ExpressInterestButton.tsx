@@ -51,8 +51,8 @@ export function ExpressInterestButton({
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await interestService.submitInterest(titleId, note.trim() || undefined);
-      trackTitleInterestSubmitted(titleId);
+      const created = await interestService.submitInterest(titleId, note.trim() || undefined);
+      if (created) trackTitleInterestSubmitted(titleId);
       setAlreadySent(true);
       setOpen(false);
       toast({

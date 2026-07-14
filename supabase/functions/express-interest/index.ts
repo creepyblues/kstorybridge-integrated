@@ -81,21 +81,47 @@ serve(async (req) => {
       })
     }
 
-    // Upsert so a repeat click refreshes the note instead of erroring
+    const interestRecord = {
+      title_id: payload.title_id,
+      buyer_email: buyerEmail,
+      buyer_name: buyer?.full_name ?? null,
+      buyer_company: buyer?.buyer_company ?? null,
+      note: note || null,
+    }
+
+    // Insert first so the unique constraint remains the authoritative dedupe gate.
     const { error: insertError } = await admin
       .from('title_interests')
-      .upsert(
-        {
-          title_id: payload.title_id,
-          buyer_email: buyerEmail,
-          buyer_name: buyer?.full_name ?? null,
-          buyer_company: buyer?.buyer_company ?? null,
-          note: note || null,
-        },
-        { onConflict: 'title_id,buyer_email' }
-      )
+      .insert(interestRecord)
 
     if (insertError) {
+      if (insertError.code === '23505') {
+        // Preserve the prior product behavior of refreshing the note, but do not
+        // create another business outcome, notification, or analytics event.
+        const { error: updateError } = await admin
+          .from('title_interests')
+          .update({
+            buyer_name: interestRecord.buyer_name,
+            buyer_company: interestRecord.buyer_company,
+            note: interestRecord.note,
+          })
+          .eq('title_id', payload.title_id)
+          .eq('buyer_email', buyerEmail)
+
+        if (updateError) {
+          console.error('[express-interest] duplicate refresh failed:', updateError)
+          return new Response(JSON.stringify({ success: false, error: 'Failed to refresh interest' }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+
+        return new Response(JSON.stringify({ success: true, created: false }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       console.error('[express-interest] insert failed:', insertError)
       return new Response(JSON.stringify({ success: false, error: 'Failed to record interest' }), {
         status: 500,
@@ -162,7 +188,7 @@ serve(async (req) => {
       }).catch((err) => console.error('[express-interest] team email failed:', err))
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, created: true }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

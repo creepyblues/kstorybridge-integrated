@@ -79,4 +79,6 @@ The scheduled report uses event counts rather than users because one creator can
 
 Active admin creators are excluded. Client drift enforcement begins only after `ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT` predates the full window; approval/publication enforcement separately requires `ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT`.
 
-The publication row is intentionally marked `Draft-to-title linkage pending`. The current schema cannot prove that a particular approved draft created a particular catalog title, so the proxy is operational context—not a reconciled publication conversion—even when aggregate counts happen to match.
+The publication row is intentionally marked `Draft-to-title linkage pending`. The current production schema cannot prove that a particular approved draft created a particular catalog title, so the proxy is operational context—not a reconciled publication conversion—even when aggregate counts happen to match.
+
+An additive migration is prepared at `supabase/migrations/20260714001452_link_title_drafts_to_publications.sql`. It adds `title_drafts.published_title_id` and `titles.source_draft_id`, and the accompanying `approve-title` source recovers a prior catalog insert instead of creating a duplicate. This is not production evidence: the migration and function must remain undeployed until local database testing passes.

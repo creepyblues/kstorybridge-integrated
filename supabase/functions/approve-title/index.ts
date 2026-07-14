@@ -88,6 +88,45 @@ interface DraftData {
   verified?: boolean
 }
 
+async function sendApprovalNotification(draftId: string): Promise<void> {
+  try {
+    const notifyUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/notify-title-decision`
+    const notifyResponse = await fetch(notifyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+      },
+      body: JSON.stringify({ draftId, decision: 'approved' }),
+    })
+
+    if (notifyResponse.ok) {
+      console.log('[approve-title] Notification sent successfully')
+    } else {
+      console.warn('[approve-title] Notification failed (non-blocking):', await notifyResponse.text())
+    }
+  } catch (notifyError) {
+    console.warn('[approve-title] Notification error (non-blocking):', notifyError)
+  }
+}
+
+function approvalSuccessResponse(titleId: string, recovered = false): Response {
+  return new Response(
+    JSON.stringify({
+      success: true,
+      titleId,
+      recovered,
+      message: recovered
+        ? 'Title approval recovered successfully'
+        : 'Title approved and created successfully',
+    }),
+    {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    }
+  )
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -162,6 +201,14 @@ serve(async (req) => {
       )
     }
 
+    if (draft.status === 'approved' && draft.published_title_id) {
+      console.log('[approve-title] Approval already complete:', {
+        draftId,
+        titleId: draft.published_title_id,
+      })
+      return approvalSuccessResponse(draft.published_title_id, true)
+    }
+
     // Verify draft is in 'submitted' status
     if (draft.status !== 'submitted') {
       return new Response(
@@ -175,6 +222,55 @@ serve(async (req) => {
 
     const draftData = draft.draft_data as DraftData
     const creatorId = draft.creator_id
+
+    // Recover an approval where the catalog insert succeeded but the draft update failed.
+    const { data: previouslyPublished, error: recoveryLookupError } = await supabaseAdmin
+      .from('titles')
+      .select('title_id')
+      .eq('source_draft_id', draftId)
+      .maybeSingle()
+
+    if (recoveryLookupError) {
+      console.error('[approve-title] Failed to check publication recovery:', recoveryLookupError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to verify prior publication' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    if (previouslyPublished) {
+      const recoveredAt = new Date().toISOString()
+      const { error: recoveryUpdateError } = await supabaseAdmin
+        .from('title_drafts')
+        .update({
+          status: 'approved',
+          approved_at: recoveredAt,
+          approved_by: adminUserId,
+          published_title_id: previouslyPublished.title_id,
+          updated_at: recoveredAt,
+        })
+        .eq('id', draftId)
+        .eq('status', 'submitted')
+        .select('id')
+        .single()
+
+      if (recoveryUpdateError) {
+        console.error('[approve-title] Failed to recover draft linkage:', recoveryUpdateError)
+        return new Response(
+          JSON.stringify({ error: 'Failed to recover draft publication linkage' }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        )
+      }
+
+      await sendApprovalNotification(draftId)
+      return approvalSuccessResponse(previouslyPublished.title_id, true)
+    }
 
     console.log('[approve-title] Draft data:', {
       titleKr: draftData.title_name_kr,
@@ -297,6 +393,7 @@ serve(async (req) => {
 
       // System fields - set defaults for immediate visibility
       creator_id: creatorId,
+      source_draft_id: draftId,
       verified: true, // Approved titles are immediately visible
       priority: '2', // Priority: 1=low, 2=medium, 3=high
       created_at: now,
@@ -336,41 +433,31 @@ serve(async (req) => {
         status: 'approved',
         approved_at: now,
         approved_by: adminUserId,
+        published_title_id: titleId,
         updated_at: now,
       })
       .eq('id', draftId)
+      .eq('status', 'submitted')
+      .select('id')
+      .single()
 
     if (updateError) {
       console.error('[approve-title] Failed to update draft status:', updateError)
-      // Note: Title was already created, so we log this but don't fail
-      // The title exists, we just couldn't mark the draft as approved
+      return new Response(
+        JSON.stringify({
+          error: 'Title was created but draft linkage failed; retry approval to recover',
+          titleId,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
     }
 
     console.log('[approve-title] Draft status updated to approved')
 
-    // Send notification (fire-and-forget)
-    try {
-      const notifyUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/notify-title-decision`
-      const notifyResponse = await fetch(notifyUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-        },
-        body: JSON.stringify({
-          draftId,
-          decision: 'approved',
-        }),
-      })
-
-      if (notifyResponse.ok) {
-        console.log('[approve-title] Notification sent successfully')
-      } else {
-        console.warn('[approve-title] Notification failed (non-blocking):', await notifyResponse.text())
-      }
-    } catch (notifyError) {
-      console.warn('[approve-title] Notification error (non-blocking):', notifyError)
-    }
+    await sendApprovalNotification(draftId)
 
     console.log('[approve-title] Approval complete:', {
       draftId,
@@ -378,17 +465,7 @@ serve(async (req) => {
       adminUserId,
     })
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        titleId,
-        message: 'Title approved and created successfully',
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
+    return approvalSuccessResponse(titleId)
 
   } catch (error) {
     console.error('[approve-title] Unexpected error:', error)

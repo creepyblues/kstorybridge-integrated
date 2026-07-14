@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import UniversalHeader from '../components/UniversalHeader';
 import { Button } from '@kstorybridge/ui';
 import { Card, CardContent } from '../components/ui/card';
@@ -25,6 +26,7 @@ import {
 
 const HomePage = () => {
   const { t } = useTranslation('home');
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white">
@@ -69,7 +71,7 @@ const HomePage = () => {
                     className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 py-6 text-lg rounded-full"
                     onClick={() => {
                       trackAudiencePathSelected('creator', 'hero');
-                      window.location.href = '/creators';
+                      navigate('/creators');
                     }}
                   >
                     <BookOpen className="mr-2 h-5 w-5" />
@@ -79,7 +81,7 @@ const HomePage = () => {
                     className="bg-hanok-teal hover:bg-hanok-teal-600 text-white px-8 py-6 text-lg rounded-full"
                     onClick={() => {
                       trackAudiencePathSelected('buyer', 'hero');
-                      window.location.href = '/producers';
+                      navigate('/producers');
                     }}
                   >
                     <Film className="mr-2 h-5 w-5" />

@@ -48,7 +48,7 @@ The event boundary deliberately records the click separately from the destinatio
 2. Cross-domain continuity from `kstorybridge.com` to dashboard and creator must be verified in GA Admin and with a production journey. A source CTA event and destination page view may otherwise appear as unrelated sessions.
 3. The homepage header intentionally hides sign-in outside `/creators` and `/producers`. Whether this harms returning-user discovery is a UX question for the pending desktop/mobile browser audit, not an analytics conclusion.
 4. Creator inquiry truth is email/Slack delivery, not a database record. Durable lead reconciliation would require an inquiry table or provider delivery ledger.
-5. Component-level click and success/failure boundary tests remain pending under `AR-207`; current tests prove canonical names, payloads, privacy, and compilation.
+5. Primary component-level click and creator-inquiry success/failure boundary tests are complete in source. Production DebugView/network sampling remains part of the Wave 2 acceptance gate.
 6. No production event exists until Wave 2 is deployed. Pre-cutover absence must render as **Instrumentation pending**, never zero.
 7. Secondary conversion links on the how-to, producer-onboarding, format-spotlight, sample-title/PDF, and older shared-header surfaces were not folded into `AR-209`. Some already use title-specific events; others still use generic or no telemetry. Inventory and either map or explicitly exclude them before claiming complete website CTA coverage under `AR-207`.
 

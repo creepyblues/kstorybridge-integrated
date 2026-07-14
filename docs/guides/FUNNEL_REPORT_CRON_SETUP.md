@@ -65,6 +65,15 @@ npx supabase secrets set ANALYTICS_AUTH_CONTRACT_LIVE_AT='2026-07-13T00:00:00Z'
 
 Use the actual production timestamp, not the example above. The report starts enforcing the 5% GA-to-Supabase reconciliation tolerance only when that timestamp predates the full report window. Until then, GA zeros are labeled as incomplete instrumentation and do not trigger false zero-signup alerts.
 
+Creator title workflow reconciliation uses separate client and server cutovers. Set the client timestamp after the creator app containing `title_draft_created` and `title_submitted` reaches production. Do not set the server timestamp until `title_approved` and `title_published` are emitted by the authoritative admin workflow:
+
+```bash
+npx supabase secrets set ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT='ACTUAL_CREATOR_DEPLOYMENT_TIMESTAMP'
+npx supabase secrets set ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT='ACTUAL_SERVER_EVENT_DEPLOYMENT_TIMESTAMP'
+```
+
+Publication remains a labeled catalog-creation proxy until `title_drafts` durably stores its published title ID. A coincidental equality between approval and catalog counts must not be called a reconciliation.
+
 **Important**: The JSON must be on a single line. You can use:
 ```bash
 # Convert multi-line JSON to single line

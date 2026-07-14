@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast'
 import { draftService } from '@/services/draftService'
 import { notifyTitleSubmission } from '@/services/notificationService'
 import { quickAddTitleSchema, type QuickAddTitleData } from '@/lib/surveySchema'
+import { trackTitleDraftCreated, trackTitleSubmitted } from '@/utils/analytics'
 
 export default function QuickAddTitle() {
   const { t } = useTranslation(['titles', 'common'])
@@ -75,9 +76,11 @@ export default function QuickAddTitle() {
         },
         current_step: 1,
       })
+      trackTitleDraftCreated(draft.id, 'quick_add')
 
       // Immediately submit for review
       await draftService.submitDraftById(draft.id)
+      trackTitleSubmitted(draft.id, 'quick_add')
 
       // Fire-and-forget admin notification (non-blocking)
       notifyTitleSubmission(draft.id).catch(err => {

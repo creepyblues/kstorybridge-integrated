@@ -67,3 +67,16 @@ These gaps do not block clean traffic reporting, auth funnels, or creator subscr
 The scheduled funnel report counts buyer and creator profiles in the same America/Los_Angeles calendar window as GA4 and excludes active administrators. GA users are assigned to account type by production hostname, so the comparison works before `account_type` is registered as a GA custom dimension.
 
 The report enforces the 5% acceptance tolerance only after `ANALYTICS_AUTH_CONTRACT_LIVE_AT` predates the complete reporting window. Before that point, the canonical events have incomplete production coverage: Supabase remains authoritative, the report labels the comparison `Instrumentation pending`, and it suppresses signup-completion alerts rather than interpreting missing GA events as missing customers.
+
+## Creator title workflow reconciliation rule
+
+The scheduled report uses event counts rather than users because one creator can create and submit multiple titles. The authoritative timestamp for each stage is:
+
+- draft created: `title_drafts.created_at`
+- submitted: `title_drafts.submitted_at`
+- approved: `title_drafts.approved_at`
+- catalog created proxy: `titles.created_at`
+
+Active admin creators are excluded. Client drift enforcement begins only after `ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT` predates the full window; approval/publication enforcement separately requires `ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT`.
+
+The publication row is intentionally marked `Draft-to-title linkage pending`. The current schema cannot prove that a particular approved draft created a particular catalog title, so the proxy is operational context—not a reconciled publication conversion—even when aggregate counts happen to match.

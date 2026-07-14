@@ -91,6 +91,19 @@ These names replace overlapping legacy names under `AR-206`. Query text, chat te
 | `pitch_deck_opened` | Buyer product | The pitch-deck viewer successfully opens. | `title_id`, `access_type` | `{title_id: "uuid", access_type: "full"}` |
 | `pitch_deck_page_viewed` | Buyer product | A distinct pitch-deck page becomes visible. | `title_id`, `page_number`, `access_type` | `{title_id: "uuid", page_number: 2, access_type: "preview"}` |
 
+## Creator title workflow outcomes
+
+Draft and submission events are client-emitted only after the corresponding Supabase write returns successfully. Approval and publication are reserved for server-side emission because they occur in the admin workflow without the creator present.
+
+| Event | Owner | Exact trigger | Required parameters | Example |
+|---|---|---|---|---|
+| `title_draft_created` | Creator success | Supabase returns a newly inserted `title_drafts` row. Updates and repeated autosaves do not fire it. | `draft_id`, `entry_method` | `{draft_id: "uuid", entry_method: "full"}` |
+| `title_submitted` | Creator success | Supabase confirms the draft changed from `draft` to `submitted`. | `draft_id`, `entry_method` | `{draft_id: "uuid", entry_method: "quick_add"}` |
+| `title_approved` | Content operations | The authoritative draft is marked approved after a successful admin decision. Server-side emission required. | `draft_id` | `{draft_id: "uuid"}` |
+| `title_published` | Content operations | A catalog title is created and durably linked to its approved source draft. Server-side emission required. | `draft_id`, `title_id` | `{draft_id: "uuid", title_id: "uuid"}` |
+
+Allowed `entry_method` values are `full` and `quick_add`. Title names, URLs, rights-holder names, and other draft contents are prohibited from GA.
+
 ## Event ownership and change control
 
 1. Product defines the user or business outcome and its expected funnel position.
@@ -104,4 +117,5 @@ These names replace overlapping legacy names under `AR-206`. Query text, chat te
 - Environment and internal-traffic fields are implemented across all three apps.
 - `email_landing_engaged` is implemented and verified in preview; production release remains tracked by `AR-110`.
 - Canonical buyer and creator auth names are implemented in source under `AR-201` and `AR-202`.
+- Canonical creator draft-created and submitted outcomes are implemented in source under `AR-303`; production release remains pending. Approval and publication remain reserved until server-side delivery and durable draft-to-title linkage exist.
 - Commercial and product-engagement names are reserved but remain unimplemented until their individual plan tasks pass acceptance tests.

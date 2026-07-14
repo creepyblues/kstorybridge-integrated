@@ -67,4 +67,10 @@ export const ANALYTICS_EVENT_NAMES = {
   favoriteRemoved: 'favorite_removed',
   pitchDeckOpened: 'pitch_deck_opened',
   pitchDeckPageViewed: 'pitch_deck_page_viewed',
+  titleDraftCreated: 'title_draft_created',
+  titleSubmitted: 'title_submitted',
+  titleApproved: 'title_approved',
+  titlePublished: 'title_published',
 } as const;
+
+export type CreatorTitleEntryMethod = 'full' | 'quick_add';

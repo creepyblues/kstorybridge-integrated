@@ -208,6 +208,20 @@ Implemented and deployed on 2026-07-13; the canonical frontend release and one f
 - Eleven shared analytics tests, including Pacific daylight-saving boundaries, and a full Deno type check pass.
 - The production function returned HTTP 200 on its health check and manual seven-day run; the report reached three admins and Slack with zero delivery failures. `ANALYTICS_AUTH_CONTRACT_LIVE_AT` is intentionally unset until both auth funnels are in production.
 
+### Creator title workflow reconciliation implementation
+
+Implemented and production-verified on 2026-07-13; creator release, server events, and durable publication linkage remain before `AR-303` can close:
+
+- `title_drafts.created_at`, `submitted_at`, and `approved_at` are the authoritative draft, submission, and approval timestamps. Active admin creators are excluded.
+- The report compares GA event counts rather than users because one creator can create or submit multiple titles during a window.
+- The full and Quick Add flows emit `title_draft_created` only after a new Supabase draft is returned and `title_submitted` only after the status transition succeeds. Failed writes emit neither outcome.
+- Legacy `title_create` is no longer misused as a submission event. Entry method is restricted to `full` or `quick_add`; draft content, names, URLs, and rights-holder data never enter GA.
+- Approval and publication event names are reserved for server-side emission. The client cannot honestly emit admin outcomes.
+- `titles.created_at` is displayed only as an unlinked catalog-creation proxy. Publication remains `Draft-to-title linkage pending` because production `title_drafts` has no `published_title_id`.
+- Separate client and server live-at timestamps prevent missing pre-release events from being interpreted as inactivity or tracking drift.
+- Four shared contract tests, 43 creator workflow tests, 15 shared report tests, the full creator build, and Deno type checking pass.
+- The production function health check and manual seven-day run returned HTTP 200; the updated report reached three admins and Slack with zero delivery failures. Both title-contract timestamps are intentionally unset while their respective instrumentation remains unreleased.
+
 ## Phase 4: Reporting, alerts, and operating cadence
 
 - [ ] `AR-400` Replace obsolete funnel event names in the analytics skill and scheduled funnel report.
@@ -267,6 +281,7 @@ All of the following must be true:
 | 2026-07-13 | Closed the authenticated GA identity lifecycle for both product apps. | Dashboard and creator auth providers pass only the Supabase UUID to GA after session resolution, derive internal classification from protected metadata, clear identity on signed-out state and before explicit sign-out, and never pass email; dashboard lifecycle coverage plus three new creator lifecycle tests pass. | Use the non-PII `user_id` for authoritative signup reconciliation under `AR-302` after the canonical auth events reach production. |
 | 2026-07-13 | Mapped GA outcomes to the current Supabase and Stripe sources of truth and documented every reconciliation gap. | Production schema was verified with zero-row PostgREST probes; migrations and webhook/approval functions were cross-checked; the source map records keys, timestamps, confidence, and remediation for signup, trial, title workflow, interest, introductions, and subscriptions. | Implement reconciliation only for high-confidence outcomes; resolve the documented buyer-approval, introduction, draft-link, and buyer-payment gaps before promoting those metrics. |
 | 2026-07-13 | Implemented and production-verified honest buyer and creator signup reconciliation in the scheduled funnel report. | The report compares active-admin-excluded Supabase profile creation with GA completed-signup users by production hostname, uses a 5% tolerance, and treats pre-release GA zeros as instrumentation pending; eleven shared tests including Pacific daylight-saving boundaries and Deno type checking pass; production health and a manual seven-day run returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Release both canonical auth funnels, set `ANALYTICS_AUTH_CONTRACT_LIVE_AT`, then close `AR-302` after one complete reconciled window. |
+| 2026-07-13 | Normalized creator draft/submission outcomes and production-verified honest title-workflow reconciliation. | Both creator entry paths emit only after successful Supabase writes; failed writes emit no outcomes; reporting compares event counts to active-admin-excluded workflow timestamps and labels publication as an unlinked proxy; 62 focused tests, the creator build, and Deno checking pass; production health and a seven-day run returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Release the creator events, then add authoritative server events and durable draft-to-title linkage before closing `AR-303`. |
 
 ## Progress update procedure
 

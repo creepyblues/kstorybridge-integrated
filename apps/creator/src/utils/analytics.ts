@@ -8,12 +8,14 @@
  */
 
 import {
+  ANALYTICS_EVENT_NAMES,
   AUTH_EVENT_NAMES,
   getAuthEventName,
   normalizeFailureReason,
   type AuthFailureReason,
   type AuthMethod,
   type AuthStage,
+  type CreatorTitleEntryMethod,
 } from '@kstorybridge/analytics';
 
 declare global {
@@ -311,6 +313,26 @@ export const trackTitleCreate = (titleId: string, format?: string): void => {
   trackEvent('title_create', {
     title_id: titleId,
     content_format: format,
+  });
+};
+
+export const trackTitleDraftCreated = (
+  draftId: string,
+  entryMethod: CreatorTitleEntryMethod
+): void => {
+  trackEvent(ANALYTICS_EVENT_NAMES.titleDraftCreated, {
+    draft_id: draftId,
+    entry_method: entryMethod,
+  });
+};
+
+export const trackTitleSubmitted = (
+  draftId: string,
+  entryMethod: CreatorTitleEntryMethod
+): void => {
+  trackEvent(ANALYTICS_EVENT_NAMES.titleSubmitted, {
+    draft_id: draftId,
+    entry_method: entryMethod,
   });
 };
 

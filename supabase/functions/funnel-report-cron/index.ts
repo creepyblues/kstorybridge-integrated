@@ -16,6 +16,13 @@ import {
   reportingWindow,
   type ReportingWindow,
 } from '../_shared/reporting-window.ts'
+import {
+  TITLE_WORKFLOW_EVENTS,
+  parseTitleWorkflowEvents,
+  reconcileTitleWorkflow,
+  type TitleWorkflowCounts,
+  type TitleWorkflowReconciliationRow,
+} from '../_shared/title-workflow-reconciliation.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -142,6 +149,69 @@ async function getAuthoritativeSignupCounts(
   ])
 
   return { buyer, creator }
+}
+
+async function getAuthoritativeTitleWorkflowCounts(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  window: ReportingWindow
+): Promise<TitleWorkflowCounts> {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { data: admins, error: adminError } = await supabase
+    .from('admin')
+    .select('email')
+    .eq('active', true)
+  if (adminError) throw new Error(`Failed to load active admins: ${adminError.message}`)
+
+  const adminEmails = (admins ?? [])
+    .map(admin => admin.email?.trim().toLowerCase())
+    .filter((email): email is string => Boolean(email))
+  const { data: adminCreators, error: creatorError } = adminEmails.length > 0
+    ? await supabase.from('user_creators').select('id').in('email', adminEmails)
+    : { data: [], error: null }
+  if (creatorError) throw new Error(`Failed to resolve admin creator IDs: ${creatorError.message}`)
+  const adminCreatorIds = (adminCreators ?? []).map(creator => creator.id)
+
+  const countExternalOutcomes = async (
+    table: 'title_drafts' | 'titles',
+    timestamp: 'created_at' | 'submitted_at' | 'approved_at'
+  ): Promise<number> => {
+    const baseQuery = () => supabase
+      .from(table)
+      .select(table === 'titles' ? 'title_id' : 'id', { count: 'exact', head: true })
+      .gte(timestamp, window.start.toISOString())
+      .lt(timestamp, window.endExclusive.toISOString())
+
+    const [allResult, adminResult] = await Promise.all([
+      baseQuery(),
+      adminCreatorIds.length > 0
+        ? baseQuery().in('creator_id', adminCreatorIds)
+        : Promise.resolve({ count: 0, error: null }),
+    ])
+    if (allResult.error) {
+      throw new Error(`Failed to count ${table}.${timestamp}: ${allResult.error.message}`)
+    }
+    if (adminResult.error) {
+      throw new Error(`Failed to exclude admins from ${table}.${timestamp}: ${adminResult.error.message}`)
+    }
+    return Math.max((allResult.count ?? 0) - (adminResult.count ?? 0), 0)
+  }
+
+  const [draftCreated, submitted, approved, published] = await Promise.all([
+    countExternalOutcomes('title_drafts', 'created_at'),
+    countExternalOutcomes('title_drafts', 'submitted_at'),
+    countExternalOutcomes('title_drafts', 'approved_at'),
+    countExternalOutcomes('titles', 'created_at'),
+  ])
+
+  return {
+    draft_created: draftCreated,
+    submitted,
+    approved,
+    published,
+  }
 }
 
 // Generate JWT for Google API authentication
@@ -380,6 +450,18 @@ function formatReconciliationStatus(status: SignupReconciliationRow['status']): 
   return labels[status]
 }
 
+function formatTitleWorkflowStatus(status: TitleWorkflowReconciliationRow['status']): string {
+  const labels: Record<TitleWorkflowReconciliationRow['status'], string> = {
+    matched: 'Matched',
+    drift: 'Drift detected',
+    no_activity: 'No activity',
+    instrumentation_pending: 'Client instrumentation pending',
+    server_event_pending: 'Server event pending',
+    linkage_pending: 'Draft-to-title linkage pending',
+  }
+  return labels[status]
+}
+
 // Generate funnel report markdown
 function generateFunnelReport(
   funnel: FunnelMetrics,
@@ -390,6 +472,9 @@ function generateFunnelReport(
   cleanTraffic: TrafficSummary,
   signupReconciliation: SignupReconciliationRow[],
   instrumentationLive: boolean,
+  titleWorkflowReconciliation: TitleWorkflowReconciliationRow[],
+  titleClientInstrumentationLive: boolean,
+  titleServerInstrumentationLive: boolean,
   window: ReportingWindow,
   days: number
 ): { markdown: string; alerts: string[] } {
@@ -435,6 +520,11 @@ function generateFunnelReport(
         `Data quality: ${row.accountType} signup tracking differs from the authoritative profile count by ${row.variance}`
       )
     }
+  }
+  for (const row of titleWorkflowReconciliation.filter(row => row.status === 'drift')) {
+    alerts.push(
+      `Data quality: creator title ${row.stage} tracking differs from the authoritative count by ${row.variance}`
+    )
   }
   if (excludedSessionRate > 0.1) {
     alerts.push(`Data quality: ${formatPct(excludedSessionRate)} of production-host sessions excluded as known scanner traffic`)
@@ -485,6 +575,23 @@ Supabase profile creation is the signup source of truth. GA4 counts are used to 
 ${instrumentationLive
   ? 'The canonical auth event contract was live before this full reporting window, so differences are treated as tracking drift.'
   : 'The canonical auth event contract was not live for this full reporting window. GA zeros are therefore **not** interpreted as zero signups, conversion alerts that depend on `signup_completed` are suppressed, and the comparison is informational only.'}
+
+### Creator title workflow reconciliation
+
+| Workflow stage | Authoritative outcomes | GA events | Variance | Status |
+|----------------|-----------------------:|----------:|---------:|--------|
+${titleWorkflowReconciliation.map(row => `| ${row.stage === 'draft_created' ? 'Draft created' : row.stage.charAt(0).toUpperCase() + row.stage.slice(1)} | ${row.authoritativeOutcomes} | ${row.gaEvents} | ${row.variance > 0 ? '+' : ''}${row.variance} | ${formatTitleWorkflowStatus(row.status)} |`).join('\n')}
+
+Draft creation, submission, and approval use \`title_drafts.created_at\`, \`submitted_at\`, and \`approved_at\` as their authoritative timestamps. GA event counts—not user counts—are compared because one creator may submit multiple titles. Active admin creators are excluded.
+
+${titleClientInstrumentationLive
+  ? 'The creator draft/submission contract was live before this full window, so client-event differences are enforceable.'
+  : 'The creator draft/submission contract was not live for this full window; those comparisons are informational and cannot be interpreted as creator inactivity.'}
+${titleServerInstrumentationLive
+  ? 'Approval and publication server events were live before this full window.'
+  : 'Approval and publication server events are not yet live, so authoritative database outcomes remain the only valid counts.'}
+
+Publication currently shows all external-creator catalog rows created in the window as an **unlinked proxy**, not a reconciled conversion. \`title_drafts\` has no \`published_title_id\`, so the report cannot prove which approved draft created which title. This stage remains \`Draft-to-title linkage pending\` regardless of matching totals.
 
 ### Human email engagement
 
@@ -647,6 +754,7 @@ serve(async (req) => {
       rawTrafficResponse,
       cleanTrafficResponse,
       signupByHostResponse,
+      titleWorkflowResponse,
     ] = await Promise.all([
       // Query 1: Funnel events
       runGA4Report(accessToken, {
@@ -734,6 +842,34 @@ serve(async (req) => {
           },
         }]),
       }),
+
+      // Query 8: Canonical creator title workflow outcomes
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['eventName'],
+        metrics: ['eventCount'],
+        dimensionFilter: buildCleanProductionFilter([
+          {
+            filter: {
+              fieldName: 'hostName',
+              stringFilter: {
+                value: 'creator.kstorybridge.com',
+                matchType: 'EXACT',
+                caseSensitive: true,
+              },
+            },
+          },
+          {
+            filter: {
+              fieldName: 'eventName',
+              inListFilter: {
+                values: TITLE_WORKFLOW_EVENTS,
+                caseSensitive: true,
+              },
+            },
+          },
+        ]),
+      }),
     ])
 
     console.log('[funnel-report-cron] Parsing GA4 data...')
@@ -746,6 +882,7 @@ serve(async (req) => {
     const rawTraffic = parseTrafficSummary(rawTrafficResponse)
     const cleanTraffic = parseTrafficSummary(cleanTrafficResponse)
     const gaSignupCounts = parseSignupUsersByHost(signupByHostResponse.rows)
+    const gaTitleWorkflowCounts = parseTitleWorkflowEvents(titleWorkflowResponse.rows)
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -767,6 +904,26 @@ serve(async (req) => {
       gaSignupCounts,
       instrumentationLive
     )
+    const authoritativeTitleWorkflowCounts = await getAuthoritativeTitleWorkflowCounts(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      window
+    )
+    const titleClientInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const titleServerInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const titleWorkflowReconciliation = reconcileTitleWorkflow(
+      authoritativeTitleWorkflowCounts,
+      gaTitleWorkflowCounts,
+      titleClientInstrumentationLive,
+      titleServerInstrumentationLive,
+      false
+    )
 
     // Generate report
     console.log('[funnel-report-cron] Generating funnel report...')
@@ -779,6 +936,9 @@ serve(async (req) => {
       cleanTraffic,
       signupReconciliation,
       instrumentationLive,
+      titleWorkflowReconciliation,
+      titleClientInstrumentationLive,
+      titleServerInstrumentationLive,
       window,
       days
     )

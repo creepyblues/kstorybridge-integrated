@@ -57,6 +57,14 @@ The cron job needs a Google Service Account with access to the GA4 Data API.
 npx supabase secrets set GOOGLE_SERVICE_ACCOUNT_JSON='<paste entire JSON content here>'
 ```
 
+The signup reconciliation remains in `Instrumentation pending` mode until the canonical auth contract has been live for a complete reporting window. After both the buyer dashboard and creator app are released to production, set this secret to the later of the two deployment timestamps:
+
+```bash
+npx supabase secrets set ANALYTICS_AUTH_CONTRACT_LIVE_AT='2026-07-13T00:00:00Z'
+```
+
+Use the actual production timestamp, not the example above. The report starts enforcing the 5% GA-to-Supabase reconciliation tolerance only when that timestamp predates the full report window. Until then, GA zeros are labeled as incomplete instrumentation and do not trigger false zero-signup alerts.
+
 **Important**: The JSON must be on a single line. You can use:
 ```bash
 # Convert multi-line JSON to single line

@@ -195,6 +195,19 @@ Implemented in source on 2026-07-13; production release pending under `AR-110`:
 - No personally identifiable information is sent to GA.
 - Buyer and creator activation can be segmented by source and cohort.
 
+### Signup reconciliation implementation
+
+Implemented and deployed on 2026-07-13; the canonical frontend release and one full post-release reporting window remain before `AR-302` can close:
+
+- `user_buyers.created_at` and `user_creators.created_at` are counted as the authoritative completed-signup outcomes for the exact same America/Los_Angeles calendar window queried from GA4.
+- Active records in the `admin` table are excluded from both profile counts without logging or reporting their email addresses. Non-admin staff exclusions remain pending `AR-005`.
+- GA `signup_completed` users are split by `dashboard.kstorybridge.com` and `creator.kstorybridge.com`, avoiding dependence on an unregistered custom dimension.
+- Reconciliation status distinguishes `Matched` (within 5%), `Drift detected`, `No signup activity`, and `Instrumentation pending`.
+- `ANALYTICS_AUTH_CONTRACT_LIVE_AT` must be set to the later production deployment timestamp for the buyer and creator auth contract. Drift enforcement begins only after that timestamp predates the full reporting window.
+- While instrumentation is pending, authoritative Supabase signups remain visible, GA zeros are never called zero signups, and alerts that depend on `signup_completed` are suppressed.
+- Eleven shared analytics tests, including Pacific daylight-saving boundaries, and a full Deno type check pass.
+- The production function returned HTTP 200 on its health check and manual seven-day run; the report reached three admins and Slack with zero delivery failures. `ANALYTICS_AUTH_CONTRACT_LIVE_AT` is intentionally unset until both auth funnels are in production.
+
 ## Phase 4: Reporting, alerts, and operating cadence
 
 - [ ] `AR-400` Replace obsolete funnel event names in the analytics skill and scheduled funnel report.
@@ -253,6 +266,7 @@ All of the following must be true:
 | 2026-07-13 | Established the shared cross-app event contract and normalized buyer and creator auth funnels. | `@kstorybridge/analytics` is consumed by all three apps; the active contract records owners, exact triggers, parameters, privacy rules, and examples; aggregate auth action parameters were replaced by directly queryable event names; arbitrary failure text normalizes to `other`; 85 focused tests and all three app builds pass; changed-file lint passes. | Release the auth contract independently, then implement founder-approved activation events and server-confirmed commercial outcomes without reopening the naming contract. |
 | 2026-07-13 | Closed the authenticated GA identity lifecycle for both product apps. | Dashboard and creator auth providers pass only the Supabase UUID to GA after session resolution, derive internal classification from protected metadata, clear identity on signed-out state and before explicit sign-out, and never pass email; dashboard lifecycle coverage plus three new creator lifecycle tests pass. | Use the non-PII `user_id` for authoritative signup reconciliation under `AR-302` after the canonical auth events reach production. |
 | 2026-07-13 | Mapped GA outcomes to the current Supabase and Stripe sources of truth and documented every reconciliation gap. | Production schema was verified with zero-row PostgREST probes; migrations and webhook/approval functions were cross-checked; the source map records keys, timestamps, confidence, and remediation for signup, trial, title workflow, interest, introductions, and subscriptions. | Implement reconciliation only for high-confidence outcomes; resolve the documented buyer-approval, introduction, draft-link, and buyer-payment gaps before promoting those metrics. |
+| 2026-07-13 | Implemented and production-verified honest buyer and creator signup reconciliation in the scheduled funnel report. | The report compares active-admin-excluded Supabase profile creation with GA completed-signup users by production hostname, uses a 5% tolerance, and treats pre-release GA zeros as instrumentation pending; eleven shared tests including Pacific daylight-saving boundaries and Deno type checking pass; production health and a manual seven-day run returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Release both canonical auth funnels, set `ANALYTICS_AUTH_CONTRACT_LIVE_AT`, then close `AR-302` after one complete reconciled window. |
 
 ## Progress update procedure
 

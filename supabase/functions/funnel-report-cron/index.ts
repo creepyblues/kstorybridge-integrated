@@ -4,6 +4,18 @@ import {
   buildCleanProductionFilter,
   buildProductionHostFilter,
 } from '../_shared/analytics-filters.ts'
+import {
+  isInstrumentationLiveForWindow,
+  parseSignupUsersByHost,
+  reconcileSignupCounts,
+  type SignupCounts,
+  type SignupReconciliationRow,
+} from '../_shared/signup-reconciliation.ts'
+import {
+  REPORT_TIME_ZONE,
+  reportingWindow,
+  type ReportingWindow,
+} from '../_shared/reporting-window.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -82,6 +94,54 @@ interface TrafficSummary {
   newUsers: number
   sessions: number
   engagedSessions: number
+}
+
+async function getAuthoritativeSignupCounts(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  window: ReportingWindow
+): Promise<SignupCounts> {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+  const { data: admins, error: adminError } = await supabase
+    .from('admin')
+    .select('email')
+    .eq('active', true)
+
+  if (adminError) throw new Error(`Failed to load active admins: ${adminError.message}`)
+  const adminEmails = (admins ?? [])
+    .map(admin => admin.email?.trim().toLowerCase())
+    .filter((email): email is string => Boolean(email))
+
+  const countExternalProfiles = async (
+    table: 'user_buyers' | 'user_creators'
+  ): Promise<number> => {
+    const baseQuery = () => supabase
+      .from(table)
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', window.start.toISOString())
+      .lt('created_at', window.endExclusive.toISOString())
+
+    const [allResult, adminResult] = await Promise.all([
+      baseQuery(),
+      adminEmails.length > 0
+        ? baseQuery().in('email', adminEmails)
+        : Promise.resolve({ count: 0, error: null }),
+    ])
+    if (allResult.error) throw new Error(`Failed to count ${table}: ${allResult.error.message}`)
+    if (adminResult.error) {
+      throw new Error(`Failed to exclude active admins from ${table}: ${adminResult.error.message}`)
+    }
+    return Math.max((allResult.count ?? 0) - (adminResult.count ?? 0), 0)
+  }
+
+  const [buyer, creator] = await Promise.all([
+    countExternalProfiles('user_buyers'),
+    countExternalProfiles('user_creators'),
+  ])
+
+  return { buyer, creator }
 }
 
 // Generate JWT for Google API authentication
@@ -299,7 +359,8 @@ function parseTrafficSummary(response: GA4Response): TrafficSummary {
 
 // Generate progress bar
 function progressBar(percentage: number): string {
-  const filled = Math.round(percentage / 5)
+  const boundedPercentage = Math.max(0, Math.min(percentage, 100))
+  const filled = Math.round(boundedPercentage / 5)
   const empty = 20 - filled
   return '\u2588'.repeat(filled) + '\u2591'.repeat(empty)
 }
@@ -307,6 +368,16 @@ function progressBar(percentage: number): string {
 // Format percentage
 function formatPct(value: number): string {
   return `${(value * 100).toFixed(1)}%`
+}
+
+function formatReconciliationStatus(status: SignupReconciliationRow['status']): string {
+  const labels: Record<SignupReconciliationRow['status'], string> = {
+    matched: 'Matched',
+    drift: 'Drift detected',
+    instrumentation_pending: 'Instrumentation pending',
+    no_activity: 'No signup activity',
+  }
+  return labels[status]
 }
 
 // Generate funnel report markdown
@@ -317,6 +388,9 @@ function generateFunnelReport(
   sources: SourceMetrics[],
   rawTraffic: TrafficSummary,
   cleanTraffic: TrafficSummary,
+  signupReconciliation: SignupReconciliationRow[],
+  instrumentationLive: boolean,
+  window: ReportingWindow,
   days: number
 ): { markdown: string; alerts: string[] } {
   const alerts: string[] = []
@@ -346,14 +420,21 @@ function generateFunnelReport(
   const excludedSessionRate = rawTraffic.sessions > 0 ? excludedSessions / rawTraffic.sessions : 0
 
   // Check for alerts
-  if (overallRate < 0.01) {
+  if (instrumentationLive && firstVisit.totalUsers > 0 && overallRate < 0.01) {
     alerts.push('Critical: Overall conversion rate <1%')
   }
-  if (ctaClicked.totalUsers > 0 && signupComplete.totalUsers === 0) {
+  if (instrumentationLive && ctaClicked.totalUsers > 0 && signupComplete.totalUsers === 0) {
     alerts.push('Critical: Signup CTA clicks but 0% completion rate')
   }
-  if (trialRate < 0.05) {
+  if (firstVisit.totalUsers > 0 && trialRate < 0.05) {
     alerts.push('Warning: First Visit to Trial rate <5%')
+  }
+  if (instrumentationLive) {
+    for (const row of signupReconciliation.filter(row => row.status === 'drift')) {
+      alerts.push(
+        `Data quality: ${row.accountType} signup tracking differs from the authoritative profile count by ${row.variance}`
+      )
+    }
   }
   if (excludedSessionRate > 0.1) {
     alerts.push(`Data quality: ${formatPct(excludedSessionRate)} of production-host sessions excluded as known scanner traffic`)
@@ -366,12 +447,15 @@ function generateFunnelReport(
     }
   }
 
-  const endDate = new Date()
-  endDate.setDate(endDate.getDate() - 1)
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() - days)
+  const endDate = new Date(`${window.endDate}T12:00:00.000Z`)
+  const startDate = new Date(`${window.startDate}T12:00:00.000Z`)
 
-  const dateFormat = (d: Date) => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const dateFormat = (d: Date) => d.toLocaleDateString('en-US', {
+    timeZone: REPORT_TIME_ZONE,
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
 
   let markdown = `# KStoryBridge Signup Funnel Analysis
 
@@ -389,6 +473,18 @@ function generateFunnelReport(
 | Engaged Sessions | ${rawTraffic.engagedSessions} | ${cleanTraffic.engagedSessions} | ${Math.max(rawTraffic.engagedSessions - cleanTraffic.engagedSessions, 0)} |
 
 The clean estimate includes only the three production hosts and excludes all observed Brevo/Sendinblue scanner referral domains. Legitimate email engagement is reconciled separately with Brevo campaign data.
+
+### Authoritative signup reconciliation
+
+| Account type | Supabase profiles | GA completed users | Variance | Status |
+|--------------|------------------:|-------------------:|---------:|--------|
+${signupReconciliation.map(row => `| ${row.accountType === 'buyer' ? 'Buyer' : 'Creator'} | ${row.authoritativeProfiles} | ${row.gaCompletedUsers} | ${row.variance > 0 ? '+' : ''}${row.variance} | ${formatReconciliationStatus(row.status)} |`).join('\n')}
+
+Supabase profile creation is the signup source of truth. GA4 counts are used to validate behavioral instrumentation, not to determine how many accounts exist. Active admin accounts are excluded from the profile totals. Additional staff classification remains pending, so these totals are an external-user estimate.
+
+${instrumentationLive
+  ? 'The canonical auth event contract was live before this full reporting window, so differences are treated as tracking drift.'
+  : 'The canonical auth event contract was not live for this full reporting window. GA zeros are therefore **not** interpreted as zero signups, conversion alerts that depend on `signup_completed` are suppressed, and the comparison is informational only.'}
 
 ### Human email engagement
 
@@ -535,9 +631,10 @@ serve(async (req) => {
     const accessToken = await getAccessToken(serviceAccount)
     console.log('[funnel-report-cron] Authentication successful')
 
-    // Calculate date range
-    const startDate = `${days}daysAgo`
-    const endDate = 'yesterday'
+    // Calculate one shared Los Angeles calendar window for GA4 and Supabase.
+    const window = reportingWindow(days)
+    const startDate = window.startDate
+    const endDate = window.endDate
 
     // Run all queries in parallel
     console.log('[funnel-report-cron] Fetching GA4 data...')
@@ -549,6 +646,7 @@ serve(async (req) => {
       sourcesResponse,
       rawTrafficResponse,
       cleanTrafficResponse,
+      signupByHostResponse,
     ] = await Promise.all([
       // Query 1: Funnel events
       runGA4Report(accessToken, {
@@ -619,6 +717,23 @@ serve(async (req) => {
         metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
         dimensionFilter: buildCleanProductionFilter(),
       }),
+
+      // Query 7: Canonical completed signups split into buyer and creator apps
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['hostName'],
+        metrics: ['totalUsers'],
+        dimensionFilter: buildCleanProductionFilter([{
+          filter: {
+            fieldName: 'eventName',
+            stringFilter: {
+              value: 'signup_completed',
+              matchType: 'EXACT',
+              caseSensitive: true,
+            },
+          },
+        }]),
+      }),
     ])
 
     console.log('[funnel-report-cron] Parsing GA4 data...')
@@ -630,6 +745,28 @@ serve(async (req) => {
     const trafficSources = parseTrafficSources(sourcesResponse)
     const rawTraffic = parseTrafficSummary(rawTrafficResponse)
     const cleanTraffic = parseTrafficSummary(cleanTrafficResponse)
+    const gaSignupCounts = parseSignupUsersByHost(signupByHostResponse.rows)
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required')
+    }
+
+    const authoritativeSignupCounts = await getAuthoritativeSignupCounts(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      window
+    )
+    const instrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_AUTH_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const signupReconciliation = reconcileSignupCounts(
+      authoritativeSignupCounts,
+      gaSignupCounts,
+      instrumentationLive
+    )
 
     // Generate report
     console.log('[funnel-report-cron] Generating funnel report...')
@@ -640,11 +777,15 @@ serve(async (req) => {
       trafficSources,
       rawTraffic,
       cleanTraffic,
+      signupReconciliation,
+      instrumentationLive,
+      window,
       days
     )
 
     // Get today's date for report
     const reportDate = new Date().toLocaleDateString('en-US', {
+      timeZone: REPORT_TIME_ZONE,
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -654,8 +795,8 @@ serve(async (req) => {
     // Send report via send-analytics-report function
     console.log('[funnel-report-cron] Sending report to admins...')
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
+    if (!supabaseAnonKey) throw new Error('SUPABASE_ANON_KEY is required')
 
     const sendResponse = await fetch(`${supabaseUrl}/functions/v1/send-analytics-report`, {
       method: 'POST',

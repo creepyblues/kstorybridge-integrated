@@ -61,3 +61,9 @@ The production schema was probed with zero-row PostgREST selects, so no customer
 6. Retire or repair older code paths that still query the nonexistent buyer `subscriptions` relation.
 
 These gaps do not block clean traffic reporting, auth funnels, or creator subscription reconciliation. They do block honest claims about buyer approval, introductions, draft-to-publication latency, and locally reconciled buyer payments.
+
+## Signup reconciliation operating rule
+
+The scheduled funnel report counts buyer and creator profiles in the same America/Los_Angeles calendar window as GA4 and excludes active administrators. GA users are assigned to account type by production hostname, so the comparison works before `account_type` is registered as a GA custom dimension.
+
+The report enforces the 5% acceptance tolerance only after `ANALYTICS_AUTH_CONTRACT_LIVE_AT` predates the complete reporting window. Before that point, the canonical events have incomplete production coverage: Supabase remains authoritative, the report labels the comparison `Instrumentation pending`, and it suppresses signup-completion alerts rather than interpreting missing GA events as missing customers.

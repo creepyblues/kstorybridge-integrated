@@ -145,4 +145,3 @@ Active admins were excluded from these database counts. Additional staff/test ex
 - Supabase service-role reads were aggregate-only and excluded active-admin identities; no personal data was written to this report.
 - GA active/new-user metrics are non-additive across apps and sources. Supabase records are authoritative for business outcomes.
 - Samples are small, canonical contracts are unreleased, staff/test exclusions are incomplete, and Brevo provider totals are unavailable. No causal or retention claim is made.
-

@@ -229,17 +229,17 @@ Implemented and production-verified on 2026-07-13; creator release, server event
 - Separate client and server live-at timestamps prevent missing pre-release events from being interpreted as inactivity or tracking drift.
 - Four shared contract tests, 43 creator workflow tests, 15 shared report tests, the full creator build, and Deno type checking pass.
 - The production function health check and manual seven-day run returned HTTP 200; the updated report reached three admins and Slack with zero delivery failures. Both title-contract timestamps are intentionally unset while their respective instrumentation remains unreleased.
-- Additive draft/publication linkage and idempotent approval recovery are prepared in source. The migration contains no destructive operation or data rewrite, and the Edge Function type-checks. They remain deliberately undeployed because Docker is stopped and the mandatory local database reset plus approval/retry integration tests have not run.
+- Additive draft/publication linkage and idempotent approval recovery are prepared in source. The migration contains no destructive operation or data rewrite, and the Edge Function type-checks. Isolated validation passes, but they remain deliberately undeployed because the complete local reset fails in older migration history before reaching this migration.
 
 ### Commercial outcome reconciliation implementation
 
-Implemented and production-verified on 2026-07-13; dashboard release and one complete post-release window remain before the buyer-interest portion of `AR-304` can close, while introductions and buyer subscriptions remain source-model gaps:
+Implemented and production-verified on 2026-07-13; dashboard release and one complete post-release window remain before the buyer-interest portion of `AR-304` can close, while introductions remain a source-model gap and buyer-subscription delivery is prepared but unreleased:
 
 - `title_interests.created_at` is the authoritative timestamp for a newly created external buyer-interest row. Active admins are excluded.
 - The unique buyer/title database constraint is the dedupe gate. A duplicate can refresh profile/note data but returns `created=false`, sends no repeated team notification, and emits no repeated GA event.
 - `interest_submitted` event counts reconcile against new rows with the same 5% tolerance used elsewhere. Enforcement waits until `ANALYTICS_INTEREST_CONTRACT_LIVE_AT` predates the full window.
 - The report explicitly labels introduction requested/completed as unavailable because no authoritative introduction record exists.
-- Buyer subscription start remains unavailable because the local `stripe_customers` projection has no immutable subscription-start timestamp; buyer payment completion remains external-only in Stripe.
+- Buyer subscription start remains unavailable in production reporting. A durable, deduplicated webhook-to-outbox path using Stripe's occurrence time is prepared and tested on `v2`, but the migration, secrets, webhooks, worker, schedule, and GA validation are not production-live; buyer payment completion remains external-only in Stripe.
 - The report treats unavailable outcomes as data-model gaps, not zero conversions.
 - Four dashboard interest tests, 18 shared report tests, both affected Edge Function type checks, and the full dashboard build pass.
 - Production `express-interest` and `funnel-report-cron` health checks returned HTTP 200. A manual seven-day report run completed and reached three admins plus Slack with zero delivery failures. `ANALYTICS_INTEREST_CONTRACT_LIVE_AT` remains intentionally unset until the dashboard event is released.
@@ -275,6 +275,8 @@ Implemented and production-verified on 2026-07-13; dashboard release and one com
 - [ ] `AR-504` Record the final architecture, event dictionary, dashboard links, and operating owner.
 - [ ] `AR-505` Obtain founder sign-off that the measurement system answers the business questions.
 - [ ] `AR-506` Change `analytics-program:status=ACTIVE` to `analytics-program:status=DONE`; the scheduled audit will then exit without sending further progress reports.
+
+`AR-504` partial evidence: [ANALYTICS_OPERATING_ARCHITECTURE.md](ANALYTICS_OPERATING_ARCHITECTURE.md) now records the three-app data flow, authoritative systems, responsibilities, environment and identity invariants, canonical references, reporting schedules, live-at gates, alert coverage, deployment order, known gaps, GA property link, and operator runbook. The task remains open because the final named operator and approved custom dashboard links are unresolved, production instrumentation and validation are incomplete, and founder sign-off belongs to `AR-505`.
 
 ## Program exit criteria
 
@@ -322,6 +324,7 @@ All of the following must be true:
 | 2026-07-13 | Cut scheduled and on-demand analytics reporting to canonical event names without rewriting history. | Central event inventory excludes obsolete authenticated aliases, keeps the public-trial funnel distinct, and adds full-window product/commercial cutover gates; fixed server-event origins preserve production-host filtering; 26 focused tests and both Edge Function checks pass; production manual report returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Release the canonical clients and server outcomes, record their real live-at timestamps, then build the complete weekly operating report under `AR-401` without combining pre-cutover aliases. |
 | 2026-07-13 | Added clean external activity breakdowns for all three production apps. | Fixed website/dashboard/creator rows use the centralized production/scanner filter; missing apps zero-fill, unexpected hosts are ignored, and duplicate/malformed production rows fail closed; 29 focused tests and Deno checking pass; production manual report returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Use these app rows in the complete weekly operating report and add app-aware alerts after founder activation and retention definitions are approved. |
 | 2026-07-13 | Added actionable acquisition, missing-event, scanner, and reconciliation alert foundations. | Contiguous previous-window comparison; 20% new-user decline threshold with five-user noise floor; contract-live and session-volume gate for missing product events; every implemented alert names an owner and action; 33 tests and Deno checking pass; production manual report returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Define buyer/creator activation and retention cadence, then add their decline rules and close `AR-403`. |
+| 2026-07-13 | Added the analytics operating architecture and reconciled outcome-source documentation. | One active reference now maps client and server collection, GA4/Supabase/Stripe reconciliation, report and progress schedules, ownership roles, live-at gates, alerts, deployment order, known blockers, and the runbook; stale title and subscription source statements were corrected without claiming unreleased work is live. | Assign the named operator, approve dashboard links, finish production validation, and obtain founder sign-off before closing `AR-504`. |
 
 ## Progress update procedure
 

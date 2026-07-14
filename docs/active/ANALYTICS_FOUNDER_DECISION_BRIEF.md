@@ -12,7 +12,7 @@ This brief turns the open business questions into specific recommended definitio
 
 KStoryBridge describes itself as a curated marketplace and deal-support layer: Korean creators list proven IP; global buyers discover and evaluate it; KStoryBridge supports rights and deal execution. The buyer promise is faster movement from a production brief or comparable title to a rights-verified title that can be shortlisted and pitched internally. The creator promise is a Hollywood-legible title submission that becomes discoverable after review, with optional packaging and active pitching.
 
-That makes raw traffic, signups, generic app sessions, and subscription revenue important inputs—not the primary proof that the marketplace works. The strongest currently modeled demand outcome is a new, deduplicated buyer/title interest record. Completed introductions and deals would be stronger, but neither has an authoritative production data model today.
+That makes raw traffic, signups, generic app sessions, and subscription revenue important inputs—not the primary proof that the marketplace works. The strongest currently modeled demand outcome is a new, deduplicated buyer/title interest record. Completed introductions and deals would be stronger, but neither has an authoritative current workflow today. Production does contain one historical `request.type=contact` row, but its semantics are unknown and the table has no status or completion boundary; it is not a current introduction KPI.
 
 ## Recommended decisions
 
@@ -39,7 +39,7 @@ That makes raw traffic, signups, generic app sessions, and subscription revenue 
 
 **Behavioral reconciliation:** Canonical GA `interest_submitted` event count, enforced only after `ANALYTICS_INTEREST_CONTRACT_LIVE_AT` predates the complete reporting window.
 
-**Do not substitute:** CTA clicks, title views, raw interest-event counts without database reconciliation, or introduction counts while no introduction record exists.
+**Do not substitute:** CTA clicks, title views, raw interest-event counts without database reconciliation, or the legacy `request.type=contact` count while no authoritative current introduction workflow exists.
 
 **Evolution path:** When an authoritative introduction workflow exists, promote completed qualified introductions as the north star or use them as the success metric immediately downstream of interest.
 

@@ -121,4 +121,6 @@ Allowed `entry_method` values are `full` and `quick_add`. Title names, URLs, rig
 - Canonical buyer and creator auth names are implemented in source under `AR-201` and `AR-202`.
 - Canonical creator draft-created and submitted outcomes are implemented in source under `AR-303`; production release remains pending. Approval and publication remain reserved until server-side delivery and durable draft-to-title linkage exist.
 - Canonical buyer `interest_submitted` is implemented in source under `AR-205` after the server-confirmed write. It replaces legacy `title_interest_submitted` and removes title names and note metadata; production release remains pending.
-- Commercial and product-engagement names are reserved but remain unimplemented until their individual plan tasks pass acceptance tests.
+- Product-engagement names are implemented and tested on `v2` under `AR-206`; production release and scheduled-report cutover remain pending.
+- Introduction, checkout, subscription, approval, and publication names remain reserved until their authoritative server-side implementations pass acceptance tests.
+- Critical-event boundary coverage and its remaining gaps are tracked in [ANALYTICS_EVENT_TEST_MATRIX.md](ANALYTICS_EVENT_TEST_MATRIX.md).

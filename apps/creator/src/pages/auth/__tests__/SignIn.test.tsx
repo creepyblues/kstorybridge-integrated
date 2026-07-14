@@ -122,6 +122,7 @@ describe('SignIn', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/home')
       expect(analytics.trackSignin).toHaveBeenCalledWith('attempted', 'email')
       expect(analytics.trackSignin).toHaveBeenCalledWith('completed', 'email')
+      expect(analytics.trackSignin.mock.calls.filter(([stage]) => stage === 'completed')).toHaveLength(1)
     })
   })
 
@@ -179,6 +180,9 @@ describe('SignIn', () => {
       },
       { timeout: 3000 }
     )
+    expect(analytics.trackSignin).toHaveBeenCalledWith('failed', 'email', 'email_not_confirmed')
+    expect(analytics.trackSignin.mock.calls.filter(([stage]) => stage === 'failed')).toHaveLength(1)
+    expect(analytics.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false)
   })
 
   it('should handle resend verification email success', async () => {
@@ -295,6 +299,9 @@ describe('SignIn', () => {
       },
       { timeout: 3000 }
     )
+    expect(analytics.trackSignin).toHaveBeenCalledWith('failed', 'email', 'auth_rejected')
+    expect(analytics.trackSignin.mock.calls.filter(([stage]) => stage === 'failed')).toHaveLength(1)
+    expect(analytics.trackSignin.mock.calls.some(([stage]) => stage === 'completed')).toBe(false)
   })
 
   it('should show loading state during signin', async () => {

@@ -249,6 +249,7 @@ describe('SignUp', () => {
 
       expect(analytics.trackSignup).toHaveBeenCalledWith('attempted', 'email')
       expect(analytics.trackSignup).toHaveBeenCalledWith('completed', 'email')
+      expect(analytics.trackSignup.mock.calls.filter(([stage]) => stage === 'completed')).toHaveLength(1)
 
       // Verify navigation
       expect(mockNavigate).toHaveBeenCalledWith(
@@ -292,6 +293,9 @@ describe('SignUp', () => {
     await waitFor(() => {
       expect(screen.getByText(/signup failed/i)).toBeInTheDocument()
     })
+    expect(analytics.trackSignup).toHaveBeenCalledWith('failed', 'email', 'auth_rejected')
+    expect(analytics.trackSignup.mock.calls.filter(([stage]) => stage === 'failed')).toHaveLength(1)
+    expect(analytics.trackSignup.mock.calls.some(([stage]) => stage === 'completed')).toBe(false)
   })
 
   it('should show loading state during signup', async () => {

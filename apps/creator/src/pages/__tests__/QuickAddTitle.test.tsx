@@ -292,6 +292,8 @@ describe('QuickAddTitle Page', () => {
         expect(mockSubmitDraftById).toHaveBeenCalledWith('new-draft-id')
         expect(analytics.trackTitleDraftCreated).toHaveBeenCalledWith('new-draft-id', 'quick_add')
         expect(analytics.trackTitleSubmitted).toHaveBeenCalledWith('new-draft-id', 'quick_add')
+        expect(analytics.trackTitleDraftCreated).toHaveBeenCalledTimes(1)
+        expect(analytics.trackTitleSubmitted).toHaveBeenCalledTimes(1)
       })
     })
 

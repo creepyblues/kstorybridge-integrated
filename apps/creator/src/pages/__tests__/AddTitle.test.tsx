@@ -3,7 +3,7 @@
  * Tests for the 5-step Add Title survey form
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
@@ -438,6 +438,8 @@ describe('AddTitle Survey Page', () => {
         expect(mockSubmitDraftById).toHaveBeenCalledWith('new-draft-id')
         expect(analytics.trackTitleDraftCreated).toHaveBeenCalledWith('new-draft-id', 'full')
         expect(analytics.trackTitleSubmitted).toHaveBeenCalledWith('new-draft-id', 'full')
+        expect(analytics.trackTitleDraftCreated).toHaveBeenCalledTimes(1)
+        expect(analytics.trackTitleSubmitted).toHaveBeenCalledTimes(1)
       })
     })
 

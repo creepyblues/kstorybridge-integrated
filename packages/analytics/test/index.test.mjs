@@ -30,6 +30,17 @@ test('uses directly queryable creator title workflow outcomes', () => {
   assert.equal(ANALYTICS_EVENT_NAMES.titlePublished, 'title_published');
 });
 
+test('uses directly queryable website acquisition events', () => {
+  assert.equal(ANALYTICS_EVENT_NAMES.audiencePathSelected, 'audience_path_selected');
+  assert.equal(ANALYTICS_EVENT_NAMES.featurePromoSelected, 'feature_promo_selected');
+  assert.equal(ANALYTICS_EVENT_NAMES.trialCtaClicked, 'trial_cta_clicked');
+  assert.equal(ANALYTICS_EVENT_NAMES.signupCtaClicked, 'signup_cta_clicked');
+  assert.equal(ANALYTICS_EVENT_NAMES.signinCtaClicked, 'signin_cta_clicked');
+  assert.equal(ANALYTICS_EVENT_NAMES.creatorInquiryStarted, 'creator_inquiry_started');
+  assert.equal(ANALYTICS_EVENT_NAMES.creatorInquirySubmitted, 'creator_inquiry_submitted');
+  assert.equal(ANALYTICS_EVENT_NAMES.creatorInquiryFailed, 'creator_inquiry_failed');
+});
+
 test('replaces arbitrary or sensitive failure text with other', () => {
   assert.equal(normalizeFailureReason('auth_rejected'), 'auth_rejected');
   assert.equal(normalizeFailureReason('User person@example.com rejected'), 'other');

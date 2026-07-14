@@ -21,7 +21,7 @@ No wave is considered live because its source exists, its tests pass, or a previ
 | Wave | Scope | Production mutation | Primary tasks unlocked |
 |---|---|---|---|
 | 1. Collection foundation | PR #141: production-host gating, internal classification, trusted email engagement, scanner filtering, progress workflow | Main merge and three Vercel app releases; no database migration | `AR-014`, `AR-106`, `AR-108`, `AR-110` |
-| 2. Canonical client contract | Shared analytics package, auth/title/buyer-product/checkout outcomes, cross-app privacy sink and boundary tests | Three Vercel app releases; no database migration or server live-at gate | `AR-201`–`AR-207`, client portions of `AR-302`–`AR-304` |
+| 2. Canonical client contract | Shared analytics package, website acquisition, auth/title/buyer-product/checkout outcomes, cross-app privacy sink and boundary tests | Three Vercel app releases; no database migration or server live-at gate | `AR-201`–`AR-207`, `AR-209`, client portions of `AR-302`–`AR-304` |
 | 3. Authoritative server outcomes and delivery security | Reconciled migration ledger, title linkage, event outbox, report-delivery ledger/schedule, strict functions, webhook/approval producers, worker and secrets | Database migrations, Vault/secrets, Edge Functions, schedules | Server portions of `AR-205`, `AR-303`, `AR-304`, `AR-405`, `AR-406` |
 | 4. Operating report and GA configuration | Weekly scorecard/app comparison, cutover timestamps, approved custom definitions/key events/retention | Report function, live-at secrets, approved GA Admin writes | `AR-208`, `AR-401`, `AR-403`, `AR-404` |
 
@@ -69,6 +69,7 @@ Revert PR #141 and redeploy the three apps. Do not modify GA filters to compensa
 
 - Current `@kstorybridge/analytics` event names and controlled parameters.
 - Successful-outcome boundaries for auth, creator draft/submission, buyer discovery/engagement, interest, and checkout start.
+- Direct website audience, feature-promo, trial, signup, sign-in, and creator-inquiry handoff events.
 - The shared fail-closed sanitizer across website, dashboard, and creator.
 - Page-level negative/duplicate/privacy tests.
 
@@ -82,9 +83,10 @@ Revert PR #141 and redeploy the three apps. Do not modify GA filters to compensa
 ### Acceptance evidence
 
 1. Production DebugView/network inspection confirms exact canonical names and controlled fields for representative website, buyer, and creator journeys.
+   Website sampling must include homepage creator/buyer selection, producer trial/signup handoffs, one feature-promo path, route-aware sign-in, and creator-inquiry start plus one delivery outcome.
 2. `title_name`, searches, raw errors, query strings, session/subscription identifiers, structures, and unknown parameters stop appearing in new client events.
 3. One successful and one failed path are sampled for auth, creator submission, buyer interest, checkout start, and a buyer product action; only durable successes emit their outcome.
-4. Record actual `ANALYTICS_AUTH_CONTRACT_LIVE_AT`, `ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT`, `ANALYTICS_INTEREST_CONTRACT_LIVE_AT`, and `ANALYTICS_PRODUCT_CONTRACT_LIVE_AT` values only after all corresponding production clients are live. Do not set server/commercial gates.
+4. Record actual `ANALYTICS_WEBSITE_ACQUISITION_CONTRACT_LIVE_AT`, `ANALYTICS_AUTH_CONTRACT_LIVE_AT`, `ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT`, `ANALYTICS_INTEREST_CONTRACT_LIVE_AT`, and `ANALYTICS_PRODUCT_CONTRACT_LIVE_AT` values only after all corresponding production clients are live. Do not set server/commercial gates.
 5. Wait for a complete post-cutover reporting window before enforcing reconciliation.
 
 ### Rollback

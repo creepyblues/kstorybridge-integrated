@@ -35,6 +35,7 @@ const CompsNavigatorFeaturePage = () => {
         secondaryCtaText={t('comps.hero.secondaryCta')}
         storageKey="comps-feature-hero"
         accentColor="teal"
+        featureName="comps_navigator"
       >
         <CompsMiniDemo />
       </FeatureHero>
@@ -86,7 +87,7 @@ const CompsNavigatorFeaturePage = () => {
       />
 
       {/* Final CTA */}
-      <FinalCTASection accentColor="teal" />
+      <FinalCTASection accentColor="teal" featureName="comps_navigator" />
     </FeaturePageLayout>
   );
 };

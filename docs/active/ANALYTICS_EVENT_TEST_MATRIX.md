@@ -13,6 +13,7 @@ Cross-app sink coverage now additionally proves that legacy helpers cannot emit 
 | Outcome | Implementation | Payload/privacy test | Success/failure + once test | Status / missing evidence |
 |---|---|---|---|---|
 | `email_landing_engaged` | Website client | Yes | Yes | Complete: page load and untrusted activity emit nothing; first trusted interaction emits once. |
+| Website acquisition handoffs | Website client | Yes | Partial | Eight direct event names and controlled payloads are covered by package/website tests and wired to the primary homepage, navigation, producer, feature-promo, sign-in, and creator-inquiry paths. Component-level click/success/failure boundary tests and production DebugView sampling remain pending (`AR-207`, `AR-209`). |
 | Buyer email signup/signin | Dashboard client | Yes | Yes | Complete: completion follows successful auth/profile checks once; failures emit no completion. |
 | Buyer Google signup/signin | Dashboard callback/profile client | Yes | Yes | Complete: callback signin waits for session/profile checks; signup completion waits for successful profile persistence. |
 | Creator email signup/signin | Creator client | Yes | Yes | Complete: success emits completion once; rejected auth emits one failure and no completion. |

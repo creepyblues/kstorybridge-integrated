@@ -6,6 +6,7 @@ import { Card, CardContent } from '../components/ui/card';
 import Footer from '../components/Footer';
 import { TypewriterText } from '../components/TypewriterText';
 import CreatorInquiryDialog from '../components/CreatorInquiryDialog';
+import { trackCreatorInquiryStarted } from '../utils/analytics';
 import {
   Globe,
   Shield,
@@ -63,7 +64,10 @@ const CreatorsPage = () => {
                 id="creators-hero-join-btn"
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => setInquiryOpen(true)}
+                onClick={() => {
+                  trackCreatorInquiryStarted('hero');
+                  setInquiryOpen(true);
+                }}
               >
                 {t('hero.cta')}
               </Button>
@@ -406,7 +410,10 @@ const CreatorsPage = () => {
               <Button
                 size="lg"
                 className="bg-sunrise-coral hover:bg-sunrise-coral-600 text-white px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => setInquiryOpen(true)}
+                onClick={() => {
+                  trackCreatorInquiryStarted('final_cta');
+                  setInquiryOpen(true);
+                }}
               >
                 {t('finalCta.cta')}
               </Button>

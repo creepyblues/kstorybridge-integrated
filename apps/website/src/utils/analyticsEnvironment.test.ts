@@ -4,7 +4,15 @@ import {
   initializeEmailLandingEngagement,
   isAnalyticsCollectionAllowed,
   trackError,
+  trackAudiencePathSelected,
+  trackCreatorInquiryFailed,
+  trackCreatorInquiryStarted,
+  trackCreatorInquirySubmitted,
+  trackFeaturePromoSelected,
   trackPageView,
+  trackSigninCtaClicked,
+  trackSignupCtaClicked,
+  trackTrialCtaClicked,
   trackWebsiteEvent,
 } from './analytics';
 
@@ -137,6 +145,72 @@ describe('website analytics privacy boundary', () => {
       page_path: '/buyers',
       app_section: 'website',
     }]);
+  });
+
+  it('emits directly queryable acquisition events with controlled fields', () => {
+    trackAudiencePathSelected('creator', 'hero');
+    trackFeaturePromoSelected('comps_navigator');
+    trackTrialCtaClicked('hero', 'chatbot');
+    trackSignupCtaClicked('final_cta', 'producers_page');
+    trackSigninCtaClicked('buyer', 'header_mobile');
+    trackCreatorInquiryStarted('final_cta');
+    trackCreatorInquirySubmitted();
+    trackCreatorInquiryFailed();
+
+    expect(window.dataLayer).toEqual([
+      {
+        event: 'audience_path_selected',
+        account_type: 'creator',
+        cta_position: 'hero',
+        app_section: 'website',
+      },
+      {
+        event: 'feature_promo_selected',
+        account_type: 'buyer',
+        feature_name: 'comps_navigator',
+        cta_position: 'discovery_tools',
+        app_section: 'website',
+      },
+      {
+        event: 'trial_cta_clicked',
+        account_type: 'buyer',
+        cta_position: 'hero',
+        source: 'chatbot',
+        app_section: 'website',
+      },
+      {
+        event: 'signup_cta_clicked',
+        account_type: 'buyer',
+        cta_position: 'final_cta',
+        source: 'producers_page',
+        app_section: 'website',
+      },
+      {
+        event: 'signin_cta_clicked',
+        account_type: 'buyer',
+        cta_position: 'header_mobile',
+        app_section: 'website',
+      },
+      {
+        event: 'creator_inquiry_started',
+        account_type: 'creator',
+        cta_position: 'final_cta',
+        source: 'creators_page',
+        app_section: 'website',
+      },
+      {
+        event: 'creator_inquiry_submitted',
+        account_type: 'creator',
+        source: 'creators_page_contact_form',
+        app_section: 'website',
+      },
+      {
+        event: 'creator_inquiry_failed',
+        account_type: 'creator',
+        source: 'creators_page_contact_form',
+        app_section: 'website',
+      },
+    ]);
   });
 
   it('emits real website events while dropping slugs, names, and raw errors', () => {

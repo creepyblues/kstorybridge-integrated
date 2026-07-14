@@ -35,6 +35,7 @@ const ChatbotFeaturePage = () => {
         secondaryCtaText={t('chatbot.hero.secondaryCta')}
         storageKey="chatbot-feature-hero"
         accentColor="teal"
+        featureName="chatbot"
       >
         <ChatbotMiniDemo />
       </FeatureHero>
@@ -86,7 +87,7 @@ const ChatbotFeaturePage = () => {
       />
 
       {/* Final CTA */}
-      <FinalCTASection accentColor="teal" />
+      <FinalCTASection accentColor="teal" featureName="chatbot" />
     </FeaturePageLayout>
   );
 };

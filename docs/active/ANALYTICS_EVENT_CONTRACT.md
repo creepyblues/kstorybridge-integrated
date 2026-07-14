@@ -62,8 +62,18 @@ Allowed auth failure reasons are defined in the shared package. Unknown or arbit
 | Event | Owner | Exact trigger | Required parameters | Example |
 |---|---|---|---|---|
 | `email_landing_engaged` | Growth | First trusted pointer, keyboard, or scroll interaction after an email-attributed website landing. | `campaign_source`, `campaign_medium`, `campaign_name`, `landing_path`, `engagement_method` | `{campaign_source: "brevo", campaign_medium: "email", campaign_name: "july_buyers", landing_path: "/", engagement_method: "pointerdown"}` |
+| `audience_path_selected` | Growth | A website visitor deliberately chooses the creator or buyer path from the homepage hero or global navigation. | `account_type`, `cta_position` | `{account_type: "buyer", cta_position: "hero"}` |
+| `feature_promo_selected` | Growth | A buyer selects one of the three discovery-tool promo cards. | `account_type`, `feature_name`, `cta_position` | `{account_type: "buyer", feature_name: "comps_navigator", cta_position: "discovery_tools"}` |
+| `trial_cta_clicked` | Growth | A visitor clicks a website CTA that hands off to the public buyer trial. | `account_type`, `source`, `cta_position` | `{account_type: "buyer", source: "chatbot", cta_position: "hero"}` |
+| `signup_cta_clicked` | Growth | A visitor clicks a website CTA that hands off to buyer signup. | `account_type`, `source`, `cta_position` | `{account_type: "buyer", source: "producers_page", cta_position: "final_cta"}` |
+| `signin_cta_clicked` | Growth | A visitor clicks the route-aware creator or buyer sign-in link. | `account_type`, `cta_position` | `{account_type: "creator", cta_position: "header_mobile"}` |
+| `creator_inquiry_started` | Creator success | A creator opens the inquiry form from the hero or final CTA. | `account_type`, `source`, `cta_position` | `{account_type: "creator", source: "creators_page", cta_position: "hero"}` |
+| `creator_inquiry_submitted` | Creator success | The creator inquiry email and team notification both succeed. | `account_type`, `source` | `{account_type: "creator", source: "creators_page_contact_form"}` |
+| `creator_inquiry_failed` | Engineering | Either required creator-inquiry delivery step rejects. No raw error or form value is emitted. | `account_type`, `source` | `{account_type: "creator", source: "creators_page_contact_form"}` |
 
 The event does not fire on page load, so security scanners cannot satisfy it without a trusted browser interaction.
+
+The CTA events measure intent at the website boundary, not completion on the destination app. Trial arrival, signup completion, and authenticated activation remain separate downstream events. `creator_inquiry_submitted` is a client-observed delivery outcome; it is not an authoritative creator profile, title submission, or supply outcome and must not be reconciled as one. The embedded Beehiiv newsletter is cross-origin and remains outside this client contract; subscription truth must come from Beehiiv reporting or a future server-side integration.
 
 ## Commercial outcomes
 
@@ -120,6 +130,7 @@ Allowed `entry_method` values are `full` and `quick_add`. Title names, URLs, rig
 
 - Environment and internal-traffic fields are implemented across all three apps.
 - `email_landing_engaged` is implemented and verified in preview; production release remains tracked by `AR-110`.
+- Primary website audience, feature, trial, signup, sign-in, and creator-inquiry events are implemented and payload-tested on `v2` under `AR-209`. They are assigned to Wave 2 and are not production-live; reports must keep the website acquisition funnel in instrumentation-pending state until the release is validated and its cutover is recorded.
 - Canonical buyer and creator auth names are implemented in source under `AR-201` and `AR-202`.
 - Canonical creator draft-created/submitted outcomes and server-side approval/publication outcomes are implemented in source under `AR-303`; production release, Measurement Protocol validation, and a complete reconciled window remain pending.
 - Canonical buyer `interest_submitted` is implemented in source under `AR-205` after the server-confirmed write. It replaces legacy `title_interest_submitted` and removes title names and note metadata; production release remains pending.

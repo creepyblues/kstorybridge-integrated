@@ -162,6 +162,88 @@ export const trackButtonClick = (buttonName: string, location: string) => {
   trackEvent('button_click', 'engagement', `${buttonName} (${location})`);
 };
 
+export type WebsiteAudience = 'buyer' | 'creator';
+export type WebsiteCtaPosition =
+  | 'header_desktop'
+  | 'header_mobile'
+  | 'hero'
+  | 'final_cta';
+export type WebsiteFeature = 'chatbot' | 'comps_navigator' | 'mandate_matcher';
+
+export const trackAudiencePathSelected = (
+  accountType: WebsiteAudience,
+  ctaPosition: WebsiteCtaPosition
+) => {
+  trackWebsiteEvent(ANALYTICS_EVENT_NAMES.audiencePathSelected, {
+    account_type: accountType,
+    cta_position: ctaPosition,
+  });
+};
+
+export const trackFeaturePromoSelected = (featureName: WebsiteFeature) => {
+  trackWebsiteEvent(ANALYTICS_EVENT_NAMES.featurePromoSelected, {
+    account_type: 'buyer',
+    feature_name: featureName,
+    cta_position: 'discovery_tools',
+  });
+};
+
+export const trackTrialCtaClicked = (
+  ctaPosition: Extract<WebsiteCtaPosition, 'hero' | 'final_cta'>,
+  source: 'producers_page' | WebsiteFeature
+) => {
+  trackWebsiteEvent(ANALYTICS_EVENT_NAMES.trialCtaClicked, {
+    account_type: 'buyer',
+    cta_position: ctaPosition,
+    source,
+  });
+};
+
+export const trackSignupCtaClicked = (
+  ctaPosition: Extract<WebsiteCtaPosition, 'hero' | 'final_cta'>,
+  source: 'producers_page' | WebsiteFeature
+) => {
+  trackWebsiteEvent(ANALYTICS_EVENT_NAMES.signupCtaClicked, {
+    account_type: 'buyer',
+    cta_position: ctaPosition,
+    source,
+  });
+};
+
+export const trackSigninCtaClicked = (
+  accountType: WebsiteAudience,
+  ctaPosition: Extract<WebsiteCtaPosition, 'header_desktop' | 'header_mobile'>
+) => {
+  trackWebsiteEvent(ANALYTICS_EVENT_NAMES.signinCtaClicked, {
+    account_type: accountType,
+    cta_position: ctaPosition,
+  });
+};
+
+export const trackCreatorInquiryStarted = (
+  ctaPosition: Extract<WebsiteCtaPosition, 'hero' | 'final_cta'>
+) => {
+  trackWebsiteEvent(ANALYTICS_EVENT_NAMES.creatorInquiryStarted, {
+    account_type: 'creator',
+    cta_position: ctaPosition,
+    source: 'creators_page',
+  });
+};
+
+export const trackCreatorInquirySubmitted = () => {
+  trackWebsiteEvent(ANALYTICS_EVENT_NAMES.creatorInquirySubmitted, {
+    account_type: 'creator',
+    source: 'creators_page_contact_form',
+  });
+};
+
+export const trackCreatorInquiryFailed = () => {
+  trackWebsiteEvent(ANALYTICS_EVENT_NAMES.creatorInquiryFailed, {
+    account_type: 'creator',
+    source: 'creators_page_contact_form',
+  });
+};
+
 // Track signup events
 export const trackSignup = (userType: 'buyer' | 'creator', method?: string) => {
   pushAnalyticsEvent('sign_up', {

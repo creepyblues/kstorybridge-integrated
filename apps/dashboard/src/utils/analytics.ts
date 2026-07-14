@@ -25,6 +25,8 @@ export type FavoriteSource = 'title_detail' | 'title_search' | 'chat' | 'comps' 
 export type ChatInputType = 'typed' | 'example' | 'suggestion' | 'url_param';
 export type MessageLengthBucket = '1_25' | '26_50' | '51_100' | '101_250' | '251_plus';
 export type PitchDeckAccessType = 'preview' | 'full';
+export type BuyerCheckoutPlan = 'pro' | 'suite';
+export type BillingPeriod = 'monthly' | 'yearly';
 
 export interface TrackingEvent {
   event_name: string;
@@ -831,15 +833,13 @@ export const trackPlanSelect = (
 };
 
 /**
- * Track checkout events
- * @param action - 'started' | 'completed' | 'cancelled' | 'error'
+ * Track legacy checkout UI events that are not business outcomes.
+ * @param action - 'cancelled' | 'error'
  * @param tier - Target tier
- * @param value - Subscription value (for completed)
  */
 export const trackCheckout = (
-  action: 'started' | 'completed' | 'cancelled' | 'error',
+  action: 'cancelled' | 'error',
   tier: string,
-  value?: number,
   metadata?: Record<string, unknown>
 ): void => {
   const params: Record<string, unknown> = {
@@ -849,22 +849,18 @@ export const trackCheckout = (
     ...metadata,
   };
 
-  if (value !== undefined) {
-    params.value = value;
-    params.currency = 'USD';
-  }
-
   trackEvent('checkout', params);
+};
 
-  // Also fire GA4's built-in purchase event for completed checkouts
-  if (action === 'completed' && value) {
-    trackEvent('purchase', {
-      transaction_id: `sub_${Date.now()}`,
-      value,
-      currency: 'USD',
-      items: [{ item_name: `${tier}_subscription`, price: value }],
-    });
-  }
+export const trackCheckoutStarted = (
+  planType: BuyerCheckoutPlan,
+  billingPeriod: BillingPeriod
+): void => {
+  trackEvent(ANALYTICS_EVENT_NAMES.checkoutStarted, {
+    account_type: 'buyer',
+    plan_type: planType,
+    billing_period: billingPeriod,
+  });
 };
 
 // ============================================================================

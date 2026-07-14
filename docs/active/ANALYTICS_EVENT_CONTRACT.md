@@ -72,7 +72,7 @@ These names are reserved now; implementation remains governed by `AR-205` and mu
 | `interest_submitted` | Buyer success | The `express-interest` function confirms the buyer-interest upsert succeeded. | `title_id`, `source` | `{title_id: "uuid", source: "title_detail"}` |
 | `introduction_requested` | Buyer success | The authoritative introduction request is stored. | `title_id`, `source` | `{title_id: "uuid", source: "interest_followup"}` |
 | `introduction_completed` | Partnerships | The authoritative introduction record is marked completed. Prefer server-side emission. | `title_id` | `{title_id: "uuid"}` |
-| `checkout_started` | Revenue | A valid Stripe Checkout session URL is returned by the server. | `account_type`, `plan_type`, `billing_period` | `{account_type: "creator", plan_type: "pro", billing_period: "monthly"}` |
+| `checkout_started` | Revenue | A valid Stripe Checkout session URL or legacy session-ID fallback is returned by the server. | `account_type`, `plan_type`, `billing_period` | `{account_type: "creator", plan_type: "premium", billing_period: "monthly"}` |
 | `subscription_started` | Revenue | Stripe webhook confirms an active paid subscription. Server-side emission is required. | `account_type`, `plan_type`, `billing_period`, `currency`, `value` | `{account_type: "buyer", plan_type: "pro", billing_period: "monthly", currency: "USD", value: 250}` |
 
 ## Product engagement outcomes
@@ -122,5 +122,6 @@ Allowed `entry_method` values are `full` and `quick_add`. Title names, URLs, rig
 - Canonical creator draft-created and submitted outcomes are implemented in source under `AR-303`; production release remains pending. Approval and publication remain reserved until server-side delivery and durable draft-to-title linkage exist.
 - Canonical buyer `interest_submitted` is implemented in source under `AR-205` after the server-confirmed write. It replaces legacy `title_interest_submitted` and removes title names and note metadata; production release remains pending.
 - Product-engagement names are implemented and tested on `v2` under `AR-206`; production release and scheduled-report cutover remain pending.
-- Introduction, checkout, subscription, approval, and publication names remain reserved until their authoritative server-side implementations pass acceptance tests.
+- Canonical `checkout_started` is implemented in both product apps after server-confirmed session creation. Client return pages no longer claim payment or subscription success.
+- Introduction, subscription, approval, and publication names remain reserved until their authoritative server-side implementations pass acceptance tests.
 - Critical-event boundary coverage and its remaining gaps are tracked in [ANALYTICS_EVENT_TEST_MATRIX.md](ANALYTICS_EVENT_TEST_MATRIX.md).

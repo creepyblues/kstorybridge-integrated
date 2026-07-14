@@ -391,20 +391,14 @@ export const trackPlanView = (): void => {
   });
 };
 
-export const trackCheckoutStart = (plan: string, billingPeriod: 'monthly' | 'yearly', titleId?: string): void => {
-  trackEvent('begin_checkout', {
-    plan_type: plan,
+export const trackCheckoutStart = (
+  planType: 'packaging' | 'premium',
+  billingPeriod: 'monthly' | 'yearly'
+): void => {
+  trackEvent(ANALYTICS_EVENT_NAMES.checkoutStarted, {
+    account_type: 'creator',
+    plan_type: planType,
     billing_period: billingPeriod,
-    title_id: titleId,
-  });
-};
-
-export const trackPaymentSuccess = (plan: string, billingPeriod: string, amount?: number): void => {
-  trackEvent('purchase', {
-    plan_type: plan,
-    billing_period: billingPeriod,
-    value: amount,
-    currency: 'USD',
   });
 };
 

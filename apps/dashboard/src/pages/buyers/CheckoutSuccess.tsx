@@ -1,28 +1,19 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTierAccess } from '@/contexts/TierContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
-import { trackCheckout, trackConversion } from '@/utils/analytics';
 
 export default function CheckoutSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refetch } = useTierAccess();
   const tier = searchParams.get('tier') || 'pro';
-  const hasTracked = useRef(false);
 
   useEffect(() => {
-    // Track checkout completed (once)
-    if (!hasTracked.current) {
-      hasTracked.current = true;
-      const value = tier === 'pro' ? 250 : tier === 'suite' ? 500 : 0;
-      trackCheckout('completed', tier, value);
-      trackConversion(`subscription_purchased_${tier}`, value, 'USD');
-    }
-
-    // Refetch tier once on mount to get updated subscription status
+    // The return URL is not proof of payment. Subscription activation is owned
+    // by the Stripe webhook; this page only refreshes the entitlement projection.
     refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);  // Empty deps - only run once on mount

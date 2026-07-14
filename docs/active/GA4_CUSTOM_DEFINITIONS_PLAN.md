@@ -22,12 +22,14 @@ These definitions are candidates, not a claim that they already exist. First inv
 | Now | Authentication Method | `method` | Compare email and Google attempt-to-completion performance. | `email`, `google` |
 | Now | Authentication Failure Reason | `failure_reason` | Diagnose controlled auth drop-off reasons without raw errors. | Contract allowlist only |
 | Now | Creator Entry Method | `entry_method` | Compare full and Quick Add draft-to-submission performance. | `full`, `quick_add` |
+| Now | Plan Type | `plan_type` | Compare server-confirmed Checkout starts by buyer/creator offering and support future webhook-confirmed subscriptions. | `pro`, `suite`, `packaging`, `premium` |
+| Now | Billing Period | `billing_period` | Compare server-confirmed Checkout starts by billing commitment. | `monthly`, `yearly` |
 | After `AR-001`–`AR-004` | Product Source | `source` | Segment canonical buyer engagement by controlled entry surface when that segmentation changes a product decision. | Contract-controlled values |
 | After `AR-001`–`AR-004` | Chat Input Type | `input_type` | Determine whether typed, suggested, or linked chat entry correlates with activation/return use. | Controlled enum |
 | After `AR-001`–`AR-004` | Message Length Bucket | `message_length_bucket` | Analyze engagement depth without collecting chat text or exact lengths. | Fixed buckets |
 | After `AR-001`–`AR-004` | Pitch Access Type | `access_type` | Compare preview and full pitch-deck engagement. | `preview`, `full` |
 
-Commercial parameters `plan_type` and `billing_period` should be registered only when the server-confirmed checkout/subscription events are implemented. Numerical `filter_count`, `input_count`, and `page_number` should be evaluated as custom metrics, not categorical dimensions, only if a named operating report requires them.
+Numerical `filter_count`, `input_count`, and `page_number` should be evaluated as custom metrics, not categorical dimensions, only if a named operating report requires them.
 
 ## Explicitly do not register
 

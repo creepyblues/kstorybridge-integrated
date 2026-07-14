@@ -28,7 +28,9 @@ Validated locally on 2026-07-13:
 - Anonymous table access and authenticated claim-RPC access both fail with permission denied.
 - Nine focused TypeScript tests pass, new shared/worker modules pass Deno checking, and the worker returns 405 for non-POST, 401 for the wrong bearer token, and 503 when its GA secret is absent.
 
-The required full `npx supabase db reset` is not yet green. It stops in the older `20251104120000_add_admin_policy_to_title_drafts.sql` migration because `public.title_drafts` does not exist at that point in the historical chain. The outbox migration was therefore tested directly against the local database after that failure, but must not be applied to production until the complete reset path is repaired and rerun.
+The required full `npx supabase db reset` is not yet green. It stops in the older `20251104120000_add_admin_policy_to_title_drafts.sql` migration because `public.title_drafts` does not exist at that point in the historical chain. Root-cause review found that the root migration directory never creates either `public.title_drafts` or its policy dependency `public.admin`; those definitions exist only in archived dashboard migrations and a one-off production SQL file. A normal current migration cannot repair an earlier failure in a clean replay, while backdating a migration or rewriting an applied migration would require an explicit migration-history decision. The outbox migration was therefore tested directly against the local database after that failure, but must not be applied to production until the complete reset path is repaired and rerun.
+
+The production Supabase secret inventory was checked by name only. `GA4_MEASUREMENT_PROTOCOL_API_SECRET` and `GA4_MEASUREMENT_PROTOCOL_DEBUG` are not configured; no secret values were read or logged. The code's measurement-ID default is `G-DWL6MV0MC2`.
 
 ## Steps
 

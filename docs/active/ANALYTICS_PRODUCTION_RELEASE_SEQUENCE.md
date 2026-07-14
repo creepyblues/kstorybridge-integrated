@@ -59,6 +59,8 @@ No wave is considered live because its source exists, its tests pass, or a previ
 
 The scheduled progress audit fetches the complete PR file list and compares it with the fixed Wave 1 allowlist. An unknown path fails the release gate as `SCOPE_DRIFT`; an incomplete file inventory fails as `UNAVAILABLE`. The alert reports counts only and does not expose repository path details in email or Slack.
 
+The complete local/staging/preview-referrer exclusion is prepared separately as local release-branch commit `2881f7b8`. It changes only the already-allowlisted shared filter and test and matches canonical `v2` filter behavior. It is not on remote PR #141 because pushing would create new Actions runs while the account is billing locked. Do not push it until billing is restored and a CI run is explicitly approved; do not replace it with the later `v2` report function.
+
 ### Rollback
 
 Revert PR #141 and redeploy the three apps. Do not modify GA filters to compensate for a broken client release.

@@ -73,6 +73,7 @@ The initial GA4 audit covered June 13 through July 12, 2026, compared with May 1
 - The crontab entry contains no credentials. Delivery uses the existing dashboard environment file and stops automatically when the plan status marker becomes `DONE`.
 - The host cron daemon (`com.vix.cron`) was verified running after installation, and the wrapper is executable.
 - Manual end-to-end verification succeeded on 2026-07-13: the wrapper parsed the plan and delivered to three admins plus Slack with zero failures.
+- The reporter performs best-effort repeated TLS and redirect probes against `www.kstorybridge.com`. An unavailable check is reported as an external-gate alert but does not prevent the checklist from rendering or being delivered.
 
 ## Phase 1: Clean measurement inputs
 
@@ -91,7 +92,7 @@ The initial GA4 audit covered June 13 through July 12, 2026, compared with May 1
 - [x] `AR-112` Release dashboard and creator analytics gating to staging and verify committed bundle markers plus root/auth smoke tests.
 - [x] `AR-113` Prove runtime network behavior on all three staging/preview apps: zero analytics by default and intentional collection only with the diagnostic override.
 - [x] `AR-114` Open a focused production release PR containing only the analytics reliability commits, excluding unrelated `v2` product and migration work.
-- [ ] `AR-115` Restore a valid managed TLS certificate on every `www.kstorybridge.com` edge and permanently redirect it to the canonical apex host without losing the path or query string.
+- [x] `AR-115` Restore a valid managed TLS certificate on every `www.kstorybridge.com` edge and permanently redirect it to the canonical apex host without losing the path or query string.
 
 ### Phase 1 acceptance criteria
 
@@ -327,6 +328,7 @@ All of the following must be true:
 | 2026-07-13 | Added actionable acquisition, missing-event, scanner, and reconciliation alert foundations. | Contiguous previous-window comparison; 20% new-user decline threshold with five-user noise floor; contract-live and session-volume gate for missing product events; every implemented alert names an owner and action; 33 tests and Deno checking pass; production manual report returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Define buyer/creator activation and retention cadence, then add their decline rules and close `AR-403`. |
 | 2026-07-13 | Added the analytics operating architecture and reconciled outcome-source documentation. | One active reference now maps client and server collection, GA4/Supabase/Stripe reconciliation, report and progress schedules, ownership roles, live-at gates, alerts, deployment order, known blockers, and the runbook; stale title and subscription source statements were corrected without claiming unreleased work is live. | Assign the named operator, approve dashboard links, finish production validation, and obtain founder sign-off before closing `AR-504`. |
 | 2026-07-13 | Partially repaired and precisely isolated the `www` acquisition entry-point failure. | The unassigned `www` hostname exposed an expired 2025 wildcard certificate. It is now attached to the existing Vercel website project with renewable certificates and a path/query-preserving 308 to `kstorybridge.com`, but 7 of 20 repeated TLS probes still reached the retired certificate through the legacy A record. Vercel recommends project-specific CNAME `bd569acf5e1d2bd5.vercel-dns-017.com.`; the connected Google DNS token is expired. | Reauthenticate the domain-admin account, replace only the `www` A record with the recommended CNAME, then require repeated zero-failure TLS and redirect probes before closing `AR-115`; retain the apex-only reporting boundary. |
+| 2026-07-13 | Closed `AR-115` after certificate propagation converged and added recurring regression detection. | Vercel lists renewable managed `www` certificates; a 50-iteration acceptance run passed 50/50 trusted TLS handshakes and 50/50 path/query-preserving 308 redirects to the apex. The scheduled progress reporter now performs five best-effort probes, renders external-gate status, and adds a delivery alert on degraded/unavailable results; five deterministic tests cover healthy, intermittent, wrong-redirect, unavailable, and rejected-probe states. | Keep the external gate in weekly progress delivery; treat any non-healthy result as an acquisition incident without changing the canonical apex reporting boundary. |
 
 ## Progress update procedure
 

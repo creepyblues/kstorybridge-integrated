@@ -74,8 +74,8 @@ The final named operating owner is intentionally not invented here. Assigning th
 | Process | Schedule | Purpose | Delivery/state |
 |---|---|---|---|
 | `funnel-report-cron` | Monday 14:00 UTC (06:00 PST / 07:00 PDT) via Supabase `pg_cron` | Clean traffic, app breakdown, canonical behavior, reconciliation, and actionable alerts over full America/Los_Angeles calendar windows | Production function is active; reports go to active-admin email and Slack. |
-| Repository progress audit | Monday 15:00 UTC via `.github/workflows/analytics-progress.yml` | Parse this program's `AR-*` checklist and report completion/blockers | Workflow exists on `v2`; default-branch activation is pending `AR-014`, and GitHub Actions is account-billing locked under `AR-016`. |
-| Local progress fallback | Monday 08:05 America/Los_Angeles via user crontab | Maintain delivery until the repository schedule is active | Installed and verified; automatically stops sending when the plan marker becomes `DONE`. |
+| Repository progress audit | Monday 15:00 UTC via `.github/workflows/analytics-progress.yml` | Parse this program's `AR-*` checklist and report completion/blockers; best-effort probes verify `www` TLS and canonical redirect health | Workflow exists on `v2`; default-branch activation is pending `AR-014`, and GitHub Actions is account-billing locked under `AR-016`. |
+| Local progress fallback | Monday 08:05 America/Los_Angeles via user crontab | Maintain delivery and external-gate monitoring until the repository schedule is active | Installed and verified; automatically stops sending when the plan marker becomes `DONE`. |
 
 The GA4 link currently distributed in reports is [GA4 Analytics Intelligence](https://analytics.google.com/analytics/web/#/p496541587/reports/intelligenthome). Links to any approved custom leadership or operational dashboards must be added here during `AR-504`; none is claimed to exist today.
 
@@ -114,7 +114,6 @@ The prepared subscription delivery path must be released in this order: repair o
 - GitHub Actions cannot run while the account is billing locked; the local progress cron is the active fallback.
 - The root migration history fails before current analytics migrations because historical migrations reference missing `title_drafts`/`admin` objects. The prepared outbox and draft-publication linkage remain undeployed until that history is repaired or safely superseded and reset passes.
 - The GA Measurement Protocol API secret is not configured, and the prepared outbox worker is not scheduled.
-- `www.kstorybridge.com` is now attached to the website project with a managed certificate and path/query-preserving 308 redirect, but its legacy `76.76.21.21` A record intermittently reaches an expired wildcard certificate. Vercel recommends replacing it with project-specific CNAME `bd569acf5e1d2bd5.vercel-dns-017.com.`; Google DNS authentication is currently expired, so `AR-115` remains open.
 - There is no authoritative introduction workflow record, buyer-approval timestamp, or interest-transition timestamp.
 - A two-week fully live observation period, journey sampling, final targets, named operator, dashboard links, and founder sign-off remain Phase 5 work.
 

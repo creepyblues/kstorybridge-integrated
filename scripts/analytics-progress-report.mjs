@@ -3,6 +3,8 @@
 import { appendFile, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
+import { checkAnalyticsExternalGates } from './analytics-external-gates.mjs'
+
 const PLAN_PATH = resolve('docs/active/ANALYTICS_RELIABILITY_EXECUTION_PLAN.md')
 const args = new Set(process.argv.slice(2))
 const shouldSend = args.has('--send')
@@ -40,6 +42,9 @@ const completed = tasks.filter(task => task.complete)
 const pending = tasks.filter(task => !task.complete)
 const percent = Math.round((completed.length / tasks.length) * 100)
 const byPhase = new Map()
+const externalGates = programStatus === 'ACTIVE'
+  ? await checkAnalyticsExternalGates()
+  : []
 
 for (const task of tasks) {
   const phase = byPhase.get(task.phase) ?? { complete: 0, total: 0 }
@@ -62,6 +67,20 @@ const reportLines = [
 
 for (const [phase, counts] of byPhase) {
   reportLines.push(`| ${phase} | ${counts.complete}/${counts.total} | ${Math.round((counts.complete / counts.total) * 100)}% |`)
+}
+
+if (externalGates.length > 0) {
+  reportLines.push(
+    '',
+    '## External gates',
+    '',
+    '| Task | Gate | Status | Evidence |',
+    '|---|---|---|---|'
+  )
+
+  for (const gate of externalGates) {
+    reportLines.push(`| ${gate.id} | ${gate.name} | ${gate.status} | ${gate.summary} |`)
+  }
 }
 
 reportLines.push('', '## Next pending tasks', '')
@@ -110,9 +129,12 @@ const response = await fetch(`${supabaseUrl}/functions/v1/send-analytics-report`
       timeZone: 'America/Los_Angeles',
     }).format(new Date()),
     reportMarkdown: report,
-    alerts: pending.length > 0
-      ? [`Analytics reliability program has ${pending.length} pending tasks`]
-      : [],
+    alerts: [
+      ...(pending.length > 0
+        ? [`Analytics reliability program has ${pending.length} pending tasks`]
+        : []),
+      ...externalGates.flatMap(gate => gate.alert ? [gate.alert] : []),
+    ],
     sendSlack: true,
   }),
 })

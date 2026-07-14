@@ -9,6 +9,7 @@ import {
   cleanWindowProgress,
   summarizeCleanWindowGate,
 } from './analytics-clean-window-gate.mjs'
+import { summarizeBrevoCampaignGate } from './brevo-campaign-evidence.mjs'
 
 const WWW_HOST = 'www.kstorybridge.com'
 const CANONICAL_HOST = 'kstorybridge.com'
@@ -20,6 +21,10 @@ const GITHUB_REPOSITORY = 'creepyblues/kstorybridge-integrated'
 const RELEASE_PR_NUMBER = 141
 const GA_INTERNAL_FILTER_EVIDENCE_URL = new URL(
   '../docs/active/GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md',
+  import.meta.url
+)
+const BREVO_CAMPAIGN_EVIDENCE_URL = new URL(
+  '../docs/active/BREVO_CAMPAIGN_AGGREGATE_EVIDENCE.json',
   import.meta.url
 )
 const BILLING_LOCK_MESSAGE = 'The job was not started because your account is locked due to a billing issue.'
@@ -307,6 +312,17 @@ export async function checkGaInternalFilterGate({
     return summarizeGaInternalFilterGate(await readFileImpl(evidenceUrl, 'utf8'))
   } catch {
     return summarizeGaInternalFilterGate(null)
+  }
+}
+
+export async function checkBrevoCampaignGate({
+  readFileImpl = readFile,
+  evidenceUrl = BREVO_CAMPAIGN_EVIDENCE_URL,
+} = {}) {
+  try {
+    return summarizeBrevoCampaignGate(await readFileImpl(evidenceUrl, 'utf8'))
+  } catch {
+    return summarizeBrevoCampaignGate(null)
   }
 }
 
@@ -618,6 +634,7 @@ export async function checkAnalyticsExternalGates(options = {}) {
     checkReleasePrGate(options.github ?? options),
     checkCleanWindowGate(options.cleanWindow ?? options),
     checkGaInternalFilterGate(options.gaInternalFilter ?? options),
+    checkBrevoCampaignGate(options.brevo ?? options),
     checkAnalyticsDeliveryGate(options.delivery ?? options),
   ])
   const fallbacks = [
@@ -626,6 +643,7 @@ export async function checkAnalyticsExternalGates(options = {}) {
     summarizeReleasePrGate({ pr: null, checkRuns: null }),
     summarizeCleanWindowGate(cleanWindowProgress(), null),
     summarizeGaInternalFilterGate(null),
+    summarizeBrevoCampaignGate(null),
     summarizeAnalyticsDeliveryGate(null),
   ]
 

@@ -37,6 +37,7 @@
     "analytics:progress": "node scripts/analytics-progress-report.mjs",
     "analytics:internal-admins": "node --env-file=.env.local scripts/internal-traffic-admins.mjs",
     "analytics:internal-users": "node --env-file=.env.local scripts/internal-traffic-approved-users.mjs",
+    "analytics:verify-brevo": "node scripts/brevo-campaign-evidence.mjs",
     "analytics:audit-introductions": "node --env-file=.env.local scripts/introduction-source-audit.mjs",
     "analytics:sync-skill": "node scripts/sync-analytics-skill.mjs",
     "analytics:verify-skill": "node --test scripts/analytics-skill-contract.test.mjs",

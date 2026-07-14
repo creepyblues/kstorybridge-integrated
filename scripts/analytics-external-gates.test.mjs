@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   checkAnalyticsDeliveryGate,
+  checkBrevoCampaignGate,
   checkGaInternalFilterGate,
   checkWwwCanonicalGate,
   summarizeAnalyticsDeliveryGate,
@@ -11,6 +12,7 @@ import {
   summarizeReleasePrGate,
   summarizeWwwCanonicalGate,
 } from './analytics-external-gates.mjs'
+import { REQUIRED_BREVO_SEND_DATES } from './brevo-campaign-evidence.mjs'
 
 const ok = { ok: true }
 const failed = { ok: false }
@@ -109,6 +111,27 @@ test('turns a missing GA evidence file into an unavailable gate', async () => {
     },
   })
   assert.equal(gate.status, 'UNAVAILABLE')
+})
+
+test('loads the Brevo aggregate record and fails closed when it is missing', async () => {
+  const complete = JSON.stringify({
+    schemaVersion: 1,
+    source: 'brevo-ui',
+    collectedAt: '2026-07-14T18:00:00Z',
+    campaigns: REQUIRED_BREVO_SEND_DATES.map(sendDate => ({
+      sendDate,
+      delivered: 100,
+      uniqueClicks: 10,
+      knownHumanClicks: 5,
+      humanClickMethod: 'brevo-reported',
+    })),
+  })
+  assert.equal((await checkBrevoCampaignGate({
+    readFileImpl: async () => complete,
+  })).status, 'HEALTHY')
+  assert.equal((await checkBrevoCampaignGate({
+    readFileImpl: async () => { throw new Error('missing') },
+  })).status, 'UNAVAILABLE')
 })
 
 const actionCheck = (id, conclusion, status = 'completed') => ({

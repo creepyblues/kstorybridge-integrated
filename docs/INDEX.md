@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated**: 2026-07-13
+**Last Updated**: 2026-07-14
 
 This is the master index of all active documentation for the KStoryBridge project.
 
@@ -22,6 +22,7 @@ This is the master index of all active documentation for the KStoryBridge projec
 | **[AUTH_DOCUMENTATION.md](active/AUTH_DOCUMENTATION.md)** | Complete authentication system reference |
 | **[ANALYTICS_EVENT_CONTRACT.md](active/ANALYTICS_EVENT_CONTRACT.md)** | Canonical cross-app event names, triggers, parameters, ownership, and privacy rules |
 | **[ANALYTICS_FOUNDER_DECISION_BRIEF.md](active/ANALYTICS_FOUNDER_DECISION_BRIEF.md)** | Recommended north star, activation, retention, operating-model, and outcome-authority decisions awaiting founder approval |
+| **[ANALYTICS_BREVO_RECONCILIATION.md](active/ANALYTICS_BREVO_RECONCILIATION.md)** | Aggregate-only Brevo evidence intake, validation, privacy boundary, and post-cutover email-engagement acceptance |
 | **[GA4_PROPERTY_AUDIT_2026-07-13.md](active/GA4_PROPERTY_AUDIT_2026-07-13.md)** | Live GA property, stream, retention, custom-definition, key-event, and Brevo contamination audit |
 | **[ANALYTICS_WEEKLY_INTERIM_2026-07-13.md](active/ANALYTICS_WEEKLY_INTERIM_2026-07-13.md)** | Read-only weekly acquisition, app engagement, outcome, instrumentation-readiness, and data-quality analysis |
 | **[ANALYTICS_OPERATING_ARCHITECTURE.md](active/ANALYTICS_OPERATING_ARCHITECTURE.md)** | Operating data flow, responsibilities, release gates, schedules, alerts, and runbook |

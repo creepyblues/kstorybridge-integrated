@@ -8,6 +8,8 @@
 
 **Status:** Read-only interim evidence; canonical client/server contracts are not production-live
 
+**Delivery:** Sent to all three active admins and the analytics Slack channel on 2026-07-13
+
 ## Executive assessment
 
 KStoryBridge did not have a traffic-volume problem this week; it had a traffic-quality and conversion problem. Of 206 production-host sessions, 170 came from the known Brevo scanner and generated no engaged session. After the current scanner/host exclusions, the provisional clean view contained 14 active users, 36 sessions, and 16 engaged sessions. Sessions rose 12.5% week over week, but engagement fell from 68.8% to 44.4% because website engagement collapsed.

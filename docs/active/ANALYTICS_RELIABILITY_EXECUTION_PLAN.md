@@ -246,7 +246,7 @@ Implemented and production-verified on 2026-07-13; dashboard release and one com
 
 ## Phase 4: Reporting, alerts, and operating cadence
 
-- [ ] `AR-400` Replace obsolete funnel event names in the analytics skill and scheduled funnel report.
+- [x] `AR-400` Replace obsolete funnel event names in the analytics skill and scheduled funnel report.
 - [ ] `AR-401` Produce one weekly acquisition, activation, engagement, retention, and commercial-outcome report.
 - [ ] `AR-402` Add app-specific breakdowns for website, buyer dashboard, and creator app.
 - [ ] `AR-403` Add alerts for scanner share, missing events, reconciliation drift, acquisition decline, activation decline, and retention decline.
@@ -259,6 +259,8 @@ Implemented and production-verified on 2026-07-13; dashboard release and one com
 - The report connects acquisition to activation, retention, and a business outcome.
 - Alerts are actionable and link to an owner or remediation task.
 - Two consecutive scheduled reports complete without data-quality warnings or delivery failures.
+
+`AR-400` completion evidence: the tracked analytics skill and production `funnel-report-cron` now use `signin_completed`, `comps_search_submitted`, `subscription_started`, and the full canonical authenticated buyer-product inventory. The still-active public-trial events remain a separate funnel; the report never sums `signin`, `comps_search`, or `checkout_completed` into canonical outcomes. Full-window cutover gates keep product and commercial sections in instrumentation-pending mode until their actual deployment timestamps are configured. Twenty-six focused filter, event-contract, reporting-window, reconciliation, and Measurement Protocol tests pass; both affected Edge Functions type-check. The production function deployment succeeded, and a manual seven-day run returned HTTP 200 and delivered to three admins plus Slack with zero failures. `ANALYTICS_PRODUCT_CONTRACT_LIVE_AT` and `ANALYTICS_COMMERCIAL_CONTRACT_LIVE_AT` remain intentionally unset because the corresponding instrumentation is not fully production-live.
 
 ## Phase 5: Validation and closeout
 
@@ -313,6 +315,7 @@ All of the following must be true:
 | 2026-07-13 | Defined the minimal custom-definition policy and documented the exact GA access blocker without registering speculative dimensions. | The plan maps each candidate to a recurring decision, excludes high-cardinality/sensitive/redundant fields, records retention and processing implications, and captures HTTP 403 `ACCESS_TOKEN_SCOPE_INSUFFICIENT` from both GA Admin and Data API probes. | Obtain Analytics-scoped read access, inventory existing definitions and retention, then approve and create only the founder-relevant subset before closing `AR-208`. |
 | 2026-07-13 | Canonicalized server-confirmed Checkout starts and removed return-page conversion false positives. | Buyer and creator emit `checkout_started` only after a usable Edge Function response with controlled account, plan, and billing metadata; buyer Strict Mode produces one session request and one event; rejected/missing/malformed paths emit none; return pages no longer emit `purchase` or payment-success events. | Release both clients, then implement idempotent webhook-side `subscription_started`; keep introductions pending until an authoritative record exists. |
 | 2026-07-13 | Prepared durable, privacy-safe `subscription_started` delivery without changing production. | Additive service-role-only outbox and controlled RPC; active buyer/creator webhook enqueue with one account/subscription dedupe key; validated Measurement Protocol payload and retry worker; nine unit tests pass; direct local migration tests prove dedupe, controlled params, permissions, claim/retry/completion, stale recovery, and concurrent `SKIP LOCKED`; HTTP boundary checks pass. The full local reset exposed an older missing-`title_drafts` migration dependency before reaching this migration. | Repair or safely supersede the historical reset blocker, rerun the complete reset, create the GA API secret, deploy schema before webhooks/worker, validate Google's debug endpoint, schedule delivery, and reconcile accepted events before completing `AR-205`. |
+| 2026-07-13 | Cut scheduled and on-demand analytics reporting to canonical event names without rewriting history. | Central event inventory excludes obsolete authenticated aliases, keeps the public-trial funnel distinct, and adds full-window product/commercial cutover gates; fixed server-event origins preserve production-host filtering; 26 focused tests and both Edge Function checks pass; production manual report returned HTTP 200 and delivered to three admins plus Slack with zero failures. | Release the canonical clients and server outcomes, record their real live-at timestamps, then build the complete weekly operating report under `AR-401` without combining pre-cutover aliases. |
 
 ## Progress update procedure
 

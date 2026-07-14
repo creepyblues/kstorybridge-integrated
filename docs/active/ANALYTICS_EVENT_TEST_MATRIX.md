@@ -12,9 +12,9 @@
 |---|---|---|---|---|
 | `email_landing_engaged` | Website client | Yes | Yes | Complete: page load and untrusted activity emit nothing; first trusted interaction emits once. |
 | Buyer email signup/signin | Dashboard client | Yes | Yes | Complete: completion follows successful auth/profile checks once; failures emit no completion. |
-| Buyer Google signup/signin | Dashboard callback/profile client | Yes | No | Add callback and complete-profile integration tests. |
+| Buyer Google signup/signin | Dashboard callback/profile client | Yes | Yes | Complete: callback signin waits for session/profile checks; signup completion waits for successful profile persistence. |
 | Creator email signup/signin | Creator client | Yes | Yes | Complete: success emits completion once; rejected auth emits one failure and no completion. |
-| Creator Google signup/signin and `creator_profile_completed` | Creator callback/profile client | Yes | No | Add callback and complete-profile integration tests. |
+| Creator Google signup/signin and `creator_profile_completed` | Creator callback/profile client | Yes | Yes | Complete: callback signin waits for session/profile checks; both signup/profile outcomes wait for profile persistence and fire once. |
 | `interest_submitted` | Dashboard + `express-interest` | Yes | Yes | Complete: new row emits once; duplicate refresh and request failure emit nothing. |
 | `introduction_requested` / `introduction_completed` | Reserved | No | No | Authoritative introduction record and emission do not exist yet (`AR-205`). |
 | `checkout_started` / `subscription_started` | Reserved | No | No | Canonical server-confirmed implementation is pending (`AR-205`). |

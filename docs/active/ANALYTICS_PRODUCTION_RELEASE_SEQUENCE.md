@@ -47,6 +47,7 @@ No wave is considered live because its source exists, its tests pass, or a previ
 2. The GA internal-traffic data filter is visually verified in **Testing** mode and recorded in [GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md](GA4_INTERNAL_TRAFFIC_FILTER_VERIFICATION.md). The scheduled `AR-108` gate must report healthy. Do not activate the filter during this wave.
 3. The focused PR diff still contains no database migration and no unrelated `v2` product work.
 4. A production release window and rollback owner are confirmed.
+5. The founder-approved non-admin internal identities are reconciled with the UUID-only procedure in [ANALYTICS_INTERNAL_TRAFFIC_APPROVAL.md](ANALYTICS_INTERNAL_TRAFFIC_APPROVAL.md), or the release record explicitly states that none are approved. Updated identities must refresh their sessions before runtime acceptance.
 
 ### Acceptance evidence
 

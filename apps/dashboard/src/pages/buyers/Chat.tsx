@@ -258,10 +258,8 @@ export default function Chat() {
 
     // Create a new lock for this submission
     let resolveLock: () => void;
-    let rejectLock: (error: Error) => void;
-    submissionLockRef.current = new Promise<void>((resolve, reject) => {
+    submissionLockRef.current = new Promise<void>((resolve) => {
       resolveLock = resolve;
-      rejectLock = reject;
     });
 
     try {
@@ -436,8 +434,6 @@ export default function Chat() {
 
       setMessages((prev) => [...prev, errorMessage]);
 
-      // Reject the lock so waiting submissions know this one failed
-      rejectLock!(error);
     } finally {
       setLoading(false);
       // Progress stays visible until next message is sent

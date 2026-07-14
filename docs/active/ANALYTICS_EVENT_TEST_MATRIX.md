@@ -18,7 +18,7 @@
 | `interest_submitted` | Dashboard + `express-interest` | Yes | Yes | Complete: new row emits once; duplicate refresh and request failure emit nothing. |
 | `introduction_requested` / `introduction_completed` | Reserved | No | No | Authoritative introduction record and emission do not exist yet (`AR-205`). |
 | `checkout_started` / `subscription_started` | Reserved | No | No | Canonical server-confirmed implementation is pending (`AR-205`). |
-| Buyer product engagement events | Dashboard client | Yes | Partial | Utility payloads are covered; add page/component boundary tests for search, detail, chat, comps, mandates, favorites, and pitch navigation. |
+| Buyer product engagement events | Dashboard client | Yes | Yes | Complete: page/component tests cover search, valid detail, accepted chat, comps, mandates, successful favorite writes, loaded pitch decks, visible page changes, blocked preview pages, and each corresponding rejection/failure boundary. |
 | `title_draft_created` / `title_submitted` | Creator full + Quick Add clients | Yes | Yes | Complete: each entry path emits once after successful writes and emits neither outcome on failure. |
 | `title_approved` / `title_published` | Reserved | No | No | Server delivery and durable publication linkage remain pending (`AR-303`). |
 

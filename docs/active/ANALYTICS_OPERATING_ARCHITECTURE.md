@@ -114,6 +114,7 @@ The prepared subscription delivery path must be released in this order: repair o
 - GitHub Actions cannot run while the account is billing locked; the local progress cron is the active fallback.
 - The root migration history fails before current analytics migrations because historical migrations reference missing `title_drafts`/`admin` objects. The prepared outbox and draft-publication linkage remain undeployed until that history is repaired or safely superseded and reset passes.
 - The GA Measurement Protocol API secret is not configured, and the prepared outbox worker is not scheduled.
+- Scheduled analytics report delivery has no durable run/recipient ledger, and the anon-accessible funnel endpoint can proxy report sends. The coordinated Vault-backed authentication and idempotent audit design is documented in [ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md](ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md); partial endpoint locking is prohibited because it either breaks the schedule or leaves the proxy open.
 - There is no authoritative introduction workflow record, buyer-approval timestamp, or interest-transition timestamp.
 - A two-week fully live observation period, journey sampling, final targets, named operator, dashboard links, and founder sign-off remain Phase 5 work.
 

@@ -1,0 +1,24 @@
+-- Migration: 20260114130000_enable_pg_cron.sql
+-- Created as root-history repair: 2026-07-13
+-- Status: READY_FOR_REMOTE_HISTORY_RECONCILIATION
+--
+-- Description:
+-- Install pg_cron before the existing weekly-funnel scheduling migration.
+-- The scheduler migration checked for the extension but did not create it and
+-- then referenced `cron.schedule` unconditionally, breaking clean resets.
+--
+-- Risk Level: LOW
+-- Destructive: NO
+-- Affected Objects:
+-- - extension pg_cron (installed only when absent)
+-- Backup Required: NO
+--
+-- Rollback Procedure:
+-- Leave pg_cron installed. Removing an extension requires a separate
+-- dependency audit and is outside this repair.
+--
+-- Testing:
+-- [x] Full local `npx supabase db reset`
+-- [x] Verify one active weekly-funnel-report job exists
+
+CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;

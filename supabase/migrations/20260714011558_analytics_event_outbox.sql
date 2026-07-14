@@ -1,6 +1,6 @@
 -- Migration: 20260714011558_analytics_event_outbox.sql
 -- Created: 2026-07-13
--- Status: IN_PROGRESS (local validation pending)
+-- Status: READY_FOR_PRODUCTION_APPROVAL
 --
 -- Description:
 -- Adds a service-role-only outbox for durable, idempotent server-side analytics
@@ -18,7 +18,7 @@
 -- through a separately reviewed migration after the observation window.
 --
 -- Testing:
--- [ ] Tested locally with `npx supabase db reset` (blocked by older title_drafts migration)
+-- [x] Tested locally with `npx supabase db reset`
 -- [x] Duplicate subscription enqueue returns the same row
 -- [x] Concurrent claims cannot return the same row
 -- [x] Anonymous/authenticated roles cannot read or invoke outbox RPCs

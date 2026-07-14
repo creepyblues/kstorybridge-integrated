@@ -1,6 +1,6 @@
 # Analytics Event Outbox Migration - 2026-07-13
 
-## Status: IN_PROGRESS
+## Status: READY_FOR_PRODUCTION_APPROVAL
 ## Last Updated: 2026-07-13
 ## Safe to Follow: WITH_CAUTION
 
@@ -28,7 +28,9 @@ Validated locally on 2026-07-13:
 - Anonymous table access and authenticated claim-RPC access both fail with permission denied.
 - Nine focused TypeScript tests pass, new shared/worker modules pass Deno checking, and the worker returns 405 for non-POST, 401 for the wrong bearer token, and 503 when its GA secret is absent.
 
-The required full `npx supabase db reset` is not yet green. It stops in the older `20251104120000_add_admin_policy_to_title_drafts.sql` migration because `public.title_drafts` does not exist at that point in the historical chain. Root-cause review found that the root migration directory never creates either `public.title_drafts` or its policy dependency `public.admin`; those definitions exist only in archived dashboard migrations and a one-off production SQL file. A normal current migration cannot repair an earlier failure in a clean replay, while backdating a migration or rewriting an applied migration would require an explicit migration-history decision. The outbox migration was therefore tested directly against the local database after that failure, but must not be applied to production until the complete reset path is repaired and rerun.
+The root migration history was repaired without editing or deleting an existing migration. Idempotent historical baselines now reconstruct the formerly app-specific admin, creator, title metadata, draft, featured, vector, and scheduler prerequisites. Supabase CLI `2.109.1` is pinned in the root development dependencies because the previously unpinned `2.62.10` client applied every migration but failed its post-reset Storage health query against the current container schema. The pinned CLI completed a clean replay of all 76 migrations, and both SQL acceptance suites passed against the resulting database.
+
+This is local readiness, not production evidence. The outbox remains undeployed; the GA Measurement Protocol secret, debug validation, authenticated worker schedule, monitoring, and post-delivery reconciliation are still required.
 
 The production Supabase secret inventory was checked by name only. `GA4_MEASUREMENT_PROTOCOL_API_SECRET` and `GA4_MEASUREMENT_PROTOCOL_DEBUG` are not configured; no secret values were read or logged. The code's measurement-ID default is `G-DWL6MV0MC2`.
 

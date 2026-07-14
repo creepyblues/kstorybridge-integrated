@@ -1,6 +1,6 @@
 # Title Publication Linkage Migration - 2026-07-13
 
-## Status: IN_PROGRESS
+## Status: READY_FOR_PRODUCTION_APPROVAL
 ## Last Updated: 2026-07-13
 ## Safe to Follow: WITH_CAUTION
 
@@ -25,6 +25,13 @@ This additive migration gives each newly approved creator draft a durable link t
 6. Verify a controlled approval persists matching IDs in both directions.
 
 ## Verification
+
+Local validation completed on 2026-07-13:
+
+- The pinned Supabase CLI completed a clean replay of all 76 root migrations.
+- `supabase/tests/title_publication_linkage.sql` inserted the complete `approve-title` catalog payload, persisted matching IDs in both directions, rejected a second catalog row for the same source draft, and verified `ON DELETE SET NULL` cleanup.
+- `approve-title` and the related webhook/outbox functions pass Deno type checking with the Edge Function compiler configuration.
+- Production application, an actual authenticated Edge Function approval/retry, and production row-count verification remain pending.
 
 - `title_drafts.published_title_id` equals the created `titles.title_id`.
 - `titles.source_draft_id` equals the source `title_drafts.id`.

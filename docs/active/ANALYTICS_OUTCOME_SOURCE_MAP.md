@@ -60,7 +60,7 @@ The production schema was probed with zero-row PostgREST selects, so no customer
 4. Create an authoritative introduction workflow table before instrumenting introduction outcomes.
 5. Choose whether Stripe remains the sole buyer-payment ledger or add a webhook-written buyer payment table.
 6. Retire or repair older code paths that still query the nonexistent buyer `subscriptions` relation.
-7. Repair or safely supersede the historical migration-reset blocker, apply the prepared analytics outbox, configure the GA Measurement Protocol API secret, deploy the webhook/worker chain in order, schedule delivery, and validate debug plus reconciliation results.
+7. With explicit approval, reconcile the nine missing historical ledger versions without replaying their SQL against populated production, back up and apply the two prepared current migrations, configure the GA Measurement Protocol API secret, deploy the webhook/worker chain in order, schedule delivery, and validate debug plus reconciliation results.
 8. Persist an immutable first-shortlist milestone before adopting saved-title behavior as the buyer activation source of truth; deleting `user_favorites` must not erase activation history.
 
 These gaps do not block clean traffic reporting, auth funnels, or creator subscription reconciliation. They do block honest claims about buyer approval, introductions, draft-to-publication latency, and locally reconciled buyer payments.
@@ -84,4 +84,4 @@ Active admin creators are excluded. Client drift enforcement begins only after `
 
 The publication row is intentionally marked `Draft-to-title linkage pending`. The current production schema cannot prove that a particular approved draft created a particular catalog title, so the proxy is operational context—not a reconciled publication conversion—even when aggregate counts happen to match.
 
-An additive migration is prepared at `supabase/migrations/20260714001452_link_title_drafts_to_publications.sql`. It adds `title_drafts.published_title_id` and `titles.source_draft_id`, and the accompanying `approve-title` source recovers a prior catalog insert instead of creating a duplicate. Isolated validation passes, but this is not production evidence: the migration and function must remain undeployed until the older root migration-history blocker is repaired or safely superseded and a complete local reset passes.
+An additive migration is prepared at `supabase/migrations/20260714001452_link_title_drafts_to_publications.sql`. It adds `title_drafts.published_title_id` and `titles.source_draft_id`, and the accompanying `approve-title` source recovers a prior catalog insert instead of creating a duplicate. A complete 76-migration local reset and the full approval-payload/linkage SQL acceptance test pass. This is not production evidence: the migration must be reviewed against remote history and applied before the updated function, followed by an authenticated approval/retry verification.

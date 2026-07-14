@@ -1,5 +1,7 @@
+import { execFile } from 'node:child_process'
 import https from 'node:https'
 import tls from 'node:tls'
+import { promisify } from 'node:util'
 
 const WWW_HOST = 'www.kstorybridge.com'
 const CANONICAL_HOST = 'kstorybridge.com'
@@ -10,6 +12,34 @@ const GITHUB_API_URL = 'https://api.github.com'
 const GITHUB_REPOSITORY = 'creepyblues/kstorybridge-integrated'
 const RELEASE_PR_NUMBER = 141
 const BILLING_LOCK_MESSAGE = 'The job was not started because your account is locked due to a billing issue.'
+const execFileAsync = promisify(execFile)
+
+let localGithubTokenPromise
+
+async function resolveGithubToken(explicitToken) {
+  if (explicitToken !== undefined) return explicitToken
+  if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN
+  if (process.env.GH_TOKEN) return process.env.GH_TOKEN
+
+  localGithubTokenPromise ??= (async () => {
+    for (const binary of ['/opt/homebrew/bin/gh', '/usr/local/bin/gh', 'gh']) {
+      try {
+        const { stdout } = await execFileAsync(binary, ['auth', 'token'], {
+          encoding: 'utf8',
+          timeout: DEFAULT_TIMEOUT_MS,
+          maxBuffer: 16_384,
+        })
+        const token = stdout.trim()
+        if (token) return token
+      } catch {
+        // Try the next known CLI location; an unavailable token is handled below.
+      }
+    }
+    return ''
+  })()
+
+  return localGithubTokenPromise
+}
 
 const failedProbe = () => ({ ok: false })
 
@@ -139,15 +169,16 @@ export async function checkWwwCanonicalGate({
 
 async function githubRequest(path, {
   fetchImpl = fetch,
-  githubToken = process.env.GITHUB_TOKEN,
+  githubToken,
   timeoutMs = DEFAULT_TIMEOUT_MS,
 } = {}) {
   try {
+    const resolvedGithubToken = await resolveGithubToken(githubToken)
     const response = await fetchImpl(`${GITHUB_API_URL}${path}`, {
       headers: {
         Accept: 'application/vnd.github+json',
         'User-Agent': 'kstorybridge-analytics-progress',
-        ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
+        ...(resolvedGithubToken ? { Authorization: `Bearer ${resolvedGithubToken}` } : {}),
         'X-GitHub-Api-Version': '2022-11-28',
       },
       signal: AbortSignal.timeout(timeoutMs),

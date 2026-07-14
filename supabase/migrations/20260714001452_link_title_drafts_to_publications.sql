@@ -1,6 +1,6 @@
 -- Migration: 20260714001452_link_title_drafts_to_publications.sql
 -- Created: 2026-07-13
--- Status: IN_PROGRESS
+-- Status: READY_FOR_PRODUCTION_APPROVAL
 --
 -- Description:
 -- Add durable, bidirectional identifiers between an approved title draft and the
@@ -23,10 +23,10 @@
 -- migration may remove constraints only after a backup and observation period.
 --
 -- Testing:
--- [ ] Applied by local `supabase db reset`
+-- [x] Applied by local `supabase db reset`
 -- [ ] Approval happy path creates both links
 -- [ ] Retry after title insert recovers the same catalog title
--- [ ] Duplicate source draft cannot create a second catalog title
+-- [x] Duplicate source draft cannot create a second catalog title
 -- [ ] Production row counts verified before and after application
 
 DO $$

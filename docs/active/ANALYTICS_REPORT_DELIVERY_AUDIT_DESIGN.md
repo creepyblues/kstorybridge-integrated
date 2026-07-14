@@ -129,7 +129,7 @@ Manual and progress runs are displayed separately and never satisfy `AR-405`.
 
 ## Rollout order
 
-1. Repair or safely supersede the historical migration-reset blocker.
+1. Confirm the locally repaired migration history against staging/production and preserve a green full reset.
 2. Create and test the additive audit schema, RLS, controlled functions, and safe status RPC locally.
 3. Create the random secret operationally; store it in Supabase Vault and Edge Function secrets without logging it.
 4. Add the GitHub service-role secret through GitHub's encrypted secret store.
@@ -142,4 +142,4 @@ Manual and progress runs are displayed separately and never satisfy `AR-405`.
 
 ## Current blocker
 
-The design is ready, but implementation must not bypass the repository's failed historical migration chain. Production writes, Vault configuration, strict endpoint cutover, and GitHub secret changes belong to the coordinated rollout after a complete reset passes and the operator authorizes the secret-bearing external changes.
+The historical migration chain now replays locally through all 76 migrations, and the focused outbox/linkage security suites pass. The read-only remote comparison found 67 recorded versions, populated foundational objects, and no prepared outbox/linkage objects. Because staging apps share the production Supabase project, implementation requires explicitly approved historical-ledger reconciliation, backups, and ordered production application—or a separate isolated clone if one becomes available. Vault configuration, strict endpoint cutover, and GitHub secret changes belong to one coordinated rollout after the operator authorizes those secret-bearing external changes.

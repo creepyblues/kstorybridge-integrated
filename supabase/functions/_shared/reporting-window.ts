@@ -67,3 +67,10 @@ export function reportingWindow(days: number, now = new Date()): ReportingWindow
     endDate: dateInTimeZone(endCalendar),
   }
 }
+
+export function previousReportingWindow(
+  days: number,
+  currentWindow: ReportingWindow
+): ReportingWindow {
+  return reportingWindow(days, currentWindow.start)
+}

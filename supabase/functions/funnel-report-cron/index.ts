@@ -13,6 +13,11 @@ import {
   type AnalyticsAppBreakdownRow,
 } from '../_shared/analytics-app-breakdown.ts'
 import {
+  acquisitionDeclineAlerts,
+  missingProductEventAlerts,
+  percentageChange,
+} from '../_shared/analytics-alerts.ts'
+import {
   isInstrumentationLiveForWindow,
   parseSignupUsersByHost,
   reconcileSignupCounts,
@@ -20,6 +25,7 @@ import {
   type SignupReconciliationRow,
 } from '../_shared/signup-reconciliation.ts'
 import {
+  previousReportingWindow,
   REPORT_TIME_ZONE,
   reportingWindow,
   type ReportingWindow,
@@ -516,6 +522,7 @@ function generateFunnelReport(
   sources: SourceMetrics[],
   rawTraffic: TrafficSummary,
   cleanTraffic: TrafficSummary,
+  previousCleanTraffic: TrafficSummary,
   appBreakdown: AnalyticsAppBreakdownRow[],
   signupReconciliation: SignupReconciliationRow[],
   instrumentationLive: boolean,
@@ -557,42 +564,50 @@ function generateFunnelReport(
   const overallRate = firstVisit.totalUsers > 0 ? (signupComplete.totalUsers / firstVisit.totalUsers) : 0
   const excludedSessions = Math.max(rawTraffic.sessions - cleanTraffic.sessions, 0)
   const excludedSessionRate = rawTraffic.sessions > 0 ? excludedSessions / rawTraffic.sessions : 0
+  const newUserChange = percentageChange(cleanTraffic.newUsers, previousCleanTraffic.newUsers)
+  const sessionChange = percentageChange(cleanTraffic.sessions, previousCleanTraffic.sessions)
 
   // Check for alerts
   if (instrumentationLive && firstVisit.totalUsers > 0 && overallRate < 0.01) {
-    alerts.push('Critical: Overall conversion rate <1%')
+    alerts.push('Conversion: overall first-visit to completed-signup rate is below 1%. Owner: Growth. Action: inspect the trial step table and authoritative signup reconciliation before changing the funnel.')
   }
   if (instrumentationLive && ctaClicked.totalUsers > 0 && signupComplete.totalUsers === 0) {
-    alerts.push('Critical: Signup CTA clicks but 0% completion rate')
+    alerts.push('Conversion: signup CTA clicks produced zero completed signups. Owner: Product Engineering. Action: verify auth errors and profile writes before interpreting this as user abandonment.')
   }
   if (firstVisit.totalUsers > 0 && trialRate < 0.05) {
-    alerts.push('Warning: First Visit to Trial rate <5%')
+    alerts.push('Acquisition journey: fewer than 5% of first visitors reached the trial. Owner: Growth. Action: review landing pages and trial entry points.')
   }
   if (instrumentationLive) {
     for (const row of signupReconciliation.filter(row => row.status === 'drift')) {
       alerts.push(
-        `Data quality: ${row.accountType} signup tracking differs from the authoritative profile count by ${row.variance}`
+        `Reconciliation drift: ${row.accountType} signup tracking differs from the authoritative profile count by ${row.variance}. Owner: Engineering. Action: inspect the auth contract live-at boundary and failed profile/event paths.`
       )
     }
   }
   for (const row of titleWorkflowReconciliation.filter(row => row.status === 'drift')) {
     alerts.push(
-      `Data quality: creator title ${row.stage} tracking differs from the authoritative count by ${row.variance}`
+      `Reconciliation drift: creator title ${row.stage} tracking differs from the authoritative count by ${row.variance}. Owner: Engineering. Action: compare the workflow timestamp and server/client event path.`
     )
   }
   if (interestReconciliation.status === 'drift') {
     alerts.push(
-      `Data quality: buyer interest tracking differs from authoritative interest rows by ${interestReconciliation.variance}`
+      `Reconciliation drift: buyer interest tracking differs from authoritative interest rows by ${interestReconciliation.variance}. Owner: Engineering. Action: inspect express-interest dedupe responses and dashboard event delivery.`
     )
   }
   if (excludedSessionRate > 0.1) {
-    alerts.push(`Data quality: ${formatPct(excludedSessionRate)} of production-host sessions excluded as known scanner traffic`)
+    alerts.push(`Scanner share: ${formatPct(excludedSessionRate)} of production-host sessions were excluded as known scanner traffic. Owner: Analytics Operations. Action: inspect source rows for a new redirect domain before changing the exclusion list.`)
   }
+  alerts.push(...acquisitionDeclineAlerts(cleanTraffic, previousCleanTraffic))
+  alerts.push(...missingProductEventAlerts({
+    contractLive: productInstrumentationLive,
+    dashboardSessions: appBreakdown.find(row => row.app === 'dashboard')?.sessions || 0,
+    eventMetrics: funnel,
+  }))
 
   // Check landing page bounce rates
   for (const lp of landingPages.slice(0, 5)) {
     if (lp.bounceRate > 0.6) {
-      alerts.push(`Warning: Landing page ${lp.landingPage} has ${formatPct(lp.bounceRate)} bounce rate`)
+      alerts.push(`Landing page: ${lp.landingPage} has ${formatPct(lp.bounceRate)} bounce rate. Owner: Growth. Action: review source quality and page-message alignment.`)
     }
   }
 
@@ -630,6 +645,15 @@ The clean estimate includes only the three production hosts and excludes all obs
 ${appBreakdown.map(row => `| ${row.app === 'website' ? 'Website' : row.app === 'dashboard' ? 'Buyer dashboard' : 'Creator app'} | ${row.hostName} | ${row.activeUsers} | ${row.newUsers} | ${row.sessions} | ${row.engagedSessions} | ${formatPct(row.engagementRate)} |`).join('\n')}
 
 The rows use the same production-host and scanner exclusions as the clean KPI total. Active-user rows must not be added together as a cross-app unique-user total because the same person may use more than one app.
+
+### Acquisition trend versus previous comparable window
+
+| Clean external metric | Current | Previous | Change |
+|-----------------------|--------:|---------:|-------:|
+| New users | ${cleanTraffic.newUsers} | ${previousCleanTraffic.newUsers} | ${newUserChange === null ? 'New baseline' : formatPct(newUserChange)} |
+| Sessions | ${cleanTraffic.sessions} | ${previousCleanTraffic.sessions} | ${sessionChange === null ? 'New baseline' : formatPct(sessionChange)} |
+
+Acquisition decline alerts use clean external new users, a 20% decline threshold, and a minimum previous-window baseline of five users. Owner: Growth. The low-volume gate prevents a one-person change from becoming an executive alert.
 
 ### Authoritative signup reconciliation
 
@@ -858,6 +882,7 @@ serve(async (req) => {
 
     // Calculate one shared Los Angeles calendar window for GA4 and Supabase.
     const window = reportingWindow(days)
+    const previousWindow = previousReportingWindow(days, window)
     const startDate = window.startDate
     const endDate = window.endDate
 
@@ -871,6 +896,7 @@ serve(async (req) => {
       sourcesResponse,
       rawTrafficResponse,
       cleanTrafficResponse,
+      previousCleanTrafficResponse,
       appBreakdownResponse,
       signupByHostResponse,
       titleWorkflowResponse,
@@ -946,7 +972,18 @@ serve(async (req) => {
         dimensionFilter: buildCleanProductionFilter(),
       }),
 
-      // Query 7: Clean external traffic split across the three production apps
+      // Query 7: Previous clean external window for acquisition comparison
+      runGA4Report(accessToken, {
+        dateRanges: [{
+          startDate: previousWindow.startDate,
+          endDate: previousWindow.endDate,
+        }],
+        dimensions: [],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildCleanProductionFilter(),
+      }),
+
+      // Query 8: Clean external traffic split across the three production apps
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['hostName'],
@@ -954,7 +991,7 @@ serve(async (req) => {
         dimensionFilter: buildCleanProductionFilter(),
       }),
 
-      // Query 8: Canonical completed signups split into buyer and creator apps
+      // Query 9: Canonical completed signups split into buyer and creator apps
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['hostName'],
@@ -971,7 +1008,7 @@ serve(async (req) => {
         }]),
       }),
 
-      // Query 9: Canonical creator title workflow outcomes
+      // Query 10: Canonical creator title workflow outcomes
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['eventName'],
@@ -999,7 +1036,7 @@ serve(async (req) => {
         ]),
       }),
 
-      // Query 10: Canonical buyer-interest outcomes
+      // Query 11: Canonical buyer-interest outcomes
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['eventName'],
@@ -1038,6 +1075,7 @@ serve(async (req) => {
     const trafficSources = parseTrafficSources(sourcesResponse)
     const rawTraffic = parseTrafficSummary(rawTrafficResponse)
     const cleanTraffic = parseTrafficSummary(cleanTrafficResponse)
+    const previousCleanTraffic = parseTrafficSummary(previousCleanTrafficResponse)
     const appBreakdown = parseAnalyticsAppBreakdown(appBreakdownResponse.rows)
     const gaSignupCounts = parseSignupUsersByHost(signupByHostResponse.rows)
     const gaTitleWorkflowCounts = parseTitleWorkflowEvents(titleWorkflowResponse.rows)
@@ -1119,6 +1157,7 @@ serve(async (req) => {
       trafficSources,
       rawTraffic,
       cleanTraffic,
+      previousCleanTraffic,
       appBreakdown,
       signupReconciliation,
       instrumentationLive,

@@ -216,6 +216,7 @@ serve(async (req) => {
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,
+          target_tier: requestedTier,
         },
       },
       metadata: {

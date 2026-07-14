@@ -65,7 +65,7 @@ The event does not fire on page load, so security scanners cannot satisfy it wit
 
 ## Commercial outcomes
 
-These names are reserved now; implementation remains governed by `AR-205` and must use server-confirmed results.
+These canonical names are governed by `AR-205` and must use server-confirmed results. Source implementation does not make an event production-live; release and GA validation are recorded separately.
 
 | Event | Owner | Exact trigger | Required parameters | Example |
 |---|---|---|---|---|
@@ -123,5 +123,6 @@ Allowed `entry_method` values are `full` and `quick_add`. Title names, URLs, rig
 - Canonical buyer `interest_submitted` is implemented in source under `AR-205` after the server-confirmed write. It replaces legacy `title_interest_submitted` and removes title names and note metadata; production release remains pending.
 - Product-engagement names are implemented and tested on `v2` under `AR-206`; production release and scheduled-report cutover remain pending.
 - Canonical `checkout_started` is implemented in both product apps after server-confirmed session creation. Client return pages no longer claim payment or subscription success.
-- Introduction, subscription, approval, and publication names remain reserved until their authoritative server-side implementations pass acceptance tests.
+- Canonical `subscription_started` now has a source implementation on `v2`: active buyer and creator Stripe webhook outcomes enqueue one privacy-safe row per Stripe subscription, and a service-role worker validates and retries Measurement Protocol delivery. The additive schema, functions, webhook changes, and GA secret are not deployed; full-chain and GA debug validation remain pending.
+- Introduction, approval, and publication names remain reserved until their authoritative server-side implementations pass acceptance tests.
 - Critical-event boundary coverage and its remaining gaps are tracked in [ANALYTICS_EVENT_TEST_MATRIX.md](ANALYTICS_EVENT_TEST_MATRIX.md).

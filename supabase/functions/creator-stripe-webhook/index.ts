@@ -3,6 +3,12 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.21.0'
 import { getStripeConfig } from '../_shared/stripe-config.ts'
+import {
+  billingPeriodFromStripeInterval,
+  enqueueSubscriptionStarted,
+  getAnalyticsTrafficType,
+  subscriptionValueFromUnitAmount,
+} from '../_shared/analytics-outbox.ts'
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider()
 
@@ -132,6 +138,7 @@ const handler = async (request: Request): Promise<Response> => {
 
         // Extract metadata
         const {
+          creator_id,
           title_id,
           title_name,
           creator_email,
@@ -139,9 +146,22 @@ const handler = async (request: Request): Promise<Response> => {
           billing_period
         } = session.metadata || {}
 
-        if (!title_id || !creator_email || !plan_type) {
+        if (!title_id || !creator_email || !['packaging', 'premium'].includes(plan_type || '')) {
           console.error('❌ Missing required metadata in checkout session')
           return new Response('Missing metadata', { status: 400 })
+        }
+
+        let creatorId = creator_id
+        if (!creatorId) {
+          const { data: creatorProfile, error: creatorError } = await supabase
+            .from('user_creators')
+            .select('id')
+            .eq('email', creator_email.toLowerCase())
+            .single()
+          if (creatorError || !creatorProfile?.id) {
+            throw new Error('Creator profile not found for subscription analytics')
+          }
+          creatorId = creatorProfile.id
         }
 
         // Get subscription details from Stripe
@@ -158,7 +178,7 @@ const handler = async (request: Request): Promise<Response> => {
         // Create subscription record in database
         const { data: subscriptionData, error: subscriptionError } = await supabase
           .from('creator_subscriptions')
-          .insert({
+          .upsert({
             creator_email: creator_email,
             title_id: title_id,
             stripe_subscription_id: subscription.id,
@@ -169,7 +189,7 @@ const handler = async (request: Request): Promise<Response> => {
             current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             cancel_at_period_end: subscription.cancel_at_period_end,
-          })
+          }, { onConflict: 'stripe_subscription_id' })
           .select()
           .single()
 
@@ -179,6 +199,24 @@ const handler = async (request: Request): Promise<Response> => {
         }
 
         console.log('✅ Subscription record created:', subscriptionData)
+
+        if (subscription.status === 'active') {
+          const price = subscription.items?.data[0]?.price
+          const trafficType = await getAnalyticsTrafficType(supabase, creatorId)
+          await enqueueSubscriptionStarted(supabase, {
+            stripeSubscriptionId: subscription.id,
+            userId: creatorId,
+            accountType: 'creator',
+            trafficType,
+            planType: plan_type as 'packaging' | 'premium',
+            billingPeriod: billing_period === 'yearly'
+              ? 'yearly'
+              : billingPeriodFromStripeInterval(price?.recurring?.interval),
+            currency: price?.currency || 'usd',
+            value: subscriptionValueFromUnitAmount(price?.unit_amount),
+            occurredAt: new Date(event.created * 1000).toISOString(),
+          })
+        }
 
         // Update or create customer record
         const { error: customerError } = await supabase
@@ -222,6 +260,46 @@ const handler = async (request: Request): Promise<Response> => {
         if (updateError) {
           console.error('❌ Failed to update subscription:', updateError)
           throw new Error(`Database error: ${updateError.message}`)
+        }
+
+        if (subscription.status === 'active') {
+          const { data: localSubscription, error: localSubscriptionError } = await supabase
+            .from('creator_subscriptions')
+            .select('creator_email, plan_type, billing_period')
+            .eq('stripe_subscription_id', subscription.id)
+            .single()
+          if (localSubscriptionError || !localSubscription) {
+            throw new Error('Creator subscription not found for analytics enqueue')
+          }
+
+          let creatorId = subscription.metadata?.creator_id
+          if (!creatorId) {
+            const { data: creatorProfile, error: creatorError } = await supabase
+              .from('user_creators')
+              .select('id')
+              .eq('email', localSubscription.creator_email.toLowerCase())
+              .single()
+            if (creatorError || !creatorProfile?.id) {
+              throw new Error('Creator profile not found for subscription analytics')
+            }
+            creatorId = creatorProfile.id
+          }
+
+          const price = subscription.items?.data[0]?.price
+          const trafficType = await getAnalyticsTrafficType(supabase, creatorId)
+          await enqueueSubscriptionStarted(supabase, {
+            stripeSubscriptionId: subscription.id,
+            userId: creatorId,
+            accountType: 'creator',
+            trafficType,
+            planType: localSubscription.plan_type as 'packaging' | 'premium',
+            billingPeriod: localSubscription.billing_period === 'yearly'
+              ? 'yearly'
+              : billingPeriodFromStripeInterval(price?.recurring?.interval),
+            currency: price?.currency || 'usd',
+            value: subscriptionValueFromUnitAmount(price?.unit_amount),
+            occurredAt: new Date(event.created * 1000).toISOString(),
+          })
         }
 
         console.log('✅ Subscription updated successfully')

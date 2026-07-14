@@ -9,6 +9,10 @@ import {
   SCHEDULED_REPORT_EVENTS,
 } from '../_shared/analytics-report-events.ts'
 import {
+  parseAnalyticsAppBreakdown,
+  type AnalyticsAppBreakdownRow,
+} from '../_shared/analytics-app-breakdown.ts'
+import {
   isInstrumentationLiveForWindow,
   parseSignupUsersByHost,
   reconcileSignupCounts,
@@ -512,6 +516,7 @@ function generateFunnelReport(
   sources: SourceMetrics[],
   rawTraffic: TrafficSummary,
   cleanTraffic: TrafficSummary,
+  appBreakdown: AnalyticsAppBreakdownRow[],
   signupReconciliation: SignupReconciliationRow[],
   instrumentationLive: boolean,
   titleWorkflowReconciliation: TitleWorkflowReconciliationRow[],
@@ -617,6 +622,14 @@ function generateFunnelReport(
 | Engaged Sessions | ${rawTraffic.engagedSessions} | ${cleanTraffic.engagedSessions} | ${Math.max(rawTraffic.engagedSessions - cleanTraffic.engagedSessions, 0)} |
 
 The clean estimate includes only the three production hosts and excludes all observed Brevo/Sendinblue scanner referral domains. Legitimate email engagement is reconciled separately with Brevo campaign data.
+
+### Clean external activity by app
+
+| App | Production host | Active users | New users | Sessions | Engaged sessions | Engagement rate |
+|-----|-----------------|-------------:|----------:|---------:|-----------------:|----------------:|
+${appBreakdown.map(row => `| ${row.app === 'website' ? 'Website' : row.app === 'dashboard' ? 'Buyer dashboard' : 'Creator app'} | ${row.hostName} | ${row.activeUsers} | ${row.newUsers} | ${row.sessions} | ${row.engagedSessions} | ${formatPct(row.engagementRate)} |`).join('\n')}
+
+The rows use the same production-host and scanner exclusions as the clean KPI total. Active-user rows must not be added together as a cross-app unique-user total because the same person may use more than one app.
 
 ### Authoritative signup reconciliation
 
@@ -858,6 +871,7 @@ serve(async (req) => {
       sourcesResponse,
       rawTrafficResponse,
       cleanTrafficResponse,
+      appBreakdownResponse,
       signupByHostResponse,
       titleWorkflowResponse,
       interestResponse,
@@ -932,7 +946,15 @@ serve(async (req) => {
         dimensionFilter: buildCleanProductionFilter(),
       }),
 
-      // Query 7: Canonical completed signups split into buyer and creator apps
+      // Query 7: Clean external traffic split across the three production apps
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['hostName'],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildCleanProductionFilter(),
+      }),
+
+      // Query 8: Canonical completed signups split into buyer and creator apps
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['hostName'],
@@ -949,7 +971,7 @@ serve(async (req) => {
         }]),
       }),
 
-      // Query 8: Canonical creator title workflow outcomes
+      // Query 9: Canonical creator title workflow outcomes
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['eventName'],
@@ -977,7 +999,7 @@ serve(async (req) => {
         ]),
       }),
 
-      // Query 9: Canonical buyer-interest outcomes
+      // Query 10: Canonical buyer-interest outcomes
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['eventName'],
@@ -1016,6 +1038,7 @@ serve(async (req) => {
     const trafficSources = parseTrafficSources(sourcesResponse)
     const rawTraffic = parseTrafficSummary(rawTrafficResponse)
     const cleanTraffic = parseTrafficSummary(cleanTrafficResponse)
+    const appBreakdown = parseAnalyticsAppBreakdown(appBreakdownResponse.rows)
     const gaSignupCounts = parseSignupUsersByHost(signupByHostResponse.rows)
     const gaTitleWorkflowCounts = parseTitleWorkflowEvents(titleWorkflowResponse.rows)
     const gaInterestCount = parseOutcomeEventCount(
@@ -1096,6 +1119,7 @@ serve(async (req) => {
       trafficSources,
       rawTraffic,
       cleanTraffic,
+      appBreakdown,
       signupReconciliation,
       instrumentationLive,
       titleWorkflowReconciliation,

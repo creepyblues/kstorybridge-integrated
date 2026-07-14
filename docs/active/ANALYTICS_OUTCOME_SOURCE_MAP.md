@@ -29,6 +29,7 @@ This map defines the authoritative record used to reconcile GA events. A GA even
 | Title submitted | `title_drafts.status=submitted` | `title_drafts.submitted_at` | `title_submitted` | High. Client emission is implemented and tested on `v2`, but not production-live. |
 | Title approved | `title_drafts.status=approved` | `title_drafts.approved_at` | Reserved `title_approved` | High for the record; server emission is not implemented. |
 | Title published/available | New row in `public.titles` inserted by `approve-title` | `titles.created_at` | Reserved `title_published` | Medium. The prepared additive linkage makes this reconcilable, but it is not production-live and the production `titles` table has no `status` or `published_at` column. |
+| Buyer title shortlisted | `public.user_favorites` unique buyer/title row | `user_favorites.created_at` | `favorite_added` | Medium for repeatable product behavior, not yet durable enough for activation. Removing a favorite deletes the row and erases the historical first-shortlist fact; persist an immutable activation milestone before using this as the authoritative activation KPI. |
 | Buyer interest submitted | `public.title_interests.id` and `title_id` | `title_interests.created_at` | `interest_submitted` | High for creation. The server uses the unique buyer/title constraint as the dedupe gate and returns `created=false` when it only refreshes an existing note; only `created=true` emits GA and team notifications. Canonical client emission is implemented but not yet released. The table has no `updated_at`, `contacted_at`, or `closed_at`. |
 | Buyer interest advanced | `title_interests.status` (`new`, `contacted`, `in_discussion`, `closed`) | None beyond original `created_at` | No reliable transition event yet | Gap. Status-transition timestamps are absent. |
 | Introduction requested | No production table or field found | None | `introduction_requested` reserved only | Gap. This must not be reported as a completed business outcome yet. |
@@ -60,6 +61,7 @@ The production schema was probed with zero-row PostgREST selects, so no customer
 5. Choose whether Stripe remains the sole buyer-payment ledger or add a webhook-written buyer payment table.
 6. Retire or repair older code paths that still query the nonexistent buyer `subscriptions` relation.
 7. Repair or safely supersede the historical migration-reset blocker, apply the prepared analytics outbox, configure the GA Measurement Protocol API secret, deploy the webhook/worker chain in order, schedule delivery, and validate debug plus reconciliation results.
+8. Persist an immutable first-shortlist milestone before adopting saved-title behavior as the buyer activation source of truth; deleting `user_favorites` must not erase activation history.
 
 These gaps do not block clean traffic reporting, auth funnels, or creator subscription reconciliation. They do block honest claims about buyer approval, introductions, draft-to-publication latency, and locally reconciled buyer payments.
 

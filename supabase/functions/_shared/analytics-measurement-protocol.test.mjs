@@ -29,7 +29,10 @@ test('builds one privacy-safe Measurement Protocol event', () => {
   assert.equal(payload.client_id, validRow.user_id)
   assert.equal(payload.user_id, validRow.user_id)
   assert.equal(payload.events[0].name, 'subscription_started')
-  assert.deepEqual(payload.events[0].params, validRow.event_params)
+  assert.deepEqual(payload.events[0].params, {
+    page_location: 'https://dashboard.kstorybridge.com/',
+    ...validRow.event_params,
+  })
   assert.equal('email' in payload.events[0].params, false)
   assert.equal('stripe_subscription_id' in payload.events[0].params, false)
   assert.equal('title_id' in payload.events[0].params, false)
@@ -49,6 +52,23 @@ test('rejects extra, high-cardinality, and mismatched fields', () => {
       event_params: { ...validRow.event_params, app_section: 'creator' },
     }),
     /invalid_outbox_app_section/
+  )
+})
+
+test('derives the fixed creator production origin without accepting a URL field', () => {
+  const payload = buildMeasurementProtocolPayload({
+    ...validRow,
+    event_params: {
+      ...validRow.event_params,
+      account_type: 'creator',
+      app_section: 'creator',
+      plan_type: 'premium',
+    },
+  })
+
+  assert.equal(
+    payload.events[0].params.page_location,
+    'https://creator.kstorybridge.com/'
   )
 })
 

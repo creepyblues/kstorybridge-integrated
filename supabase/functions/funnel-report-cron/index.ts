@@ -5,6 +5,10 @@ import {
   buildProductionHostFilter,
 } from '../_shared/analytics-filters.ts'
 import {
+  authenticatedBuyerEngagementRows,
+  SCHEDULED_REPORT_EVENTS,
+} from '../_shared/analytics-report-events.ts'
+import {
   isInstrumentationLiveForWindow,
   parseSignupUsersByHost,
   reconcileSignupCounts,
@@ -36,21 +40,6 @@ const corsHeaders = {
 
 // GA4 Property Configuration
 const GA4_PROPERTY_ID = '496541587'
-
-// Funnel event names
-const FUNNEL_EVENTS = [
-  'first_visit',
-  'email_landing_engaged',
-  'trial_page_view',
-  'trial_tool_selected',
-  'trial_comps_search',
-  'trial_mandate_search',
-  'trial_chat_message_sent',
-  'trial_search_completed',
-  'trial_limit_reached',
-  'trial_signup_cta_clicked',
-  'signup_completed',
-]
 
 const PAGE_PATHS = [
   '/trial',
@@ -530,6 +519,8 @@ function generateFunnelReport(
   titleServerInstrumentationLive: boolean,
   interestReconciliation: OutcomeReconciliationRow,
   interestInstrumentationLive: boolean,
+  productInstrumentationLive: boolean,
+  commercialInstrumentationLive: boolean,
   window: ReportingWindow,
   days: number
 ): { markdown: string; alerts: string[] } {
@@ -542,7 +533,10 @@ function generateFunnelReport(
   const searchCompleted = funnel['trial_search_completed'] || { eventCount: 0, totalUsers: 0 }
   const ctaClicked = funnel['trial_signup_cta_clicked'] || { eventCount: 0, totalUsers: 0 }
   const signupComplete = funnel['signup_completed'] || { eventCount: 0, totalUsers: 0 }
+  const signinComplete = funnel['signin_completed'] || { eventCount: 0, totalUsers: 0 }
   const emailLandingEngaged = funnel['email_landing_engaged'] || { eventCount: 0, totalUsers: 0 }
+  const checkoutStarted = funnel['checkout_started'] || { eventCount: 0, totalUsers: 0 }
+  const subscriptionStarted = funnel['subscription_started'] || { eventCount: 0, totalUsers: 0 }
 
   // Tool breakdown
   const compsSearch = funnel['trial_comps_search'] || { eventCount: 0, totalUsers: 0 }
@@ -669,10 +663,40 @@ ${interestInstrumentationLive
 |--------------------------------------------------|--------|
 | Introduction requested | No authoritative introduction table or timestamp exists. |
 | Introduction completed | No authoritative introduction workflow exists. |
-| Buyer subscription started | Stripe is authoritative, but the local buyer record has no immutable subscription-start timestamp. |
+| Buyer subscription started | Stripe is authoritative; the prepared local outbox timestamp is not available until its migration and webhook path are production-live. |
 | Buyer payment completed | No local buyer payment ledger exists; Stripe event time is external-only. |
 
-These rows are product/data-model gaps, not zero conversions. Creator subscriptions have a reliable local creation record, but server-side GA emission and a shared non-PII reconciliation key are still pending.
+These rows are product/data-model gaps, not zero conversions. Creator subscriptions have a reliable local creation record. Privacy-safe server emission and a stable Supabase-user reconciliation identity are prepared on \`v2\`, but remain unavailable here until the outbox migration, webhooks, worker, secret, and schedule are production-validated.
+
+### Canonical commercial behavior signals
+
+| Outcome | Users | Events |
+|---------|------:|-------:|
+| Checkout started after server session creation | ${checkoutStarted.totalUsers} | ${checkoutStarted.eventCount} |
+| Active subscription confirmed by Stripe webhook | ${subscriptionStarted.totalUsers} | ${subscriptionStarted.eventCount} |
+
+${commercialInstrumentationLive
+  ? 'The canonical commercial contract was live before this full window. These GA behavior signals may be evaluated alongside their authoritative reconciliation rows.'
+  : 'The canonical commercial contract was not live for this full window. These values are informational and must not be interpreted as complete conversion totals.'}
+
+### Authenticated product engagement
+
+| Auth outcome across buyer and creator apps | Users | Events |
+|--------------------------------------------|------:|-------:|
+| Signup completed | ${signupComplete.totalUsers} | ${signupComplete.eventCount} |
+| Sign-in completed | ${signinComplete.totalUsers} | ${signinComplete.eventCount} |
+
+The sign-in row uses only \`signin_completed\`; views, attempts, failures, and the obsolete aggregate \`signin\` event are not combined with it.
+
+| Canonical buyer-product outcome | Users | Events |
+|---------------------------------|------:|-------:|
+${authenticatedBuyerEngagementRows(funnel).map(row => {
+  return `| ${row.label} | ${row.totalUsers} | ${row.eventCount} |`
+}).join('\n')}
+
+${productInstrumentationLive
+  ? 'The canonical authenticated buyer-product contract was live before this full window. Legacy aliases are not queried or combined with these outcomes.'
+  : 'The canonical authenticated buyer-product contract was not live for this full window. Legacy aliases are deliberately not added to these values, so zeros or partial counts are instrumentation-pending rather than evidence of no engagement.'}
 
 ### Human email engagement
 
@@ -847,7 +871,7 @@ serve(async (req) => {
           filter: {
             fieldName: 'eventName',
             inListFilter: {
-              values: FUNNEL_EVENTS,
+              values: [...SCHEDULED_REPORT_EVENTS],
               caseSensitive: true,
             },
           },
@@ -1054,6 +1078,14 @@ serve(async (req) => {
       gaInterestCount,
       interestInstrumentationLive
     )
+    const productInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_PRODUCT_CONTRACT_LIVE_AT'),
+      window.start
+    )
+    const commercialInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_COMMERCIAL_CONTRACT_LIVE_AT'),
+      window.start
+    )
 
     // Generate report
     console.log('[funnel-report-cron] Generating funnel report...')
@@ -1071,6 +1103,8 @@ serve(async (req) => {
       titleServerInstrumentationLive,
       interestReconciliation,
       interestInstrumentationLive,
+      productInstrumentationLive,
+      commercialInstrumentationLive,
       window,
       days
     )

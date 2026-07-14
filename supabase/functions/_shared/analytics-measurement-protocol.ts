@@ -92,6 +92,11 @@ export function buildMeasurementProtocolPayload(row: AnalyticsOutboxRow): Measur
     events: [{
       name: row.event_name,
       params: {
+        // A fixed production origin makes the server event visible to the same
+        // GA hostName filter as browser events without accepting a user URL.
+        page_location: accountType === 'buyer'
+          ? 'https://dashboard.kstorybridge.com/'
+          : 'https://creator.kstorybridge.com/',
         account_type: accountType,
         app_section: appSection,
         traffic_type: trafficType,

@@ -150,10 +150,10 @@ mcp__analytics-mcp__run_report:
     filter:
       field_name: "eventName"
       in_list_filter:
-        values: ["signup_completed", "signin", "trial_page_view", "trial_tool_selected",
+        values: ["signup_completed", "signin_completed", "trial_page_view", "trial_tool_selected",
                  "trial_limit_reached", "trial_signup_cta_clicked", "chat_message_sent",
-                 "comps_search", "mandate_search_submitted", "checkout_started",
-                 "checkout_completed", "favorite_added"]
+                 "comps_search_submitted", "mandate_search_submitted", "checkout_started",
+                 "subscription_started", "interest_submitted", "favorite_added"]
         case_sensitive: true
 ```
 
@@ -195,8 +195,8 @@ mcp__analytics-mcp__run_report:
         values: ["trial_page_view", "trial_tool_selected", "trial_comps_search",
                  "trial_mandate_search", "trial_chat_message_sent", "trial_search_completed",
                  "trial_limit_reached", "trial_signup_cta_clicked", "signup_completed",
-                 "signin", "chat_message_sent", "comps_search", "mandate_search_submitted",
-                 "checkout_started", "checkout_completed"]
+                 "signin_completed", "chat_message_sent", "comps_search_submitted",
+                 "mandate_search_submitted", "checkout_started", "subscription_started"]
         case_sensitive: true
 ```
 
@@ -322,10 +322,17 @@ Overall Trial → Signup: >15%
 | `trial_signup_cta_clicked` | User clicked signup from trial |
 | `signup_completed` | User completed registration |
 | `chat_message_sent` | User sent a chat message |
-| `comps_search` | User searched in Comps Navigator |
+| `comps_search_submitted` | Authenticated user submitted a comps request |
 | `mandate_search_submitted` | User searched with a mandate |
 | `checkout_started` | User started checkout |
-| `checkout_completed` | User completed purchase ($250) |
+| `subscription_started` | Stripe confirmed an active paid subscription |
+
+### Event cutover policy
+
+- Public-trial events such as `trial_comps_search` remain distinct trial outcomes; do not merge them with authenticated product events.
+- Never query or add the obsolete authenticated aliases `signin`, `comps_search`, or `checkout_completed` to canonical values.
+- Use `signin_completed`, `comps_search_submitted`, and webhook-confirmed `subscription_started` for the corresponding canonical outcomes.
+- A reporting window is contract-live only when its full start is after the recorded deployment timestamp. If a window crosses a cutover, label canonical counts as instrumentation pending; do not backfill them by summing legacy aliases.
 
 ---
 

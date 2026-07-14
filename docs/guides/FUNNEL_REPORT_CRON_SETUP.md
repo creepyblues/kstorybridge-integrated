@@ -82,6 +82,15 @@ npx supabase secrets set ANALYTICS_INTEREST_CONTRACT_LIVE_AT='ACTUAL_DASHBOARD_D
 
 Leave the secret unset until the updated dashboard is in production. The authoritative count comes from newly created `title_interests` rows; duplicate requests that merely refresh a note are not additional outcomes.
 
+Authenticated buyer-product reporting and canonical commercial signals use independent cutovers. Set each value only after every event represented by that report section is live in production:
+
+```bash
+npx supabase secrets set ANALYTICS_PRODUCT_CONTRACT_LIVE_AT='ACTUAL_DASHBOARD_DEPLOYMENT_TIMESTAMP'
+npx supabase secrets set ANALYTICS_COMMERCIAL_CONTRACT_LIVE_AT='ACTUAL_LATER_WEBHOOK_OR_CLIENT_DEPLOYMENT_TIMESTAMP'
+```
+
+If a reporting window starts before a cutover, the section remains labeled instrumentation pending. The report never fills canonical counts by adding obsolete aliases such as `comps_search` or `checkout_completed`. Public-trial events remain separate because they describe the unauthenticated trial flow rather than the authenticated product contract.
+
 **Important**: The JSON must be on a single line. You can use:
 ```bash
 # Convert multi-line JSON to single line

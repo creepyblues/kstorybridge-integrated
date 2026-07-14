@@ -50,6 +50,7 @@ The production Supabase secret inventory was checked by name only. `GA4_MEASUREM
 - Anonymous and authenticated clients cannot select from the table or execute its RPCs.
 - Only the service role can enqueue, claim, complete, or retry rows.
 - `event_params` contains only `account_type`, `app_section`, `traffic_type`, `plan_type`, `billing_period`, `currency`, and `value`.
+- Measurement Protocol delivery derives a fixed production `page_location` from `account_type`; it never accepts a user-provided URL. This makes the server event visible to the report's production-host filter.
 - Buyer and creator events use `subscription_started:{account_type}:{stripe_subscription_id}` as the unique key, while the Stripe identifier itself never enters `event_params`.
 - An active subscription retry does not create a second outbox row.
 - A crashed worker's `processing` row becomes claimable after 15 minutes.

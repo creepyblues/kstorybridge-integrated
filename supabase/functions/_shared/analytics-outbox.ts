@@ -14,7 +14,22 @@ export interface SubscriptionStartedInput {
   occurredAt: string
 }
 
-interface SupabaseRpcClient {
+export interface TitleWorkflowOutcomesInput {
+  draftId: string
+  titleId: string
+  creatorId: string
+  trafficType: AnalyticsTrafficType
+  occurredAt: string
+}
+
+export interface TitleWorkflowOutboxIds {
+  approvedOutboxId: string
+  publishedOutboxId: string
+}
+
+export type TitleWorkflowOutcomeForCreatorInput = Omit<TitleWorkflowOutcomesInput, 'trafficType'>
+
+export interface AnalyticsOutboxClient {
   rpc: (name: string, params: Record<string, unknown>) => PromiseLike<{
     data: unknown
     error: { message?: string } | null
@@ -38,7 +53,7 @@ export function subscriptionValueFromUnitAmount(unitAmount?: number | null): num
 }
 
 export async function getAnalyticsTrafficType(
-  supabase: SupabaseRpcClient,
+  supabase: AnalyticsOutboxClient,
   userId: string
 ): Promise<AnalyticsTrafficType> {
   const { data, error } = await supabase.auth.admin.getUserById(userId)
@@ -49,7 +64,7 @@ export async function getAnalyticsTrafficType(
 }
 
 export async function enqueueSubscriptionStarted(
-  supabase: SupabaseRpcClient,
+  supabase: AnalyticsOutboxClient,
   input: SubscriptionStartedInput
 ): Promise<string> {
   const { data, error } = await supabase.rpc('enqueue_subscription_started', {
@@ -68,4 +83,36 @@ export async function enqueueSubscriptionStarted(
     throw new Error('analytics_outbox_enqueue_failed')
   }
   return data
+}
+
+export async function enqueueTitleWorkflowOutcomes(
+  supabase: AnalyticsOutboxClient,
+  input: TitleWorkflowOutcomesInput
+): Promise<TitleWorkflowOutboxIds> {
+  const { data, error } = await supabase.rpc('enqueue_title_workflow_outcomes', {
+    p_draft_id: input.draftId,
+    p_title_id: input.titleId,
+    p_creator_id: input.creatorId,
+    p_traffic_type: input.trafficType,
+    p_occurred_at: input.occurredAt,
+  })
+  const row = Array.isArray(data) ? data[0] : null
+
+  if (error ||
+      typeof row?.approved_outbox_id !== 'string' ||
+      typeof row?.published_outbox_id !== 'string') {
+    throw new Error('analytics_title_workflow_enqueue_failed')
+  }
+  return {
+    approvedOutboxId: row.approved_outbox_id,
+    publishedOutboxId: row.published_outbox_id,
+  }
+}
+
+export async function enqueueTitleWorkflowOutcomesForCreator(
+  supabase: AnalyticsOutboxClient,
+  input: TitleWorkflowOutcomeForCreatorInput
+): Promise<TitleWorkflowOutboxIds> {
+  const trafficType = await getAnalyticsTrafficType(supabase, input.creatorId)
+  return enqueueTitleWorkflowOutcomes(supabase, { ...input, trafficType })
 }

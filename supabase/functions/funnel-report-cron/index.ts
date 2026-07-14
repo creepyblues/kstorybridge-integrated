@@ -198,13 +198,20 @@ async function getAuthoritativeTitleWorkflowCounts(
 
   const countExternalOutcomes = async (
     table: 'title_drafts' | 'titles',
-    timestamp: 'created_at' | 'submitted_at' | 'approved_at'
+    timestamp: 'created_at' | 'submitted_at' | 'approved_at',
+    linkedOnly = false
   ): Promise<number> => {
-    const baseQuery = () => supabase
-      .from(table)
-      .select(table === 'titles' ? 'title_id' : 'id', { count: 'exact', head: true })
-      .gte(timestamp, window.start.toISOString())
-      .lt(timestamp, window.endExclusive.toISOString())
+    const baseQuery = () => {
+      let query = supabase
+        .from(table)
+        .select(table === 'titles' ? 'title_id' : 'id', { count: 'exact', head: true })
+        .gte(timestamp, window.start.toISOString())
+        .lt(timestamp, window.endExclusive.toISOString())
+      if (linkedOnly && table === 'title_drafts') {
+        query = query.not('published_title_id', 'is', null)
+      }
+      return query
+    }
 
     const [allResult, adminResult] = await Promise.all([
       baseQuery(),
@@ -225,7 +232,7 @@ async function getAuthoritativeTitleWorkflowCounts(
     countExternalOutcomes('title_drafts', 'created_at'),
     countExternalOutcomes('title_drafts', 'submitted_at'),
     countExternalOutcomes('title_drafts', 'approved_at'),
-    countExternalOutcomes('titles', 'created_at'),
+    countExternalOutcomes('title_drafts', 'approved_at', true),
   ])
 
   return {
@@ -1214,7 +1221,7 @@ serve(async (req) => {
       gaTitleWorkflowCounts,
       titleClientInstrumentationLive,
       titleServerInstrumentationLive,
-      false
+      titleServerInstrumentationLive
     )
     const authoritativeInterestCount = await getAuthoritativeInterestCount(
       supabaseUrl,

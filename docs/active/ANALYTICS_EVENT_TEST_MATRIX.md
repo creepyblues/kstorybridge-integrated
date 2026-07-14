@@ -21,7 +21,7 @@
 | `subscription_started` | Buyer/creator Stripe webhooks + service-role outbox prepared on `v2` | Yes | Partial | Nine payload/helper tests pass; database tests prove controlled params, unique subscription dedupe, claim/retry/completion, stale recovery, and client-role denial. Delivery authorization boundaries return 405/401/503 as designed. Full Stripe-to-GA debug validation, deployment-order verification, and post-delivery reconciliation remain pending (`AR-205`). Client return pages deliberately emit no success. |
 | Buyer product engagement events | Dashboard client | Yes | Yes | Complete: page/component tests cover search, valid detail, accepted chat, comps, mandates, successful favorite writes, loaded pitch decks, visible page changes, blocked preview pages, and each corresponding rejection/failure boundary. |
 | `title_draft_created` / `title_submitted` | Creator full + Quick Add clients | Yes | Yes | Complete: each entry path emits once after successful writes and emits neither outcome on failure. |
-| `title_approved` / `title_published` | Reserved | No | No | Server delivery and durable publication linkage remain pending (`AR-303`). |
+| `title_approved` / `title_published` | Implemented on `v2`; not production-live | Yes | Yes | One service-only RPC atomically writes exact allowlisted payloads; duplicate/recovery calls reuse rows, conflicts roll back, client roles are denied, spoofed/inactive admins are rejected before draft access, and all three approval success paths share the finalizer. Production approval/retry, GA debug, and full-window reconciliation remain pending (`AR-303`). |
 
 ## Required gate to close AR-207
 

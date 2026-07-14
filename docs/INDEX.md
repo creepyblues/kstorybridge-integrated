@@ -28,6 +28,7 @@ This is the master index of all active documentation for the KStoryBridge projec
 | **[ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md](active/ANALYTICS_REPORT_DELIVERY_AUDIT_DESIGN.md)** | Secure scheduled-report authentication, idempotent delivery ledger, and two-run acceptance design |
 | **[migration-root-history-reconstruction-2026-07-13.md](active/migration-root-history-reconstruction-2026-07-13.md)** | Safe root Supabase history reconstruction, local acceptance evidence, and production-ledger reconciliation procedure |
 | **[migration-analytics-report-delivery-audit-2026-07-13.md](active/migration-analytics-report-delivery-audit-2026-07-13.md)** | Authenticated, idempotent report-delivery ledger and coordinated cron/function cutover |
+| **[migration-analytics-title-workflow-outbox-2026-07-13.md](active/migration-analytics-title-workflow-outbox-2026-07-13.md)** | Authoritative title approval/publication outbox, admin boundary, release order, and rollback |
 | **[rollback-analytics-report-delivery-audit-2026-07-13.sql](active/rollback-analytics-report-delivery-audit-2026-07-13.sql)** | Evidence-preserving emergency pause for the report-delivery cutover |
 | **[DATABASE_SCHEMA.md](active/DATABASE_SCHEMA.md)** | Database schema and query patterns |
 | **[DESIGN_SYSTEM.md](active/DESIGN_SYSTEM.md)** | UI/UX standards, components, color palette |

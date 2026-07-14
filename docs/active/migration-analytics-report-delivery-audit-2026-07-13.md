@@ -38,7 +38,7 @@ Two additive migrations and coordinated function/caller changes prepare `AR-406`
 
 Completed on 2026-07-13:
 
-- The pinned Supabase CLI replays all 78 root migrations through `20260714041207`.
+- The pinned Supabase CLI replays all 79 root migrations through `20260714042851`.
 - Database tests cover new/duplicate run claims, recipient snapshot dedupe, one-send behavior, partial email failure, retry-only-failed behavior, successful finalization, stale generation/delivery reclaim, conflicting invocation rejection, forced RLS, grants, forbidden-column absence, and safe status separation.
 - Schedule tests require exactly one active Monday job, a runtime Vault lookup, no Authorization/Bearer/JWT material in `cron.job`, and no client access to cron command text.
 - HTTP boundary checks return 403 for missing, anon, and wrong credentials. Exact service-role sender requests reach payload validation; exact service-role and dedicated-secret funnel requests reach the authenticated path.
@@ -52,7 +52,7 @@ Completed on 2026-07-13:
 3. Back up `title_drafts` and `titles`, record aggregate counts for all touched business tables, and export the current `weekly-funnel-report` cron metadata without exposing credential material.
 4. Generate one random cron secret outside version control. Store the same value in Vault as `analytics_funnel_cron_secret` and in Edge Function secrets as `ANALYTICS_FUNNEL_CRON_SECRET` without printing it.
 5. Add `SUPABASE_SERVICE_ROLE_KEY` to GitHub Actions encrypted secrets and configure the local fallback cron through a user-only secure environment source.
-6. Apply the four current additive/operational migrations through `20260714041207` during a non-cron maintenance window.
+6. Apply the five current additive/operational migrations through `20260714042851` during a non-cron maintenance window, preserving chronological order.
 7. Deploy `send-analytics-report` and `funnel-report-cron` together. Do not leave only one strict boundary live.
 8. Require 403 from anon/user/missing/wrong credentials; run one service-role manual report and repeat its invocation key to prove no duplicate recipient sends.
 9. Verify the secure cron command, safe status RPC, unchanged business row counts, email/Slack results, and absence of PII/raw errors in audit rows.

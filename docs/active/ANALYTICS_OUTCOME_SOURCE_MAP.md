@@ -27,8 +27,8 @@ This map defines the authoritative record used to reconcile GA events. A GA even
 | Trial converted to signup | `trial_sessions.converted=true`, joined through `trial_sessions.user_id`; buyer profile stores `trial_session_id` | `trial_sessions.converted_at` | `signup_completed` plus trial attribution | High when both link fields are populated. |
 | Title draft created | `public.title_drafts.id` with `status=draft` | `title_drafts.created_at` | `title_draft_created` | High. Client emission is implemented and tested on `v2`, but not production-live. |
 | Title submitted | `title_drafts.status=submitted` | `title_drafts.submitted_at` | `title_submitted` | High. Client emission is implemented and tested on `v2`, but not production-live. |
-| Title approved | `title_drafts.status=approved` | `title_drafts.approved_at` | Reserved `title_approved` | High for the record; server emission is not implemented. |
-| Title published/available | New row in `public.titles` inserted by `approve-title` | `titles.created_at` | Reserved `title_published` | Medium. The prepared additive linkage makes this reconcilable, but it is not production-live and the production `titles` table has no `status` or `published_at` column. |
+| Title approved | `title_drafts.status=approved` with `published_title_id` | `title_drafts.approved_at` | `title_approved` through the prepared service-only outbox | High locally. Fresh, recovered, and repeated approvals enqueue idempotently after durable linkage; production remains on the old schema/function. |
+| Title published/available | `title_drafts.published_title_id` joined to `titles.source_draft_id` | The linked draft's `approved_at`, when availability becomes durable | `title_published` through the prepared service-only outbox | High locally. Bidirectional linkage and atomic paired enqueue pass acceptance tests, but neither is production-live. The production `titles` table still has no `status` or `published_at` column. |
 | Buyer title shortlisted | `public.user_favorites` unique buyer/title row | `user_favorites.created_at` | `favorite_added` | Medium for repeatable product behavior, not yet durable enough for activation. Removing a favorite deletes the row and erases the historical first-shortlist fact; persist an immutable activation milestone before using this as the authoritative activation KPI. |
 | Buyer interest submitted | `public.title_interests.id` and `title_id` | `title_interests.created_at` | `interest_submitted` | High for creation. The server uses the unique buyer/title constraint as the dedupe gate and returns `created=false` when it only refreshes an existing note; only `created=true` emits GA and team notifications. Canonical client emission is implemented but not yet released. The table has no `updated_at`, `contacted_at`, or `closed_at`. |
 | Buyer interest advanced | `title_interests.status` (`new`, `contacted`, `in_discussion`, `closed`) | None beyond original `created_at` | No reliable transition event yet | Gap. Status-transition timestamps are absent. |
@@ -55,12 +55,12 @@ The production schema was probed with zero-row PostgREST selects, so no customer
 ## Required remediation before full reconciliation
 
 1. Define buyer approval, then persist an approval status and timestamp.
-2. Persist `published_title_id` on the approved draft or a dedicated draft-to-title mapping.
+2. Release and production-verify the prepared `published_title_id` / `source_draft_id` linkage and authenticated approval boundary.
 3. Add timestamps for interest status transitions if contacted/in-discussion/closed durations matter.
 4. Create an authoritative introduction workflow table before instrumenting introduction outcomes.
 5. Choose whether Stripe remains the sole buyer-payment ledger or add a webhook-written buyer payment table.
 6. Retire or repair older code paths that still query the nonexistent buyer `subscriptions` relation.
-7. With explicit approval, reconcile the nine missing historical ledger versions without replaying their SQL against populated production, back up affected tables, prepare server-only report credentials, and apply the four current migrations through the authenticated report schedule. Then configure the GA Measurement Protocol API secret, deploy both report boundaries and the webhook/worker chain in their coordinated order, schedule delivery, and validate debug plus reconciliation results.
+7. With explicit approval, reconcile the nine missing historical ledger versions without replaying their SQL against populated production, back up affected tables, prepare server-only report credentials, and apply the five current migrations through the authenticated report schedule and title-workflow extension. Then configure the GA Measurement Protocol API secret, deploy both report boundaries and the webhook/worker/approval chain in their coordinated order, schedule delivery, and validate debug plus reconciliation results.
 8. Persist an immutable first-shortlist milestone before adopting saved-title behavior as the buyer activation source of truth; deleting `user_favorites` must not erase activation history.
 
 These gaps do not block clean traffic reporting, auth funnels, or creator subscription reconciliation. They do block honest claims about buyer approval, introductions, draft-to-publication latency, and locally reconciled buyer payments.
@@ -78,10 +78,10 @@ The scheduled report uses event counts rather than users because one creator can
 - draft created: `title_drafts.created_at`
 - submitted: `title_drafts.submitted_at`
 - approved: `title_drafts.approved_at`
-- catalog created proxy: `titles.created_at`
+- published/available: linked `title_drafts.approved_at` where `published_title_id` is non-null
 
 Active admin creators are excluded. Client drift enforcement begins only after `ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT` predates the full window; approval/publication enforcement separately requires `ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT`.
 
-The publication row is intentionally marked `Draft-to-title linkage pending`. The current production schema cannot prove that a particular approved draft created a particular catalog title, so the proxy is operational context—not a reconciled publication conversion—even when aggregate counts happen to match.
+The publication row remains `Draft-to-title linkage pending` until the server live-at gate covers the complete reporting window. After the coordinated linkage/function release, the same gate enables comparison against linked approved drafts; aggregate `titles.created_at` is no longer used as a publication proxy.
 
-An additive migration is prepared at `supabase/migrations/20260714001452_link_title_drafts_to_publications.sql`. It adds `title_drafts.published_title_id` and `titles.source_draft_id`, and the accompanying `approve-title` source recovers a prior catalog insert instead of creating a duplicate. A complete 76-migration local reset and the full approval-payload/linkage SQL acceptance test pass. This is not production evidence: the migration must be reviewed against remote history and applied before the updated function, followed by an authenticated approval/retry verification.
+Additive migrations are prepared at `20260714001452_link_title_drafts_to_publications.sql` and `20260714042851_extend_analytics_outbox_title_workflow.sql`. They add bidirectional linkage and atomic, deduplicated approval/publication enqueue; `approve-title` also recovers a prior catalog insert, authenticates the active admin, and refuses success until enqueue is durable. A complete 79-migration reset, five SQL suites, 53 focused analytics tests, and three Edge Function checks pass. This is not production evidence: schema must precede the coordinated function release, authenticated approval/retry and GA debug checks, and the real server live-at timestamp.

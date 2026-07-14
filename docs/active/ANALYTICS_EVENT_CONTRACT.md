@@ -95,14 +95,14 @@ Implementation status (2026-07-13): all nine buyer-product outcomes above are im
 
 ## Creator title workflow outcomes
 
-Draft and submission events are client-emitted only after the corresponding Supabase write returns successfully. Approval and publication are reserved for server-side emission because they occur in the admin workflow without the creator present.
+Draft and submission events are client-emitted only after the corresponding Supabase write returns successfully. Approval and publication are server-emitted because they occur in the admin workflow without the creator present. Their durable outbox implementation is prepared and locally validated on `v2`, but is not production-live.
 
 | Event | Owner | Exact trigger | Required parameters | Example |
 |---|---|---|---|---|
 | `title_draft_created` | Creator success | Supabase returns a newly inserted `title_drafts` row. Updates and repeated autosaves do not fire it. | `draft_id`, `entry_method` | `{draft_id: "uuid", entry_method: "full"}` |
 | `title_submitted` | Creator success | Supabase confirms the draft changed from `draft` to `submitted`. | `draft_id`, `entry_method` | `{draft_id: "uuid", entry_method: "quick_add"}` |
-| `title_approved` | Content operations | The authoritative draft is marked approved after a successful admin decision. Server-side emission required. | `draft_id` | `{draft_id: "uuid"}` |
-| `title_published` | Content operations | A catalog title is created and durably linked to its approved source draft. Server-side emission required. | `draft_id`, `title_id` | `{draft_id: "uuid", title_id: "uuid"}` |
+| `title_approved` | Content operations | The authoritative draft is marked approved, linked, and both outcomes are atomically persisted to the service-only analytics outbox. | `draft_id` | `{draft_id: "uuid"}` |
+| `title_published` | Content operations | A catalog title is durably linked to its approved source draft and both outcomes are atomically persisted to the service-only analytics outbox. | `draft_id`, `title_id` | `{draft_id: "uuid", title_id: "uuid"}` |
 
 Allowed `entry_method` values are `full` and `quick_add`. Title names, URLs, rights-holder names, and other draft contents are prohibited from GA.
 
@@ -119,10 +119,10 @@ Allowed `entry_method` values are `full` and `quick_add`. Title names, URLs, rig
 - Environment and internal-traffic fields are implemented across all three apps.
 - `email_landing_engaged` is implemented and verified in preview; production release remains tracked by `AR-110`.
 - Canonical buyer and creator auth names are implemented in source under `AR-201` and `AR-202`.
-- Canonical creator draft-created and submitted outcomes are implemented in source under `AR-303`; production release remains pending. Approval and publication remain reserved until server-side delivery and durable draft-to-title linkage exist.
+- Canonical creator draft-created/submitted outcomes and server-side approval/publication outcomes are implemented in source under `AR-303`; production release, Measurement Protocol validation, and a complete reconciled window remain pending.
 - Canonical buyer `interest_submitted` is implemented in source under `AR-205` after the server-confirmed write. It replaces legacy `title_interest_submitted` and removes title names and note metadata; production release remains pending.
 - Product-engagement names are implemented and tested on `v2` under `AR-206`. The production-verified scheduled report and tracked analytics skill now query only canonical authenticated names under `AR-400`, keep public-trial events separate, and require a full-window live-at boundary; client production release remains pending.
 - Canonical `checkout_started` is implemented in both product apps after server-confirmed session creation. Client return pages no longer claim payment or subscription success.
 - Canonical `subscription_started` now has a source implementation on `v2`: active buyer and creator Stripe webhook outcomes enqueue one privacy-safe row per Stripe subscription, and a service-role worker validates and retries Measurement Protocol delivery. The additive schema, functions, webhook changes, and GA secret are not deployed; full-chain and GA debug validation remain pending.
-- Introduction, approval, and publication names remain reserved until their authoritative server-side implementations pass acceptance tests.
+- Introduction names remain reserved until an authoritative workflow exists. Approval and publication have locally validated authoritative implementations, but must not be reported as live until the coordinated production cutover passes.
 - Critical-event boundary coverage and its remaining gaps are tracked in [ANALYTICS_EVENT_TEST_MATRIX.md](ANALYTICS_EVENT_TEST_MATRIX.md).

@@ -72,6 +72,91 @@ test('derives the fixed creator production origin without accepting a URL field'
   )
 })
 
+test('builds exact creator approval and publication events', () => {
+  const draftId = '223e4567-e89b-42d3-a456-426614174001'
+  const titleId = '323e4567-e89b-42d3-a456-426614174002'
+  const approved = buildMeasurementProtocolPayload({
+    ...validRow,
+    event_name: 'title_approved',
+    event_params: {
+      app_section: 'creator',
+      traffic_type: 'external',
+      draft_id: draftId,
+    },
+  })
+  const published = buildMeasurementProtocolPayload({
+    ...validRow,
+    event_name: 'title_published',
+    event_params: {
+      app_section: 'creator',
+      traffic_type: 'internal',
+      draft_id: draftId,
+      title_id: titleId,
+    },
+  })
+
+  assert.deepEqual(approved.events[0], {
+    name: 'title_approved',
+    params: {
+      page_location: 'https://creator.kstorybridge.com/',
+      app_section: 'creator',
+      traffic_type: 'external',
+      draft_id: draftId,
+    },
+  })
+  assert.deepEqual(published.events[0], {
+    name: 'title_published',
+    params: {
+      page_location: 'https://creator.kstorybridge.com/',
+      app_section: 'creator',
+      traffic_type: 'internal',
+      draft_id: draftId,
+      title_id: titleId,
+    },
+  })
+})
+
+test('rejects malformed, extra, and mismatched title workflow fields', () => {
+  const titleRow = {
+    ...validRow,
+    event_name: 'title_published',
+    event_params: {
+      app_section: 'creator',
+      traffic_type: 'external',
+      draft_id: '223e4567-e89b-42d3-a456-426614174001',
+      title_id: '323e4567-e89b-42d3-a456-426614174002',
+    },
+  }
+  assert.throws(
+    () => buildMeasurementProtocolPayload({
+      ...titleRow,
+      event_params: { ...titleRow.event_params, title_name: 'Sensitive title' },
+    }),
+    /invalid_outbox_param_shape/
+  )
+  assert.throws(
+    () => buildMeasurementProtocolPayload({
+      ...titleRow,
+      event_params: { ...titleRow.event_params, app_section: 'dashboard' },
+    }),
+    /invalid_outbox_app_section/
+  )
+  assert.throws(
+    () => buildMeasurementProtocolPayload({
+      ...titleRow,
+      event_params: { ...titleRow.event_params, draft_id: 'not-a-uuid' },
+    }),
+    /invalid_outbox_draft_id/
+  )
+  assert.throws(
+    () => buildMeasurementProtocolPayload({
+      ...titleRow,
+      event_params: { ...titleRow.event_params, title_id: 'not-a-uuid' },
+    }),
+    /invalid_outbox_title_id/
+  )
+})
+
 test('rejects invalid identity, controlled values, and timestamps', () => {
   assert.throws(
     () => buildMeasurementProtocolPayload({ ...validRow, user_id: 'buyer@example.com' }),

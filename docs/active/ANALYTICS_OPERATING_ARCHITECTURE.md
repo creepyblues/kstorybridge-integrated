@@ -35,6 +35,11 @@ Stripe webhooks
   -> deliver-analytics-outbox worker (prepared; not scheduled)
   -> GA4 Measurement Protocol
 
+secured approve-title
+  -> durable draft/title linkage
+  -> atomic title_approved + title_published outbox rows (prepared; not production-live)
+  -> same delivery worker and GA4 Measurement Protocol
+
 ANALYTICS_RELIABILITY_EXECUTION_PLAN.md
   -> analytics-progress-report.mjs
   -> GitHub schedule or active local cron fallback
@@ -94,7 +99,7 @@ The report reads these Edge Function secrets as cutover gates:
 
 A gate is set only to the actual full production release time. Enforcement starts only when the gate predates the complete report window. Before then, the report labels the section as instrumentation pending and suppresses false missing-event or drift alerts.
 
-The historical root reset blocker is repaired locally and a complete 78-migration replay passes with the pinned Supabase CLI. A read-only production comparison found 67 recorded versions, the foundational objects already populated, and the prepared current schemas absent. Because staging apps share the production Supabase project, release must explicitly reconcile the nine historical ledger versions without replaying their SQL, back up affected tables, and apply the four current migrations through the authenticated report schedule. Report Vault/service-role secrets and both strict report functions then cut over together. The subscription path separately requires buyer/creator webhooks, `GA4_MEASUREMENT_PROTOCOL_API_SECRET`, the delivery worker, Google's debug endpoint, scheduling, accepted-event reconciliation, and only then the commercial live-at gate. `GA4_MEASUREMENT_PROTOCOL_DEBUG` is a validation control, not a production default.
+The historical root reset blocker is repaired locally and a complete 79-migration replay passes with the pinned Supabase CLI. A read-only production comparison found 67 recorded versions, the foundational objects already populated, and the prepared current schemas absent. Because staging apps share the production Supabase project, release must explicitly reconcile the nine historical ledger versions without replaying their SQL, back up affected tables, and apply the five current migrations through the authenticated report schedule and title-workflow extension. Report Vault/service-role secrets and both strict report functions then cut over together. Subscription and title outcomes additionally require `GA4_MEASUREMENT_PROTOCOL_API_SECRET`, the delivery worker, Google's debug endpoint, authenticated scheduling, accepted-event reconciliation, and only then their commercial/server live-at gates. `GA4_MEASUREMENT_PROTOCOL_DEBUG` is a validation control, not a production default.
 
 ## Alert coverage
 
@@ -112,7 +117,7 @@ The historical root reset blocker is repaired locally and a complete 78-migratio
 - Founder decisions `AR-001` through `AR-008` are unanswered, including the north star, activation, retention cadence, operating model, exclusions, and Brevo reconciliation.
 - Direct GA Admin/Data API access from the development environment lacks the necessary OAuth scopes. Internal filter and custom-definition verification remain pending.
 - GitHub Actions cannot run while the account is billing locked; the local progress cron is the active fallback.
-- The root migration history now replays locally through the prepared outbox, draft-publication linkage, report-delivery ledger, and Vault-backed schedule. Production has 67 recorded versions and existing foundational schema drift; the nine reconstructed versions should be ledger-reconciled, not blindly executed. None of the four current migrations or dependent functions is production-live. Explicit approval, backups, migration repair, ordered application, and authenticated validation remain release gates; staging app domains do not provide a separate database.
+- The root migration history now replays locally through the prepared outbox, draft-publication linkage, title-outcome extension, report-delivery ledger, and Vault-backed schedule. Production has 67 recorded versions and existing foundational schema drift; the nine reconstructed versions should be ledger-reconciled, not blindly executed. None of the five current migrations or dependent functions is production-live. Explicit approval, backups, migration repair, ordered application, and authenticated validation remain release gates; staging app domains do not provide a separate database.
 - The GA Measurement Protocol API secret is not configured, and the prepared outbox worker is not scheduled.
 - Production scheduled analytics delivery still has no durable run/recipient ledger, and its legacy anon-accessible funnel endpoint can proxy sends. The coordinated Vault-backed authentication, idempotent audit schema, strict functions, caller support, and external gate are implemented and locally verified on `v2`, but deliberately undeployed pending approval. Partial endpoint locking is prohibited because it either breaks the schedule or leaves the proxy open.
 - There is no authoritative introduction workflow record, buyer-approval timestamp, or interest-transition timestamp.

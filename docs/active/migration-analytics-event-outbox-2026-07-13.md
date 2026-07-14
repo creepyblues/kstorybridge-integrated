@@ -6,7 +6,7 @@
 
 ## Overview
 
-This additive migration creates a service-role-only outbox for durable, idempotent delivery of server-confirmed analytics events. The first supported outcome is `subscription_started`, deduplicated by account type and Stripe subscription ID. A controlled RPC constructs the payload so email, Stripe IDs, session IDs, title IDs, URLs, and free text cannot be sent to GA.
+This additive migration creates a service-role-only outbox for durable, idempotent delivery of server-confirmed analytics events. The first supported outcome is `subscription_started`, deduplicated by account type and Stripe subscription ID. The later `20260714042851` extension adds title approval/publication with its own exact allowlist. Controlled RPCs construct payloads so email, Stripe IDs, session IDs, title names, URLs, and free text cannot be sent to GA; stable draft/title UUIDs are permitted only for the corresponding title events.
 
 The outbox separates Stripe webhook correctness from GA network availability: after the webhook writes the authoritative subscription state, it idempotently enqueues the analytics outcome. A separate worker atomically claims and retries delivery. If enqueue fails, the webhook fails so Stripe can retry the idempotent path.
 
@@ -28,7 +28,7 @@ Validated locally on 2026-07-13:
 - Anonymous table access and authenticated claim-RPC access both fail with permission denied.
 - Nine focused TypeScript tests pass, new shared/worker modules pass Deno checking, and the worker returns 405 for non-POST, 401 for the wrong bearer token, and 503 when its GA secret is absent.
 
-The root migration history was repaired without editing or deleting an existing migration. Idempotent historical baselines now reconstruct the formerly app-specific admin, creator, title metadata, draft, featured, vector, and scheduler prerequisites. Supabase CLI `2.109.1` is pinned in the root development dependencies because the previously unpinned `2.62.10` client applied every migration but failed its post-reset Storage health query against the current container schema. The pinned CLI completed a clean replay of all 78 current migrations, and all four SQL acceptance suites passed against the resulting database.
+The root migration history was repaired without editing or deleting an existing migration. Idempotent historical baselines now reconstruct the formerly app-specific admin, creator, title metadata, draft, featured, vector, and scheduler prerequisites. Supabase CLI `2.109.1` is pinned in the root development dependencies because the previously unpinned `2.62.10` client applied every migration but failed its post-reset Storage health query against the current container schema. The pinned CLI completed a clean replay of all 79 current migrations, and all five SQL acceptance suites passed against the resulting database.
 
 This is local readiness, not production evidence. The outbox remains undeployed; the GA Measurement Protocol secret, debug validation, authenticated worker schedule, monitoring, and post-delivery reconciliation are still required.
 

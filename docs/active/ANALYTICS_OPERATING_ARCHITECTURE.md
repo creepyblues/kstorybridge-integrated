@@ -73,6 +73,7 @@ The final named operating owner is intentionally not invented here. Assigning th
 - [Analytics event contract](ANALYTICS_EVENT_CONTRACT.md): event names, triggers, parameters, ownership, privacy, and change control.
 - [Analytics outcome source map](ANALYTICS_OUTCOME_SOURCE_MAP.md): authoritative records, timestamps, reconciliation keys, confidence, and source gaps.
 - [Analytics event test matrix](ANALYTICS_EVENT_TEST_MATRIX.md): positive and negative event-boundary coverage.
+- [Analytics production release sequence](ANALYTICS_PRODUCTION_RELEASE_SEQUENCE.md): wave scope, dependency boundaries, production entry gates, acceptance evidence, and rollback controls.
 - [Analytics reliability execution plan](ANALYTICS_RELIABILITY_EXECUTION_PLAN.md): acceptance criteria, live progress, blockers, and closeout requirements.
 
 ## Reporting and schedules

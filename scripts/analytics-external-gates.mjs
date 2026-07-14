@@ -241,8 +241,39 @@ const FAILURE_CONCLUSIONS = new Set([
   'timed_out',
 ])
 
-export function summarizeReleasePrGate({ pr, checkRuns, annotationsById = new Map() }) {
-  if (!pr || !Array.isArray(checkRuns)) {
+const WAVE_ONE_ALLOWED_RELEASE_PATHS = new Set([
+  '.github/workflows/analytics-progress.yml',
+  'apps/creator/src/components/tools/CollectButton.tsx',
+  'apps/creator/src/components/tools/IntelligenceResultsModal.tsx',
+  'apps/creator/src/hooks/useAuth.tsx',
+  'apps/creator/src/utils/analytics.ts',
+  'apps/creator/src/utils/analyticsEnvironment.test.ts',
+  'apps/dashboard/src/hooks/useAuth.test.tsx',
+  'apps/dashboard/src/hooks/useAuth.tsx',
+  'apps/dashboard/src/utils/analytics.ts',
+  'apps/dashboard/src/utils/analyticsEnvironment.test.ts',
+  'apps/website/index.html',
+  'apps/website/src/components/AnalyticsProvider.tsx',
+  'apps/website/src/utils/analytics.ts',
+  'apps/website/src/utils/analyticsEnvironment.test.ts',
+  'docs/active/ANALYTICS_RELIABILITY_EXECUTION_PLAN.md',
+  'package.json',
+  'scripts/analytics-progress-report.mjs',
+  'scripts/internal-traffic-admins.mjs',
+  'scripts/internal-traffic-admins.test.mjs',
+  'scripts/run-analytics-progress-cron.zsh',
+  'supabase/functions/_shared/analytics-filters.test.mjs',
+  'supabase/functions/_shared/analytics-filters.ts',
+  'supabase/functions/funnel-report-cron/index.ts',
+])
+
+export function summarizeReleasePrGate({
+  pr,
+  checkRuns,
+  files = [],
+  annotationsById = new Map(),
+}) {
+  if (!pr || !Array.isArray(checkRuns) || !Array.isArray(files)) {
     return {
       id: 'AR-016',
       name: 'analytics release PR #141 CI',
@@ -261,6 +292,28 @@ export function summarizeReleasePrGate({ pr, checkRuns, annotationsById = new Ma
     return annotations.some(annotation => annotation.message === BILLING_LOCK_MESSAGE)
   })
   const prState = `${pr.draft ? 'draft/' : ''}${String(pr.state || 'unknown').toLowerCase()}`
+  const changedFileCount = Number(pr.changed_files)
+  if (Number.isInteger(changedFileCount) && changedFileCount !== files.length) {
+    return {
+      id: 'AR-016',
+      name: 'analytics release PR #141 CI',
+      status: 'UNAVAILABLE',
+      summary: `PR scope could not be fully verified (${files.length}/${changedFileCount} files loaded)`,
+      alert: 'AR-016 release scope inventory is incomplete; do not merge until every changed path is verified',
+    }
+  }
+  const unexpectedPaths = files
+    .map(file => file?.filename)
+    .filter(path => typeof path !== 'string' || !WAVE_ONE_ALLOWED_RELEASE_PATHS.has(path))
+  if (unexpectedPaths.length > 0) {
+    return {
+      id: 'AR-016',
+      name: 'analytics release PR #141 CI',
+      status: 'SCOPE_DRIFT',
+      summary: `${prState}; ${unexpectedPaths.length} changed path${unexpectedPaths.length === 1 ? '' : 's'} fall outside the migration-free Wave 1 allowlist`,
+      alert: `AR-016 PR #141 scope drift detected in ${unexpectedPaths.length} path${unexpectedPaths.length === 1 ? '' : 's'}; restore the documented Wave 1 boundary before CI rerun or merge`,
+    }
+  }
 
   if (pr.merged_at) {
     return {
@@ -332,11 +385,22 @@ export async function checkReleasePrGate(options = {}) {
     return summarizeReleasePrGate({ pr: null, checkRuns: null })
   }
 
-  const checksResult = await githubRequest(
-    `/repos/${GITHUB_REPOSITORY}/commits/${prResult.data.head.sha}/check-runs?per_page=100`,
-    options
-  )
-  if (checksResult.status !== 200 || !Array.isArray(checksResult.data?.check_runs)) {
+  const [checksResult, filesResult] = await Promise.all([
+    githubRequest(
+      `/repos/${GITHUB_REPOSITORY}/commits/${prResult.data.head.sha}/check-runs?per_page=100`,
+      options
+    ),
+    githubRequest(
+      `/repos/${GITHUB_REPOSITORY}/pulls/${RELEASE_PR_NUMBER}/files?per_page=100`,
+      options
+    ),
+  ])
+  if (
+    checksResult.status !== 200
+    || !Array.isArray(checksResult.data?.check_runs)
+    || filesResult.status !== 200
+    || !Array.isArray(filesResult.data)
+  ) {
     return summarizeReleasePrGate({ pr: null, checkRuns: null })
   }
 
@@ -354,6 +418,7 @@ export async function checkReleasePrGate(options = {}) {
   return summarizeReleasePrGate({
     pr: prResult.data,
     checkRuns: checksResult.data.check_runs,
+    files: filesResult.data,
     annotationsById: new Map(annotationEntries),
   })
 }

@@ -135,6 +135,37 @@ test('reports a closed unmerged release PR as a release-path failure', () => {
   assert.match(result.alert, /closed without merge/)
 })
 
+test('fails the release gate when Wave 1 scope drifts or cannot be fully inventoried', () => {
+  const drift = summarizeReleasePrGate({
+    pr: { ...openPr, changed_files: 1 },
+    checkRuns: [actionCheck(1, 'success')],
+    files: [{ filename: 'supabase/migrations/20260715000000_unapproved.sql' }],
+  })
+  assert.equal(drift.status, 'SCOPE_DRIFT')
+  assert.match(drift.summary, /migration-free Wave 1 allowlist/)
+  assert.doesNotMatch(drift.alert, /20260715000000/)
+
+  const incomplete = summarizeReleasePrGate({
+    pr: { ...openPr, changed_files: 2 },
+    checkRuns: [actionCheck(1, 'success')],
+    files: [{ filename: 'package.json' }],
+  })
+  assert.equal(incomplete.status, 'UNAVAILABLE')
+  assert.match(incomplete.summary, /1\/2 files loaded/)
+})
+
+test('accepts a complete allowlisted Wave 1 scope before classifying CI', () => {
+  const result = summarizeReleasePrGate({
+    pr: { ...openPr, changed_files: 2 },
+    checkRuns: [actionCheck(1, 'success')],
+    files: [
+      { filename: 'package.json' },
+      { filename: 'supabase/functions/funnel-report-cron/index.ts' },
+    ],
+  })
+  assert.equal(result.status, 'HEALTHY')
+})
+
 const scheduledRun = (overrides = {}) => ({
   trigger_kind: 'scheduled',
   status: 'succeeded',

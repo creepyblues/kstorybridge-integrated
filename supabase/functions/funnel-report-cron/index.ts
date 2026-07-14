@@ -12,6 +12,7 @@ import {
   parseAnalyticsAppBreakdown,
   type AnalyticsAppBreakdownRow,
 } from '../_shared/analytics-app-breakdown.ts'
+import { renderWeeklyOperatingScorecard } from '../_shared/analytics-operating-scorecard.ts'
 import {
   acquisitionDeclineAlerts,
   missingProductEventAlerts,
@@ -549,6 +550,7 @@ function generateFunnelReport(
   cleanTraffic: TrafficSummary,
   previousCleanTraffic: TrafficSummary,
   appBreakdown: AnalyticsAppBreakdownRow[],
+  previousAppBreakdown: AnalyticsAppBreakdownRow[],
   signupReconciliation: SignupReconciliationRow[],
   instrumentationLive: boolean,
   titleWorkflowReconciliation: TitleWorkflowReconciliationRow[],
@@ -591,6 +593,29 @@ function generateFunnelReport(
   const excludedSessionRate = rawTraffic.sessions > 0 ? excludedSessions / rawTraffic.sessions : 0
   const newUserChange = percentageChange(cleanTraffic.newUsers, previousCleanTraffic.newUsers)
   const sessionChange = percentageChange(cleanTraffic.sessions, previousCleanTraffic.sessions)
+  const canonicalProductEvents = authenticatedBuyerEngagementRows(funnel)
+    .reduce((total, row) => total + row.eventCount, 0)
+  const buyerProfiles = signupReconciliation
+    .find(row => row.accountType === 'buyer')?.authoritativeProfiles || 0
+  const creatorProfiles = signupReconciliation
+    .find(row => row.accountType === 'creator')?.authoritativeProfiles || 0
+  const creatorTitleSubmissions = titleWorkflowReconciliation
+    .find(row => row.stage === 'submitted')?.authoritativeOutcomes || 0
+  const operatingScorecard = renderWeeklyOperatingScorecard({
+    currentTraffic: cleanTraffic,
+    previousTraffic: previousCleanTraffic,
+    currentApps: appBreakdown,
+    previousApps: previousAppBreakdown,
+    buyerProfiles,
+    creatorProfiles,
+    creatorTitleSubmissions,
+    buyerInterests: interestReconciliation.authoritativeCount,
+    checkoutStartedEvents: checkoutStarted.eventCount,
+    subscriptionStartedEvents: subscriptionStarted.eventCount,
+    canonicalProductEvents,
+    productInstrumentationLive,
+    commercialInstrumentationLive,
+  })
 
   // Check for alerts
   if (instrumentationLive && firstVisit.totalUsers > 0 && overallRate < 0.01) {
@@ -646,9 +671,13 @@ function generateFunnelReport(
     year: 'numeric',
   })
 
-  let markdown = `# KStoryBridge Signup Funnel Analysis
+  let markdown = `# KStoryBridge Weekly Operating Report
 
 **Period**: ${dateFormat(startDate)} - ${dateFormat(endDate)} (${days} days)
+
+---
+
+${operatingScorecard}
 
 ---
 
@@ -1003,6 +1032,7 @@ serve(async (req) => {
       cleanTrafficResponse,
       previousCleanTrafficResponse,
       appBreakdownResponse,
+      previousAppBreakdownResponse,
       signupByHostResponse,
       titleWorkflowResponse,
       interestResponse,
@@ -1096,7 +1126,18 @@ serve(async (req) => {
         dimensionFilter: buildCleanProductionFilter(),
       }),
 
-      // Query 9: Canonical completed signups split into buyer and creator apps
+      // Query 9: Previous clean external app split for engagement comparison
+      runGA4Report(accessToken, {
+        dateRanges: [{
+          startDate: previousWindow.startDate,
+          endDate: previousWindow.endDate,
+        }],
+        dimensions: ['hostName'],
+        metrics: ['activeUsers', 'newUsers', 'sessions', 'engagedSessions'],
+        dimensionFilter: buildCleanProductionFilter(),
+      }),
+
+      // Query 10: Canonical completed signups split into buyer and creator apps
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['hostName'],
@@ -1113,7 +1154,7 @@ serve(async (req) => {
         }]),
       }),
 
-      // Query 10: Canonical creator title workflow outcomes
+      // Query 11: Canonical creator title workflow outcomes
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['eventName'],
@@ -1141,7 +1182,7 @@ serve(async (req) => {
         ]),
       }),
 
-      // Query 11: Canonical buyer-interest outcomes
+      // Query 12: Canonical buyer-interest outcomes
       runGA4Report(accessToken, {
         dateRanges: [{ startDate, endDate }],
         dimensions: ['eventName'],
@@ -1182,6 +1223,7 @@ serve(async (req) => {
     const cleanTraffic = parseTrafficSummary(cleanTrafficResponse)
     const previousCleanTraffic = parseTrafficSummary(previousCleanTrafficResponse)
     const appBreakdown = parseAnalyticsAppBreakdown(appBreakdownResponse.rows)
+    const previousAppBreakdown = parseAnalyticsAppBreakdown(previousAppBreakdownResponse.rows)
     const gaSignupCounts = parseSignupUsersByHost(signupByHostResponse.rows)
     const gaTitleWorkflowCounts = parseTitleWorkflowEvents(titleWorkflowResponse.rows)
     const gaInterestCount = parseOutcomeEventCount(
@@ -1258,6 +1300,7 @@ serve(async (req) => {
       cleanTraffic,
       previousCleanTraffic,
       appBreakdown,
+      previousAppBreakdown,
       signupReconciliation,
       instrumentationLive,
       titleWorkflowReconciliation,

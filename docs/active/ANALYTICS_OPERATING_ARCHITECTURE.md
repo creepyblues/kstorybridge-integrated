@@ -79,7 +79,7 @@ The final named operating owner is intentionally not invented here. Assigning th
 
 | Process | Schedule | Purpose | Delivery/state |
 |---|---|---|---|
-| `funnel-report-cron` | Monday 14:00 UTC (06:00 PST / 07:00 PDT) via Supabase `pg_cron` | Clean traffic, app breakdown, canonical behavior, reconciliation, and actionable alerts over full America/Los_Angeles calendar windows | Production function is active; reports go to active-admin email and Slack. |
+| `funnel-report-cron` | Monday 14:00 UTC (06:00 PST / 07:00 PDT) via Supabase `pg_cron` | Clean traffic, app comparison, canonical behavior, reconciliation, operating scorecard, and actionable alerts over full America/Los_Angeles calendar windows | Production function is active; reports go to active-admin email and Slack. The scorecard/app-comparison source update remains release-pending on `v2`. |
 | Repository progress audit | Monday 15:00 UTC via `.github/workflows/analytics-progress.yml` | Parse this program's `AR-*` checklist; best-effort probes verify `www`, default-branch workflow, release-PR CI, and the privacy-safe scheduled-delivery streak | Workflow exists on `v2`; default-branch activation is pending `AR-014`, GitHub Actions is account-billing locked under `AR-016`, and the production delivery ledger is not yet live. The checks are read-only and never rerun, merge, or mutate CI. |
 | Local progress fallback | Monday 08:05 America/Los_Angeles via user crontab | Maintain delivery and external-gate monitoring until the repository schedule is active | Installed and verified; automatically stops sending when the plan marker becomes `DONE`. |
 
@@ -116,7 +116,7 @@ The historical root reset blocker is repaired locally and a complete 79-migratio
 ## Known gates and gaps
 
 - Founder decisions `AR-001` through `AR-008` are unanswered, including the north star, activation, retention cadence, operating model, exclusions, and Brevo reconciliation.
-- Direct GA Admin/Data API access from the development environment lacks the necessary OAuth scopes. Internal filter and custom-definition verification remain pending.
+- Explicitly scoped read-only GA Admin/Data API access now works and the live property inventory is documented. Internal-filter verification remains UI-only and open because no signed-in browser session is currently available; custom-definition writes remain pending approval plus Editor/Administrator authority.
 - GitHub Actions cannot run while the account is billing locked; the local progress cron is the active fallback.
 - The root migration history now replays locally through the prepared outbox, draft-publication linkage, title-outcome extension, report-delivery ledger, and Vault-backed schedule. Production has 67 recorded versions and existing foundational schema drift; the nine reconstructed versions should be ledger-reconciled, not blindly executed. None of the five current migrations or dependent functions is production-live. Explicit approval, backups, migration repair, ordered application, and authenticated validation remain release gates; staging app domains do not provide a separate database.
 - The GA Measurement Protocol API secret is not configured, and the prepared outbox worker is not scheduled.
@@ -134,8 +134,8 @@ npm run analytics:progress
 scripts/run-analytics-progress-cron.zsh --send
 
 # Focused analytics verification
-npx vitest run supabase/functions/_shared/*.test.ts
-deno check supabase/functions/funnel-report-cron/index.ts
+node --test supabase/functions/_shared/*.test.mjs
+npx deno check --no-config supabase/functions/funnel-report-cron/index.ts
 ```
 
 When changing measurement behavior, update the event contract, source map, test matrix, implementation, and execution-plan evidence together. When releasing a contract, record the actual live timestamp only after the full path is deployed and validated. Do not mark `AR-504` complete until the architecture is final, dashboard links and the named operator are recorded, and the founder has confirmed the model.

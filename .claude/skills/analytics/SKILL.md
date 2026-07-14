@@ -167,13 +167,17 @@ mcp__analytics-mcp__run_report:
 ```
 
 **Output Format**: Full weekly report with:
+- A compact operating scorecard covering acquisition, buyer/creator activation readiness, engagement, retention readiness, and commercial outcomes
 - Executive summary (2-3 sentences)
 - Daily breakdown table with week-over-week comparison
+- Current-versus-previous clean app engagement for the buyer dashboard and creator app
 - Traffic sources with engagement rates
 - Landing page performance
 - Tool usage (chat/comps/mandates events)
 - Conversion funnel analysis
 - Key insights and action items
+
+Until the founder approves activation and retention definitions, show those values as **Not reported** with the relevant `AR-*` gate. Never render unavailable activation or retention as zero, and never substitute sessions or sign-ins for meaningful retention.
 
 ---
 

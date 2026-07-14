@@ -9,6 +9,7 @@
  */
 
 import {
+  ANALYTICS_EVENT_NAMES,
   getAuthEventName,
   normalizeFailureReason,
   type AuthFailureReason,
@@ -1317,22 +1318,16 @@ export const trackTitleContactCreatorClicked = (
 };
 
 /**
- * Track a submitted Express Interest request (the fulfilled counterpart
- * of title_contact_creator_clicked)
- * @param titleId - UUID of the title
- * @param titleName - Name of the title
- * @param hasNote - Whether the buyer included a note
+ * Track a server-confirmed Express Interest request.
+ * Title names and freeform note details are intentionally excluded.
  */
 export const trackTitleInterestSubmitted = (
   titleId: string,
-  titleName: string,
-  hasNote: boolean
+  source: 'title_detail' = 'title_detail'
 ): void => {
-  trackEvent('title_interest_submitted', {
+  trackEvent(ANALYTICS_EVENT_NAMES.interestSubmitted, {
     title_id: titleId,
-    title_name: titleName,
-    has_note: hasNote,
-    timestamp: new Date().toISOString(),
+    source,
   });
 };
 

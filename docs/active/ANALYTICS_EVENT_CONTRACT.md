@@ -69,7 +69,7 @@ These names are reserved now; implementation remains governed by `AR-205` and mu
 
 | Event | Owner | Exact trigger | Required parameters | Example |
 |---|---|---|---|---|
-| `interest_submitted` | Buyer success | Supabase confirms a buyer-interest record was created. | `title_id`, `source` | `{title_id: "uuid", source: "title_detail"}` |
+| `interest_submitted` | Buyer success | The `express-interest` function confirms the buyer-interest upsert succeeded. | `title_id`, `source` | `{title_id: "uuid", source: "title_detail"}` |
 | `introduction_requested` | Buyer success | The authoritative introduction request is stored. | `title_id`, `source` | `{title_id: "uuid", source: "interest_followup"}` |
 | `introduction_completed` | Partnerships | The authoritative introduction record is marked completed. Prefer server-side emission. | `title_id` | `{title_id: "uuid"}` |
 | `checkout_started` | Revenue | A valid Stripe Checkout session URL is returned by the server. | `account_type`, `plan_type`, `billing_period` | `{account_type: "creator", plan_type: "pro", billing_period: "monthly"}` |
@@ -118,4 +118,5 @@ Allowed `entry_method` values are `full` and `quick_add`. Title names, URLs, rig
 - `email_landing_engaged` is implemented and verified in preview; production release remains tracked by `AR-110`.
 - Canonical buyer and creator auth names are implemented in source under `AR-201` and `AR-202`.
 - Canonical creator draft-created and submitted outcomes are implemented in source under `AR-303`; production release remains pending. Approval and publication remain reserved until server-side delivery and durable draft-to-title linkage exist.
+- Canonical buyer `interest_submitted` is implemented in source under `AR-205` after the server-confirmed write. It replaces legacy `title_interest_submitted` and removes title names and note metadata; production release remains pending.
 - Commercial and product-engagement names are reserved but remain unimplemented until their individual plan tasks pass acceptance tests.

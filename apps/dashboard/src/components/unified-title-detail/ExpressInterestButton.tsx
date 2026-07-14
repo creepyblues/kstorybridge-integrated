@@ -52,7 +52,7 @@ export function ExpressInterestButton({
     setSubmitting(true);
     try {
       await interestService.submitInterest(titleId, note.trim() || undefined);
-      trackTitleInterestSubmitted(titleId, titleName, !!note.trim());
+      trackTitleInterestSubmitted(titleId);
       setAlreadySent(true);
       setOpen(false);
       toast({

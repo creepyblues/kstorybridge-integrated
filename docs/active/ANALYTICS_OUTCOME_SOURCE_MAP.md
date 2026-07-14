@@ -29,7 +29,7 @@ This map defines the authoritative record used to reconcile GA events. A GA even
 | Title submitted | `title_drafts.status=submitted` | `title_drafts.submitted_at` | Future `title_submitted` | High. |
 | Title approved | `title_drafts.status=approved` | `title_drafts.approved_at` | Future `title_approved` | High for approval. |
 | Title published/available | New row in `public.titles` inserted by `approve-title` | `titles.created_at` | Future `title_published` | Medium. The production `titles` table has no `status` or `published_at` column. |
-| Buyer interest submitted | `public.title_interests.id` and `title_id` | `title_interests.created_at` | `interest_submitted` | High for creation. The table has no `updated_at`, `contacted_at`, or `closed_at`. |
+| Buyer interest submitted | `public.title_interests.id` and `title_id` | `title_interests.created_at` | `interest_submitted` | High for creation. Canonical client emission is implemented after the server-confirmed write but not yet released. The table has no `updated_at`, `contacted_at`, or `closed_at`. |
 | Buyer interest advanced | `title_interests.status` (`new`, `contacted`, `in_discussion`, `closed`) | None beyond original `created_at` | No reliable transition event yet | Gap. Status-transition timestamps are absent. |
 | Introduction requested | No production table or field found | None | `introduction_requested` reserved only | Gap. This must not be reported as a completed business outcome yet. |
 | Introduction completed | No production table or field found | None | `introduction_completed` reserved only | Gap. This must not be reported as a completed business outcome yet. |

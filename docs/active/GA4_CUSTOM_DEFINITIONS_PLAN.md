@@ -24,7 +24,9 @@ The 2026-07-13 live inventory confirms none of the six `Now` parameters below is
 | Now | Creator Entry Method | `entry_method` | Compare full and Quick Add draft-to-submission performance. | `full`, `quick_add` |
 | Now | Plan Type | `plan_type` | Compare server-confirmed Checkout starts by buyer/creator offering and support future webhook-confirmed subscriptions. | `pro`, `suite`, `packaging`, `premium` |
 | Now | Billing Period | `billing_period` | Compare server-confirmed Checkout starts by billing commitment. | `monthly`, `yearly` |
-| After `AR-001`–`AR-004` | Product Source | `source` | Segment canonical buyer engagement by controlled entry surface when that segmentation changes a product decision. | Contract-controlled values |
+| After Wave 2 / `AR-210` | CTA Position | `cta_position` | Compare hero, final, header, mobile-menu, feature-card, and inquiry-form handoffs after the website contract has a complete production window. | Contract-controlled values |
+| After Wave 2 / `AR-210` | Feature Name | `feature_name` | Compare which promoted buyer capability produces a trial or signup handoff. | `chat`, `comps`, `mandates` |
+| After Wave 2 / `AR-210` | Product Source | `source` | Distinguish controlled website and product entry surfaces; this event parameter is not GA's predefined acquisition source and may later support approved buyer-engagement analysis. | Contract-controlled values |
 | After `AR-001`–`AR-004` | Chat Input Type | `input_type` | Determine whether typed, suggested, or linked chat entry correlates with activation/return use. | Controlled enum |
 | After `AR-001`–`AR-004` | Message Length Bucket | `message_length_bucket` | Analyze engagement depth without collecting chat text or exact lengths. | Fixed buckets |
 | After `AR-001`–`AR-004` | Pitch Access Type | `access_type` | Compare preview and full pitch-deck engagement. | `preview`, `full` |

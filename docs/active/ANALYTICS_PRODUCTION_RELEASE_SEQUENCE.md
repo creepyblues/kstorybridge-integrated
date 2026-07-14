@@ -135,6 +135,7 @@ Use the documented evidence-preserving pause scripts. Disable schedules/workers 
 4. Legacy dimensions/key events are archived or reclassified only after dashboard, audience, exploration, and GTM dependency review.
 5. GA retention changes, if approved, are recorded as prospective and are not represented as restoring expired history.
 6. The leadership scorecard receives founder sign-off before Phase 5 validation begins.
+7. After Wave 2 has a complete website-contract window, the weekly report renders all eight canonical website handoffs at event level; before that boundary it renders **Instrumentation pending**, never behavioral zeroes. Audience, CTA-position, feature, and controlled-source segmentation is enabled only after the corresponding approved custom definitions finish processing; device and acquisition-source analysis use GA's predefined dimensions.
 
 ### Rollback
 

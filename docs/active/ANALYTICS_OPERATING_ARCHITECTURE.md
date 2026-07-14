@@ -92,6 +92,7 @@ The report reads these Edge Function secrets as cutover gates:
 
 | Gate | Coverage it enables |
 |---|---|
+| `ANALYTICS_WEBSITE_ACQUISITION_CONTRACT_LIVE_AT` | Canonical website audience, CTA, feature-promo, sign-in, and creator-inquiry handoffs |
 | `ANALYTICS_AUTH_CONTRACT_LIVE_AT` | Canonical buyer/creator authentication reconciliation |
 | `ANALYTICS_TITLE_CLIENT_CONTRACT_LIVE_AT` | Creator draft and submission client events |
 | `ANALYTICS_TITLE_SERVER_CONTRACT_LIVE_AT` | Creator approval and publication server events |
@@ -110,6 +111,7 @@ The historical root reset blocker is repaired locally and a complete 79-migratio
 | Scanner contamination | Reports raw-versus-clean variance and scanner-share warning | Analytics operations checks source filters and campaign reconciliation. |
 | Reconciliation drift | Alerts only after the corresponding full-window live-at gate | Engineering checks event boundary, identity, dedupe, and authoritative records. |
 | Acquisition decline | Alerts at a 20% or greater clean-new-user decline with a prior baseline of at least five | Growth/product checks channel and app breakdowns before acting. |
+| Missing website acquisition events | Requires a fully live website contract and at least three clean website sessions | Growth and Engineering sample homepage and audience-path CTAs in DebugView before interpreting the absence as user rejection. |
 | Missing product events | Requires a fully live product contract and at least three clean dashboard sessions | Engineering checks release marker and product-event delivery. |
 | Activation decline | Not yet valid | Blocked on founder-approved activation definitions. |
 | Retention decline | Not yet valid | Blocked on founder-approved cadence and cohort definitions. |

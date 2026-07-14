@@ -61,7 +61,7 @@ The event boundary deliberately records the click separately from the destinatio
 5. A creator inquiry open plus one successful or failed delivery outcome is sampled without names, email, title data, URL, notes, or raw errors in GA.
 6. GA cross-domain configuration and session continuity are verified for website-to-dashboard and website-to-creator handoffs.
 7. Set `ANALYTICS_WEBSITE_ACQUISITION_CONTRACT_LIVE_AT` only after all production website paths are live and validated. Wait for a complete Pacific-calendar window before calculating the funnel.
-8. Add the funnel to the weekly operating report under `AR-210`, segmented by audience, CTA position, feature, device, and acquisition source where sample size permits.
+8. Release the prepared `AR-210` weekly section. Its first valid production view reports the eight event-level handoffs after the full-window live gate and does not invent a closed-cohort conversion rate. Add audience, CTA-position, feature, and controlled-source segmentation only after the approved custom definitions become queryable; device and acquisition-source analysis use GA's predefined dimensions where sample size permits.
 
 ## Honest interpretation rule
 

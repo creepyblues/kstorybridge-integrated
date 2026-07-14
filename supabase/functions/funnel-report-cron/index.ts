@@ -48,6 +48,13 @@ import {
   scheduledFunnelInvocationKey,
   validateInvocationKey,
 } from '../_shared/analytics-report-auth.ts'
+import {
+  missingWebsiteAcquisitionAlerts,
+  parseWebsiteAcquisitionEvents,
+  renderWebsiteAcquisitionSection,
+  websiteAcquisitionDimensionFilters,
+  type WebsiteAcquisitionMetrics,
+} from '../_shared/website-acquisition-report.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -543,6 +550,8 @@ function formatOutcomeStatus(status: OutcomeReconciliationRow['status']): string
 // Generate funnel report markdown
 function generateFunnelReport(
   funnel: FunnelMetrics,
+  websiteAcquisition: WebsiteAcquisitionMetrics,
+  websiteAcquisitionInstrumentationLive: boolean,
   pages: PageMetrics,
   landingPages: LandingPageMetrics[],
   sources: SourceMetrics[],
@@ -616,6 +625,10 @@ function generateFunnelReport(
     productInstrumentationLive,
     commercialInstrumentationLive,
   })
+  const websiteAcquisitionSection = renderWebsiteAcquisitionSection(
+    websiteAcquisition,
+    websiteAcquisitionInstrumentationLive
+  )
 
   // Check for alerts
   if (instrumentationLive && firstVisit.totalUsers > 0 && overallRate < 0.01) {
@@ -648,6 +661,11 @@ function generateFunnelReport(
     alerts.push(`Scanner share: ${formatPct(excludedSessionRate)} of production-host sessions were excluded as known scanner traffic. Owner: Analytics Operations. Action: inspect source rows for a new redirect domain before changing the exclusion list.`)
   }
   alerts.push(...acquisitionDeclineAlerts(cleanTraffic, previousCleanTraffic))
+  alerts.push(...missingWebsiteAcquisitionAlerts({
+    contractLive: websiteAcquisitionInstrumentationLive,
+    websiteSessions: appBreakdown.find(row => row.app === 'website')?.sessions || 0,
+    metrics: websiteAcquisition,
+  }))
   alerts.push(...missingProductEventAlerts({
     contractLive: productInstrumentationLive,
     dashboardSessions: appBreakdown.find(row => row.app === 'dashboard')?.sessions || 0,
@@ -708,6 +726,8 @@ The rows use the same production-host and scanner exclusions as the clean KPI to
 | Sessions | ${cleanTraffic.sessions} | ${previousCleanTraffic.sessions} | ${sessionChange === null ? 'New baseline' : formatPct(sessionChange)} |
 
 Acquisition decline alerts use clean external new users, a 20% decline threshold, and a minimum previous-window baseline of five users. Owner: Growth. The low-volume gate prevents a one-person change from becoming an executive alert.
+
+${websiteAcquisitionSection}
 
 ### Authoritative signup reconciliation
 
@@ -1036,6 +1056,7 @@ serve(async (req) => {
       signupByHostResponse,
       titleWorkflowResponse,
       interestResponse,
+      websiteAcquisitionResponse,
     ] = await Promise.all([
       // Query 1: Funnel events
       runGA4Report(accessToken, {
@@ -1210,6 +1231,16 @@ serve(async (req) => {
           },
         ]),
       }),
+
+      // Query 13: Canonical website acquisition handoffs
+      runGA4Report(accessToken, {
+        dateRanges: [{ startDate, endDate }],
+        dimensions: ['eventName'],
+        metrics: ['eventCount', 'totalUsers'],
+        dimensionFilter: buildCleanProductionFilter(
+          websiteAcquisitionDimensionFilters()
+        ),
+      }),
     ])
 
     console.log('[funnel-report-cron] Parsing GA4 data...')
@@ -1229,6 +1260,9 @@ serve(async (req) => {
     const gaInterestCount = parseOutcomeEventCount(
       interestResponse.rows,
       'interest_submitted'
+    )
+    const websiteAcquisition = parseWebsiteAcquisitionEvents(
+      websiteAcquisitionResponse.rows
     )
 
     const authoritativeSignupCounts = await getAuthoritativeSignupCounts(
@@ -1288,11 +1322,17 @@ serve(async (req) => {
       Deno.env.get('ANALYTICS_COMMERCIAL_CONTRACT_LIVE_AT'),
       window.start
     )
+    const websiteAcquisitionInstrumentationLive = isInstrumentationLiveForWindow(
+      Deno.env.get('ANALYTICS_WEBSITE_ACQUISITION_CONTRACT_LIVE_AT'),
+      window.start
+    )
 
     // Generate report
     console.log('[funnel-report-cron] Generating funnel report...')
     const { markdown, alerts } = generateFunnelReport(
       funnelMetrics,
+      websiteAcquisition,
+      websiteAcquisitionInstrumentationLive,
       pageMetrics,
       landingPages,
       trafficSources,

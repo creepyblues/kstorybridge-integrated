@@ -8,6 +8,8 @@
 
 `AR-207` remains open until every implemented critical event has both payload/privacy coverage and an integration-level success/failure boundary test. Reserved events cannot pass until their authoritative implementation exists.
 
+Cross-app sink coverage now additionally proves that legacy helpers cannot emit title names, search/chat text, raw errors, arbitrary URLs, page query strings, timestamps, user/session/subscription IDs, arrays, objects, or unknown future fields. The shared allowlist has eight focused tests, and dashboard, creator, and website integration tests exercise the real app sinks. This source protection is prepared on `v2`; the live GA audit still sees legacy `title_name` collection because the client release is pending.
+
 | Outcome | Implementation | Payload/privacy test | Success/failure + once test | Status / missing evidence |
 |---|---|---|---|---|
 | `email_landing_engaged` | Website client | Yes | Yes | Complete: page load and untrusted activity emit nothing; first trusted interaction emits once. |

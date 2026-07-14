@@ -12,6 +12,7 @@ import {
   ANALYTICS_EVENT_NAMES,
   getAuthEventName,
   normalizeFailureReason,
+  sanitizeAnalyticsEventParams,
   type AuthFailureReason,
   type AuthMethod,
   type AuthStage,
@@ -218,10 +219,10 @@ export const clearAnalyticsUser = (): void => {
  */
 const trackEvent = (eventName: string, params: Record<string, unknown>): void => {
   // Add app_section to all events for segmentation
-  const enrichedParams = {
+  const enrichedParams = sanitizeAnalyticsEventParams(eventName, {
     ...params,
     app_section: 'dashboard',
-  };
+  });
 
   if (IS_DEV) {
     console.log(`[Analytics] ${eventName}`, enrichedParams);

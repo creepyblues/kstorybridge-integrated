@@ -66,6 +66,7 @@ The final named operating owner is intentionally not invented here. Assigning th
 - Authenticated GA `user_id` is the Supabase Auth UUID. It is cleared on sign-out.
 - Internal classification comes only from service-role-controlled `app_metadata.internal_traffic=true`; client email/domain matching is prohibited.
 - Server Measurement Protocol events set an exact production `page_location` so they pass the same hostname boundary.
+- Every client custom event passes through the shared fail-closed parameter allowlist before queueing or transport. Unknown/structured values and known sensitive or high-cardinality fields are discarded; page-view locations retain only origin and path.
 
 ## Canonical specifications
 

@@ -28,6 +28,8 @@ The following data must never be sent to GA:
 - Raw exception messages. Failure reasons must come from an allowlisted enum.
 - Recipient-level email campaign identifiers, including `utm_content` and contact IDs.
 
+`sanitizeAnalyticsEventParams` in the shared analytics package is the final client-side sink boundary. Website, dashboard, and creator pass every custom event through its explicit allowlist. Unknown keys and non-primitive values fail closed; page locations lose query strings and fragments; legacy helpers may still accept display strings for UI compatibility, but those strings cannot cross the analytics boundary.
+
 ### Authenticated identity lifecycle
 
 - After Supabase resolves an authenticated dashboard or creator session, GA `user_id` is set to `session.user.id` (the Supabase UUID) only.

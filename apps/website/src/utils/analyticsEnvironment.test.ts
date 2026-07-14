@@ -3,6 +3,9 @@ import {
   getEmailCampaignAttribution,
   initializeEmailLandingEngagement,
   isAnalyticsCollectionAllowed,
+  trackError,
+  trackPageView,
+  trackWebsiteEvent,
 } from './analytics';
 
 beforeEach(() => {
@@ -121,5 +124,45 @@ describe('initializeEmailLandingEngagement', () => {
     expect(JSON.stringify(window.dataLayer)).not.toContain('recipient');
     expect(JSON.stringify(window.dataLayer)).not.toContain('contact_id');
     cleanup();
+  });
+});
+
+describe('website analytics privacy boundary', () => {
+  it('strips page query strings and page titles', () => {
+    trackPageView('/buyers?recipient=secret', 'Private Page Title');
+
+    expect(window.dataLayer).toEqual([{
+      event: 'page_view',
+      page_location: `${window.location.origin}/buyers`,
+      page_path: '/buyers',
+      app_section: 'website',
+    }]);
+  });
+
+  it('emits real website events while dropping slugs, names, and raw errors', () => {
+    trackWebsiteEvent('title_page_view', {
+      title_id: 'title-uuid',
+      title_slug: 'confidential-working-title',
+      title_name: 'Confidential Working Title',
+      user_state: 'anonymous',
+    });
+    trackError('person@example.com failed at a private URL', 'public_title');
+
+    expect(window.dataLayer).toEqual([
+      {
+        event: 'title_page_view',
+        title_id: 'title-uuid',
+        user_state: 'anonymous',
+        app_section: 'website',
+      },
+      {
+        event: 'custom_event',
+        event_action: 'error',
+        event_category: 'technical_issues',
+        app_section: 'website',
+      },
+    ]);
+    expect(JSON.stringify(window.dataLayer)).not.toContain('@');
+    expect(JSON.stringify(window.dataLayer)).not.toContain('confidential');
   });
 });

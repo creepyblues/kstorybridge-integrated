@@ -1,6 +1,9 @@
 // Google Tag Manager utility functions for the website
 
-import { ANALYTICS_EVENT_NAMES } from '@kstorybridge/analytics';
+import {
+  ANALYTICS_EVENT_NAMES,
+  sanitizeAnalyticsEventParams,
+} from '@kstorybridge/analytics';
 
 declare global {
   interface Window {
@@ -21,6 +24,14 @@ export const isAnalyticsCollectionAllowed = (
 
 const isAnalyticsEnabled = (): boolean =>
   typeof window !== 'undefined' && window.KSB_ANALYTICS_ENABLED === true;
+
+const pushAnalyticsEvent = (event: string, params: Record<string, unknown>): void => {
+  if (!isAnalyticsEnabled() || !window.dataLayer) return;
+  window.dataLayer.push({
+    event,
+    ...sanitizeAnalyticsEventParams(event, params),
+  });
+};
 
 export interface EmailCampaignAttribution {
   campaignSource: string;
@@ -78,8 +89,7 @@ export const initializeEmailLandingEngagement = (): (() => void) => {
     if (recorded || !event.isTrusted) return;
     recorded = true;
 
-    window.dataLayer?.push({
-      event: ANALYTICS_EVENT_NAMES.emailLandingEngaged,
+    pushAnalyticsEvent(ANALYTICS_EVENT_NAMES.emailLandingEngaged, {
       campaign_source: attribution.campaignSource,
       campaign_medium: attribution.campaignMedium,
       campaign_name: attribution.campaignName,
@@ -115,34 +125,31 @@ export const initGA = () => {
 
 // Track page views
 export const trackPageView = (path: string, title?: string) => {
-  if (isAnalyticsEnabled() && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'page_view',
-      'page_title': title || document.title,
-      'page_location': window.location.href,
-      'page_path': path,
-      'app_section': 'website'
-    });
-  }
+  pushAnalyticsEvent('page_view', {
+    page_title: title || document.title,
+    page_location: window.location.href,
+    page_path: path,
+    app_section: 'website',
+  });
 };
 
 // Track custom events
 export const trackEvent = (action: string, category: string, label?: string, value?: number) => {
-  if (isAnalyticsEnabled() && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'custom_event',
-      'event_action': action,
-      'event_category': category,
-      'event_label': label,
-      'event_value': value,
-      'app_section': 'website'
-    });
-  }
+  pushAnalyticsEvent('custom_event', {
+    event_action: action,
+    event_category: category,
+    event_label: label,
+    event_value: value,
+    app_section: 'website',
+  });
 };
 
 // Track user interactions specific to website
 export const trackWebsiteEvent = (action: string, details?: Record<string, unknown>) => {
-  trackEvent(action, 'website_interaction', JSON.stringify(details));
+  pushAnalyticsEvent(action, {
+    ...details,
+    app_section: 'website',
+  });
 };
 
 // Track navigation events
@@ -157,25 +164,19 @@ export const trackButtonClick = (buttonName: string, location: string) => {
 
 // Track signup events
 export const trackSignup = (userType: 'buyer' | 'creator', method?: string) => {
-  if (isAnalyticsEnabled() && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'sign_up',
-      'method': method || 'email',
-      'user_type': userType,
-      'app_section': 'website'
-    });
-  }
+  pushAnalyticsEvent('sign_up', {
+    method: method || 'email',
+    user_type: userType,
+    app_section: 'website',
+  });
 };
 
 // Track login events
 export const trackLogin = (method?: string) => {
-  if (isAnalyticsEnabled() && window.dataLayer) {
-    window.dataLayer.push({
-      'event': 'login',
-      'method': method || 'email',
-      'app_section': 'website'
-    });
-  }
+  pushAnalyticsEvent('login', {
+    method: method || 'email',
+    app_section: 'website',
+  });
 };
 
 // Track language changes

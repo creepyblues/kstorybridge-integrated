@@ -5,6 +5,7 @@ import {
   AUTH_EVENT_NAMES,
   getAuthEventName,
   normalizeFailureReason,
+  sanitizeAnalyticsEventParams,
 } from '../dist/index.js';
 
 test('maps every auth stage to a directly queryable event name', () => {
@@ -32,4 +33,69 @@ test('uses directly queryable creator title workflow outcomes', () => {
 test('replaces arbitrary or sensitive failure text with other', () => {
   assert.equal(normalizeFailureReason('auth_rejected'), 'auth_rejected');
   assert.equal(normalizeFailureReason('User person@example.com rejected'), 'other');
+});
+
+test('keeps exact canonical primitives and stable identifiers', () => {
+  assert.deepEqual(sanitizeAnalyticsEventParams('interest_submitted', {
+    app_section: 'dashboard',
+    traffic_type: 'external',
+    source: 'title_detail',
+    title_id: '123e4567-e89b-42d3-a456-426614174000',
+    filter_count: 3,
+    has_results: true,
+  }), {
+    app_section: 'dashboard',
+    traffic_type: 'external',
+    source: 'title_detail',
+    title_id: '123e4567-e89b-42d3-a456-426614174000',
+    filter_count: 3,
+    has_results: true,
+  });
+});
+
+test('drops sensitive, high-cardinality, structured, and unknown fields', () => {
+  assert.deepEqual(sanitizeAnalyticsEventParams('title_detail_view', {
+    title_name: 'A Secret Title',
+    query: 'private search text',
+    search_term: 'private search text',
+    suggestion_text: 'private prompt',
+    error_message: 'person@example.com failed',
+    url: 'https://example.com/?recipient=person@example.com',
+    destination_url: 'https://example.com/private',
+    event_label: 'arbitrary free text',
+    timestamp: '2026-07-13T12:00:00Z',
+    user_id: '123e4567-e89b-42d3-a456-426614174000',
+    session_id: 'session-secret',
+    subscription_id: 'sub_secret',
+    fields_updated: ['name', 'company'],
+    future_unreviewed_field: 'value',
+  }), {});
+});
+
+test('removes page query strings and refuses locations on custom events', () => {
+  assert.deepEqual(sanitizeAnalyticsEventParams('page_view', {
+    page_location: 'https://dashboard.kstorybridge.com/buyers/home?email=person@example.com#private',
+    page_path: '/buyers/home?recipient=abc#private',
+    page_title: 'Private title name',
+  }), {
+    page_location: 'https://dashboard.kstorybridge.com/buyers/home',
+    page_path: '/buyers/home',
+  });
+  assert.deepEqual(sanitizeAnalyticsEventParams('external_link_click', {
+    page_location: 'https://example.com/private',
+  }), {});
+  assert.deepEqual(sanitizeAnalyticsEventParams('page_view', {
+    page_path: '/users/person%40example.com',
+  }), {});
+});
+
+test('rejects malformed controlled values and identifiers', () => {
+  assert.deepEqual(sanitizeAnalyticsEventParams('test_event', {
+    source: 'contains arbitrary words',
+    source_tool: 'person@example.com',
+    feature_name: 'https://example.com/private',
+    title_id: 'contains arbitrary words',
+    currency: 'usd',
+    result_count: Number.NaN,
+  }), {});
 });

@@ -2,7 +2,7 @@
 
 **Property:** `496541587`
 
-**Status:** Registration blocked pending an Analytics-scoped credential and founder activation decisions
+**Status:** Live inventory complete; cleanup/registration pending approval and edit authority
 
 **Updated:** 2026-07-13
 
@@ -14,7 +14,7 @@ GA standard properties allow 50 event-scoped custom dimensions. A definition nor
 
 ## Proposed minimal set
 
-These definitions are candidates, not a claim that they already exist. First inventory the property and avoid duplicates.
+The 2026-07-13 live inventory confirms none of the six `Now` parameters below is registered. Existing legacy `user_type` overlaps semantically with `account_type`, but the production contract uses `account_type`; do not silently alias or combine them.
 
 | Priority | Display name | Event parameter | Why it earns a slot | Expected values |
 |---|---|---|---|---|
@@ -48,17 +48,19 @@ The operational policy is therefore:
 
 1. Use only controlled, low-cardinality values.
 2. Keep stable business outcomes in Supabase/Stripe reconciliation.
-3. Record the property retention setting during the GA inventory before closing `AR-208`.
+3. The current property setting is two months with reset-on-activity enabled. Decide whether to increase it to 14 months prospectively; Supabase remains the authoritative retention source either way.
 4. Do not promise historical custom-dimension analysis; allow a 24–48 hour processing window after registration and validate with post-registration events.
 
-## Current access evidence and unblock
+## Current live inventory and access evidence
 
-On 2026-07-13, Application Default Credentials were present but contained only `cloud-platform`, SQL login, identity, and email scopes. Both the GA Data API report probe and GA Admin API custom-dimension list returned HTTP 403 with `ACCESS_TOKEN_SCOPE_INSUFFICIENT`. No signed-in in-app browser session was available.
+On 2026-07-13, the default unscoped ADC token still returned `ACCESS_TOKEN_SCOPE_INSUFFICIENT`. The existing read-only service-account file succeeds when `analytics.readonly` is explicitly requested. GA Admin and Data API calls then verified the property, streams, 15 custom dimensions, four custom metrics, 11 key events, two-month retention, and 90-day definition usage. The service account cannot list property access bindings, so Editor/Administrator authority is not inferred. Full results are in [GA4_PROPERTY_AUDIT_2026-07-13.md](GA4_PROPERTY_AUDIT_2026-07-13.md).
+
+The most urgent finding is registered `title_name`: 328 events across 60 values in 90 days and 32 events in the latest seven days. `search_id` is also registered despite being a prohibited high-cardinality identifier, although it had no events in the window. The prepared shared client sanitizer stops both fields and other unreviewed parameters at the sink, but remains unreleased.
 
 Before any write, obtain a credential with Analytics access and verify the user's property role. A property Editor or Administrator is required to create event-scoped definitions. The preferred least-risk sequence is:
 
-1. Re-authenticate ADC with `analytics.readonly` first and list existing definitions plus property retention.
-2. Review the proposed set against the founder decisions in `AR-001`–`AR-004` and remove anything without a named report or decision.
+1. Use the service account with an explicitly scoped `analytics.readonly` token for repeatable inventory; never print or persist the token.
+2. Review the proposed set and the legacy-definition dependency inventory against the founder decisions in `AR-001`–`AR-004`.
 3. Add `analytics.edit` only for the approved creation step.
 4. Create missing definitions idempotently, record their GA resource names, and run post-registration Data API probes after 24–48 hours.
 
@@ -66,8 +68,8 @@ If the Google Cloud SDK OAuth client is blocked again, use a Google Cloud OAuth 
 
 ## Acceptance evidence required for `AR-208`
 
-- Existing active and archived definitions inventoried from property `496541587`.
-- Property retention setting recorded.
+- Existing current definitions are inventoried from property `496541587`; any UI-only archived-definition history still requires manual confirmation.
+- Property retention is recorded as two months with reset-on-activity enabled.
 - Founder-approved minimal list reconciled with the existing inventory.
 - Missing definitions created with event scope and documented GA resource names.
 - Data API confirms each created dimension is queryable after processing.

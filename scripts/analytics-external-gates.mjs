@@ -409,6 +409,19 @@ export function summarizeReleasePrGate({
     }
   }
 
+  if (
+    failures.length > 0
+    && failures.some(check => !Array.isArray(annotationsById.get(check.id)))
+  ) {
+    return {
+      id: 'AR-016',
+      name: 'analytics release PR #141 CI',
+      status: 'UNAVAILABLE',
+      summary: `${prState}; failed-check annotations could not be fully verified`,
+      alert: 'AR-016 failed-check annotations are incomplete; do not classify or rerun PR #141 CI until GitHub evidence is available',
+    }
+  }
+
   if (failures.length > 0 && billingLocked.length === failures.length) {
     return {
       id: 'AR-016',
@@ -484,7 +497,12 @@ export async function checkReleasePrGate(options = {}) {
       `/repos/${GITHUB_REPOSITORY}/check-runs/${check.id}/annotations?per_page=100`,
       options
     )
-    return [check.id, annotations.status === 200 && Array.isArray(annotations.data) ? annotations.data : []]
+    return [
+      check.id,
+      annotations.status === 200 && Array.isArray(annotations.data)
+        ? annotations.data
+        : null,
+    ]
   }))
 
   return summarizeReleasePrGate({

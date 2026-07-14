@@ -143,6 +143,17 @@ test('distinguishes an account billing lock from a code failure', () => {
   assert.doesNotMatch(failed.alert, /TypeScript compilation failed/)
 })
 
+test('does not turn missing failure annotations into a generic code diagnosis', () => {
+  const unavailable = summarizeReleasePrGate({
+    pr: openPr,
+    checkRuns: [actionCheck(3, 'failure')],
+    annotationsById: new Map([[3, null]]),
+  })
+  assert.equal(unavailable.status, 'UNAVAILABLE')
+  assert.match(unavailable.summary, /annotations could not be fully verified/)
+  assert.doesNotMatch(unavailable.alert, /billing|code failure/)
+})
+
 test('reports healthy, pending, and unavailable release CI without counting external checks', () => {
   const vercelCheck = {
     id: 99,

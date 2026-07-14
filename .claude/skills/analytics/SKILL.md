@@ -29,7 +29,7 @@ Generate on-demand analytics reports for KStoryBridge dashboard using GA4 MCP to
 
 1. Standard reports use **complete Pacific calendar days** ending yesterday. Realtime is diagnostic only and never a KPI.
 2. Daily, weekly, and source reports query raw production traffic separately for scanner-share variance, but use the **clean production filter** for every behavioral conclusion, alert, source, page, device, and event table.
-3. The clean filter is defined in `supabase/functions/_shared/analytics-filters.ts`: include only `kstorybridge.com`, `dashboard.kstorybridge.com`, and `creator.kstorybridge.com`; exclude the three observed Brevo/Sendinblue source-medium values and development referrers containing localhost, loopback, staging hosts, or `.vercel.app`.
+3. The clean filter values are centralized in `supabase/functions/_shared/analytics-filter-values.mjs` and composed by `analytics-filters.ts`: include only `kstorybridge.com`, `dashboard.kstorybridge.com`, and `creator.kstorybridge.com`; exclude the three observed Brevo/Sendinblue source-medium values and development referrers containing localhost, loopback, staging hosts, or `.vercel.app`.
 4. Never interpret a missing canonical event as zero before its full-window `*_CONTRACT_LIVE_AT` gate. Render **Instrumentation pending** instead.
 5. Event-name rows are independent leading signals, not proof that the same users completed an ordered journey. Do not calculate step-to-step or overall conversion rates from separate `totalUsers` rows. A conversion rate requires a GA closed-funnel exploration or user-level sequenced evidence with the same cohort, order, and window.
 6. Do not use undocumented industry benchmarks. Founder-approved KStoryBridge targets are pending `AR-001`–`AR-004` and `AR-503`.

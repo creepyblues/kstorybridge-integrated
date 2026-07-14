@@ -4,6 +4,12 @@ import https from 'node:https'
 import tls from 'node:tls'
 import { promisify } from 'node:util'
 
+import {
+  checkCleanWindowGate,
+  cleanWindowProgress,
+  summarizeCleanWindowGate,
+} from './analytics-clean-window-gate.mjs'
+
 const WWW_HOST = 'www.kstorybridge.com'
 const CANONICAL_HOST = 'kstorybridge.com'
 const CHECK_PATH = '/__analytics-progress-check?utm_source=analytics_progress'
@@ -610,6 +616,7 @@ export async function checkAnalyticsExternalGates(options = {}) {
     checkWwwCanonicalGate(options.www ?? options),
     checkDefaultBranchWorkflow(options.github ?? options),
     checkReleasePrGate(options.github ?? options),
+    checkCleanWindowGate(options.cleanWindow ?? options),
     checkGaInternalFilterGate(options.gaInternalFilter ?? options),
     checkAnalyticsDeliveryGate(options.delivery ?? options),
   ])
@@ -617,6 +624,7 @@ export async function checkAnalyticsExternalGates(options = {}) {
     summarizeWwwCanonicalGate([], []),
     summarizeDefaultBranchWorkflow(0),
     summarizeReleasePrGate({ pr: null, checkRuns: null }),
+    summarizeCleanWindowGate(cleanWindowProgress(), null),
     summarizeGaInternalFilterGate(null),
     summarizeAnalyticsDeliveryGate(null),
   ]

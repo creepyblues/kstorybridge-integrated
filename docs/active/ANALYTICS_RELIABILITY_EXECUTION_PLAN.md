@@ -147,7 +147,7 @@ Implemented 2026-07-13:
 
 Completed 2026-07-13:
 
-- `supabase/functions/_shared/analytics-filters.ts` is the source of truth for the three production hosts and all observed Brevo/Sendinblue scanner referral domains.
+- `supabase/functions/_shared/analytics-filter-values.mjs` is the source of truth for the three production hosts, all observed Brevo/Sendinblue scanner referral domains, and nonproduction-referrer patterns. The report's TypeScript filter builder and the progress gate import the same values.
 - Funnel, page, landing-page, and traffic-source queries in `funnel-report-cron` use the clean production filter.
 - Separate raw-production and clean-production summaries preserve visibility into excluded traffic instead of hiding the data-quality problem.
 - The generated report alerts when more than 10% of production-host sessions are excluded and displays raw versus clean sessions, users, and engaged sessions.
@@ -156,7 +156,19 @@ Completed 2026-07-13:
 - Before the 2026-07-13 deployment, these source changes did not affect the production function.
 - Production deployment completed on 2026-07-13. The endpoint passed an HTTP 200 health check, and a manual seven-day run completed with five alerts and successful delivery to three admins plus Slack.
 - The existing Supabase `weekly-funnel-report` pg_cron job is active as job 1 on schedule `0 14 * * 1` (Monday 14:00 UTC), verified through the production `check_cron_job_status` RPC.
-- The `AR-106` observation window begins with the first full production day after deployment (2026-07-14) and can be closed no earlier than 2026-07-21 after reviewing seven complete days.
+- The deployed July 13 function predates the source-only localhost/staging/Vercel-referrer extension. `AR-106` therefore has **not** started; the earlier proposed July 14–20 window is invalid and July 21 is not an honest close date.
+- The scheduled progress audit now requires a real `ANALYTICS_CLEAN_FILTER_LIVE_AT` timestamp. It starts the observation on the next Pacific calendar day, audits a fixed seven-complete-day GA window with the exact shared clean filter, and never requests GA credentials before cutover or the first complete day. Missing credentials/evidence is unavailable, any excluded-row leakage is degraded, and only seven audited days with zero leakage is healthy.
+- The local cron resolves the existing read-only analytics service-account path without printing or copying credentials. The repository schedule requires secret `GA4_SERVICE_ACCOUNT_JSON` and variable `ANALYTICS_CLEAN_FILTER_LIVE_AT`; neither is claimed configured on `main` while `AR-014` remains open. Six clean-window tests, 18 external-gate tests, four shared-filter tests, live token acquisition, and the report function type check pass.
+
+#### `AR-106` acceptance criteria
+
+1. Explicit production approval releases the complete clean filter, including local/staging/preview referrer exclusions.
+2. Record the actual successful cutover as `ANALYTICS_CLEAN_FILTER_LIVE_AT`; never backdate it to the earlier partial-filter deployment.
+3. The next Pacific date begins day 1. Release day is excluded even if deployment happened early.
+4. The Data API query covers exactly the first seven complete days and returns a complete, non-duplicated result set.
+5. Every returned row has a canonical production hostname and no known scanner or development-referrer match.
+6. The scheduled gate reports `HEALTHY`; unavailable credentials, malformed/incomplete evidence, or leakage cannot close the task.
+7. Review the corresponding scheduled report alerts to confirm scanner traffic did not create a false customer-behavior alert before checking `AR-106` complete.
 
 ### Human email-engagement implementation
 
@@ -332,7 +344,7 @@ All of the following must be true:
 | 2026-07-13 | Completed the analytics initialization inventory across all three apps, static teaser pages, legacy code, and scheduled reporting. | Initialization inventory under Phase 1; source references listed there. | Review the pre-existing internal-traffic changes, then implement `AR-101`. |
 | 2026-07-13 | Centralized the clean-production GA4 filters and applied them to every scheduled funnel-report query, with a raw-versus-clean guardrail. | Three shared-filter tests pass; function and helper syntax checks pass. | Deploy and manually verify under `AR-107`. |
 | 2026-07-13 | Completed production-host collection gating and implemented privacy-safe, auth-aware internal-traffic tagging. | 41 targeted tests pass; dashboard and website builds plus creator Vite bundle pass. | Approve internal accounts (`AR-005`), inspect the GA filter (`AR-108`), then flag and validate accounts (`AR-109`). |
-| 2026-07-13 | Deployed the clean-production `funnel-report-cron` and completed its manual production acceptance run. | Deployment uploaded the function and shared filter; endpoint health returned HTTP 200; seven-day run delivered to three admins and Slack with zero delivery failures. | Observe seven complete production days through 2026-07-20 and evaluate `AR-106` on or after 2026-07-21. |
+| 2026-07-13 | Deployed the then-current production/scanner `funnel-report-cron` and completed its manual production acceptance run. | Deployment uploaded the function and filter; endpoint health returned HTTP 200; seven-day run delivered to three admins and Slack with zero delivery failures. | Release the later local/staging/preview-referrer extension with approval, record its real cutover, and only then start `AR-106`. |
 | 2026-07-13 | Activated a local weekly progress cron fallback without releasing unrelated `v2` commits. | Idempotent crontab entry at Monday 08:05; wrapper dry run and live delivery both succeeded; three admin emails and Slack delivered. | Keep the fallback active until `AR-014` is merged and its scheduled run is verified. |
 | 2026-07-13 | Classified the authoritative active-admin subset as internal traffic without maintaining a frontend email list. | Three script tests pass; dry run matched 3/3 active admins; protected auth metadata update and verification reported 3/3 internal. | Refresh admin sessions, verify a tagged event after the frontend release, and identify any additional accounts under `AR-005`. |
 | 2026-07-13 | Recorded and pushed the scoped analytics implementation without staging unrelated workspace changes. | `v2` commit `7c9803d0`; push to `origin/v2` succeeded. | Release and validate the three frontend apps separately; do not merge unrelated `v2` product commits solely to activate the workflow. |
@@ -379,6 +391,7 @@ All of the following must be true:
 | 2026-07-13 | Closed the manual-analytics operator drift under `AR-407`. | The tracked skill and installed runtime mirror now share canonical events, exact clean-production exclusions, complete-day/live-at rules, raw-versus-clean evidence, honest activation/retention gaps, and event-level handoff tables without invented funnel conversion or benchmarks. A sync command and two contract tests make future drift detectable. | Keep the verifier in analytics changes; after founder approval, add only the approved cohort funnel and targets rather than restoring ratios from independent event rows. |
 | 2026-07-13 | Prevented missing GitHub annotations from becoming a false generic CI-failure diagnosis. | A live checkpoint briefly labeled the same six zero-step billing failures as generic failures when annotation fetches were unavailable; direct read-only inspection confirmed every annotation still names the billing lock. The external gate now returns `UNAVAILABLE` when any failed-check annotation is missing, while preserving `FAILED` only for actual nonbilling evidence. | Keep PR #141 unrereun; restore account billing, then rerun only with explicit approval and require the focused jobs to execute. |
 | 2026-07-13 | Reconciled the previously undocumented production request/contact source under `AR-211`. | Exact privacy-safe production evidence shows eight historical request rows (seven pitch, one contact), but the table has no status/completion fields and no current active introduction write boundary. Source inspection separates the active interest record, click-only licensing TODO, and unpersisted legacy email form. Three audit tests prove aggregation privacy and fail closed on incomplete evidence. | Founder defines when an introduction is requested and completed; then build one authoritative idempotent workflow and explicitly migrate or exclude the historical contact row before emitting canonical outcomes. |
+| 2026-07-14 | Automated the future seven-day `AR-106` acceptance gate and corrected its premature start date. | The deployed July 13 function does not contain the later development-referrer extension, so the gate now refuses to count days until a real cutover timestamp exists. Shared filter values drive both report and tracker; six timing/evidence tests, 18 external-gate tests, four filter tests, live read-token acquisition, and Deno checking pass. | Obtain production approval, release the complete filter, set the real live-at value locally and as a GitHub variable, then let the gate audit seven complete Pacific days before manual alert review. |
 
 ## Progress update procedure
 

@@ -55,7 +55,7 @@ No wave is considered live because its source exists, its tests pass, or a previ
 3. An authenticated internal admin emits `traffic_type=internal`; an external test identity emits `traffic_type=external`; neither sends email or other personal data.
 4. A tagged production email landing emits exactly one `email_landing_engaged` after a trusted interaction, with campaign-level fields only.
 5. The progress workflow is visible on `main`, its manual run succeeds, and the local cron remains enabled until the first scheduled repository run is proven.
-6. The production release timestamp and evidence are added to the execution plan. Begin the seven-complete-day `AR-106` window; do not close it on release day.
+6. The complete-filter production release timestamp and evidence are added to the execution plan and configured as `ANALYTICS_CLEAN_FILTER_LIVE_AT`. The following Pacific date begins the seven-complete-day `AR-106` window; do not count release day or backdate the marker to the earlier partial-filter deployment.
 
 The scheduled progress audit fetches the complete PR file list and compares it with the fixed Wave 1 allowlist. An unknown path fails the release gate as `SCOPE_DRIFT`; an incomplete file inventory fails as `UNAVAILABLE`. The alert reports counts only and does not expose repository path details in email or Slack.
 

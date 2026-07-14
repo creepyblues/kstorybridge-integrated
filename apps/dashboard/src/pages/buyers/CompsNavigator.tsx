@@ -161,7 +161,7 @@ export default function CompsNavigator() {
       }
 
       // Track comps search
-      trackCompsSearch(titles, response.results.length, response.processing_time_ms);
+      trackCompsSearch(titles.length, 'comps_navigator');
 
       if (response.results.length > 0) {
         toast({

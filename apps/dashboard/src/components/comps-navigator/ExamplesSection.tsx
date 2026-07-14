@@ -24,7 +24,7 @@ export default function ExamplesSection({ onTryExample, isModal = false }: Examp
   // Wrap onTryExample to add tracking
   const handleTryExample = (comps: string[], refinement?: string) => {
     // Track example usage for GA4 analytics
-    trackCompsExampleUsed(activeCategory, comps);
+    trackCompsExampleUsed(activeCategory, comps.length);
     // Call the original handler
     onTryExample(comps, refinement);
   };

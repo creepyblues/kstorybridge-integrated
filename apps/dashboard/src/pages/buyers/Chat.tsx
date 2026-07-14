@@ -19,7 +19,7 @@ import { TITLE_CACHE_SIZE } from '@/utils/constants/config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { debug } from '@/utils/debug';
-import { trackPageView, trackFeatureUsage, trackChatMessage, trackChatSessionStarted, trackChatHistoryLoaded, trackChatMessageSource, trackChatSuggestionClick, trackSessionSearches } from '@/utils/analytics';
+import { trackPageView, trackFeatureUsage, trackChatMessageSent, trackChatSessionStarted, trackChatHistoryLoaded, trackChatSuggestionClick, trackSessionSearches } from '@/utils/analytics';
 
 interface ChatMessage {
   id: string;
@@ -244,8 +244,6 @@ export default function Chat() {
   ) => {
     if (!query.trim() || loading || !user?.id) return;
 
-    // Track message source for analytics
-    trackChatMessageSource(source, query.length);
     promptCountRef.current += 1;
 
     // Wait for any pending submission to complete (prevents race condition during session creation)
@@ -308,8 +306,8 @@ export default function Chat() {
       setSearchCount(undefined);
       setProgressAfterMessageId(tempUserMessage.id);
 
-      // Track message sent
-      trackChatMessage('sent', query.length);
+      // The validated request has a durable session and is accepted for processing.
+      trackChatMessageSent(source, query.length);
 
       // Record user message in database
       debug.log('💾 Recording user message to database...');
@@ -419,13 +417,8 @@ export default function Chat() {
         setLastTiming(response.timing);
       }
 
-      // Track message received
-      trackChatMessage('received', response.response.length, response.titles?.length || 0, responseTime);
     } catch (error: any) {
       console.error('❌ Chat error', error);
-
-      // Track chat error
-      trackChatMessage('error');
 
       toast({
         title: 'Error',
@@ -458,7 +451,7 @@ export default function Chat() {
     if (!user?.id) return;
 
     // Track suggestion click for GA4 analytics
-    trackChatSuggestionClick(query, position || 1);
+    trackChatSuggestionClick(position || 1);
 
     // Mark query as clicked in database (if session exists)
     if (messageId && currentSession) {

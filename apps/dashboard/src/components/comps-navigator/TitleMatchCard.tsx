@@ -38,7 +38,6 @@ export default function TitleMatchCard({ match, position = 1 }: TitleMatchCardPr
   const handleCardClick = () => {
     trackCompsResultClick(
       match.title_id,
-      match.title_name_en || match.title_name_kr || 'Unknown',
       score,
       position
     );

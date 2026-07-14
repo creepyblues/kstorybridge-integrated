@@ -17,7 +17,7 @@ import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@iconify/react';
 import { UnifiedTitleDetail } from '@/components/unified-title-detail';
-import { trackTitleDetailView, trackFavorite, trackFeatureUsage, trackSavedTitle } from '@/utils/analytics';
+import { trackTitleDetailView, trackFavorite, trackFeatureUsage } from '@/utils/analytics';
 import { completeOnboardingStep } from '@/utils/onboarding';
 import { triggerFirstSaveEmail } from '@/services/emailService';
 
@@ -63,11 +63,7 @@ export default function UnifiedTitleDetailPage() {
         if (data && !hasTrackedView.current) {
           hasTrackedView.current = true;
           const source = getViewSource();
-          trackTitleDetailView(data.title_id, data.title_name_en || data.title_name_kr || 'Unknown', source, {
-            genre: data.genre?.join(','),
-            content_format: data.content_format,
-            has_pitch: !!data.pitch,
-          });
+          trackTitleDetailView(data.title_id, source);
           trackFeatureUsage('title_detail_view');
           completeOnboardingStep(3);
         }
@@ -101,14 +97,13 @@ export default function UnifiedTitleDetailPage() {
       if (isFavorited) {
         await titlesService.removeFavorite(title.title_id, user.id);
         setIsFavorited(false);
-        trackFavorite('remove', title.title_id, title.title_name_en || title.title_name_kr || 'Unknown', 'detail');
+        trackFavorite('remove', title.title_id, 'title_detail');
         toast({ title: 'Removed from favorites', description: 'Title removed from your saved list' });
       } else {
         await titlesService.addFavorite(title.title_id, user.id);
         setIsFavorited(true);
         const titleName = title.title_name_en || title.title_name_kr || 'Unknown';
-        trackFavorite('add', title.title_id, titleName, 'detail');
-        trackSavedTitle(title.title_id, titleName, 'detail', user.id);
+        trackFavorite('add', title.title_id, 'title_detail');
         completeOnboardingStep(4);
         toast({ title: 'Added to favorites', description: 'Title saved to your list' });
 

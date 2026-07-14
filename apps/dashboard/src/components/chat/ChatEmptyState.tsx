@@ -9,7 +9,7 @@ interface ChatEmptyStateProps {
 export function ChatEmptyState({ onQuerySelect, suggestedQueries }: ChatEmptyStateProps) {
   const handleExampleClick = (query: string) => {
     // Track example click for GA4 analytics
-    trackChatExampleClicked(query);
+    trackChatExampleClicked();
     // Execute with 'example' source
     onQuerySelect(query, 'example');
   };

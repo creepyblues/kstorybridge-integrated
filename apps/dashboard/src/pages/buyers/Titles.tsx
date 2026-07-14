@@ -111,6 +111,8 @@ export default function Titles() {
           const { nameMatches, vectorPromise } = await titlesService.searchTitlesHybrid(searchQuery, 50);
           if (requestId !== searchRequestIdRef.current) return; // stale
 
+          trackTitleSearch('hybrid', formatFilter ? 1 : 0);
+
           // Apply format filter if set
           const applyFormatFilter = (list: Title[]) =>
             formatFilteredTitleIds !== null
@@ -139,10 +141,9 @@ export default function Titles() {
               setTitles((prev) => [...prev, ...additions]);
             }
 
-            trackTitleSearch(searchQuery, totalCount, 'hybrid');
             // Track zero results for search quality analysis
             if (totalCount === 0) {
-              trackSearchZeroResults(searchQuery, 'hybrid');
+              trackSearchZeroResults('hybrid');
             }
           });
         } else if (formatFilteredTitleIds !== null && formatFilter) {

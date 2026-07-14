@@ -35,7 +35,7 @@ export function HeroSection() {
 
   const handleSelectSuggestion = (result: OMDBSearchResult) => {
     // Track search initiated with autocomplete selection
-    trackHomeSearchInitiated('show_comp', result.Title, 'autocomplete');
+    trackHomeSearchInitiated('show_comp', 'autocomplete');
     completeOnboardingStep(2);
     setShowDropdown(false);
 
@@ -46,7 +46,7 @@ export function HeroSection() {
   const handleShowCompSubmit = () => {
     if (showInput.trim()) {
       // Track search initiated via manual input
-      trackHomeSearchInitiated('show_comp', showInput.trim(), 'manual');
+      trackHomeSearchInitiated('show_comp', 'manual');
     completeOnboardingStep(2);
 
       navigate(`/buyers/comps-navigator?show=${encodeURIComponent(showInput.trim())}`);
@@ -56,7 +56,7 @@ export function HeroSection() {
   const handleBriefSubmit = () => {
     if (briefInput.trim()) {
       // Track brief search initiated
-      trackHomeSearchInitiated('brief', briefInput.trim(), 'manual');
+      trackHomeSearchInitiated('brief', 'manual');
     completeOnboardingStep(2);
 
       navigate(`/buyers/mandates?brief=${encodeURIComponent(briefInput.trim())}`);
@@ -82,7 +82,7 @@ export function HeroSection() {
   const handleChatSubmit = () => {
     if (chatInput.trim()) {
       // Track AI chat search initiated
-      trackHomeSearchInitiated('ai_chat', chatInput.trim(), 'manual');
+      trackHomeSearchInitiated('ai_chat', 'manual');
     completeOnboardingStep(2);
 
       navigate(`/buyers/chat?q=${encodeURIComponent(chatInput.trim())}`);

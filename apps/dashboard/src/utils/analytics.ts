@@ -20,6 +20,11 @@ import {
 // TypeScript type definitions
 export type OnboardingAction = 'start' | 'complete' | 'skip';
 export type SavedTitleSource = 'chat' | 'search' | 'featured' | 'detail';
+export type TitleDetailSource = 'search' | 'chat' | 'comps' | 'saved' | 'featured' | 'direct';
+export type FavoriteSource = 'title_detail' | 'title_search' | 'chat' | 'comps' | 'saved_titles';
+export type ChatInputType = 'typed' | 'example' | 'suggestion' | 'url_param';
+export type MessageLengthBucket = '1_25' | '26_50' | '51_100' | '101_250' | '251_plus';
+export type PitchDeckAccessType = 'preview' | 'full';
 
 export interface TrackingEvent {
   event_name: string;
@@ -567,48 +572,31 @@ export const trackSignin = (
 // ============================================================================
 
 /**
- * Track title search actions
- * @param query - Search query text
- * @param resultCount - Number of results returned
+ * Track accepted title search requests without sending the query.
  * @param searchType - 'hybrid' | 'vector' | 'pagination' | 'filter'
  */
 export const trackTitleSearch = (
-  query: string,
-  resultCount: number,
   searchType: 'hybrid' | 'vector' | 'pagination' | 'filter' = 'vector',
-  metadata?: Record<string, unknown>
+  filterCount = 0
 ): void => {
-  trackEvent('title_search', {
-    search_term: query, // GTM compatibility
-    query_length: query.length,
-    query_first_word: query.split(' ')[0]?.toLowerCase() || '',
-    result_count: resultCount,
+  trackEvent(ANALYTICS_EVENT_NAMES.titleSearchSubmitted, {
     search_type: searchType,
-    has_results: resultCount > 0,
-    app_section: 'titles', // GTM compatibility
-    timestamp: new Date().toISOString(),
-    ...metadata,
+    filter_count: filterCount,
   });
 };
 
 /**
  * Track title detail page views
  * @param titleId - UUID of the title
- * @param titleName - Name of the title
  * @param source - Where the user came from
  */
 export const trackTitleDetailView = (
   titleId: string,
-  titleName: string,
-  source: 'search' | 'chat' | 'comps' | 'saved' | 'featured' | 'direct' = 'direct',
-  metadata?: Record<string, unknown>
+  source: TitleDetailSource = 'direct'
 ): void => {
-  trackEvent('title_detail_view', {
+  trackEvent(ANALYTICS_EVENT_NAMES.titleDetailViewed, {
     title_id: titleId,
-    title_name: titleName,
     source,
-    timestamp: new Date().toISOString(),
-    ...metadata,
   });
 };
 
@@ -635,22 +623,20 @@ export const trackTitleTabSwitch = (
  * Track favorite/unfavorite actions
  * @param action - 'add' | 'remove'
  * @param titleId - UUID of the title
- * @param titleName - Name of the title
  * @param source - Where the action occurred
  */
 export const trackFavorite = (
   action: 'add' | 'remove',
   titleId: string,
-  titleName: string,
-  source: 'detail' | 'search' | 'chat' | 'comps' | 'saved' = 'detail'
+  source: FavoriteSource = 'title_detail'
 ): void => {
-  trackEvent('favorite_action', {
-    action,
+  trackEvent(
+    action === 'add' ? ANALYTICS_EVENT_NAMES.favoriteAdded : ANALYTICS_EVENT_NAMES.favoriteRemoved,
+    {
     title_id: titleId,
-    title_name: titleName,
     source,
-    timestamp: new Date().toISOString(),
-  });
+    }
+  );
 };
 
 // ============================================================================
@@ -659,23 +645,23 @@ export const trackFavorite = (
 // ============================================================================
 
 /**
- * Track chat message events
- * @param action - 'sent' | 'received' | 'error'
- * @param messageLength - Length of message
- * @param titlesReturned - Number of title recommendations (for 'received')
+ * Track an accepted chat request using a non-identifying length bucket.
  */
-export const trackChatMessage = (
-  action: 'sent' | 'received' | 'error',
-  messageLength: number = 0,
-  titlesReturned: number = 0,
-  responseTimeMs?: number
+export const getMessageLengthBucket = (messageLength: number): MessageLengthBucket => {
+  if (messageLength <= 25) return '1_25';
+  if (messageLength <= 50) return '26_50';
+  if (messageLength <= 100) return '51_100';
+  if (messageLength <= 250) return '101_250';
+  return '251_plus';
+};
+
+export const trackChatMessageSent = (
+  inputType: ChatInputType,
+  messageLength: number
 ): void => {
-  trackEvent('chat_message', {
-    action,
-    message_length: messageLength,
-    titles_returned: titlesReturned,
-    response_time_ms: responseTimeMs || 0,
-    timestamp: new Date().toISOString(),
+  trackEvent(ANALYTICS_EVENT_NAMES.chatMessageSent, {
+    input_type: inputType,
+    message_length_bucket: getMessageLengthBucket(messageLength),
   });
 };
 
@@ -722,18 +708,13 @@ export const trackChatTitleClick = (
 
 /**
  * Track suggested query clicks
- * @param query - The suggested query text
  * @param position - Position in suggestions (1-indexed)
  */
 export const trackChatSuggestionClick = (
-  query: string,
   position: number
 ): void => {
   trackEvent('chat_suggestion_click', {
-    query_text: query.substring(0, 50),
-    query_length: query.length,
     position,
-    timestamp: new Date().toISOString(),
   });
 };
 
@@ -755,15 +736,9 @@ export const trackChatMessageSource = (
 
 /**
  * Track when user clicks an initial example prompt on chat page
- * @param exampleText - The example text that was clicked
  */
-export const trackChatExampleClicked = (
-  exampleText: string
-): void => {
-  trackEvent('chat_example_clicked', {
-    example_text: exampleText.substring(0, 50),
-    timestamp: new Date().toISOString(),
-  });
+export const trackChatExampleClicked = (): void => {
+  trackEvent('chat_example_clicked', {});
 };
 
 // ============================================================================
@@ -773,43 +748,31 @@ export const trackChatExampleClicked = (
 
 /**
  * Track Comps Navigator search
- * @param compTitles - Array of comp title names
- * @param resultCount - Number of results
- * @param processingTimeMs - Total processing time
+ * Track an accepted comps request without sending comp title names.
  */
 export const trackCompsSearch = (
-  compTitles: string[],
-  resultCount: number,
-  processingTimeMs: number,
-  metadata?: Record<string, unknown>
+  inputCount: number,
+  source: 'comps_navigator' | 'home' | 'trial_conversion' = 'comps_navigator'
 ): void => {
-  trackEvent('comps_search', {
-    num_comps: compTitles.length,
-    comp_titles: compTitles.join(', ').substring(0, 100), // Truncate for GA4
-    result_count: resultCount,
-    processing_time_ms: processingTimeMs,
-    has_results: resultCount > 0,
-    timestamp: new Date().toISOString(),
-    ...metadata,
+  trackEvent(ANALYTICS_EVENT_NAMES.compsSearchSubmitted, {
+    input_count: inputCount,
+    source,
   });
 };
 
 /**
  * Track Comps Navigator result clicks
  * @param titleId - UUID of clicked title
- * @param titleName - Name of the title
  * @param matchScore - Match score (0-100)
  * @param position - Position in results (1-indexed)
  */
 export const trackCompsResultClick = (
   titleId: string,
-  titleName: string,
   matchScore: number,
   position: number
 ): void => {
   trackEvent('comps_result_click', {
     title_id: titleId,
-    title_name: titleName,
     match_score: matchScore,
     position,
     timestamp: new Date().toISOString(),
@@ -819,16 +782,15 @@ export const trackCompsResultClick = (
 /**
  * Track when user clicks "Try Example" in Comps Navigator
  * @param exampleName - Name of the example used
- * @param compTitles - Array of comp titles in the example
+ * @param inputCount - Number of comps in the example
  */
 export const trackCompsExampleUsed = (
   exampleName: string,
-  compTitles: string[]
+  inputCount: number
 ): void => {
   trackEvent('comps_example_used', {
     example_name: exampleName,
-    comp_titles: compTitles.join(', ').substring(0, 100),
-    comp_count: compTitles.length,
+    input_count: inputCount,
     timestamp: new Date().toISOString(),
   });
 };
@@ -983,31 +945,15 @@ export const trackTitlesFilterApplied = (
 /**
  * Track when a pitch deck is opened/loaded
  * @param titleId - UUID of the title
- * @param titleName - Name of the title
- * @param userTier - User's current tier
- * @param totalPages - Total pages in the PDF
+ * @param accessType - Whether the viewer grants preview or full access
  */
 export const trackPitchDeckOpened = (
   titleId: string,
-  titleName: string,
-  userTier: string,
-  totalPages: number
+  accessType: PitchDeckAccessType
 ): void => {
-  trackEvent('pitch_deck_opened', {
+  trackEvent(ANALYTICS_EVENT_NAMES.pitchDeckOpened, {
     title_id: titleId,
-    title_name: titleName,
-    user_tier: userTier,
-    total_pages: totalPages,
-    timestamp: new Date().toISOString(),
-  });
-
-  // Also fire 'view_pitch' event for GTM compatibility
-  trackEvent('view_pitch', {
-    title_id: titleId,
-    title_name: titleName,
-    user_tier: userTier,
-    total_pages: totalPages,
-    timestamp: new Date().toISOString(),
+    access_type: accessType,
   });
 };
 
@@ -1015,18 +961,17 @@ export const trackPitchDeckOpened = (
  * Track pitch deck page navigation
  * @param titleId - UUID of the title
  * @param pageNumber - Current page number (1-indexed)
- * @param timeOnPageMs - Time spent on the previous page in milliseconds
+ * @param accessType - Whether the viewer grants preview or full access
  */
 export const trackPitchDeckPageViewed = (
   titleId: string,
   pageNumber: number,
-  timeOnPageMs: number
+  accessType: PitchDeckAccessType
 ): void => {
-  trackEvent('pitch_deck_page_viewed', {
+  trackEvent(ANALYTICS_EVENT_NAMES.pitchDeckPageViewed, {
     title_id: titleId,
     page_number: pageNumber,
-    time_on_page_ms: timeOnPageMs,
-    timestamp: new Date().toISOString(),
+    access_type: accessType,
   });
 };
 
@@ -1212,18 +1157,13 @@ export const trackPremiumUpgradeCtaClicked = (
 
 /**
  * Track when a search returns zero results
- * @param query - Search query (truncated for privacy)
  * @param searchType - Type of search performed
  */
 export const trackSearchZeroResults = (
-  query: string,
   searchType: string
 ): void => {
   trackEvent('search_zero_results', {
-    query: query.substring(0, 50),
-    query_length: query.length,
     search_type: searchType,
-    timestamp: new Date().toISOString(),
   });
 };
 
@@ -1443,17 +1383,14 @@ export const trackHomeCtaClicked = (
 /**
  * Track search initiated from home page
  * @param searchType - Type of search (show_comp, brief, etc.)
- * @param query - The search query text
  * @param inputMethod - How the search was initiated (manual, autocomplete)
  */
 export const trackHomeSearchInitiated = (
   searchType: string,
-  query: string,
   inputMethod?: string
 ): void => {
   trackEvent('home_search_initiated', {
     search_type: searchType,
-    query_length: query.length,
     input_method: inputMethod,
     timestamp: new Date().toISOString(),
   });
@@ -1482,37 +1419,29 @@ export const trackFeaturedTitleClicked = (
 
 /**
  * Track mandate search submission
- * @param query - The mandate query text
- * @param resultsCount - Number of results returned
- * @param processingTimeMs - Time to process the search
+ * Track an accepted mandate request without sending mandate text.
  */
 export const trackMandateSearchSubmitted = (
-  query: string,
-  resultsCount: number,
-  processingTimeMs?: number
+  filterCount: number,
+  source: 'mandates' | 'home' | 'trial_conversion' = 'mandates'
 ): void => {
-  trackEvent('mandate_search_submitted', {
-    query_length: query.length,
-    results_count: resultsCount,
-    processing_time_ms: processingTimeMs,
-    timestamp: new Date().toISOString(),
+  trackEvent(ANALYTICS_EVENT_NAMES.mandateSearchSubmitted, {
+    filter_count: filterCount,
+    source,
   });
 };
 
 /**
  * Track mandate result clicks
  * @param titleId - UUID of the title
- * @param titleName - Name of the title for reporting
  * @param matchScore - Match score percentage
  */
 export const trackMandateResultClicked = (
   titleId: string,
-  titleName: string,
   matchScore: number
 ): void => {
   trackEvent('mandate_result_clicked', {
     title_id: titleId,
-    title_name: titleName,
     match_score: matchScore,
     timestamp: new Date().toISOString(),
   });
@@ -1520,15 +1449,9 @@ export const trackMandateResultClicked = (
 
 /**
  * Track example mandate usage
- * @param exampleName - Name of the example mandate
  */
-export const trackMandateExampleUsed = (
-  exampleName: string
-): void => {
-  trackEvent('mandate_example_used', {
-    example_name: exampleName,
-    timestamp: new Date().toISOString(),
-  });
+export const trackMandateExampleUsed = (): void => {
+  trackEvent('mandate_example_used', {});
 };
 
 // --- PROFILE & UPGRADE ---

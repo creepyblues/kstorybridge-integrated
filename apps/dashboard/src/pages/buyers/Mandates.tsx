@@ -116,11 +116,11 @@ export default function Mandates() {
       setSearchTiming(response.timing || null);
 
       // Track mandate search submitted
-      trackMandateSearchSubmitted(mandateText, response.results.length, response.processing_time_ms);
+      trackMandateSearchSubmitted(0, 'mandates');
 
       // Track zero results for search quality analysis
       if (response.results.length === 0) {
-        trackSearchZeroResults(mandateText, 'mandate');
+        trackSearchZeroResults('mandate');
       }
 
       // Reload history to show the new search
@@ -201,7 +201,7 @@ export default function Mandates() {
 
   const handleTryExample = (mandateText: string) => {
     // Track example usage
-    trackMandateExampleUsed(mandateText);
+    trackMandateExampleUsed();
 
     setShowExamples(false);
     handleSubmitMandate(mandateText);

@@ -91,6 +91,8 @@ These names replace overlapping legacy names under `AR-206`. Query text, chat te
 | `pitch_deck_opened` | Buyer product | The pitch-deck viewer successfully opens. | `title_id`, `access_type` | `{title_id: "uuid", access_type: "full"}` |
 | `pitch_deck_page_viewed` | Buyer product | A distinct pitch-deck page becomes visible. | `title_id`, `page_number`, `access_type` | `{title_id: "uuid", page_number: 2, access_type: "preview"}` |
 
+Implementation status (2026-07-13): all nine buyer-product outcomes above are implemented and tested on `v2`. The dashboard client release and canonical scheduled-report cutover are still pending; reports must not combine legacy and canonical names without an explicit contract-live boundary.
+
 ## Creator title workflow outcomes
 
 Draft and submission events are client-emitted only after the corresponding Supabase write returns successfully. Approval and publication are reserved for server-side emission because they occur in the admin workflow without the creator present.
